@@ -1,0 +1,1436 @@
+Title: Integrating Diagnostic Checks into Estimation
+
+URL Source: https://arxiv.org/pdf/2604.16690v1
+
+Published Time: Tue, 21 Apr 2026 00:18:51 GMT
+
+Number of Pages: 34
+
+Markdown Content:
+# Integrating Diagnostic Checks into Estimation ∗
+
+# Reca Sarfati † Vod Vilfort ‡
+
+# April 17, 2026 
+
+Abstract 
+
+Empirical researchers often use diagnostic checks to assess the plausibility of their modeling assumptions, such as testing for covariate balance in RCTs, pre-trends in event studies, or instrument validity in IV designs. While these checks are traditionally treated as external hurdles to estimation, we argue they should be integrated into the estimation process itself. In particular, we propose residualizing one’s baseline estimator against the vector of diagnostic check statistics to remove the component of baseline sampling variation explained by the diagnostic checks. This residualized estimator offers researchers a “free lunch,” delivering three properties simultaneously: (i) eliminating inference distortions from check-based selective reporting; (ii) reducing variance without changing the estimand when the baseline model is correctly specified; and (iii) minimizing worst-case bias under bounded local misspecification within the class of linear adjustments. We apply our method to the RCT in Kaur et al. (2024) and find that, even in a setting where all balance checks pass comfortably, residualization increases the magnitude of the baseline point estimate and reduces its standard error, equivalent to approximately a 10% increase in sample size. 
+
+# 1 Introduction 
+
+Empirical researchers often use diagnostic checks to guide their choice of estimator. For example, in randomized controlled trials (RCTs), it is common to check for successful randomization by testing for covariate “balance,” which examines differences in pre-treatment characteristics across treatment arms (Banerjee et al., 2017, 2020). When such covariates appear imbalanced (e.g., the difference in mean covariates ˆγ = ¯X1 − ¯X0 between the treatment and control groups is sufficiently far from zero), researchers might depart from their initial estimator (e.g., the 
+
+> ∗
+
+We thank Isaiah Andrews, Anna Mikusheva, and Alberto Abadie for their guidance and support, as well as MIT lunch seminar participants for helpful comments. 
+
+> †
+
+Department of Economics, Massachusetts Institute of Technology, sarfati@mit.edu. 
+
+> ‡
+
+Department of Economics, Massachusetts Institute of Technology, vod@mit.edu. 
+
+1
+
+> arXiv:2604.16690v1 [econ.EM] 17 Apr 2026
+
+difference in mean outcomes ˆc = ¯Y1 − ¯Y0 between treatment and control) to adjust outcomes or include controls to address the imbalance. As another example, in difference-in-differences (DiD) and event-study designs, researchers routinely assess the plausibility of parallel trends by examining “pre-trends” (Roth, 2022). Evidence of nonzero pre-trends—for instance, statistically significant coefficients on leads of the treatment indicator—may lead the researcher to modify the specification (e.g., alter the set of controls, change the event window, reweight the sample, etc.). As a further example, in instrumental variables (IV) designs, researchers often report checks of instrument validity, such as balance of predetermined covariates across instrument values or reduced-form effects of the instrument on predetermined outcomes (Danieli et al., 2026). When such checks yield evidence against the maintained assumptions—for example, when predetermined covariates are imbalanced across instrument values—researchers may sim-ilarly modify the specification, such as dropping controls, switching instruments, or restricting the sample to a subgroup where the instrument seems more plausible. To date, such diagnostic checks have largely been treated as external hurdles to estimation. In this paper, we argue that diagnostic checks should be integrated into the estimation process itself. Specifically, given a baseline estimator ˆc and a vector of jointly asymptotically normal and mean-zero diagnostic checks ˆγ, we propose an estimator ˆcR which “residualizes” ˆγ from ˆc based on the linear regression of ˆc on ˆγ under their asymptotic normal distribution. In particular, the residualized estimator ˆcR takes ˆc and subtracts the linear combination of ˆγ induced by the regression coefficients. Intuitively, the linear adjustment ˆcR integrates diagnostic checks into estimation by accounting for the first-order dependence between ˆc and ˆγ.We show that the residualized estimator ˆcR comes with a “free lunch,” delivering three prop-erties simultaneously. First, it removes first -order sensitivity to the check, thereby eliminating bias from selective reporting of the baseline estimator based on passing diagnostic checks. That is, the distribution of ˆcR conditional on “passing” a check based on ˆγ remains asymptotically normal, with the same mean and variance as its unconditional distribution. In this sense, ˆcR is pre-test independent. Second, under standard regularity conditions, semiparametric efficiency requires orthogonality to any auxiliary statistic whose population value is zero under the base model. For example, in an RCT the covariate imbalance ˆγ = ¯X1 − ¯X0 has population value 
+
+E[X | T = 1] −E[X | T = 0] = 0 under the baseline of random assignment; an efficient average treatment effect (ATE) estimator therefore cannot co-move with ˆγ to first order. Otherwise one can strictly reduce variance by residualizing on the check. In particular, residualization is the variance-minimizing linear adjustment of ˆc on ˆγ; thus, whenever ˆc is not orthogonal to ˆγ, the linear adjustment ˆcR strictly improves large-sample efficiency without changing the estimand under the base model. Third, residualization minimizes worst-case bias under bounded local misspecification, which, in combination with our second result, implies that the residualized estimator ˆcR is minimax-optimal under squared error loss within the class of linear adjustments. 2Below we position these three properties relative to existing literature and results. 
+
+Pretesting. There are a number of papers that consider the properties of diagnostic checks, with many pointing out issues of power deficiency and inference distortions from pretesting (Hartman and Hidalgo, 2018; Freyaldenhoven et al., 2019; Kahn-Lang and Lang, 2020; Roth, 2022; Rambachan and Roth, 2023; Bicalho et al., 2025; Mikhaeil and Harshaw, 2025; Bilinski and Hatfield, 2026). We do not address the issue of power, opting instead to take the choice of diagnostic checks as given; efforts to develop better diagnostic checks are complementary to our framework (Hartman and Hidalgo, 2018; Bicalho et al., 2025; Bilinski and Hatfield, 2026). We do, however, consider the issue of pretesting, for which existing solutions include conditional inference corrections and methods that avoid pretesting altogether. Examples of conditional inference applied to RCTs include Andrews et al. (2024) and Sarfati and Vilfort (2025), while applications to event studies include Roth (2022) and Mikhaeil and Harshaw (2025). Examples of approaches that avoid pretesting altogether include Manski and Pepper (2018), Freyaldenhoven et al. (2019), and Rambachan and Roth (2023). Our residualization approach has the benefit of (i) being agnostic to the form of pretesting and (ii) not requiring the specification of bounds, ambiguity sets, or other tuning parameters. 1 This is useful when there is uncertainty or disagreement over the inputs to (i) and (ii). For example, there can be disagreement over the acceptable threshold for covariate balance (Banerjee et al., 2020). 
+
+Efficiency. The orthogonality property of efficient estimators is well-established in the liter-ature on semiparametric efficiency (Fisher, 1925; Bickel et al., 1993; Newey and McFadden, 1994; Van der Vaart, 2000) and is the basis of Hausman (1978) specification tests. Recent work highlighting this property is Borusyak et al. (2024), who show orthogonality of their efficient event-study imputation estimator to pre-trend coefficients. We show that such orthogonality can be obtained more generally starting from any pair of jointly asymptotically normal baseline estimator ˆc and diagnostic checks ˆγ in a wide variety of contexts, including those highlighted in the introduction. In the case of an RCT with ˆc = ¯Y1 − ¯Y0 and ˆγ = ¯X1 − ¯X0, the residualized estimator ˆcR coincides with the efficient covariate adjustment proposed by Lin (2013). This type of adjustment is also advanced by Roth and Sant’Anna (2023) for event-study designs with random treatment timing rather than parallel trends. Our framework speaks more generally to any setting where researchers accompany their baseline estimator ˆc with auxiliary statistics 
+
+ˆγ whose population value should be zero under the base model. 
+
+Misspecification. Researchers use diagnostic checks to assess deviations from correct model specification, such as failures of randomization in RCTs or violations of parallel trends in event 
+
+> 1For example, the conditional inference approach based on truncated Gaussian pivots (Fithian et al., 2014; Lee et al., 2016; Andrews et al., 2024; Sarfati and Vilfort, 2025) would require specification of the conditioning set of a given pretesting procedure.
+
+3studies. We model the bias from such deviations as a local-to-zero bias term in the researcher’s baseline estimator. This follows a large literature on local misspecification (Newey, 1985; Conley et al., 2012; Andrews et al., 2017, 2020; Armstrong and Kolesár, 2021; Bonhomme and Weidner, 2022; Andrews et al., 2025). The local misspecification approach considers bias on the same asymptotic order as sampling variance, which facilitates tractable analysis of bias-variance tradeoffs. We show that in our setting, the worst-case squared bias of a linear adjustment is proportional to its variance, meaning that the variance-minimizing residualization also mini-mizes worst-case bias. This “double optimality” relies on measuring the size of misspecification in terms of a bound on the L2 norm of the local misspecification score function, with no further restrictions on misspecification. 2 A recent paper that finds a similar double-optimality result when allowing for analogous forms of unrestricted misspecification is Adusumilli (2026). The rest of this paper is organized as follows. Section 2 formalizes the setting and establishes notation. Section 3 discusses the practical implementation of our procedure. Section 4 presents our first result, which is that residualization eliminates the inference distortions from selective reporting based on the passing of diagnostic checks. Section 5 presents our second result, which is that orthogonality to diagnostic checks is implied by semiparametric efficiency when the base model is correct, which we use to establish the variance reduction from residualization. Section 6 presents our third result, which is that residualization also minimizes worst-case bias under bounded local misspecification within the class of linear adjustments. Section 7 applies our procedure to the example of balance checks for the RCT in Kaur et al. (2024). Section 8 concludes. Appendix A presents proofs for our results. Appendix B provides additional details, remarks, and worked examples. 
+
+# 2 Setting and Notation 
+
+We consider the following setting, borrowing the terminology of Andrews et al. (2025). A researcher posits an economic model M ⊆ R × ∆( D), where each element (c,P ) ∈ M pairs a scalar parameter of interest c (e.g., a treatment effect) with a distribution P over the ob-served data D ∈ D on sample space D. For instance, in an RCT with treatment T ∈ { 0,1}
+
+and observed outcome Y , the model collects all pairs (c,P ) such that P is an observed-data distribution induced by some underlying potential-outcomes structure satisfying random as-signment, and c is the corresponding average treatment effect, identified under the model as 
+
+c(P ) = EP [Y | T = 1] −EP [Y | T = 0] . In an event-study design with pre- and post-treatment periods, the model collects all pairs (c,P ) such that P is an observed-data distribution induced   
+
+> 2This is without much loss of generality: as shown by Andrews et al. (2020), bounding the L2norm of the score is asymptotically equivalent to bounding any divergence in the Cressie and Read (1984) family, which includes Kullback–Leibler divergence and Hellinger distance as special cases.
+
+4by some underlying potential-outcomes structure satisfying parallel trends and no anticipation, and c is the corresponding identified average treatment effect on the treated. The economic model induces a statistical model P = {P : ( c,P ) ∈ M for some c} ⊆ ∆( D),within which we assume the parameter is identified as a functional c = c(P ). The researcher would like to know whether the true (parameter, distribution) pair lies in M—that is, whether the economic model is correctly specified. In practice, however, the data can only speak to the weaker question of whether P ∈ P : the researcher observes D1,...,D n drawn i.i.d. from some true distribution P ∗ and can test features of P ∗, but cannot directly verify that there exists a parameter value c∗ such that (c∗,P ∗) ∈ M . Diagnostic checks target this testable implication. Formally, let ˆγ be a pγ -vector of statistics with population analogue γ = γ(P ) ∈ Rpγ satisfying 
+
+γ(P ) = 0 for all P ∈ P . Evidence that γ(P ∗)̸ = 0 is thus evidence of statistical misspecification (P ∗ /∈ P ), which in turn implies econometric misspecification (i.e., there does not exist a parameter value c∗ such that (c∗,P ∗) ∈ M ). In practice, even when P ∗ ∈ P , the finite-sample realization ˆγ fluctuates around zero, and researchers must make judgment calls about which values of ˆγ constitute evidence against the model. We take the choice of diagnostic check as given and ask how to use ˆγ constructively—not only as a pass/fail diagnostic, but as an input to the estimator ˆc itself. We now formalize the asymptotic behavior of the estimator and the diagnostic check. For a given P , we let L2(P ) denote the set of functions f : D → R with finite second moments 
+
+EP [f 2] ≡ EP [f 2(D)] < ∞, and let L20(P ) ⊆ L2(P ) denote the subset with mean zero EP [f ] = 0 .Fix a base distribution P0 ∈ P so that ˆc targets c = c(P0) ∈ R and ˆγ targets γ = γ(P0) ∈ Rpγ . To lighten notation, we henceforth write E0 = EP0 . We assume that ( ˆc, ˆγ) is jointly asymptotically linear: for influence functions ϕc ∈ L20(P0) and ϕγ ∈ L20(P0)pγ ,
+
+√n 
+
+> 
+
+ˆc−c
+
+ˆγ −γ 
+
+> 
+
+= 1
+
+√n
+
+> n∑
+> i=1
+> 
+
+ϕc(Di)
+
+ϕγ (Di)
+
+> 
+
++op(1) , Σ =  
+
+> 
+
+σ2 
+
+> c
+
+Σcγ 
+
+Σγc Σγγ 
+
+> 
+
+, Σγγ ≻ 0, σ2 
+
+> c
+
+> Σcγ Σ−1 
+
+> γγ
+
+Σγc , (1) where E0[ϕc] = 0 , E0[ϕγ ] = 0 , and the blocks of the joint asymptotic covariance Σ are 
+
+σ2 
+
+> c
+
+= E0[ϕ2 
+
+> c
+
+], Σcγ = E0[ϕcϕ′ 
+
+> γ
+
+], Σγγ = E0[ϕγ ϕ′ 
+
+> γ
+
+].
+
+In particular, (1) implies joint asymptotic normality: √n( ˆc−c, ( ˆγ −γ)′)′ d
+
+−→ N (0 ,Σ) . Note that the off-diagonal block Σcγ measures the degree to which the baseline estimator ˆc co-moves with the diagnostic check ˆγ to first order, which will be a central component to our analysis. We illustrate this framework in the context of an RCT balance check, which we will return to as a running example: 
+
+Example 1 (RCT Balance Check) . A researcher conducts an RCT to estimate the effect of a program on an outcome Y , with binary treatment assignment T ∈ { 0,1} and predetermined 5covariates X. The economic model is 
+
+M = {(c,P ) ∈ R×∆( D) : c = EP [Y | T = 1] −EP [Y | T = 0] , EP [X | T = 1] = EP [X | T = 0] }.
+
+This observed-data restriction is implied by random assignment in an underlying potential-outcomes model, under which c is the average treatment effect. The induced statistical model 
+
+P = {P : ( c,P ) ∈ M for some c}
+
+therefore consists of observed-data distributions under which treatment and control groups are balanced in predetermined covariates, and within this model the parameter is identified as 
+
+c(P ) = EP [Y | T = 1] −EP [Y | T = 0] .
+
+The researcher estimates c(P ) using the difference in means ˆc = ¯Y1 − ¯Y0 and reports the balance statistic ˆγ = ¯X1 − ¯X0. Under any P ∈ P ,
+
+γ(P ) = EP [X | T = 1] −EP [X | T = 0] = 0 ,
+
+so ˆγ targets a testable implication of the model. Now consider possible deviations from M, focusing on the case where X is baseline income. Suppose, for redistributive reasons, administrators were more likely to assign treatment to worse-off households. This would generate an observed-data distribution P1 under which treated and control households are no longer balanced in X, so that 
+
+γ(P1) = EP1 [X | T = 1] −EP1 [X | T = 0] < 0.
+
+Alternatively, administrators may have been receptive to bribes, so that wealthier households were more likely to receive treatment. This would generate a distribution P2 satisfying 
+
+γ(P2) = EP2 [X | T = 1] −EP2 [X | T = 0] > 0.
+
+In either case, the balance check ˆγ detects a violation of the observed-data restriction defining 
+
+P, so the true distribution lies outside the maintained statistical model. Since P is induced by M, this also means that the maintained economic model fails at the true data-generating process (DGP). The challenge for inference arises even when the model is correctly specified. Under proper randomization ( P ∗ ∈ P ), the population imbalance satisfies γ(P ∗) = 0 , but ˆγ fluctuates around zero in finite samples. A common practice is to test for balance by computing a t-statistic 6for the null hypothesis γ = 0 and compare it to a conventional significance cutoff. If the test rejects—that is, if balance “fails”—the researcher may change what they report, for example by adding controls, changing specifications, or discarding the RCT results entirely. The workflow in Example 1 applies more generally to settings where researchers may wish to correct for the potential bias of a baseline estimator ˆc after observing values of diagnostic statistics ˆγ. In the next section, we propose a residualized estimator ˆcR that provides a general correction for such settings. 
+
+# 3 Implementation 
+
+Based on (1), we have the normal approximation 
+
+√n 
+
+> 
+
+ˆc−c
+
+ˆγ −γ 
+
+> 
+
+∼ N (0 ,Σ) , Σ =  
+
+> 
+
+σ2 
+
+> c
+
+Σcγ 
+
+Σγc Σγγ 
+
+> 
+
+.
+
+The implied linear regression of ˆc on ˆγ is given by the regression coefficient Λ = Σ cγ Σ−1 
+
+> γγ
+
+, which measures the sensitivity of the baseline estimator ˆc to the diagnostic checks ˆγ. The residualized estimator is defined as the resulting regression residual 
+
+ˆcR = ˆ c−Λˆ γ, 
+
+which has a corresponding asymptotic variance 
+
+σ2 
+
+> R
+
+= σ2 
+
+> c
+
+−Σcγ Σ−1 
+
+> γγ
+
+Σγc > 0.
+
+The residualized estimator ˆcR “partials out” the component of the baseline estimator ˆc that is linearly predictable from the diagnostic check ˆγ. In practice, we replace the unknown asymptotic covariance matrix Σ with a consistent estimator ˆΣ (i.e., n ˆΣ p
+
+−→ Σ), where ˆσ2 
+
+> c
+
+> 0 and ˆΣγγ is invertible. This leads to feasible plug-in versions of the above quantities. That is, once a re-searcher can obtain a consistent estimator of the joint asymptotic covariance of ( ˆc, ˆγ)—the same ingredient already used to compute standard errors—it is straightforward to implement our procedures. In particular, we can define the plug-in regression coefficient ˆΛ = ˆΣcγ ˆΣ−1 
+
+> γγ
+
+, plug-in residualized estimator ˆcR = ˆc− ˆΛˆ γ, and the plug-in variance estimator ˆσ2 
+
+> R
+
+= ˆσ2 
+
+> c
+
+− ˆΣcγ ˆΣ−1 
+
+> γγ
+
+ˆΣγc so that ˆσR is the standard error of ˆcR.This plug-in approach does not affect the asymptotic distribution of the residualized esti-mator. To see why, expand ˆcR = ˆc−Λ ˆγ −( ˆΛ−Λ) ˆγ. The remainder ( ˆΛ−Λ) ˆγ is op(n−1/2) because 
+
+ˆΛ − Λ = op(1) and ˆγ = γ + Op(n−1/2) = Op(n−1/2) under the base model (where γ = 0 ). As a result, the plug-in and population-coefficient versions share the same asymptotic distribution 7to first order. Thus, for ease of exposition, our theoretical results below are stated using the population Σ while implementation examples use the sample ˆΣ.
+
+Example 1 (Continued). In the RCT example, with ˆc = ¯Y1 − ¯Y0 and ˆγ = ¯X1 − ¯X0, residual-ization gives 
+
+ˆcR = ( ¯Y1 − ¯Y0)− ˆΛ( ¯X1 − ¯X0), (2) where ˆΛ is defined as above. In the special case of a linear conditional mean function E[Y | T,X ] = 
+
+α+τ T +β′X, the population coefficient satisfies Λ = β′. To see this, write Y = α+τ T +β′X +ε
+
+with E[ε | T,X ] = 0 . Under independence of T and X, we have 
+
+Σcγ = Cov( ¯Y1 − ¯Y0, ¯X1 − ¯X0) = β′Var( ¯X1 − ¯X0) = β′Σγγ ,
+
+so Λ = Σ cγ Σ−1 
+
+> γγ
+
+= β′, and the residualization subtracts ˆβ′( ¯X1 − ¯X0) from the difference-in-means, where ˆβ is a consistent sample analogue of β.
+
+# 4 Selective Reporting and Pre-Test Independence 
+
+Empirical practice often conditions what gets reported on whether diagnostic checks “pass.” This can take the form of reporting an estimate only when ˆγ is close to zero, or modifying the analysis when |ˆγ| is large—for instance, switching estimators (changing ˆc), or changing the target altogether (changing c), e.g., by restricting the sample or redefining the estimand. To see why this is problematic, let ˜c denote the reported estimate after the researcher conditions on whether the check “passes”—for example, ˜c = ˆc when ˆγ ∈ A for some acceptance set A, and ˜c is altered or suppressed otherwise. Even if the base model holds, ˜c is drawn from the conditional distribution of ˆc given ˆγ ∈ A , not its unconditional sampling distribution. When ˆc and ˆγ co-move, conditioning shifts the distribution of ˜c relative to its unconditional distribution. Under the null of correct specification, de Chaisemartin and D’Haultfœuille (2024) show that for symmetric pre-tests (e.g., two-sided t-tests of γ = 0 ), this distortion takes the form of conservatism—confidence intervals over-cover and tests are undersized. More generally, when the base model does not hold, conditioning can distort inference in either direction, so that confidence intervals and t-tests based on the unconditional distribution of ˆc need not deliver valid coverage or size after selection (Fithian et al., 2014; Andrews et al., 2024; Sarfati and Vilfort, 2025). Critically, selection distorts first-order inference whenever the reported estimate co-moves with the check (i.e., ˆc has nonzero covariance with ˆγ). Residualization breaks this link. By construction, the residualized estimator is first-order orthogonal to the check, and since the joint limit is normal, orthogonality implies asymptotic independence. Conditioning on events determined by ˆγ therefore has no effect on the first-order distribution of ˆcR. Formally: 8Proposition 1. Assume (1) and define ˆcR = ˆ c−Λˆ γ with Λ = Σ cγ Σ−1 
+
+> γγ
+
+. Then 
+
+√n
+
+> 
+
+ˆcR −c
+
+ˆγ −γ 
+
+> d
+
+−→ N
+
+> 
+
+0,
+
+> 
+
+σ2 
+
+> R
+
+00 Σγγ 
+
+> 
+
+, σ2 
+
+> R
+
+= σ2 
+
+> c
+
+−Σcγ Σ−1 
+
+> γγ
+
+Σγc ,
+
+and, in particular, the Gaussian limit implies √n( ˆcR − c) is asymptotically independent of 
+
+√n(ˆ γ −γ).
+
+The result has a simple interpretation via the Gaussian limit. If (√n( ˆc−c),√n( ˆγ −γ))
+
+is jointly normal, the conditional mean of ˆc given ˆγ is linear: 
+
+E[√n(ˆ c−c) | √n(ˆ γ −γ)]
+
+= Σ cγ Σ−1
+
+> γγ
+
+√n(ˆ γ −γ).
+
+The coefficient Λ = Σ cγ Σ−1 
+
+> γγ
+
+is precisely the component of ˆc that is linearly predictable from 
+
+ˆγ. Residualization removes this term, so E[√n( ˆcR − c) | √n( ˆγ − γ)] = 0 and the conditional distribution of ˆcR coincides with its unconditional distribution. This asymptotic independence implies post-selection validity for a broad class of conventional diagnostic screening rules, as formalized in the following corollary. 
+
+Corollary 1 (Pre-test independence) . Under the conditions of Proposition 1, let 
+
+Tn = ˆΣ−1/2 
+
+> γγ
+
+ˆγ, 
+
+and suppose the reporting rule An is asymptotically equivalent to a fixed threshold rule based on 
+
+Tn, in the sense that there exist a continuous function q : Rpγ → R and a constant a ∈ R such that 
+
+P (An∆{q(Tn) ≤ a}) → 0.
+
+If, for Z ∼ N (0 ,I pγ ) we have 0 < P (q(Z) ≤ a) < 1 and P (q(Z) = a) = 0 , then 
+
+√n(ˆ cR −c) | And
+
+−→ N (0 ,σ 2
+
+> R
+
+).
+
+If moreover √nˆσRp
+
+−→ σR, then the usual one-dimensional Gaussian confidence intervals and tests based on ˆcR remain asymptotically valid conditional on An.
+
+Corollary 1 shows that the residualized estimator is robust to a broad class of conventional di-agnostic screening rules. The key point is that the first-order distribution of ˆcR is asymptotically independent of the first-order distribution of the diagnostic statistic, so once the reporting deci-sion is driven by a fixed function of the standardized check, conditioning on that decision does not alter the estimator’s first-order distribution. In this sense, the correction is built into the estima-tor itself, rather than applied ex post through a rule-specific conditional-inference adjustment. 9The assumption that An be asymptotically equivalent to a fixed threshold rule is meant to capture the kinds of screening decisions researchers actually make in practice. It allows the realized reporting decision to differ from the idealized threshold rule on a vanishing set of samples, while requiring that, to first order, the decision be determined by a fixed function of the standardized diagnostic statistic. This covers many rules used in practice, including two-sided 
+
+t-tests, joint Wald or F -tests, max-statistic cutoffs, and equivalent p-value thresholds. For example, a two-sided screening rule based on the jth balance statistic corresponds to q(t) = |tj |,while a joint screening rule based on a Wald statistic corresponds to q(t) = t′t.The remaining conditions are mild regularity requirements. The condition 0 < P (q(Z) ≤ a) < 1
+
+rules out degenerate cases in which the screening rule passes with probability tending to zero or one, so that conditioning either becomes ill-posed or asymptotically vacuous. The condition 
+
+P (q(Z) = a) = 0 rules out knife-edge cases in which the Gaussian limit places mass exactly on the cutoff, ensuring the pass/fail indicator behaves continuously in the limit. For the threshold-based rules used in applications, such as t-tests and Wald tests, this condition is automatic. The practical benefit of the corollary is that valid first-order inference for ˆcR does not depend on tailoring a correction to one particular diagnostic rule. If one researcher screens with a 5% balance test, another with a 1% test, and a referee prefers a joint Wald rule, the same residualized estimator continues to have the same first-order distribution after conditioning on any of these fixed screening rules. Thus the researcher need not commit ex ante to one specific diagnostic cutoff in order for standard inference on ˆcR to remain asymptotically valid. To illustrate, consider a concrete reporting rule in the RCT setting. 
+
+Example 1 (Continued). In the balance-check example, a common reporting rule is to use the unadjusted difference-in-means (i.e., “short” regression) ˆcS = ¯Y1 − ¯Y0 when a two-sided t-test of γ = 0 finds |ˆγ| ≤ t “small” and switch to the covariate-adjusted “long” regression ˆcL = ˆcS − ˆβ′ ˆγ
+
+when |ˆγ| ≥ t is “large.” Since both ˆcS and ˆcL generally co-move with ˆγ, their post-selection distributions differ from their unconditional sampling distributions. By Proposition 1, residual-ization chooses Λ so that ˆcR is first-order uncorrelated with ˆγ, eliminating the leading selection effect based on reporting threshold t. As Banerjee et al. (2020) have discussed, however, there is no consensus on what degree of imbalance warrants concern, meaning that different researchers may have different personal thresholds t (e.g., corresponding to 5% vs. 1% levels of significance). Corollary 1 emphasizes that the solution ˆcR was not dependent on a particular choice of t. The math behind the selection distortion and correction for this particular example is worked out explicitly in Appendix B. 10 5 Efficiency and Orthogonality to Specification Checks 
+
+Our first result showed that residualization eliminates first-order selection distortions induced by reporting rules based on ˆγ. In this section we show that the same orthogonality to ˆγ also arises from a different source: semiparametric efficiency. The intuition is simple. A diagnostic check is designed to detect whether the realized data look unusual relative to the maintained statistical model. For example, in an RCT, covariate imbalance is informative about whether treatment assignment looks inconsistent with randomization. Such a check is therefore useful for diagnosing the model, but it is not itself part of the signal about the parameter of interest 
+
+under the model. If an estimator systematically co-moves with the realized value of the check, then some of its sampling variation is being driven by the same fluctuations that make the data look more or less consistent with the maintained restrictions. That component is not informative about c, and so an efficient estimator should not contain it. We now make this precise. Fix a base distribution P0 ∈ P . A smooth one-dimensional submodel through P0 is a scalar-indexed family of distributions {Pt : t ∈ (−ε,ε )} ⊆ P with 
+
+Pt=0 = P0 and score function 
+
+sPt = ddt log dP t
+
+> ∣∣∣∣∣t=0
+
+∈ L20(P0).
+
+The tangent space of P at P0 is the closed linear span of all such scores: 
+
+TP = span {sPt } ⊆ L20(P0),
+
+where the span ranges over all smooth one-dimensional submodels through P0. Its orthocom-plement is 
+
+T ⊥P = {
+
+h ∈ L20(P0) : E0[hs ] = 0 for all s ∈ T P
+
+> }
+
+.
+
+Intuitively, TP collects local directions that keep us inside the model, while T ⊥P collects directions orthogonal to all such within-model perturbations and therefore point away from the model. In the RCT example, a direction in TP perturbs the joint distribution of the data while preserving random assignment to first order. By contrast, a direction in T ⊥P represents a local departure from randomization. An estimator is regular if its first-order behavior is stable under such local perturbations: along every smooth one-dimensional submodel through P0, the limit distribution of √n( ˆc−c(Pt)) 
+
+under Pt at t = 1 /√n does not depend on the particular direction of the submodel. This rules out pathological superefficient estimators that may look unusually precise at isolated points but behave poorly under arbitrarily small perturbations. 11 Now let c = c(P ) be the target parameter. For a within-model direction s ∈ T P , write 
+
+˙c(s) = ddt c(Pt)
+
+> ∣∣∣∣∣t=0
+
+for the pathwise derivative of the parameter in direction s. If ˆc is a regular estimator with influence function ϕc, then 
+
+E0[ϕcs] = ˙ c(s) for all s ∈ T P .
+
+This says that when we perturb the distribution slightly in a direction that remains inside the model, the estimator must respond to first order in exactly the same way as the parameter itself. Semiparametric efficiency adds one more requirement: among all regular estimators that track the parameter correctly in this sense, we want the one with the smallest asymptotic variance. Geometrically, this means choosing the shortest such influence function in L20(P0). The efficient influence function therefore lies in the tangent space itself: any extra component in T ⊥P
+
+would increase variance without helping the estimator track c along within-model directions. Now consider a diagnostic check. Because γ(P ) = 0 for all P ∈ P , the check is flat along every within-model perturbation. Formally, for every s ∈ T P ,
+
+˙γ(s) = ddt γ(Pt)
+
+> ∣∣∣∣∣t=0
+
+= E0[ϕγ s] = 0 .
+
+Thus ϕγ ∈ T ⊥P : the diagnostic check does not respond to perturbations that stay within the model, and only picks up local directions that move the distribution away from the maintained restrictions. By contrast, the efficient influence function for c lies in TP . An efficient estimator therefore cannot co-move with the diagnostic check to first order. In the RCT of Example 1, tangent directions in TP preserve random assignment to first order. Along all such directions balance remains zero, so the influence function of ˆγ = ¯X1 − ¯X0 lies in T ⊥P . The balance table therefore measures local departures from the randomization model, while an efficient ATE estimator uses only variation that is informative about the treatment effect within the randomization model. With this setup in hand, we may state the following: 
+
+Proposition 2 (Efficiency implies orthogonality to diagnostic checks) . Assume joint asymp-totic linearity as in (1) . Suppose ˆc is semiparametrically efficient for c(P0) under the base model. If γ(P ) = 0 for all P ∈ P , then 
+
+Σcγ = E0[ϕc(D)ϕγ (D)′] = 0 .
+
+Proposition 2 says that an efficient estimator cannot co-move with a statistic that only 12 responds to local departures from the maintained model. The natural follow-up is whether this condition is merely diagnostic or actionable. The next result shows it is the latter: when orthogonality fails, residualization provides an explicit repair. 
+
+Corollary 2 (Efficiency repair) . Under (1) , if ˆc is regular for c, γ(P ) = 0 for all P ∈ P ,and Σcγ ̸ = 0 , then the residualized estimator ˆcR = ˆc−Λ ˆγ is regular for c with strictly smaller large-sample variance: 
+
+Var(ˆ cR) = σ2 
+
+> c
+
+−Σcγ Σ−1 
+
+> γγ
+
+Σγc < σ 2 
+
+> c
+
+.
+
+The corollary follows directly from (1) . For any linear adjustment ˆc(λ) = ˆc−λˆγ, the influence function is ϕc −λϕ γ , so the asymptotic variance is 
+
+E0[( ϕc −λϕ γ )2] = σ2 
+
+> c
+
+−2λΣγc +λΣγγ λ′,
+
+which is indeed minimized at λ = Λ = Σ cγ Σ−1 
+
+> γγ
+
+. The intuition is straightforward: if Σcγ ̸ = 0 , then part of the estimator’s sampling variation is aligned with the same off-model direction captured by the diagnostic check. Residualization subtracts that component, and the improvement is strict whenever Σcγ ̸ = 0 . In practice, this gives a simple diagnostic: if the estimated covariance 
+
+ˆΣcγ is nonnegligible, the original estimator is leaving precision on the table, which the residual-ized estimator recovers. To see how this plays out concretely, we can compare three estimators in the RCT setting. 
+
+Example 1 (Continued). It is useful to compare three estimators in the RCT setting. Let 
+
+ˆγ = ¯X1 − ¯X0 denote the balance statistic and let ˆcS = ¯Y1 − ¯Y0 denote the unadjusted difference-in-means. A conventional covariate-adjusted estimator is the coefficient on T from the “long” regression of Y on T and X, which can be written as 
+
+ˆcL = ˆ cS − ˆβ′ 
+
+> L
+
+ˆγ, 
+
+where ˆβL is the coefficient on X. The residualized estimator instead uses the coefficient implied by the joint asymptotic covariance of (ˆ cS ,ˆγ):
+
+ˆcR = ˆ cS − ˆβ′ 
+
+> R
+
+ˆγ, ˆβR = ˆΣ−1 
+
+> γγ
+
+ˆΣγc S .
+
+Thus both ˆcL and ˆcR adjust the short estimator by subtracting a multiple of the realized imbalance ˆγ, but they use different coefficients. In the discussion below, let βL and βR denote the probability limits of ˆβL and ˆβR.
+
+Corollary 3 (Variance comparisons) . ˆcR has weakly smaller large-sample variance than both 
+
+ˆcS and ˆcL, with equality relative to ˆcS iff ΣcS γ = 0 and equality relative to ˆcL iff βL = βR.
+
+13 The proof, given in Appendix A, follows from the fact that βR minimizes the asymptotic variance of ˆcS −β′ ˆγ over all β. Any other choice of coefficient, including βL, incurs the additional nonnegative quadratic penalty 
+
+(βL −βR)′Σγγ (βL −βR).
+
+The two equality cases are informative. First, equality with ˆcS occurs when ΣcS γ = 0 , so that the unadjusted difference-in-means does not co-move with the balance statistic to first order. In that case, the realized imbalance in X is asymptotically uninformative about the sampling error in ˆcS ; there is nothing to residualize, and ˆcR reduces to ˆcS asymptotically. Second, equality with ˆcL occurs when βL = βR. A sufficient condition is 
+
+E[Y | T,X ] = α+τ T +β′X, 
+
+so that the conditional mean is linear in X and the slope on X is the same in both treatment arms (equivalently, there are no T ×X interactions). In that case, the coefficient on X from the long regression targets the same population coefficient that governs how realized imbalance in X translates into sampling error in ˆcS , and so βL = βR. More generally, when the conditional mean is nonlinear in X or the slope on X differs across treatment arms, the two coefficients need not coincide. Thus, while the conventional long regression adjusts for covariates, it does not in general choose the adjustment that is optimal for large-sample precision. Residualization closes this gap by choosing the coefficient that minimizes asymptotic variance, rather than the one implied by a particular regression specification. 
+
+# 6 Minimax Bias Under Local Misspecification 
+
+In Sections 4 and 5, we fixed a base distribution P0 ∈ P and studied estimators targeting the identified value c(P0). In that framing, the target was viewed as the value of the functional c(·)
+
+at the benchmark distribution P0, and we compared alternative estimators that continue to target this same quantity under correct specification. For the local misspecification analysis in this section, it is convenient to recast the same benchmark in fixed-target form. That is, fix a benchmark pair (c0,P 0) ∈ M . Since P0 ∈ P and the parameter is identified on P, this benchmark value satisfies 
+
+c0 = c(P0),
+
+so under correct specification this is only a change in framing, not a change in estimand. The reason for the new framing is that once we allow misspecification, the true DGP need not lie 14 in P, and the model-based functional c(P ) need not be defined at the true distribution. We therefore keep the target fixed at the benchmark value c0 and study how estimators for c0
+
+behave when the sampling distribution departs locally from P0.Specifically, the researcher has a baseline estimator ˆc that is consistent for c0 under P0,together with a diagnostic statistic ˆγ whose population value is zero at P0. The true DGP, however, may be a sequence {Pn} that differs from P0 by an amount of order 1/√n. Under such local misspecification, √n( ˆc−c0) need no longer be centered at zero: its limiting distribution may acquire a nonzero mean, so ˆc exhibits first-order asymptotic bias for the fixed target 
+
+c0. At the same time, the diagnostic check need no longer have population value zero; local misspecification may shift γ(Pn) as well. This fixed-target interpretation is the relevant one in our applications. In the RCT example, for instance, the parameter of interest remains the benchmark ATE c0; a slight failure of random assignment perturbs the sampling distribution of the observed data and can bias the difference-in-means estimator for that target, but it does not itself redefine the estimand of interest. More generally, throughout this section, misspecification refers to a local failure of the baseline model for the DGP, not a change in the target parameter itself. We model these departures using the standard local misspecification device from semipara-metric theory, and allow the true DGP Pn to deviate from the benchmark distribution P0 by an amount of order 1/√n. The misspecification is “local” in the sense that Pn converges to P0 at the 1/√n rate, meaning the departure is too small to be separated from P0 without √n-scale magnification, yet large enough to affect first-order asymptotic distributions and hence inference. A natural concern in this setting is that the estimator ˆcR = ˆc−Λ ˆγ may reduce variance under correct specification at the expense of making the estimator more sensitive to misspecification. We show that the opposite is true. Within the class of linear adjustments {ˆc − λˆγ}, the residualized estimator ˆcR = ˆc − Λ ˆγ
+
+minimizes worst-case first-order bias over an unrestricted local misspecification neighborhood, for the same coefficient Λ = Σ cγ Σ−1 
+
+> γγ
+
+from Section 5 that minimizes asymptotic variance un-der correct specification. Combining these two results, this implies that ˆcR is asymptotically minimax under squared loss, within the class of linear adjustments, for any fixed bound on the degree of local misspecification. The remainder of this section is organized as follows: we develop the local misspecification framework, derive the bias formula from primitives, and present the main results in the subsections that follow. To formalize “small” departures from the base model, we adopt the standard local misspec-ification device from semiparametric theory (Bickel et al., 1993; Van der Vaart, 2000; Newey, 1985; Andrews et al., 2017, 2020). The true data-generating process Pn is allowed to deviate 15 from P0 by an amount of order 1/√n. To first order, the local alternative may be written as 3
+
+dP n(d) = 
+
+> (
+
+1+ s(d)
+
+√n
+
+> )
+
+dP 0(d), (3) where the score function s ∈ L20(P0) satisfies E0[s(D)] = 0 (so that Pn integrates to one to first order) and E0[s(D)2] ≤ μ2 for given μ < ∞. The score function s describes the direction and magnitude in which the distribution Pn departs from P0 (i.e., regions of the support where 
+
+s(d) > 0 receive more mass under Pn, while regions where s(d) < 0 receive less). The constraint 
+
+E0[s2] ≤ μ2 bounds the size of the perturbation. We consider the local misspecification ball 
+
+S(μ) = 
+
+> {
+
+s ∈ L20(P0) : E0[s(D)2] ≤ μ2
+
+> }
+
+. (4) This neighborhood is unrestricted in the sense that s is not constrained to satisfy E0[ϕγ s] = 0 
+
+or any other moment condition, so the misspecification may shift the check γ itself, contrasting with the restricted neighborhood of Andrews et al. (2020), which imposes E0[ϕγ s] = 0 to ensure that admissible misspecifications do not shift the population value of the check. Note that “unrestricted” is sometimes used in the literature to mean that misspecification may also perturb the parameter of interest in the population (i.e., viewing c0 as a statistical functional c(·) that changes with P ), meaning s includes both structural and misspecification directions. Recall that in our fixed-target framing, the adversary is free to shift the check, but the target c0
+
+remains fixed, meaning s represents misspecification of the base model P0 only. We now derive the first-order asymptotic bias of the linear adjustment ˆc(λ) = ˆc−λˆγ, with influence function ψλ = ϕc −λϕ γ . Under the base model P0, asymptotic linearity (1) gives 
+
+√n(
+
+ˆc(λ)−c0
+
+> )
+
+= 1
+
+√n
+
+> n∑
+> i=1
+
+ψλ(Di)+ op(1) .
+
+Under P0 the summands have mean zero, so ˆc(λ) is asymptotically unbiased. Under the per-turbed distribution Pn defined in (3) , the mean of each summand shifts by 1√n E0[ψλ ·s]. By Le Cam’s third lemma, 4 this yields 
+
+√n(
+
+ˆc(λ)−c0 
+
+> )d
+
+−→ N (
+
+E0[ψλ ·s], E 0[ψ2
+
+> λ
+
+])
+
+. (5)                        
+
+> 3Formally, (3) is justified by differentiability in quadratic mean of a local path {Pst}through P0with score s:
+> ∫ (√ dP st−√dP 0−t
+> 2s√dP 0
+> )2=o(t2),t→0.
+> setting Pn=Ps
+> 1/√n. See Van der Vaart (2000) for a formal treatment.
+> 4See Van der Vaart (2000, Examples 6.5 and 6.7).
+
+16 The first-order asymptotic bias of ˆc(λ) under misspecification score s is thus bias (λ,s ) = E0[ψλ(D)·s(D)] = E0[ϕc ·s]−λE 0[ϕγ ·s], (6) i.e., the L20(P0) inner product between the estimator’s influence function and the misspecification score. The misspecification score s in (6) perturbs the distribution of the data while holding the parameter of interest c fixed. In the RCT of Example 1, for instance, the ATE c is a feature of potential outcomes that exists regardless of whether randomization holds; misspecification of the assignment mechanism (i.e., Pn̸ = P0) biases the estimator ˆc = ¯Y1 − ¯Y0 for this fixed target but does not redefine the ATE. 
+
+Proposition 3 (Unrestricted worst-case bias and minimax residualization) . Under (1) , the unique minimizer of the worst-case bias over λ is 
+
+λ⋆ = Λ = Σ cγ Σ−1 
+
+> γγ
+
+, ˆcR = ˆ c(Λ) = ˆ c−Λˆ γ, 
+
+and the corresponding minimax worst-case bias is 
+
+inf  
+
+> λ
+
+sup 
+
+> s∈S (μ)
+> ∣∣∣
+
+E0[ψλs]∣∣∣ = μ√
+
+σ2 
+
+> c
+
+−Σcγ Σ−1 
+
+> γγ
+
+Σγc = μσ c
+
+√1−I , (7) 
+
+where I = Σ cγ Σ−1 
+
+> γγ
+
+Σγc /σ 2 
+
+> c
+
+∈ [0 ,1) .
+
+To sketch the proof: since the bias (6) is an inner product between ψλ and s, Cauchy–Schwarz implies that worst-case bias is proportional to the L2 length of ψλ, attained when s aligns with 
+
+ψλ. Residualization shortens the influence function by projecting out the component explained by ϕγ , reducing worst-case bias by a factor of √1−I .5 Since variance also equals ∥ψλ∥2 
+
+> L2
+
+, the same Λ minimizes both, giving a stronger result: 
+
+Corollary 4 (Minimax-optimality under squared error loss) . Under (1) , for any bound μ ≥ 0
+
+on the degree of misspecification, 
+
+inf 
+
+> λ
+> {
+
+sup 
+
+> s∈S (μ)
+> (
+
+E0[ψλs])2
+
++∥ψλ∥2
+
+> L2
+> }
+
+is uniquely attained at λ⋆ = Λ = Σ cγ Σ−1 
+
+> γγ
+
+, with value (1+ μ2)( σ2 
+
+> c
+
+−Σcγ Σ−1 
+
+> γγ
+
+Σγc ).                 
+
+> 5Iis the population R2from regressing ˆcon ˆγin their joint asymptotic distribution, which Andrews et al. (2020) call the informativeness of ˆγfor ˆc: it measures the share of variation in the baseline estimate that is explained by the diagnostic check. When Iis close to one, most of ˆc’s sampling variation is predictable from the check, and residualization achieves a large reduction in worst-case bias. When Iis close to zero, the check carries little information about the estimator, and residualization has little effect.
+
+17 That is, there is no bias-variance tradeoff to navigate: ˆcR is optimal regardless of the bound μ
+
+on misspecification. Note that this double optimality is a feature of the unrestricted misspecifica-tion ball S(μ).6 Because S(μ) is a ball in L2(P0), Cauchy–Schwarz gives worst-case bias μ∥ψλ∥L2 ,which is a monotone function of ∥ψλ∥2 
+
+> L2
+
+= Var ( ˆc(λ)) . The same Λ therefore minimizes both, and the minimax squared loss objective factors as (1+ μ2)∥ψλ∥2 
+
+> L2
+
+, eliminating any dependence on μ.This proportionality would break if the misspecification neighborhood encoded prior knowl-edge about how the benchmark model might fail. Suppose, for instance, that the researcher believes the true DGP can depart from P0 only along certain margins—say, the assignment mech-anism may be slightly misspecified, while the outcome distribution is correctly modeled. Then the local misspecification score s is not allowed to vary in an arbitrary direction in L20(P0); instead, it must lie in a smaller set of directions V ⊂ L20(P0) corresponding to those admissible departures. Variance would remain ∥ψλ∥2 
+
+> L2
+
+, but worst-case bias would equal μ∥ΠV ψλ∥L2 , where ΠV denotes the L20(P0) projection onto V. In other words, variance depends on the full size of the influence function, while worst-case bias depends only on the component of the influence function aligned with the directions in which misspecification is thought to occur. These are generally different functions of λ, so the bias-minimizing and variance-minimizing adjustments may differ, the op-timal λ would depend on μ, and the researcher would face a genuine bias-variance tradeoff. The unrestricted ball avoids this issue by allowing misspecification in any direction in L20(P0), so re-ducing the overall length of the influence function is also the unique way to reduce worst-case bias. 
+
+# 7 Empirical Application 
+
+We illustrate our method by applying it to the randomized controlled trial in Kaur et al. (2024), who study whether financial concerns reduce worker productivity. This application is a natural fit for our framework: the paper reports a standard balance table (their Table I) alongside its main treatment-effect estimate, providing both the estimator ˆc and the diagnostic check ˆγ needed to construct the residualized estimator ˆcR. We first summarize the experimental design and main findings, then implement residualization and compare the original and residualized estimates. Finally, we examine the informativeness I of the balance checks for the ATE estimate, quantifying how much of the estimator’s sampling variation is explained by realized covariate imbalance. Kaur et al. (2024) conduct a field experiment with 408 low-income male workers in rural Odisha, India, who are hired to produce disposable leaf plates for two weeks during the agricultural lean season. Workers are paid piece rates, so productivity directly determines earnings. The authors randomize the timing of wage payments: treated workers receive an interim payment of accrued earnings partway through the contract, while control workers 
+
+> 6See Adusumilli (2026) for an analogous finding in a decision-theoretic framework with unrestricted forms of likelihood misspecification.
+
+18 receive all earnings at the end. The main estimate of interest is the effect of this cash infusion on hourly output in the post-payment period, estimated via a difference-in-differences (DiD) specification at the worker-hour level with round-wave fixed effects and controls. 7 The authors report a productivity increase of 0.109 standard deviations (6.9%) among treated workers, with effects concentrated among poorer workers (0.204 standard deviations). Alongside these estimates, the authors report a balance table (their Table I, shown here in Table B.1) covering baseline demographics, labor market characteristics, wealth measures, financial worries, and pre-treatment productivity. The table reports differences in means across treatment and control for each covariate, along with p-values from regressions of each variable on a treatment indicator — the standard format for assessing whether randomization produced comparable groups. As the authors then report, “The baseline characteristics do not statistically differ between the treatment and control groups overall (Table I, columns (2) and (3)), indicating a successful randomization procedure” Kaur et al. (2024, page 25). In the language of our framework, these covariate differences constitute the diagnostic check ˆγ = ¯X1 − ¯X0, which should be zero in expectation under random assignment ( P0) but fluctuates in finite samples. The main specification, estimated at the worker-hour level using data from the announcement date onward, is 
+
+yirdh = β(Cash i ×Post-Pay ird )+ βA(Cash i ×Announcement ird )+τP Post-Pay ird +τAAnnouncement ird +X′
+
+> ird
+
+η+δr +εirdh ,
+
+where yirdh is the output of worker i in round-wave r on day d in hour h, Cash i indicates assignment to the interim-payment group, Post-Pay ird indicates the days after the interim payment was disbursed, Announcement ird indicates the period after the payment schedule was announced but before cash was disbursed, δr are round-wave (strata) fixed effects, and Xird 
+
+is a vector of baseline controls. 8 The coefficient of interest is β, the average treatment effect of the cash infusion on productivity in the post-payment period. In the notation of Section 2, the ATE estimate ˆc = ˆβ is the coefficient on Cash i ×Post-Pay ird 
+
+from the main specification, and the diagnostic check ˆγ = ¯X1 − ¯X0 is the vector of baseline co-variate differences reported in the balance table. Under random assignment ( P0), the population imbalance satisfies γ(P0) = E0[X | Cash = 1] −E0[X | Cash = 0] = 0 . The residualized estimator is 
+
+ˆcR = ˆβ − ˆΛˆ γ, ˆΛ = ˆΣcγ ˆΣ−1 
+
+> γγ
+
+,
+
+> 7The authors describe these controls as “LASSO-selected,” but the replication code uses a fixed set (perhaps pre-computed). For simplicity, here we take this set of controls as given.
+> 8Technically, controls selected via the post-double-selection LASSO procedure of Belloni et al. (2013). Consistent with the authors’ replication code, for simplicity we will take the set of controls as given.
+
+19 where ˆΣcγ is the estimated covariance between the ATE estimate and the balance statistics, and ˆΣγγ is the estimated covariance matrix of the balance statistics. The coefficient ˆΛ captures how much the ATE estimate tends to move with realized covariate imbalance: if, say, a sample where treated workers happen to be wealthier also tends to produce a larger ˆβ, then ˆΛ will have a nonzero component along the wealth dimension, and residualization will subtract off this predictable component. Implementation requires only a consistent estimate of the joint covariance of ( ˆβ, ˆγ), which can be obtained from the same variance estimation procedure used to compute standard errors for the main specification. We find the following: Table 1: Original vs. Residualized Estimates Original Residualized 
+
+ˆc ˆcR
+
+Panel A. Estimates 
+
+Point estimate 0.1090 0.1220 Std. error (0.0465) (0.0445) 
+
+t-statistic 2.3438 2.7384 
+
+p-value 0.0191 0.0062 95% CI [0.018, 0.200] [0.035, 0.209] 
+
+Panel B. Diagnostics 
+
+Informativeness ( I) 0.0819 Bias reduction factor ( √1−I ) 0.9582 Variance reduction (%) 8.19% Correction ( ˆΛˆ γ) -0.0130 Equiv. increase in sample size 10% The point estimate increases from 0.109 to 0.122 after residualization. The correction 
+
+ˆΛˆ γ = −0.013 is negative, meaning that the realized covariate imbalances, while small individ-ually, were attenuating the treatment effect in the original estimate. In this particular sample, treated workers happened to draw slightly unfavorable baseline characteristics relative to control workers, and the original treatment-effect estimate was absorbing this noise, which the residualized estimator corrects for. The combined effect of a slightly larger point estimate and a slightly smaller standard error produces a notable increase in statistical significance: the p-value falls from 0.019 to 0.006, the 
+
+t-statistic rises from 2.34 to 2.74, and the lower bound of the 95% confidence interval shifts from 0.018 to 0.035, moving well away from zero. The variance reduction is modest but meaningful: the standard error falls from 0.0465 to 0.0445, a reduction of 8.2% in variance. This is consistent with the low informativeness I = 0 .082 ,indicating that only about 8% of the sampling variation in ˆc is linearly predictable from realized 20 covariate imbalance. In a well-executed RCT this is reassuring—proper randomization limits the scope for balance checks to predict the estimator’s sampling error. In settings with weaker designs, or where covariates are strongly predictive of outcomes (amplifying the effects of any imbalance), one would expect larger gains. That said, even the modest improvement here is equivalent to a 10% increase in effective sample size—a meaningful gain obtained at zero cost. Of separate importance, this residualized estimate is immune to selective reporting concerns based on the balance table. As established in Proposition 1, ˆcR is asymptotically independent of 
+
+ˆγ, so its distribution is unaffected by any rule that conditions on the balance statistics—whether that rule is “report only if all p-values in Table 1 exceed 0.05,” “add controls if any covariate is significantly imbalanced,” or any other function of ˆγ. The original estimate ˆc does not have this property: its nonzero ˆΛ confirms that Σcγ ̸ = 0 , meaning that conditioning on balance outcomes distorts its sampling distribution, even in this well-randomized experiment. Concretely, if a researcher or referee views the original estimate more favorably when the balance table looks clean (i.e., balance statistics are small), the resulting conditional distribution of ˆc differs from its unconditional distribution—as shown in Section 4, the conditional variance shrinks, leading to conservative inference. The magnitude of this distortion is governed by Σcγ : the stronger the co-movement between the ATE estimate and the balance outcomes, the larger the gap between the conditional and unconditional distributions of ˆc. Table B.2 provides a decomposition of which covariates drive this co-movement. In this application, the largest contributions come from base-line measures of labor market activity and financial worries—variables that one would expect to predict productivity, and therefore to generate co-movement between ˆc and ˆγ when imbalanced. 
+
+# 8 Conclusion 
+
+Diagnostic checks are ubiquitous in empirical research. Researchers test for covariate balance in RCTs, examine pre-trends in event studies, and assess instrument validity in IV designs. Yet these checks have traditionally been treated as external diagnostics—pass/fail hurdles that inform whether to trust an estimate, but that play no formal role in the estimate itself. This paper argues that diagnostic checks should be integrated into the estimator, and proposes a concrete method for doing so: residualize the estimator on its diagnostic check, subtracting the component of ˆc that is linearly predictable from the realized check ˆγ. The residualized estimator 
+
+ˆcR = ˆc− ˆΛˆ γ requires only a consistent estimate of the joint covariance of ( ˆc, ˆγ), available already from the machinery needed for standard error calculations. Our method delivers three properties simultaneously, offering a “free lunch”: (i) it eliminates first-order sensitivity to check-based reporting rules (Proposition 1), (ii) recovers precision lost to nuisance variation whenever the base model is correct and the original estimator is not semiparametrically efficient (Proposition 2 and Corollary 2), and (iii) minimizes worst-case bias under local misspecification (Proposition 3). 21 Together, these imply that ˆcR is asymptotically minimax optimal under squared loss, within the class of linear adjustments, for any fixed bound on the degree of local misspecification (Corollary 4). Within that unrestricted local misspecification problem, there is no bias-variance tradeoff to navigate, and the procedure requires no specification of pretesting rules or tuning parameters. Our application to the RCT in Kaur et al. (2024) illustrates the procedure in practice. Even in a well-randomized experiment where all balance checks pass comfortably, residualization produces a nontrivial correction, shifting the point estimate and reducing standard error. 22 References 
+
+Adusumilli, K. (2026). You’ve got to be efficient: Ambiguity, misspecification and variational preferences. arXiv preprint arXiv:2604.05327 .Andrews, I., Chen, J., and Tecchio, O. (2025). The purpose of an estimator is what it does: Misspecification, estimands, and over-identification. arXiv preprint arXiv:2508.13076 .Andrews, I., Gentzkow, M., and Shapiro, J. M. (2017). Measuring the sensitivity of parameter estimates to estimation moments. The Quarterly Journal of Economics , 132(4):1553–1592. Andrews, I., Gentzkow, M., and Shapiro, J. M. (2020). On the informativeness of descriptive statistics for structural estimates. Econometrica , 88(6):2231–2258. Andrews, I., Kitagawa, T., and McCloskey, A. (2024). Inference on winners. The Quarterly Journal of Economics , 139(1):305–358. Armstrong, T. B. and Kolesár, M. (2021). Sensitivity analysis using approximate moment condition models. Quantitative Economics , 12(1):77–108. Banerjee, A. V., Chassang, S., Montero, S., and Snowberg, E. (2020). A theory of experimenters: Robustness, randomization, and balance. American Economic Review , 110(4):1206–1230. Banerjee, A. V., Chassang, S., and Snowberg, E. (2017). Decision theoretic approaches to experiment design and external validity. In Handbook of economic field experiments ,volume 1, pages 141–174. Elsevier. Belloni, A., Chernozhukov, V., and Hansen, C. (2013). Inference on treatment effects after selection among high-dimensional controls †. The Review of Economic Studies , 81(2):608–650. Bicalho, C., Bouyamourn, A., and Dunning, T. (2025). The power of prognosis: Improving covariate balance tests with outcome information. Political Analysis (XXXX) , 20:1–26. Bickel, P. J., Klaassen, C. A., Bickel, P. J., Ritov, Y., Klaassen, J., Wellner, J. A., and Ritov, Y. (1993). Efficient and adaptive estimation for semiparametric models , volume 4. Springer. Bilinski, A. and Hatfield, L. A. (2026). Nothing to see here? a non-inferiority approach to parallel trends. Statistics in Medicine , 45(3-5):e70296. Bonhomme, S. and Weidner, M. (2022). Minimizing sensitivity to model misspecification. 
+
+Quantitative Economics , 13(3):907–954. Borusyak, K., Jaravel, X., and Spiess, J. (2024). Revisiting event-study designs: robust and efficient estimation. Review of Economic Studies , 91(6):3253–3285. Conley, T. G., Hansen, C. B., and Rossi, P. E. (2012). Plausibly exogenous. Review of Economics and Statistics , 94(1):260–272. Cressie, N. and Read, T. R. (1984). Multinomial goodness-of-fit tests. Journal of the Royal Statistical Society Series B: Statistical Methodology , 46(3):440–464. Danieli, O., Nevo, D., Walk, I., Weinstein, B., and Zeltzer, D. (2026). Negative control falsifica-tion tests for instrumental variable designs. American Economic Review , 116(4):1380–1414. 23 de Chaisemartin, C. and D’Haultfœuille, X. (2024). Under the null of valid specification, pre-tests cannot make post-test inference liberal. Working Paper . Revision requested, 
+
+American Economic Review .Fisher, R. A. (1925). Theory of statistical estimation. In Mathematical proceedings of the Cambridge philosophical society , volume 22, pages 700–725. Cambridge University Press. Fithian, W., Sun, D., and Taylor, J. (2014). Optimal inference after model selection. arXiv preprint arXiv:1410.2597 .Freyaldenhoven, S., Hansen, C., and Shapiro, J. M. (2019). Pre-event trends in the panel event-study design. American Economic Review , 109(9):3307–3338. Hartman, E. and Hidalgo, F. D. (2018). An equivalence approach to balance and placebo tests. 
+
+American journal of political science , 62(4):1000–1013. Hausman, J. A. (1978). Specification tests in econometrics. Econometrica: Journal of the econometric society , pages 1251–1271. Kahn-Lang, A. and Lang, K. (2020). The promise and pitfalls of differences-in-differences: Reflections on 16 and pregnant and other applications. Journal of Business & Economic Statistics , 38(3):613–620. Kaur, S., Mullainathan, S., Oh, S., and Schilbach, F. (2024). Do financial concerns make workers less productive? The Quarterly Journal of Economics , 140(1):635–689. Lee, J. D., Sun, D. L., Sun, Y., and Taylor, J. E. (2016). Exact post-selection inference, with application to the lasso. The Annals of Statistics .Lin, W. (2013). Agnostic notes on regression adjustments to experimental data: Reexamining freedman’s critique. The Annals of Applied Statistics , pages 295–318. Manski, C. F. and Pepper, J. V. (2018). How do right-to-carry laws affect crime rates? coping with ambiguity using bounded-variation assumptions. Review of Economics and Statistics ,100(2):232–244. Mikhaeil, J. M. and Harshaw, C. (2025). In defense of the pre-test: Valid inference when testing violations of parallel trends for difference-in-differences. arXiv preprint arXiv:2510.26470 .Newey, W. K. (1985). Generalized method of moments specification testing. Journal of econometrics , 29(3):229–256. Newey, W. K. and McFadden, D. (1994). Large sample estimation and hypothesis testing. 
+
+Handbook of econometrics , 4:2111–2245. Rambachan, A. and Roth, J. (2023). A more credible approach to parallel trends. The Review of Economic Studies , 90(5):2555–2591. Roth, J. (2022). Pretest with caution: Event-study estimates after testing for parallel trends. 
+
+American Economic Review: Insights , 4(3):305–322. Roth, J. and Sant’Anna, P. H. (2023). Efficient estimation for staggered rollout designs. 
+
+Journal of Political Economy Microeconomics , 1(4):669–709. 24 Sarfati, R. and Vilfort, V. (2025). "post" pre-analysis plans: Valid inference for non-preregistered specifications. arXiv preprint arXiv:2510.02507 .Van der Vaart, A. W. (2000). Asymptotic statistics , volume 3. Cambridge university press. 25 Appendix A Proofs 
+
+Proof of Proposition 1: By (1) , √n( ˆcR −c) has influence function ϕc −Λϕγ , so the joint influence function for (
+
+ˆcR,ˆγ)
+
+is ϕc −Λϕγ
+
+ϕγ
+
+> 
+
+.
+
+Its covariance block between the two components equals 
+
+E0
+
+> [
+
+(ϕc −Λϕγ )ϕ′
+
+> γ
+> ]
+
+= Σ cγ −ΛΣ γγ = Σ cγ −Σcγ Σ−1 
+
+> γγ
+
+Σγγ = 0 ,
+
+so the limiting covariance is block diagonal. Joint asymptotic normality then yields asymptotic independence. ■
+
+Proof of Corollary 1 (Pretest Independence): Let 
+
+Xn = √n(ˆ cR −c), Tn = ˆΣ−1/2 
+
+> γγ
+
+ˆγ, Bn = {q(Tn) ≤ a}.
+
+By Proposition 1 and Slutsky’s theorem, (Xn,T n) d
+
+−→ (X,Z ), where X ∼ N (0 ,σ 2
+
+> R
+
+), Z ∼ N (0 ,I pγ ),
+
+and X and Z are independent. We first show that 
+
+Xn | Bnd
+
+−→ N (0 ,σ 2
+
+> R
+
+).
+
+Let B = {q(Z) ≤ a}. Since q is continuous and P (q(Z) = a) = 0 , the indicator 1{q(t) ≤ a} is 
+
+Z-almost surely continuous. Hence, for any bounded continuous function g : R → R,
+
+E[g(Xn)1 Bn ] → E[g(X)1 B ].
+
+By independence of X and Z,
+
+E[g(X)1 B ] = E[g(X)] P (B).
+
+Also, 
+
+P (Bn) → P (B) > 0
+
+by the continuous mapping theorem and the assumption 0 < P (q(Z) ≤ a) < 1. Therefore, 
+
+E[g(Xn) | Bn] = E[g(Xn)1 Bn ]
+
+P (Bn) → E[g(X)] .
+
+26 Since this holds for every bounded continuous g, it follows that 
+
+Xn | Bnd
+
+−→ X ∼ N (0 ,σ 2
+
+> R
+
+).
+
+Now compare the actual reporting rule An to the idealized rule Bn. For any bounded continuous 
+
+g with ∥g∥∞ ≤ M ,
+
+|E[g(Xn) | An]−E[g(Xn) | Bn]| =
+
+> ∣∣∣∣∣
+
+E[g(Xn)1 An ]
+
+P (An) − E[g(Xn)1 Bn ]
+
+P (Bn)
+
+> ∣∣∣∣∣
+
+≤
+
+> ∣∣∣∣∣
+
+E[g(Xn)(1 An −1Bn )] 
+
+P (An)
+
+> ∣∣∣∣∣
+
++|E[g(Xn)1 Bn ]|
+
+> ∣∣∣∣∣
+
+1
+
+P (An) − 1
+
+P (Bn)
+
+> ∣∣∣∣∣
+
+≤ M P (An∆Bn)
+
+P (An) + M |P (An)−P (Bn)|
+
+P (An)
+
+≤ 2M P (An∆Bn)
+
+P (An) .
+
+Because P (An∆Bn) → 0 and P (Bn) → P (B) > 0, we also have P (An) → P (B) > 0. Hence 
+
+|E[g(Xn) | An]−E[g(Xn) | Bn]| → 0.
+
+Combining this with the convergence of the conditional distribution given Bn yields 
+
+E[g(Xn) | An] → E[g(X)] 
+
+for every bounded continuous g, and therefore 
+
+Xn | And
+
+−→ X ∼ N (0 ,σ 2
+
+> R
+
+).
+
+For the final claim, if √nˆσRp
+
+−→ σR, then Slutsky’s theorem implies 
+
+ˆcR −c
+
+ˆσR
+
+| And
+
+−→ N (0 ,1) ,
+
+so the usual one-dimensional Gaussian confidence intervals and tests based on ˆcR are asymp-totically valid conditional on An. ■
+
+Proof of Proposition 2. 
+
+Because γ(P ) = 0 for all P ∈ P , each coordinate of the pathwise derivative of γ vanishes 27 along every within-model score s ∈ T P :
+
+˙γj (s) = E0[ϕγ,j s] = 0 , j = 1 ,...,p γ , s ∈ T P .
+
+Hence each coordinate ϕγ,j lies in T ⊥P . If ˆc is semiparametrically efficient for c(P0) under the base model, then its influence function equals the efficient influence function for c, which lies in TP . Therefore, for each j,
+
+E0[ϕcϕγ,j ] = 0 .
+
+Stacking these identities yields 
+
+Σcγ = E0[ϕc(D)ϕγ (D)′] = 0 . ■
+
+Proof of Corollary 2 (Efficiency Repair): Let ψR = ϕc −Λϕγ and Λ = Σ cγ Σ−1 
+
+> γγ
+
+. Since 
+
+γ(P0) = 0 , the residualized estimator satisfies 
+
+√n(ˆ cR −c) = √n(ˆ c−c)−Λ√n(ˆ γ −γ) = 1
+
+√n
+
+> n∑
+> i=1
+
+ψR(Di)+ op(1) 
+
+by (1) . Thus ˆcR is asymptotically linear with influence function ψR. It remains to be shown that ˆcR is regular for the same target c. Let s ∈ T P be any within-model score. Because ˆc is regular for c, its influence function satisfies 
+
+E0[ϕcs] = ˙ c(s).
+
+Also, since γ(P ) = 0 for all P ∈ P , the pathwise derivative of γ vanishes along every within-model direction, so 
+
+E0[ϕγ s] = ˙ γ(s) = 0 .
+
+Hence 
+
+E0[ψRs] = E0[( ϕc −Λϕγ )s] = E0[ϕcs]−ΛE0[ϕγ s] = ˙ c(s).
+
+Therefore ψR is an influence function for c, so ˆcR is regular for the same target. Its large-sample variance is 
+
+E0[ψ2
+
+> R
+
+] = E0[( ϕc −Λϕγ )2]= σ2 
+
+> c
+
+−2ΛΣ γc +ΛΣ γγ Λ′
+
+= σ2 
+
+> c
+
+−2Σ cγ Σ−1 
+
+> γγ
+
+Σγc +Σ cγ Σ−1 
+
+> γγ
+
+Σγγ Σ−1 
+
+> γγ
+
+Σγc 
+
+28 = σ2 
+
+> c
+
+−Σcγ Σ−1 
+
+> γγ
+
+Σγc .
+
+Since Σγγ ≻ 0, we have Σcγ Σ−1 
+
+> γγ
+
+Σγc > 0 whenever Σcγ ̸ = 0 . Therefore 
+
+Var(ˆ cR) = σ2 
+
+> c
+
+−Σcγ Σ−1 
+
+> γγ
+
+Σγc < σ 2 
+
+> c
+
+. ■
+
+Proof of Corollary 3: We can show that ˆcR has weakly smaller large-sample variance than both ˆcS and ˆcL: Let Σ denote the joint asymptotic covariance of ( ˆcS ,ˆγ), with blocks σ2 
+
+> S
+
+= Σ cS cS ,
+
+ΣcS γ , and Σγγ ≻ 0. By the variance formula for linear adjustments, 
+
+Var(ˆ cR) = σ2 
+
+> S
+
+−ΣcS γ Σ−1 
+
+> γγ
+
+Σγc S ≤ σ2 
+
+> S
+
+= Var(ˆ cS ),
+
+with equality iff ΣcS γ = 0 . Next, write ˆcL = ˆcS − ˆβ′ 
+
+> L
+
+ˆγ and treat βL as fixed at the probability limit of ˆβL (this suffices for first-order variance comparisons). Then 
+
+Var(ˆ cL) = Var(ˆ cS −β′ 
+
+> L
+
+ˆγ)= σ2 
+
+> S
+
+−2β′
+
+> L
+
+Σγc S +β′
+
+> L
+
+Σγγ βL
+
+= (
+
+σ2 
+
+> S
+
+−ΣcS γ Σ−1 
+
+> γγ
+
+Σγc S
+
+)︸ ︷︷ ︸
+
+> Var(ˆ cR)
+
++ ( βL −βR)′Σγγ (βL −βR)
+
+≥ Var(ˆ cR),
+
+where βR = Σ −1 
+
+> γγ
+
+Σγc S , and the last inequality uses Σγγ ≻ 0. Equality holds iff βL = βR. ■
+
+Proof of Proposition 3: We first show that for any λ,
+
+sup 
+
+> s∈S (μ)
+
+∣∣∣E0[ψλs]
+
+∣∣∣ = μ∥ψλ∥L2(P0). (8) Fix λ and set ψλ = ϕc −λϕ γ . By the Cauchy–Schwarz inequality, for any s ∈ S (μ),
+
+|E0[ψλs]| ≤ ∥ ψλ∥L2 ∥s∥L2 ≤ μ∥ψλ∥L2 .
+
+If ψλ̸ = 0 , equality is attained by s⋆ = μ ψ λ/∥ψλ∥L2 , which satisfies E0[( s⋆)2] = μ2 and 
+
+E0[ψλs⋆] = μ∥ψλ∥L2 , establishing (8). Given (8), we next minimize ∥ψλ∥2 
+
+> L2
+
+over λ:
+
+∥ψλ∥2 
+
+> L2
+
+= E0[( ϕc −λϕ γ )2] = σ2 
+
+> c
+
+−2λΣγc +λΣγγ λ′,
+
+29 a strictly convex quadratic since Σγγ ≻ 0. The first-order condition is −2Σ γc +2Σ γγ λ′ = 0 , i.e. 
+
+λ⋆ = Σ cγ Σ−1 
+
+> γγ
+
+= Λ . Plugging in yields 
+
+min  
+
+> λ
+
+∥ψλ∥2 
+
+> L2
+
+= σ2 
+
+> c
+
+−Σcγ Σ−1 
+
+> γγ
+
+Σγc = σ2 
+
+> c
+
+(1 −I ),
+
+which implies (7). ■
+
+Proof of Corollary 4: For any λ, the worst-case squared bias follows from Proposition 3: 
+
+sup 
+
+> s∈S (μ)
+> (
+
+E0[ψλs])2
+
+= μ2∥ψλ∥2 
+
+> L2
+
+.
+
+The asymptotic variance of ˆc(λ) under P0 is ∥ψλ∥2 
+
+> L2
+
+. The minimax squared loss objective is therefore 
+
+sup 
+
+> s∈S (μ)
+> (
+
+E0[ψλs])2
+
++∥ψλ∥2 
+
+> L2
+
+= μ2∥ψλ∥2 
+
+> L2
+
++∥ψλ∥2 
+
+> L2
+
+= (1+ μ2)∥ψλ∥2 
+
+> L2
+
+.
+
+Since (1+ μ2) > 0 is a constant that does not depend on λ, the minimizer over λ is the same as the minimizer of ∥ψλ∥2 
+
+> L2
+
+, which by the proof of Proposition 3 is uniquely λ⋆ = Λ = Σ cγ Σ−1 
+
+> γγ
+
+.The minimum value is 
+
+(1+ μ2)(
+
+σ2 
+
+> c
+
+−Σcγ Σ−1 
+
+> γγ
+
+Σγc 
+
+> )
+
+= (1+ μ2)σ2 
+
+> c
+
+(1 −I ). ■
+
+# B Definitions, Remarks, and Worked Examples 
+
+Worked Example of Selection Distortion: Let ˆcS = ¯Y1 − ¯Y0 and ˆcL = ˆcS − ˆβ′ ˆγ. Suppose for simplicity that pγ = 1 and, under the base model, 
+
+> 
+
+ZS
+
+Zγ 
+
+> 
+
+=
+
+> 
+
+√n(ˆ cS −c)/σ S
+
+√n(ˆ γ −γ)/σ γ 
+
+> 
+
+⇒ N
+
+> 
+
+0,
+
+> 
+
+1 ρρ 1
+
+> 
+
+, ρ = ΣcS γ
+
+σS σγ
+
+.
+
+Then ZS admits the decomposition 
+
+ZS = ρZ γ +
+
+> √
+
+1−ρ2ε, ε ∼ N (0 ,1) , ε ⊥ Zγ .
+
+Under a “pass” rule S = 1{| Zγ | ≤ t}, the reported short estimate is drawn from the conditional dis-tribution ZS
+
+> ∣∣∣
+
+{| Zγ | ≤ t}, which is a non-Gaussian mixture since the term ρZ γ is truncated by the event {| Zγ | ≤ t}. In particular, its variance differs from the unconditional variance whenever ρ̸ = 0 :
+
+Var (
+
+ZS | | Zγ | ≤ t)
+
+= (1 −ρ2)+ ρ2Var (
+
+Zγ | | Zγ | ≤ t)̸ = 1 .
+
+30 A similar point applies to the “long” specification ˆcL = ˆ cS −βL ˆγ. In standardized form, 
+
+ZL =
+
+√n(ˆ cL −c)
+
+σS
+
+= ZS −κLZγ = ( ρ−κL)Zγ +
+
+> √
+
+1−ρ2ε, κL = βL
+
+σγ
+
+σS
+
+,
+
+so ZL
+
+> ∣∣∣
+
+{| Zγ | > t } is likewise distorted unless κL = ρ. Residualization sets κR = ρ, equivalently 
+
+Λ = Σ cS γ Σ−1 
+
+> γγ
+
+, yielding 
+
+ZR = ZS −ρZ γ =
+
+> √
+
+1−ρ2ε, 
+
+which is independent of Zγ . Thus, conditioning on any rule based on ˆγ leaves the first-order distribution of the residualized estimator unchanged. 
+
+Worked Example of Bias Under Local Misspecification: We provide here a self-contained derivation of the first-order asymptotic bias formula (6) , clarifying why the mis-specification score s represents perturbations to the distribution only (not to the parameter of interest), and the condition under which the linear correction does not subtract first-order signal about the target. 
+
+Mean shift under local misspecification. Under the perturbed distribution Pn defined in (3), the mean of the influence function ψλ = ϕc −λϕ γ shifts as follows: 
+
+EPn [ψλ(D)] = 
+
+> ∫
+
+ψλ(d)
+
+> (
+
+1+ s(d)
+
+√n
+
+> )
+
+dP 0(d)= E0[ψλ]+ 1
+
+√nE0[ψλ ·s] = 1
+
+√nE0[ψλ ·s], (9) where the last equality uses E0[ψλ] = 0 . The mean of the sample average is therefore 
+
+EPn 
+
+> [
+
+1
+
+√n
+
+> n∑
+> i=1
+
+ψλ(Di)
+
+> ]
+
+= √n·EPn [ψλ(D)] = E0[ψλ ·s].
+
+Le Cam’s third lemma (Van der Vaart, 2000, Examples 6.5 and 6.7) formalizes this as an asymptotic distributional statement: under the drifting sequence Di ∼ Pn,
+
+√n(
+
+ˆc(λ)−c) d
+
+−→ N (
+
+E0[ψλ ·s], ∥ψλ∥2
+
+> L2
+> )
+
+,
+
+so the first-order asymptotic bias is E0[ψλ ·s].
+
+Decomposition into structural and misspecification scores. To clarify why s represents misspecification only, we connect to the framework of Andrews et al. (2020) (hereafter AGS). In AGS, the distribution F (η,ζ ) depends on a structural parameter η and a misspecification 31 parameter ζ (with ζ = 0 under the base model). Their Lemma 1 considers drifting sequences 
+
+η = η0 + h/ √n, ζ = z/ √n, and shows that the asymptotic mean of the joint estimator is determined by the total score sh +sz , where 
+
+sh(d) = ∂∂t h
+
+log fh,z (d;0 ,0) , sz (d) = ∂∂t z
+
+log fh,z (d;0 ,0) 
+
+are the scores from perturbing η in direction h (which changes c) and ζ in direction z (which changes the distribution but not c), respectively. The minimax problem in Proposition 3 asks: holding the true parameter c(P0) fixed, how large can the bias of ˆc(λ) be? Since perturbations in η change c, they alter the estimand, not the estimator’s accuracy for a fixed target. Formally, under the combined score sh +sz , the total asymptotic mean of √n( ˆc(λ)−c(η0)) is E0[ψλ(sh +sz )] , while the true parameter shifts to c′(h) = E0[ϕcsh] (the pathwise derivative of c in direction h). The bias is therefore bias = E0[ψλ(sh +sz )] −c′(h)= E0[( ϕc −λϕ γ )( sh +sz )] −E0[ϕcsh]= E0[ϕcsz ]−λE 0[ϕγ sz ]−λE 0[ϕγ sh]= E0[ψλsz ]−λE 0[ϕγ sh]. (10) The first term, E0[ψλ sz ], is the bias from misspecification, identical to (6) with s = sz . The second term, −λE 0[ϕγ sh], reflects a potential cost of the linear correction: by subtracting λˆγ
+
+from ˆc, we may inadvertently remove a component that tracks a real change in the parameter of interest, introducing bias that is absent from the original estimator ˆc. The second term in (10) vanishes when the structural directions sh are within-model perturbations and the diagnostic check is identically zero on the model, i.e. when γ(P ) = 0 for all P ∈ P . In that case, the pathwise derivative of γ along any such structural direction is zero, so E0[ϕγ sh] = 0 . Hence, subtracting 
+
+λˆγ does not remove first-order signal about the parameter along directions that change c, and (10) reduces to E0[ψλsz ]. The minimax problem over s = sz alone is therefore the relevant one for fixed-target local misspecification. This is the same orthogonality that underlies Section 5. There it ensures that linear adjust-ments of the form ˆc−λˆγ preserve the target’s pathwise derivative along within-model directions; here it ensures that the only first-order bias to be minimized is the bias coming from misspec-ification directions that move the data-generating process away from the benchmark model. 32 Table B.1: Baseline Balance 
+
+Control Mean Coef. on Cash P-value (1) (2) (3) Age 39.188 -0.447 0.596 [8.856] (0.841) Years of education 4.721 -0.060 0.857 [3.540] (0.330) Can read newspaper in Odiya 0.630 0.021 0.670 [0.484] (0.048) Married 0.984 -0.012 0.468 [0.127] (0.016) Has any children 0.891 -0.038 0.262 [0.313] (0.034) Primarily daily laborer 0.751 -0.056 0.216 [0.433] (0.045) Days of paid work in past 7 days 1.884 -0.130 0.509 [2.125] (0.196) Days of paid work in past 30 days 8.602 0.098 0.889 [6.307] (0.701) House quality (durable house) 0.238 0.003 0.946 [0.427] (0.042) Owns farmland 0.568 0.012 0.788 [0.497] (0.046) No outstanding food loans 0.459 -0.006 0.902 [0.500] (0.051) Can get Rs. 1K in emergency 0.355 -0.034 0.458 [0.480] (0.046) Worried about finances 0.883 -0.022 0.551 [0.323] (0.037) Worried about any loan 0.579 -0.031 0.513 [0.495] (0.048) Amount of loans worried about 14624.571 -913.348 0.679 [15994.347] (2203.768) Has loans 0.683 0.027 0.550 [0.467] (0.045) Has moneylender loans 0.175 -0.021 0.572 [0.381] (0.037) 
+
+33 Table B.2: Covariate Contributions to the Residualization Correction 
+
+ˆΛk ˆγk ˆΛk ˆγk
+
+Age -0.0014 -0.4461 0.0006 Years of education 0.0173 -0.0596 -0.0010 Can read newspaper in Odiya -0.0227 0.0205 -0.0005 Married 0.0399 -0.0119 -0.0005 Has any children 0.1320 -0.0378 -0.0050 Primarily daily laborer 0.1156 -0.0559 -0.0065 Days of paid work in past 7 days 0.0349 -0.1295 -0.0045 Days of paid work in past 30 days -0.0090 0.0975 -0.0009 House quality (durable house) -0.0164 0.0029 -0.0000 Owns farmland -0.0193 0.0124 -0.0002 No outstanding food loans -0.0561 -0.0062 0.0003 Can get Rs. 1K in emergency -0.0190 -0.0342 0.0006 Worried about finances -0.0563 -0.0219 0.0012 Worried about any loan -0.0834 -0.0312 0.0026 Amount of loans worried about -0.0000 -856.2956 0.0029 Has loans 0.0116 0.0268 0.0003 Has moneylender loans 0.1242 -0.0211 -0.0026 Total correction -0.0130 
+
+34
