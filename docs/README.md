@@ -7,34 +7,31 @@
 
 ## 每次日报
 - 最新运行日期：2026-03-23 ~ 2026-04-21
-- 运行时间：2026-04-21 12:38:53 UTC
+- 运行时间：2026-04-21 12:55:50 UTC
 - 运行状态：成功
-- 本次总论文数：4
+- 本次总论文数：3
 - 精读区：0
-- 速读区：4
+- 速读区：3
 
 ### 今日简报（AI）
-深度探索因果推断前沿，从 DiD 模型的技术改良跨越到公共政策的社会影响评估。
-重点推荐加权堆叠 DiD 的协变量平衡新法，以及免费公交对印度女性劳动参与率的实证研究。
-建议关注因果图与改良 DiD 工具的结合，以更精准地评估复杂社会政策的实施效果。
+今日聚焦婚姻匹配机制与因果推断方法论，涵盖从家庭行为偏好到政策评估的 3 篇高分速读。
+核心结论揭示了婚前偏好对家庭决策的深远影响，并为复杂政策环境下的平行趋势检验提供了因果图新视角。
+建议优先研读 9.0 分的婚姻匹配研究，并关注阶梯设计在健康政策评估中的实操应用。
 - 详情：[/20260323-20260421/README](/20260323-20260421/README)
 
 ### 精读区论文标签
 - 本次无精读推荐。
 
 ### 速读区论文标签
-1. [Causal Graphs for Conditional Parallel Trends](/20260323-20260421/2604.12818v1-causal-graphs-for-conditional-parallel-trends)  
-   标签：评分：9.0/10、query:q1
-   evidence：双重差分法与条件平行趋势
-2. [Covariate-Balanced Weighted Stacked Difference-in-Differences](/20260323-20260421/2604.02293v1-covariate-balanced-weighted-stacked-difference-in-differences)  
-   标签：评分：8.0/10、query:q1
-   evidence：提出了加权堆叠双重差分法的基于设计的扩展。
-3. [Ticket to ride: Impact of free public transport on women's workforce participation in India](/20260323-20260421/2604.14758v1-ticket-to-ride-impact-of-free-public-transport-on-womens-workforce-participation-in-india)  
+1. [Marital Sorting on Pre-Marital Preferences for Household Behavior](/20260323-20260421/2603.25372v1-marital-sorting-on-pre-marital-preferences-for-household-behavior)  
+   标签：评分：9.0/10、query:q2
+   evidence：匹配框架中对子女和家庭行为的婚前偏好
+2. [Causal Graphs for Conditional Parallel Trends](/20260323-20260421/2604.12818v1-causal-graphs-for-conditional-parallel-trends)  
    标签：评分：8.0/10、query:profile-1
-   evidence：针对女性劳动参与率的三重差分和事件研究
-4. [Integrating Diagnostic Checks into Estimation](/20260323-20260421/2604.16690v1-integrating-diagnostic-checks-into-estimation)  
-   标签：评分：8.0/10、query:q8
-   evidence：事件研究中的平行趋势检验与诊断检查
+   evidence：双重差分法和平行趋势的因果图
+3. [Emulating Stepped-Wedge Cluster Randomized Trials to Evaluate Health Policies and Interventions](/20260323-20260421/2604.12900v1-emulating-stepped-wedge-cluster-randomized-trials-to-evaluate-health-policies-and-interventions)  
+   标签：评分：8.0/10、query:profile-1
+   evidence：模拟阶梯设计试验和双重差分法进行政策评估
 
 
 <div class="dpr-home-promo-card">
