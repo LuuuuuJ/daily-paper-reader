@@ -1,0 +1,4463 @@
+Title: Average Marginal Effects in One-Step Partially Linear Instrumental Regressions
+
+URL Source: https://arxiv.org/pdf/2604.11393v1
+
+Published Time: Tue, 14 Apr 2026 02:44:43 GMT
+
+Number of Pages: 67
+
+Markdown Content:
+# Average Marginal Effects in One-Step Partially Linear Instrumental Regressions ∗
+
+## Lucas Girard † Elia Lapenta ‡
+
+## April 2026 
+
+Abstract 
+
+We propose a novel procedure for estimating and conducting inference on average marginal effects in partially linear instrumental regressions using Reproducing Kernel Hilbert Space methods. Our procedure relies on a single regularization parameter. We obtain the consistency and asymptotic normality of our estimator. Since the variance of the limiting distribution has a complex analytical form, we propose a Bayesian bootstrap method to conduct inference and establish its validity. Our procedure is easy to implement and exhibits good finite-sample performance in simulations. Three empirical applications illustrate its implementation on real data, showing that it yields economically meaningful results. 
+
+Keywords: Instrumental variables, Semiparametric estimation, Reproducing Kernel Hilbert Spaces, Average Marginal Effects, Bootstrap. 
+
+# 1 Introduction 
+
+We consider the partially linear instrumental variables (IV) model 
+
+Y = h0(Z) + XT β0 + ε with E {ε|W, X } = 0 , (1) where Y ∈ R is the outcome, Z ∈ R is the endogenous continuous treatment possibly correlated with the error term ε ∈ R, X ∈ Rp is a vector of exogenous covariates, and 
+
+W ∈ R is a continuous instrument. β0 ∈ Rp is a vector of coefficients, and the treatment or regression function h0 is nonparametrically specified. We develop an estimation and inference method for the average marginal effect (AME) of the treatment, which is defined as 
+
+θ0 := E {h′
+
+> 0
+
+(Z)} . (2) 
+
+> ∗
+
+Elia Lapenta acknowledges funding from the French National Research Agency (ANR) under grant ANR-23-CE26-0008-01. 
+
+> †
+
+CREST, CNRS, Ecole polytechnique, Groupe ENSAE-ENSAI, ENSAE Paris, Institut Polytechnique de Paris, Palaiseau, France. lucas.girard[at]ensae.fr 
+
+> ‡
+
+University of Exeter and CREST. e.lapenta[at]exeter.ac.uk 
+
+1
+
+> arXiv:2604.11393v1 [econ.EM] 13 Apr 2026
+
+The AME is a key object in many empirical applications, such as estimating the returns to education or measuring demand elasticities in industrial organization. If the treatment function h0 were linear, the AME of the treatment would equal the slope coefficient of this function, and could be easily estimated by a two-stage least squares regression. However, a linearity or parametric assumption can rarely be justified on economic grounds and entails the risk of misspecification. When linearity is violated, the AME is not consistently estimated by two-stage least squares, and the resulting causal inference or counterfactual analyses can be misleading. Assuming a semiparametric IV model allows to overcome the risk of misspecification and to learn the treatment effects flexibly from the data, while mitigating the curse of dimensionality, see Florens (2003), Florens et al. (2012), and Ai and Chen (2003). Although non- and semiparametric approaches allow reducing the misspecification risk, inference for a nonparametric IV function is substantially more difficult than inference on a scalar parameter. Moreover, an estimated nonparametric regression remains less easy to interpret than an estimated linear model, where the coefficients can directly be viewed as average marginal effects of the variables and the treatment. For applied work, this is important because researchers often must report results in a form that policymakers and practitioners can interpret. Focusing on the AME in (2) is appealing for two reasons: (i) it provides an easy-to-interpret index of the treatment effect while addressing misspecification issues; (ii) it enables inference on a scalar parameter rather than on a nonparametric function. In this paper, we contribute to the literature by providing an inference procedure for the AME in (2) that has two distinctive features. First, it is based on a single regularization parameter. Second, it builds on a framework widely used in the machine learning and Support Vector Machines literature, namely the Reproducing Kernel Hilbert Space setting. The first distinctive feature of our procedure is that it is based on a single regularization parameter. Most of the existing literature estimates functionals of h0, such as the AME, by running multi-step regressions. In the first step, they estimate the conditional expectation operator E {·| W, X }; in the second step, they use this estimate to obtain an estimator of the function h0, which is then employed to construct an AME estimator. See, e.g., Ai and Chen (2003) and Ai and Chen (2007). Such a multi-step regression approach requires selecting multiple regularization parameters, one for each regression. This complicates the practical implementation of these methods, as the fine-tuning of each of these parameters might be difficult in practice. Moreover, each estimation step introduces an estimation error that impacts the finite sample behavior of the final estimator. Unlike existing methods, we provide an estimation and inference procedure for the AME based on a one-step regression. Its main advantage is that it requires a single regularization parameter, which simplifies practical implementation. 2The second distinctive feature of our inference method is that it builds on a popular frame-work from the machine learning literature, the Reproducing Kernel Hilbert Space (RKHS) setting; see, e.g., Wainwright (2019, Chapter 12), Berlinet and Thomas-Agnan (2011), and Steinwart and Christmann (2008). Tools and algorithms from this framework have been extensively used in Support Vector Machine and classification methods. The advantages of constructing an inference procedure for the AME based on RKHSs are twofold. First, RKHS tools allow solving difficult computational problems in a tractable manner. In our context, they allow us to provide an estimator of the AME and a test statistic with simple and easy-to-compute expressions. Second, they have excellent finite-sample performances, as we show in our simulations, see Section 6. We show that our AME estimator based on RKHSs is asymptotically normal, but the variance of the limiting distribution has a complex analytical form. Thus, we develop an inference procedure relying on the Bayesian bootstrap and establish its validity. Our method is simple to implement and we provide an R package that practitioners can readily use. In addition to its simplicity, we show in simulations that it yields good size control under the null hypothesis and exhibits good power under the alternative in small- and moderate-sample settings. We also illustrate the potential of our method with three empirical applications based on Angrist and Lavy (1999), Frankel and Romer (1999), and Sokullu (2016), with respective samples of 2,024, 150, and 117 observations. These applications reveal the good performance of our estimation and inference procedure on real data, including small samples. Thanks to its computational simplicity, its reliance on a single regularization parameter, and its good performance in finite samples, our method can be readily adopted by practitioners. 
+
+Related literature. Series-based methods for estimating AMEs and, more generally, func-tionals of IV regressions have been developed in Ai and Chen (2003), Ai and Chen (2007), and Santos (2011). In a recent paper, Chen et al. (2023) investigates the properties of several AME estimators based on Artificial Neural Networks, and study their finite sample perfor-mance. All these papers are based on a multi-step regression approach and require selecting multiple tuning parameters, one for each regression estimation, which may complicate the practical implementation. Breunig and Johannes (2016) considers adaptive estimation of 
+
+known functionals in nonparametric IV models, but does not study inference on them. Chen and Christensen (2018) and Chen et al. (2025) provide inference procedures for known func-tionals of nonparametric IV regressions. Our context differs from theirs, as in our case the AME is an unknown functional of the nonparametric IV regression, since it involves the expectation of h′ 
+
+> 0
+
+with respect to the unknown distribution of Z. Beyhum et al. (2024b) and Zhang et al. (2023) propose one-step estimators of nonparametric IV models, but do not 3study inference on the AME. RKHS estimation of nonparametric IV models is also studied in Singh et al. (2019) and Zhang et al. (2023). However, they neither consider a partially linear specification nor develop inference for the AME. 
+
+Organization of the paper. In Section 2, we introduce our AME estimator and derive its expression. The asymptotic behavior of our estimator is established in Section 3. Section 4 presents the bootstrap test and obtains its validity. The implementation of our inference procedure as well as the selection of our unique regularization parameter are discussed in Section 5. In Section 6, we provide simulation evidence for the small-sample behavior of our bootstrap test, demonstrating its excellent finite-sample performance. Section 7 contains three empirical applications of our method. Finally, Section 8 concludes. The Appendix collects the mathematical proofs of our results, auxiliary lemmas, and additional simulations. The R package for implementing our inference procedure can be downloaded at https: //github.com/lucasgirardh/rkhsiv .
+
+# 2 The estimator 
+
+## 2.1 Estimation setup 
+
+We assume that h0 ∈ H , with H being a space of functions defined on the support of Z. Below we define precisely the space H. For now, let us present the general features of the estimation method. From Equation (1), we have the moment condition E {Y −h0(Z)−XT β0|W, X } = 0. We assume that identification holds on H × Rp, that is, E{Y − h(Z) − XT β|W, X } = 0 with h ∈ H and β ∈ Rp ⇐⇒ h = h0 and β = β0 . (3) Necessary and sufficient conditions for the identification of the partially linear IV model can be found in Florens et al. (2012). For example, a sufficient condition for the identifi-cation of ( β0, h 0) is that (i) E {h(Z)|X, W } = 0 implies h = 0, (ii) E {XX T } is full-rank, and (iii) if E {h(Z)|X, W } = XT β for some ( h, β ) ∈ H × Rp, then XT β = 0. Part (i) is the classical completeness condition in nonparametric IV models, see Newey and Pow-ell (2003), D’Haultfoeuille (2011), Freyberger (2017). Part (ii) is the standard absence of perfect collinearity among control variables X. Part (iii) expresses a similar idea: the only way for E {h(Z)|W, X } to be a linear function of X is to be the null function. See Florens et al. (2012) for details. For our purpose, we simply assume the identification condition in Equation (3). The logic underlying the construction of our estimator follows the ideas in Beyhum et al. (2024b). Building an estimator based on the conditional moment restriction in (3) would 4require the preliminary estimation of the conditional expectation given ( X, W ), as done by most of the literature. Differently, we consider an equivalent reformulation of (3) that allows us to avoid such a preliminary estimation. From Bierens (2016, Theorem 2.2), E{Y −XT β0−h0(Z)|W, X } = 0 ⇔ E Y − XT β0 − h0(Z) exp  i(W, X T )t = 0 ∀ t ∈ Rp+1 ,
+
+(4) where i denotes the imaginary root. Let us define 
+
+M (β, h ) := 
+
+Z
+
+E Y − XT β − h(Z) exp  i(W, X T )t 2dμ (t) ,
+
+with μ a probability measure supported on Rp+1 having a symmetric characteristic function. Notice that M (β, h ) ≥ 0, and, by (4) and the identification condition (3), M (β, h ) = 0 ⇔
+
+(β, h ) = ( β0, h 0). Thus, (β0, h 0) = arg min  
+
+> β∈Rp, h ∈H
+
+M (β, h ) .
+
+We will now use the above equation to build an estimator of ( h0, β 0). Given an indepen-dent and identically distributed (i.i.d.) sample {Yi, Z i, X i, W i}i=1 ,...,n , we denote by E n the empirical-mean operator, that is, E n f (Yi, Z i, X i, W i) := n−1 Pni=1 f (Yi, Z i, X i, W i) for any function f . To build the empirical counterpart of M (β, h ), we replace the population expec-tation E with the empirical mean operator E n:
+
+Mn(β, h ) := 
+
+Z
+
+En
+
+ Yi − X′ 
+
+> i
+
+β − h(Zi) exp  i(Wi, X Ti )t 2dμ (t)= 1
+
+n2
+
+X
+
+> 1≤i,j ≤n
+
+[Yi − h(Zi) − XTi β] Fμ(( Wi, X Ti ) − (Wj , X Tj )) [ Yj − h(Zj ) − XTj β] ,
+
+(5) where Fμ(·) = R exp( itT ·)dμ (t) denotes the symmetric characteristic function of μ.Now, minimizing Mn(β, h ) with respect to β and h would lead to overfitting, as h is a nonparametric function. Thus, we regularize the problem by minimizing a penalized version of Mn, that is, ( bβ, bh) := arg min  
+
+> β∈Rp, h ∈H
+
+Mn(β, h ) + λ∥h∥2 
+
+> H
+
+, (6) where λ > 0 is a penalty parameter, and ∥ · ∥ H is the norm on the space H. In the next section, we discuss the definition of H and show that the above minimization problem admits a unique solution. The practical choice of the penalty parameter λ is discussed in Section 5. Given bh, we estimate the AME of the endogenous treatment as follows: 
+
+bθ := E n{bh′(Zi)} . (7) 52.2 Computation of the estimator 
+
+We choose the space H to be a Reproducing Kernel Hilbert Space (RKHS). This allows us (i) to have enough flexibility to recover nonparametrically the treatment function h0,and (ii) to obtain an estimator with a simple closed form expression. For a comprehensive treatment of RKHSs, we refer the reader to, e.g., Wainwright (2019, Chapter 12), Berlinet and Thomas-Agnan (2011), and Steinwart and Christmann (2008). To clearly present our estimator, we briefly recall the notion of an RKHS. We denote by Z the support of Z, and let K : Z × Z → R be a symmetric function, that is, K(z1, z 2) = K(z2, z 1) for any z1, z 2 ∈ Z .
+
+K is said to be positive semidefinite if, for any m ∈ N and any collection z1, . . . , z m ∈ Z ,the m × m matrix with entries {K(zi, z j ) : i, j = 1 . . . , m } (the associated Gram matrix) is positive semidefinite. A symmetric and positive semidefinite function K is called a kernel. The formal definition of an RKHS of functions is the following. 
+
+Definition 1. Let K : Z × Z → R be a symmetric positive semidefinite function. Let H be a Hilbert space of functions defined on Z and valued in R, endowed with the inner product 
+
+⟨· , ·⟩ H. H is an RKHS with reproducing kernel K if 1. K(·, z ) ∈ H for any z ∈ Z ;2. For any h ∈ H and z ∈ Z , ⟨h, K (·, z )⟩H = h(z) .
+
+From Steinwart and Christmann (2008, Theorems 4.20 and 4.21), every symmetric pos-itive semidefinite kernel has a unique RKHS, and every RKHS has a unique reproducing kernel. For the sake of clarity, we provide two examples of RKHSs. For further examples, see Wainwright (2019, Chapter 12), Berlinet and Thomas-Agnan (2011), and Steinwart and Christmann (2008). 
+
+Example 1 (Sobolev RKHS) . Let Z = [0 , 1], and for any function f : [0 , 1] → R, denote with f (κ) its κth derivative on (0 , 1). Define 
+
+H := 
+
+n
+
+f : [0 , 1] → R such that f is κ times differentiable and 
+
+Z 10
+
+|f (κ)(z)|2dz < ∞
+
+o
+
+.
+
+Then, H is an RKHS of functions with reproducing kernel 
+
+K(z, u ) = 
+
+> κ−1
+
+X
+
+> j=0
+
+zj
+
+j!
+
+uj
+
+j! +
+
+Z 10
+
+(z − t)κ−1+
+
+(κ − 1)! (u − t)κ−1+
+
+(κ − 1)! dt , 
+
+where ( a)+ := max( a, 0) for any a ∈ R. See Wainwright (2019, Chapter 12). ■
+
+6The RKHS of the following example is very popular in the statistics and machine learning literature. 
+
+Example 2 (Gaussian RKHS) . Let H be the space of functions g : C → C such that g is analytic and R |g(u)|2 exp( |u − u|2/2) du < ∞, where u denotes the complex conjugate of u
+
+and du stands for the complex Lebesgue measure on C. Consider the space 
+
+H =
+
+n
+
+f : Z → R such that ∃g ∈ H with f (z) = Real( g(z)) ∀ z ∈ Z 
+
+o
+
+,
+
+where Real( g(z)) is the real part of g(z). Then, H is an RKHS with reproducing kernel 
+
+K(z, u ) = exp( −| z − u|2/2). See Steinwart and Christmann (2008, Chapter 4). ■
+
+Having set H to be an RKHS of functions, we now show that the empirical program (6) admits a unique solution, and give a closed form expression to our estimator bθ. To this end, let us introduce the following notation. Recall that the characteristic function of the measure 
+
+μ is given by Fμ(·) := R exp( itT ·)dμ (t). We define the following n × n matrix via its generic (i, j )−th entry, for i, j = 1 , . . . , n ,
+
+F := [ Fμ(( XTi , W i) − (XTj , W j )) : i, j = 1 , . . . , n ] .
+
+We also denote 
+
+X := 
+
+
+
+XT
+
+> 1
+
+...
+
+XTn
+
+ , Y := 
+
+
+
+Y1
+
+...
+
+Yn
+
+ , K := [ K(Zi, Z j ) : i, j = 1 , . . . , n ] ,
+
+where K is the n × n Gram matrix associated with the kernel K. We let In be the identity matrix of order n, and we use the shortcut notations for the p × p matrix 
+
+C := XT F X .
+
+Let N (K) := {γ ∈ Rn : Kγ = 0 } denote the null space of K and let N (K)⊥ be its orthogonal complement. Formally, N (K)⊥ := {γ⊥ ∈ Rn : γT
+
+> ⊥
+
+γ = 0 for all γ ∈ N (K)}.
+
+Proposition 2.1. Let H be an RKHS with reproducing kernel K. Assume that Fμ is sym-metric about zero, X has full-column rank, the Zi’s are distinct, and the ( XTi , W i)’s are distinct. Then, the solution to (6) exists, is unique, and satisfies 
+
+bh(·) = 
+
+> n
+
+X
+
+> i=1
+
+bαiK(·, Z i), bβ = C−1XT F (Y − K bα) , (8) 
+
+where bα := ( bα1, . . . , bαn)T ∈ Rn is the minimum-norm solution to 
+
+ KF K − KF XC −1XT F K + n2λK bα = KF  Y − XC −1XT F Y  , (9) 
+
+and is the unique element of N (K)⊥ satisfying this equation. 
+
+7The proof of Proposition 2.1 can be found in Appendix B. Singh et al. (2019) obtain a similar result for a fully nonparametric IV model without the linear component. Let us make two remarks about the above proposition. First, when the matrix K is invertible, the solution to (9) is unique. Second, from the proof of Proposition 2.1, any solution α = ( α1, . . . , α n)T
+
+to (9) gives rise to the same function Pni=1 αiK(·, Z i). Thus, the specific solution to (9) used to compute bh in (8) has no effect on bh.As our parameter of interest involves the derivative of h0, we assume that K is a differ-entiable kernel and denote by K′(·, Z i) the first derivative of K(·, Z i). From Equation (8), we estimate the first derivative of h0 by 
+
+bh′(·) = 
+
+> n
+
+X
+
+> i=1
+
+bαiK′(·, Z i) . (10) We then estimate the targeted quantity θ0 using Equation (7), with bh′ computed as above. By construction, our estimator of θ0 is readily obtained by solving the linear system of equations in (9), and is straightforward to compute. Moreover, it does not rely on multi-step nonparametric estimators, and involves only a single regularization parameter. 
+
+# 3 Asymptotic Analysis 
+
+To study the asymptotic properties of our estimator, we first reformulate the integral equation (4) that identifies ( β0, h 0). Let L2 
+
+> μ
+
+be the space of functions square-integrable with respect to μ, with inner product ⟨g1, g 2⟩μ = R g1(t)g2(t)dμ (t) for g1, g 2 ∈ L2
+
+> μ
+
+, where g2(t) denotes the complex conjugate of g2(t). Denote by ∥ · ∥ μ the norm on L2 
+
+> μ
+
+induced by ⟨· , ·⟩ μ, that is, 
+
+∥g∥2 
+
+> μ
+
+= ⟨g, g ⟩μ. We define A h := E {h(Z) exp( i (XT , W ) ·)} , A : H → L2
+
+> μ
+
+B β := E {βT X exp( i (XT , W ) ·)} , B : Rp → L2
+
+> μ
+
+s := E {Y exp( i (XT , W ) ·)} , s ∈ L2 
+
+> μ
+
+. (11) Below we provide the integrability conditions ensuring that s ∈ L2
+
+> μ
+
+, and that both A and B are valued in L2
+
+> μ
+
+. Equation (4) can be reformulated as follows: B β0 + A h0 = s . 
+
+Thus, ( β0, h 0) can be identified as the unique solution to the following population program (β0, h 0) = arg min  
+
+> β∈Rp, h ∈H
+
+∥ B β + A h − s∥2 
+
+> μ
+
+.
+
+8An advantage of this reformulation for our proof is that θ0 can be expressed in terms of the operators (A , B). In our proofs, we also consider the empirical (penalized) version of the above minimization program, which allows us to express our estimator bθ in terms of the empirical counterparts of A and B. This facilitates the analysis of the asymptotic behavior of bθ.
+
+Assumption 3.1. (i) {Yi, Z i, X i, W i}ni=1 is an i.i.d. sample defined on the probability space 
+
+(Ω , A, P ), with E ∥X∥2 < ∞, E W 2 < ∞, and E Y 2 < ∞; (ii) Z has a continuously differ-entiable density fZ supported on Z; (iii) Z is a bounded set with nonempty interior; (iv) μ
+
+is a probability measure supported on Rp+1 .
+
+Part (i) of the above assumption imposes square integrability conditions ensuring that 
+
+s ∈ L2 
+
+> μ
+
+and that B is valued in L2
+
+> μ
+
+. Parts (ii) and (iii) impose smoothness and boundedness assumptions that are common in the semiparametric literature. 
+
+Assumption 3.2. (i) H is a Reproducing Kernel Hilbert Space of real-valued differentiable functions defined on Z, with inner product ⟨· , ·⟩ H and reproducing differentiable kernel K :
+
+Z × Z → R; (ii) h0, f ′ 
+
+> Z
+
+∈ H .
+
+Part (i) of the above assumption formally defines H and implies that the operator A is valued in L2
+
+> μ
+
+. Part (ii) states that h0 must belong to the RKHS H. The inclusion of f ′ 
+
+> Z
+
+in 
+
+H is needed to handle a bias term that appears in the expansion of bθ.The following assumption ensures the identification of ( h0, β 0). We let R(A) := {A h such that h ∈ H} and R(B) := {B β such that β ∈ Rp} be the ranges of A and B, respectively. 
+
+Assumption 3.3. (i) A and B are injective; (ii) R(A) ∩ R (B) = {0}.
+
+Florens et al. (2012) show that Assumption 3.3 is a necessary and sufficient condition for identification of the partially linear IV model. Examples of Assumption 3.3 can be found in Florens et al. (2012). In the lines below Proposition 3.1, we discuss how our results can be extended to the case where the operator A is not injective. For the following assumption, given any class of functions G, we define its bracketing entropy N[ ] (ϵ, G, L 2(P )) as the minimal number of brackets of L2(P ) size ϵ required to cover 
+
+G. For a formal definition, see Van der Vaart (2000, Chapter 19). 
+
+Assumption 3.4. (i) sup z∈Z |bh′(z)−h′
+
+> 0
+
+(z)| = oP (1) ; (ii) Pr( bh′ ∈ G ) → 1, with log N[ ] (ϵ, G, L 2(P )) 
+
+≤ Cϵ −v and fixed constants C and v ∈ (0 , 2) ; (iii) lim z→±∞ fZ (z)[ bh(z) − h0(z)] = 0 .
+
+Parts (i) and (ii) of the above assumption are needed to obtain the asymptotic stochastic equicontinuity of an empirical process appearing in the expansion of bθ. Part (i) requires the 9uniform consistency of bh′, without imposing a convergence rate. Part (ii) requires that bh′ must be included asymptotically in a class of functions with a bounded entropy. This condition is satisfied if bh is twice differentiable and its first two derivatives are bounded in probability. Part (iii) is a boundary condition commonly used in semiparametric frameworks, see, e.g., Powell et al. (1989), Escanciano and Song (2010). It is satisfied when, as we approach the boundaries of Z, fZ decays to zero and bh − h0 does not explode. In Appendix D, we provide mild primitive conditions guaranteeing Assumption 3.4. Such primitive conditions impose some smoothness on the kernel K of the RKHS. To introduce the next condition, we need some additional pieces of notation. Let P : 
+
+L2 
+
+> μ
+
+→ R (B) be the projection operator onto R(B). As the linear operator B : Rp → L2
+
+> μ
+
+is defined on a finite-dimensional space, its range R(B) is a linear finite-dimensional space (see Kreyszig (1991, Theorem 2.6-9)). From Kreyszig (1991, Theorem 2.4-2), linear finite-dimensional spaces are closed. Thus R(B) is linear and closed. Since from Kress (1999, Theorem 1.26) projection operators onto linear and closed spaces are well defined, P is a well defined operator. Let T := (I − P) A : H → L2
+
+> μ
+
+, where the operator I is the identity operator, and let us denote with T ∗ the Hilbert adjoint of T. By definition, the Hilbert adjoint of T is the operator T ∗ : L2 
+
+> μ
+
+→ H such that ⟨T φ, ψ ⟩μ = ⟨φ, T∗ ψ⟩H for any ( φ, ψ ) ∈ H × L2
+
+> μ
+
+.See Kress (1999, Chapter 4). The next assumption is a source condition common in the literature on inverse problems. 
+
+Assumption 3.5. h0, R 
+
+> Z
+
+K(·, z )f ′ 
+
+> Z
+
+(z)dz ∈ R ((T ∗ T) γ/ 2) for some γ ≥ 2.
+
+The above source condition is common in the nonparametric IV literature and can be interpreted as a smoothness assumption, see, e.g., Carrasco et al. (2007), Beyhum et al. (2024b), Babii (2022), Darolles et al. (2011), Florens et al. (2012). It essentially implies a requirement that is necessary for the asymptotic normality of the estimator, see Severini and Tripathi (2012). In our proofs establishing the asymptotic behavior of bθ, we employ the above condition to deal with a bias term appearing in the expansion of bθ.
+
+Proposition 3.1. Let Assumptions 3.1, 3.2, 3.3, 3.4, and 3.5 hold. Let nλ → ∞ and 
+
+nλ 2 = o(1) . Then, (i) 
+
+√n(bθ − θ0) = √n(E n − E) ψ(Yi, Z i, X i, W i) + oP (1) ,
+
+where 
+
+ψ(Yi, Z i, X i, W i) = h′
+
+> 0
+
+(Zi)
+
+− [Yi − h0(Zi)] (I − P) exp( i(XTi , W i)·), T f0 μ
+
++ [ XTi (B ∗ B) −1 B∗(s − A h0)] exp( i(XTi , W i)·), T f0 μ ,
+
+10 f0 = (T ∗ T) −1g, and g = R K(·, z )f ′ 
+
+> Z
+
+(z)dz .(ii) √n(bθ − θ0) ⇝ N ( 0 , Var[ ψ(Yi, Z i, X i, W i)] ) .
+
+The proof of Proposition 3.1 can be found in Appendix B. The condition nλ → ∞ guaran-tees that several variance terms appearing in the expansion of √n(bθ − θ0) are asymptotically negligible, while the condition nλ 2 = o(1) ensures that a (regularization) bias term vanishes. The result can be extended to accommodate a data-dependent choice of λ. However, for simplicity, we consider only a deterministic regularization parameter. The asymptotic normality result of Proposition 3.1 is obtained under Assumption 3.3, which guarantees the identification of h0. Such an assumption requires the injectivity of A, that is, the completeness of the distribution of Z conditional on ( X, W ). We point out that the convergence in distribution of our statistic can also be obtained without requiring the injec-tivity of A. Under Assumption 3.5, the conditions in Severini and Tripathi (2012, Lemma 3.1 and 4.1) are satisfied, and the AME θ0 is identified also if identification of h0 does not hold. We can then extend our results and obtain the asymptotic normality of bθ by replacing 
+
+h0 with the projection of h0 onto N (T) ⊥, the orthogonal complement of the null space of T. For simplicity of presentation, we choose not to provide such a more general version of our results, and to work under the completeness condition in Assumption 3.3. We finally note that our estimator is based on a moment condition that is not locally robust with respect to the preliminary estimation of h0; see Chernozhukov et al. (2022) and Bennett et al. (2023). A locally robust approach would require estimating additional correction terms and hence selecting multiple regularization parameters. Differently, our approach relies on a single regularization parameter, which simplifies its implementation. Although from Proposition 3.1 bθ is asymptotically normal, the variance of the limiting distribution has a rather involved expression. This makes it inconvenient to use the quantiles of the asymptotic distribution for hypothesis testing on θ0. Therefore, in the next section, we construct a simple bootstrap test. 
+
+# 4 Bootstrap test for θ0We construct a Bayesian bootstrap test for the null hypothesis 
+
+H0 : θ0 = θH0 versus H1 : θ0̸ = θH0 ,
+
+with θH0 ∈ R a user-chosen tested value of the AME. For the sake of brevity, we focus on a two-sided test, but our procedure can be easily adapted to implement a one-sided test as well. In view of Proposition 3.1, we construct a bootstrap test for θ0 by bootstrapping the 11 Wald statistic √n(bθ − θ0). To this end, we first define the Bayesian bootstrap versions of bh
+
+and bβ, and then we construct the Bayesian bootstrap version of bθ.Let {ξi}i=1 ,...,n be i.i.d. random variables with E {ξ} = Var {ξ} = 1, and independent from the sample data. For example, we can sample each ξi from an exponential distribution with density f (ξ) = exp( −ξ). Let ξ := n−1 Pni=1 ξi. Note that we use · for both complex conjugation and empirical means to avoid introducing additional notation. The distinction will be clear from the context. We define the bootstrap version of ( bβ, bh) as ( bβb, bhb) := arg min  
+
+> β∈Rp, h ∈H
+
+Z
+
+En
+
+Yi − XTi β − h(Zi) exp  i(Wi, X Ti )tξi
+
+ξ
+
+ 2
+
+dμ (t) + λ∥h∥2 
+
+> H
+
+. (12) The above objective function is similar to the one used for ( bβ, bh), with the exception that the 
+
+ith observation has weight ξi/ξ , so each observation is represented in the bootstrap sample with that weight. From the minimization program in (12), the bootstrapped estimators bhb
+
+and bβb can be computed in the same way as their sample counterparts in Equations (8) and (9), provided that the weighting matrix F = {F μ(( XTi , W i) − (XTj , W j )) : i, j = 1 , . . . , n } is replaced with 
+
+Fb := [ Fμ(( XTi , W i) − (XTj , W j )) ξiξj /(ξ)2 : i, j = 1 , . . . , n ] .
+
+Similarly, we define Cb := XT FbX. Thus, with bαb = ( bαb, 1, . . . , bαb,n )T minimum norm solution to 
+
+ KF bK − KF bXC −1 
+
+> b
+
+XT FbK + n2λK bαb = KF b
+
+ Y − XC −1 
+
+> b
+
+XT FbY  (13) we compute 
+
+bh′
+
+> b
+
+(·) = 
+
+> n
+
+X
+
+> i=1
+
+bαb,i K′(·, Z i) (14) and define the bootstrap version of bθ as 
+
+bθb := E n
+
+ξi
+
+ξ
+
+bh′
+
+> b
+
+(Zi)
+
+
+
+. (15) Hence, the bootstrap version of the statistic √n(bθ − θ0) is 
+
+√n(bθb − bθ) . (16) We implement the test by using symmetric bootstrap p-values, but our procedure can be easily modified to implement equal-tail bootstrap p-values. To run a test of nominal size 
+
+α, we set the critical value to the (1 − α) quantile of the bootstrap distribution of the bootstrapped statistic |√n(bθb − bθ)|. Formally, 
+
+bc1−α = inf 
+
+> c
+
+n
+
+Pr ξ
+
+
+
+|√n(bθb − bθ)| ≤ c
+
+
+
+≥ 1 − α
+
+o
+
+,
+
+12 where Pr ξ represents the probability that considers as random only the bootstrap weights 
+
+{ξi : i = 1 , . . . , n } and as fixed the sample data. We then reject the null hypothesis if and only if |√n(bθ − θH0 )| > bc1−α.To show the validity of the bootstrap test, we introduce some regularity conditions. To avoid introducing additional notation, we make a slight abuse of notation and denote by Pr the probability treating both the bootstrap weights {ξi : i = 1 , . . . , n } and the sample data 
+
+{(Yi, Z i, X i, W i) : i = 1 , . . . , n } as random. 
+
+Assumption 4.1. The bootstrap weights {ξi : i = 1 , . . . , n } are i.i.d., independent from the sample data {(Yi, Z i, X i, W i) : i = 1 , . . . , n }, and satisfy E{ξ} = Var {ξ} = 1 .
+
+The following assumption is the bootstrap counterpart of Assumption 3.4. Mild primitive conditions guaranteeing this assumption are provided in Appendix D. 
+
+Assumption 4.2. (i) sup z∈Z |bh′
+
+> b
+
+(z)−h′
+
+> 0
+
+(z)| = oP (1) ; (ii) Pr( bh′ 
+
+> b
+
+∈ G ) → 1, with log N[ ] (ϵ, G, L 2(P )) 
+
+≤ Cϵ −v and fixed constants C and v ∈ (0 , 2) ; (iii) lim z→±∞ fZ (z)[ bhb(z) − h0(z)] = 0 .
+
+Proposition 4.1. Let the assumptions of Proposition 3.1, Assumption 4.1, and Assumption 4.2 hold. Then, (i) 
+
+√n(bθb − bθ) = √n En
+
+ ξi
+
+ξ − 1
+
+
+
+ψ(Yi, Z i, X i, W i)
+
+
+
++ oP (1) ,
+
+where ψ is defined in Proposition 3.1, and the probability space is the joint probability on the random bootstrap weights and the sample data. (ii) Under H0 : θ0 = θH0 , Pr( |√n(bθ − θH0 )| > bc1−α) → α.(iii) Under H1 : θ0̸ = θH0 , Pr( |√n(bθ − θH0 )| > bc1−α) → 1.
+
+The above result establishes the validity of the bootstrap test, and its proof can be found in Appendix B. Part (i) obtains the bootstrap influence function representation of 
+
+bθb, showing that such a representation is a reweighed version of the expansion of bθ from Proposition 3.1. The new weights are the bootstrap weights {ξi/ξ − 1 : i = 1 , . . . , n }. Such a reweighting ensures that the leading term of the bootstrap expansion estimates consistently the distribution of the statistic under the null, while remaining bounded in probability under the alternative. Parts (ii) and (iii) of Proposition 4.1 establish that the test has the correct size asymptotically and is consistent, with power converging to one when the sample size goes to infinity. 13 5 Implementation 
+
+This section describes the implementation of our method. We first discuss the choice of our single regularization parameter. We select λ by minimizing a cross-validated version of the objective function in (5). Specifically, let us focus on a two-fold cross-validation. We partition the sample into two folds, denoted S1 and S2. We first use S1 for estimation and 
+
+S2 for validation, and then interchange their roles. Let bβS1,λ and bhS1,λ denote the estimators obtained from the first fold for a given value of λ. Define bβS2,λ and bhS2,λ analogously for the second fold. The cross-validated version of (5) is given by 
+
+Z 1
+
+n
+
+ X
+
+> i∈S1
+
+h Yi − XTi bβS2,λ − bhS2,λ (Zi) exp  i(Wi, X Ti )ti
+
++ X
+
+> i∈S2
+
+h Yi − XTi bβS1,λ − bhS1,λ (Zi) exp  i(Wi, X Ti )ti 2
+
+dμ (t),
+
+(17) where P 
+
+> i∈Sj
+
+denotes the sum over observations in fold Sj , for j = 1 , 2. Finally, we minimize the above criterion with respect to λ, and we take the minimizer as the selected regularization parameter. Compared to the usual out-of-sample mean squared error criterion, the above cross-validation objective employs the appropriate weights, those corresponding to our objective function 
+
+Mn(β, h ) in Equation (5). In our simulations and empirical applications, we implement the above two-fold cross-validation method with good results. To reduce the computational burden of the bootstrap procedure, we fix the regularization parameter at the value selected from the original sample and use this same value across all bootstrap replications. As shown in our simulation study, this is enough to provide a good performance of our procedure. Algorithm 1 summarizes the practical steps required to implement our test. 
+
+# 6 Small Sample Behavior 
+
+In this section, we study the finite-sample performance of our test in two settings. We first consider a fully nonparametric model corresponding to Equation (1) without X. We then consider the general case of a partially linear model, where we also include the regressor X.14 Algorithm 1 Bootstrap test for the null hypothesis H0 : θ0 = θH0
+
+Inputs : a sample {Yi, Z i, X i, W i}i=1 ,...,n , a tested value θH0 , a number B of bootstrap repe-titions, a nominal level α ∈ (0 , 1), a distribution for ξ.1. Obtain a cross-validated bλ by minimizing the two-fold Cram´ er-von Mises criterion in (17). 2. Compute bθ using the penalization bλ as in Equations (7), (9), and (10). 3. For b = 1 , . . . , B 
+
+(a) Draw an i.i.d. sample ( ξ1, . . . , ξ n) from the distribution of ξ.(b) Compute bθb using the penalization bλ and the weights ( ξ1, . . . , ξ n) as in Equa-tions (13), (14), and (15). 4. Compute the 1 − α quantile of |bθb − bθ| : b = 1 , . . . , B , denoted bq1−α.5. Reject H0 if and only if |bθ − θH0 | > bq1−α.
+
+Fully nonparametric model. We use a data-generating process consistent with model (1) without X, where we draw the variables Z, W , and ε as follows: 
+
+ε = aV + U
+
+√1 + a2 , where a =
+
+s
+
+ρ2
+
+> εV
+
+1 − ρ2
+
+> εV
+
+, and Z = bW + V
+
+√1 + b2 , where b =
+
+s
+
+ρ2
+
+> ZW
+
+1 − ρ2
+
+> ZW
+
+, (18) with ( W, V, U ) mutually independent standard Gaussians. In this setup, the marginal dis-tributions of ε and Z are also standard Gaussians. For a non-zero value of a, the regressor 
+
+Z is endogenous and correlated with the error ε. The parameter ρεV measures the degree of such correlation, and hence the level of endogeneity of Z. For a non-null value of b, W is a valid instrument for Z.We implement our estimator with K(z, u ) = exp( −| z − u|2/2), which corresponds to a Gaussian kernel. This is a well-established choice for kernel ridge regression in the ma-chine learning literature (see Steinwart and Christmann (2008, Chapter 4)) and enables the approximation of a wide range of functions. Specifically, it has a universal approximation property, in the sense that any continuous function can be arbitrarily well approximated by a function in the RKHS with Gaussian reproducing kernel (see Steinwart and Christmann (2008, Corollary 4.58)). We set μ to a Laplace distribution with mean zero and unit variance, thus its characteristic function Fμ is a Cauchy density. We choose the penalty parameter λ
+
+by the two-fold cross-validation described in Section 5, and perform a grid search to minimize the cross-validated objective function. For bootstrapping, we draw the bootstrap weights ξ
+
+15 from an Exponential distribution with expectation one. In this nonparametric setting, we compare our procedure to an inference method for the average derivative based on two-stage series regressions (Ai and Chen, 2007). The method is implemented as follows. We set the series basis to B-Splines and select the number of series terms in the first and second stages using the method proposed in Chen et al. (2025). Given the two-stage series estimator of the IV regression, we compute the AME similarly to Equation (7). We then obtain the p-values by pairwise bootstrap. Specifically, we resample with replacement from the original sample {Yi, Z i, W i}ni=1 and, for each bootstrap sample, compute the AME, keeping the same number of series terms selected in the original sample. We consider two functional forms for the treatment effects: h0,1(z) = z2/√2, corre-sponding to a quadratic function, and h0,2(z) = p3√3 exp( −z2/2), corresponding to a non-polynomial function. Both expressions are normalized so that h0,1(Z) and h0,2(Z) have unit variance. With these functions and the marginal distribution of Z, the corresponding true values of the AMEs ( θ0) are, respectively, 0 in the quadratic case, and approximately 0.81 in the non-polynomial case. Finally, we set ρZW = 0 .8 and consider two levels of endogeneity: 
+
+ρεV = 0 .5, corresponding to a moderate level of endogeneity, and ρεV = 0 .8, corresponding to a high level of endogeneity. We ran 5,000 simulations with the sample sizes of n = 100 , 400. To speed up compu-tations, we use the warp-speed method of Davidson and MacKinnon (2007) and Giacomini et al. (2013). Thus, for each simulated sample, we draw one bootstrap sample and use the collection of bootstrapped statistics to compute the bootstrap p-value for each original statis-tic. Table 1 reports the rejection probabilities under the null hypothesis at the usual nominal levels of 5% and 10% for the different functions h0 and levels of endogeneity ρεV .1 We label our method “one-step” and the two-stage series regression method “two-step”. Under the null hypothesis, both methods control Type I error, with rejection probabilities below the nominal levels. However, our method delivers rejection rates closer to the targeted nomi-nal levels in most configurations – it is systematically the case with n = 100 and with the non-polynomial function h0,2. The improvement is notably large for the smaller sample size 
+
+n = 100. 
+
+> 1We also consider the nominal level of 1%, but the rejection rates for the two-stage series regression method are very close to 0.
+
+16 Table 1: Rejection probabilities under the null hypothesis in the fully nonparametric model. Case quadratic non-polynomial Nominal level 5% 10% 5% 10% Method 1-step 2-step 1-step 2-step 1-step 2-step 1-step 2-step 
+
+ρεV = 0 .5 n = 100 2.20 0.73 5.14 3.13 2.42 0.65 6.70 3.11 
+
+n = 400 2.20 2.69 5.94 7.42 3.38 1.57 7.22 5.30 
+
+ρεV = 0 .8 n = 100 2.48 0.77 5.56 3.36 3.00 0.80 6.92 2.87 
+
+n = 400 1.98 2.72 6.16 8.01 3.26 1.51 7.42 5.43                 
+
+> Notes: Rejection probabilities for our one-step regression test (labeled “1-step”) and for the two-step series regression test (labeled “2-step”) in the fully nonparametric model under the null hypothesis. The left and right panels report results for the quadratic case, h0,1(z) = z2/√2, and the non-polynomial case, h0,2(z) = p3√3×z×exp( −z2/2). The upper and lower panels report results with a moderate ( ρεV = 0 .5) or a high ( ρεV = 0 .8) level of endogeneity, for n= 100 and n= 400, at nominal levels of 5% and of 10%. The rejection probabilities are based on 5,000 Monte Carlo replications and are displayed in percentages.
+
+We also study the behavior of our test under the alternative. To do so, we compute the rejection rates of the test of the hypothesis θH0 = θ0 + γ, for a deviation γ ∈ (0 , 1) from the null, using 5,000 Monte Carlo replications. In Figures 1 and 2, we compare our one-step regression test (displayed in blue) with the two-step series regression test (displayed in red). Figure 1 presents the results for the quadratic function h0,1 and a moderate level of endogeneity, while Figure 2 presents the results for the non-polynomial function h0,2 and a high level of endogeneity. The other settings display similar results and are reported in Appendix A, Figures 4 and 5. They show that our method has considerably higher power for the small sample size n = 100. For n = 400, both methods have comparable power: the two-step test slightly outperforms in the quadratic case h0,1, whereas ours outperforms in the non-polynomial case h0,2.Overall, when considering both size and power, our test performs best in almost all cases, often substantially outperforming the two-step series regression test, while in the few scenarios where it is slightly outperformed, the difference is minor. 
+
+Partially linear model. We now study the finite-sample performance of our test in the general partially linear setting corresponding to Equation (1). Similarly to the fully non-parametric model, ( Z, ε) are drawn from Equation (18). U and V are mutually independent standard Gaussians, and are jointly independent of the covariate X and the instrument W .The pair ( X, W ) is drawn from a zero-mean bivariate Gaussian, with Var( X) = Var( W ) = 1, 17 Figure 1: Power curves in the fully nonparametric model: quadratic case and moderate endogeneity.           
+
+> Notes: Power curves for our one-step regression test (in blue) and for the two-step series regression test (in red) in the fully nonparametric model, for the quadratic case, h0,1(z) = z2/√2, with a moderate level of endogeneity, ρεV = 0 .5. The upper and lower panels report results for n= 100 and n= 400. The left and right panels report results at nominal levels of 5% and 10%. The x-axis shows the deviation γfrom the null, and the y-axis shows the rejection probability based on 5,000 Monte Carlo replications.
+
+and a correlation coefficient between X and W equal to 0.5. In the simulations, we set the slope coefficient of X to 1. We consider the same two scenarios as in the fully nonparametric model, depending on ρεV to monitor the magnitude of the endogeneity, as well as the two cases of a quadratic and a non-polynomial functional form for h0. Our test is implemented as described in the fully nonparametric case. Table 2 reports the rejection rates of our test under the null hypothesis θH0 = θ0 at the nominal levels of 5% and 10%, based on 5,000 Monte Carlo replications. The results show that our test controls Type I error with rejection rates below the nominal levels and approaching them when the sample size increases. Like in the fully nonparametric model, we also study the behavior of our test under the alternative hypothesis by testing θH0 = θ0 + γ,with γ ranging between 0 and 1. Figure 3 considers the quadratic case ( h0,1) with a moderate 18 Figure 2: Power curves in the fully nonparametric model: non-polynomial case and high endogeneity. 
+
+Notes: Power curves for our one-step regression test (in blue) and for the two-step series regression test (in red) in the fully nonparametric model, for the non-polynomial case, h0,2(z) = p3√3 × z ×
+
+exp( −z2/2), with a high level of endogeneity, ρεV = 0 .8. The upper and lower panels report results for n = 100 and n = 400. The left and right panels report results at nominal levels of 5% and 10%. The x-axis shows the deviation γ from the null, and the y-axis shows the rejection probability based on 5,000 Monte Carlo replications. 
+
+level of endogeneity ( ρεV = 0 .5). The results are qualitatively the same for the other settings reported in Appendix A (Figures 6 to 8). The power curves illustrate the consistency of our test. Overall, these simulations indicate that the solid performance of our test in the fully nonparametric model is preserved when the model is extended to a partially linear specification with additional exogenous covariates. 19 Table 2: Rejection probabilities under the null hypothesis in the partially linear model. Case quadratic non-polynomial Nominal level 5% 10% 5% 10% 
+
+ρεV = 0 .5 n = 100 1.64 4.82 1.92 5.18 
+
+n = 400 2.06 5.52 2.46 6.62 
+
+ρεV = 0 .8 n = 100 1.42 4.14 2.30 5.28 
+
+n = 400 2.04 5.22 2.28 6.20 
+
+Notes: Rejection probabilities for our one-step regression test in the partially linear model under the null hypothesis. The left and right panels report results for the quadratic case, h0,1(z) = z2/√2, and the non-polynomial case, h0,2(z) = p3√3×z ×exp( −z2/2). The upper and lower panels report results with a moderate ( ρεV = 0 .5) or a high ( ρεV = 0 .8) level of endogeneity, for n = 100 and 
+
+n = 400, at nominal levels of 5% and of 10%. The rejection probabilities are based on 5,000 Monte Carlo replications and are displayed in percentages. 
+
+Figure 3: Power curves in the partially linear model: quadratic case and moderate endo-geneity. 
+
+Notes: Power curves for our one-step regression test in the partially linear model, for the quadratic case, h0,1(z) = z2/√2, with a moderate level of endogeneity, ρεV = 0 .5. The dashed and solid lines correspond to n = 100 and n = 400, respectively. The left and right panels report results at nominal levels of 5% and 10%. The x-axis shows the deviation γ from the null, and the y-axis shows the rejection probability based on 5,000 Monte Carlo replications. 
+
+# 7 Empirical applications 
+
+We apply our method to three empirical datasets to illustrate its potential. 20 7.1 Class size effects on student achievement 
+
+Our first application revisits the seminal study by Angrist and Lavy (1999) on the effects of class size on student achievement. We briefly recall the setting and refer to the original article for further details. The data come from a national testing program conducted in Israeli elementary schools in June 1991, with test scores in mathematics and reading comprehension scaled from 0 to 100. Angrist and Lavy (1999) exploits Maimonides’ Rule – an administrative regulation that caps class sizes at 40 students – to construct the predicted class size, W =Enrollment /(⌊(Enrollment − 1) /40 ⌋ + 1). The discontinuities at enrollment multiples of 40 provide exogenous variation in class size, making W a valid instrument for the actual class size, denoted Z in our notation. We focus on fifth-grade students, using a sample of 
+
+n = 2 ,024 classes. Following the original study, we also consider an exogenous covariate X,the percentage of disadvantaged students (PD index). The outcome variable Y is the average grade across students for a given class, either in mathematics or reading. We estimate the partially linear IV model (1). Our parameter of interest is the AME 
+
+θ0 = E[ h′
+
+> 0
+
+(Z)], which here measures the average impact of a one-student increase in class size on test scores. In comparison, we recall that a classical application of two-stage least squares assumes a linear relationship between average test score Y and class size Z, so that the AME equals the corresponding coefficient. We implement our RKHS-based method as described in Sections 5 and 6. Inference is conducted using the Bayesian bootstrap test with 
+
+B = 499 replications. To report the confidence intervals, we invert the bootstrap test of Algorithm 1. Specifically, for any θ, we do not reject the null hypothesis θ0 = θ if and only if |bθ − θ| ≤ bq1−α, with bq1−α the 1 − α quantile of the bootstrap distribution of |bθb − bθ|. This leads to the interval [ bθ ± bq1−α] that uses the quantiles of the bootstrapped statistic |bθb − bθ|
+
+as critical values. Table 3 presents the results. Applying our method, we find that the effects of class size on test scores are not statistically significant in either mathematics or reading. This finding contrasts with the statistically significant negative effects estimated by two-stage least squares in the original study: −0.372 for reading and −0.355 for mathematics (see Table IV of Angrist and Lavy (1999)). Our results are consistent with Horowitz (2011), Section 5.2, who notes that “the [fully] nonparametric [IV] model does not support the conclusion drawn from the linear model that increases in class size are associated with decreased test scores” (page 374). Our results confirm the findings of Horowitz (2011, Section 5.2), which are based on an informal bootstrap inference procedure for the nonparametric IV model. He notes that “the [fully] nonparametric [IV] model does not support the conclusion drawn from the linear model that increases in class size are associated with decreased test scores” (page 374). 21 Importantly, our analysis shows that, absent strong functional form assumptions, the data provide limited information about the precise nature of class-size effects. This highlights the value of our inference procedure, which properly accounts for uncertainty in a flexible semiparametric model with theoretical guarantees, while remaining computationally simple through a single regularization parameter. Table 3: Estimates and confidence intervals for the AME of class size on test scores. Outcome Estimate 90% CI 95% CI Mathematics 0.133 [−0.339 , 0.605] [−0.450 , 0.716] Reading −0.076 [−0.387 , 0.235] [−0.488 , 0.337]     
+
+> Notes: Estimates and confidence intervals from our method for the AME of class size on student mathematics and reading scores in fifth grade. The confidence intervals are obtained by inverting the bootstrap test with B= 499 replications. Data: Angrist and Lavy (1999), n= 2 ,024 observations.
+
+## 7.2 Trade effects on per capita income 
+
+The previous application uses samples of about 2,000 observations. We now turn to two applications with smaller sample sizes to illustrate the small-sample performance of our method. As we show below, our procedure proves able to detect significant effects while allowing a flexible semiparametric relationship even with small samples. First, we revisit Frankel and Romer (1999), who investigate whether international trade causes economic growth using a sample of n = 150 countries. The endogenous treatment, the trade share Z of a given country, is measured as imports plus exports divided by GDP. Frankel and Romer (1999) address the endogeneity issue by a constructed trade share based on geographic factors (bilateral distances, country sizes, and whether countries share borders or are landlocked). We refer to the original article for further details. Here, we use their data and instrumental variable strategy while allowing for a flexible semiparametric relationship between trade and income. More precisely, we estimate the following partially linear model log( Yi) = h0(Zi) + β1Ni + β2Ai + εi, E{εi|Ni, A i, W i} = 0 , (19) where the outcome Yi is GDP per capita in country i, the endogenous treatment Zi is the trade share, the exogenous covariates are population ( Ni) and area ( Ai), and Wi is the constructed geographic component of trade obtained from the original study. Equation (19) corresponds to the main specification of Frankel and Romer (1999), with the difference that the trade share enters nonlinearly through h0, which is nonparametrically specified. Our 22 application thus relaxes the linearity assumption, allowing for a flexible relationship between trade and income. Table 4 presents the estimation and inference results for the AME using our method. We find a positive and statistically significant effect of the trade share on GDP per capita, which illustrates that our method can detect effects even with a few hundred observations. The resulting estimate implies that a one-percentage-point increase in trade share raises GDP per capita by 1.15 percent. In comparison, Frankel and Romer (1999) find that a one-percentage-point increase raises income per capita by 1.97 percent (see their Table 3, column 2, page 387). This suggests that allowing for nonlinearities in the relationship changes the estimate, reducing the effects of trade on income, although the effects remain of the same order of magnitude and statistically significant. Based on Frankel and Romer (1999) data and their identification strategy, our semiparametric method thus confirms a positive causal effect of trade on income while relaxing the linearity assumption. This application illustrates the robustness of our flexible inference procedure, which avoids imposing functional form restrictions while delivering reliable inference even in small samples. Table 4: Estimates and confidence intervals for the AME of trade share on GDP per capita. Outcome Estimate 90% CI 95% CI GDP per capita 1.15 [0 .42 , 1.89] [0 .38 , 1.92]      
+
+> Notes: Estimates and confidence intervals from our method for the AME of trade share on GDP per capita. The confidence intervals are obtained by inverting the bootstrap test with B= 499 replications. Data: Frankel and Romer (1999), n= 150 observations.
+
+## 7.3 Advertisement effects on reader newspaper demand 
+
+Our third application is based on Sokullu (2016), who proposes an empirical semiparametric model for two-sided markets applied to local daily newspapers in the US. Two-sided mar-kets (where a platform serves two distinct groups of users who benefit from each other’s participation) are a central object of study in empirical industrial organization. Examples include newspaper platforms, connecting readers and advertisers (Rysman, 2004; Chandra and Collard-Wexler, 2009), and payment card networks, connecting merchants and cardhold-ers (Rysman, 2007); see, e.g., Rochet and Tirole (2006) or Armstrong (2006) for theoretical contributions and Sanchez-Cartas and Le´ on (2021) for a recent review. A key feature of these markets is the presence of indirect network effects : the value that agents on one side derive from the platform depends on the level of participation on the other side. In the 23 newspaper context, advertisers value newspapers with larger readership, and readers may be attracted or deterred by the volume of advertising. Correctly estimating these network effects is important for competition policy analysis. Several empirical studies of two-sided markets have estimated network effects under lin-earity assumptions. Sokullu (2016) relaxes this assumption by specifying the network effect functions nonparametrically. Specifically, she estimates a nonparametric IV model with Tikhonov regularization on a sample of n = 117 monopoly newspaper markets. The main finding is that network effects are neither linear nor monotonic: readers’ benefits initially increase with advertising but decrease beyond a threshold, and similarly for advertisers with respect to circulation. Here, to illustrate our method, we consider the readers’ side and estimate the demand function. Sokullu (2016) uses the results from the nonparametric IV model to select a parametric specification and re-estimates the model. On the readers’ side, the nonparametric estimates suggest approximating the network effect of advertising on readers by a third-order polynomial, leading to the following equation log 
+
+1 − N r
+
+N r
+
+
+
+= α0 + α1N a + α2(N a)2 + α3(N a)3 + β0P r + U, (20) where all variables are defined at the level of each local newspaper market: N r is the share of readers buying the newspaper; N a is the share of advertisements in the newspaper; P r is the daily cover price; and U is an error term capturing unobserved newspaper characteristics affecting readers’ demand. The left-hand side is the log-odds transformation of the readers’ market share, which arises from the parametric specification of the distribution of readers’ and advertisers’ benefits (see Section 4.3.1 in Sokullu (2016)). The polynomial α1N a +
+
+α2(N a)2 + α3(N a)3 captures the indirect network effect of advertising on reader demand: it measures how the presence of advertisers on the platform affects readers’ propensity to buy the newspaper. We apply our RKHS-based method to nonparametrically estimate this network effect by considering log 
+
+1 − N r
+
+N r
+
+
+
+= h0(N a) + β0P r + U. (21) Compared to (20), the advertising share N a enters through the unknown function h0, which we estimate nonparametrically while maintaining the linear specification for the price. Our goal is to estimate and perform inference on the average marginal effect θ0 = E {h′
+
+> 0
+
+(N a)},which summarizes how an increase in advertising share affects readers’ demand on average. We provide a formal inference procedure for the AME, complementing Sokullu (2016)’s nonparametric estimation results. 24 Both N a and P r are endogenous in this model: the advertising share is jointly determined with readership on the platform, and the cover price is set by the newspaper in response to unobserved demand characteristics. Our method can be straightforwardly adapted to handle such cases with multiple endogenous regressors. We require two instruments ( W1, W 2) and adapt the matrix F as [ Fμ(( W1i, W 2i)⊤ − (W1j , W 2j )⊤) : i, j = 1 , . . . , n ]. Following Sokullu (2016), we use the area of the city (in square miles) as W1 and the average wages in the printing industry at the county level as W2. The first instrument is correlated with advertising rates but plausibly independent of unobserved reader demand characteristics; the second is an income-related variable correlated with circulation but independent of unobserved newspaper characteristics in the advertising equation. Table 5 presents the results obtained from our method, implemented as described in the previous sections. As a comparison, Sokullu (2016) obtains the following estimates for (20): 
+
+bα1 = −48 .34, bα2 = 96 .75, and bα3 = −62 .06. Combined with the descriptive statistics for 
+
+N a reported in Table 1 of Sokullu (2016), the average marginal effect of N a implied by the cubic polynomial specification is thus bα1 + 2 bα2 En{N a} + 3 bα3 En{(N a)2} = −8.19 . In contrast, our nonparametrically estimated AME is −5.53 and is statistically significant. The estimate is smaller, although both remain of the same order of magnitude; in particular, 
+
+−8.19 falls within our confidence intervals. Recall that the cubic specification in (20) is itself guided by Sokullu (2016)’s prior nonparametric estimation. The similarity between our AME estimate and that implied by the cubic specification therefore yields supporting evidence for the validity of our method. Table 5: Estimates and confidence intervals for the average marginal network effect of ad-vertisement on reader demand. Outcome Estimate 90% CI 95% CI Reader demand −5.53 [−8.50 , −2.56] [−9.06 , −2.01]      
+
+> Notes: Estimates and confidence intervals from our method for the average marginal network effects of advertisement on reader demand. The confidence intervals are obtained by inverting the bootstrap test with B= 499 replications. Data: Sokullu (2016), n= 117 observations.
+
+In conclusion, the three applications presented in this section, spanning sample sizes from 117 to over 2,000 observations, illustrate the value of our method: it provides a formal inference procedure for the AME that delivers economically meaningful results and maintains computational simplicity with a single regularization parameter. 25 8 Conclusion 
+
+We propose a bootstrap inference procedure for the average marginal effect of an endogenous treatment in the partially linear IV model. Our procedure builds on the RKHS framework and requires a single regularization parameter, which simplifies its practical implementation relative to existing approaches. Our approach can be extended to consider linear functionals of nonparametric IV regressions. In our simulations, we show that our procedure has good size control and power in small and moderate samples, while three empirical applications illustrate its effectiveness on real datasets. 
+
+# Appendix 
+
+The Appendix is divided into four sections. In Appendix A, we provide additional simulation results. Appendix B contains the proofs of our main results, namely Propositions 2.1, 3.1, and 4.1. In Appendix C, we collect the auxiliary lemmas and their proofs. Finally, Appendix D contains primitive conditions that satisfy the high-level assumptions. 
+
+# A Additional results for the simulations 
+
+This section presents the power curves for the remaining settings not shown in Section 6. 
+
+Fully nonparametric model. In the fully non-parametric model, Figure 4 presents the quadratic case with high level of endogeneity while Figure 5 presents the non-polynomial case with moderate level of endogeneity. The two remaining settings are presented in the body of the article (Figure 1 for the quadratic case with moderate level of endogeneity and Figure 2 for the non-polynomial case with high level of endogeneity). 
+
+Partially linear model. In the partially linear model, Figure 3 presents the quadratic case with high level of endogeneity, Figure 7 and 8 show the non-polynomial case with, respectively, low and high level of endogeneity. The remaining setting (quadratic case with moderate level of endogeneity) is presented in Section 6 (Figure 3). 26 Figure 4: Power curves in the fully nonparametric model: quadratic case and high endogene-ity. 
+
+Notes: Power curves for our one-step regression test (in blue) and for the two-step series regression test (in red) in the fully nonparametric model, for the quadratic case, h0,1(z) = z2/√2, with a high level of endogeneity, ρεV = 0 .8. The upper and lower panels report results for n = 100 and 
+
+n = 400. The left and right panels report results at nominal levels of 5% and 10%. The x-axis shows the deviation γ from the null, and the y-axis shows the rejection probability based on 5,000 Monte Carlo replications. 
+
+27 Figure 5: Power curves in the fully nonparametric model: non-polynomial case and moderate endogeneity. 
+
+Notes: Power curves for our one-step regression test (in blue) and for the two-step series regression test (in red) in the fully nonparametric model, for the non-polynomial case, h0,2(z) = p3√3 × z ×
+
+exp( −z2/2), with a moderate level of endogeneity, ρεV = 0 .5. The upper and lower panels report results for n = 100 and n = 400. The left and right panels report results at nominal levels of 5% and 10%. The x-axis shows the deviation γ from the null, and the y-axis shows the rejection probability based on 5,000 Monte Carlo replications. 
+
+28 Figure 6: Power curves in the partially linear model: quadratic case and high endogeneity. 
+
+Notes: Power curves for our one-step regression test in the partially linear model, for the quadratic case, h0,1(z) = z2/√2, with a high level of endogeneity, ρεV = 0 .8. The dashed and solid lines correspond to n = 100 and n = 400, respectively. The left and right panels report results at nominal levels of 5% and 10%. The x-axis shows the deviation γ from the null, and the y-axis shows the rejection probability based on 5,000 Monte Carlo replications. 
+
+Figure 7: Power curves in the partially linear model: non-polynomial case and moderate endogeneity. 
+
+Notes: Power curves for our one-step regression test in the partially linear model, for the non-polynomial case, h0,2(z) = p3√3×z ×exp( −z2/2), with a moderate level of endogeneity, ρεV = 0 .5. The dashed and solid lines correspond to n = 100 and n = 400, respectively. The left and right panels report results at nominal levels of 5% and 10%. The x-axis shows the deviation γ from the null, and the y-axis shows the rejection probability based on 5,000 Monte Carlo replications. 
+
+29 Figure 8: Power curves in the partially linear model: non-polynomial case and high endo-geneity. 
+
+Notes: Power curves for our one-step regression test in the partially linear model, for the non-polynomial case, h0,2(z) = p3√3 × z × exp( −z2/2), with a high level of endogeneity, ρεV = 0 .8. The dashed and solid lines correspond to n = 100 and n = 400, respectively. The left and right panels report results at nominal levels of 5% and 10%. The x-axis shows the deviation γ from the null, and the y-axis shows the rejection probability based on 5,000 Monte Carlo replications. 
+
+30 B Proofs of the main results 
+
+Before delving into the proofs, we recall some standard definitions and notation. For a linear operator C : X → Y between inner product spaces( X , ⟨· , ·⟩ X ) and ( Y, ⟨· , ·⟩ Y ) with associated norms ∥ · ∥ X = p⟨· , ·⟩ X and ∥ · ∥ Y = p⟨· , ·⟩ Y , the operator norm is defined as 
+
+∥ C ∥op := sup   
+
+> φ∈X ,∥φ∥X=1
+
+∥ C φ∥Y .
+
+An operator is bounded if ∥ C ∥op < ∞; see Kress (1999, Chapter 2). The adjoint of C is the operator C ∗ : Y → X such that ⟨C φ, ψ ⟩Y = ⟨φ, C∗ ψ⟩X for any ( φ, ψ ) ∈ X × Y . Whenever C is linear and bounded, it admits an adjoint C ∗ that is also linear and bounded, and such that ∥ C∗ ∥op = ∥ C ∥op . See Kress (1999, Theorem 4.9). 
+
+Proof of Proposition 2.1 . Let us define 
+
+bAh := E n{h(Zi) exp( i (XTi , W i) ·)} , bA : H → L2 
+
+> μ
+
+,
+
+bBβ = E n{XTi β exp( i (XTi , W i) ·)} , bB : Rp → L2 
+
+> μ
+
+,
+
+and bs := E n{Yi exp( i (XTi , W i) ·)} , bs ∈ L2 
+
+> μ
+
+. (22) We reformulate the the minimization problem in (6) as min 
+
+> h∈H ,β ∈Rp
+
+Z
+
+En
+
+n
+
+[Yi − XTi β − h(Zi)] exp( i(XTi , W i)t)
+
+o 2
+
+dμ (t) + λ∥h∥2 
+
+> H
+
+(23) = min  
+
+> h∈H ,β ∈Rp
+
+∥bs − bBβ − bAh∥2 
+
+> μ
+
++ λ∥h∥2 
+
+> H
+
+.
+
+By Lemma C.2(iii), the solution to the above problem exists, is unique, and is given by 
+
+bh = ( bT∗ bT + λ I) −1 bT∗
+
+br , bβ = ( bB∗ bB) −1 bB∗
+
+(bs − bAbh) , (24) where bT = (I −bP) bA, br = (I −bP) bs, and bP = bB( bB∗ bB) −1 bB∗
+
+(see Lemma C.7(v)). Let us now show that bh and bβ can be expressed as in (8). We begin by using arguments similar to those in the proof of Wainwright (2019, Proposition 12.32). Let Lα := {Pni=1 αiK(·, Z i) : (α1, . . . , α n) ∈ Rn}. Since K(·, Z i) ∈ H for each i = 1 , . . . , n , Lα is a finite-dimensional linear subspace of H. From Kreyszig (1991, Theorem 2.4-2), any finite-dimensional linear space is closed. So, Lα closed. Thus, by the Direct Sum Theorem (see Kreyszig (1991, Theorem 3.3-4)), any h ∈ H can be decomposed as h = hα + h⊥ 
+
+> α
+
+, where hα ∈ Lα, h⊥ 
+
+> α
+
+∈ L⊥ 
+
+> α
+
+, and L⊥
+
+> α
+
+denotes the orthogonal complement of Lα in H. By the reproducing property of the RKHS, see Definition 1, for any h ∈ H we have h(Zi) = ⟨h, K (·, Z i)⟩H. It follows that 
+
+h(Zi) = ⟨h, K (·, Z i)⟩H = hα + h⊥ 
+
+> α
+
+, K (·, Z i) H = ⟨hα, K (·, Z i)⟩H + h⊥ 
+
+> α
+
+, K (·, Z i) H
+
+= ⟨hα, K (·, Z i)⟩H = hα(Zi) .
+
+31 Also, 
+
+∥h∥2 
+
+> H
+
+= ∥hα + h⊥ 
+
+> α
+
+∥2 
+
+> H
+
+= ∥hα∥2 
+
+> H
+
++ ∥h⊥ 
+
+> α
+
+∥2 
+
+> H
+
+≥ ∥ hα∥2 
+
+> H
+
+,
+
+with strict inequality if h / ∈ Lα. From the two displays above, the solution ( bβ, bh) to the problem in the first line of (23) must satisfy bh ∈ Lα. Thus, bh can be expressed as in (8) and 
+
+Z
+
+En[Yi − XTi bβ − bh(Zi)] exp( i(Xi, W i)t) 2
+
+dμ (t) + λ∥bh∥2
+
+> H
+
+= min 
+
+> β∈Rp,h α∈Lα
+
+Z
+
+En[Yi − XTi β − hα(Zi)] exp( i(Xi, W i)t) 2
+
+dμ (t) + λ∥hα∥2 
+
+> H
+
+.
+
+Now, ∥hα∥2 
+
+> H
+
+= ⟨hα, h α⟩H =
+
+DP 
+
+> i
+
+αiK(·, Z i), P 
+
+> j
+
+αj K(·, Z j )
+
+E
+
+> H
+
+= P 
+
+> i,j
+
+αi αj ⟨K(·, Z i), K (·, Z j )⟩H
+
+= P 
+
+> i,j
+
+αiαj K(Zi, Z j ), where in the last equality we have used the reproducing property of the space H by the kernel K. Using this and Equation (5), we deduce the following (see the comments below): min 
+
+> β∈Rp,h α∈Lα
+
+Z
+
+En[Yi − XTi β − hα(Zi)] exp( i(XTi , W i)t) 2
+
+dμ (t) + λ∥hα∥2
+
+> H
+
+= min 
+
+> β∈Rp,h α∈Lα
+
+1
+
+n2
+
+X
+
+> 1≤i,j ≤n
+
+[Yi − XTi β − hα(Zi)] Fμ(( XTi , W i) − (XTj , W j )) [ Yj − XTj β − hα(Zj )] + λ∥hα∥2
+
+> H
+> (a)
+
+= min 
+
+> β∈Rp,α∈Rn
+
+1
+
+n2 [Y − Xβ − Kα ]T F [Y − Xβ − Kα ] + λαT Kα 
+
+=: 1
+
+n2 min  
+
+> β∈Rp,α∈Rn
+
+f (α, β ) , (25) where in equality (a) we have used the fact that, for any hα ∈ Lα, ( hα(Z1), . . . , h α(Zn)) T =
+
+Kα , with α = ( α1, . . . , α n)T . Note that, from the two displays above and since bh ∈ Lα
+
+(as established earlier in this proof), the problem min β∈Rpα∈Rn f (α, β ) admits at least one solution. Let us now derive an expression for such solutions. Since the kernel function K is symmetric and positive semidefinite, the Gram matrix K is a symmetric positive semidefinite matrix; see Wainwright (2019, Definition 12.6). F is symmetric, and from Lemma C.1 it is also positive semidefinite. The symmetry and positive semidefiniteness of both K and F
+
+imply that f is convex. Accordingly, any solution to the first-order conditions of the problem min β∈Rpα∈Rn f (α, β ) is a global minimizer. To derive such first-order conditions, notice that 
+
+f (α, β ) = Y T F Y − 2βT XT F Y − 2αT KF Y + 2 αT KF X β
+
++ βT XT F X β + αT KF Kα + n2λαT Kα . (26) Thus, denoting by ( bα, bβ) a solution to the minimization problem in (25), the first-order 32 conditions are 
+
+∇αf ( bα, bβ) = − 2KF Y + 2 KF X bβ + 2 KF K bα + 2 n2λK bα = 0 
+
+∇β f ( bα, bβ) = − 2XT F Y + 2 XT F K bα + 2 XT F X bβ = 0 . (27) From the second equation, we obtain 
+
+bβ = ( XT F X )−1XT F (Y − K bα) . (28) Note that since X is full column rank by assumption, and F is invertible by Lemma C.1, the matrix XT F X is also invertible. Plugging (28) into the first equation of (27) and then rearranging terms, yields [KF K − KF X (XT F X )−1XT F K + n2λK] bα = KF [Y − X(XT F X )−1XT F Y ] . (29) Let N (K)⊥ denote the orthogonal complement of N (K) := {γ ∈ Rn : Kγ = 0 }, the null space of K. We next show that there exists a unique α ∈ N (K)⊥ solving Equation (29). Let α ∈ Rn. By the Direct Sum Theorem (Kreyszig (1991, Theorem 3.3-4)), there exists a unique α⊥ ∈ N (K)⊥ and a unique αN ∈ N (K) such that α = α⊥ + αN . Since 
+
+Kα = Kα ⊥, it follows from (26) that f (α, β ) = f (α⊥, β ). Consequently, min  
+
+> α∈Rn,β ∈Rp
+
+f (α, β ) = min  
+
+> α∈N (K)⊥,β ∈Rp
+
+f (α, β ) . (30) To show that there exists a unique α ∈ N (K)⊥ solving Equation (29), we show that the problem on the right-hand side (RHS) of the above display admits a unique solution. Clearly, since the problem on the left-hand side of (30) admits a solution, as established earlier in this proof, the problem on the RHS also admits a solution. To show uniqueness, we establish the strict convexity of f over N (K)⊥ × Rp, that is for any ( α1, β 1), (α2, β 2) ∈ N (K)⊥ × Rp
+
+with ( α1, β 1)̸ = ( α2, β 2) and any γ ∈ (0 , 1), 
+
+f (γα1 + (1 − γ)α2, γβ 1 + (1 − γ)β2) < γf (α1, β 1) + (1 − γ)f (α2, β 2) . (31) Since F and K are symmetric positive semidefinite matrices, they admit symmetric positive semidefinite square roots F 1/2 and K1/2 satisfying F = F 1/2F 1/2 and K = K1/2K1/2. It follows that f (α, β ) = ∥F 1/2(Y − Xβ − Kα )∥2 + λ∥K1/2α∥2, and 
+
+f (γα1 + (1 − γ)α2, γβ 1 + (1 − γ)β2) = ∥γF 1/2(Y − Xβ1 − Kα 1) + (1 − γ)F 1/2(Y − Xβ2 − Kα 2)∥2
+
++ λ∥γK1/2α1 + (1 − γ)K1/2α2∥2 .
+
+Let us consider first the case where α1̸ = α2. Since K is injective on N (K)⊥, so is K1/2,thus K1/2α1̸ = K1/2α2. By the strict convexity of the squared norm, for any a1, a 2 ∈ Rn,33 ∥γa 1 +(1 −γ)a2∥2 ≤ γ∥a1∥2 +(1 −γ)∥a2∥2, with the inequality being strict whenever a1̸ = a2.Thus, ∥γK1/2α1+(1 −γ)K1/2α2∥2 < γ ∥K1/2α1∥2+(1 −γ)∥K1/2α2∥2 and ∥γF 1/2(Y −Xβ1−
+
+Kα 1) + (1 − γ)F 1/2(Y − Xβ2 − Kα 2)∥2 ≤ γ∥F 1/2(Y − Xβ1 − Kα 1)∥2 +(1 − γ)∥F 1/2(Y −
+
+Xβ2 − Kα 2)∥2. Accordingly, (31) holds. Let us now consider the case where α1 = α2, but 
+
+β1̸ = β2. Since X is full rank, Xβ1̸ = Xβ2. By Lemma C.1, F is invertible, hence F 1/2 is also invertible. It follows that F 1/2(Y − Xβ1 − Kα 1)̸ = F 1/2(Y − Xβ2 − Kα 2). Thus, by the strict convexity of the squared norm, ∥γF 1/2(Y − Xβ1 − Kα 1) + (1 − γ)F 1/2(Y −
+
+Xβ2 − Kα 2)∥2 < γ ∥F 1/2(Y − Xβ1 − Kα 1)∥2 +(1 − γ)∥F 1/2(Y − Xβ2 − Kα 2)∥2 and 
+
+∥γK1/2α1 + (1 − γ)K1/2α2∥2 = γ∥K1/2α1∥2 + (1 − γ)∥K1/2α2∥2. Consequently, (31) holds. We have therefore established that (31) holds for any ( α1, β 1)̸ = ( α2, β 2) and γ ∈ (0 , 1). Since f is strictly convex over N (K)⊥ × Rp, the problem min α∈N (K)⊥,β ∈Rp f (α, β ) admits a unique solution. We next use this to conclude that (i) Equation (29) admits a unique solution over N (K)⊥, and (ii) this solution has the smallest norm among all the solutions of (29) over Rn. Let bα be a solution to (29), and let us define 
+
+bβα = ( XT F X )−1XT F (Y − Kα ) .
+
+By the Direct Sum Theorem, there exists a unique bα⊥ ∈ N (K)⊥ and a unique bαN ∈ N (K)such that bα = bα⊥ + bαN . Since K bα = K bα⊥, ( bα⊥, bβbα⊥ ) satisfies (29) and (28), and hence the first-order conditions in (27). Thus, ( bα⊥, bβbα⊥ ) is a global minimizer of f and also solves the problem on the RHS of (30). Since the solution to such a problem is unique, we find that there exists a unique element of N (K)⊥ satisfying (29). Moreover, denoting such a unique element by bα⊥, any solution eα to (29) can be written in the form eα = bα⊥ + eαN ,with eαN ∈ N (K) and ∥ eα∥2 = ∥ bα⊥∥2 + ∥ eαN ∥2 ≥ ∥ bα⊥∥2. Thus, bα⊥ is also the minimum norm solution to (29). This concludes the proof. We finally note that all solutions to (29) yield the same function bh in (8). In fact, if α1 = ( α1,1, . . . , α 1,n )T and α2 = ( α2,1, . . . , α 2,n )T are two solutions to (29), they can be written as α1 = bα⊥ +α1N and α2 = bα⊥ +α2N , with bα⊥ denoting the unique solution to (29) over N (K)⊥ and α1N , α2N ∈ N (K). Hence, α1 −α2 = α1N −α2N and ∥ Pni=1 α1,i K(·, Z i)−
+
+Pni=1 α2,i K(·, Z i)∥2 
+
+> H
+
+= ( α1 − α2)T K(α1 − α2) = ( α1N − α2N )T K(α1N − α2N ) = 0. Thus, 
+
+bh in (8) does not depend on which solution of (29) is used. 
+
+■
+
+34 Proof of Proposition 3.1 . We start with the following decomposition: 
+
+√n(bθ − θ0) = √n {En[bh′(Zi)] − E[ h′
+
+> 0
+
+(Zi)] }
+
+=√n(E n − E)[ bh′(Zi) − h′
+
+> 0
+
+(Zi)] + √n(E n − E)[ h′
+
+> 0
+
+(Zi)] + √n E[ bh′(Zi) − h′
+
+> 0
+
+(Zi)] , (32) where E[ bh(Zi)] := R bh(z)P (dz ). From Assumption 3.4(i)(ii) and Lemma C.5(i), it follows that √n(E n − E)[ bh′(Zi) − h′
+
+> 0
+
+(Zi)] = oP (1) .
+
+Thus, to prove the desired result, we need to obtain an influence function representation for the third term on the RHS of (32). We have (see the comments below): 
+
+√n E[ bh′(Z) − h′
+
+> 0
+
+(Z)] = 
+
+Z
+
+> Z
+
+[bh′(z) − h′
+
+> 0
+
+(z)] fZ (z)dz 
+
+> (a)
+
+=
+
+
+
+lim 
+
+> z→∞
+
+[bh(z) − h0(z)] fZ (z) − lim 
+
+> z→−∞
+
+[bh(z) − h0(z)] fZ (z)
+
+
+
+− √n
+
+Z
+
+> Z
+
+[bh(z) − h0(z)] f ′ 
+
+> Z
+
+(z)dz 
+
+> (b)
+
+= − √n
+
+Z
+
+> Z
+
+[bh(z) − h0(z)] f ′ 
+
+> Z
+
+(z)dz . (33) Equality ( a) follows from an integration by parts, while equality ( b) is a direct consequence of Assumption 3.4(iii). Let us now deal with the RHS of the above display. By construction, 
+
+bh ∈ H , and by Assumption 3.2(ii), h0, f ′ 
+
+> Z
+
+∈ H . Thus, by Lemma C.11(iii)(iv), there exists square-summable sequences ( bγj )j , (γj )j , (πj )j such that 
+
+bh(z) = X
+
+> j
+
+bγj eϕj (z) , h 0(z) = X
+
+> j
+
+γj eϕj (z) , and f ′ 
+
+> Z
+
+(z) = X
+
+> j
+
+πj eϕj (z) , (34) where ( eϕj )j is a sequence of functions defined in Lemma C.11. We therefore have (see the comments below): 
+
+√n
+
+Z
+
+> Z
+
+[bh(z) − h0(z)] f ′ 
+
+> Z
+
+(z)dz =√n
+
+Z
+
+> Z
+
+X
+
+> j
+
+(bγj − γj )eϕj (z) X
+
+> j
+
+πj eϕj (z)dz 
+
+> (a)
+
+=√n lim 
+
+> J→∞
+
+Z
+
+> Z
+> J
+
+X
+
+> j=1
+
+(bγj − γj )eϕj (z)
+
+> J
+
+X
+
+> k=1
+
+πk eϕk(z)dz 
+
+> (b)
+
+=√n lim 
+
+> J→∞
+> J
+
+X
+
+> j=1
+
+(bγj − γj )πj
+
+Z
+
+> Z
+
+|eϕj (z)|2dz 
+
+> (c)
+
+=√n lim 
+
+> J→∞
+> J
+
+X
+
+> j=1
+
+(bγj − γj )πj ηj
+
+> (d)
+
+=√n ⟨(bγj − γj )j , (πj ηj )j ⟩ℓ2 . (35) 35 Here ℓ2 denotes the space of square summable sequences, and for any ( aj )j , (bj )j ∈ ℓ2,
+
+⟨(aj )j , (bj )j ⟩ℓ2 = P∞ 
+
+> j=1
+
+aj bj . To obtain equality ( a), note that by the Cauchy-Schwarz in-equality, | PJj=1 πj eϕj (z)|2 ≤ PJj=1 π2
+
+> j
+
+PJj=1 eϕj (z)2 ≤ P∞ 
+
+> j=1
+
+π2
+
+> j
+
+P∞ 
+
+> j=1
+
+eϕj (z)2 , where P 
+
+> j
+
+π2 
+
+> j
+
+=
+
+∥f ′ 
+
+> Z
+
+∥2 
+
+> H
+
+by (34) and Lemma C.11(iii)(iv). Similarly, | PJj=1 (bγj − γj )eϕj (z)|2 ≤ P∞
+
+> j=1
+
+(bγj −
+
+γj )2 P∞ 
+
+> j=1
+
+eϕj (z)2, where P∞
+
+> j=1
+
+(bγj − γj )2 = ∥bh − h0∥2
+
+> H
+
+. From Lemma C.11(ii), P∞ 
+
+> j=1
+
+eϕ2 
+
+> j
+
+(z) ≤
+
+K(z, z ). Gathering the above result, we have | PJj=1 (bγj − γj )eϕj (z) PJj=1 πj eϕj (z)| ≤ ∥ bh −
+
+h0∥H∥f ′ 
+
+> Z
+
+∥HK(z, z ), where R 
+
+> Z
+
+K(z, z )dz < ∞ by the continuity of K and the boundedness of Z, see Assumptions 3.1(iii) and 3.2(i). Thus, we can apply the Lebesgue Dominated Convergence Theorem to get equality ( a) of the above display. To show equality ( b), note that, from Lemma C.11(i)(iii), eϕj = √ηj ϕj , where ( ηj )j is a sequence of positive scalars and R 
+
+> Z
+
+ϕj (z)ϕk(z) = 0 for any j̸ = k. Thus, equality ( b) follows. Equality ( c) follows from 
+
+eϕj = √ηj ϕj and R 
+
+> Z
+
+|ϕj (z)|2dz = 1, see Lemma C.11(i)(iii). Finally, equality ( d) follows from the definition of the inner product on ℓ2.Next, let us show that ( πj ηj )j are the coefficients of R 
+
+> Z
+
+K(·, z )f ′ 
+
+> Z
+
+(z)dz in the space HEIG 
+
+from Lemma C.11(iii). That is, R 
+
+> Z
+
+K(·, z )f ′ 
+
+> Z
+
+(z)dz = P 
+
+> j
+
+πj ηj eϕj (·). First, by Mercer’s Theo-rem (see Wainwright (2019, Theorem 12.20)), K(z, u ) = P 
+
+> j
+
+ηj ϕj (z)ϕj (u) = P 
+
+> j
+
+eϕj (z)eϕj (u). Since, as noted earlier, f ′ 
+
+> Z
+
+(z) = P 
+
+> j
+
+πj eϕj (z), we obtain (see the comment below): 
+
+Z
+
+> Z
+
+K(z, u )f ′ 
+
+> Z
+
+(u)du =
+
+Z
+
+> Z
+
+X
+
+> j
+
+eϕj (z)eϕj (u) X
+
+> k
+
+πk eϕk(u)du 
+
+> (a)
+
+= lim 
+
+> J→∞
+
+Z
+
+> Z
+> J
+
+X
+
+> j=1
+
+eϕj (z)eϕj (u)
+
+> J
+
+X
+
+> k=1
+
+πk eϕk(u)du 
+
+> (b)
+
+= X
+
+> j
+
+eϕj (z)πj
+
+Z
+
+> Z
+
+|eϕj (u)|2du 
+
+> (c)
+
+= X
+
+> j
+
+eϕj (z)πj ηj .
+
+Equality ( a) follows from combining the bounds | PJj=1 eϕj (u)eϕj (z)|2 ≤ P 
+
+> j
+
+eϕj (u)2 P 
+
+> j
+
+eϕj (z)2 ≤
+
+K(z, z )K(u, u ), | PJk=1 πk eϕk(u)|2 ≤ ∥ f ′ 
+
+> Z
+
+∥2
+
+> H
+
+K(u, u ), together with R 
+
+> Z
+
+K(u, u )du < ∞ and the Lebesgue Dominated Convergence Theorem, as argued earlier in this proof. Equality ( b)follows from the orthogonality of ( eϕj )j , that is, R 
+
+> Z
+
+eϕj (z)eϕk(z)dz = 0 for j̸ = k, as noted earlier. Similarly, equality ( c) follows from R 
+
+> Z
+
+|eϕj (z)|2dz = ηj , as noted earlier. So, by Lemma C.11(iii), R 
+
+> Z
+
+K(·, z )f ′ 
+
+> Z
+
+(z)dz ∈ H EIG as long as the coefficients ( πj ηj )j are square summable. To show this, note first that P 
+
+> j
+
+(πj ηj )2 ≤ [sup j ηj ]2 P 
+
+> j
+
+π2 
+
+> j
+
+= [sup j ηj ]2∥f ′ 
+
+> Z
+
+∥2
+
+> H
+
+, where we have used P 
+
+> j
+
+π2 
+
+> j
+
+= ∥f ′ 
+
+> Z
+
+∥2
+
+> H
+
+, as established earlier in this proof. Next, let us denote by L2(Z) the space of square integrable functions defined on Z. Then, the operator φ 7 → R 
+
+> Z
+
+K(·, z )φ(z)dz 
+
+from L2(Z) to L2(Z) is self-adjoint and positive. To see that it is self-adjoint, note that for 36 any φ, ψ ∈ L2(Z), 
+
+Z 
+
+> Z
+
+K(·, u )φ(u)du, ψ 
+
+
+
+> L2(Z)
+
+=
+
+Z
+
+> Z
+
+Z 
+
+> Z
+
+K(z, u )φ(u)du 
+
+
+
+ψ(z)dz 
+
+=
+
+Z
+
+> Z
+
+φ(u)
+
+Z
+
+> Z
+
+K(u, z )ψ(z)dzdu 
+
+=
+
+
+
+φ, 
+
+Z
+
+> Z
+
+K(·, z )ψ(z)dz 
+
+
+
+> L2(Z)
+
+.
+
+Thus the operator φ 7 → R 
+
+> Z
+
+K(·, z )φ(z)dz is self-adjoint. To see that such an operator is also positive, note that, since K(z, u ) = P 
+
+> j
+
+eϕj (z)eϕj (u), as established earlier in this proof, 
+
+R 
+
+> Z
+
+K(·, u )φ(u)du, φ L2(Z) = R 
+
+> Z
+
+[R 
+
+> Z
+
+K(z, u )φ(u)du ]φ(z)dz = P
+
+> j
+
+R 
+
+> Z
+
+eϕj (u)φ(u)du R 
+
+> Z
+
+eϕj (z)φ(z)dz ≥
+
+0. Thus, the operator φ 7 → R 
+
+> Z
+
+K(·, z )φ(z)dz is also positive. It follows that (see the com-ments below): sup 
+
+> φ∈L2(Z),∥φ∥L2(Z)=1
+
+Z
+
+> Z
+
+K(·, u )φ(u)du L2(Z)(a)
+
+= sup 
+
+> φ∈L2(Z),∥φ∥L2(Z)=1
+
+Z 
+
+> Z
+
+K(·, u )φ(u)du, φ 
+
+
+
+> L2(Z)(b)
+
+≥ sup 
+
+> j
+
+Z 
+
+> Z
+
+K(·, u )ϕj (u)du, ϕ j
+
+
+
+> L2(Z)(c)
+
+= sup 
+
+> j
+
+ηj ⟨ϕj , ϕ j ⟩L2(Z)(d)
+
+= sup 
+
+> j
+
+ηj .
+
+Equality ( a) is a direct consequence of Kress (1999, Theorem 15.9) and the fact the operator 
+
+φ 7 → R 
+
+> Z
+
+K(·, z )φ(z)dz is positive and self adjoint. Inequality ( b) follows from R 
+
+> Z
+
+|ϕj (z)|2dz =1, as noted earlier. Equality ( c) is a direct consequence of R 
+
+> Z
+
+K(·, u )ϕj (u)du = ηj ϕ(·) from Lemma C.11(i). Finally, equality ( d) follows from ⟨ϕj , ϕ j ⟩L2(Z) = R 
+
+> Z
+
+|ϕj (z)|2ds = 1. Gath-ering these results shows that P 
+
+> j
+
+(πj ηj )2 < ∞. Hence, R 
+
+> Z
+
+K(·, z )f ′ 
+
+> Z
+
+(z)dz = P 
+
+> j
+
+πj ηj eϕj (·) ∈HEIG .Now, since R 
+
+> Z
+
+K(·, z )f ′ 
+
+> Z
+
+(z)dz = P 
+
+> j
+
+πj ηj eϕj (·) ∈ H EIG , using Lemma C.11(iii)(iv), we obtain 
+
+√n ⟨(bγj − γj ), (πj ηj )j ⟩ℓ2 =√n
+
+bh − h0,
+
+Z
+
+> Z
+
+K(·, z )f ′ 
+
+> Z
+
+(z)dz 
+
+
+
+> EIG
+
+=√n
+
+bh − h0,
+
+Z
+
+> Z
+
+K(·, z )f ′ 
+
+> Z
+
+(z)dz 
+
+
+
+> H
+
+. (36) To derive the influence function representation of the above inner product, we first refor-mulate bh in terms of the operators bA and bB, and the estimator bs from Equation (22). As already noted in Equation (24) (see the proof of Proposition 2.1), bh can be expressed as 
+
+bh = ( bT∗ bT + λ I) −1 bT∗
+
+br , 
+
+37 where bT = (I −bP) bA, br = (I −bP) bs, and bP = bB( bB∗ bB) −1 bB∗
+
+. Let 
+
+g := 
+
+Z
+
+> Z
+
+K(·, z )f ′ 
+
+> Z
+
+(z)dz . 
+
+From Babii and Florens (2025), 
+
+bh − h0 =
+
+> 4
+
+X
+
+> j=1
+
+Θj + hλ − h0 , (37) where Θ1 :=(T ∗ T + λ I) −1 T∗(br − bTh0)Θ2 :=(T ∗ T + λ I) −1(bT∗
+
+− T∗)( br − bTh0)Θ3 :=[( bT∗ bT + λ I) −1 − (T ∗ T + λ I) −1]bT∗
+
+(br − bTh0)Θ4 :=( bT∗ bT + λ I) −1 bT∗ bTh0 − hλ
+
+hλ :=( bT∗ bT + λ I) −1 T∗ T h0 .
+
+We now use the above decomposition to obtain an expansion of the RHS of (36). Let us show that √n ⟨Θj , g ⟩H = oP (1) for j = 2 , 3, 4. From Lemma C.4(i), 
+
+√n ⟨Θ2, g ⟩H = OP
+
+√n∥bT − T ∥op ∥br − bTh0∥μ ∥(λ I + T ∗ T) −1g∥H
+
+
+
+.
+
+Using Lemma C.7(viii)(x), we have ∥bT − T ∥op = OP (n−1/2) and ∥br − bTh0∥μ = OP (n−1/2). Since g ∈ R (T ∗ T) by Assumption 3.5, and T is a compact operator by Lemma C.7(i), we can apply Lemma C.6(iv) with γ = 2 to obtain ∥(λ I + T ∗ T) −1g∥H = O(1). Gathering these results shows that the RHS of the above display is oP (1). Thus, 
+
+√n ⟨Θ2, g ⟩H = oP (1) . (38) Let us now show the negligibility of √n ⟨Θ3, g ⟩H. From Lemma C.4(ii), 
+
+√n ⟨Θ3, g ⟩H = OP
+
+√n∥br − bTh0∥μ · ∥ bT − T ∥op ·
+
+h
+
+∥(bT∗ bT + λ I) −1 bT∗
+
+∥op ∥ T(T ∗ T + λ I) −1g∥μ
+
++ ∥bT( bT∗ bT + λ I) −1 bT∗
+
+∥op ∥(T ∗ T + λ I) −1g∥H
+
+i 
+
+.
+
+As already noted above, ∥br − bTh0∥μ = OP (n−1/2) and ∥bT − T ∥op = OP (n−1/2). Since T and 
+
+bT are compact operators by Lemma C.7(i)(vii), and h0, g ∈ R (T ∗ T) by Assumption 3.5, we can apply Lemma C.6(i)(iii)(iv)(v) with γ = 2 to obtain ∥bT( bT∗ bT + λ I) −1 bT∗
+
+∥op = OP (1), 
+
+∥(bT∗ bT + λ I) −1 bT∗
+
+∥op = OP (λ−1/2), ∥(T ∗ T + λ I) −1g∥H = OP (1), and ∥ T(T ∗ T + λ I) −1g∥μ =
+
+O(1). Gathering these results and using the fact that nλ → ∞ , we obtain 
+
+√n ⟨Θ3, g ⟩H = OP (n−1/2[λ−1/2 + 1]) = oP (1) . (39) 38 Let us now show the negligibility of √n ⟨Θ4, g ⟩H. From Assumption 3.5, we have g ∈R(T ∗ T). Hence, we can apply Lemma C.4(iii) to obtain 
+
+√n ⟨Θ4, g ⟩H = OP
+
+√n∥(bT∗ bT + λ I) −1 bT∗ bTh0 − hλ∥H ∥bT − T ∥op 
+
++ √n∥bT[( bT∗ bT + λ I) −1 bT∗ bTh0 − hλ]μ∥
+
+
+
+, (40) where 
+
+∥(bT∗ bT + λ I) −1 bT∗ bTh0 − hλ∥H ≤ λ · ∥ bT − T ∥op ·∥ (T ∗ T + λ I) −1h0∥H·
+
+h
+
+∥(bT∗ bT + λ I) −1 bT∗
+
+∥op + ∥(bT∗ bT + λ I) −1∥op ∥ T ∥op 
+
+i
+
+(41) and 
+
+∥bT[( bT∗ bT + λ I) −1 bT∗ bTh0 − hλ]∥μ ≤ λ · ∥ bT − T ∥op · ∥ (T ∗ T + λ I) −1h0∥H
+
+·
+
+h
+
+∥bT( bT∗ bT + λ I) −1 bT∗
+
+∥op + ∥ T ∥op ∥bT( bT∗ bT + λ I) −1∥op 
+
+i
+
+.
+
+(42) Now, as already noted earlier in this proof, ∥bT − T ∥op = OP (n−1/2), ∥(bT∗ bT + λ I) −1 bT∗
+
+∥op =
+
+OP (λ−1/2), and ∥bT( bT∗ bT + λ I) −1 bT∗
+
+∥op = OP (1). Also, since the norm of an operator equals the norm of its adjoint, ∥bT( bT∗ bT + λ I) −1∥op = ∥[bT( bT∗ bT + λ I) −1]∗∥op = ∥(bT∗ bT + λ I) −1 bT∗
+
+∥op =
+
+OP (λ−1/2). Since T is a compact operator and compact operators are bounded (see Kress (1999, Theorem 2.14)), ∥ T ∥op < ∞. Furthermore, because h0 ∈ R (T ∗ T) by Assumption 3.5, we can apply Lemma C.6(iv) with γ = 2 to obtain ∥(T ∗ T + λ I) −1h0∥H = O(1). Also, from Lemma C.6(ii), we have ∥(bT∗ bT + λ I) −1∥op = O(λ−1). From these results, together with (41) and (42), it follows that 
+
+∥(bT∗ bT + λ I) −1 bT∗ bTh0 − hλ∥H = OP
+
+
+
+λn −1/2[λ−1/2 + λ−1]
+
+
+
+and ∥bT[( bT∗ bT + λ I) −1 bT∗ bTh0 − hλ]∥μ = OP
+
+
+
+λn −1/2[1 + λ−1/2]
+
+
+
+.
+
+The above display, together with ∥bT − T ∥op = OP (n−1/2) and (40), yields 
+
+√n ⟨Θ4, g ⟩H = OP
+
+√nλn −1/2[λ−1/2 + λ−1]n−1/2
+
++ √nλn −1/2[1 + λ−1/2]
+
+
+
+= oP (1) . (43) Let us finally show the negligibility of √n ⟨hλ − h0, g ⟩H. From Assumption 3.5, we have 
+
+h0 ∈ R (T ∗ T), and by definition hλ = (T ∗ T + λ I) −1 T∗ T h0. Hence, applying Lemma C.6(vi) with γ = 2 gives √n ⟨hλ − h0, g ⟩H = O(√nλ ) = O(√nλ 2) = o(1) . (44) 39 From the decomposition in (37) and Equations (38), (39), (43), and (44), we obtain 
+
+√n
+
+Dbh − h0, g 
+
+E
+
+> H
+
+=√n
+
+D
+
+(T ∗ T + λ I) −1 T∗(br − bTh0), g 
+
+E
+
+> H
+
++ oP (1) =√n
+
+D
+
+(br − bTh0), T(T ∗ T + λ I) −1g
+
+E
+
+> μ
+
++ oP (1) =√n
+
+D
+
+(br − bTh0), T(T ∗ T + λ I) −1 T∗ T f0
+
+E
+
+> μ
+
++ oP (1) , (45) where the last equality follows from g = (T ∗ T) f0 for some f0 ∈ H . This holds by Assumption 3.5, since g ∈ R (T ∗ T). To obtain the final result, it remains to derive an influence function representation for the leading term of the above display. Now, by Lemma C.7(i)(ii), T is compact and injective. Hence, from Kress (1999, Definition 15.5 and Theorem 15.23), we have ∥(T ∗ T + λ I) −1 T∗ T f0 −f0∥H = o(1) as λ → 0. Also, from Lemma C.7(x) and the fact that br = (I −bP) bs, we have √n∥br − bTh0∥μ = OP (1). Combining these results with the Cauchy-Schwarz inequality gives 
+
+√n
+
+D
+
+(br − bTh0), T[(T ∗ T + λ I) −1(T ∗ T) f0 − f0]
+
+E
+
+> μ
+
+= OP (√n∥br − bTh0∥μ ∥ T ∥op ∥(T ∗ T + λ I) −1 T∗ T f0 − f0∥H) = oP (1) .
+
+Accordingly, in the leading term on the RHS of (45), we may replace T(T ∗ T + λ I) −1(T ∗ T) f0
+
+with T f0 at the cost of an oP (1) reminder. Using this and recalling that br = (I −bP) bs and 
+
+bT = (I −bP) bA, we obtain 
+
+√n
+
+D
+
+(br − bTh0), T(T ∗ T + λ I) −1(T ∗ T) f0
+
+E
+
+> μ
+
+=√n
+
+D
+
+(br − bTh0), T f0
+
+E
+
+> μ
+
++ oP (1) =√n
+
+D
+
+(I −bP)( bs − bAh0), T f0
+
+E
+
+> μ
+
++ oP (1) =√n
+
+D
+
+(I − P)( bs − bAh0), T f0
+
+E
+
+> μ
+
+− √n
+
+D
+
+(bP − P)( bs − bAh0), T f0
+
+E
+
+> μ
+
++ oP (1) . (46) Let us now derive an influence function representation for the first term on the RHS of (46). To this end, using bAh0 = E n{h0(Zi) exp( i(XTi , W i)·)} and bs = E n{Yi exp( i(XTi , W i)·)}, we obtain 
+
+√n
+
+D
+
+(I − P)( bs − bAh0), T f0
+
+E
+
+> μ
+
+=√n (I − P) E n[Yi − h0(Zi)] exp( i(XTi , W i)·), T f0 μ
+
+=√n En[Yi − h0(Zi)] (I − P) exp( i(XTi , W i)·), T f0 μ . (47) Let us prove that the RHS has zero expectation. Since P is the projection operator onto the range of B, we have (I − P) B β = 0 for any β ∈ Rp. Applying (I − P) to both sides of 40 s = B β0 + A h0 gives (I − P)( s − A h0) = 0. Recalling that A h0 = E {h0(Zi) exp( i(XTi , W i)·)}
+
+and s = E {Yi exp( i(XTi , W i)·)}, we obtain (I − P) E {[Yi − h0(Zi)] exp( i(XTi , W i)·)} = 0 . (48) To show that the RHS of (47) has zero expectation, let us first prove that we can interchange the operators E and (I − P) in the above display. By Lemma C.7(v), P = B(B ∗ B) −1 B∗. Since B β = E {XTi β exp( i(XTi , W i)·)} ∈ L2
+
+> μ
+
+, for any β ∈ Rp and ψ ∈ L2 
+
+> μ
+
+we can compute the adjoint B∗ : L2 
+
+> μ
+
+→ Rp as follows (see the comments below): 
+
+⟨B β, ψ ⟩μ =
+
+Z
+
+E{XTi β exp( i(XTi , W i)t)}ψ(t)dμ (t)=
+
+Z Z 
+
+βT X1 exp( i(XT 
+
+> 1
+
+, W 1)t)ψ(t)dP (X1, W 1)dμ (t)=βT
+
+Z
+
+X1
+
+Z
+
+exp( −i(XT 
+
+> 1
+
+, W 1)t) ψ(t)dμ (t)dP (X1, W 1)=βT B∗ ψ . 
+
+In the third line of the above display, to exchange E and R dμ (t), we have used Tonelli-Fubini’s Theorem. This applies because ∥β∥ ∥ X1∥ | ψ(t)| bounds the absolute value of the integrand and R R ∥X1∥ | ψ(t)|dP (X1)dμ (t) < ∞, where ∥ · ∥ denotes the Euclidean norm on Rp. The last line of the above display follows from the definition of the adjoint operator. Thus (see the comments below), B∗ E{[Yi − h0(Zi)] exp( i(XTi , W i)·)}
+
+> (a)
+
+=
+
+Z
+
+X1
+
+Z
+
+exp( −i(XT 
+
+> 1
+
+, W 1)t) E {[Yi − h0(Zi)] exp( i(XTi , W i)t)}dμ (t)dP (X1, W 1)
+
+> (b)
+
+= E 
+
+
+
+[Yi − h0(Zi)] 
+
+Z
+
+X1
+
+Z
+
+exp( −i(XT 
+
+> 1
+
+, W 1)t) exp( i(XTi , W i)t)dμ (t)dP (X1, W 1)
+
+
+
+> (c)
+
+= E {[Yi − h0(Zi)] B ∗ exp( i(XTi , W i)·)} .
+
+Equality ( a) follows from the form of B ∗. Equality ( b) follows from Tonelli-Fubini’s Theo-rem, which allows exchanging the integrals. This applies because the absolute value of the integrand is bounded by |Yi − h0(Zi)| · ∥ X1∥, and R E{| Yi − h0(Zi)|} · ∥ X1∥dP (X1) < ∞.Finally, equality ( c) follows again from the definition of B ∗. Next, since B ∗ B maps Rp to Rp,it is a p × p matrix (see Kreyszig (1991, pages 112-113)). Therefore, its inverse (B ∗ B) −1 is also p × p matrix. Consequently, from the previous display, we obtain (B ∗ B) −1 B∗ E{[Yi − h0(Zi)] exp( i(XTi , W i)·)} = E {[Yi − h0(Zi)](B ∗ B) −1 B∗ exp( i(XTi , W i)·)} .
+
+41 By Lemma C.7(v), P = B(B ∗ B) −1 B∗. Hence, applying B to both sides of the above equation yields (see the comments below) P E {[Yi − h0(Zi)] exp( i(XTi , W i)·)} = B E {[Yi − h0(Zi)] (B ∗ B) −1 B∗ exp( i(XTi , W i)·)
+
+| {z }
+
+> =: δ(Xi,W i)∈Rp
+
+}
+
+> (a)
+
+=
+
+Z
+
+XT 
+
+> 1
+
+E{[Yi − h0(Zi)] δ(Xi, W i)} exp( i(XT 
+
+> 1
+
+, W 1)·)dP (X1, W 1)
+
+> (b)
+
+= E 
+
+
+
+[Yi − h0(Zi)] 
+
+Z
+
+XT 
+
+> 1
+
+δ(Xi, W i) exp( i(XT 
+
+> 1
+
+, W 1)·)dP (X1, W 1)
+
+
+
+= E {[Yi − h0(Zi)] B δ(Xi, W i)}
+
+= E [Yi − h0(Zi)] B(B ∗ B) −1 B∗ exp( i(XTi , W i)·)
+
+= E [Yi − h0(Zi)] P exp( i(XTi , W i)·) . (49) Equality ( a) follows from the definition of B. Equality ( b) follows from Tonelli-Fubini’s The-orem. This applies because the integrand is bounded in absolute value by |Yi − h0(Zi)| · |XT 
+
+> 1
+
+δ(Xi, W i)| ≤ | Yi − h0(Zi)| · ∥ X1∥ · ∥ δ(Xi, W i)∥ ≤ | Yi − h0(Zi)| · ∥ X1∥ · ∥ (B ∗ B) −1∥ · ∥ B∗ exp( i(XTi , W i)·)∥, with ∥ B∗ exp( i(XTi , W i)·)∥ ≤ ∥ B ∥op and R E{| Yi−h0(Zi)|}∥ X1∥dP (X1) <
+
+∞, where, with a slight abuse of notation, ∥ · ∥ denotes both the Euclidean and the Frobe-nius norm. The remaining equalities follow from the definitions of B, δ(Xi, W i), and P = B(B ∗ B) −1 B∗.Equation (49) shows that we can interchange E and P, so that (I − P) E {[Yi − h0(Zi)] exp( i(XTi , W i)·)} = E {[Yi − h0(Zi)] (I − P) exp( i(XTi , W i)·)} .
+
+From the above display and (48), we obtain E{[Yi − h0(Zi)] (I − P) exp( i(XTi , W i)·)} = 0 .
+
+Thus, by exchanging the integrals as done earlier, we obtain E
+
+n
+
+[Yi − h0(Zi)] (I − P) exp( i(XTi , W i)·), T f0 μ
+
+o
+
+= E 
+
+Z 
+
+[Yi − h0(Zi)] [(I − P) exp( i(XTi , W i)·)]( t) (T f0)( t)dμ (t)
+
+
+
+=
+
+Z
+
+E [Yi − h0(Zi)] [(I − P) exp( i(XTi , W i)·)]( t) (T f0)( t)dμ (t) = 0 . (50) Accordingly, (47) provides an influence function representation for the first term on the RHS of (46). We now derive an influence function representation for the second term on the RHS of (46). By Lemma C.7(v), bP = bB( bB∗ bB) −1 bB∗
+
+and P = B(B ∗ B) −1 B∗. Also, by Lemma C.7(iii)(iv) 42 ∥bB − B ∥op = OP (n−1/2), ∥bB∗ bB − B∗ B ∥op = OP (n−1/2), and ∥(bB∗ bB) −1 − (B ∗ B) −1∥op =
+
+OP (n−1/2). Thus, we obtain 
+
+bP − P =( bB − B)( bB∗ bB) −1 bB∗
+
++ B( bB∗ bB) −1[B ∗ B −bB∗ bB](B ∗ B) −1 bB∗
+
++ B(B ∗ B) −1(bB∗
+
+− B∗)=( bB − B)(B ∗ B) −1 B∗
+
++ B(B ∗ B) −1[B ∗ B −bB∗ bB](B ∗ B) −1 B∗
+
++ B(B ∗ B) −1(bB∗
+
+− B∗) + oP (n−1/2) , (51) where the remainder term is oP (n−1/2) in the sense that its operator norm is oP (n−1/2). From the above display, and since ∥bB − B ∥op = OP (n−1/2) and ∥bB∗ bB − B∗ B ∥op = OP (n−1/2), as noted earlier, we obtain ∥bP − P ∥op = OP (n−1/2). Also, from Lemma C.7(vi)(ix), ∥bAh0 −
+
+A h0∥μ = OP (n−1/2) and ∥bs − s∥μ = OP (n−1/2). Using these rates and the above display, for the second term on the RHS of (46), we have 
+
+√n
+
+D
+
+(bP − P)( bs − bAh0), T h0
+
+E
+
+> μ
+
+=√n
+
+D
+
+(bP − P)( s − A h0), T h0
+
+E
+
+> μ
+
++ oP (1) =√n
+
+D
+
+(bB − B)(B ∗ B) −1 B∗(s − A h0), T h0
+
+E
+
+> μ
+
++ √n
+
+*
+
+B(B ∗ B) −1[B ∗ B −bB∗ bB](B ∗ B) −1 B∗(s − A h0)
+
+| {z }
+
+> =: a1
+
+, T h0
+
++
+
+> μ
+
++ √n
+
+*
+
+B(B ∗ B) −1(bB∗
+
+− B∗)( s − A h0)
+
+| {z }
+
+> =: a2
+
+, T h0
+
++
+
+> μ
+
++ oP (1) .
+
+Now, let us recall that T = (I − P) A, where (I − P) is the projection operator onto R(B) ⊥,the orthogonal complement of the range of B. Then, T f0 = (I − P) A f0 ∈ R (B) ⊥. Since 
+
+a1 and a2, defined above, belong to R(B), the last two leading terms on the RHS of the above display are exactly zero. By recalling that bBβ = E n[XTi β exp( i(XTi , W i)·)] and B β =E[ XTi β exp( i(XTi , W i)·)], the first leading term can be expressed as 
+
+√n
+
+*
+
+(bB − B) (B ∗ B) −1 B∗(s − A h0)
+
+| {z }
+
+> ∈Rp
+
+, T h0
+
++
+
+> μ
+
+= √n(E n − E) 
+
+n
+
+[XTi (B ∗ B) −1 B∗(s − A h0)] 
+
+exp( i(XTi , W i)·), T f0 μ .
+
+(52) Finally, combining the two equations above with (46), (47), and (50), we obtain the in-fluence function representation for the leading term on the RHS of (45). This completes the 43 proof of the desired result. (ii ) The result is a direct consequence of the influence function representation in Part ( i). 
+
+■
+
+Proof of Proposition 4.1 .(i) In what follows, we consider statements relative to joint probability space of the bootstrap weights and the sample data. We start with the following decomposition: 
+
+√n(bθb − bθ) = √n
+
+
+
+En
+
+ξi
+
+ξ
+
+bh′
+
+> b
+
+(Zi) − En[bh′(Zi)] 
+
+
+
+=√n En
+
+ξi
+
+ξ [bh′
+
+> b
+
+(Zi) − bh′(Zi)] + √n En
+
+ξi
+
+ξ
+
+bh′(Zi) − bh′(Zi)
+
+
+
+. (53) Let bh′(Z) := E n h′(Zi). Then, for the second term on the RHS of (53), we have 
+
+√n En
+
+ξi
+
+ξ
+
+bh′(Zi) − bh′(Zi)
+
+
+
+=√n En
+
+ξi
+
+ξ
+
+hbh′(Zi) − bh′(Z)
+
+i
+
+=√n En
+
+(ξi − 1) 
+
+ξ
+
+hbh′(Zi) − bh′(Z)
+
+i
+
+=√n En
+
+(ξi − 1) 
+
+ξ [bh′(Zi) − h′
+
+> 0
+
+(Zi)] + √n En
+
+(ξi − 1) 
+
+ξ
+
+h
+
+h′
+
+> 0
+
+(Zi) − h′
+
+> 0
+
+(Z)
+
+i
+
+− √n En
+
+(ξi − 1) 
+
+ξ [bh′(Z) − h′
+
+> 0
+
+(Z)] . (54) We now consider the first term on the RHS of the above display. By Assumption 4.1, the bootstrap weights {ξi}i are independent from the sample data and satisfy E ξi = 1. Hence, E( ξi − 1)[ bh′(Zi) − h′
+
+> 0
+
+(Zi)] = R(ξ − 1)[ bh′(z) − h′
+
+> 0
+
+(z)] dP Z (z)dP ξ(ξ) = 0, where PZ and Pξ denote the probability distributions of Z and ξ, respectively. It follows that the empirical process 
+
+√n En(ξi − 1)[ bh′(Zi) − h′
+
+> 0
+
+(Zi)] is centered. By Assumption 3.4(i)(ii), sup z∈Z |bh′(z) − h′
+
+> 0
+
+(z)| =
+
+oP (1) and, with probability approaching one, bh′ ∈ G , with log N[ ] (ϵ, G, L 2(P )) ≤ Cϵ −v and 
+
+v ∈ (0 , 2). Accordingly, by Lemma C.5(ii), √n En(ξi − 1)[ bh′(Zi) − h′
+
+> 0
+
+(Zi)] = oP (1). Since 
+
+ξ = 1 + oP (1), we obtain 
+
+√n En
+
+(ξi − 1) 
+
+ξ [bh′(Zi) − h′
+
+> 0
+
+(Zi)] = oP (1) .
+
+44 Next, for the second term on the RHS of (54), we have 
+
+√n En
+
+(ξi − 1) 
+
+ξ
+
+h
+
+h′
+
+> 0
+
+(Zi) − h′
+
+> 0
+
+(Z)
+
+i
+
+=√n En
+
+ξi
+
+ξ
+
+h
+
+h′
+
+> 0
+
+(Zi) − h′
+
+> 0
+
+(Z)
+
+i
+
+=√n En
+
+ξi
+
+ξ − 1
+
+
+
+h′
+
+> 0
+
+(Zi) .
+
+Let us now consider the last term on the RHS of (54). Using sup z∈Z |bh′(z) − h0(z)| = oP (1) from Assumption 3.4(i), we obtain bh(Z) − h0(Z) = oP (1). This, together with √n En(ξi −
+
+1) = OP (1) and ξ = 1 + oP (1), implies 
+
+√n En
+
+(ξi − 1) 
+
+ξ [bh′(Z) − h′
+
+> 0
+
+(Z)] = op(1) .
+
+Gathering the above results, we find that 
+
+√n En
+
+ξi
+
+ξ
+
+bh′(Zi) − bh′(Zi)
+
+
+
+= √n En
+
+ξi
+
+ξ − 1
+
+
+
+h′
+
+> 0
+
+(Zi) + oP (1) (55) which provides an expansion for the second term on the RHS of (53). To prove the desired result, we now obtain an expansion for the first term on the RHS of (53). We start by decomposing it as follows: 
+
+√n En
+
+ξi
+
+ξ [bh′
+
+> b
+
+(Zi) − bh′(Zi)] = √n En ξi[bh′
+
+> b
+
+(Zi) − bh′(Zi)] + √n En ξi
+
+1
+
+ξ − 1
+
+
+
+[bh′
+
+> b
+
+(Zi) − bh′(Zi)] . (56) For the second term on the RHS of the above display, we have (see the comments below): 
+
+√n En ξi
+
+1
+
+ξ − 1
+
+
+
+[bh′
+
+> b
+
+(Zi) − bh′(Zi)] = ξ[bh′
+
+> b
+
+(Z) − bh′(Z)] 
+
+ξ
+
+√n(1 − ξ)= oP (1) .
+
+To obtain the second equality, note that Assumptions 3.4(i) and 4.2(i) imply sup z∈Z |bh′
+
+> b
+
+(z) −
+
+bh′(z)| = oP (1), so that ξ[bh′
+
+> b
+
+(Z) − bh′(Z)] = oP (1). Moreover, as established earlier in this proof, √n(ξ − 1) = OP (1). Hence, the last equality in the above display follows. Next, we focus on the first term on the RHS of (56). We have 
+
+√n En ξi[bh′
+
+> b
+
+(Zi) − bh′(Zi)] = √n(E n − E) ξi[bh′
+
+> b
+
+(Zi) − bh′(Zi)] + √n E ξi[bh′
+
+> b
+
+(Zi) − bh′(Zi)] , (57) where E ξi[bh′
+
+> b
+
+(Zi) − bh′(Zi)] = R ξ[bh′
+
+> b
+
+(z) − bh′(z)] dP Z (z)dP ξ(ξ). Let us show the negligibility of the first term on the RHS of (57). By Assumptions 3.4 and 4.2, sup z∈Z |bh′
+
+> b
+
+(z)−bh′(z)| = oP (1) and, with probability approaching one, bh′ 
+
+> b
+
+, bh′ ∈ G , where log N[ ] (ϵ, G, L 2(P )) ≤ Cϵ −υ and 45 υ ∈ (0 , 2). This implies that, with probability approaching one, bh′ 
+
+> b
+
+− bh′ ∈ eG := {f1 − f2 :
+
+f1, f 2 ∈ G} with log N[ ] (ϵ, eG, L 2(P )) ≤ C2ϵ−υ, for a constant C2. Consequently, Lemma C.5(ii) yields √n(E n − E) ξi[bh′
+
+> b
+
+(Zi) − bh′(Zi)] = oP (1) .
+
+Next, consider the second term on the RHS of (57). Since the bootstrap weights {ξi : i =1, . . . , n } are independent from the sample data and satisfy E ξi = 1, we have 
+
+√n E ξi[bh′
+
+> b
+
+(Zi) − bh′(Zi)] = √n E[ bh′
+
+> b
+
+(Zi) − bh′(Zi)] = √n E[ bh′
+
+> b
+
+(Zi) − h′
+
+> 0
+
+(Zi)] 
+
+− √n E[ bh′(Zi) − h′
+
+> 0
+
+(Zi)] . (58) The expansion of the second term on the RHS of this equation was already obtained in the proof of Proposition 3.1. For clarity, we report it below: 
+
+√n E[ bh′(Zi) − h′
+
+> 0
+
+(Zi)] = − √n En[Yi − h0(Zi)] (I − P) exp( i(XTi , W i)·), T f0 μ
+
++ √n(E n − E)[ XTi (B ∗ B) −1 B∗(s − A h0)] exp( i(XTi , W i)·), T f0 μ
+
++ oP (1) . (59) Let us obtain an expansion for the first term on the RHS of (58). By Assumption 4.2(iii) and using the same arguments as in Equations (33), (35), and (36), we obtain 
+
+√n E[ bh′
+
+> b
+
+(Zi) − h′
+
+> 0
+
+(Zi)] = −√n
+
+Dbhb − h0, g 
+
+E
+
+> H
+
+, (60) where g = R 
+
+> Z
+
+K(·, z )f ′ 
+
+> Z
+
+(z)dz . Next, define the bootstrap counterparts of bA, bB, and bs as follows: 
+
+bAbh := E n
+
+
+
+h(Zi)ξi
+
+ξ exp( i (XTi , W i) ·)
+
+
+
+, bAb : H → L2 
+
+> μ
+
+,
+
+bBbβ = E n
+
+
+
+XTi β ξi
+
+ξ exp( i (XTi , W i) ·)
+
+
+
+, bBb : Rp → L2 
+
+> μ
+
+,
+
+bsb := E n
+
+
+
+Yi
+
+ξi
+
+ξ exp( i (XTi , W i) ·)
+
+
+
+, bsb ∈ L2 
+
+> μ
+
+. (61) Then, the problem in (12) is equivalent to ( bβb, bhb) = arg min  
+
+> β∈Rp,h ∈H
+
+∥bsb − bBbβ − bAbh∥2 
+
+> μ
+
++ λ∥h∥2 
+
+> H
+
+.
+
+Let us denote by bPb the projection operator onto R(bBb), the range of bBb. By defining 
+
+bTb := (I −bPb)bAb, we can use Lemma C.2(iv) to express bhb as 
+
+bhb = ( bT∗ 
+
+> b
+
+bTb + λ I) −1 bT∗ 
+
+> b
+
+(I −bPb)bsb .
+
+46 Then, to obtain an expansion of √n
+
+Dbhb − h0, g 
+
+E
+
+> H
+
+, we apply arguments analogous to those used in the proof of Proposition 3.1, from Equation (37) up to Equation (47), and from Equation (51) up to Equation (52). Specifically, we substitute ( bT, bB, bs) with ( bTb, bBb, bsb) and replace Lemma C.7 with Lemma C.8. This yields 
+
+√n
+
+Dbhb − h0, g 
+
+E
+
+> H
+
+=√n En[Yi − h0(Zi)] ξi
+
+ξ (I − P) exp( i(XTi , W i)·), T f0 μ
+
+− √n En
+
+nξi
+
+ξ [XTi (B ∗ B) −1 B∗(s − A h0)] 
+
+exp( i(XTi , W i)·), T f0 μ
+
++ √n E
+
+n
+
+[XTi (B ∗ B) −1 B∗(s − A h0)] 
+
+exp( i(XTi , W i)·), T f0 μ
+
+o
+
+. (62) Plugging Equations (59), (60), and (62) into (58) gives 
+
+√n E ξi[bh′
+
+> b
+
+(Zi) − bh′(Zi)] = − √n En[Yi − h0(Zi)] 
+
+ξi
+
+ξ − 1
+
+
+
+(I − P) exp( i(XTi , W i)·), T f0 μ
+
++ √n En
+
+n ξi
+
+ξ − 1
+
+
+
+[XTi (B ∗ B) −1 B∗(s − Ah 0)] 
+
+· exp( i(XTi , W i)·), T f0 μ
+
+o
+
++ oP (1) .
+
+Gathering the above results, we obtain an expansion for the first term on the RHS of (53). This concludes the proof of ( i). (ii ) By Lemma C.9, we obtain that, conditionally on the sample data {(Yi, Z i, X i, W i)}i≥1,
+
+√n En[( ξi/ξ − 1) ψ(Yi, Z i, X i, W i)] ⇝ T , where T ∼ N (0 , Var[ ψ(Yi, Z i, X i, W i)] ), for almost all realizations {(Yi, Z i, X i, W i)}i≥1. That is, sup 
+
+> x
+
+|Pr ξ(√n En[( ξi/ξ − 1) ψ(Yi, Z i, X i, W i)] ≤ x) − FT (x)| = o(1) almost surely ,
+
+where Pr ξ is the probability distribution treating the bootstrap weights {ξi : i = 1 , 2, . . . }
+
+as random and the sample data as fixed, and FT is the distribution function of T . Thus, by the expansion in Part ( i), we obtain that √n(bθb − bθ) ⇝ T in probability. That is, sup x |Pr ξ(√n(bθb − bθ) ≤ x) − FT (x)| = oP (1). Consequently, by the Continuous Mapping Theorem, sup 
+
+> x
+
+|Pr ξ(|√n(bθb − bθ)| ≤ x) − F|T |(x)| = oP (1) ,
+
+where F|T | denotes the distribution function of |T |, with T defined above. Since F|T | is continuous and strictly increasing, its quantile function is continuous. Hence, by the above 47 display and Van der Vaart (2000, Lemma 21.2), we obtain 
+
+bc1−α = c1−α + oP (1) , (63) where c1−α denotes the (1 − α) quantile of F|T |, and bc1−α is the bootstrap (1 − α) quantile of 
+
+|√n(bθb −bθ)|, as defined in Section 4. Next, combining Proposition 3.1(ii) with the Continuous Mapping Theorem, we obtain |√n(bθ − θ0)| ⇝ |T |. Thus, by (63) and Van der Vaart (2000, Theorem 2.7(v)), ( |√n(bθ − θ0)|, bc1−α) ⇝ (|T |, c 1−α). By the Continuous Mapping Theorem, this implies that |√n(bθ − θ0)| − bc1−α ⇝ |T | − c1−α. Since the distribution function of |T | is continuous at any point, the distribution function of |T | − c1−α is continuous at 0. Hence, Pr( |√n(bθ − θ0)| − bc1−α ≤ 0) → Pr( |T | − c1−α ≤ 0). Consequently, Pr( |√n(bθ − θ0)| > bc1−α) = 1 − Pr( |√n(bθ − θ0)| ≤ bc1−α) → 1 − Pr( |T | ≤ c1−α) = α . 
+
+Finally, under H0, we have θ0 = θH0 . Hence, by the above display, Pr( |√n(bθ − θH0 )| > bc1−α) → α under H0 .
+
+(iii ) From Equation (63), bc1−α = c1−α + oP (1). Also, by Proposition 3.1, bθ = θ0 + oP (1). Hence, under H1 : θ0̸ = θH0 , we have bθ − θH0 = ( bθ − θ0) + ( θ0 − θH0 ) = oP (1) + c, with 
+
+c := θ0 − θH0̸ = 0. Accordingly, |bθ − θH0 | − bc1−α/√n = |c| + oP (1). This implies that Pr( |√n(bθ − θH0 )| > bc1−α) = Pr( |bθ − θH0 | − bc1−α/√n > 0) → 1 ,
+
+which delivers the desired result. 
+
+■
+
+# C Auxiliary lemmas 
+
+Lemma C.1. Assume that Fμ is symmetric and that the {(XTi , W i) : 1 , . . . , n } are all different. Then, F is a positive definite matrix, that is, γT F γ > 0 for any γ ∈ Rn with 
+
+γ̸ = 0 .Proof. The proof of this result is given as an intermediate step in the proof of Proposition 2.1 in Beyhum et al. (2024b). Before presenting the following lemmas, we recall that A, B, and s are defined in Equation (11); bA, bB, bs are defined in Equation (22); and bAb, bBb, and bsb are defined in Equation (61). The projection operators P, bP, and bPb onto R(B), R(bB), and R(bBb) are well defined and can be expressed as in Lemma C.7(v) and Lemma C.8(iii). 48 Lemma C.2. Let Assumptions 3.1, 3.2(i)(ii) , and 3.3 hold. Then, (i) h0 = T −1(I − P) s and β0 = (B ∗ B) −1 B∗(s − A h0), where T = (I − P) A .(ii) The problem min h∈H ,β ∈Rp ∥s − A h − B β∥2 
+
+> μ
+
++ λ∥h∥2 
+
+> H
+
+admits a unique solution given by 
+
+hλ = (T ∗ T + λ I) −1 T∗(I − P) s , β λ = (B ∗ B) −1 B∗(s − A hλ) .
+
+(iii) If, moreover, Assumption 4.1 holds, with probability approaching one, the problem 
+
+min h∈H ,β ∈Rp ∥bs − bAh − bBβ∥2 
+
+> μ
+
++ λ∥h∥2 
+
+> H
+
+admits a unique solution given by 
+
+bh = ( bT∗ bT + λ I) −1 bT∗
+
+(I −bP) bs , bβ = ( bB∗ bB) −1 bB∗
+
+(bs − bAbh) ,
+
+where bT := (I −bP) bA.(iv) With probability approaching one, the problem min h∈H ,β ∈Rp ∥bsb − bAbh − bBbβ∥2 
+
+> μ
+
++ λ∥h∥2
+
+> H
+
+admits a unique solution given by 
+
+bhb = ( bT∗ 
+
+> b
+
+bTb + λ I) −1 bT∗ 
+
+> b
+
+(I −bPb)bsb , bβb = ( bB∗ 
+
+> b
+
+bBb)−1 bB∗ 
+
+> b
+
+(bsb − bAbbhb) ,
+
+where bTb := (I −bPb)bAb.Proof. (i) From the definitions of s, A, and B, Equation (4) can be equivalently rewritten as 
+
+s = A h0 + B β0 . (64) As noted just above Assumption 3.5, the projection operator P onto R(B), the range of B, is well defined. Since (I − P) B = 0, applying (I − P) to both sides of (64) gives (I − P) s = T h0,where T = (I − P) A. By Lemma C.7(ii), T is injective, and hence h0 = T −1(I − P) s. To obtain an expression for β0, we apply B ∗ to both sides of (64) and rearrange terms to get (B ∗ B) β0 = B ∗(s − A h0). By Assumption 3.3(i), B is injective, so that N (B) = {0}, where 
+
+N (B) denotes the null space of B. Since N (B) = N (B ∗ B), it follows that B ∗ B is injective. Hence, we obtain β0 = (B ∗ B) −1 B∗(s − A h0). (ii ) Note first that min  
+
+> h∈H ,β ∈Rp
+
+∥s − A h − B β∥2 
+
+> μ
+
++ λ∥h∥2 
+
+> H
+
+= min 
+
+> h∈H
+
+n
+
+min  
+
+> β∈Rp
+
+∥s − A h − B β∥2
+
+> μ
+
+o
+
++ λ∥h∥2
+
+> H
+
+= min 
+
+> h∈H
+
+n
+
+min 
+
+> a∈R (B)
+
+∥s − A h − a∥2
+
+> μ
+
+o
+
++ λ∥h∥2 
+
+> H
+
+. (65) As established just above Assumption 3.5, R(B) is a closed linear subspace. Thus, by Kress (1999, Theorems 1.26 and 13.3), for any h ∈ H , the problem min b∈R (B) ∥s − A h − b∥2 
+
+> μ
+
+admits a unique solution given by bh = P( s − A h). Accordingly, min 
+
+> h∈H
+
+n
+
+min 
+
+> b∈R (B)
+
+∥s − A h − b∥2
+
+> μ
+
+o
+
++ λ∥h∥2 
+
+> H
+
+= min  
+
+> h∈H
+
+∥(I − P) s − (I − P) A h∥2 
+
+> μ
+
++ λ∥h∥2 
+
+> H
+
+. (66) 49 By Lemma C.7(i), T = (I − P) A is a compact operator. Because compact operators are bounded (see Kress (1999, Theorem 2.14)), T is also bounded. Hence, by Kress (1999, Theorem 16.1), the problem on the RHS of (66) admits a unique solution given by (T ∗ T + λ I) −1 T∗(I − P) s =: hλ.
+
+Plugging hλ into the expression for bh obtained earlier yields bhλ = P( s − A hλ). Since 
+
+bhλ ∈ R (B), there exists a βλ ∈ Rp such that B βλ = bhλ . Thus, B βλ = P( s − A hλ)and B ∗ B βλ = B ∗ P( s − A hλ). As noted in the proof of Part ( i), B ∗ B is injective, and hence βλ = (B ∗ B) −1 B∗ P( s − A hλ). Since, by Lemma C.7(v), P = B(B ∗ B) −1 B∗, we have B∗ P = B ∗. Thus, βλ = (B ∗ B) −1 B∗(s − A hλ). Now, recall that hλ is a solution to the problem on the RHS of (66). Consequently, by the two displays above, ( hλ, β λ) is a solution to the problem on the left-hand side of (65). By the strict convexity of the squared norm, this solution must be unique. (iii ) By Lemma C.7(vii), bT is a compact operator. Thus, as long as bB∗ bB is injective with probability approaching one, the proof proceeds analogously to that of Part ( ii ). We first note that, since both bB∗ bB and B ∗ B are linear operators from Rp to Rp, they can be represented as p × p matrices (see Kreyszig (1991, Section 2.9)). By Lemma C.7(iv), 
+
+∥bB∗ bB − B∗ B ∥op = oP (1). Hence, the injectivity of B ∗ B implies that bB∗ bB is injective with probability approaching one. (iv ) The proof follows by the same arguments as in the proof of Part ( iii ), replacing Lemma C.7(iv)(vii) with Lemma C.8(ii)(v). 
+
+Lemma C.3. Let Assumptions 3.1, 3.2(i)(ii), and 3.3 hold. If nλ → ∞ and λ → 0 , then 
+
+∥bh − h0∥H = oP (1) .
+
+If moreover h0 ∈ R [(T ∗ T) b/ 2], then 
+
+∥bh − h0∥H = OP
+
+ 1
+
+√nλ + λ(b∧2) /2
+
+
+
+.
+
+Proof. The proof follows by arguments analogous to those in the proof of Beyhum et al. (2024b, Theorem 3.1). For completeness, we include the details here. As obtained in Equa-tion (24) (see the proof of Proposition 2.1), 
+
+bh = ( bT∗ bT + λ I) −1 bT∗
+
+(I −bP) bs , 
+
+50 where bT = (I −bP) bA, bP is the projection operator onto R(bB), the range of bB, and ( bA, bB, bs)are defined in Equation (22). Next, notice that 
+
+bh − h0 = bS1 + bS2 + bS3 + bS4 + hλ − h0 ,
+
+where 
+
+bS1 = (T ∗ T + λ I) −1 T∗[(I −bP) bs − bTh0] , bS2 = (T ∗ T + λ I) −1(bT∗
+
+− T∗)[(I −bP) bs − bTh0] ,
+
+bS3 = [( bT∗ bT + λ I) −1 − (T ∗ T + λ I) −1]bT∗
+
+[(I −bP) bs − bTh0] , bS4 = ( bT∗ bT + λ I) −1 bT∗ bTh0 − hλ ,hλ = (T ∗ T + λ I) −1 T∗ T h0 .
+
+Since λ → 0 and nλ → ∞ , Lemma C.10(i)-(iv) implies ∥ bSj ∥H = OP (1 /√nλ ) for j=1,2,3,4. Moreover, since T is injective and compact as stated in Lemma C.7(i)(ii), we can apply Kress (1999, Definition 15.5 and Theorem 15.23) to conclude that ∥hλ −h0∥H = o(1). Thus, the first part of the lemma follows. To obtain the second part of the lemma, recall that T is compact. Hence, combining h0 ∈ R [(T ∗ T) b/ 2] and Lemma C.6(vi) yields ∥hλ − h0∥H = O(λ(b∧2) /2). This establishes the second part of the lemma and concludes the proof. 
+
+Lemma C.4. Let Assumption 3.1 and 3.2(i) hold. Let T be as defined in Section 3, bT as in Lemma C.2(iii), and bP the projection operator onto R(bB) , the range of bB. Let (bB, bs) be as in Equation (22) , br := (I −bP) bs, and hλ = (T ∗ T + λ I) −1 T∗ T h0. Then, (i) 
+
+D
+
+(T ∗ T + λ I) −1(bT∗
+
+− T∗)( br − bTh0), g 
+
+E
+
+> H
+
+= OP
+
+
+
+∥bT∗
+
+− T∗ ∥op ∥br − bTh0∥μ ∥(λ I + T ∗ T) −1g∥H
+
+
+
+.
+
+(ii) 
+
+D
+
+[( bT∗ bT + λ I) −1 − (T ∗ T + λ I) −1]bT∗
+
+(br − bTh0), g 
+
+E
+
+> H
+
+= OP
+
+
+
+∥br − bTh0∥μ · ∥ bT − T ∥op ·
+
+h
+
+∥(bT∗ bT + λ I) −1 bT∗
+
+∥op ∥ T(T ∗ T + λ I) −1g∥μ
+
++ ∥bT( bT∗ bT + λ I) −1 bT∗
+
+∥op ∥(T ∗ T + λ I) −1g∥H
+
+i 
+
+.
+
+(iii) If g ∈ R (T ∗ T) ,
+
+D
+
+(bT∗ bT + λ I) −1 bT∗ bTh0 − hλ, g 
+
+E
+
+> H
+
+= OP
+
+
+
+∥(bT∗ bT + λ I) −1 bT∗ bTh0 − hλ∥H ∥bT − T ∥op 
+
++ ∥bT[( bT∗ bT + λ I) −1 bT∗ bTh0 − hλ]∥μ
+
+
+
+with 
+
+∥(bT∗ bT + λ I) −1 bT∗ bTh0 − hλ∥H ≤ λ · ∥ bT − T ∥op ·∥ (T ∗ T + λ I) −1h0∥H·
+
+h
+
+∥(bT∗ bT + λ I) −1 bT∗
+
+∥op + ∥(bT∗ bT + λ I) −1∥op ∥ T ∥op 
+
+i
+
+51 and 
+
+∥bT[( bT∗ bT + λ I) −1 bT∗ bTh0 − hλ]∥μ ≤ λ · ∥ bT − T ∥op · ∥ (T ∗ T + λ I) −1h0∥H
+
+·
+
+h
+
+∥bT( bT∗ bT + λ I) −1 bT∗
+
+∥op + ∥ T ∥op ∥bT( bT∗ bT + λ I) −1∥op 
+
+i
+
+.
+
+Proof. The proofs of these results are contained in the proof of Beyhum et al. (2024a, Lemma 2.2). 
+
+Lemma C.5. Let bf : Z → R be a data-dependent function and f0 : Z → R be a deterministic function. Assume that sup z∈Z | bf (z) − f0(z)| = oP (1) and Pr( bf ∈ G ) → 1 for a deterministic class of functions G such that log N[ ] (ϵ, G, L 2(P )) ≤ Cϵ −v with v ∈ (0 , 2) . Then, (i) √n(E n − E)[ bf (Zi) − f0(Zi)] = oP (1) ,
+
+where E bf (Zi) = R bf (z)dP Z (z) and PZ is the probability distribution of Z.(ii) If moreover {ζi : i = 1 , . . . , n } are random variables independent from {Zi : i =1, . . . , n } with E ζ2 < ∞, then 
+
+√n(E n − E) ζi[ bf (Zi) − f0(Zi)] = oP (1) .
+
+Proof. The proofs follow from a simple application of Van der Vaart (2000, Lemma 19.34). 
+
+Lemma C.6. Let X and Y be two Hilbert spaces with norms ∥ · ∥ X and ∥ · ∥ Y , respectively. Let C : X → Y be a linear compact operator with singular system (eμj , eφj , eψj )j , where (eμj )j
+
+is a sequence of positive values in R, ( eφj )j is a sequence of orthonormal elements in X , and 
+
+( eψj )j is a sequence of orthonormal elements in Y. Let λ ↓ 0. Then, (i) 
+
+|| C( λ I + C ∗ C) −1 C∗ || op ≤ 1 .
+
+(ii) 
+
+|| λ(λ I + C ∗ C) −1|| op ≤ 2 .
+
+(iii) 
+
+|| (λ I + C ∗ C) −1 C∗ || op ≤ 12√λ .
+
+If, moreover, ϕ ∈ R [(C ∗ C) γ/ 2], that is, || ϕ|| 2 
+
+> γ
+
+:= P 
+
+> j
+
+eμ−2γj | ⟨ ϕ, eφj ⟩ | 2 < ∞, then 
+
+52 (iv) 
+
+|| λ(λ I + C ∗ C) −1ϕ|| X = O(λγ∧22 ) .
+
+(v) 
+
+|| λ C( λ I + C ∗ C) −1ϕ|| Y = O(λγ+1 2 ∧1) .
+
+(vi) 
+
+|| (λ I + C ∗ C) −1 C∗ C ϕ − ϕ|| X = O(λγ∧22 ) .
+
+Proof. These inequalities are well known in the inverse problems literature. The proofs of parts ( i), ( ii ), and ( iii ) can be found in Florens et al. (2011, Lemma A.1). The proofs of parts ( iv ) and ( v) follow from arguments similar to those used in the proofs of Florens et al. (2011, Lemma A.1) and Babii (2022, Theorem 3.1). Finally, the proof of part ( vi ) can be found in Carrasco et al. (2007, Proposition 3.11). 
+
+Lemma C.7. Under Assumptions 3.1, 3.2(i), 3.3, and h0 ∈ H ,(i) the operators A and T are compact; (ii) T is injective; (iii) ∥bB − B ∥op = Op(n−1/2);(iv) ∥bB∗ bB − B∗ B ∥op = Op(n−1/2) and ∥(bB∗ bB) −1 − (B ∗ B) −1∥op = Op(n−1/2);(v) P = B(B ∗ B) −1 B∗ and bP = bB( bB∗ bB) −1 bB∗
+
+with probability approaching one; (vi) ∥bA − A ∥op = Op(n−1/2);(vii) the operator bT is compact; (viii) ∥bT − T ∥op = Op(n−1/2);(ix) ∥bs − s∥μ = Op(n−1/2);(x) ∥(I −bP) bs − bTh0∥μ = Op(n−1/2).Proof. (i) Let us first show that A is a compact operator. Pick any h ∈ H , and recall that ℓ2 is the space of square-summable sequences. By Lemma C.11(iv), there exists a sequence ( βj )j ∈ ℓ2 such that h(z) = P∞ 
+
+> j=1
+
+βj eϕj (z) pointwise in z ∈ Z , where eϕj (z) = 
+
+√ηj ϕj (z), ( ηj )j is a sequence of positive scalars, and ( ϕj )j is a sequence of functions defined on Z. Note that P∞ 
+
+> j=1
+
+βj eϕj (z) is a well-defined limit. In fact, by Lemma C.11(ii), we have 
+
+P∞ 
+
+> j=1
+
+|eϕj (z)|2 = P∞ 
+
+> j=1
+
+ηj |ϕj (z)|2 ≤ K(z, z ). Thus, both sequences ( eϕj (z)) j and ( βj )j belong 53 to ℓ2, and, denoting by ⟨· , ·, ⟩ℓ2 the inner product on ℓ2, we obtain that P∞ 
+
+> j=1
+
+βj eϕj (z) = 
+
+D
+
+(βj )j , (eϕj (z)) j
+
+E
+
+> ℓ2
+
+is well defined. Then (see the comments below), (A h)( t) = E h(Zi) exp( i(XTi , W i)t) = E lim  
+
+> N→∞
+> N
+
+X
+
+> j=1
+
+βj eϕj (Zi) exp( i(XTi , W i)t)
+
+> (a)
+
+= lim  
+
+> N→∞
+> N
+
+X
+
+> j=1
+
+βj E eϕj (Zi) exp( i(XTi , W i)t) =: eA[( βj )j ]( t) . (67) To justify the interchange of lim N →∞ and E in equality ( a), observe that by | exp( i(XTi , W i)t)| ≤ 
+
+1 and the Cauchy-Schwarz inequality, we have | PNj=1 βj eϕj (Zi) exp( i(XTi , W i)t)| ≤ (PNj=1 β2 
+
+> j
+
+)1/2
+
+[PNj=1 eϕj (Zi)2]1/2 ≤ (P∞ 
+
+> j=1
+
+β2 
+
+> j
+
+)1/2[P∞ 
+
+> j=1
+
+eϕj (Zi)2]1/2. As shown earlier in this proof, [ P∞ 
+
+> j=1
+
+eϕj (Zi)2]1/2
+
+≤ K(Zi, Z i)1/2, where E K(Zi, Z i)1/2 < ∞ by the continuity of K and the compactness of 
+
+Z (see Assumptions 3.1(iii) and 3.2(i)). Thus, by the Lebesgue Dominated Convergence Theorem, we can interchange lim N →∞ and E and obtain equality ( a) of the above display. Next, note that eA : ℓ2 → L2
+
+> μ
+
+. Indeed, since P∞ 
+
+> j=1
+
+| E eϕj (Zi) exp( i(XTi , W i)t)|2 ≤ P∞ 
+
+> j=1
+
+E |eϕj (Zi)|2
+
+≤ E K(Zi, Z i) < ∞, we have 
+
+∥eA[( βj )j ]∥2 
+
+> μ
+
+= = 
+
+Z
+
+|
+
+> ∞
+
+X
+
+> j=1
+
+βj E eϕj (Zi) exp( i(XTi , W i)t)|2dμ (t)
+
+≤
+
+Z ∞X
+
+> j=1
+
+β2
+
+> j
+> ∞
+
+X
+
+> j=1
+
+| E eϕj (Zi) exp( i(XTi , W i)t)|2dμ (t) < ∞ .
+
+Let us now show that eA : ℓ2 → L2 
+
+> μ
+
+is a compact operator. Since every Hilbert-Schmidt operator is compact (see Carrasco et al. (2007, Theorem 2.32)), it suffices to prove that eAis Hilbert-Schmidt. By Carrasco et al. (2007, Definition 2.30), eA is Hilbert-Schmidt if for a complete orthonormal system {(γs,j )j : s = 1 , 2, . . . } ⊂ ℓ2, we have P∞ 
+
+> s=1
+
+∥eA[( γs,j )j ]∥2 
+
+> μ
+
+< ∞.By Perseval’s formula (see Carrasco et al. (2007, Theorem 2.8)), {(γs,j )j : s = 1 , 2, . . . } is a complete orthonormal set in ℓ2 if P∞
+
+> s=1
+
+(P∞ 
+
+> j=1
+
+γs,j βj )2 = P∞ 
+
+> j=1
+
+β2 
+
+> j
+
+for any ( βj )j ∈ ℓ2. Now, setting γs,j = 1 if s = j and γs,j = 0 if s̸ = j, we see that {(γs,j )j : s = 1 , 2, . . . } is indeed a complete orthonormal set in ℓ2. Then, 
+
+> ∞
+
+X
+
+> s=1
+
+∥eA[( γs,j )j ]∥2 
+
+> μ
+
+=
+
+> ∞
+
+X
+
+> s=1
+
+Z ∞X
+
+> j=1
+
+γs,j E eϕj (Zi) exp( i(XTi , W i)t) 2
+
+dμ (t)=
+
+> ∞
+
+X
+
+> s=1
+
+Z
+
+E eϕs(Zi) exp( i(XTi , W i)t) 2
+
+dμ (t)
+
+≤
+
+> ∞
+
+X
+
+> s=1
+
+E |eϕs(Zi)|2
+
+≤ E K(Zi, Z i) < ∞ .
+
+54 This shows that eA is Hilbert- Schmidt and hence compact. We now use this result to prove that A is also compact. By Kress (1999, Theorem 2.13), the operator A : H → L2 
+
+> μ
+
+is com-pact if and only if, for every bounded sequence ( hs)s in H, the sequence (A hs)s admits a convergent subsequence in L2
+
+> μ
+
+. Using Lemma C.11(iii)(iv), we have hs(z) = P∞ 
+
+> j=1
+
+βs,j eϕj (z)pointwise in z ∈ Z , for some coefficients ( βs,j )j ∈ ℓ2, and ∥hs∥2 
+
+> H
+
+= ⟨hs, h s⟩H = ⟨hs, h s⟩EIG 
+
+= P∞
+
+> j=1
+
+(βs,j )2. Thus, the bounded sequence ( hs)s in H corresponds to a bounded sequence 
+
+{(βs,j )j : s = 1 , 2, . . . } in ℓ2. Since eA : ℓ2 → L2 
+
+> μ
+
+is compact, the sequence {eA[( βs,j )j ] : s =1, 2, . . . } has a convergent subsequence in L2
+
+> μ
+
+. Therefore, by (67), (A hs)s also admits a con-vergent subsequence. This shows that A is compact. We now establish the compactness of T = (I − P) A. By Kress (1999, Theorem 13.3), pro-jection operators are bounded. Hence P is bounded, and so is I − P. Moreover, by Kress (1999, Theorems 2.14 and 2.16), the composition of a bounded and a compact operator is compact. Therefore, since A is compact, it follows that (I − P) A = T is compact. (ii ) To show that T is injective, it suffices to prove that T h = 0 ⇒ h = 0. Since T = (I − P) A, the condition T h = 0 implies that A h = P A h. As P is the projection oper-ator onto R(B), we have P A h ∈ R (B). Hence, A h ∈ R (A) ∩ R (B). By Assumption 3.3(ii), 
+
+R(A) ∩ R (B) = {0}, and therefore A h = 0. Finally, since A is injective by Assumption 3.3(i), it follows that h = 0. (iii ) Note first that ∥(bB−B) β∥2 
+
+> μ
+
+= R |(E n − E) XTi β exp( i(XTi , W i)t)|2dμ (t) ≤ ∥ β∥2 R ∥(E n − E) Xi
+
+exp( i(XTi , W i)t)∥2 dμ (t), where ∥ · ∥ denotes the Euclidean norm on Rp. Thus, E ∥bB − B ∥2 
+
+> op
+
+= E sup 
+
+> β∈Rp,∥β∥=1
+
+∥(bB − B) β∥2 
+
+> μ
+
+≤ E
+
+Z
+
+∥(E n − E) Xi exp( i(XTi , W i)t)∥2dμ (t) .
+
+Without loss of generality, suppose that X ∈ R. Then, the RHS of the above display equals 
+
+Z
+
+E |(E n − E) Xi exp( i(XTi , W i)t)|2dμ (t) = 
+
+Z
+
+Var 
+
+h 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Xi exp( i(XTi , W i)t)
+
+i
+
+dμ (t)=
+
+Z 1
+
+n Var 
+
+h
+
+Xi exp( i(XTi , W i)t)
+
+i
+
+dμ (t)
+
+≤
+
+Z E |Xi exp( i(XTi , W i)t)|2
+
+n dμ (t)
+
+≤E X2
+
+> i
+
+n ,
+
+where E X2 
+
+> i
+
+< ∞ by Assumption 3.1(i). Hence, E ∥bB − B ∥2 
+
+> op
+
+= Op(n−1), which gives the desired result. 55 (iv ) Since ∥bB − B ∥op = OP (n−1/2) by Part ( iii ), the proof proceeds in the same manner as that of Beyhum et al. (2024b, Lemma S3.2(c)). (v) The proof that P = B(B ∗ B) −1 B∗ is given in Beyhum et al. (2024b, pages 194-195). The proof that bP = bB( bB∗ bB) −1 bB∗
+
+with probability approaching one (wpa1) follows by anal-ogous arguments, provided that bB is injective wpa1. As established in the proof of Lemma C.2(iii), bB∗ bB is injective wpa1, which implies N (bBbB∗
+
+) = {0} wpa1. Since N (bB) = N (bBbB∗
+
+), we conclude that N (bB) = {0} wpa1. Hence, bB is injective wpa1. (vi ) As noted in the proof of Part ( i), for any h ∈ H there exists a sequence ( βj )j ∈ ℓ2
+
+such that h(z) = P∞ 
+
+> j=1
+
+βj eϕj (z) pointwise in Z ∈ Z and ∥h∥2 
+
+> H
+
+= P∞ 
+
+> j=1
+
+β2 
+
+> j
+
+. Hence (see the comments below), 
+
+∥bAh − A h∥2 
+
+> μ
+
+=
+
+Z
+
+En
+
+n ∞X
+
+> j=1
+
+βj eϕj (Zi) exp( i(XTi , W i)t)
+
+o
+
+− E
+
+n ∞X
+
+> j=1
+
+βj eϕj (Zi) exp( i(XTi , W i)t)
+
+o 2
+
+dμ (t)
+
+> (a)
+
+=
+
+Z ∞X
+
+> j=1
+
+βj En
+
+eϕj (Zi) exp( i(XTi , W i)t) −
+
+> ∞
+
+X
+
+> j=1
+
+βj E eϕj (Zi) exp( i(XTi , W i)t) 2
+
+dμ (t)=
+
+Z ∞X
+
+> j=1
+
+βj (E n − E) eϕj (Zi) exp( i(XTi , W i)t) 2
+
+dμ (t)
+
+> (b)
+
+≤
+
+> ∞
+
+X
+
+> j=1
+
+β2
+
+> j
+
+Z ∞X
+
+> j=1
+
+(E n − E) eϕj (Zi) exp( i(XTi , W i)t) 2
+
+dμ (t) .
+
+Here, equality ( a) follows from exchanging E n with P∞
+
+> j=1
+
+, and E with P∞
+
+> j=1
+
+, as in (67). Inequality ( b) follows from Cauchy-Schwarz. Then, using ∥h∥2 
+
+> H
+
+= P∞ 
+
+> j=1
+
+β2 
+
+> j
+
+yields E ∥bA− A ∥2 
+
+> op
+
+= E sup 
+
+> h∈H ,∥h∥H=1
+
+∥bAh − A h∥2 
+
+> μ
+
+≤ E
+
+Z ∞X
+
+> j=1
+
+(E n − E) eϕj (Zi) exp( i(XTi , W i)t) 2
+
+dμ (t)=
+
+Z ∞X
+
+> j=1
+
+E (E n − E) eϕj (Zi) exp( i(XTi , W i)t) 2
+
+dμ (t) = 
+
+Z ∞X
+
+> j=1
+
+Var 
+
+h
+
+En eϕj (Zi) exp( i(XTi , W i)t)
+
+i
+
+dμ (t)=
+
+Z ∞X
+
+> j=1
+
+1
+
+n Var 
+
+heϕj (Zi) exp( i(XTi , W i)t)
+
+i
+
+dμ (t) ≤
+
+Z ∞X
+
+> j=1
+
+1
+
+n E eϕj (Zi) exp( i(XTi , W i)t) 2
+
+dμ (t)
+
+≤ 1
+
+n
+
+> ∞
+
+X
+
+> j=1
+
+E |eϕj (Zi)|2 (a)
+
+≤ 1
+
+n E K(Zi, Z i) (b)
+
+= O(n−1) ,
+
+where inequality ( a) follows from P∞ 
+
+> j=1
+
+|eϕj (Zi)|2 ≤ K(Zi, Z i), as noted earlier, and equality (b) follows from the compactness of Z and the continuity of K (see Assumptions 3.1(iii) and 3.2(i)). Hence, the desired result follows. 56 (vii ) The arguments used in the proof of Part ( i) remain valid with bA replacing A, that is, with E n replacing E. Hence, bA is a compact operator. Since bP is the projection operator onto R(bB), it is bounded, and so is I −bP. By Kress (1999, Theorem 2.14 and 2.16), the composition of a bounded and a compact operator is compact. Therefore, bT = (I −bP) bA is compact. (viii ) By Part ( v), bP = bB( bB∗ bB) −1 bB∗
+
+and P = B(B ∗ B) −1 B∗. Since by Parts ( iii ) and (iv ) ∥bB − B ∥op = OP (n−1/2) and ∥(bB∗ bB) −1 − (B ∗ B) −1∥op = OP (n−1/2), it follows that 
+
+∥(bB∗ bB) −1∥op = OP (1) and ∥bB∥op = OP (1). Hence, 
+
+∥bP−P ∥op = ∥(bB−B)( bB∗ bB) −1 bB∗
+
++B[( bB∗ bB) −1−(B ∗ B) −1]bB∗
+
++B(B ∗ B) −1[bB∗
+
+−B∗]∥op = Op(n−1/2) .
+
+By Part ( vi ), ∥bA − A ∥op = OP (n−1/2) and ∥bA∥op = OP (1). Therefore, 
+
+∥bT − T ∥op = ∥(I −bP) bA − (I − P) A ∥op = ∥(P −bP) bA + (I − P)( bA − A) ∥op = OP (n−1/2) .
+
+(ix ) The proof follows by arguments analogous to those used in the proof of Part ( iii ). (x) As already established in the proof of Part ( viii ), ∥bP − P ∥op = OP (n−1/2). By Parts (viii ) and ( ix ), ∥bT − T ∥op = OP (n−1/2) and ∥bs − s∥μ = Op(n−1/2). Moreover, by Lemma C.2(i), (I − P) s = T h0. Hence, 
+
+∥(I −bP) bs − bTh0∥μ = ∥(P −bP) bs + (I − P)( bs − s) + (I − P) s − T h0 − (bT − T) h0∥μ = OP (n−1/2) .
+
+In the following lemma, we consider statements regarding the joint probability space of the bootstrap weights and the sample data. Recall that bAb, bBb, and bsb are defined in (61). 
+
+Lemma C.8. Under Assumptions 3.1, 3.2(i), 3.3(i), 4.1, and h0 ∈ H ,(i) ∥bBb − B ∥op = Op(n−1/2);(ii) ∥bB∗ 
+
+> b
+
+bBb − B∗ B ∥op = Op(n−1/2) and ∥(bB∗ 
+
+> b
+
+bBb)−1 − (B ∗ B) −1∥op = Op(n−1/2);(iii) bPb = bBb(bB∗ 
+
+> b
+
+bBb)−1 bB∗ 
+
+> b
+
+with probability approaching one; (iv) ∥bAb − A ∥op = Op(n−1/2);(v) the operator bTb is compact; (vi) ∥bTb − T ∥op = Op(n−1/2);
+
+57 (vii) ∥bsb − s∥μ = Op(n−1/2);(viii) ∥(bI − bPb)bsb − bTbh0∥μ = Op(n−1/2).Proof. (i) First note that, for any β ∈ Rp,(bBbβ)( t) − (B β)( t) = E n
+
+ξi
+
+ξ XTi β exp( i(XTi , W i)t) − (B β)( t)= E n
+
+ξi − 1
+
+ξ XTi β exp( i(XTi , W i)t)+ E n
+
+1 − ξξ XTi β exp( i(XTi , W i)t)+ ( bBβ)( t) − (B β)( t)=:( eB1β)( t) + ( eB2β)( t) + ( bBβ)( t) − (B β)( t) .
+
+By Lemma C.7(iii), ∥bB − B ∥op = OP (n−1/2). Moreover, ( eB2β)( t) = (1 − ξ)( ξ)−1(bBβ)( t) and (1 − ξ)( ξ)−1 = OP (n−1/2). Thus, 
+
+∥eB2∥2 
+
+> op
+
+= sup 
+
+> β∈Rp,∥β∥=1
+
+∥eB2β∥2 
+
+> μ
+
+= (1 − ξ)2
+
+ξ2 sup 
+
+> β∈Rp,∥β∥=1
+
+∥bBβ∥2 
+
+> μ
+
+= OP (n−1)∥bB∥2 
+
+> op
+
+= OP (n−1) , (68) where in the last equality we have used ∥bB∥op = OP (1), which follows from Lemma C.7(iii) and ∥ B ∥op < ∞. Hence, to show the desired result, it suffices to prove that ∥eB1∥op =
+
+OP (n−1/2). To this end, note that (see the comments below) 
+
+∥eB1∥2 
+
+> op
+
+= sup 
+
+> β∈Rp,∥β∥=1
+
+1
+
+ξ2
+
+Z
+
+|βT En(ξi − 1) Xi exp( i(XTi , W i)t)|2dμ (t)
+
+> (a)
+
+≤OP (1) sup 
+
+> β∈Rp,∥β∥=1
+
+∥β∥2
+
+Z
+
+∥ En(ξi − 1) Xi exp( i(XTi , W i)t)∥2dμ (t)=OP (1) 
+
+Z
+
+∥ En(ξi − 1) Xi exp( i(XTi , W i)t)∥2dμ (t) ,
+
+where ∥ · ∥ denotes the Euclidean norm on Rp. Inequality ( a) follows from 1 /ξ = OP (1) and Cauchy-Schwarz. Let us assume, without loss of generality, that X ∈ R. Since the bootstrap weights {ξi : i = 1 . . . , n } are independent from the sample data and satisfy E ξi = 1 (Assumption 4.1), the empirical mean E n(ξi − 1) Xi exp( i(XTi , W i)t) has zero expectation. Using this, together with Var {ξ} = 1 (Assumption 4.1) and E X2 < ∞ (Assumption 3.1(i)), we obtain E
+
+Z
+
+| En(ξi − 1) Xi exp( i(XTi , W i)t)|2dμ (t) = 
+
+Z
+
+Var[E n(ξi − 1) Xi exp( i(XTi , W i)t)] dμ (t)=
+
+Z 1
+
+n Var[( ξi − 1) Xi exp( i(XTi , W i)t)] dμ (t)
+
+≤ 1
+
+n
+
+Z
+
+E |(ξi − 1) Xi exp( i(XTi , W i)t)|2dμ (t)
+
+≤ 1
+
+n E |(ξi − 1) Xi|2 = 1
+
+n[E( ξi − 1) 2][E X2 
+
+> i
+
+] = O(n−1) .
+
+58 Gathering the above results, we conclude that ∥eB1∥op = OP (n−1/2), which completes the proof of ( i). (ii )−(iii ) The proofs follow by arguments analogous to those used in the proof of Lemma C.7(iv)(v). (iv ) Similarly to the proof of ( i), for any h ∈ H ,(bAh)( t) − (A h)( t) = E n
+
+ξi
+
+ξ h(Zi) exp( i(XTi , W i)t) − (A h)( t)= E n
+
+ξi − 1
+
+ξ h(Zi) exp( i(XTi , W i)t)+ E n
+
+1 − ξξ h(Zi) exp( i(XTi , W i)t)+ ( bAh)( t) − (A h)( t)=:( eA1h)( t) + ( eA2h)( t) + ( bAh)( t) − (A h)( t) .
+
+By Lemma C.7 (vi), ∥bA − A ∥op = OP (n−1/2). Proceeding as in Equation (68), we ob-tain ∥eA2∥op = OP (n−1/2). Thus, to conclude the proof, it remains to show that ∥eA1∥op =
+
+OP (n−1/2). As argued in the proof of Lemma C.7(i), for any h ∈ H there exists a sequence (βj )j ∈ ℓ2 such that h(z) = P∞ 
+
+> j=1
+
+βj eϕj (z), with P∞ 
+
+> j=1
+
+|eϕj (z)|2 ≤ K(z, z ) and ∥h∥2 
+
+> H
+
+= P∞ 
+
+> j=1
+
+β2 
+
+> j
+
+.Thus, 
+
+∥eA1h∥2 
+
+> μ
+
+= 1(ξ)2
+
+Z
+
+En(ξi − 1) 
+
+> ∞
+
+X
+
+> j=1
+
+βj eϕj (Zi) exp( i(XTi , W i)t) 2
+
+dμ (t)= 1(ξ)2
+
+Z ∞X
+
+> j=1
+
+βj En(ξi − 1) eϕj (Zi) exp( i(XTi , W i)t) 2
+
+dμ (t)
+
+≤ 1(ξ)2
+
+Z ∞X
+
+> j=1
+
+β2
+
+> j
+> ∞
+
+X
+
+> j=1
+
+En(ξi − 1) eϕj (Zi) exp( i(XTi , W i)t) 2
+
+dμ (t)= 1(ξ)2 ∥h∥2
+
+> H
+
+Z ∞X
+
+> j=1
+
+En(ξi − 1) eϕj (Zi) exp( i(XTi , W i)t) 2
+
+dμ (t) .
+
+Accordingly, 
+
+∥eA1∥2 
+
+> op
+
+= sup 
+
+> h∈H ,∥h∥H=1
+
+∥eA1h∥2 
+
+> μ
+
+≤ 1(ξ)2
+
+Z ∞X
+
+> j=1
+
+En(ξi − 1) eϕj (Zi) exp( i(XTi , W i)t) 2
+
+dμ (t)=OP (1) 
+
+Z ∞X
+
+> j=1
+
+En(ξi − 1) eϕj (Zi) exp( i(XTi , W i)t) 2
+
+dμ (t) ,
+
+where the last equality follows from ξ = 1 + oP (1), which is implied by E ξ = 1 (see As-sumption 4.1). Since the bootstrap weights {ξi : i = 1 , . . . , n } are independent from the 59 sample data, E n(ξi − 1) eϕj (Zi) exp( i(XTi , W i)t) has zero expectation. Using this, together with Var {ξ} = 1 (Assumption 4.1) and P∞ 
+
+> j=1
+
+E |eϕj (Zi)|2 ≤ E K(Zi, Z i) < ∞, we obtain E
+
+Z ∞X
+
+> j=1
+
+En(ξi − 1) eϕj (Zi) exp( i(XTi , W i)t) 2
+
+dμ (t) = 
+
+Z ∞X
+
+> j=1
+
+E En(ξi − 1) eϕj (Zi) exp( i(XTi , W i)t) 2
+
+dμ (t)=
+
+Z ∞X
+
+> j=1
+
+Var 
+
+h
+
+En(ξi − 1) eϕj (Zi) exp( i(XTi , W i)t)
+
+i
+
+dμ (t)=
+
+Z ∞X
+
+> j=1
+
+1
+
+n Var 
+
+h
+
+(ξi − 1) eϕj (Zi) exp( i(XTi , W i)t)
+
+i
+
+dμ (t)
+
+≤
+
+Z ∞X
+
+> j=1
+
+1
+
+n E
+
+h
+
+(ξi − 1) 2 eϕj (Zi)2 exp( i(XTi , W i)t)2
+
+i
+
+dμ (t)
+
+≤
+
+> ∞
+
+X
+
+> j=1
+
+1
+
+n E
+
+h
+
+(ξi − 1) 2 eϕj (Zi)2
+
+i
+
+=
+
+> ∞
+
+X
+
+> j=1
+
+1
+
+n E[( ξi − 1) 2] E[ eϕj (Zi)2]= 1
+
+n Var {ξi}
+
+> ∞
+
+X
+
+> j=1
+
+E[ eϕj (Zi)2]
+
+≤ 1
+
+n E K(Zi, Z i)= O(n−1) .
+
+Gathering the above results, we obtain ∥eA1∥op = OP (n−1/2). Hence, Part ( iv ) is proved. (v) By arguments analogous to those used in the proof of Lemma C.7(i), bAb is compact. Since bPb is the projection operator onto R(bBb), it is bounded. Thus, (I −bPb) is also bounded. Consequently, bTb = (I −bPb)bAb, being the composition of a bounded and a compact operator, is compact. (vi ) The proof proceeds similarly to that of Lemma C.7(viii), by using Part ( iii ) of the present lemma, ∥bBb − B ∥op = OP (n−1/2), ∥(bB∗ 
+
+> b
+
+bBb)−1 − (B ∗ B) −1∥op = OP (n−1/2), and 
+
+∥bAb − A ∥op = OP (n−1/2) (from Parts ( i), ( ii ), and ( iv ) of the present lemma). (vii ) − (viii ) The proof of Part ( vii ) follows similarly to that of Part ( i) of the present lemma. The proof of Part ( viii ) follows by arguments analogous to those used in the proof of Lemma C.7(x). 60 Lemma C.9. Let {Ui : i = 1 , 2, . . . } be an i.i.d. sequence of random variables with E U 2 
+
+> i
+
+<
+
+∞. Let {ξi : i = 1 , 2, . . . } be an i.i.d. sequence of random variables independent from 
+
+{Ui : i = 1 , 2, . . . } satisfying E{ξi} = Var {ξi} = 1 . Then, conditionally on {Ui : i = 1 , 2, . . . },
+
+√n En
+
+ξi
+
+ξ − 1
+
+
+
+Ui ⇝ N (0 , Var( U )) 
+
+for almost all sequences {Ui : i = 1 , 2, . . . }.Proof. This is a standard result in bootstrap theory. A proof can be found, for example, in Kosorok (2008, Theorem 2.6). 
+
+Lemma C.10. Let h0 ∈ H , and let Assumptions 3.1, 3.2(i), and 3.3 hold. Assume that 
+
+λ → 0 and nλ → ∞ . Then, (i) (T ∗ T + λ I) −1 T∗[(I −bP) bs − bTh0] , (ii) (T ∗ T + λ I) −1(bT∗
+
+−
+
+T∗)[(I −bP) bs − bTh0) , (iii) [( bT∗ bT + λ I) −1 −(T ∗ T + λ I) −1]bT∗
+
+[(I −bP) bs − bTh0] , and (iv) (bT∗ bT + 
+
+λ I) −1 bT∗ bTh0− (T ∗ T + λ I) −1 T∗ T h0 are all OP (1 /√nλ ). (v) If moreover h0 ∈ R [(T ∗ T) b/ 2],then ∥(T ∗ T + λ I) −1 T∗ T h0 − h0∥H = O(λ(b∧2) /2).Proof. The proof proceeds along lines similar to those of Beyhum et al. (2024b, Lemma S3.3). 
+
+Lemma C.11. Let Z be a compact set, and K : Z × Z → C be a continuous, symmetric, positive semidefinite kernel. Let (H, ⟨· , ·⟩ H) denote the Reproducing Kernel Hilbert Space (RKHS) with reproducing kernel K. Then, there exist a sequence (ηj )j ⊂ R+ and a sequence of continuous functions (ϕj )j , with ϕj : Z → C, such that: (i) Z
+
+> Z
+
+K(z, u ) ϕj (u) du = ηj ϕj (z) for all z ∈ Z and j ∈ N
+
+with Z
+
+> Z
+
+ϕj (z) ϕs(z) dz =
+
+
+
+1 if j = s
+
+0 if j̸ = s
+
+;
+
+(ii) 
+
+K(z, z ) ≥
+
+> N
+
+X
+
+> j=1
+
+ηj |ϕj (z)|2 for all z ∈ Z and N ∈ N ;
+
+(iii) for eϕj (z) = √ηj ϕj (z), the space 
+
+HEIG := 
+
+n
+
+f : Z → C s.t. for a sequence (βj )j in ℓ2
+
+f (z) = 
+
+> ∞
+
+X
+
+> j=1
+
+βj eϕj (z) pointwise in z ∈ Z 
+
+o
+
+61 endowed with the inner product 
+
+⟨f, g ⟩EIG =
+
+> ∞
+
+X
+
+> j=1
+
+βj γj (where g(z) = 
+
+> ∞
+
+X
+
+> j=1
+
+γj eϕj (z) ) 
+
+is an RKHS with reproducing kernel K;(iv) 
+
+(H , ⟨· , ·⟩ H) = ( HEIG , ⟨· , ·⟩ EIG ) .
+
+Proof . The results in ( i) and ( ii ) are known as Mercer’s Theorem. The proofs of ( iii )-( iv )can be found, for example, in Wainwright (2019, Chapter 12). 
+
+# D Low level conditions 
+
+In this Appendix, we provide primitive conditions that imply the high-level assumptions in the main text, namely Assumptions 3.4 and 4.2. Let 
+
+∂κκ K(z1, z 2) := ∂2κ
+
+∂κz1∂κz2
+
+K(z1, z 2) .
+
+We introduce the following primitive conditions. 
+
+Assumption D.1. ∂κκ K is well-defined and continuous on Int( Z) × Int( Z) for some κ ≥ 2.
+
+Let ∂Z denote the boundary of Z.
+
+Assumption D.2. fZ = 0 on ∂Z.
+
+The following lemma shows that, under these two low-level conditions, the high-level assumptions stated in the main text are satisfied. 
+
+Lemma D.1. Let h0 ∈ H , and let Assumptions 3.1, 3.2(i), and 3.3 hold. Suppose that Conditions D.1 and D.2 are satisfied, and that λ → 0 and nλ → ∞ . Then, Assumptions 3.4 and 4.2 hold. Proof. We first establish Part (i) of Assumption 3.4. By Condition D.1, ∂κκ K is well-defined and continuous for some κ ≥ 2. It then follows from Steinwart and Christmann (2008, Corollary 4.36) that every h ∈ H is κ times continuously differentiable and satisfies 
+
+|h(κ)(z)| ≤ ∥ h∥H[∂κκ K(z, z )] 1/2 for κ = 0 , 1, 2 . (69) Since bh, h 0 ∈ H , we obtain 
+
+|bh(κ)(z) − h(κ)0 (z)| ≤ ∥ bh − h0∥H[∂κκ K(z, z )] 1/2 for κ = 0 , 1, 2 . (70) 62 Accordingly, sup 
+
+> z∈Z
+
+|bh(κ)(z) − h(κ)0 (z)| ≤ ∥ bh − h0∥H sup 
+
+> z∈Z
+
+[∂κκ K(z, z )] 1/2 for κ = 0 , 1, 2 .
+
+Since by Assumption 3.1(iii) Z is compact, and by Condition D.1 ∂κκ K is continuous, sup z∈Z [∂κκ K(z, z )] 1/2 is finite for κ = 0 , 1, 2. Moreover, by Lemma C.3, ∥bh − h0∥H = oP (1). Gathering these results gives sup 
+
+> z∈Z
+
+|bh(κ)(z) − h(κ)0 (z)| = oP (1) for κ = 0 , 1, 2 .
+
+Hence, Part (i) of Assumption 3.4 is established. Part (i) of Assumption 4.2 follows by analogous arguments. We now establish Part (ii) of Assumption 3.4. From Equation (69), sup 
+
+> z∈Z
+
+|h(κ)0 (z)| ≤ ∥ h0∥H sup 
+
+> z∈Z
+
+[∂κκ K(z, z )] 1/2 for κ = 0 , 1, 2 . (71) Using (69) and ∥bh − h0∥H = oP (1) gives sup 
+
+> z∈Z
+
+|bh(κ)(z)| ≤ [∥bh − h0∥H + ∥h0∥H] sup 
+
+> z∈Z
+
+[∂κκ K(z, z )] 1/2 (a)
+
+≤ 2∥h0∥H sup 
+
+> z∈Z
+
+[∂κκ K(z, z )] 1/2] =: CH ,
+
+(72) where the inequality ( a) holds with probability approaching one. Let us now define the class of functions 
+
+G := {f : Z → R such that |f (κ)| ≤ CH for κ = 0 , 1} .
+
+Then, by (71) and (72), h′ 
+
+> 0
+
+∈ G and Pr( bh′ ∈ G ) → 1. Applying Van der Vaart and Wellner (1996, Corollary 2.7.2) with α = d = 1 yields log N[ ] (ϵ, G, L 2(P )) ≤ Cϵ −1 ,
+
+for a fixed constant C independent of ϵ. Thus, Part (ii) of Assumption 3.4 is established. Assumption 4.2(ii) can be obtained by analogous arguments. Finally, since bh, bhb, and h0 are continuous on Z, Assumptions 3.4(iii) and 4.2(iii) follow directly from Condition D.2. 63 References 
+
+Ai, C. and Chen, X. (2003). Efficient estimation of models with conditional moment restric-tions containing unknown functions. Econometrica , 71(6):1795–1843. Ai, C. and Chen, X. (2007). Estimation of possibly misspecified semiparametric conditional moment restriction models with different conditioning variables. Journal of Econometrics ,141(1):5–43. Angrist, J. D. and Lavy, V. (1999). Using maimonides’ rule to estimate the effect of class size on scholastic achievement. The Quarterly Journal of Economics , 114(2):533–575. Armstrong, M. (2006). Competition in two-sided markets. The RAND Journal of Economics ,37(3):668–691. Babii, A. (2022). High-dimensional mixed-frequency iv regression. Journal of Business & Economic Statistics , 40(4):1470–1483. Babii, A. and Florens, J.-P. (2025). Are unobservables separable? Econometric Theory ,41(3):551–583. Bennett, A., Kallus, N., Mao, X., Newey, W., Syrgkanis, V., and Uehara, M. (2023). Source condition double robust inference on functionals of inverse problems. arXiv preprint arXiv:2307.13793 .Berlinet, A. and Thomas-Agnan, C. (2011). Reproducing kernel Hilbert spaces in probability and statistics . Springer Science & Business Media. Beyhum, J., Florens, J.-P., Lapenta, E., and Keilegom, I. V. (2024a). Testing for homoge-neous treatment effects in linear and nonparametric instrumental variable models. Econo-metric Reviews , 43(7):540–557. Beyhum, J., Lapenta, E., and Lavergne, P. (2024b). One-step smoothing splines instrumental regression. The Econometrics Journal , 28(2):176–197. Bierens, H. J. (2016). Econometric model specification . World Scientific. Breunig, C. and Johannes, J. (2016). Adaptive estimation of functionals in nonparametric instrumental regression. Econometric Theory , 32(3):612–654. Carrasco, M., Florens, J.-P., and Renault, E. (2007). Linear inverse problems in structural econometrics estimation based on spectral decomposition and regularization. Handbook of econometrics , 6:5633–5751. 64 Chandra, A. and Collard-Wexler, A. (2009). Mergers in two-sided markets: An applica-tion to the canadian newspaper industry. Journal of Economics & Management Strategy ,18(4):1045–1070. Chen, J., Chen, X., and Tamer, E. (2023). Efficient estimation of average derivatives in npiv models: Simulation comparisons of neural network estimators. Journal of Econometrics ,235(2):1848–1875. Chen, X., Christensen, T., and Kankanala, S. (2025). Adaptive estimation and uniform con-fidence bands for nonparametric structural functions and elasticities. Review of Economic Studies , 92(1):162–196. Chen, X. and Christensen, T. M. (2018). Optimal sup-norm rates and uniform inference on nonlinear functionals of nonparametric iv regression. Quantitative Economics , 9(1):39–84. Chernozhukov, V., Escanciano, J. C., Ichimura, H., Newey, W. K., and Robins, J. M. (2022). Locally robust semiparametric estimation. Econometrica , 90(4):1501–1535. Darolles, S., Fan, Y., Florens, J.-P., and Renault, E. (2011). Nonparametric instrumental regression. Econometrica , 79(5):1541–1565. Davidson, R. and MacKinnon, J. G. (2007). Improving the reliability of bootstrap tests with the fast double bootstrap. Computational Statistics & Data Analysis , 51(7):3259–3281. D’Haultfoeuille, X. (2011). On the completeness condition in nonparametric instrumental problems. Econometric Theory , 27(3):460–471. Escanciano, J. C. and Song, K. (2010). Testing single-index restrictions with a focus on average derivatives. Journal of Econometrics , 156(2):377–391. Florens, J.-P. (2003). Inverse problems and structural econometrics: The example of instru-mental variables. Econometric Society Monographs , 36:284–311. Florens, J.-P., Johannes, J., and Van Bellegem, S. (2011). Identification and estimation by penalization in nonparametric instrumental regression. Econometric Theory , 27(3):472– 496. Florens, J.-P., Johannes, J., and Van Bellegem, S. (2012). Instrumental regression in partially linear models. The Econometrics Journal , 15(2):304–324. Frankel, J. A. and Romer, D. H. (1999). Does trade cause growth? American Economic Review , 89(3):379–399. 65 Freyberger, J. (2017). On completeness and consistency in nonparametric instrumental vari-able models. Econometrica , 85(5):1629–1644. Giacomini, R., Politis, D. N., and White, H. (2013). A warp-speed method for conducting monte carlo experiments involving bootstrap estimators. Econometric Theory , 29(3):567– 589. Horowitz, J. L. (2011). Applied nonparametric instrumental variables estimation. Econo-metrica , 79(2):347–394. Kosorok, M. R. (2008). Introduction to empirical processes and semiparametric inference ,volume 61. Springer. Kress, R. (1999). Linear integral equations . Springer. Kreyszig, E. (1991). Introductory functional analysis with applications . John Wiley & Sons. Newey, W. K. and Powell, J. L. (2003). Instrumental variable estimation of nonparametric models. Econometrica , 71(5):1565–1578. Powell, J. L., Stock, J. H., and Stoker, T. M. (1989). Semiparametric estimation of index coefficients. Econometrica , 57(6):1403–1430. Rochet, J.-C. and Tirole, J. (2006). Two-sided markets: a progress report. The RAND Journal of Economics , 37(3):645–667. Rysman, M. (2004). Competition between networks: A study of the market for yellow pages. 
+
+The Review of Economic Studies , 71(2):483–512. Rysman, M. (2007). An empirical analysis of payment card usage. The Journal of Industrial Economics , 55(1):1–36. Sanchez-Cartas, J. M. and Le´ on, G. (2021). Multisided platforms and markets: A survey of the theoretical literature. Journal of Economic Surveys , 35(2):452–487. Santos, A. (2011). Instrumental variable methods for recovering continuous linear functionals. 
+
+Journal of Econometrics , 161(2):129–146. Severini, T. A. and Tripathi, G. (2012). Efficiency bounds for estimating linear functionals of nonparametric regression models with endogenous regressors. Journal of Econometrics ,170(2):491–498. 66 Singh, R., Sahani, M., and Gretton, A. (2019). Kernel instrumental variable regression. 
+
+Advances in Neural Information Processing Systems , 32. Sokullu, S. (2016). A semi-parametric analysis of two-sided markets: An application to the local daily newspapers in the usa. Journal of Applied Econometrics , 31(5):843–864. Steinwart, I. and Christmann, A. (2008). Support vector machines . Springer Science & Business Media. Van der Vaart, A. W. (2000). Asymptotic statistics . Cambridge University Press. Van der Vaart, A. W. and Wellner, J. A. (1996). Weak convergence and empirical processes: with applications to statistics . Springer. Wainwright, M. J. (2019). High-dimensional statistics: A non-asymptotic viewpoint . Cam-bridge University Press. Zhang, R., Imaizumi, M., Sch¨ olkopf, B., and Muandet, K. (2023). Instrumental variable regression via kernel maximum moment loss. Journal of Causal Inference , 11(1):20220073. 67
