@@ -1,0 +1,4398 @@
+Title: Fundamental Limits and Optimal Methods for Sharp Analytical Causal Bounds in Instrumental Variable Models
+
+URL Source: https://arxiv.org/pdf/2604.12802v1
+
+Published Time: Wed, 15 Apr 2026 01:14:15 GMT
+
+Number of Pages: 76
+
+Markdown Content:
+# Fundamental Limits and Optimal Methods for Sharp Analytical Causal Bounds in Instrumental Variable Models 
+
+Arefe Boushehrian ∗1, Mohammad Reza Badri ∗1, Sina Akbari 2, and Negar Kiyavash 11EPFL, Switzerland 
+
+> 2
+
+Statistical Laboratory, University of Cambridge, UK 
+
+Abstract 
+
+Bounding causal effects analytically, rather than numerically, is appealing for its inter-pretability and conceptual clarity. Existing sharp methods rely on optimization-based ap-proaches such as the Balke–Pearl framework, whose computational complexity grows rapidly. An alternative line of work derives bounds heuristically using probability laws and generic in-equalities, and some recent papers have claimed or conjectured that this approach can yield sharp analytical bounds with substantially lower complexity. In this paper, we show that this perceived advantage is illusory. In particular, in a discrete instrumental variable setting, we show that any sharp analytical bound for the average treatment effect must be expressible as a maximum (minimum) over a collection of linear terms whose cardinality grows exponentially in the number of values taken by the outcome. In parallel, we show that the number of instrumen-tal variable inequalities itself also grows exponentially. Consequently, bounds and inequalities expressed using only polynomially many such terms cannot be sharp. As a constructive com-plement, the paper is accompanied by codes implemented in python and R to derive sharp analytical bounds and sharp inequalities with optimal efficiency, matching the lower bounds proven in this paper. These codes are available online. 
+
+# 1 INTRODUCTION 
+
+Bounding causal effects under partial identification has a long history in statistics, econometrics, and causal inference. When point identification fails, sharp bounds provide the tightest possible characterization of causal estimands consistent with observed data and maintained assumptions. Seminal contributions by Manski (1990) and Manski (2003) formalized partial identification as a coherent framework, while subsequent work on instrumental variable (IV) models clarified how structural assumptions can result in narrower identification regions (Balke 1995; Balke and Pearl 1997; Robins 1989; Pearl 1995). 
+
+> ∗
+
+Authors contributed equally. 
+
+1
+
+> arXiv:2604.12802v1 [stat.ME] 14 Apr 2026
+
+Among the available tools for bounding causal estimands, analytical bounds , closed-form expressions written directly as functionals of observed probabilities, are especially appealing due to their inter-pretability and transparency. However, the computational complexity of deriving sharp analytical bounds remains poorly understood. Two broad approaches have been developed to derive analytical bounds in IV models. The first for-mulates the bounding problem as an optimization over the space of full data distributions consistent with the observed data and the structural assumptions. This approach originates in Balke (1995), and has been extended in multiple directions (Cheng and Small 2006; Richardson and Robins 2014; Sachs et al. 2020; Duarte et al. 2024). These methods are guaranteed to yield sharp bounds, but their computational cost grows rapidly with the cardinalities of the observed variables, making them difficult to apply in more complex discrete settings. The second approach derives inequalities algebraically from the observed data law using logical implications of the causal model, the laws of probability, and generic inequalities, e.g. Fr´ echet inequalities (Fr´ echet 1935; Manski 1990; K´ edagni and Mourifi´ e 2020; Finkelstein and Shpitser 2020). While these bounds are not guaranteed to be sharp, they are often easier to interpret and compute. Because these approaches do not explicitly enumerate vertices of the full-data polytope, it has been conjectured, implicitly or explicitly Bonet (2001); K´ edagni and Mourifi´ e (2020); Shu et al. (2025) that sharp analytical bounds and complete testable implications might be obtained through these approaches without incurring the limiting computational complexity of the optimization-based approaches. This paper shows that such a computational separation is impossible. Focusing on the discrete instrumental variable (IV) model, we establish fundamental lower bounds on the complexity of 
+
+both sharp partial identification bounds for the average treatment effect (ATE) and sharp testable implications of the IV model. First, for partial identification, we prove that when the outcome variable Y takes n distinct values, any sharp upper (or lower) bound for the ATE must be representable as the minimum (or maximum) over a collection of linear expressions whose cardinality grows exponentially in n. Consequently, no polynomial-size family of linear analytical expressions can yield sharp bounds in general. Second, we provide a complete and sharp characterization of the testable implications of the discrete IV model. We show that the set of observed data distributions compatible with the model is defined by a family of linear inequalities corresponding to the extreme rays of a dual cone. Crucially, we prove that the number of necessary and sufficient IV inequalities also grows exponentially in the support size of the outcome. Thus, any complete system of testable implications must be exponentially large in the worst case. This extends and sharpens earlier results on instrumental inequalities (Pearl 1995; Bonet 2001; K´ edagni and Mourifi´ e 2020) by providing necessity, sufficiency, and explicit lower bounds on their number in multi-valued settings. Both results show that the exponential growth observed in linear programming approaches, there-fore, reflects an intrinsic combinatorial feature of the IV model rather than an artifact of a particular computational technique. As a constructive complement to our theoretical results, we develop a software package that com-putes sharp upper and lower bounds on the ATE as well as sharp IV inequalities (testable im-plications) with optimal output-sensitive complexity , that is, time linear in the number of sharp terms (or inequalities). Rather than enumerating extreme points of the dual linear program, our 2implementation exploits the explicit structural characterizations derived in this paper to generate sharp bounds and IV inequalities directly. This avoids the combinatorial overhead inherent in off-the-shelf linear programming or vertex-enumeration routines. Simulation studies demonstrate substantial computational gains. While existing packages based on generic optimization or poly-hedral enumeration become practically intractable even for moderate outcome support sizes, our method computes the full collection of sharp bounds and necessary and sufficient IV inequalities in milliseconds, even when the outcome support is large. 
+
+1.1 RELATED WORK 
+
+The identification of causal effects in IV models dates back to classical econometric analyses of simultaneous equations and compliance behavior. Under additional structural assumptions such as monotonicity, point identification of effects is possible (Angrist and Imbens 1995, 1991; Chamber-lain 1986; Manski and Pepper 1998). Without such strengthening assumptions, causal effects are generally only partially identified. Sharp bounds for IV models were first derived via linear programming in Balke (1995). Extensions to multi-valued instruments appeared in Cheng and Small (2006) and Richardson and Robins (2014), building on earlier nonparametric bounds in Robins (1989) and Manski (1990). Symbolic and algorithmic characterizations of causal bounds from general DAGs were developed in Sachs et al. (2020). Our results complement these works by proving that their observed time complexity is unavoidable for sharp analytical solutions, rather than an artifact of their approaches. On the testability side, Pearl (1995) derived the original instrumental inequalities for the binary case, and Bonet (2001) strengthened these results. K´ edagni and Mourifi´ e (2020) provided necessary and sufficient generalized instrumental inequalities for the binary treatment and outcome setting under joint independence. Most recently, Song et al. (2024) characterized the restrictions on the joint distribution of potential outcomes in a categorical IV model. We extend this literature by (i) providing necessary and sufficient inequalities for multi-valued outcomes, and (ii) establishing exponential lower bounds on the number of inequalities required for completeness. Finally, continuous IV models have been studied under structural or semiparametric assumptions (Angrist and Imbens 1995; Kitagawa 2009; Beresteanu et al. 2012). However, without additional restrictions, continuous IV models impose no testable constraints on the observed distribution (Bonet 2001; Gunsilius 2021). Our focus is therefore on the discrete setting, where rich geometric structure emerges. 
+
+Contributions. We make three main contributions: 1. Sharp analytical ATE bounds. We prove that any sharp representation of the ATE bounds the discrete IV model must involve exponentially many linear terms in the outcome support size, showing that the computational burden is unavoidable when deriving sharp bounds. We provide an explicit and complete characterization of these bounds in the binary instrument setting. 2. Sharp testable implications. We establish exponential (in the outcome support size) lower bounds on the number of sharp testable implications (IV inequalities) in the discrete 3IV model. We provide these sharp inequalities explicitly in the binary instrument setting. 3. Computationally optimal code. We provide codes to compute all sharp bounds and inequalities with optimal time complexity in the binary instrument setting, which enables tractable computation of bounds and inequalities in discrete IV models. 
+
+# 2 Problem setup 
+
+For n ∈ N, we denote the set {0, · · · , n − 1} by [ n]. Throughout the paper, vectors are shown by bold letters (e.g., p), random variables by capital letters (e.g., Y ), and probability measures by calligraphic letters (e.g., P). We consider the instrumental variable model with categorical variables. We let D denote a dichoto-mous treatment variable. We assume without loss of generality that D ∈ { 0, 1}. We denote the observed outcome variable and the instrument by Y and Z, respectively. Following Neyman-Rubin potential outcome model, let Y (d,z ) denote the potential outcome of Y , if the treatment and the instrument (possibly contrary to the fact) were set to D = d and Z = z, respectively. We assume these variables exist throughout. The variables D(z) are defined similarly, as the potential outcome of D, had (possibly contrary to the fact) the instrumental variable been set to Z = z. The existence of these variables, however, is only essential to some of our results. We assume the outcome variable Y takes values in a finite real-valued set {γ0, γ 1, · · · , γ n−1}, where 
+
+γ0 < γ 1 < · · · < γ n−1 without loss of generality. We further assume that the instrument Z takes values in [ ℓ]. We require an exclusion restriction in our setting. 
+
+Assumption 1 (Individual-level exclusion) . Y (d,z ) = Y (d,z ′) almost surely for all z, z ′ ∈ [ℓ] and every d ∈ { 0, 1}.
+
+The individual-level exclusion restriction posits that there is no direct effect of Z on the outcome 
+
+Y other than through the treatment of interest D. We maintain this assumption throughout the manuscript and consequently simplify the notation and use Y (d) to denote potential outcomes. In addition to the exclusion restriction, we will work under an IV independence assumption. We consider the following two versions. 
+
+Assumption 2 (Random assignment) . The variables D(z) for z ∈ [ℓ] exist, and, 
+
+Z ⊥⊥
+
+
+
+Y (0) , Y (1) , D (0) , D (1) , . . . , D (ℓ−1) 
+
+.
+
+Assumption 3 (Joint independence) .
+
+Z ⊥⊥ (Y (0) , Y (1) ).
+
+Assumption 2 is stronger than Assumption 3, in the sense that the former implies the latter. In the remainder of this paper, we work under Assumption 2 for ease of exposition. However, we will show that most of our results are valid under Assumption 3. Finally, we make the standard consistency assumption: 4Assumption 4 (Consistency) .
+
+Y = (1 − D)Y (0) + DY (1) , (4a) 
+
+D = P 
+
+> z∈[ℓ]
+
+1(Z = z)D(z), (4b) 
+
+where 1(·) is the indicator function. 
+
+Let Qf and P represent the full data and the observed data laws, respectively. For example, when ℓ = 2 (binary instrument), Qf = L(Y (0) , Y (1) , D (0) , D (1) , Z ), and P = L(Y, D, Z ). We denote by Q the marginal law of ( Y (0) , Y (1) , D (0) , . . . , D (ℓ−1) ), after marginalizing out Z, induced by Qf . Moreover, for every z ∈ [ℓ], we define the stochastic kernel Pz as the regular conditional distribution 1 of ( Y, D ) given Z = z under P. That is, Pz := P(Y, D | Z = z). Finally, we use qij, d
+
+and pid,z as shorthand for Q  Y (0) = γi, Y (1) = γj , (D(0) , . . . , D (ℓ−1) ) = d and Pz (Y = γi, D = d), respectively. In this work, we consider the following two problems. 
+
+Sharp Partial Identification Bounds for the Average Treatment Effect. We consider the problem of deriving sharp bounds for the average treatment effect, defined as 
+
+ATE (Qf ) := EQf [Y (1) − Y (0) ]: = P
+
+> i,j ∈[n]
+
+P 
+
+> d∈{ 0,1}ℓ
+
+(γj − γi) qij, d. (1) Specifically, the objective is to derive functionals U (·) and L(·) of the observed data law P such that the following inequalities are valid and sharp 
+
+L(P) ≤ AT E (Qf ) ≤ U (P), (2) meaning that (i) they contain the true value of the estimand for every full data law that is com-patible with the maintained assumptions and the observed distribution (valid); and, (ii) they are the tightest possible among all valid bounds (sharp). Specifically, for every observed law P con-forming to the IV model, there exist full data distributions QfL and QfU satisfying the maintained assumptions and having the marginal P that attain these bounds, i.e. 
+
+AT E (QfL) = L(P), AT E (QfU ) = U (P).
+
+In general, one has to derive the functional L(·) and U (·) separately. However, in the following proposition we show that using the symmetry of the ATE functional, U (P) can be expressed as 
+
+L(·) evaluated at a different point (and vise versa). 
+
+Proposition 1. For any observed data law P we have U (P) ≡ − L( ¯P), where the law ¯P can be constructed based on P as follows: 
+
+¯P(Y = y, D = d, Z = z) = P(Y = y, D = 1 − d, Z = z).     
+
+> 1We assume without loss of generality that P(Z)>0. Otherwise, one can discard the values zwith zero probability and rearrange.
+
+5Proof. Let ¯Qf be defined as ¯Qf (Y (0) = γi, Y (1) = γj , (D(0) , . . . , D (ℓ)) = d, Z = z) = 
+
+Qf (Y (0) = γj , Y (1) = γi, (D(0) , . . . , D (ℓ)) = d, Z = z),
+
+which is the probability measure resulting from relabeling Y (0) and Y (1) by swapping them. By definition, 
+
+ATE ( ¯Qf ) := E ¯Qf [Y (1) − Y (0) ] = EQf [Y (0) − Y (1) ] = −ATE (Qf ). (3) Let ¯P be the observed data law induced by ¯Qf under consistency. Equation (3) implies that if 
+
+L( ¯P) is a (sharp) lower bound for ATE( ¯Qf ), then −L( ¯P) is a (sharp) upper bound for ATE( Qf ); that is, U (P) ≡ − L( ¯P). The law ¯P can be easily constructed based on P as follows. ¯P(Y = y, D = d, Z = z) = P(Y = y, D = 1 − d, Z = z).
+
+Therefore, it is sufficient to characterize the lower bound functional L(·) for our purposes. We call ¯P the conjugate observed law, and similar to P, we define conditionals ¯Pz and use ¯ pij, d as shorthand for its conditionals. 
+
+Sharp Testable Implications. It is known that the instrumental variable model has testable implications (see, e.g. Pearl (1995); K´ edagni and Mourifi´ e (2020)). In particular, the instrumen-tal variable model imposes restrictions on the observed data law P, and if these restrictions are violated, the IV model is falsified. Here, we consider the problem of deriving the set of valid and 
+
+sharp testable implications, in the sense that (i) if the true data-generating process follows the instrumental variable model, then P satisfies these implications, and (ii) if P satisfies this set of testable implications, then there exists a full data law Qf that follows the IV model and induces (marginalizes to) P. In other words, the IV model cannot be falsified. 
+
+# 3 Linear Programming Formulation and the Dual 
+
+In this section, we formalize the set of necessary and sufficient (linear) constraints that the full data law must satisfy under Assumptions 1, 2 and 4. Additionally, we review a unified linear programming approach to solving both classes of problems considered in this work. 
+
+Proposition 2. Under Assumptions 1, 2 and 4, given the observed law P, the marginal law of potential outcome variables Q(·) is sharply characterized as follows: 
+
+
+
+py0,z = P
+
+> j∈[n]
+
+P 
+
+> d∈{ 0,1}ℓ,dz=0
+
+qyj, d ∀y ∈ [n], z ∈ [ℓ],py1,z = P
+
+> i∈[n]
+
+P 
+
+> d∈{ 0,1}ℓ,dz=1
+
+qiy, d ∀y ∈ [n], z ∈ [ℓ],qij, d ≥ 0 ∀i, j ∈ [n], d ∈ { 0, 1}ℓ,
+
+(4) 
+
+where dz is the z-th element of vector d.
+
+6The proof of Proposition 2 is given in Appendix A.1. Proposition 2 states that for any IV model, these equations hold (necessity), and for every pair P, Q that satisfy these equations, there exists a full data law Qf ∗ conforming to the IV model that marginalizes to Q and P (sufficiency). Let p, ¯p ∈ R2ℓn and q ∈ R2ℓn2
+
+be vector representations of pyd,z and ¯ pyd,z for all y, d, z and qij, d for all i, j, d, respectively. Equation (4) can be expressed in matrix form: 
+
+M ⊤q = p, q ≥ 0, (5) where M is a binary matrix such that 
+
+M(ij, d),(yd,z ) = 1 if qij, d appears in the equation corresponding to pyd,z in Equation (4), and is 0 otherwise. In Appendix, we provide an example where n = ℓ = 2 and the corresponding matrix M is given (see Section E.1). 
+
+3.1 Linear Programming and the Dual Problem 
+
+Based on Proposition 2 and its matrix representation (Equation 5), the set of all full data laws consistent with the observed distribution p is given by the convex polytope Γ( p) := 
+
+n
+
+q ∈ R2ℓn2
+
+: M ⊤q = p, q ≥ 0
+
+o
+
+. (6) Below, we review how the problems we consider in this paper are cast into linear programming (LP) problems using the latter observation. 
+
+Partial Identification for ATE. The ATE is a linear functional of the full data law. In partic-ular, ATE( Qf ) = c⊤q,
+
+where the coefficient vector c is defined component-wise as 
+
+cij, d = γj − γi,
+
+for all i, j ∈ [n] and all d ∈ { 0, 1}ℓ (see Equation 1). Therefore, the sharp identification region for the ATE is given by solutions to the linear programs 
+
+L(P) = min  
+
+> q
+
+c⊤q s.t. M ⊤q = p, q ≥ 0 (7) and 
+
+U (P) = max  
+
+> q
+
+c⊤q s.t. M ⊤q = p, q ≥ 0= −L( ¯P)= − min  
+
+> q
+
+c⊤q s.t. M ⊤q = ¯ p, q ≥ 0, (8) where U, L are defined in Equation (2). Since Γ( p) (the feasibility region) is a convex polytope, the resulting interval [L(P), U (P)] = [ L(P), −L( ¯P)] is the sharp identification region for the ATE. 7Testable Implications of IV Model. To test whether a given observed probability vector p is compatible with the IV model, we seek necessary and sufficient conditions on p such that existence of a vector q satisfying the linear system in Equation (5) is guaranteed. In other words, we want to determine whether the set Γ( p) is nonempty. This can be cast as deciding the feasibility of the following linear program: min  
+
+> q
+
+0 s.t. M ⊤q = p, q ≥ 0. (9) The IV model can be falsified if and only if the latter is not feasible. 
+
+Dual Formulation. The dual formulation provides an alternative characterization of both sharp identification regions and testable implications. By the strong duality theorem of linear program-ming, whenever the feasible set Γ( p) is nonempty, the optimal values of the primal and dual problems coincide (see, e.g., (Boyd and Vandenberghe 2004, Section 5.2.3)). The dual has two desirable advantages: (i) solving the dual can be computationally more efficient as it is defined over parameters corresponding to the observed data with dimension 2 ℓn , whereas the primal is defined over parameters corresponding to the full data law with dimension 2 ℓn2; (ii) more importantly, the dual admits a form where the constraints do not depend on the observed vector p. As we shall see in Section 3.2, the latter is essential for deriving analytical (closed-form) solutions to the LPs. The dual LPs associated with Equations (7) and (8) are max  
+
+> v∈R2ℓn
+
+v⊤p s.t. M v ≤ c, (10) and 
+
+− max  
+
+> v∈R2ℓn
+
+v⊤ ¯p s.t. M v ≤ c, (11) respectively, where v is the vector of dual variables corresponding to the equality constraints of primal LPs. Every dual-feasible vector v in Equation (10) or (11) generates a valid bound which holds uniformly over all full data laws consistent with the observed distribution. The optimal dual solution yields the tightest such bound. In the testable implications setting, a fundamental result from linear programming (a theorem of the alternative; see, e.g., (Boyd and Vandenberghe 2004, Section 5.8)) implies that the primal problem of Equation (9) is feasible if and only if 
+
+{ max  
+
+> r∈R2ℓn
+
+p⊤r subject to M r ≤ 0} ≤ 0. (12) In other words, each vector r satisfying M r ≤ 0 imposes the linear inequality p⊤r ≤ 0 that must be satisfied by the observed distribution p. These inequalities are necessary and sufficient for the existence of a full data law q ≥ 0 satisfying M ⊤q = p.
+
+3.2 Dual Solution via Extreme Points and Rays 
+
+In this section, we discuss how to derive closed-form solutions of the dual LPs. We Denote the feasible regions of Equations (10) and (11) by 
+
+H := {v ∈ R2ℓn : M v ≤ c},
+
+8and the corresponding feasible region of Equation (12) by 
+
+K := {r ∈ R2ℓn : M r ≤ 0}.
+
+Note that these sets do not depend on the observed data law; they remain invariant across every instance of the IV model, and so are their extreme points. Closed-form solutions can therefore be obtained through finding the extreme points and rays of these feasible regions. We provide the necessary formalism below. Both H and K are polyhedra. However, since M might not have full column rank, these polyhedra contain affine directions given by ker( M ). Consequently, feasible points are not isolated in R2ℓn : if 
+
+v is feasible, then so is v + s for any s ∈ ker( M ). To eliminate this intrinsic degeneracy, we work modulo ker( M ). 
+
+Definition 1 (M -equivalent and M -distinct) . Two vectors v1, v2 are M -equivalent if 
+
+v1 − v2 ∈ ker( M ),
+
+or equivalently, M v1 = M v2. Two vectors are called M -distinct if they are not M -equivalent. 
+
+Working in the quotient space R2ℓn \ ker( M ) removes affine directions and restores a proper notion of extremality. 
+
+Definition 2 (Vertex) . A vector v ∈ H is a vertex of H if for any representation 
+
+v = λv1 + (1 − λ)v2, λ ∈ (0 , 1) , v1, v2 ∈ H ,
+
+the vectors v, v1, v2 are M -equivalent. 
+
+A vertex is a point in H that cannot be written as a nontrivial convex combination of two M -distinct feasible points. The dual optimum will be attained at a vertex of H (see Section A.2 for a more detailed discussion). Therefore, sharp identification bounds can be obtained by evaluating 
+
+p⊤v and ¯ p⊤v over the (finite) set of vertices. The set K is a polyhedral cone. The feasibility of the primal problem is equivalent to 
+
+p⊤r ≤ 0 for all r ∈ K .
+
+Hence, the extreme rays of K determine all necessary and sufficient IV inequalities. 
+
+Definition 3 (Extreme ray) . A nonzero vector r ∈ K is an extreme ray of K if for any decompo-sition 
+
+r = r1 + r2, r1, r2 ∈ K ,
+
+there exist α, β ≥ 0 such that 
+
+M r1 = αM r, M r2 = βM r
+
+or equivalently, 
+
+r1 = αr + s1, r2 = βr + s2
+
+for some s1, s2 ∈ ker( M ).
+
+9Each extreme ray r generates the affine set 
+
+Er = {αr + s : α > 0, s ∈ ker( M )}.
+
+Since K is a polyhedral cone, it admits only finitely many M -distinct extreme rays Rockafellar (1970) (see Section A.3 for a more detailed discussion). Consequently, K can be written as the conic hull of finitely many extreme rays. It follows that the infinite family of inequalities p⊤r ≤ 0for all r ∈ K reduces to a finite family indexed by the extreme rays. The above discussion yields a unifying principle: 
+
+• Sharp identification bounds are obtained by enumerating the vertices of H.
+
+• Sharp testable implications are obtained by enumerating the extreme rays of K.We shall explicitly characterize the vertices of H and the extreme rays of K in Sections 4 and 5, respectively, and present closed-form sharp bounds and IV inequalities accordingly. 
+
+# 4 Partial Identification of ATE 
+
+We first present the sharp ATE bounds for the case where ℓ = 2 (binary instrument) in Section 4.1. Later in Section 4.2, we provide an exponential lower bound on the number of terms in the bounds for an arbitrary value of ℓ (multi-valued instrument). 
+
+4.1 Binary instrument 
+
+To compute the vertices of H explicitly in this case, we use the special structure of H. An extensive list of the useful properties of H along with their proof is available in Appendix B. Using these properties, for every feasible point v ∈ H , we build a corresponding binary vector b, which we call the signature of that feasible point. See Definition 10 in Appendix B.3 for the details of constructing a signature vector. We next define a set S of such signature vectors that, as we shall see, correspond to the M -distinct vertices of H.
+
+Definition 4 (Admissible signatures) . The set of admissible signatures, denoted by S, is defined as S = S1 ∪ S2 ∪ S3, where each Si is a set of binary vectors b ∈ Rn×2×2 s.t. 1. b ∈ S1 iff 
+
+• ∃ t ∈ [n − 1] such that bi00 = bi01 = 1 for all i ≥ t and bi00 ̸ = bi01 for all i < t .
+
+• For all i ∈ [n], bi10 ̸ = bi11 .
+
+• There exist i, j ∈ [n] such that bi10 = bj11 = 1 .2. b ∈ S2 iff 
+
+• b(n−1)00 = b(n−1)01 = b010 = b011 = 1 .
+
+• For all 0 ≤ i < n − 1, bi00 ̸ = bi01 .
+
+10 • For all 0 < j ≤ n − 1, bj10 ̸ = bj11 .3. b ∈ S3 iff 
+
+• ∃ t ∈ [n − 1] such that bi10 = bi11 = 1 for all i ≤ t + 1 and bi10 ̸ = bi11 for all i > t + 1 .
+
+• For all i ∈ [n], bi00 ̸ = bi01 .
+
+• There exist i, j ∈ [n] such that bi00 = bj01 = 1 .
+
+In Appendix B, we first show that given a set of M -distinct vertices of H, every vertex induces a unique admissible signature b ∈ S. Conversely, given an admissible signature, we can reconstruct the corresponding vertex, as outlined below. 
+
+Definition 5 (Vertex map) . Given an admissible signature b ∈ S, we define the vector u(b) ∈
+
+Rn×2×2 as follows: 
+
+• ui00 = −γi − α if bi00 = 1 , and ui00 = γ0 otherwise; 
+
+• ui10 = γi if bi10 = 1 , and ui10 = −γn−1 − α otherwise; 
+
+• ui01 = −γi if bi01 = 1 , and ui01 = γ0 + α otherwise; 
+
+• ui11 = γi + α if bi11 = 1 , and ui11 = −γn−1 otherwise, where 
+
+α =
+
+
+
+−γ0 − γt if b ∈ S1,
+
+−γ0 − γn−1 if b ∈ S2,
+
+−γt − γn−1 if b ∈ S3.
+
+This following result establishes a one-to-one correspondence between the set of admissible signa-tures S and the M -distinct vertices of H.
+
+Theorem 1. The set V = {u(b) : b ∈ S} is a set of M -distinct vertices of H, and any other vertex of H is M -equivalent to a member of V.
+
+Corollary 1. The number of M -distinct vertices of H is exactly 
+
+5 × 4n−1 − 2n+2 + 4 ,
+
+which is the number of admissible signatures. 
+
+Sharp ATE bounds can be expressed in terms of the M -distinct vertices of H as follows. 
+
+Theorem 2. Under Assumptions 1, 2, and 4, the ATE admits the following valid and sharp bounds: 
+
+max  
+
+> v∈V
+
+v⊤p ≤ AT E ≤ − max  
+
+> v∈V
+
+v⊤ ¯p. (13) We presented the sharp bounds on ATE under random assignment (Assumption 2). However, our next result indicates that the ATE admits the same set of sharp bounds under the weaker assumption of joint independence. 
+
+Theorem 3. The ATE bounds of Equation (13) are valid and sharp under Assumptions 1, 3 and 4a. 
+
+Theorem 3 does not require the variables D(z) to be defined. For n = 2, the corresponding S, V, and ATE bounds are provided in Appendix E.3. 11 4.2 Multi-valued instrument 
+
+To show that the number of linear terms in the ATE bounds grows exponentially in the multi-valued instrument case ( ℓ > 2), we construct a family of M -distinct vertices whose cardinality grows as Ω( ℓn). 
+
+Theorem 4. For any a ∈ [ℓ], and any s = ( s0, . . . , s n−1) ∈ ([ ℓ] \ { a})n, define w(a, s) ∈ Rn×2×ℓ as 
+
+wy1,j = 0 , ∀y, j ̸ = a, wy1,a = γy − γn−1, ∀y, wy0,j = 0 , ∀y, j / ∈ { a, s y},wy0,s y = γn−1 − γy, ∀y, wy0,a = γ0 − γn−1, ∀y. 
+
+Then {w(a, s) : a ∈ [ℓ], s ∈ ([ ℓ] \ { a})n non-constant } is a set of M -distinct vertices of H (the fea-sible region of Equation 10). The number of these M -distinct vertices equals 
+
+ℓ
+
+
+
+(ℓ − 1) n−1 − (ℓ − 1) 
+
+
+
+.
+
+Corollary 2 (Exponential lower bound) . Under Assumptions 1, 2 and 4 (or alternatively, 1, 3 and 4a), if a set of linear functionals of P is a sharp ATE bound, then it must contain at least 
+
+ℓ
+
+
+
+(ℓ − 1) n−1 − (ℓ − 1) 
+
+
+
+terms. 
+
+# 5 Testable Implications 
+
+In a similar fashion to the previous section, we first present the sharp implications expressed as IV inequalities in a binary instrument case ( ℓ = 2) in Section 5.1. Later in Section 5.2, we provide an exponential lower bound on the number of sharp inequalities for an arbitrary value of ℓ.
+
+5.1 Binary instrument 
+
+As mentioned in Section 3, the implications of the IV model boil down to 
+
+p⊤r ≤ 0 for all r ∈ K . (14) Since K is a polyhedral cone, it can be expressed as a cone combination of finitely many, e.g. ω,extreme rays (see, e.g., (Rockafellar 1970, Section 19, Part IV)): 
+
+K = cone( r1, . . . , r ω) (15) Equation (14) is therefore equivalent to the finite family of inequalities 
+
+p⊤ri ≤ 0 ∀i ∈ { 1, . . . , ω }, (16) 12 where {r1, . . . , r ω} are M -distinct extreme rays of K. That is, the inequalities of Equation (16) are sufficient to test the IV model. In Appendix C, we characterize these extreme rays (see Propo-sition 7). We further show that each inequality of Equation (16) is necessary, that is, for each 
+
+i ∈ { 1, . . . , ω }, there exists a vector p such that p satisfies all inequalities but the one correspond-ing to ri (see Section C.3). Therefore, to obtain an explicit set of necessary and sufficient (valid and sharp) IV inequalities, it suffices to characterize the M -distinct extreme rays ri of K. The following result presents these sharp implications. 
+
+Theorem 5. Let P be the observed probability distribution, and pyd,z defined as in Section 2. The sharp testable implications of the IV model under Assumptions 1, 2, and 4 are the following inequalities: 
+
+P
+
+> k∈[n]
+
+−pk0,1 + P
+
+> k∈T
+
+(pk1,0 − pk1,1) ≤ 0 ∀T ⊆ [n − 1] , T ̸ = ∅
+
+P
+
+> k∈[n]
+
+−pk1,0 + P
+
+> k∈T
+
+(pk0,1 − pk0,0) ≤ 0 ∀T ⊂ [n], T ̸ = ∅
+
+P
+
+> k∈[n]
+
+−pk0,0 + P
+
+> k∈T
+
+(pk1,1 − pk1,0) ≤ 0 ∀T ⊆ [n − 1] , T ̸ = ∅
+
+(17) 
+
+Corollary 3. The number of sharp IV inequalities in a binary instrument setting is 2n+1 − 4.
+
+Remark 1. For a binary instrument, Bonet (2001) derived 2n+1 IV inequalities, showing that they are necessary but not sufficient. In fact, some of those inequalities were shown to be redundant within the same paper. More recently, K´ edagni and Mourifi´ e (2020) obtained 2n2
+
++2 n(4+2 n)+2 n+1 
+
+inequalities and proved their necessity, noting that this set may not be sufficient (and clearly contains redundancies). Theorem 5 provides a non-redundant, necessary and sufficient set of size 2n+1 − 4.
+
+For n = 2, the corresponding extreme rays and IV inequalities are provided in Appendix E.4. 
+
+5.2 Multi-valued instrument 
+
+We now show that the number of IV inequalities grows exponentially when the instrument Z
+
+takes ℓ > 2 values. To this end, it suffices to find a set of M -distinct extreme rays of K with exponentially increasing cardinality, and construct the corresponding IV inequalities. The following result presents such a set of inequalities. 
+
+Theorem 6. Suppose Assumptions 1, 2 and 4 hold. For any y′ ∈ [n − 1] , j′ ∈ [ℓ], and non-constant 
+
+(j0, . . . , j n−1) ∈ ([ ℓ] \ { j′})n, the following inequality holds: 
+
+py′1,j ′ ≤ X
+
+> j∈{ j0,...,j n−1}
+
+py′1,j +
+
+> n−1
+
+X
+
+> y=0
+
+py0,j y . (18) 
+
+Moreover, none of these inequalities are implied by the others (no redundancy), and their total number is 
+
+(n − 1) ℓ  (ℓ − 1) n − (ℓ − 1) .
+
+Corollary 4 (Exponential lower bound) . Any sharp set of linear IV (in P) inequalities must contain at least (n − 1) ℓ  (ℓ − 1) n − (ℓ − 1)  inequalities. 
+
+13 Figure 1: Average running time of our approach vs causaloptim (Sachs et al. 2020) for enumerating the vertices of the dual LP and producing the ATE bounds. 
+
+# 6 Simulation 
+
+As shown in Theorem 2 and Theorem 5, both the number of linear terms in the ATE bounds and the number of testable implications grows exponentially in the outcome support n. These numbers are provided in Table 1 for 2 ≤ n ≤ 10. These results establish an exponential-time lower bound on the time complexity of deriving closed-form bounds and testable implications. Our approach of explicitly characterizing the vertices (extreme rays) of the dual feasible set allows for the derivation of the bounds (inequalities) in time linear in the number of terms appearing in the bound (inequalities). We can therefore use these characterizations to derive the ATE bounds as well as testable implications efficiently, i.e., with time complexity matching the lower bound. 
+
+n Terms in ATE Bound IV Inequalities 2 8 43 52 12 4 260 28 5 1156 60 6 4868 124 7 19972 252 8 80900 508 9 325636 1020 Table 1: Number of linear terms in the ATE bounds, and the number of testable implications. n
+
+represents the size of the outcome support. In order to assess whether this approach is advantageous to the existing ones, we compared the running time of deriving sharp closed-form ATE bounds using our approach vs the approach of Sachs et al. (2020), who enumerate the vertices of the feasible set using off-the-shelf methods. We 14 used the causaloptim library in R (Sachs et al. 2020) for this comparison. The code implementing our approach is available online 2.Figure 1 illustrates the running times across different values of n (the size of the outcome support). As expected, our approach requires time exponential in n (linear trend in the log-scale plot). However, as shown in Figure 1, the approach of Sachs et al. (2020) requires time super-exponential 
+
+in n to enumerate the vertices, albeit the number of vertices is only exponential. With support sizes as small as n = 6, we can already witness more than 1000 times faster running times through our approach. 
+
+# 7 CONCLUSION 
+
+We studied the problem of deriving sharp analytical closed-form ATE bounds and testable impli-cations of the discrete IV model. We showed that the number of linear expressions in any set of sharp bounds for the ATE, as well as the number of sharp testable implications in such models grow exponentially in the outcome support. This rules out any approach trying to derive sharp linear bounds (inequalities) in polynomial time. On the positive side, we explicitly characterized the sharp ATE bounds and the sharp IV inequalities in the binary instrument setting. As shown in our simulations, this approach makes deriving bounds and inequalities tractable for moderate sizes of outcome support, which were untractable with previously existing approaches. We leave such sharp characterizations for multi-valued instruments as future work. 
+
+# Aknowledgements 
+
+Sina Akbari was supported by the Swiss National Science Foundation through a Mobility fellowship under grant P500PT 230240. 
+
+# References 
+
+Joshua Angrist and Guido Imbens. Sources of identifying information in evaluation models, 1991. Joshua Angrist and Guido Imbens. Identification and estimation of local average treatment effects, 1995. Alexander Balke and Judea Pearl. Bounds on treatment effects from studies with imperfect com-pliance. Journal of the American Statistical Association , 92:1171–1176, 1997. URL https: //api.semanticscholar.org/CorpusID:18365761 .Alexander Abraham Balke. Probabilistic counterfactuals: semantics, computation, and applications .University of California, Los Angeles, 1995. Arie Beresteanu, Ilya Molchanov, and Francesca Molinari. Partial identification using random set theory. Journal of Econometrics , 166(1):17–32, 2012. 
+
+> 2https://github.com/ArefeBoushehrian/Analytical-Causal-Bounds-in-Instrumental-Variable-Models
+
+15 Blai Bonet. Instrumentality tests revisited. In Proceedings of the Seventeenth conference on Un-certainty in artificial intelligence , pages 48–55, 2001. Stephen Boyd and Lieven Vandenberghe. Convex optimization . Cambridge university press, 2004. Gary Chamberlain. Asymptotic efficiency in semi-parametric models with censoring. journal of Econometrics , 32(2):189–218, 1986. Jing Cheng and Dylan S Small. Bounds on causal effects in three-arm trials with non-compliance. 
+
+Journal of the Royal Statistical Society Series B: Statistical Methodology , 68(5):815–836, 2006. Guilherme Duarte, Noam Finkelstein, Dean Knox, Jonathan Mummolo, and Ilya Shpitser. An automated approach to causal inference in discrete settings. Journal of the American Statistical Association , 119(547):1778–1793, 2024. Noam Finkelstein and Ilya Shpitser. Deriving bounds and inequality constraints using logical relations among counterfactuals. In Conference on uncertainty in artificial intelligence , pages 1348–1357. PMLR, 2020. Maurice Fr´ echet. G´ en´ eralisation du th´ eoreme des probabilit´ es totales. Fundamenta mathematicae ,25(1):379–387, 1935. Florian F Gunsilius. Nontestability of instrument validity under continuous treatments. Biometrika ,108(4):989–995, 2021. Toru Kitagawa. Identification region of the potential outcome distributions under instrument in-dependence. 2009. D´ esir´ e K´ edagni and Ismael Mourifi´ e. Generalized instrumental inequalities: testing the instrumental variable independence assumption. Biometrika , 107(3):661–675, 02 2020. ISSN 0006-3444. doi: 10.1093/biomet/asaa003. URL https://doi.org/10.1093/biomet/asaa003 .Charles F Manski. Nonparametric bounds on treatment effects. The American Economic Review ,80(2):319–323, 1990. Charles F Manski. Partial identification of probability distributions . Springer, 2003. Charles F Manski and John V Pepper. Monotone instrumental variables with an application to the returns to schooling, 1998. Judea Pearl. On the testability of causal models with latent and instrumental variables. In Proceed-ings of the Eleventh Conference on Uncertainty in Artificial Intelligence , UAI’95, page 435–443, San Francisco, CA, USA, 1995. Morgan Kaufmann Publishers Inc. ISBN 1558603859. Thomas S. Richardson and James M. Robins. Ace bounds; sems with equilibrium conditions. 
+
+Statistical Science , 29(3), August 2014. ISSN 0883-4237. doi: 10.1214/14-sts485. URL http: //dx.doi.org/10.1214/14-STS485 .James M Robins. The analysis of randomized and non-randomized aids treatment trials using a new approach to causal inference in longitudinal studies. Health service research methodology: a focus on AIDS , pages 113–159, 1989. 16 Ralph Tyrell Rockafellar. Convex Analysis . Princeton University Press, Princeton, 1970. ISBN 9781400873173. doi: doi:10.1515/9781400873173. URL https://doi.org/10.1515/ 9781400873173 .Michael C. Sachs, Gustav Jonzon, Arvid Sj¨ olander, and Erin E. Gabriel. A general method for de-riving tight symbolic bounds on causal effects. Journal of Computational and Graphical Statistics ,32:567 – 576, 2020. URL https://api.semanticscholar.org/CorpusID:244955008 .Xin Shu, Shuai Wang, and Ang Li. Identification of probabilities of causation: A complete charac-terization. arXiv preprint arXiv:2505.15274 , 2025. Yilin Song, F Richard Guo, KC Chan, and Thomas S Richardson. The categorical instrumental variable model: Characterization, partial identification, and statistical inference. arXiv preprint arXiv:2405.09510 , 2024. 17 Appendices 
+
+These appendices are organized as follows: 
+
+• The proof of Proposition 2 along with some preliminaries for the rest of our results is provided in Section A. 
+
+• The proofs of Theorems 1 and 2 are provided in Section B. 
+
+• The proof of Theorem 5 is provided in Section C. 
+
+• The proofs of Theorems 4 and 6 are provided in Section D. 
+
+# A Preliminaries 
+
+A.1 Proof of Proposition 2 
+
+Proposition 2. Under Assumptions 1, 2 and 4, given the observed law P, the marginal law of potential outcome variables Q(·) is sharply characterized as follows: 
+
+
+
+py0,z = P
+
+> j∈[n]
+
+P 
+
+> d∈{ 0,1}ℓ,dz=0
+
+qyj, d ∀y ∈ [n], z ∈ [ℓ],py1,z = P
+
+> i∈[n]
+
+P 
+
+> d∈{ 0,1}ℓ,dz=1
+
+qiy, d ∀y ∈ [n], z ∈ [ℓ],qij, d ≥ 0 ∀i, j ∈ [n], d ∈ { 0, 1}ℓ,
+
+(4) 
+
+where dz is the z-th element of vector d.Proof. (⇒) Consider the first equation for a fixed y and z. The right-hand-side summation is equal to Q(Y (0) = y, D (z) = 0). Under Assumption 2, the latter is also equal to Q(Y (0) = y, D (z) = 0 |
+
+Z = z), which, under consistency (Assumption 4) equals P(Y = y, D = 0 | Z = z) = py0,z . The second set of equations hold similarly. The the inequalities qij, d ≥ 0 hold because Q is a probability measure. (⇐) By Theorem 1 of Song et al. (2024), it suffices to show that the linear relations Equation (4) imply the family of inequalities 
+
+Q
+
+
+
+Y (0) ∈ V (0) , Y (1) ∈ V (1) 
+
+≤
+
+> 1
+
+X
+
+> d=0
+
+P
+
+
+
+Y ∈ V (d), D = d | Z = z
+
+
+
+, ∀z ∈ [ℓ], (19) for every choice of nonempty sets V(0) , V(1) ⊆ { γ0, . . . , γ n−1}.Fix an arbitrary z ∈ [ℓ]. We show that Equation (19) follows solely from Equation (4) for this fixed 
+
+z.18 Left-hand side: Expanding the definition of Q yields 
+
+Q
+
+
+
+Y (0) ∈ V (0) , Y (1) ∈ V (1) 
+
+= X
+
+> d∈{ 0,1}ℓ
+
+X
+
+> y0∈V (0)
+
+X
+
+> y1∈V (1)
+
+qy0y1,d.
+
+Right-hand side: Using (4), 
+
+> 1
+
+X
+
+> d=0
+
+X
+
+> y∈V (d)
+
+pyd,z = X
+
+> y∈V (0)
+
+X
+
+> y1
+
+X 
+
+> d∈{ 0,1}ℓ,dz=0
+
+qyy 1,d + X
+
+> y∈V (1)
+
+X
+
+> y0
+
+X 
+
+> d∈{ 0,1}ℓ,dz=1
+
+qy0y, d,
+
+Since all entries of q are nonnegative, Hence, 
+
+> 1
+
+X
+
+> d=0
+
+X
+
+> y∈V (d)
+
+pyd,z ≥ X
+
+> d∈{ 0,1}ℓ
+
+X
+
+> y0∈V (0)
+
+X
+
+> y1∈V (1)
+
+qy0y1,d.
+
+The right-hand side equals the left-hand side of (19), proving the inequality. 
+
+A.2 Vertices of H
+
+We define the M -equivalence class of a vertex v as [v] = { v + s | s ∈ ker( M ) }.
+
+The Definition 2 captures extremality after quotienting out the intrinsic affine directions induced by ker( M ). 
+
+Lemma 1 (Quotient characterization) . Let π : R2ℓn → R2ℓn / ker( M ) denote the canonical projec-tion, i.e., the map that identifies any two vectors x, y ∈ R2ℓn such that x − y ∈ ker( M ). Then v is a vertex of H in the sense of Definition 2 if and only if π(v) is an extreme point of the projected polyhedron π(H).Proof. (⇒) Assume v is a vertex and suppose that 
+
+π(v) = λπ (v1) + (1 − λ)π(v2)for some λ ∈ (0 , 1) and v1, v2 ∈ H . By linearity of π, this implies 
+
+π
+
+
+
+v − λv1 − (1 − λ)v2
+
+
+
+= 0,
+
+hence v = λv1 + (1 − λ)v2 + s for some s ∈ ker( M ). Since M s = 0, we also have M (v1 + s) = 
+
+M v1, M (v2 + s) = M v2 and v1 + s, v2 + s ∈ H (because feasibility depends only on M ·). Thus we can rewrite 
+
+v = λ(v1 + s) + (1 − λ)( v2 + s)with both points in H. By Definition 2, it follows that M (v1 + s) = M v and M (v2 + s) = M v,i.e. π(v1) = π(v) and π(v2) = π(v). Therefore π(v) is an extreme point of π(H). 19 (⇐) Conversely, assume that π(v) is an extreme point of π(H) and write 
+
+v = λv1 + (1 − λ)v2, λ ∈ (0 , 1) , v1, v2 ∈ H .
+
+Applying π yields 
+
+π(v) = λπ (v1) + (1 − λ)π(v2).
+
+By extremality of π(v), we get π(v1) = π(v2) = π(v), which is equivalent to M v1 = M v2 = M v.This is exactly the condition in Definition 2. 
+
+Lemma 2. For any observed law P conforming to the IV and s ∈ ker( M ),
+
+p⊤s = 0 .
+
+Proof. Since M ⊤q = p,
+
+p⊤s = ( M ⊤q)⊤s = q⊤M s (a)
+
+= q⊤0 = 0 ,
+
+where in (a) we used the fact that s ∈ ker( M ), we have M s = 0. Consequently, for any linear objective p⊤v, it suffices to consider one representative per vertex class [ v]. By the fundamental theorem of linear programming, whenever the primal is feasible and bounded, the dual optimum over H is attained at an extreme point of π(H), equivalently at a vertex M -equivalence class of v of H in the sense of Definition 2. Therefore, sharp identification bounds can be obtained by evaluating p⊤v over a finite set containing one representative from each vertex class. 
+
+A.3 Extreme Rays of K
+
+The set K := {r ∈ R2ℓn : M r ≤ 0} is a polyhedral cone. Moreover, by standard LP duality, feasibility of the primal system is equivalent to 
+
+p⊤r ≤ 0 for all r ∈ K .
+
+Hence, sharp testable implications (i.e., a necessary and sufficient finite family of IV inequalities) can be obtained by characterizing the extreme structure of K.
+
+M -Equivalence under Scaling and Kernel Shifts. Because ker( M )̸ = {0} (see Remark 3), the cone K is generally not pointed and contains a lineality space. In particular, ker( M ) ⊆ K and ker( M ) ⊆ −K . Accordingly, we work with rays modulo positive scaling and kernel shifts. 
+
+Definition 6 (Extreme ray class) . For nonzero r, r′ ∈ K , we write r ∼ r′ if there exists λ > 0 such that 
+
+λr − r′ ∈ ker( M ).
+
+We call the M -equivalence class 
+
+Er := {λr + s : λ > 0, s ∈ ker( M )}
+
+the ray class generated by r.
+
+20 Definition 7 (M -Distinct extreme rays) . Two extreme rays r1, r2 /∈ ker( M ) are called M -distinct if 
+
+Er1̸ = Er2 .
+
+Lemma 3. For any two M -distinct extreme rays r1 and r2, we have 
+
+Er1 ∩ E r2 = ∅.
+
+Proof. Suppose, by contradiction, that there exists r′ ∈ E r1 ∩ E r2 . Then there exist α1, α 2 > 0 and 
+
+s1, s2 ∈ ker( M ) such that 
+
+r′ = α1r1 + s1 and r′ = α2r2 + s2.
+
+Rearranging yields 
+
+r1 = α2
+
+α1
+
+r2 + α2
+
+α1
+
+(s2 − s1),
+
+which implies r1 ∈ E r2 . By symmetry, r2 ∈ E r1 , hence Er1 = Er2 , a contradiction. The following lemma formalizes the fact that extremality is a property of the ray class and coincides with extremality in the quotient cone. 
+
+Lemma 4 (Quotient characterization of extreme rays) . Let π : R2ℓn → R2ℓn \ ker( M ) be the canonical projection and let bK := π(K). Then r ∈ K \ ker( M ) is an extreme ray in the sense of Definition 3 if and only if π(r) generates an extreme ray of the pointed polyhedral cone bK. Moreover, if r ∼ r′, then π(r) and π(r′) generate the same ray in bK.Proof. First, note that π(r) = π(r′) holds if and only if r − r′ ∈ ker( M ), hence r ∼ r′ implies that π(r) and π(r′) lie on the same ray in bK. Now suppose that r is not extreme in the sense of Definition 3. Then there exist r1, r2 ∈ K such that r = r1 + r2 and neither summand belongs to the ray class Er, i.e., rt /∈ { αr + s : α > 0, s ∈ ker( M )}. Applying π yields π(r) = π(r1) + π(r2)with π(r1), π (r2) ∈ bK, and neither π(rt) lies on the ray generated by π(r). Hence π(r) does not generate an extreme ray of bK.Conversely, if π(r) does not generate an extreme ray of bK, then we can write π(r) = br1 + br2 with 
+
+br1, br2 ∈ bK such that neither lies on the ray of π(r). Choose preimages r1, r2 ∈ K with π(rt) = brt.Then π(r − r1 − r2) = 0, so r = r1 + r2 + s for some s ∈ ker( M ). Since s ∈ K and K is a cone, we may absorb s into, say, r2 and obtain a decomposition r = ˜ r1 +˜ r2 with ˜ r1, ˜r2 ∈ K whose projections do not lie on the ray of π(r); equivalently, neither summand belongs to the ray class Er. Thus r is not extreme in the sense of Definition 3. 
+
+Corollary 5 (Finite generation and reduction to finitely many inequalities) . The quotient cone 
+
+bK = π(K) is a pointed polyhedral cone and therefore admits only finitely many extreme rays. Con-sequently, there exist r1, . . . , rω ∈ K such that 
+
+K = ker( M ) + cone (r1, . . . , rω),
+
+and every element of K can be written as s + Pωi=1 λiri for some s ∈ ker( M ) and λi ≥ 0.
+
+21 In particular, if p⊤s = 0 for all s ∈ ker( M ), then the family of inequalities 
+
+p⊤r ≤ 0 ∀r ∈ K 
+
+is equivalent to the finite family 
+
+p⊤ri ≤ 0 ∀i ∈ { 1, . . . , ω }.
+
+Proof. Since K is polyhedral, bK = π(K) is also polyhedral. By construction it is pointed, hence it has finitely many extreme rays; see, e.g., (Rockafellar 1970, Section 19). Choosing one representa-tive ri in each extreme-ray class and lifting back to K yields K = ker( M ) + cone( r1, . . . , rω). Finally, if r = s + P 
+
+> i
+
+λiri, then 
+
+p⊤r = p⊤s + X
+
+> i
+
+λip⊤ri = X
+
+> i
+
+λip⊤ri,
+
+so p⊤r ≤ 0 for all r ∈ K holds if and only if p⊤ri ≤ 0 for all i.
+
+Lineality Space. Since ker( M ) is a linear subspace, there exists finite nonzero vectors s1, · · · st
+
+such that ker( M ) = span( s1, · · · , st) = cone( s1, · · · , st) + cone( −s1, · · · , −st).
+
+Consequently, 
+
+K = cone( s1, · · · , st, −s1, · · · , −st, r1, . . . , rω),
+
+where r1, . . . , rω are representatives of extreme-ray classes in K \ ker( M ). Moreover, note that 
+
+s1, · · · , st and −s1, · · · , −st satisfy Definition 3, thus, they are extreme-rays in K ∩ ker( M ). Therefore, if p⊤si ≤ 0 and −p⊤si ≤ 0 are satisfied for all i ≤ t, then we have p⊤s = 0 for all 
+
+s ∈ ker( M ). As a result, based on Corollary 5, 
+
+p⊤r ≤ 0 ∀r ∈ K 
+
+is equivalent to the finite family 
+
+p⊤ri ≤ 0 ∀i ∈ { 1, . . . , ω }
+
+p⊤si ≤ 0 ∀i ∈ { 1, . . . , t }−p⊤si ≤ 0 ∀i ∈ { 1, . . . , t }.
+
+Consequently, sharp testable implications can be obtained by enumerating one representative from each extreme-ray class along with s1, · · · , st and −s1, · · · , −st from the extreme ray class E0 which denote the ker( M ). 
+
+# B Vertex Enumeration 
+
+In this section, we provide the proofs and notations for Section 4. First, in Section B.1, we introduce the basic definitions and notation required for the problem. In Section B.2, we present fundamental 22 lemmas that characterize the vertices and the structure of the dual LP matrix. In Section B.3, we define the signature binary number associated with a vertex v and prove lemmas describing its structure. Next, in Section B.4, we establish the existence of a bijection between these signatures and the vertices. Finally, in Section B.5, we prove the main results, Theorem 1 and Theorem 2, using the previously established lemmas. 
+
+B.1 Definitions and Notations 
+
+In this subsection, we introduce the notation, definitions, and preliminary results required for the subsequent proofs. 
+
+Definition 8 (Active Constraint Matrix) . For a point v, let Mv denote the submatrix of M and 
+
+cv the corresponding subvector of c associated with active (tight) constraints at v, i.e., Mvv = cv.
+
+We call Mv the active constraint matrix at v.
+
+Definition 9. Let M (α, β ) denote the submatrix of M obtained by restricting to the rows indexed by α and the columns indexed by β. Here, a row index α is of the form y0y1d0d1, and a column index β is of the form ydz , where each symbol may also be the wildcard ∗, indicating that it ranges over all possible values. By M1 ∈ M2, we mean that the row indices appearing in M1 are a subset of the row indices appearing in M2, and the column indices appearing in M1 are a subset of the column indices appearing in M2.Also, by M (α1 ∪ α2, β 1 ∪ β2) we mean the submatrix obtained by restricting to all rows indexed by either α1 or α2, and to the columns indexed by either β1 or β2.The same notation applies to Mv. An example for this definition is provided in section E.2. 
+
+Based on the LP formulation, each variable qy0y1,d 0d1 is constrained by exactly two pyd,z s. More precisely, 
+
+• qy0y1,00 is constrained by py00,0 and py00,1,
+
+• qy0y1,01 is constrained by py00,0 and py11,1,
+
+• qy0y1,10 is constrained by py00,1 and py11,0,
+
+• qy0y1,11 is constrained by py11,0 and py11,1.According to these relations between p and q, the matrix M will have a specific pattern outlined in the following remark. 
+
+Remark 2. For i, j ∈ [n], all entries equal to 1 in M occur in the following positions and any other entry is eqaul to 0:
+
+• M (ij 00 , i 00) and M (ij 00 , i 01) ,
+
+• M (ij 01 , i 00) and M (ij 01 , j 11) ,
+
+• M (ij 10 , i 01) and M (ij 10 , j 10) ,
+
+• M (ij 11 , j 10) and M (ij 11 , j 11) .
+
+23 B.2 Structural Properties of Vertices 
+
+In this subsection, we establish some fundamental structural properties of the constraint matrix M
+
+and the active constraint matrix Mv associated with a vertex v.
+
+Lemma 5. The rank of matrix M is 4n − 1.Proof. By Remark 2, every row of M contains exactly one entry equal to 1 in M (∗ ∗ ∗∗ , ∗ ∗ 0) and exactly one entry equal to 1 in M (∗ ∗ ∗∗ , ∗ ∗ 1). Therefore, the sum of all columns of M (∗ ∗ ∗∗ , ∗ ∗ 0) minus the sum of all columns of M (∗ ∗ ∗∗ , ∗ ∗ 1) gives a nontrivial linear combination of columns equal to zero. Hence, M cannot have full rank, and rank( M ) ≤ 4n − 1.
+
+Now suppose that there exists a nontrivial linear combination of columns of M that is equal to zero. Then at least one column must have a nonzero coefficient. Without loss of generality, assume that the coefficient assigned to the column M (∗ ∗ ∗∗ , i 00) is ci00 = s̸ = 0. For any j ∈ [n], the columns M (∗ ∗ ∗∗ , i 00) and M (∗ ∗ ∗∗ , j 11) share a 1 in some row of M . Since each row of M contains exactly two entries equal to 1, the corresponding coefficient must satisfy 
+
+cj11 = −s
+
+in order for the linear combination to vanish on that row. Applying the same argument to all such rows implies that 
+
+cj11 = −s for all j ∈ [n].
+
+Next, since each column M (∗∗∗∗ , j 11) shares 1’s with the column M (∗∗∗∗ , j 00), the same reasoning shows that 
+
+cj00 = s for all j ∈ [n].
+
+Similarly, for any i ∈ [n], the columns M (∗ ∗ ∗∗ , i 00) and M (∗ ∗ ∗∗ , i 01) share n entries equal to 1 in the rows indexed by M (i ∗ 00 , i 0∗). Thus, to cancel these contributions we must have 
+
+ci01 = −s for all i ∈ [n].
+
+By the same argument, since M (∗ ∗ ∗∗ , i 01) and M (∗ ∗ ∗∗ , i 10) share 1’s, we obtain 
+
+ci10 = s for all i ∈ [n].
+
+Therefore, in any nontrivial linear dependence among the columns of M , all columns appear with coefficient either s or −s, and this dependence is unique up to scaling. Consequently, the null space of M is one-dimensional, and hence rank( M ) = 4 n − 1.
+
+24 Remark 3. As shown in the proof of Lemma 5, the null space of M is one-dimensional. Moreover, any vector s = ( sydz )y∈[n], d,z ∈{ 0,1} in ker( M ) must satisfy 
+
+syd 0 = s, syd 1 = −s for all y ∈ [n], d ∈ { 0, 1},
+
+for some scalar s ∈ R.
+
+Lemma 6. Let v be a feasible point satisfying M v ≤ c. Then v is a vertex if and only if rank (Mv) = 4 n − 1.
+
+Proof. We prove both directions. 
+
+(⇐) If rank (Mv) < 4n − 1, then v is not a vertex. 
+
+Suppose rank( Mv) < 4n − 1. Since rank( M ) = 4 n − 1, we have dim(ker( Mv)) > dim(ker( M )) .
+
+Hence, there exists a nonzero vector t ∈ ker( Mv) such that t /∈ ker( M ). Since t ∈ ker( Mv), we have 
+
+Mv(v + ϵt) = Mvv = cv
+
+for all ϵ ∈ R. For sufficiently small ϵ > 0, the inequalities corresponding to non-active constraints remain strict, because they are strict at v. Therefore, 
+
+M (v + ϵt) ≤ c and M (v − ϵt) ≤ c
+
+for sufficiently small ϵ.Thus both v + ϵt and v − ϵt are feasible. Moreover, 
+
+v = 12 (v + ϵt) + 12 (v − ϵt),
+
+and since t /∈ ker( M ), we have 
+
+M (v + ϵt)̸ = M v,
+
+so the two feasible points are M -distinct. Hence v can be written as a non-trivial convex combination of two M -distinct feasible points, and therefore v is not a vertex by Definition 2. 
+
+(⇒) If rank (Mv) = 4 n − 1, then v is a vertex. 
+
+Now suppose rank( Mv) = 4 n − 1. Assume 
+
+v = λv1 + (1 − λ)v2, λ ∈ (0 , 1) ,
+
+for feasible points v1, v2.Since v is active on Mv, we have 
+
+Mvv = cv.
+
+25 Applying Mv to the convex combination gives 
+
+Mvv = λM vv1 + (1 − λ)Mvv2.
+
+Because v1 and v2 are feasible, 
+
+Mvv1 ≤ cv, Mvv2 ≤ cv.
+
+Since the convex combination equals cv, it follows that 
+
+Mvv1 = cv and Mvv2 = cv.
+
+Therefore, 
+
+Mv(v − v1) = 0, Mv(v − v2) = 0.
+
+Because rank( Mv) = 4 n − 1 = rank( M ), and the fact the Mv is a submatrix of M we have ker( Mv) = ker( M ).
+
+Hence, 
+
+v − v1 ∈ ker( M ), v − v2 ∈ ker( M ).
+
+By Definition 2, any two feasible points differing by a vector in ker( M ) represent the same extreme point. Thus v cannot be written as a non-trivial convex combination of two M -distinct feasible points, and therefore v is a vertex. From now on, we assume that v represents a vertex. This means that M v ≤ c and Mvv = cv, and rank( Mv) = 4 n − 1 (by Lemma 5). 
+
+Remark 4. Since rank (M ) = rank (Mv) = 4 n − 1, the system Mvv = c has a unique solution in the affine space v + ker( M ). Therefore, Mv uniquely determines the M -equivalence class [v].In particular, if two active constraint matrices share the same row basis (that is, they consist of the same linearly independent rows), then they determine the same solution v and thus the same 
+
+M -equivalence class [v]. Consequently, the two active constraint matrices must coincide. 
+
+Lemma 7. If M (ij 00 , ∗ ∗ ∗ ) ∈ Mv then j = 0 . Also if M (ij 11 , ∗ ∗ ∗ ) ∈ Mv then i = n − 1.Proof. Suppose that M (ij 00 , ∗ ∗ ∗ ) ∈ Mv for some j > 0, then 
+
+M (ij 00 , ∗ ∗ ∗ )v = γj − γi > γ 0 − γi.
+
+On the other hand, based on the structure of M we know that M (ij 00 , ∗ ∗ ∗ ) = M (i000 , ∗ ∗ ∗ ), so 
+
+M (i000 , ∗ ∗ ∗ )v > γ 0 − γi,
+
+which contradicts the fact that v is a vertex. Hence j = 0. Now suppose that M (ij 11 , ∗ ∗ ∗ ) ∈ Mv for some i < n − 1. Then 
+
+M (ij 11 , ∗ ∗ ∗ )v = γj − γi < γ j − γn−1.
+
+Again, by the structure of M we have M (ij 11 , ∗ ∗ ∗ ) = M (( n − 1) j11 , ∗ ∗ ∗ ), and therefore 
+
+M (( n − 1) j11 , ∗ ∗ ∗ )v < γ j − γn−1,
+
+which contradicts the fact that v is a vertex. Hence i = n − 1. 26 Lemma 8. For any vertex v, every column of Mv contains at least one entry equal to 1.Proof. We know that the null space of Mv is one-dimensional and is spanned by some non-zero vector s (see Remark 3). Suppose, by contradiction, that there exists a column indexed by ( y, d, z )in Mv that contains no entries equal to 1. Then the corresponding standard basis vector eydz 
+
+satisfies 
+
+Mveydz = 0.
+
+Hence eydz lies in the null space of Mv.Since eydz is linearly independent from s, the null space of Mv has dimension at least 2. This contradicts the fact that v is a vertex based on Lemma 6. Hence every column of Mv must contain at least one entry equal to 1. 
+
+B.3 Signature of a Vertex 
+
+In this section, we define the signature of a vertex and prove its fundamental properties. These results will help us show that the signature is unique for each vertex and that it can be used to reconstruct the vertex. 
+
+Definition 10 (Signature of a Point) . We define signature bu ∈ { 0, 1}4n for a point u as the column-wise logical OR of the rows of Mu(∗ ∗ 01 ∪ ∗ ∗ 10 , ∗ ∗ ∗ ). That is, for each index (y, d, z ), the entry bu 
+
+> ydz
+
+equals 1 if there exists at least one entry equal to 1 in the column Mu(∗ ∗ 01 ∪ ∗ ∗ 10 , ydz ),and equals 0 otherwise. 
+
+Lemma 9. For any y, z , if bv 
+
+> y0z
+
+= 0 , then M (y000 , ∗ ∗ ∗ ) ∈ Mv. Similarly, if bv 
+
+> y1z
+
+= 0 , then 
+
+M (( n − 1) y11 , ∗ ∗ ∗ ) ∈ Mv.Proof. By Lemma 8, every column of Mv must contain at least one entry equal to 1. Fix indices 
+
+y, z and suppose that bv 
+
+> ydz
+
+= 0. By definition of bv, this means that there is no entry equal to 1 in Mv(∗ ∗ 01 ∪ ∗ ∗ 10 , ydz ). Consequently, the required 1 in column Mv(∗ ∗ ∗∗ , ydz ) must lie in 
+
+Mv(∗ ∗ 00 ∪ ∗ ∗ 11 , ydz ). First, assume that d = 0. By the structure of M (see Remark 2), the only rows of Mv(∗ ∗ 00 ∪ ∗ ∗ 
+
+11 , y 0z) that can contain a 1 are the rows M (yj 00 , ∗ ∗ ∗ ). Hence, at least one such row must belong to Mv. By Lemma 7, this is only possible when j = 0, and therefore M (y000 , ∗ ∗ ∗ ) ∈ Mv.The case d = 1 follows by a similar argument: if bv 
+
+> y1z
+
+= 0, then the 1 in column ( y1z) must lie in 
+
+Mv(∗ ∗ 11 , ∗ ∗ ∗ ), and by the structure of M the only possible rows are M (ij 11 , ∗ ∗ ∗ ). Applying Lemma 7 yields i = n − 1, and hence M (( n − 1) y11 , ∗ ∗ ∗ ) ∈ Mv.
+
+Lemma 10. For any i, j ∈ [n], bv 
+
+> i00
+
+= bv 
+
+> j11
+
+= 1 if and only if M (ij 01 , ∗ ∗ ∗ ) ∈ Mv. Similarly, for any i, j ∈ [n], bv 
+
+> i01
+
+= bv 
+
+> j10
+
+= 1 if and only if M (ij 10 , ∗ ∗ ∗ ) ∈ Mv.Proof. The “ ⇐” direction in both statements follows immediately from Definition 10, since the presence of a row in Mv forces a 1 in the corresponding columns. We prove the “ ⇒” directions. 27 First case. Assume bv 
+
+> i00
+
+= bv 
+
+> j11
+
+= 1. By Definition 10 and the fact that Mv(∗ ∗ 10 , ∗00 ∪ ∗ 11) contains no entries equal to 1, there must exist at least one row in Mv(∗ ∗ 01 , ∗ ∗ ∗ ) containing required 1 entries. Suppose, by contradiction, that M (ij 01 , ∗ ∗ ∗ ) /∈ Mv. Then there exist indices a̸ = i and b̸ = j such that 
+
+M (aj 01 , ∗ ∗ ∗ ), M (ib 01 , ∗ ∗ ∗ ) ∈ Mv.
+
+(If no such a existed, M (∗ ∗ 01 , j 11) would contain no 1(see Remark 2), contradicting bv 
+
+> j11
+
+= 1; the same argument applies to b). Since these rows belong to Mv, we have 
+
+M (aj 01 , ∗ ∗ ∗ )v = γj − γa, M (ib 01 , ∗ ∗ ∗ )v = γb − γi,
+
+and therefore  M (aj 01 , ∗ ∗ ∗ ) + M (ib 01 , ∗ ∗ ∗ )v = γj − γi + γb − γa.
+
+On the other hand, since M (ij 01 , ∗ ∗ ∗ ) /∈ Mv, we obtain 
+
+M (ij 01 , ∗ ∗ ∗ )v < γ j − γi, M (ab 01 , ∗ ∗ ∗ )v ≤ γb − γa,
+
+and therefore, 
+
+ M (ij 01 , ∗ ∗ ∗ ) + M (ab 01 , ∗ ∗ ∗ )v < γ j − γi + γb − γa =  M (aj 01 , ∗ ∗ ∗ ) + M (ib 01 , ∗ ∗ ∗ )v.
+
+By the structure of M (see Remark 2), 
+
+M (aj 01 , ∗ ∗ ∗ ) + M (ib 01 , ∗ ∗ ∗ ) = M (ij 01 , ∗ ∗ ∗ ) + M (ab 01 , ∗ ∗ ∗ ),
+
+which yields a contradiction. 
+
+Second case. Assume bv 
+
+> i01
+
+= bv 
+
+> j10
+
+= 1 and suppose M (ij 10 , ∗∗∗ ) /∈ Mv. Since Mv(∗∗ 01 , ∗01 ∪∗ 10) contains no 1’s, the required 1’s must lie in Mv(∗ ∗ 10 , ∗ ∗ ∗ ). Thus, there exist indices a̸ = i and 
+
+b̸ = j such that 
+
+M (aj 10 , ∗ ∗ ∗ ), M (ib 10 , ∗ ∗ ∗ ) ∈ Mv.
+
+As before, using the structure of M we have 
+
+M (aj 10 , ∗ ∗ ∗ ) + M (ib 10 , ∗ ∗ ∗ ) = M (ij 10 , ∗ ∗ ∗ ) + M (ab 10 , ∗ ∗ ∗ ),
+
+and evaluating at v gives 
+
+γj − γi + γb − γa = ( M (aj 10 , ∗ ∗ ∗ ) + M (ib 10 , ∗ ∗ ∗ )) v
+
+= ( M (ij 10 , ∗ ∗ ∗ ) + M (ab 10 , ∗ ∗ ∗ )) v
+
+< γ j − γi + γb − γa,
+
+a contradiction. Therefore, M (ij 10 , ∗ ∗ ∗ ) ∈ Mv.28 Lemma 11. For any i ∈ [n], we have 
+
+bv 
+
+> i00
+
++ bv 
+
+> i01
+
+> 0 and bv 
+
+> i10
+
++ bv 
+
+> i11
+
+> 0.
+
+Equivalently, at least one of bv
+
+> i00
+
+, b v 
+
+> i01
+
+and at least one of bv
+
+> i10
+
+, b v 
+
+> i11
+
+must be equal to 1.Proof. We prove the first statement; the second follows by an analogous argument. Suppose, by contradiction, that bv 
+
+> i00
+
+= bv 
+
+> i01
+
+= 0. By Lemma 9, this implies that M (i000 , ∗∗∗ ) ∈ Mv.Moreover, M (i000 , ∗ ∗ ∗ ) is the only row of Mv that can contain a 1 in either column Mv(∗ ∗ ∗∗ , i 00) or Mv(∗ ∗ ∗∗ , i 01). Indeed, since bv 
+
+> i00
+
+= bv 
+
+> i01
+
+= 0, no row of Mv(∗ ∗ 01 ∪ ∗ ∗ 10 , ∗ ∗ ∗ ) contains a 1 in these columns. By the structure of M , the only remaining cells of M that contain a 1 in columns 
+
+Mv(∗ ∗ ∗∗ , i 00) or Mv(∗ ∗ ∗∗ , i 01) are M (∗ ∗ 00 , i ∗ 00 ∪ i ∗ 01). By Lemma 7, among these rows only 
+
+M (i000 , ∗ ∗ ∗ ) can belong to Mv.Now consider the vector 
+
+t = ei00 − ei01 .
+
+Since the only row of Mv with nonzero entries in columns Mv(∗ ∗ ∗∗ , i 00) or Mv(∗ ∗ ∗∗ , i 01) is 
+
+M (i000 , ∗ ∗ ∗ ), and this row contains a 1 in both columns, we have Mvt = 0. Thus, t lies in the null space of Mv.Together with the vector s, which spans the null space of Mv (see remark 3), this implies that the null space of Mv is at least two-dimensional Consequently, Mv cannot have rank 4 n − 1, contradicting the assumption that v is a vertex. Therefore, bv 
+
+> i00
+
++ bv 
+
+> i01
+
+> 0. The proof for bv 
+
+> i10
+
++ bv 
+
+> i11
+
+> 0 is identical. 
+
+Lemma 12. We have 
+
+bv 
+
+> i00
+
+= bv 
+
+> i01
+
+= bv 
+
+> j10
+
+= bv 
+
+> j11
+
+= 1 
+
+if and only if i = n − 1, j = 0 , and 
+
+M (( n − 1)000 , ∗ ∗ ∗ ), M (( n − 1)011 , ∗ ∗ ∗ ) ∈ Mv.
+
+Proof. We first prove the “ ⇒” direction. Suppose 
+
+bv 
+
+> i00
+
+= bv 
+
+> i01
+
+= bv 
+
+> j10
+
+= bv 
+
+> j11
+
+= 1 .
+
+By Lemma 10, this implies that 
+
+M (ij 01 , ∗ ∗ ∗ ), M (ij 10 , ∗ ∗ ∗ ) ∈ Mv.
+
+Hence 
+
+M (ij 01 , ∗ ∗ ∗ )v = γj − γi, M (ij 10 , ∗ ∗ ∗ )v = γj − γi,
+
+and (M (ij 01 , ∗ ∗ ∗ ) + M (ij 10 , ∗ ∗ ∗ )) v = 2( γj − γi).
+
+29 By the structure of M (see Remark 2), we have 
+
+M (ij 01 , ∗ ∗ ∗ ) + M (ij 10 , ∗ ∗ ∗ ) = M (i000 , ∗ ∗ ∗ ) + M (( n − 1) j11 , ∗ ∗ ∗ ).
+
+Therefore, 2( γj − γi) = ( M (i000 , ∗ ∗ ∗ ) + M (( n − 1) j11 , ∗ ∗ ∗ )) v ≤ (γ0 − γi) + ( γj − γn−1).
+
+Rearranging yields 
+
+γj − γi ≤ γ0 − γn−1.
+
+Since γ0 − γn−1 is the maximum possible difference, equality can occur only if j = 0 and i = n − 1. In this case, equality in the above inequality forces 
+
+M (( n − 1)000 , ∗ ∗ ∗ ), M (( n − 1)011 , ∗ ∗ ∗ ) ∈ Mv,
+
+because (M (( n − 1)000 , ∗ ∗ ∗ ) + M (( n − 1)011 , ∗ ∗ ∗ )) v = 2( γ0 − γn−1).
+
+We now prove the “ ⇐” direction. Suppose i = n − 1, j = 0, and 
+
+M (( n − 1)000 , ∗ ∗ ∗ ), M (( n − 1)011 , ∗ ∗ ∗ ) ∈ Mv.
+
+By the structure of M , we have 
+
+M (( n − 1)001 , ∗ ∗ ∗ ) + M (( n − 1)010 , ∗ ∗ ∗ ) = M (( n − 1)000 , ∗ ∗ ∗ ) + M (( n − 1)011 , ∗ ∗ ∗ ).
+
+Evaluating at v gives (M (( n − 1)001 , ∗ ∗ ∗ ) + M (( n − 1)010 , ∗ ∗ ∗ )) v = 2( γ0 − γn−1).
+
+Since each of M (( n − 1)001 , ∗ ∗ ∗ )v, M (( n − 1)010 , ∗ ∗ ∗ )v is bounded above by γ0 − γn−1, both must attain this value. Thus, 
+
+M (( n − 1)001 , ∗ ∗ ∗ ), M (( n − 1)010 , ∗ ∗ ∗ ) ∈ Mv,
+
+which implies 
+
+bv 
+
+> (n−1)00
+
+= bv 
+
+> (n−1)01
+
+= bv 
+
+> 010
+
+= bv 
+
+> 011
+
+= 1 .
+
+Remark 5. If bv 
+
+> i00
+
+= bv 
+
+> i01
+
+for some i < n − 1, then for all j ∈ [n] we have bv
+
+> j10
+
+̸ = bv
+
+> j11
+
+. Similarly, if 
+
+bv 
+
+> j10
+
+= bv 
+
+> j11
+
+for some j > 0, then for all i ∈ [n] we have bv
+
+> i00
+
+̸ = bv
+
+> i01
+
+.Proof. This follows directly from Lemma 12, together with Lemma 8. 
+
+Lemma 13. There exists at least one i ∈ [n] and d ∈ { 0, 1} such that 
+
+bv 
+
+> id 0
+
+= bv 
+
+> id 1
+
+= 1 .
+
+30 Proof. Suppose, by contradiction, that for every i ∈ [n] and every d ∈ { 0, 1}, we have 
+
+bv
+
+> id 0
+
+̸ = bv
+
+> id 1
+
+.
+
+In particular, for every i,
+
+bv 
+
+> i00
+
++ bv 
+
+> i01
+
+= 1 and bv 
+
+> i10
+
++ bv 
+
+> i11
+
+= 1 ,
+
+by Lemma 11. For every i, since exactly one of bv
+
+> i00
+
+, b v 
+
+> i01
+
+is equal to 0, Lemma 9 implies that 
+
+M (i000 , ∗ ∗ ∗ ) ∈ Mv,
+
+and, in particular for i = n − 1, 
+
+M (( n − 1)000 , ∗ ∗ ∗ ) ∈ Mv. (20) Similarly, since exactly one of bv
+
+> i10
+
+, b v 
+
+> i11
+
+is equal to 0, again by Lemma 9 we obtain 
+
+M (( n − 1) i11 , ∗ ∗ ∗ ) ∈ Mv,
+
+and, for the choice of i = 0, 
+
+M (( n − 1)011 , ∗ ∗ ∗ ) ∈ Mv. (21) Equations (20) and (21) together with Lemma 12 imply 
+
+bv 
+
+> (n−1)00
+
+= bv 
+
+> (n−1)01
+
+= bv 
+
+> 010
+
+= bv 
+
+> 011
+
+= 1 ,
+
+which contradicts the assumption that bv 
+
+> id 0
+
++ bv 
+
+> id 1
+
+= 1 for all i, d .Therefore, there must exist at least one i ∈ [n] and d ∈ { 0, 1} such that 
+
+bv 
+
+> id 0
+
+= bv 
+
+> id 1
+
+= 1 .
+
+Lemma 14. Let adz denote the number of indices i such that bv 
+
+> idz
+
+= 1 . Then rank (Mv(∗ ∗ 01 , ∗ ∗ ∗ )) ≤ a00 + a11 − 1 and rank (Mv(∗ ∗ 10 , ∗ ∗ ∗ )) ≤ a01 + a10 − 1.
+
+Proof. We prove the bound for Mv(∗ ∗ 01 , ∗ ∗ ∗ ); the proof for Mv(∗ ∗ 10 , ∗ ∗ ∗ ) is identical. By definition of bv, the submatrix Mv(∗ ∗ 01 , ∗ ∗ ∗ ) has nonzero entries only in columns indexed by ( i00) and ( i11) with bv 
+
+> i00
+
+= 1 or bv 
+
+> i11
+
+= 1 (as all entries in Mv(∗ ∗ 10 , ∗00 ∪ ∗ 11) are equal to 0). Hence, Mv(∗ ∗ 01 , ∗ ∗ ∗ ) has at most a00 + a11 nonzero columns. Moreover, by the structure of M , every row of Mv(∗ ∗ 01 , ∗ ∗ ∗ ) contains exactly one entry equal to 1 in a column of type ( i00) and exactly one entry equal to 1 in a column of type ( j11). Consequently, the sum of all columns of type ( i00) is equal to the sum of all columns of type ( j11). This yields a nontrivial linear dependence among the columns of Mv(∗ ∗ 01 , ∗ ∗ ∗ ). Therefore, the column space of Mv(∗ ∗ 01 , ∗ ∗ ∗ ) has dimension at most a00 + a11 − 1, and hence rank( Mv(∗ ∗ 01 , ∗ ∗ ∗ )) ≤ a00 + a11 − 1.
+
+The same argument, applied to columns of type ( i01) and ( i10), gives rank( Mv(∗ ∗ 10 , ∗ ∗ ∗ )) ≤ a01 + a10 − 1.
+
+31 Lemma 15. For any d, z ∈ { 0, 1}, there exists an index i ∈ [n] such that 
+
+bv 
+
+> idz
+
+= 1 .
+
+Proof. It suffices to prove the statement for ( d, z ) = (0 , 0); the other cases follow by symmetry. Suppose, by contradiction, that 
+
+bv 
+
+> i00
+
+= 0 for all i ∈ [n].
+
+By Lemma 10, this implies that no row of the form M (i′j′01 , ∗∗∗ ) can belong to Mv. Consequently, 
+
+Mv(∗ ∗ 01 , ∗ ∗ ∗ ) is empty and for every j ∈ [n], 
+
+bv 
+
+> j11
+
+= 0 .
+
+We now bound the rank of Mv. First, submatrix Mv(∗ ∗ 01 , ∗ ∗ ∗ ) is empty and contributes zero to the rank. By Lemma 14, the submatrix Mv(∗ ∗ 10 , ∗ ∗ ∗ ) has rank at most 
+
+a01 + a10 − 1 ≤ 2n − 1.
+
+Next, by Lemma 7, at most 2 n rows from M (∗ ∗ 00 ∪ ∗ ∗ 11 , ∗ ∗ ∗ ) can belong to Mv. Therefore, the total rank of Mv is at most (2 n − 1) + 2 n = 4 n − 1.
+
+Equality can occur only if all such rows belong to Mv.In particular, this forces 
+
+M (( n − 1)000 , ∗ ∗ ∗ ), M (( n − 1)011 , ∗ ∗ ∗ ) ∈ Mv.
+
+By Lemma 12, this implies 
+
+bv 
+
+> (n−1)00
+
+= bv 
+
+> (n−1)01
+
+= bv 
+
+> 010
+
+= bv 
+
+> 011
+
+= 1 ,
+
+which contradicts the assumption that bv 
+
+> i00
+
+= 0 for all i.Hence, there exists at least one i ∈ [n] such that bv 
+
+> i00
+
+= 1. The same argument applies to any choice of ( d, z ). 
+
+Lemma 16. Suppose that bv 
+
+> i00
+
+= bv 
+
+> i01
+
+= 1 for some i ∈ [n]. Then for every j with i < j ≤ n − 1,we have 
+
+bv 
+
+> j00
+
+= bv 
+
+> j01
+
+= 1 and M (j000 , ∗ ∗ ∗ ) /∈ Mv.
+
+Similarly, if bv 
+
+> i10
+
+= bv 
+
+> i11
+
+= 1 for some i ∈ [n], then for every j with 0 ≤ j < i ,
+
+bv 
+
+> j10
+
+= bv 
+
+> j11
+
+= 1 and M (( n − 1) j11 , ∗ ∗ ∗ ) /∈ Mv.
+
+Proof. We prove the first statement; the second follows by symmetry. Suppose bv 
+
+> i00
+
+= bv 
+
+> i01
+
+= 1 for some i. If i = n − 1, there is nothing to prove, so assume i < n − 1. By Remark 5, it is impossible that bv 
+
+> t10
+
+= bv 
+
+> t11
+
+= 1 for any t. Hence, for every t ∈ [n], by Lemma 11 exactly one of bv
+
+> t10
+
+, b v 
+
+> t11
+
+is equal to 0. By Lemma 9, this implies 
+
+M (( n − 1) t11 , ∗ ∗ ∗ ) ∈ Mv for all t ∈ [n].
+
+32 By Lemma 15, there exist indices a, b such that 
+
+bv 
+
+> a10
+
+= 1 and bv 
+
+> b11
+
+= 1 .
+
+Since bv 
+
+> i01
+
+= 1 and bv 
+
+> a10
+
+= 1, and bv 
+
+> i00
+
+= 1 and bv 
+
+> b11
+
+= 1, Lemma 10 implies 
+
+M (ia 10 , ∗ ∗ ∗ ), M (ib 01 , ∗ ∗ ∗ ) ∈ Mv,
+
+which yields 
+
+M (ia 10 , ∗ ∗ ∗ )v = γa − γi, M (ib 01 , ∗ ∗ ∗ )v = γb − γi.
+
+Adding the sides gives 
+
+vi00 + vi01 + va10 + vb11 = γa + γb − 2γi. (22) Also we have the inequality 
+
+M (i000 , ∗ ∗ ∗ )v = vi00 + vi01 ≤ γ0 − γi,
+
+which implies 
+
+va10 + vb11 ≥ γa + γb − γi − γ0. (23) Now fix any j with i < j ≤ n − 1. Suppose, by contradiction, that bv 
+
+> j00
+
+= 0 or bv 
+
+> j01
+
+= 0. Then by Lemma 9, 
+
+M (j000 , ∗ ∗ ∗ ) ∈ Mv,
+
+so 
+
+vj00 + vj01 = γ0 − γj . (24) Using inequalities for the rows M (ja 10 , ∗ ∗ ∗ ) and M (jb 01 , ∗ ∗ ∗ ), we obtain 
+
+vj01 + va10 ≤ γa − γj , vj00 + vb11 ≤ γb − γj .
+
+Adding and using (24) gives 
+
+va10 + vb11 ≤ γa + γb − γj − γ0. (25) Combining (23) and (25) yields 
+
+γa + γb − γi − γ0 ≤ va10 + vb11 ≤ γa + γb − γj − γ0,
+
+which is impossible since γj > γ i. Hence, 
+
+bv 
+
+> j00
+
+= bv 
+
+> j01
+
+= 1 .
+
+Finally, if M (j000 , ∗ ∗ ∗ ) ∈ Mv while bv 
+
+> j00
+
+= bv 
+
+> j01
+
+= 1, then equality holds in (25), which again contradicts (23) because γj > γ i. Therefore, 
+
+M (j000 , ∗ ∗ ∗ ) /∈ Mv.
+
+This completes the proof of the first statement. The second statement follows from a symmetric argument. 33 Lemma 17. Suppose 0 ≤ i < n − 1 is the smallest index such that 
+
+bv 
+
+> i00
+
+= bv 
+
+> i01
+
+= 1 .
+
+Then M (i000 , ∗ ∗ ∗ ) ∈ Mv. Similarly, if 0 < j ≤ n − 1 is the largest index such that 
+
+bv 
+
+> j10
+
+= bv 
+
+> j11
+
+= 1 ,
+
+then M (( n − 1) j11 , ∗ ∗ ∗ ) ∈ Mv.Proof. First, we prove the first statement. Let i < n − 1 be the smallest index such that bv 
+
+> i00
+
+= bv 
+
+> i01
+
+= 1. By Remark 5, this implies that 
+
+bv 
+
+> y10
+
++ bv 
+
+> y11
+
+= 1 for all y ∈ [n]. (26) By minimality of i and Lemma 16, we have 
+
+bv 
+
+> j00
+
++ bv 
+
+> j01
+
+=
+
+(
+
+1, 0 ≤ j < i, 
+
+2, i ≤ j ≤ n − 1. (27) Let adz denote the number of indices k with bv 
+
+> kdz
+
+= 1. From (27) we obtain 
+
+a00 + a01 = i + 2( n − i) = 2 n − i, a10 + a11 = n
+
+by (26). Hence, by Lemma 14, rank  Mv(∗ ∗ 01 ∪ ∗ ∗ 10 , ∗ ∗ ∗ ) ≤ (a00 + a01 ) + ( a10 + a11 ) − 2 = 3 n − i − 2. (28) By Lemma 16, no row M (j000 , ∗ ∗ ∗ ) with j > i can belong to Mv.Suppose, by contradiction, that M (i000 , ∗ ∗ ∗ ) /∈ Mv. Then the submatrix Mv(∗ ∗ 00 ∪ ∗ ∗ 11 , ∗ ∗ ∗ )contains at most n + i rows and therefore has rank at most n + i. Combining with (28), we obtain rank( Mv) ≤ (3 n − i − 2) + ( n + i) = 4 n − 2,
+
+which contradicts the fact that v is a vertex and hence rank( Mv) = 4 n − 1. Therefore, M (i000 , ∗ ∗ ∗ ) ∈ Mv.The proof of the second statement is symmetric. Let 0 < j ≤ n − 1 be the largest index such that 
+
+bv 
+
+> j10
+
+= bv 
+
+> j11
+
+= 1. Since j > 0, by Remark 5 we cannot have bv 
+
+> t00
+
+= bv 
+
+> t01
+
+= 1 for any t, and hence 
+
+bv 
+
+> t00
+
++ bv 
+
+> t01
+
+= 1 for all t ∈ [n]. (29) By maximality of j and Lemma 16, we have 
+
+bv 
+
+> t10
+
++ bv 
+
+> t11
+
+=
+
+(
+
+2, t ≤ j, 
+
+1, t > j. (30) Let adz be as above. Then (29) gives a00 + a01 = n, and (30) yields 
+
+a10 + a11 = 2( j + 1) + ( n − (j + 1)) = n + j + 1 .
+
+34 Therefore, by Lemma 14, rank  Mv(∗∗ 01 ∪∗∗ 10 , ∗∗∗ ) ≤ (a00 +a01 )+( a10 +a11 )−2 = ( n)+( n+j +1) −2 = 2 n+j −1. (31) By Lemma 16, no row M (( n − 1) t11 , ∗ ∗ ∗ ) with t < j can belong to Mv.If M (( n−1) j11 , ∗∗∗ ) /∈ Mv, then Mv(∗∗ 00 ∪∗∗ 11 , ∗∗∗ ) contains at most n+( n−(j +1)) = 2 n−j −1rows, hence has rank at most 2 n − j − 1. Combining with (31) gives rank( Mv) ≤ (2 n + j − 1) + (2 n − j − 1) = 4 n − 2,
+
+contradicting rank( Mv) = 4 n − 1 at a vertex. Thus M (( n − 1) j11 , ∗ ∗ ∗ ) ∈ Mv.
+
+Lemma 18. The index i = n − 1 is the smallest index such that 
+
+bv 
+
+> i00
+
+= bv 
+
+> i01
+
+= 1 
+
+if and only if the index j = 0 is the largest index such that 
+
+bv 
+
+> j10
+
+= bv 
+
+> j11
+
+= 1 .
+
+Proof. It suffices to prove one direction, since the statement is symmetric. Assume that i = n − 1 is the smallest index such that bv 
+
+> i00
+
+= bv 
+
+> i01
+
+= 1. By Remark 5, this implies that there is no index j > 0 for which bv 
+
+> j10
+
+= bv 
+
+> j11
+
+= 1. Suppose, by contradiction, that bv
+
+> 010
+
+̸ = 1 or bv
+
+> 011
+
+̸ = 1. Then bv 
+
+> 010
+
++ bv 
+
+> 011
+
+= 1. For all j ∈ [n], we therefore have bv 
+
+> j10
+
++ bv 
+
+> j11
+
+= 1. By Lemma 14, this implies rank( Mv(∗ ∗ 01 ∪ ∗ ∗ 10 , ∗ ∗ ∗ )) ≤ 2n − 1.
+
+Moreover, since there are at most 2 n rows in Mv(∗ ∗ 00 ∪ ∗ ∗ 11 , ∗ ∗ ∗ ), we have rank( Mv(∗ ∗ 00 ∪ ∗ ∗ 11 , ∗ ∗ ∗ )) ≤ 2n. 
+
+Consequently, rank( Mv) ≤ 4n − 1,
+
+and equality can hold only if all such rows belong to Mv. In particular, this forces 
+
+M (( n − 1)000 , ∗ ∗ ∗ ), M (( n − 1)011 , ∗ ∗ ∗ ) ∈ Mv,
+
+which implies bv 
+
+> 010
+
+= bv 
+
+> 011
+
+= 1 by Lemma 12. This contradicts the assumption. Therefore, bv 
+
+> 010
+
+= bv 
+
+> 011
+
+= 1, and hence j = 0 is the largest index such that bv 
+
+> j10
+
+= bv 
+
+> j11
+
+= 1. 35 B.4 Bijection Between Vertices and Their Signature 
+
+Here we show that there is a bijection between vertices and their signatures. Consequently, the vertices can be enumerated via their signatures. 
+
+Proposition 3. The active constraint matrix Mv uniquely determines bv, and conversely, bv
+
+uniquely determines Mv.Proof. One can construct bv from Mv by Definition 10. Now suppose that we are given bv for some vertex v and wish to recover Mv. First, by Lemma 10, the submatrix Mv(∗ ∗ 01 ∪ ∗ ∗ 10 , ∗ ∗ ∗ ) is uniquely determined by bv.It remains to determine which of the 2 n rows in M (∗∗ 00 ∪∗∗ 11 , ∗∗∗ ) belong to Mv. By Lemma 13, there exists an index y ∈ [n] and d ∈ { 0, 1} such that 
+
+bv 
+
+> yd 0
+
+= bv 
+
+> yd 1
+
+= 1 .
+
+We first consider the case d = 0 and let i be the smallest index such that bv 
+
+> i00
+
+= bv 
+
+> i01
+
+= 1. If i = n − 1, then by Lemma 18 we have bv 
+
+> 010
+
+= bv 
+
+> 011
+
+= 1, and by Lemma 12 it follows that 
+
+M (( n − 1)000 , ∗ ∗ ∗ ), M (( n − 1)011 , ∗ ∗ ∗ ) ∈ Mv.
+
+Moreover, for any 0 ≤ i′ < n − 1 and 0 < j ′ ≤ n − 1, we have bv 
+
+> i′00
+
++ bv 
+
+> i′01
+
+= 1 and bv 
+
+> j′10
+
++ bv 
+
+> j′11
+
+= 1 (by Remark 5), so exactly one entry in each pair is zero. By Lemma 9, this implies 
+
+M (i′000 , ∗ ∗ ∗ ), M (( n − 1) j′11 , ∗ ∗ ∗ ) ∈ Mv.
+
+Hence, Mv is uniquely determined by bv in this case. Now suppose that i < n − 1. By Remark 5, for every j ∈ [n] we have bv 
+
+> j10
+
++ bv 
+
+> j11
+
+= 1, and hence exactly one of them is zero. By Lemma 9, this implies 
+
+M (( n − 1) j11 , ∗ ∗ ∗ ) ∈ Mv for all j ∈ [n].
+
+Furthermore, by Lemma 16, for all i′ > i we have M (i′000 , ∗ ∗ ∗ ) /∈ Mv. By minimality of i, for all 
+
+i′ < i we have bv 
+
+> i′00
+
++ bv 
+
+> i′01
+
+= 1, and hence M (i′000 , ∗ ∗ ∗ ) ∈ Mv. Finally, by Lemma 17, we also have M (i000 , ∗ ∗ ∗ ) ∈ Mv. Thus, Mv is uniquely determined by bv in this case as well. We now consider the case d = 1. Let j be the largest index such that bv 
+
+> j10
+
+= bv 
+
+> j11
+
+= 1. If j = 0, then by Lemma 18 we reduce to the first case considered above, and Mv can again be uniquely constructed from bv.Finally, suppose that j > 0. By Remark 5, for every i ∈ [n] we have bv 
+
+> i00
+
++ bv 
+
+> i01
+
+= 1, and hence exactly one of them is zero. By Lemma 9, this implies 
+
+M (i000 , ∗ ∗ ∗ ) ∈ Mv for all i ∈ [n].
+
+Moreover, by Lemma 16, for all j′ < j we have M (( n − 1) j′11 , ∗ ∗ ∗ ) /∈ Mv, while by maximality of j and Lemma 17 we have M (( n − 1) j11 , ∗ ∗ ∗ ) ∈ Mv. For j′ > j , we have bv 
+
+> j′10
+
++ bv 
+
+> j′11
+
+= 1, and hence M (( n − 1) j′11 , ∗ ∗ ∗ ) ∈ Mv by Lemma 9. Therefore, in all cases, Mv is uniquely determined by bv. This completes the proof. 36 Remark 6. Since [v] and Mv uniquely determine each other, it follows that [v] uniquely determines 
+
+bv, and conversely bv uniquely determines [v].
+
+We introduce the following set and claim that it precisely consists of all signatures associated with vertices. 
+
+Definition 4 (Admissible signatures) . The set of admissible signatures, denoted by S, is defined as S = S1 ∪ S2 ∪ S3, where each Si is a set of binary vectors b ∈ Rn×2×2 s.t. 1. b ∈ S1 iff 
+
+• ∃ t ∈ [n − 1] such that bi00 = bi01 = 1 for all i ≥ t and bi00 ̸ = bi01 for all i < t .
+
+• For all i ∈ [n], bi10 ̸ = bi11 .
+
+• There exist i, j ∈ [n] such that bi10 = bj11 = 1 .2. b ∈ S2 iff 
+
+• b(n−1)00 = b(n−1)01 = b010 = b011 = 1 .
+
+• For all 0 ≤ i < n − 1, bi00 ̸ = bi01 .
+
+• For all 0 < j ≤ n − 1, bj10 ̸ = bj11 .3. b ∈ S3 iff 
+
+• ∃ t ∈ [n − 1] such that bi10 = bi11 = 1 for all i ≤ t + 1 and bi10 ̸ = bi11 for all i > t + 1 .
+
+• For all i ∈ [n], bi00 ̸ = bi01 .
+
+• There exist i, j ∈ [n] such that bi00 = bj01 = 1 .
+
+Proposition 4. b v ∈ S for any vertex v.Proof. Suppose that some 0 ≤ t < n −1 is the smallest index such that bv 
+
+> t00
+
+= bv
+
+> t01
+
+. Then Lemma 16, Remark 5, and Lemma 15 imply that the first, second, and third conditions of S1 hold, respectively. Thus bv ∈ S1.Suppose that some 0 < t ≤ n − 1 is the largest index such that bv 
+
+> t10
+
+= bv
+
+> t11
+
+. Then Lemma 16, Remark 5, and Lemma 15 imply that the first, second, and third conditions of S3 hold, respectively. Thus bv ∈ S3.Finally, suppose that bv
+
+> i00
+
+̸ = bv 
+
+> i01
+
+for all 0 ≤ i < n − 1 and that bv
+
+> j10
+
+̸ = bv 
+
+> j11
+
+for all 0 < j ≤ n − 1. By Lemma 13, at least one of bv 
+
+> 010
+
+= bv 
+
+> 011
+
+or bv 
+
+> (n−1)00
+
+= bv 
+
+> (n−1)01
+
+must hold. If one holds, then Lemma 18 implies the other, and hence the first condition of S2 is satisfied. Moreover, Lemma 12 implies that the remaining two conditions of S2 also hold. Therefore bv ∈ S2.
+
+Definition 11. A vector b ∈ { 0, 1}4n is called valid if there exists a vertex v such that b = bv.
+
+Definition 5 (Vertex map) . Given an admissible signature b ∈ S, we define the vector u(b) ∈
+
+Rn×2×2 as follows: 
+
+• ui00 = −γi − α if bi00 = 1 , and ui00 = γ0 otherwise; 
+
+37 • ui10 = γi if bi10 = 1 , and ui10 = −γn−1 − α otherwise; 
+
+• ui01 = −γi if bi01 = 1 , and ui01 = γ0 + α otherwise; 
+
+• ui11 = γi + α if bi11 = 1 , and ui11 = −γn−1 otherwise, where 
+
+α =
+
+
+
+−γ0 − γt if b ∈ S1,
+
+−γ0 − γn−1 if b ∈ S2,
+
+−γt − γn−1 if b ∈ S3.
+
+Proposition 5. Any b ∈ S is valid and its corresponding vertex is u(b).Proof. In this proof, for every b ∈ S, we prove that vector u(b) satisfies all the required equalities and strict inequalities. In particular, we prove that 
+
+M u(b) ≤ c and b = bu(b),
+
+which results the feasibility of u(b) and its uniqueness with respect to b. Finally, we verify that 
+
+u(b) is a vertex by showing that rank( Mu(b)) = 4 n − 1,
+
+in view of Lemma 6. During this proof, u is used as shorthand for u(b). 
+
+Relevant constraints. Similar to Lemma 7, it is enough to check the inequality for rows 
+
+M (i000 , ∗ ∗ ∗ ) and M (( n − 1) j11 , ∗ ∗ ∗ )among the rows of M (∗ ∗ 00 ∪ ∗ ∗ 11 , ∗ ∗ ∗ ), because all other rows correspond to strictly weaker inequalities. Therefore, it suffices to verify the following inequalities: 
+
+• M (i000 , ∗ ∗ ∗ )u = ui00 + ui01 ≤ γ0 − γi;
+
+• M (( n − 1) j11 , ∗ ∗ ∗ )u = uj10 + uj11 ≤ γj − γn−1;
+
+• M (ij 01 , ∗ ∗ ∗ )u = ui00 + uj11 ≤ γj − γi;
+
+• M (ij 10 , ∗ ∗ ∗ )u = ui01 + uj10 ≤ γj − γi,for all relevant indices. 
+
+Equality structure. If bi00 = bj11 = 1, then 
+
+ui00 + uj11 = γj − γi,
+
+so the inequality corresponding to M (ij 01 , ∗ ∗ ∗ ) holds with equality, independently of the value of 
+
+α. If bi01 = bj10 = 1, then 
+
+ui01 + uj10 = γj − γi,
+
+so the inequality corresponding to M (ij 10 , ∗ ∗ ∗ ) also holds with equality. 38 To establish strict inequality whenever at least one of the corresponding b-entries is zero, we verify that each component uydz strictly increases when bydz takes the value 1 instead of 0. Since equality holds when both corresponding b-entries are equal to 1, this implies that the sum is strictly smaller than γj − γi whenever at least one of them is zero. 
+
+Case b ∈ S1. Let 0 ≤ t < n − 1 be the smallest index such that bt00 = bt01 = 1. Set 
+
+α = −γ0 − γt.
+
+• For i < t , bi00 ̸ = bi01 , and hence ui00 + ui01 = γ0 − γi. For i ≥ t, bi00 = bi01 = 1, and 
+
+ui00 + ui01 = −2γi − α = γ0 − γi + ( γt − γi).
+
+Thus equality holds if and only if i = t, and the inequality is strict for all i > t (as γt −γi < 0). Therefore, 
+
+M (i000 , ∗ ∗ ∗ ) ∈ Mu ⇐⇒ i ≤ t. 
+
+• For all j ∈ [n], bj10 ̸ = bj11 . Consequently, 
+
+uj10 + uj11 = γj − γn−1,
+
+so equality holds for all j, and 
+
+M (( n − 1) j11 , ∗ ∗ ∗ ) ∈ Mu for all j ∈ [n].
+
+• If bi00 = 0, which occurs only for i < t , then 
+
+−γi − α > γ 0,
+
+which shows that ui00 is strictly larger when bi00 = 1. If bj11 = 0, then 
+
+γj + α > −γn−1,
+
+which shows that uj11 is strictly smaller when bj11 = 0. Therefore, 
+
+M (ij 01 , ∗ ∗ ∗ ) ∈ Mu ⇐⇒ bi00 = bj11 = 1 .
+
+• If bi01 = 0, then 
+
+−γi > γ 0 + α, 
+
+so ui01 is strictly larger when bi01 = 1. If bj10 = 0, then 
+
+γj > −γn−1 − α, 
+
+so uj10 is strictly smaller when bj10 = 0. Hence, 
+
+M (ij 10 , ∗ ∗ ∗ ) ∈ Mu ⇐⇒ bi01 = bj10 = 1 .
+
+Thus M u ≤ c and bu = b for b ∈ S1.
+
+Case b ∈ S2. Set α = −γ0 − γn−1.39 • For i < n − 1, bi00 ̸ = bi01 , so ui00 + ui01 = γ0 − γi. For i = n − 1, b(n−1)00 = b(n−1)01 = 1, and hence u(n−1)00 + u(n−1)01 = γ0 − γn−1. Therefore, 
+
+M (i000 , ∗ ∗ ∗ ) ∈ Mu for all i ∈ [n].
+
+• For j > 0, bj10 ̸ = bj11 , which gives equality. For j = 0, b010 = b011 = 1, which also gives equality. Thus, 
+
+M (( n − 1) j11 , ∗ ∗ ∗ ) ∈ Mu for all j ∈ [n].
+
+• If bi00 = 0, then i < n − 1 and 
+
+−γi − α > γ 0,
+
+showing that ui00 is strictly larger when bi00 = 1. If bj11 = 0, then j > 0 and 
+
+γj + α > −γn−1,
+
+showing that uj11 is strictly smaller when bj11 = 0. Hence, 
+
+M (ij 01 , ∗ ∗ ∗ ) ∈ Mu ⇐⇒ bi00 = bj11 = 1 .
+
+• If bi01 = 0, then i < n − 1 and 
+
+−γi > γ 0 + α, 
+
+showing that ui01 is strictly larger when bi01 = 1. If bj10 = 0, then j > 0 and 
+
+γj > −γn−1 − α, 
+
+showing that uj10 is strictly smaller when bj10 = 0. Hence, 
+
+M (ij 10 , ∗ ∗ ∗ ) ∈ Mu ⇐⇒ bi01 = bj10 = 1 .
+
+Thus M u ≤ c and bu = b for b ∈ S2.
+
+Case b ∈ S3. Let 0 < t ≤ n − 1 be the largest index such that bt10 = bt11 = 1. Set 
+
+α = −γt − γn−1.
+
+• For all i ∈ [n], bi00 ̸ = bi01 , and hence ui00 + ui01 = γ0 − γi. Therefore, 
+
+M (i000 , ∗ ∗ ∗ ) ∈ Mu for all i ∈ [n].
+
+• For j > t , bj10 ̸ = bj11 and equality holds. For j ≤ t, bj10 = bj11 = 1, so 
+
+uj10 + uj11 = γj − γn−1 + ( γj − γt).
+
+Equality holds only when j = t. Hence, 
+
+M (( n − 1) j11 , ∗ ∗ ∗ ) ∈ Mu ⇐⇒ j ≤ t. 
+
+40 • If bi00 = 0, then 
+
+−γi − α > γ 0,
+
+which shows that ui00 is strictly larger when bi00 = 1. If bj11 = 0, then j > t and 
+
+γj + α > −γn−1,
+
+which shows that uj11 is strictly smaller when bj11 = 0. Therefore, 
+
+M (ij 01 , ∗ ∗ ∗ ) ∈ Mu ⇐⇒ bi00 = bj11 = 1 .
+
+• If bi01 = 0, then 
+
+−γi > γ 0 + α, 
+
+showing that ui01 is strictly larger when bi01 = 1. If bj10 = 0, then j > t and 
+
+γj > −γn−1 − α, 
+
+showing that uj10 is strictly smaller when bj10 = 0. Hence, 
+
+M (ij 10 , ∗ ∗ ∗ ) ∈ Mu ⇐⇒ bi01 = bj10 = 1 .
+
+Thus M u ≤ c and bu = b for b ∈ S3.It remains to prove that rank( Mu) = 4 n − 1 in all cases. To do so, we show that ker( Mu) is one-dimensional. Suppose that s ∈ ker( Mu). Then 
+
+Mus = 0 .
+
+Structure coming from M (ij 01 , ∗ ∗ ∗ ).
+
+In all cases we have 
+
+M (ij 01 , ∗ ∗ ∗ ) ∈ Mu ⇐⇒ bi00 = bj11 = 1 .
+
+Hence, whenever bi00 = bj11 = 1, we obtain 
+
+M (ij 01 , ∗ ∗ ∗ )s = si00 + sj11 = 0 .
+
+By the structure of b, there exists some index i0 such that bi000 = 1. Let 
+
+si000 = a. 
+
+Then for every j such that bj11 = 1, the relation si000 + sj11 = 0 implies 
+
+sj11 = −a. 
+
+Substituting this back into si00 + sj11 = 0 for any i with bi00 = 1 gives 
+
+si00 = a. 
+
+41 Therefore, 
+
+si00 = a if bi00 = 1 , sj11 = −a if bj11 = 1 .
+
+Structure coming from M (ij 10 , ∗ ∗ ∗ ).
+
+Similarly, in all cases we have 
+
+M (ij 10 , ∗ ∗ ∗ ) ∈ Mu ⇐⇒ bi01 = bj10 = 1 .
+
+Hence, whenever bi01 = bj10 = 1, we obtain 
+
+M (ij 10 , ∗ ∗ ∗ )s = si01 + sj10 = 0 .
+
+Let 
+
+si001 = a′
+
+for some i0 with bi001 = 1. Then for every j such that bj10 = 1 we have 
+
+sj10 = −a′,
+
+and consequently for every i such that bi01 = 1, 
+
+si01 = a′.
+
+Thus, 
+
+si01 = a′ if bi01 = 1 , sj10 = −a′ if bj10 = 1 .
+
+Determination of the remaining entries. 
+
+If by0z = 0 for some y ∈ [n] and z ∈ { 0, 1}, then by construction 
+
+M (y000 , ∗ ∗ ∗ ) ∈ Mu.
+
+Hence 
+
+M (y000 , ∗ ∗ ∗ )s = sy00 + sy01 = 0 .
+
+Since by the structure of b we know that 
+
+by00 + by01 > 0,
+
+at least one of sy00 or sy01 is already determined (either equal to a or a′). The equation sy00 +sy01 = 0 therefore uniquely determines the other entry. Similarly, if by1z = 0, then 
+
+M (( n − 1) y11 , ∗ ∗ ∗ ) ∈ Mu,
+
+and therefore 
+
+sy10 + sy11 = 0 ,
+
+which again uniquely determines the remaining component. Consequently, every component of s is determined in terms of a and a′.42 Case b ∈ S1.
+
+In this case, we know that 
+
+M (t000 , ∗ ∗ ∗ ) ∈ Mu
+
+for the index t defined in S1. Hence 
+
+st00 + st01 = 0 .
+
+Since bt00 = bt01 = 1, we have 
+
+st00 = a, st01 = a′.
+
+Thus 
+
+a + a′ = 0 , so a = −a′.
+
+Therefore all components of s are determined by a single parameter a, and the null space is one-dimensional. 
+
+Case b ∈ S2.
+
+Here we know that 
+
+M (( n − 1)000 , ∗ ∗ ∗ ) ∈ Mu,
+
+so 
+
+s(n−1)00 + s(n−1)01 = 0 .
+
+Since b(n−1)00 = b(n−1)01 = 1, we have 
+
+s(n−1)00 = a, s(n−1)01 = a′,
+
+which implies 
+
+a + a′ = 0 .
+
+Again a = −a′, so s depends on a single parameter. 
+
+Case b ∈ S3.
+
+In this case, 
+
+M (( n − 1) t11 , ∗ ∗ ∗ ) ∈ Mu,
+
+for the index t defined in S3. So 
+
+st10 + st11 = 0 .
+
+Since bt10 = bt11 = 1, we have 
+
+st10 = −a′, st11 = −a. 
+
+Thus 
+
+−a − a′ = 0 , so again a = −a′.
+
+In all three cases, s is uniquely determined up to a scalar multiple. Hence, dim(ker( Mu)) = 1 ,
+
+and therefore rank( Mu) = 4 n − 1.
+
+43 Finally, we have proven that for each b ∈ S there exists a unique active constraint matrix Mu
+
+and a unique vector u such that u is a vertex. Hence, every b ∈ S is valid, and this validity is unique. 
+
+Remark 7. If b is valid, we can recreate its corresponding vertex in O(n), which indicates the length of the vertex. Proof. Given b, we can explicitly construct the corresponding vertex u using Definition 5. This construction requires only O(n) time. Indeed, once b is given, the only remaining parameter to determine is the value of α. To compute this value, it suffices to find either 
+
+• the smallest index t such that bt00 = bt01 , or 
+
+• the largest index t such that bt10 = bt11 .Both quantities can be obtained by a single linear scan of b, and therefore can be computed in 
+
+O(n) time. 
+
+B.5 Proof of the Theorems 1, 2, and 3 
+
+Theorem 1. The set V = {u(b) : b ∈ S} is a set of M -distinct vertices of H, and any other vertex of H is M -equivalent to a member of V.Proof. By proposition 4, every vertex has a signature in S. Therefore, any vertex is M -equivalent to a member of V. Conversely, by proposition 5, every b ∈ S has an associated vertex, and this vertex is unique. Indeed, no two M -distinct vectors produce the same signature b. Thus, set V
+
+includes M -distinct vertices. As a result, there is a bijection between the elements of S and vertices and the proof is completed. 
+
+Proposition 6. For every vertex v of the dual feasible set, there exists a distribution P conforming to the IV model (equivalently, a corresponding Q that the pair P, Q satisfy equations in 4) such that v uniquely attains the maximum (or, in the minimization case, the minimum) value of the dual objective. 
+
+Let v be a vertex of the feasible set of Equation (10). By the definition of a vertex (see Lemma 6), there exists a collection of inequalities in Equation (10) that are tight at v and whose corresponding equalities admit a unique vertex solution, namely v itself (see Remark 4). Since Equation (10) is the dual of Equation (7), each dual inequality corresponds to a primal variable qkl,ij for some 
+
+i, j ∈ { 0, 1} and k, l ∈ [n]. 
+
+Proof. Fix a vertex v, and let u denote the number of inequalities in Equation (10) that are tight at v. By construction of the dual via the Lagrangian, each such inequality is associated with a primal variable qy0y1,d 0d1 .44 We define a distribution Q as follows: for each inequality that holds with equality at v, set the corresponding qy0y1,d 0d1 = 1 
+
+> u
+
+, and set all remaining probabilities in the support of Q to zero. This defines a valid distribution supported exactly on the tight inequalities at v.Next, rewrite the dual objective in Equation (10) in terms of qy0y1,d 0d1 :
+
+X
+
+> d,z ∈{ 0,1}, y ∈[n]
+
+pyd,z vyd,z = X
+
+> j,l,y
+
+qyl, 0j vy0,0 + X
+
+> j,k,y
+
+qky, 1j vy1,0
+
++ X
+
+> i,l,y
+
+qyl,i 0 vy0,1 + X
+
+> i,k,y
+
+qky,i 1 vy1,1,
+
+which can be equivalently expressed as 
+
+X
+
+> k,l
+
+qkl, 00 
+
+ vk0,0 + vk0,1
+
+ + X
+
+> k,l
+
+qkl, 01 
+
+ vk0,0 + vl1,1
+
+ (32) + X
+
+> k,l
+
+qkl, 10 
+
+ vl1,0 + vk0,1
+
+ + X
+
+> k,l
+
+qkl, 11 
+
+ vl1,0 + vl1,1
+
+.
+
+Each term in Equation (32) is a convex combination of expressions that are individually bounded above (or below) by the inequalities defining the dual feasible set. Since all nonzero coefficients 
+
+qy0y1,d 0d1 equal 1 
+
+> u
+
+> 0, the dual objective is maximized (or minimized) if and only if every inequality corresponding to a nonzero qy0y1,d 0d1 is tight. By construction of M , this occurs precisely when the set of inequalities that are tight at v hold with equality. In other words, u can maximize the dual objective if and only if Mv ⊆ Mu. Since 
+
+v is a vertex, by Remark 4, Mu has the same basis as Mv and must be equal to it. Thus, the system of equalities represented by Mv admits a unique vertex solution, namely v itself. Therefore, 
+
+v uniquely attains the extreme value of the dual objective, completing the proof. 
+
+Theorem 2. Under Assumptions 1, 2, and 4, the ATE admits the following valid and sharp bounds: 
+
+max  
+
+> v∈V
+
+v⊤p ≤ AT E ≤ − max  
+
+> v∈V
+
+v⊤ ¯p. (13) 
+
+Proof. We have enumerated all M -distinct vertices of the dual feasible set, which is sufficient. Moreover, by Proposition 6, each vertex provides a unique bound. Hence, every vertex contributes a necessary term to the bounds. Therefore, we obtain max  
+
+> v∈V
+
+v⊤p = L(P) ≤ AT E ≤ − L( ¯P) = − max  
+
+> v∈V
+
+v⊤ ¯p.
+
+based on Equations 7 and 8. 
+
+Theorem 3. The ATE bounds of Equation (13) are valid and sharp under Assumptions 1, 3 and 4a. Proof. As established in Theorem 1 of Song et al. (2024), the set of admissible pairs ( P, Q) under Assumptions 1, 2, and 4 (denoted by M1 in Song et al. (2024)) is identical to the set of admissible pairs under Assumptions 1, 3, and 4a (denoted by M2 in Song et al. (2024)). 45 More precisely, for every pair ( P, Q) for which there exists a full data law Qf ∗ satisfying Assump-tions 1, 2, and 4, there exists a full data law Qf ′
+
+satisfying Assumptions 1, 3, and 4a that induces the same observed distribution P, and vice versa. Consequently, the sharp identification region for the ATE under the two sets of assumptions is identical. In particular, the bounds in (13), obtained via (7) and (8), remain valid and sharp under Assumptions 1, 3, and 4a. 
+
+# C Extreme Ray Enumeration 
+
+Note that Equation (12) can be also written as follows: 0 ≥ max Σd,z ∈{ 0,1},y ∈[n]pyd,z xyd,z (33) s.t. xk0,0 + xk0,1 ≤ 0 ∀k ∈ [n]
+
+xk0,0 + xl1,1 ≤ 0 ∀k, l ∈ [n]
+
+xl1,0 + xk0,1 ≤ 0 ∀k, l ∈ [n]
+
+xl1,0 + xl1,1 ≤ 0 ∀l ∈ [n]In the definition below, we introduce a set of vectors R. We shall shortly prove that R is exactly the set of vectors that can generate the cone K := {x ∈ R2ℓn : M x ≤ 0}.
+
+Definition 12. Let R be the set of all vectors r =  rki,j 
+
+ 
+
+> k∈[n],i,j ∈{ 0,1}
+
+that belong to one of the following families: 
+
+(I) The all-±1 rays. One vector corresponding to each s ∈ {− 1, 1}, defined as 
+
+rki, 1 = s, rki, 0 = −s, ∀ k ∈ [n], i ∈ { 0, 1}.
+
+(II) Single-entry perturbations. One vector corresponding to every (k′, i ′, j ′) ∈ [n] × { 0, 1} × {0, 1} with (k′, i ′, j ′)̸ = ( n − 1, 1, 1) , defined as 
+
+(
+
+rk′i′,j ′ = −1,rki,j = 0 ∀(k, i, j )̸ = ( k′, i ′, j ′)
+
+(III) One special coordinate set to zero. 
+
+
+
+rk1,0 = −1, rk0,0 = −1 ∀k ∈ [n],rk1,1 = 1 ∀k ∈ [n − 1] ,rk0,1 = 1 ∀k ∈ [n],r(n−1)1 ,1 = 0 .
+
+(IV) Rays indexed by a nonzero binary vector s ∈ { 0, 1}n−1. One vector corresponding to 
+
+46 every s ∈ { 0, 1}n−1 \ { 0}, defined as 
+
+
+
+rk0,1 = −1, rk0,0 = 0 ∀k ∈ [n],rk1,0 = sk ∀k ∈ [n − 1] ,rk1,1 = −rk1,0 ∀k ∈ [n],r(n−1)1 ,0 = 0 .
+
+(V) Rays indexed by a nontrivial binary vector s ∈ { 0, 1}n. One vector corresponding to every s ∈ { 0, 1}n \ { 0, 1}, defined as 
+
+
+
+rk1,1 = 0 , rk1,0 = −1 ∀k ∈ [n],rk0,1 = sk ∀k ∈ [n],rk0,0 = −rk0,1 ∀k ∈ [n].
+
+(VI) Another family indexed by s ∈ { 0, 1}n−1 \ { 0}. One vector corresponding to every 
+
+s ∈ { 0, 1}n−1 \ { 0}, defined as 
+
+
+
+rk0,1 = 0 , rk0,0 = −1 ∀k ∈ [n],rk1,1 = sk ∀k ∈ [n − 1] ,rk1,0 = −rk1,1 ∀k ∈ [n],r(n−1)1 ,1 = 0 .
+
+Proposition 7. The cone K is generated by cone combination of vectors r ∈ R .
+
+In order to prove Proposition 7, we characterize the extreme rays. To do so, we will utilize a few preliminary results presented below. 
+
+Definition 13 (Active Constraint Matrix) . For a feasible point r in K, the active constraint matrix at r, denoted by M (0)  
+
+> r
+
+, is the maximal (row-) submatrix of M such that 
+
+M (0)  
+
+> r
+
+r = 0.
+
+Definition 14 (Positive Homogeneity) . A set defined by a system of equalities is positively homo-geneous if it is closed under nonnegative scaling, i.e., if r satisfies the defining equalities, then λr
+
+also satisfies them for all λ ≥ 0.
+
+Lemma 19. Let r̸ = 0 be a feasible point of the cone K := {x : M x ≤ 0}. Then r is an extreme ray of K if and only if the active contain matrix at least 4n − 2 linearly independent constraints, i.e., rank (M (0)  
+
+> r
+
+) ≥ 4n − 2
+
+Proof. (⇒) Fix an extreme ray r. Suppose by contradiction that rank( M (0)  
+
+> r
+
+) < 4n − 2. Then the null space of M (0)  
+
+> r
+
+has dimension strictly larger than 1 +dim(ker( M )). Hence there exists a nonzero vector 
+
+t ∈ ker( M (0)  
+
+> r
+
+) \ span( r, ker( M )) .
+
+47 Since t ∈ ker( M (0)  
+
+> r
+
+), all inequalities that are tight at r remain tight along the direction t. Therefore, for sufficiently small ϵ > 0, 
+
+M (r + ϵt) ≤ 0, M (r − ϵt) ≤ 0,
+
+so both r + ϵt and r − ϵt belong to K. Moreover, 
+
+r = 12 (r + ϵt) + 12 (r − ϵt).
+
+Because t /∈ span( r, ker( M )), at least one of the vectors r ± ϵt is not contained in span( r, ker( M )), contradicting Definition 3. Hence rank( M (0)  
+
+> r
+
+) ≥ 4n − 2. (⇐) Suppose rank( M (0)  
+
+> r
+
+) ≥ 4n − 2. Then dim(ker( M (0)  
+
+> r
+
+)) ≤ 1 + dim(ker( M )) .
+
+By construction, r ∈ ker( M (0)  
+
+> r
+
+) and ker( M ) ⊆ ker( M (0)  
+
+> r
+
+). Let r1, r2 ∈ K such that 
+
+r = r1 + r2.
+
+Applying M (0)  
+
+> r
+
+gives 
+
+0 = M (0)  
+
+> r
+
+r = M (0)  
+
+> r
+
+r1 + M (0)  
+
+> r
+
+r2.
+
+Since r1, r2 ∈ K , we have M (0)  
+
+> r
+
+r1 ≤ 0 and M (0)  
+
+> r
+
+r2 ≤ 0, hence 
+
+M (0)  
+
+> r
+
+r1 = M (0)  
+
+> r
+
+r2 = 0,
+
+which implies r1, r2 ∈ ker( M (0)  
+
+> r
+
+). If r ∈ ker( M ), then M (0)  
+
+> r
+
+= M by definition, and therefore r1, r2 ∈ ker( M ), satisfying Definition 3. Otherwise, r /∈ ker( M ). Since ker( M ) ⊆ ker( M (0)  
+
+> r
+
+) and dim(ker( M (0)  
+
+> r
+
+)) ≤ 1 + dim(ker( M )) ,
+
+we must have ker( M (0)  
+
+> r
+
+) = span( r, ker( M )) .
+
+Thus any feasible decomposition of r lies in span( r, ker( M )), which proves that r is an extreme ray. According to Lemma 5 and Lemma 19, we have two sets of extreme rays, one set for those with rank( M (0)  
+
+> r
+
+) = 4 n − 1 and one set with rank( M (0)  
+
+> r
+
+) = 4 n − 2. 
+
+Remark 8 (Invariant directions and trivial rays) . Based on the structure of the cone K := {x :
+
+M x ≤ 0}, if rank (M (0)  
+
+> r
+
+) = rank (M ) = 4 n − 1 holds for a vector r, then M r = 0. Therefore, only the following vectors can satisfy rank (M (0)  
+
+> r
+
+) = 4 n − 1:
+
+{ra : a ∈ R},
+
+where ra is defined as 
+
+rki, 0 = a, r ki, 1 = −a, ∀k ∈ [n], i ∈ { 0, 1}.
+
+48 On the other hand, each vector ra is a scalar multiple of any other vectors of this kind. As a result, all vectors r that satisfy rank (M (0)  
+
+> r
+
+) = 4 n − 1, produce two extreme rays. Convenient choices for these extreme rays are the vectors rinv 1 and rinv 2 defined by 
+
+(rinv 1 
+
+> ki, 0
+
+= −1, ∀k ∈ [n], i ∈ { 0, 1},rinv 1 
+
+> ki, 1
+
+= 1, ∀k ∈ [n], i ∈ { 0, 1}.
+
+(rinv 2 
+
+> ki, 0
+
+= 1, ∀k ∈ [n], i ∈ { 0, 1},rinv 2 
+
+> ki, 1
+
+= −1, ∀k ∈ [n], i ∈ { 0, 1}. (34) 
+
+Moreover, since both inequalities p⊤rinv 1 ≤ 0 and 
+
+−p⊤rinv 1 = p⊤rinv 2 ≤ 0
+
+are required to hold, it follows that p⊤rinv 1 = 0 . As rinv 1 and rinv 2 span ker( M ), we have 
+
+p⊤s = 0 , ∀s ∈ ker( M ),
+
+whenever p satisfies Equation (14) .
+
+The two extreme rays identified in Remark 8 belong to the family (I) in Definition 12. 
+
+Lemma 20 (Shift invariance) . Let x be feasible for Equation (12) , i.e., M x ≤ 0. Fix any a ∈ R,and define y by 
+
+yki, 0 = xki, 0 + a, yki, 1 = xki, 1 − a, ∀k ∈ [n], i ∈ { 0, 1}.
+
+Then y is also feasible: M y ≤ 0. Moreover, M (0)  
+
+> x
+
+= M (0)  
+
+> y
+
+and p⊤x = p⊤y; in particular, x and y
+
+induce the same constraints on p.Proof. Each inequality in M x ≤ 0 involves a sum of one ( ·, 0)-coordinate and one ( ·, 1)-coordinate. Under the transformation above, these sums remain unchanged, hence feasibility is preserved. The equalities M (0)  
+
+> x
+
+= M (0)  
+
+> y
+
+and p⊤x = p⊤y follow from the same cancellation (see Remark 8). 
+
+Remark 9 (Normalization) . By Lemma 20, for the set of extreme rays with rank (M (0)  
+
+> r
+
+) = 4 n − 2,we may impose the normalization r(n−1)1 ,1 = 0 without loss of generality. 
+
+C.1 Characterizing the Extreme Rays 
+
+Under Remark 9, the vector r has 4 n − 1 free (unfixed) coordinates. Throughout the remainder of this appendix, the term coordinate refers to these 4 n − 1 unfixed entries, excluding r(n−1)1 ,1.By Lemma 19, any nonzero, nontrivial extreme ray r of K—excluding the case rank( M (0)  
+
+> r
+
+) = 4n − 1 already treated in Remark 8—satisfies exactly 4 n − 2 linearly independent tight equalities. Consequently, the solution space of the linear equation system M (0)  
+
+> r
+
+r = 0 is one–dimensional. Equivalently, r is unique up to scaling. In particular, at most one coordinate can remain absent from the active equalities. We therefore classify all extreme rays according to the number of unconstrained coordinates. 49 C.1.1 Case 1: A Single Unconstrained Coordinate 
+
+Suppose that exactly one coordinate does not appear in any equality. Then all remaining 4 n − 2variables are uniquely determined by the linear equation system. Since the system is homogeneous and closed under positive homogeneity, this unique solution should also satisfy positive homogeneity (if r is the unique solution then r = λr ∀λ ≥ 0) therefore, this solution have to set all constrained variables equal to zero. Thus r = cei, where c is constant and ei is the standard basis vector corresponding to the uncon-strained coordinate. Feasibility of Equation (12) requires c < 0, as a result, a convenient choice for these extreme rays are 
+
+r = −ei.
+
+This case contributes exactly 4 n − 1 extreme rays belonging to the family (II) in Definition 12. In what follows, we assume that every variable appears in at least one equality of our linear equation system. 
+
+Lemma 21. Every M -equivalence class Er (other than those in Case C.1.1 and Equation (34) )has a member, e.g. r, that satisfies 
+
+r ∈ {− 1, 0, 1}4n−1.
+
+Moreover, r must follow exactly one of the two sign patterns below: 
+
+Pattern A: 
+
+(
+
+rki, 0 ∈ { 0, −1},rki, 1 ∈ { 0, +1 }, Pattern B: 
+
+
+
+rk0,0 = 0 ,rk1,0 ∈ { 0, +1 },rki, 1 ∈ { 0, −1},
+
+(35) 
+
+for all k ∈ [n] and i ∈ { 0, 1}.
+
+Note that, based on the feasibility of r, in Pattern B , if rki, 1 = 0 for all possible k and i, then rk1,0
+
+have to be zero for all k which yields to a trivial ray 0 that is a member of trivial extreme ray Equation (34). Excluding that, these two patterns are disjoint. Before presenting the formal proof, we provide a high-level outline. 
+
+Proof outline. Let r be an extreme ray not covered by Case C.1.1. The defining equalities form a homogeneous linear system with 4 n − 1 variables and rank 4 n − 2. Hence, the solution space is one–dimensional and can be parameterized as 
+
+rki,j = aki,j w + bk,i,j ,
+
+for some scalar w.Homogeneity of the system implies that if r is feasible, then λr is feasible for all λ ≥ 0. This forces each nonzero coordinate of r to have fixed magnitude, which we normalize to 1. Therefore 
+
+rki,j ∈ {− 1, 0, 1}.Each equality has the form rk0i0,0 + rk1i1,1 = 0, which implies that all nonzero rki, 0 share the same sign and all nonzero rki, 1 share the opposite sign. Using Remark 9, which enforces rk0,0 ≤ 0, only the two sign patterns in (35) are possible. 50 Using the intuition given in the outline, we continue on with the full version of the proof. 
+
+Full version of the proof. Consider an extreme ray r and the system of linear equalities obtained from the inequalities of Equation (12) that are active at r. By Assumption 9 and the feasibility of 
+
+r, we have 
+
+r(n−1)1 ,1 + rk0,0 ≤ 0 ⇒ rk0,0 ≤ 0 ∀k ∈ [n].
+
+As mentioned before, the solution space of this homogeneous linear system M r ≤ 0 is one– dimensional. Consequently, there exists a scalar parameter w ∈ R and coefficients aki,j , b ki,j ∈ R
+
+such that every solution of the system, and in particular each the extreme ray r, can be written as 
+
+rki,j = aki,j w + bki,j , ∀k ∈ [n], i, j ∈ { 0, 1}. (36) Now consider any equality of the form 
+
+rk0i0,0 + rk1i1,1 = 0 appearing in the system. Substituting Equation (36) yields (ak0i0,0 + ak1i1,1) w + ( bk0i0,0 + bk1i1,1) = 0 ∀w ∈ R.
+
+Since this equality must hold for all w, we obtain 
+
+ak0i0,0 + ak1,i 1,1 = 0 , bk0i0,0 + bk1i1,1 = 0 .
+
+To show that each nonzero coordinate has the same absolute value, we use the following crucial property of extreme rays: positive homogeneity. Therefore, for any λ ≥ 0, there must exist a scalar 
+
+wλ such that 
+
+λr ki,j = aki,j wλ + bki,j ∀k, i, j. 
+
+Substituting Equation (36) into the left-hand side gives 
+
+λa ki,j w + λb ki,j = aki,j wλ + bki,j .
+
+For indices ( k, i, j ) such that aki,j ̸ = 0, this implies 
+
+wλ = λw + (λ − 1) bki,j 
+
+aki,j 
+
+. (37) Since Equation (37) holds for any indices that aki,j ̸ = 0, there exists a constant c independent of (k, i, j ) such that 
+
+bki,j 
+
+aki,j 
+
+= c
+
+whenever aki,j ̸ = 0. On the other hand, if aki,j = 0, then the above homogeneity condition reduces to 
+
+bki,j = λb ki,j ∀λ ≥ 0,
+
+which forces bki,j = 0. 51 We now justify the normalization of the nonzero coordinates of r. Define a graph G whose vertices correspond to the coordinates ( k, i, j ) of r, and where an edge connects two vertices ( k0, i 0, 0) and (k1, i 1, 1) ̸ = (( n − 1) , 1, 1) whenever the equality 
+
+rk0,i 0,0 + rk1,i 1,1 = 0 appears in the active constraint system. Also, we have some self loops on vertices ( k0, i 0, 0) whenever we have 
+
+rk0,i 0,0 + r(n−1) ,1,1 = 0 ⇒ rk0,i 0,0 = 0 in the active constraint system. Each connected component of G corresponds to a subset of variables that are linearly linked through the equalities. Therefore, we can separate the whole linear system as several disjoint linear equa-tions, each corresponding to a connected component of G. Since the whole linear system has rank 4n − 2 over 4 n − 1 variables, exactly one connected component of G (and its corresponding linear equation) contains one degree of freedom, while all others correspond to uniquely determined vari-ables (since their linear equation system is full ranked, it has a unique solution, which is therefore a zero vector). Equivalently, for all vertices outside this specific component we have aki,j = 0 and hence rki,j = 0. Within the unique component containing the free variable, the equalities force all variables to be affine functions of the same scalar w. Note that there is no edge of type rk0,i 0,0 = 0 in this connected component, due to the fact that each variable has a path with the node corresponding rk0,i 0,0 must have a value equal to zero and uniquely determined. Moreover, along any edge of G, the equality 
+
+rk0i0,0 + rk1i1,1 = 0 implies that the corresponding coordinates must have the same absolute value. By connectivity, it follows that all nonzero coordinates in this component have equal absolute value. Since r is a ray, it is defined only up to positive scaling. Without loss of generality (by rescaling 
+
+w), we may normalize the ray so that 
+
+|aki,j w + bki,j | = 1 whenever aki,j ̸ = 0 .
+
+Consequently, each coordinate of r satisfies 
+
+rki,j ∈ {− 1, 0, 1}.
+
+We now analyze the sign structure of r. Each equality in the system has the form 
+
+rk0i0,0 + rk1i1,1 = 0 ,
+
+which implies that whenever both variables are nonzero, they must have opposite signs. Since we are excluding Case C.1.1, every variable appears in at least one equality. As a result, due to the fact that all nonzero coordinates present in one connected component, so, they all have paths to each other, all variables rki, 0 share the same sign, and all nonzero variables rki, 1 share the opposite sign (we treat zero as sign–neutral). Finally, from Remark 9 we have rk0,0 ≤ 0 for all k ∈ [n]. This restricts the possible sign configura-tions to exactly two cases: 
+
+• rk0,0 = 0 for all k, with rk1,0 ≥ 0 and rki, 1 ≤ 0; 52 • rki, 0 ≤ 0 and rki, 1 ≥ 0. These correspond precisely to the two patterns stated in Equation (35), which completes the proof. Using Lemma 21, we now enumerate all extreme rays by determining which coordinates can be zero under each admissible sign pattern while satisfying the rank condition of Lemma 19. 
+
+C.1.2 Case 2: Pattern B 
+
+Suppose Pattern B holds, namely 
+
+rk0,0 = 0 , rk1,0 ∈ { 0, 1}, rki, 1 ∈ { 0, −1}, ∀k ∈ [n], i ∈ { 0, 1}.
+
+We distinguish two subcases. 
+
+Subcase 2.1: ∀k, i : rki, 0 = 0 . In this subcase, the only potentially nonzero variables are 
+
+{rk0,1, r k1,1}k∈[n]. Let 
+
+A := {k ∈ [n] : rk0,1 = 0 }, B := {k ∈ [n] : rk1,1 = 0 },
+
+and denote a := |A| and b := |B|.We prove that the rank of the active constraint matrix in this subcase equals (2 n − 1) + a + b, 
+
+by constructing an independent family of this cardinality whose span contains all tight equalities. 
+
+Step 1: a spanning family. Define the following sets of equalities: Let k′ ∈ A and l′ ∈ B be arbitrary fixed values. 
+
+L1 := { rk0,0 + rk0,1 = 0 : k ∈ A },
+
+L2 := { rk′0,0 + rl1,1 = 0 : l ∈ B } ∪ { rk0,0 + rl′1,1 = 0 : k ∈ [n] \ { l′} } ,
+
+L3 := { rl1,0 + rl1,1 = 0 : l ∈ B },
+
+L4 := { rl1,0 + rk′0,1 = 0 : l / ∈ B }.
+
+Remark 10. Note that choosing k′ ∈ A and l′ ∈ B implicitly assumes that both sets are nonempty. We now justify this assumption. First, B̸ = ∅ by normalization, since r(n−1)1 ,1 = 0 implies (n − 1) ∈ B.Suppose next that A = ∅. Then rk0,1̸ = 0 for all k ∈ [n], and under pattern B we have rk0,1 = −1
+
+for every k ∈ [n]. In this case, the families L1 and L4 are empty and the only tight equalities are of types rk0,0 + rl1,1 = 0 and rl1,0 + rl1,1 = 0 .
+
+53 Consequently, the number of independent equalities is at most 
+
+(n − 1 + b) + b ≤ 2n − 1,
+
+which is strictly smaller than the extreme ray rank 4n − 2. Hence A must be nonempty. We may therefore fix arbitrary indices k′ ∈ A and l′ ∈ B.
+
+Let 
+
+L := L1 ∪ L 2 ∪ L 3 ∪ L 4.
+
+By construction, 
+
+|L| = a + ( n − 1 + b) + b + ( n − b) = 2 n − 1 + a + b. 
+
+Step 2: spanning property. We show that any remaining tight equality lies in span( L). The equalities of type rk0,0 + rk0,1 = 0 and rl1,0 + rl1,1 = 0 are already contained in L1 and L3. It is easy to see that any equality in { rk0,0 + rl1,1 = 0 : k ∈ [n], l ∈ B } lies in span( L2). It remains to show that { rk0,1 + rl1,0 = 0 : l ∈ [n], k ∈ A } lies in span( L). Fix l ∈ B and k ∈ A. Then (rl1,0 + rl1,1 = 0) − (rk0,0 + rl1,1 = 0) ⇒ rl1,0 − rk0,0 = 0 .
+
+Adding ( rk0,0 + rk0,1 = 0) yields 
+
+rl1,0 + rk0,1 = 0 .
+
+Now, fix l / ∈ B and k ∈ A \ { k′}. Then (rl1,0 + rk′0,1 = 0) − (rk′0,0 + rk′0,1 = 0) ⇒ rl1,0 − rk′0,0 = 0 .
+
+Adding ( rk′0,0 + rl′1,1 = 0) − (rk0,0 + rl′1,1 = 0) yields 
+
+rl1,0 − rk0,0 = 0 .
+
+Adding ( rk0,0 + rk0,1 = 0) yields 
+
+rl1,0 + rk0,1 = 0 .
+
+Hence all equalities of type rl1,0 + rk0,1 = 0 with k ∈ A are linear combinations of equalities in 
+
+L1 ∪ L 2 ∪ L 3.
+
+Step 3: linear independence. Order the variables as 
+
+{rk0,1 : k ∈ A}, {rk0,0 : k ∈ [n]}, {rl1,1 : l ∈ B}, {rl1,0 : l ∈ B}, {rl1,0 : l / ∈ B}.
+
+Each family L1, . . . , L4 introduces a new pivot variable not used earlier: 
+
+• L1 pivots on rk0,1 (k ∈ A), 
+
+• L2 pivots on rk0,0 (k ∈ [n] \ { l′}) and rl1,1 (l ∈ B), 
+
+• L3 pivots on rl1,0 (l ∈ B), 
+
+• L4 pivots on rl1,0 (l / ∈ B). 54 The coefficient matrix therefore contains a block upper-triangular submatrix with nonzero diagonal, implying that L is linearly independent. 
+
+Conclusion. The active constraint matrix has rank 2n − 1 + a + b. 
+
+Imposing the extreme ray rank condition 2 n − 1 + a + b = 4 n − 2 yields {a, b } = {n − 1, n }, and the configuration coincides with Case C.1.1. 
+
+Subcase 2.2: ∃k0 : rk01,0 = 1 . In this subcase, the equality constraints imply 
+
+rl0,1 = −1 ∀ l ∈ [n], rk01,1 = −1.
+
+Moreover, by Remark 9, 
+
+r(n−1)1 ,0 = 0 .
+
+Let 
+
+A := {k ∈ [n] : rk1,0 = 1 }, B := {k ∈ [n] : rk1,1 = 0 },
+
+and denote a := |A| and b := |B|. Since rk1,1 ≤ − rk1,0, the above constraints imply A ∩ B = ∅ and therefore 
+
+a + b ≤ n. 
+
+Rank count. We now count the number of independent tight equalities. 
+
+• Equalities of type rk0,0 + rk0,1 = 0 do not appear in this subcase. 
+
+• Equalities of type rk0,0 + rl1,1 = 0 contribute n + b − 1 independent constraints. 
+
+• Equalities of type rl1,0 + rk0,1 = 0 contribute n + a − 1 independent constraints. 
+
+• Equalities of type rk1,0 + rk1,1 = 0 contribute a + b independent constraints. Hence the total number of independent equalities equals (n + b − 1) + ( n + a − 1) + ( a + b) = 2 n − 2 + 2 a + 2 b. 
+
+Imposing the extreme ray rank condition 2 n − 2 + 2 a + 2 b = 4 n − 2 yields 
+
+a + b = n. 
+
+Remark 11. Note that A cannot be empty. Indeed, if A = ∅, then no equalities of type rl1,0+rk0,1 =0 appear. In this case the number of independent equalities is at most 
+
+(n + b − 1) + b ≤ 3n − 1,
+
+which is strictly smaller than the extreme ray rank 4n − 2. Hence A̸ = ∅.
+
+55 Enumeration of rays. Thus A and B form a partition of [ n] with ( n−1) /∈ A because r(n−1)1 ,0 = 0. Hence A ⊆ [n − 1] is nonempty, and every nonempty subset A ⊆ [n − 1] yields an extreme ray. Equivalently, for any binary vector s ∈ { 0, 1}n−1 that is not identically zero, define 
+
+
+
+rk0,1 = −1, ∀k ∈ [n],rk0,0 = 0 , ∀k ∈ [n],r(n−1)1 ,0 = 0 ,rk1,0 = sk, ∀k ∈ [n − 1] ,rk1,1 = −rk1,0, ∀k ∈ [n].
+
+This produces 2 n−1 − 1 M -distinct extreme rays belonging to the family (IV) in Definition 12. 
+
+C.1.3 Case 3: Pattern A 
+
+Suppose Pattern A holds, namely 
+
+rki, 0 ∈ { 0, −1}, rki, 1 ∈ { 0, +1 }, ∀k ∈ [n], i ∈ { 0, 1}.
+
+We consider four subcases. 
+
+Subcase 3.1: ∀k, i : rki, 1 = 0 . In this subcase, the only potentially nonzero variables are 
+
+{rk0,0, r k1,0}k∈[n]. Define 
+
+A := {k ∈ [n] : rk0,0 = 0 }, B := {k ∈ [n] : rk1,0 = 0 },
+
+and denote a := |A| and b := |B|.
+
+Rank count. We count the number of independent tight equalities. 
+
+• Equalities of type rk0,0 + rk0,1 = 0 contribute a independent constraints. 
+
+• Equalities of type rl1,0 + rk0,1 = 0 contribute n + a − 1 independent constraints. 
+
+• Equalities of type rk1,0 + rk1,1 = 0 contribute b independent constraints. 
+
+• Equalities of type rk0,0 +rl1,1 = 0 contribute n−a independent constraints (Similar to Subcase 2.1). Hence the total number of independent equalities equals 
+
+a + ( n + a − 1) + ( n − a) + b = 2 n − 1 + a + b. 
+
+Imposing the extreme ray rank condition 2 n−1+ a+b = 4 n−2 yields {a, b } = {n−1, n }. Therefore this configuration coincides with Case C.1.1. 56 Subcase 3.2: ∃k0, l 0 : rk00,1 = 1 , r l01,1 = 1 . In this case, the equality constraints force 
+
+rl0,0 = rl1,0 = −1 ∀l ∈ [n].
+
+Define 
+
+A := {k ∈ [n] : rk0,1 = 1 }, B := {k ∈ [n] : rk1,1 = 1 },
+
+and denote a := |A| and b := |B|. By Remark 9, ( n − 1) /∈ B, hence b ≤ n − 1. 
+
+Rank count. As in the previous subcases, we count the number of independent equalities: 
+
+• Equalities of type rk0,0 + rk0,1 = 0 contribute a constraints. 
+
+• Equalities of type rl1,0 + rk0,1 = 0 contribute n + a − 1 constraints. 
+
+• Equalities of type rk0,0 + rl1,1 = 0 contribute n − a constraints. 
+
+• Equalities of type rk1,0 + rk1,1 = 0 contribute b constraints. Hence the total number of independent equalities equals 2n − 1 + a + b. 
+
+Imposing the extreme ray rank condition 2 n − 1 + a + b = 4 n − 2 yields 
+
+a = n, b = n − 1.
+
+Resulting extreme ray. These values uniquely determine the configuration, giving the extreme ray 
+
+rk1,0 = −1, ∀k ∈ [n],rk0,0 = −1, ∀k ∈ [n],r(n−1)1 ,1 = 0 ,rk1,1 = 1 , ∀k ∈ [n − 1] ,rk0,1 = 1 , ∀k ∈ [n].
+
+which belongs to the family (III) in Definition 12. 
+
+Subcase 3.3: ∃k0 : rk00,1 = 1 , ∀l : rl1,1 = 0 . In this subcase, the equality constraints imply 
+
+rl1,0 = −1 ∀l ∈ [n], rk00,0 = −1.
+
+Define 
+
+A := {k ∈ [n] : rk0,1 = 1 }, B := {k ∈ [n] : rk0,0 = 0 },
+
+and denote a := |A| and b := |B|.
+
+Rank count. We now count the number of independent tight equalities. 57 • Equalities of type rk1,0 + rk1,1 = 0 do not appear. 
+
+• Equalities of type rk0,0 + rl1,1 = 0 contribute n + b − 1 independent constraints. 
+
+• Equalities of type rl1,0 + rk0,1 = 0 contribute n + a − 1 independent constraints. 
+
+• Equalities of type rk0,0 +rk0,1 = 0 (for indices where both variables appear in tight constraints) contribute a + b independent constraints. 
+
+Remark 12. If B = ∅, then no equalities of type rk0,0 + rl1,1 = 0 appear. In this case the number of independent equalities is at most 
+
+(n + a − 1) + a = n + 2 a − 1,
+
+which is strictly smaller than the extreme ray rank 4n − 2. Hence B̸ = ∅.
+
+Hence the total number of independent equalities equals (n + b − 1) + ( n + a − 1) + ( a + b) = 2 n − 2 + 2 a + 2 b. 
+
+Imposing the extreme ray rank condition 2n − 2 + 2 a + 2 b = 4 n − 2yields 
+
+a + b = n. 
+
+Enumeration of rays. Thus, the sets A and B form a nontrivial partition of [ n]. Equivalently, for any binary vector s ∈ { 0, 1}n that is neither identically zero nor identically one, define 
+
+
+
+rk1,1 = 0 , ∀k ∈ [n],rk1,0 = −1, ∀k ∈ [n],rk0,1 = sk, ∀k ∈ [n],rk0,0 = −rk0,1, ∀k ∈ [n].
+
+This produces 2 n − 2 M -distinct extreme rays belonging to the family (V) in Definition 12. 
+
+Subcase 3.4: ∃k0 : rk01,1 = 1 , ∀l : rl0,1 = 0 . In this subcase, the equality constraints imply 
+
+rl0,0 = −1 ∀l ∈ [n], rk01,0 = −1.
+
+Define 
+
+A := {k ∈ [n] : rk1,1 = 1 }, B := {k ∈ [n] : rk1,0 = 0 },
+
+and denote a := |A| and b := |B|.
+
+Rank count. We count the number of independent tight equalities. 58 • Equalities of type rk0,0 + rk0,1 = 0 do not appear. 
+
+• Equalities of type rk1,0 + rk1,1 = 0 contribute a + b independent constraints. 
+
+• Equalities of type rl1,0 + rk0,1 = 0 contribute n + b − 1 independent constraints. 
+
+• Equalities of type rk0,0 + rl1,1 = 0 contribute n + a − 1 independent constraints. 
+
+Remark 13. If B = ∅, then no equalities of type rl1,0 + rk0,1 = 0 appear. In this case the number of independent equalities is at most 
+
+(n + a − 1) + a = n + 2 a − 1,
+
+which is strictly smaller than the extreme ray rank 4n − 2. Hence B̸ = ∅.
+
+Hence the total number of independent equalities equals (a + b) + ( n + a − 1) + ( n + b − 1) = 2 n − 2 + 2 a + 2 b. 
+
+Imposing the extreme ray rank condition 2n − 2 + 2 a + 2 b = 4 n − 2yields 
+
+a + b = n. 
+
+Enumeration of rays. By Remark 9, ( n − 1) /∈ A. Thus, A ⊆ [n − 1] is a nonempty subset, and every such subset produces an extreme ray. Equivalently, for any nonzero binary vector s ∈ { 0, 1} n−1, define 
+
+
+
+rk0,1 = 0 , ∀k ∈ [n],rk0,0 = −1, ∀k ∈ [n],r(n−1)1 ,1 = 0 ,rk1,1 = sk, ∀k ∈ [n − 1] ,rk1,0 = −rk1,1, ∀k ∈ [n].
+
+This produces 2 n−1 − 1 M -distinct extreme rays belonging to the family (VI) in Definition 12. The above case analysis exhausts all feasible configurations and characterizes all extreme rays of the cone. This completes the proof of Proposition 7. 
+
+C.2 Number of Extreme Rays 
+
+Summing the contributions from all cases, 2 + (4 n − 1) + (2 n−1 − 1) + 1 + (2 n − 2) + (2 n−1 − 1) = 2 n+1 + 4 n − 2,
+
+which proves the following Corollary. 
+
+Corollary 6. According to Proposition 7, the cone K is generated by 2n+1 + 4 n − 2 M -distinct vectors ri.
+
+59 C.3 Extracting the IV Inequalities 
+
+Theorem 5. Let P be the observed probability distribution, and pyd,z defined as in Section 2. The sharp testable implications of the IV model under Assumptions 1, 2, and 4 are the following inequalities: 
+
+P
+
+> k∈[n]
+
+−pk0,1 + P
+
+> k∈T
+
+(pk1,0 − pk1,1) ≤ 0 ∀T ⊆ [n − 1] , T ̸ = ∅
+
+P
+
+> k∈[n]
+
+−pk1,0 + P
+
+> k∈T
+
+(pk0,1 − pk0,0) ≤ 0 ∀T ⊂ [n], T ̸ = ∅
+
+P
+
+> k∈[n]
+
+−pk0,0 + P
+
+> k∈T
+
+(pk1,1 − pk1,0) ≤ 0 ∀T ⊆ [n − 1] , T ̸ = ∅
+
+(17) 
+
+Proof. Based on the fact that K can be written as a cone combination of ris, we can write the sufficient inequalities as p⊤ri ≤ 0. As p is the observed probability law, the following inequalities are obviously satisfied, hence, there is no need to check them. 
+
+P
+
+> k∈[n]
+
+(pk0,1 + pk1,1) − P
+
+> k∈[n]
+
+(pk0,0 + pk1,0) ≤ 0
+
+P
+
+> k∈[n]
+
+(pk0,0 + pk1,0) − P
+
+> k∈[n]
+
+(pk0,1 + pk1,1) ≤ 0
+
+−pk0,0 ≤ 0 ∀k ∈ [n]
+
+−pk0,1 ≤ 0 ∀k ∈ [n]
+
+−pk1,0 ≤ 0 ∀k ∈ [n]
+
+−pk1,1 ≤ 0 ∀k ∈ [n − 1] 
+
+P
+
+> k∈[n−1]
+
+(pk1,1 + pk0,1) + p(n−1)0 ,1 ≤ P
+
+> k∈[n]
+
+(pk1,0 + pk0,0)(38) Therefore, the given inequalities in Theorem 5 are sufficient to test the validity of the observed probability vector p satisfying our problem assumptions and setup. For necessity part, we need to show that each extreme ray presented in Proposition 7 cannot be derived as cone combination of the others and moreover, for each inequality in Equation (17), there exists a vector p such that it satisfies all inequalities except that specific one. Fix an extreme ray representative r ∈ R (where R is the family in Definition 12), and suppose, by contradiction, that 
+
+r =
+
+> m
+
+X
+
+> t=1
+
+λtrt, λt ≥ 0,
+
+where each rt ∈ R are such that Ert̸ = Er whenever rt /∈ ker( M ). Let I := {t : λt > 0} and pick any t0 ∈ I . Define 
+
+r1 := λt0 rt0 , r2 := X
+
+> t∈I\{ t0}
+
+λtrt.
+
+Then r1, r2 ∈ K and r = r1 + r2.Since r is an extreme ray, by Definition 3 we have 
+
+Er1 = Er2 = Er.
+
+60 Hence there exist α > 0 and s ∈ ker( M ) such that 
+
+r = α rt0 + s.
+
+We distinguish two cases. 
+
+Case 1: r /∈ ker( M ). This implies that rt0 /∈ ker( M ). By the normalization in Remark 9, 
+
+r(n−1)1 ,1 = 0. Since s ∈ ker( M ), we have s = 0 if and only if s(n−1)1 ,1 = 0, which implies s = 0 and therefore 
+
+r = α rt0 .
+
+All vectors in R are unique rays; hence r = rt0 .
+
+Case 2: r ∈ ker( M ). Multiplying the above equality by M yields 
+
+0 = M r = α M rt0 ,
+
+so rt0 ∈ ker( M ). Since both r and rt0 belong to ker( M ) = cone( s1, · · · , st, −s1, · · · , −st), combining the fact that s1, · · · , st are independent bases of ker( M ) with positiveness of α implies that r and 
+
+rt0 must coincide. Hence 
+
+r = rt0 .
+
+Therefore, r cannot be expressed as a conic combination of representatives of the other elements in R. Since the conic hull of these representatives is a closed convex set, the strong separating hyperplane theorem guarantees the existence of a vector p such that 
+
+p⊤r > 0 and p⊤x ≤ 0for all x in the conic hull generated by representatives of the remaining elements of R. Moreover, since r does not correspond to an extreme ray inducing the inequalities in Equation (38), the vector 
+
+p satisfies these inequalities. In particular, p̸ = 0, and by normalization, the vector 
+
+p∗ = 2p
+
+∥p∥1
+
+defines a valid observed probability vector such that (p∗)⊤r > 0 and (p∗)⊤x ≤ 0for all x in the conic hull generated by representatives of the other elements of R.As a result, for each inequality in Equation (17), there exists an observed probability vector p
+
+that violates that inequality while satisfying all the others. Consequently, each inequality p⊤r ≤ 0associated with r ∈ R is necessary : removing it would enlarge the feasible set of observed probability vectors p beyond the set induced by K.Combining necessity with the sufficiency argument (since K = cone( R)), we conclude that the family of inequalities in Theorem 5 is necessary and sufficient. 61 D Proofs of Generalized Versions 
+
+Below, we provide generalized versions of our previous Lemmas. Specifically, we no longer restrict our setting to ℓ = 2; the instrument Z can take an arbitrary number ℓ of values. 
+
+Lemma 22. Let v be a feasible point satisfying M v ≤ c. Then v is a vertex if and only if rank (Mv) = 2 nℓ − dim(ker( M )) = rank (M ).
+
+Proof. We prove both directions. 
+
+(⇐) If rank (Mv) < 2nℓ − dim(ker( M )) , then v is not a vertex. 
+
+Suppose rank( Mv) < 2nℓ − dim(ker( M )). Note that rank( M ) = 2 nℓ − dim(ker( M )). Because rank( Mv) < rank( M ), we have dim ker( Mv) > dim ker( M ).
+
+Hence, there exists a nonzero vector t ∈ ker( Mv) such that t /∈ ker( M ). Since t ∈ ker( Mv), we have 
+
+Mv(v + ϵt) = Mvv = cv
+
+for all ϵ ∈ R. For sufficiently small ϵ > 0, the inequalities corresponding to non-active constraints remain strict, because they are strict at v. Therefore, 
+
+M (v + ϵt) ≤ c and M (v − ϵt) ≤ c
+
+for sufficiently small ϵ.Thus both v + ϵt and v − ϵt are feasible. Moreover, 
+
+v = 12 (v + ϵt) + 12 (v − ϵt),
+
+and since t /∈ ker( M ), we have 
+
+M (v + ϵt)̸ = M v,
+
+so the two feasible points are M -distinct. Hence v can be written as a non-trivial convex combination of two M -distinct feasible points, and therefore v is not a vertex by Definition 2. 
+
+(⇒) If rank (Mv) = 2 nℓ − dim(ker( M )) , then v is a vertex. 
+
+Now suppose rank( Mv) = 2 nℓ − dim(ker( M )). Assume 
+
+v = λv1 + (1 − λ)v2, λ ∈ (0 , 1) ,
+
+for feasible points v1, v2.Since v is active on Mv, we have 
+
+Mvv = cv.
+
+62 Applying Mv to the convex combination gives 
+
+Mvv = λM vv1 + (1 − λ)Mvv2.
+
+Because v1 and v2 are feasible, 
+
+Mvv1 ≤ cv, Mvv2 ≤ cv.
+
+Since the convex combination equals cv, it follows that 
+
+Mvv1 = cv and Mvv2 = cv.
+
+Therefore, 
+
+Mv(v − v1) = 0, Mv(v − v2) = 0.
+
+Because rank( Mv) = rank( M ), and the fact the Mv is a submatrix of M we have ker( Mv) = ker( M ).
+
+Hence, 
+
+v − v1 ∈ ker( M ), v − v2 ∈ ker( M ).
+
+By Definition 2, any two feasible points differing by a vector in ker( M ) represent the same extreme point. Thus v cannot be written as a non-trivial convex combination of two M -distinct feasible points, and therefore v is a vertex. 
+
+Remark 14. Since rank (M ) = rank (Mv) = 2 nℓ − dim(ker( M )) , the solution set of the system 
+
+Mvx = c is an affine space of the form v + ker( M ). Therefore, Mv uniquely determines the 
+
+M -equivalence class [v].In particular, if two active constraint matrices share the same row basis (that is, they consist of the same linearly independent rows), then they determine the same solution v and thus the same 
+
+M -equivalence class [v]. Consequently, the two active constraint matrices must coincide. 
+
+Lemma 23. Let r̸ = 0 be a feasible vector of the cone K = {x : M x ≤ 0}. Let M (0)  
+
+> r
+
+denote the matrix of all inequalities that are active at r as described in Definition 13. Then r is an extreme ray of K if and only if the active set contains at least 2nℓ − dim(ker( M )) − 1 linearly independent constraints, i.e., rank (M (0)  
+
+> r
+
+) ≥ 2nℓ − dim(ker( M )) − 1
+
+Proof. (⇒) Assume r is an extreme ray and suppose, by contradiction, that rank( M (0)  
+
+> r
+
+) < 2nℓ −
+
+dim(ker( M )) − 1. Then the null space of M (0)  
+
+> r
+
+has dimension strictly larger than 1 + dim ker( M ). Hence there exists a nonzero vector 
+
+t ∈ ker( M (0)  
+
+> r
+
+) \ span( r, ker( M )) .
+
+Since t ∈ ker( M (0)  
+
+> r
+
+), all inequalities that are tight at r remain tight along the direction t. Therefore, for sufficiently small ϵ > 0, 
+
+M (r + ϵt) ≤ 0, M (r − ϵt) ≤ 0,
+
+63 so both r + ϵt and r − ϵt belong to K. Moreover, 
+
+r = 12 (r + ϵt) + 12 (r − ϵt).
+
+Because t /∈ span( r, ker( M )), at least one of the vectors r ± ϵt is not contained in span( r, ker( M )), contradicting Definition 3. Hence rank( M (0)  
+
+> r
+
+) ≥ 2nℓ − dim(ker( M )) − 1. (⇐) Assume rank( M (0)  
+
+> r
+
+) ≥ 2nℓ − dim(ker( M )) − 1. Then dim ker( M (0)  
+
+> r
+
+) ≤ 1 + dim ker( M ).
+
+By construction, r ∈ ker( M (0)  
+
+> r
+
+) and ker( M ) ⊆ ker( M (0)  
+
+> r
+
+). Let r(1) , r(2) ∈ K such that 
+
+r = r(1) + r(2) .
+
+Applying M (0)  
+
+> r
+
+gives 0 = M (0)  
+
+> r
+
+r = M (0)  
+
+> r
+
+r(1) + M (0)  
+
+> r
+
+r(2) .
+
+Since r(1) , r(2) ∈ K , we have M (0)  
+
+> r
+
+r(1) ≤ 0 and M (0)  
+
+> r
+
+r(2) ≤ 0, hence 
+
+M (0)  
+
+> r
+
+r(1) = M (0)  
+
+> r
+
+r(2) = 0,
+
+which implies r(1) , r(2) ∈ ker( M (0)  
+
+> r
+
+). If r ∈ ker( M ), then M (0)  
+
+> r
+
+= M and therefore r(1) , r(2) ∈ ker( M ), satisfying Definition 3. Otherwise, 
+
+r /∈ ker( M ). Since ker( M ) ⊆ ker( M (0)  
+
+> r
+
+) and dim ker( M (0)  
+
+> r
+
+) ≤ 1 + dim ker( M ),
+
+we must have ker( M (0)  
+
+> r
+
+) = span( r, ker( M )) .
+
+Thus any feasible decomposition of r lies in span( r, ker( M )), which proves that r is an extreme ray. 
+
+D.1 Vertices and Proofs of Section 4.2 
+
+Theorem 4. For any a ∈ [ℓ], and any s = ( s0, . . . , s n−1) ∈ ([ ℓ] \ { a})n, define w(a, s) ∈ Rn×2×ℓ as 
+
+wy1,j = 0 , ∀y, j ̸ = a, wy1,a = γy − γn−1, ∀y, wy0,j = 0 , ∀y, j / ∈ { a, s y},wy0,s y = γn−1 − γy, ∀y, wy0,a = γ0 − γn−1, ∀y. 
+
+Then {w(a, s) : a ∈ [ℓ], s ∈ ([ ℓ] \ { a})n non-constant } is a set of M -distinct vertices of H (the fea-sible region of Equation 10). The number of these M -distinct vertices equals 
+
+ℓ
+
+
+
+(ℓ − 1) n−1 − (ℓ − 1) 
+
+
+
+.
+
+64 Proof. For convenience we rewrite Equation (10) in the equivalent form max X
+
+> y∈[n]
+
+X
+
+> d∈{ 0,1}
+
+X
+
+> j∈[ℓ]
+
+pyd,j xyd,j (39) s.t. 
+
+> ℓ−1
+
+X
+
+> j=0
+
+xyij ij ,j ≤ γy1 − γy0 , ∀y0, y 1 ∈ [n], ∀(i0, . . . , i ℓ−1) ∈ { 0, 1}ℓ.
+
+Lemma 24 (Shift invariance for general version) . Let v be feasible for Equation (39) . Fix any 
+
+t ∈ R and j ∈ [ℓ] \ { 0}, and define u by 
+
+uki, 0 = vki, 0 + t, uki,j = vki,j − t, ∀k ∈ [n], i ∈ { 0, 1}.
+
+Then y is also feasible. Moreover, Mv = Mu and p⊤u = p⊤v; in particular, v and u induce the same constraints on p.proof of Lemma 24. Each inequality in Equation (39) involves a sum of one ( ·, 0)-coordinate and one (·, j )-coordinate. Under the transformation above, these sums remain unchanged, hence feasibility is preserved and Mv = Mu. The equality p⊤v = p⊤u follows from the same cancellation due to the fact that P 
+
+> k∈[n], i ∈{ 0,1}
+
+pki, 0 = P 
+
+> k∈[n], i ∈{ 0,1}
+
+pki,j = 1. 
+
+Remark 15 (Normalization) . By Lemma 24, for any feasible point in Equation (39) , we may impose the normalization v(n−1)1 ,j = 0 , ∀j̸ = 0 without loss of generality. 
+
+In order to prove Theorem 4, we show (i) feasibility of the constructed w, and (ii) that w is a vertex by exhibiting a family of constraints that are tight at w and whose equalities determine w
+
+uniquely (after fixing a normalization for the shift invariance). 
+
+(i) Feasibility. Fix ( i0, . . . , i ℓ−1) ∈ { 0, 1}ℓ and let A := {j : ij = 0 } and Ac := {j : ij = 1 }. For any y0, y 1 ∈ [n], the left-hand side of the corresponding constraint equals 
+
+X
+
+> j∈A
+
+wy00,j + X
+
+> j∈Ac
+
+wy11,j .
+
+By construction, among the terms wy11,j only the coordinate with j = a may be nonzero, and among the terms wy00,j only the coordinates with j ∈ { a, s y0 } may be nonzero. Hence the above sum contains at most two nonzero contributions, at indices a and sy0 , and we obtain 
+
+X
+
+> j∈A
+
+wy00,j + X
+
+> j∈Ac
+
+wy11,j ≤ max {wy00,a , w y11,a } + max {wy00,s y0 , w y11,s y0 }.
+
+Since wy11,s y0 = 0 (because sy0̸ = a), the second maximum equals wy00,s y0 = γn−1 − γy0 . Moreover 
+
+wy00,a = γ0 − γn−1 and wy11,a = γy1 − γn−1, so the first maximum equals γy1 − γn−1. Therefore, 
+
+X
+
+> j∈A
+
+wy00,j + X
+
+> j∈Ac
+
+wy11,j ≤  γy1 − γn−1
+
+ +  γn−1 − γy0
+
+ = γy1 − γy0 ,
+
+and all constraints in Equation (39) are satisfied. Thus w is feasible. 65 (ii) Vertex Property. We next show that the above construction is uniquely determined (up to the standard shift invariance) by a collection of tight constraints from Equation (39). Concretely, the construction implies that the following constraints are tight: 
+
+> ℓ−1
+
+X
+
+> j=0
+
+xy0,j = γ0 − γy, ∀y ∈ [n], (40) 
+
+> ℓ−1
+
+X
+
+> j=0
+
+xy1,j = γy − γn−1, ∀y ∈ [n], (41) 
+
+xy0,s y + X 
+
+> j̸=sy
+
+xk1,j = γk − γy, ∀y, k ∈ [n], (42) 
+
+xy0,s y + xk1,a + X
+
+> j∈A
+
+xy0,j + X 
+
+> j∈Ac\{ a,s y}
+
+xk1,j = γk − γy, ∀y, k, ∀A ⊆ [ℓ] \ { a, s y}. (43) After fixing the normalization 
+
+x(n−1)1 ,j = 0 , ∀j̸ = 0 ,
+
+we prove that the resulting linear system has a unique solution, hence w is a vertex of the feasible polyhedron. From the normalization x(n−1)1 ,j = 0 for all j̸ = 0 (Remark 15) and equality (41) with y = n − 1, we obtain ℓ−1X
+
+> j=0
+
+x(n−1)1 ,j = γn−1 − γn−1 = 0 .
+
+Since all summands except possibly j = 0 are zero, it follows that x(n−1)1 ,0 = 0 as well. Thus, 
+
+x(n−1)1 ,j = 0 , ∀j ∈ [ℓ]. (44) Now apply (42) with k = n − 1: 
+
+xy0,s y + X 
+
+> j̸=sy
+
+x(n−1)1 ,j = γn−1 − γy.
+
+Using (44), the sum vanishes, and we conclude that for every y,
+
+xy0,s y = γn−1 − γy. (45) Substituting (45) back into (42) for general k gives 
+
+γn−1 − γy + X 
+
+> j̸=sy
+
+xk1,j = γk − γy,
+
+hence X 
+
+> j̸=sy
+
+xk1,j = γk − γn−1, ∀y, k. (46) Combining (41) with (46) gives 
+
+xk1,s y = 0 ∀k, y. (47) 66 Define the index sets 
+
+B := {j : ∃k with sk = j}, C := Bc.
+
+By construction sy̸ = a for all y, so a ∈ C.Since there exists y such that sy = j for each j ∈ B, using (47) implies that 
+
+xk1,j = 0 , ∀k, ∀j ∈ B. (48) Consequently, (41) becomes X
+
+> j∈C
+
+xk1,j = γk − γn−1, ∀k. (49) Next, specialize (43) by choosing A ⊆ B \ { sy} (so that A contains no elements of C). Using (45) and (48), the terms involving xk1,j for j ∈ B vanish, and (43) simplifies to 
+
+γn−1 − γy + X
+
+> j∈A
+
+xy0,j = γk − γy − xk1,a − X
+
+> j∈C\{ a}
+
+xk1,j . (50) Combining (49) with (50) gives X
+
+> j∈A
+
+xy0,j = 0 .
+
+Varying A over all subsets of B \ { sy} forces xy0,j = 0 for all j ∈ B \ { sy}, and combined with (45) shows that, within B, the only possibly nonzero d = 0 coordinate is at sy:
+
+xy0,j = 0 (j ∈ B \ { sy}), xy0,s y = γn−1 − γy. (51) Now choose A ⊆ C \ { a} in (43). With (47), the remaining terms lie entirely in C.
+
+γn−1 − γy + xk1,a + X
+
+> j∈A
+
+xy0,j + X
+
+> j∈Ac∩(C\{ a})
+
+xk1,j = γk − γy
+
+The dependence on A then implies that for each j ∈ C \ { a} there exists a scalar hj such that 
+
+xk1,j = xy0,j = hj , ∀k, y, ∀j ∈ C \ { a}. (52) Using (49), we obtain for all k:
+
+xk1,a + X
+
+> j∈C\{ a}
+
+hj = γk − γn−1.
+
+Also, with (40) and (51), we obtain for all y:
+
+xy0,a + X
+
+> j∈C\{ a}
+
+hj = γ0 − γn−1
+
+Finally, by the normalization and (52), for every j ∈ C \ { a},
+
+hj = x(n−1)1 ,j = 0 ,
+
+so xk1,j = xy0,j = 0 for all j ∈ C \ { a}. Plugging this into the two displayed equations yields 
+
+xy0,a = γ0 − γn−1, xk1,a = γk − γn−1.
+
+Together with (48) and (51), this determines all coordinates of x uniquely. Therefore, after fixing the stated normalization, the linear system (40)-(43) admits a unique solution, and hence the feasible point w is a vertex of the feasible polyhedral. 67 (iii) Counting. Fix a ∈ { 0, . . . , ℓ − 1}. The map s is a length-n vector taking values in [ ℓ] \{a}, hence there are ( ℓ − 1) n possible maps in total. Among these, ( ℓ − 1) maps are constant. The construction excludes constant s, and moreover the resulting vertex is unchanged under the standard shift invariance, so the number of M -distinct (non-constant) choices contributing M -distinct vertices is (ℓ − 1) n−1 − (ℓ − 1) .
+
+Multiplying by the l possible choices of a gives the total count 
+
+l (ℓ − 1) n−1 − (ℓ − 1) .
+
+This completes the proof. 
+
+Corollary 2 (Exponential lower bound) . Under Assumptions 1, 2 and 4 (or alternatively, 1, 3 and 4a), if a set of linear functionals of P is a sharp ATE bound, then it must contain at least 
+
+ℓ
+
+
+
+(ℓ − 1) n−1 − (ℓ − 1) 
+
+
+
+terms. Proof. By Theorem 4, the feasible set H contains at least 
+
+ℓ
+
+
+
+(ℓ − 1) n−1 − (ℓ − 1) 
+
+
+
+M -distinct vertices. Moreover, according to Remark 14 and similar to Proposition 6, for each vertex v ∈ H , there exists a pair ( P, Q) satisfying (4) such that v uniquely attains the optimum of the dual objective. It follows that each such vertex v induces an achievable ATE bound of the form p⊤v. Therefore, any complete set of sharp ATE bounds must include at least one bound corresponding to each of these vertices. Hence, any complete collection of sharp ATE bounds must contain at least 
+
+ℓ
+
+
+
+(ℓ − 1) n−1 − (ℓ − 1) 
+
+
+
+bounds. 
+
+D.2 Extreme rays and Proofs of Section 5.2 
+
+In this setting, the dual feasibility problem Equation (12) can be written as max p⊤x
+
+s.t. X
+
+> j∈S
+
+xy00,j + X
+
+> j∈Sc
+
+xy11,j ≤ 0 ∀y0, y 1 ∈ { 0, . . . , n − 1}, ∀S ⊆ { 0, . . . , ℓ − 1}. (53) 68 Theorem 6. Suppose Assumptions 1, 2 and 4 hold. For any y′ ∈ [n − 1] , j′ ∈ [ℓ], and non-constant 
+
+(j0, . . . , j n−1) ∈ ([ ℓ] \ { j′})n, the following inequality holds: 
+
+py′1,j ′ ≤ X
+
+> j∈{ j0,...,j n−1}
+
+py′1,j +
+
+> n−1
+
+X
+
+> y=0
+
+py0,j y . (18) 
+
+Moreover, none of these inequalities are implied by the others (no redundancy), and their total number is 
+
+(n − 1) ℓ  (ℓ − 1) n − (ℓ − 1) .
+
+In order to prove Theorem 6, we introduce a set of extreme rays that produce necessary IV in-equalities. 
+
+Proposition 8 (Extreme rays generating the inequalities) . Fix y′ ∈ [n − 1] and j′ ∈ [ℓ]. Let 
+
+(j0, . . . , j n−1) ∈ ([ ℓ] \ { j′})n be not identically constant. Define r by 
+
+ry′1,j ′ = 1 ,ry0,j y = −1, ∀y, ry′1,j y = −1, ∀y, 
+
+and all other entries equal to zero. Then r is an extreme ray of the cone K.Proof. The proof consists of three steps. 
+
+Step 1: Feasibility. Fix any constraint indexed by ( y0, y 1, S ). The left-hand side is 
+
+LHS = X
+
+> j∈S
+
+ry00,j + X
+
+> j∈Sc
+
+ry11,j .
+
+By construction, the only nonzero entries of r are: 
+
+ry′1,j ′ = 1 , ry0,j y = −1, ry′1,j y = −1.
+
+Hence, LHS contains at most one positive term, namely ry′1,j ′ . If this term appears (i.e., y1 = y′
+
+and j′ ∈ Sc), then since jy0̸ = j′, either the term ry00,j y0 = −1 or ry′1,j y0 = −1 appear in the sums. All remaining nonzero terms are nonpositive. Therefore, 
+
+LHS ≤ 1 − 1 = 0 ,
+
+and the constraint is satisfied. Hence r ∈ K .
+
+Step 2: Rank of the Active Constraints. First, note that the ambient dimension is 2 nℓ , and by shift invariance (see Lemma 24), the kernel has dimension at least ℓ − 1. Hence, by Lemma 23, 
+
+r satisfies Definition 3 if and only if rank( M (0)  
+
+> r
+
+) ≥ 2nℓ − dim(ker( M )) − 1.
+
+69 We now show that the set of tight constraints at r has rank at least 2 nℓ − ℓ.Consider the following family of constraints, all of which are active (tight) at r:
+
+xy′0,i + X 
+
+> j̸=i
+
+xy1,j = 0 , ∀y̸ = y′, i ̸ = jy′ , (54) 
+
+X
+
+> j
+
+xy1,j = 0 , ∀y̸ = y′, (55) 
+
+xy0,i + X 
+
+> j̸=i
+
+xy1,j = 0 , ∀y̸ = y′, i ̸ = jy, (56) 
+
+X 
+
+> j̸=j′,i
+
+xy′0,j + xy′1,j ′ + xy′1,i = 0 , ∀i̸ = jy′ , j ′, (57) 
+
+X 
+
+> j̸=j′,j y′
+
+xy′′ 0,j + xy′1,j ′ + xy′1,j y′ = 0 , ∀y′′ with jy′′ ̸ = jy′ , (58) 
+
+X 
+
+> j̸=j′,j y
+
+xy0,j + xy0,j y + xy′1,j ′ = 0 , ∀y. (59) We claim that these constraints determine r uniquely up to scaling and addition of a vector in ker( M ). From (55), we have X
+
+> j
+
+xy1,j = 0 ∀y̸ = y′.
+
+Substituting into (56) yields, for all i̸ = jy,
+
+xy0,i + X 
+
+> j̸=i
+
+xy1,j = xy0,i − xy1,i = 0 ,
+
+hence 
+
+xy0,i = xy1,i , ∀y̸ = y′, i ̸ = jy.
+
+Combining with (54) yields, for each i̸ = jy there exists a scalar hi such that, 
+
+hi = xy′0,i = xy0,i = xy1,i , ∀y̸ = y′, i ̸ = jy.
+
+Applying in (55) yields, for all y̸ = y′,
+
+xy1,j y = − X 
+
+> j̸=jy
+
+hj . (60) Substituting into (59) yields, for all y̸ = y′,
+
+xy1,j y − xy0,j y = xy′1,j ′ − hj′ . (61) Combining with (58) yields, for all y′′ with jy′′ ̸ = jy′ ,
+
+X 
+
+> j̸=jy′
+
+xy′′ 1,j + xy′1,j y′ = 0 .
+
+70 Considering (55), we obtain 
+
+xy′1,j y′ = hjy′ = xy′0,j y′
+
+Comparing (57) and (59) for y = y′, we obtain 
+
+xy′1,i = xy′0,i = hi, ∀i̸ = j′, j y′ .
+
+Applying in (57) yields 
+
+xy′1,j ′ = − X 
+
+> j̸=j′
+
+hj .
+
+Combining with (60) and (61) results in 
+
+xy0,j y = hjy .
+
+Thus, by fixing values of hi for all i ∈ [ℓ], x is uniquely determined as follows 
+
+xy0,j = hj , ∀y, j ;
+
+xy1,j = hj , ∀y̸ = y′, j ̸ = jy;
+
+xy1,j y = − X 
+
+> j̸=jy
+
+hj ∀y̸ = y′;
+
+xy′1,j = hj , ∀j̸ = j′;
+
+xy′1,j ′ = − X 
+
+> j̸=j′
+
+hj ;Therefore, the solution space has dimension ℓ. Since dim(ker( M )) ≥ ℓ − 1 and r belongs to the solution space, rank( M (0)  
+
+> r
+
+) ≥ 2nℓ − ℓ ≥ 2nℓ − dim(ker( M )) − 1.
+
+This shows that the active constraints have maximal rank for an extreme ray, and hence x defines an extreme ray. 
+
+Step 3: Counting. For each ( y′, j ′), there are ( ℓ − 1) n − (ℓ − 1) non-constant choices of the vector ( j0, . . . , j n−1). Multiplying by ( n − 1) ℓ yields the total number of M -distinct rays. 
+
+Proof of Theorem 6. Each ray presented in Proposition 8 induces the inequality 
+
+p⊤r ≤ 0,
+
+which is exactly inequalities in Theorem 6. In order to prove the necessity of these inequalities, it is suffice to show that for each inequality there exists a vector p such that all of inequalities except this specific one is satisfied, which is obtained similarly to Section C.3 since the inequalities are derived from M -distinct extreme rays. Furthermore, as in Section C.3, the basic constraints 
+
+pyd,z ≥ 0 ∀y, d, z, and X
+
+> y,d
+
+pyd, 0 = X
+
+> y,d
+
+pyd,z , ∀z ∈ [ℓ],
+
+are implied by extreme rays other than those characterized in Proposition 8. Hence, it follows that the vector p is an observed probability vector, corresponding to some distribution P.71 E Analytical Example 
+
+In this section, we present an explicit example for n = ℓ = 2. We construct the corresponding matrix M , the set S, the set of vertices V, the ATE bounds based on the distribution P, set of extreme rays, and the associated IV inequalities. 
+
+E.1 Formulation 
+
+We begin by listing all the constraints given in Proposition 2: 
+
+p00 ,0 = q00 ,00 + q00 ,01 + q01 ,00 + q01 ,01 
+
+p10 ,0 = q10 ,00 + q10 ,01 + q11 ,00 + q11 ,01 
+
+p01 ,0 = q00 ,10 + q00 ,11 + q10 ,10 + q10 ,11 
+
+p11 ,0 = q01 ,10 + q01 ,11 + q11 ,10 + q11 ,11 
+
+p00 ,1 = q00 ,00 + q00 ,10 + q01 ,00 + q01 ,10 
+
+p10 ,1 = q10 ,00 + q10 ,10 + q11 ,00 + q11 ,10 
+
+p01 ,1 = q00 ,01 + q00 ,11 + q10 ,01 + q10 ,11 
+
+p11 ,1 = q01 ,01 + q01 ,11 + q11 ,01 + q11 ,11 .
+
+In addition, we impose the nonnegativity constraints 
+
+qij, d ≥ 0 for all i, j ∈ { 0, 1}, d ∈ { 0, 1}2.
+
+Our objective is to maximize or minimize the linear functional 
+
+c⊤q,
+
+subject to the constraints p = M ⊤q and q ≥ 0, where 
+
+p =
+
+
+
+p00 ,0
+
+p10 ,0
+
+p01 ,0
+
+p11 ,0
+
+p00 ,1
+
+p10 ,1
+
+p01 ,1
+
+p11 ,1
+
+
+
+q =
+
+
+
+q00 ,00 
+
+q01 ,00 
+
+q10 ,00 
+
+q11 ,00 
+
+q00 ,01 
+
+q01 ,01 
+
+q10 ,01 
+
+q11 ,01 
+
+q00 ,10 
+
+q01 ,10 
+
+q10 ,10 
+
+q11 ,10 
+
+q00 ,11 
+
+q01 ,11 
+
+q10 ,11 
+
+q11 ,11 
+
+
+
+c =
+
+
+
+0
+
+γ1 − γ0
+
+γ0 − γ1
+
+00
+
+γ1 − γ0
+
+γ0 − γ1
+
+00
+
+γ1 − γ0
+
+γ0 − γ1
+
+00
+
+γ1 − γ0
+
+γ0 − γ1
+
+0
+
+
+
+72 M =
+
+
+
+p00 ,0 p10 ,0 p01 ,0 p11 ,0 p00 ,1 p10 ,1 p01 ,1 p11 ,1
+
+q00 ,00 1 0 0 0 1 0 0 0
+
+q01 ,00 1 0 0 0 1 0 0 0
+
+q10 ,00 0 1 0 0 0 1 0 0
+
+q11 ,00 0 1 0 0 0 1 0 0
+
+q00 ,01 1 0 0 0 0 0 1 0
+
+q01 ,01 1 0 0 0 0 0 0 1
+
+q10 ,01 0 1 0 0 0 0 1 0
+
+q11 ,01 0 1 0 0 0 0 0 1
+
+q00 ,10 0 0 1 0 1 0 0 0
+
+q01 ,10 0 0 0 1 1 0 0 0
+
+q10 ,10 0 0 1 0 0 1 0 0
+
+q11 ,10 0 0 0 1 0 1 0 0
+
+q00 ,11 0 0 1 0 0 0 1 0
+
+q01 ,11 0 0 0 1 0 0 0 1
+
+q10 ,11 0 0 1 0 0 0 1 0
+
+q11 ,11 0 0 0 1 0 0 0 1
+
+
+
+E.2 Example of Submatrix Selection 
+
+We illustrate the notation M (α, β ) on the following matrix for Definition 9: 
+
+
+
+p00 ,0 p10 ,0 p01 ,0 p11 ,0 p00 ,1 p10 ,1 p01 ,1 p11 ,1
+
+q00 ,00 1 0 0 0 1 0 0 0
+
+q01 ,00 1 0 0 0 1 0 0 0
+
+q10 ,00 0 1 0 0 0 1 0 0
+
+q11 ,00 0 1 0 0 0 1 0 0
+
+q00 ,01 1 0 0 0 1 0 1 0
+
+q01 ,01 1 0 0 0 0 0 0 1
+
+q10 ,01 0 1 0 0 0 0 1 0
+
+q11 ,01 0 1 0 0 0 0 0 1
+
+q00 ,10 0 0 1 0 1 0 0 0
+
+q01 ,10 0 0 0 1 1 0 0 0
+
+q10 ,10 0 0 1 0 0 1 0 0
+
+q11 ,10 0 0 0 1 0 1 0 0
+
+q00 ,11 0 0 1 0 0 0 1 0
+
+q01 ,11 0 0 0 1 0 0 0 1
+
+q10 ,11 0 0 1 0 0 0 1 0
+
+q11 ,11 0 0 0 1 0 0 0 1
+
+
+
+The dark gray entries correspond exactly to the submatrix 
+
+M (0 ∗ 01 ∪ 0 ∗ 10 , ∗ ∗ 1) .
+
+The light grey entries correspond exactly to the submatrix 
+
+M (∗ ∗ ∗∗ , 110 ∪ 000) .
+
+73 E.3 Vertices and ATE Bounds 
+
+We can represent each b ∈ { 0, 1}2×2×2 ∈ S (defined in Definition 4) as the horizontal vector ordered as (b000 , b 100 , b 010 , b 11 ,0, b 001 , b 101 , b 011 , b 111 ).
+
+in 
+
+S =
+
+
+
+S1 =
+
+((1 , 1, 0, 1, 1, 1, 1, 0) ,
+
+(1 , 1, 1, 0, 1, 1, 0, 1) ,
+
+)
+
+S2 =
+
+
+
+(0 , 1, 1, 0, 1, 1, 1, 1) ,
+
+(1 , 1, 1, 0, 0, 1, 1, 1) ,
+
+(0 , 1, 1, 1, 1, 1, 1, 0) ,
+
+(1 , 1, 1, 1, 0, 1, 1, 0) ,
+
+
+
+S2 =
+
+((0 , 1, 1, 1, 1, 0, 1, 1) ,
+
+(1 , 0, 1, 1, 0, 1, 1, 1) 
+
+)
+
+Now based on Definition 5, we can create the vertex set V defined in Theorem 1: 
+
+V =
+
+
+
+( 0, −1, −1, 1, 0, −1, 0, −1) ,
+
+( 0, −1, 0, −1, 0, −1, −1, 1) ,
+
+(−1, −1, −1, −1, 1, 0, 0, 1) ,
+
+( 0, −1, −1, −1, 0, 0, 0, 1) ,
+
+(−1, −1, −1, 0, 1, 0, 0, 0) ,
+
+( 0, −1, −1, 0, 0, 0, 0, 0) ,
+
+(−1, 0, −1, 0, 1, −1, −1, 0) ,
+
+( 1, −1, −1, 0, −1, 0, −1, 0) .
+
+
+
+So based on Theorem 2 we have max 
+
+
+
+− p10 ,0 − p01 ,0 + p11 ,0 − p10 ,1 − p11 ,1,
+
+− p10 ,0 − p11 ,0 − p10 ,1 − p01 ,1 + p11 ,1,
+
+− p00 ,0 − p10 ,0 − p01 ,0 − p11 ,0 + p00 ,1 + p11 ,1,
+
+− p10 ,0 − p01 ,0 − p11 ,0 + p11 ,1,
+
+− p00 ,0 − p10 ,0 − p01 ,0 + p00 ,1,
+
+− p10 ,0 − p01 ,0,
+
+− p00 ,0 − p01 ,0 + p00 ,1 − p10 ,1 − p01 ,1,p00 ,0 − p10 ,0 − p01 ,0 − p00 ,1 − p01 ,1
+
+
+
+≤ ATE 74 and ATE ≤ min 
+
+
+
++ p11 ,0 + p00 ,0 − p10 ,0 + p11 ,1 + p10 ,1,
+
++ p11 ,0 + p10 ,0 + p11 ,1 + p00 ,1 − p10 ,1,
+
++ p01 ,0 + p11 ,0 + p00 ,0 + p10 ,0 − p01 ,1 − p10 ,1,
+
++ p11 ,0 + p00 ,0 + p10 ,0 − p10 ,1,
+
++ p01 ,0 + p11 ,0 + p00 ,0 − p01 ,1,
+
++ p11 ,0 + p00 ,0,
+
++ p01 ,0 + p00 ,0 − p01 ,1 + p11 ,1 + p00 ,1,
+
+− p01 ,0 + p11 ,0 + p00 ,0 + p01 ,1 + p00 ,1
+
+
+
+which are equivalent to the bounds introduced in Balke (1995). 
+
+E.4 Extreme Rays and Testable Implications 
+
+We now specialize Theorem 5 to the case n = ℓ = 2. By Theorem 5, the IV model is valid if and only if the observed distribution p satisfies the finite family of inequalities induced by the extreme rays of K.We represent each non trivial extreme ray as the horizontal vector ordered with respect to (p00 ,0, p 10 ,0, p 01 ,0, p 11 ,0, p 00 ,1, p 10 ,1, p 01 ,1, p 11 ,1).
+
+( 0, 0, 1, 0, −1, −1, −1, 0) ,
+
+(−1, 0, −1, −1, 1, 0, 0, 0) ,
+
+( 0, −1, −1, −1, 0, 1, 0, 0) ,
+
+(−1, −1, −1, 0, 0, 0, 1, 0) .
+
+Explicit Inequalities for n = 2 . Instantiating above extreme rays into p⊤r ≤ 0 (equivalently (17) for n = 2), we obtain the following system: 
+
+−p00 ,1 − p10 ,1 + p01 ,0 − p01 ,1 ≤ 0; 
+
+−p01 ,0 − p11 ,0 + p00 ,1 − p00 ,0 ≤ 0,
+
+−p01 ,0 − p11 ,0 + p10 ,1 − p10 ,0 ≤ 0; 
+
+−p00 ,0 − p10 ,0 + p01 ,1 − p01 ,0 ≤ 0; which by using ( p00 ,1 + p10 ,1 + p01 ,1 + p11 ,1) = ( p00 ,0 + p10 ,0 + p01 ,0 + p11 ,0) = 1 are equivalent to 
+
+p01 ,0 + p11 ,1 ≤ 1,p00 ,1 + p10 ,0 ≤ 1,p10 ,1 + p00 ,0 ≤ 1,p01 ,1 + p11 ,0 ≤ 1.
+
+75 Therefore, producing a total of 2 n+1 − 4 = 4 inequalities as follow: 
+
+p01 ,0 + p11 ,1 ≤ 1,p00 ,1 + p10 ,0 ≤ 1,p10 ,1 + p00 ,0 ≤ 1,p01 ,1 + p11 ,0 ≤ 1.
+
+which are equivalent to the bounds introduced in Pearl (1995). 76
