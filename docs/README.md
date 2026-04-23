@@ -6,58 +6,56 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-04-22
-- 运行时间：2026-04-22 20:29:56 UTC
+- 最新运行日期：2026-04-23
+- 运行时间：2026-04-23 20:24:05 UTC
 - 运行状态：成功
-- 本次总论文数：12
-- 精读区：1
+- 本次总论文数：11
+- 精读区：0
 - 速读区：11
 
 ### 今日简报（AI）
-今日精选 12 篇因果推断前沿论文，重点攻克了条件平行趋势下的因果图建模与复杂混杂因素处理难题。
-核心突破在于利用因果图优化 DiD 假设，并为生存数据中的不可观测混杂及工具变量边界提供了更精准的解析方法。
-建议优先研读因果图与政策评估结合的新框架，以提升在非随机实验场景下因果效应估计的稳健性。
-- 详情：[/202604/22/README](/202604/22/README)
+今日速览 11 篇前沿论文，深度覆盖社会机制设计、数据插补及计量估计方法的最新进展。
+重点关注托儿所匹配中的同胞优先权福利评估，以及如何通过集成诊断检查提升模型估计的准确性。
+建议对社会资源分配公平性及计量经济学方法论感兴趣的读者重点研读。
+- 详情：[/202604/23/README](/202604/23/README)
 
 ### 精读区论文标签
-1. [Causal Graphs for Conditional Parallel Trends](/202604/22/2604.12818v1-causal-graphs-for-conditional-parallel-trends)  
-   标签：评分：8.0/10、query:q9
-   evidence：双重差分法（DiD）和条件平行趋势的识别工具
+- 本次无精读推荐。
 
 ### 速读区论文标签
-1. [Observing the unobserved confounding through its effects: toward randomized trial-like estimates from real-world survival data](/202604/22/2604.12137v1-observing-the-unobserved-confounding-through-its-effects-toward-randomized-trial-like-estimates-from-real-world-survival-data)  
+1. [Daycare Matching with Siblings: Social Implementation and Welfare Evaluation](/202604/23/2604.13597v1-daycare-matching-with-siblings-social-implementation-and-welfare-evaluation)  
+   标签：评分：7.5/10、query:q2
+   evidence：家庭决策中家庭偏好和兄弟姐妹互补性的实证框架
+2. [SHARELIFE Imputations](/202604/23/2604.20416v1-sharelife-imputations)  
+   标签：评分：7.5/10、query:profile-1
+   evidence：SHARELIFE中包含生育和货币变量的生命历程数据插补
+3. [Integrating Diagnostic Checks into Estimation](/202604/23/2604.16690v1-integrating-diagnostic-checks-into-estimation)  
    标签：评分：7.0/10、query:profile-1
-   evidence：解决未观测混杂因素以实现类随机对照试验估计的框架
-2. [Fundamental Limits and Optimal Methods for Sharp Analytical Causal Bounds in Instrumental Variable Models](/202604/22/2604.12802v1-fundamental-limits-and-optimal-methods-for-sharp-analytical-causal-bounds-in-instrumental-variable-models)  
-   标签：评分：7.0/10、query:q7
-   evidence：工具变量模型中平均处理效应的解析因果边界分析。
-3. [Emulating Stepped-Wedge Cluster Randomized Trials to Evaluate Health Policies and Interventions](/202604/22/2604.12900v1-emulating-stepped-wedge-cluster-randomized-trials-to-evaluate-health-policies-and-interventions)  
-   标签：评分：7.0/10、query:q9
-   evidence：分析社会政策交错采用的双重差分方法
-4. [On causal inference with marked point process data](/202604/22/2604.12977v1-on-causal-inference-with-marked-point-process-data)  
-   标签：评分：7.0/10、query:q8
-   evidence：标记点过程和事件史分析的因果推断
-5. [Gender, Unpaid Work, and Social Norms in Young Italian Families: Evidence from Couples Time Diaries](/202604/22/2604.13896v1-gender-unpaid-work-and-social-norms-in-young-italian-families-evidence-from-couples-time-diaries)  
-   标签：评分：7.0/10、query:q10
-   evidence：有子女家庭中无偿工作和时间分配的性别不平等
-6. [Ticket to ride: Impact of free public transport on women's workforce participation in India](/202604/22/2604.14758v1-ticket-to-ride-impact-of-free-public-transport-on-womens-workforce-participation-in-india)  
+   evidence：事件研究和预趋势诊断检查的方法论改进
+4. [Factor-Augmented Panel Regressions and Variance-Weighted Treatment Effects](/202604/23/2604.18078v1-factor-augmented-panel-regressions-and-variance-weighted-treatment-effects)  
    标签：评分：7.0/10、query:profile-1
-   evidence：用于因果识别的三重差分和事件研究框架
-7. [Causal inference for spatiotemporal point processes in the presence of outcome spillover and carryover](/202604/22/2604.12124v1-causal-inference-for-spatiotemporal-point-processes-in-the-presence-of-outcome-spillover-and-carryover)  
-   标签：评分：6.0/10、query:q8
-   evidence：时空事件过程的因果推断
-8. [Partial Identification of Policy-Relevant Treatment Effects with Instrumental Variables via Optimal Transport](/202604/22/2604.12263v1-partial-identification-of-policy-relevant-treatment-effects-with-instrumental-variables-via-optimal-transport)  
-   标签：评分：6.0/10、query:q7
-   evidence：使用工具变量进行处理效应部分识别的方法
-9. [A Causal Framework for Evaluating Jointly Longitudinal Outcomes and Surrogate Markers: A State-Space Approach](/202604/22/2604.12882v1-a-causal-framework-for-evaluating-jointly-longitudinal-outcomes-and-surrogate-markers-a-state-space-approach)  
-   标签：评分：6.0/10、query:profile-1
-   evidence：纵向结果和随时间变化的治疗效果的因果框架
-10. [Causal Diffusion Models for Counterfactual Outcome Distributions in Longitudinal Data](/202604/22/2604.12992v1-causal-diffusion-models-for-counterfactual-outcome-distributions-in-longitudinal-data)  
-   标签：评分：6.0/10、query:q7
-   evidence：纵向数据和序列干预中反事实结果的因果扩散模型
-11. [Nonparametric efficient inference for network quantile causal effects under partial interference](/202604/22/2604.13008v1-nonparametric-efficient-inference-for-network-quantile-causal-effects-under-partial-interference)  
-   标签：评分：6.0/10、query:profile-1
-   evidence：集群设置下网络效应和部分干扰的因果推断理论
+   evidence：提供处理不可观测异质性的面板回归方法，可用于生育影响的因果识别研究。
+5. [Recent Advances in Causal Analysis of the Stochastic Frontier Model](/202604/23/2604.19693v1-recent-advances-in-causal-analysis-of-the-stochastic-frontier-model)  
+   标签：评分：7.0/10、query:profile-1
+   evidence：综述了社会科学中双重差分等因果推断方法
+6. [A general nonparametric framework for testing hypotheses about function-valued parameters](/202604/23/2604.20045v1-a-general-nonparametric-framework-for-testing-hypotheses-about-function-valued-parameters)  
+   标签：评分：7.0/10、query:profile-1
+   evidence：评估处理效应异质性和条件均值依赖性的非参数框架
+7. [Leveraging machine learning to estimate individualized treatment effects in cluster-randomized trials](/202604/23/2604.13406v1-leveraging-machine-learning-to-estimate-individualized-treatment-effects-in-cluster-randomized-trials)  
+   标签：评分：6.5/10、query:q7
+   evidence：用于因果推断中估计个体化处理效应的机器学习框架
+8. [Jackknife Instrumental Variable Inference](/202604/23/2604.15437v1-jackknife-instrumental-variable-inference)  
+   标签：评分：6.5/10、query:q7
+   evidence：提供用于内生性线性回归的工具变量推断方法，有助于因果影响分析。
+9. [A Quasi-Experiment comparing the health of unhoused people who have and have not experienced an eviction in King County, WA](/202604/23/2604.15504v1-a-quasi-experiment-comparing-the-health-of-unhoused-people-who-have-and-have-not-experienced-an-eviction-in-king-county-wa)  
+   标签：评分：6.5/10、query:profile-1
+   evidence：用于识别生活事件因果影响的准实验设计
+10. [A Goodness-of-Fit Test for Mixed-Effects Logistic Regression](/202604/23/2604.19694v1-a-goodness-of-fit-test-for-mixed-effects-logistic-regression)  
+   标签：评分：6.5/10、query:profile-1
+   evidence：分层数据中处理效应异质性检验的方法论桥梁
+11. [Constructing external comparator groups via transportability in mean or in effect measure](/202604/23/2604.19977v1-constructing-external-comparator-groups-via-transportability-in-mean-or-in-effect-measure)  
+   标签：评分：6.5/10、query:profile-1
+   evidence：因果识别和跨群体效应迁移的方法论桥梁
 
 
 <div class="dpr-home-promo-card">

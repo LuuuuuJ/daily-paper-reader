@@ -1,0 +1,5419 @@
+Title: Jackknife Instrumental Variable Inference
+
+URL Source: https://arxiv.org/pdf/2604.15437v1
+
+Published Time: Mon, 20 Apr 2026 00:04:26 GMT
+
+Number of Pages: 106
+
+Markdown Content:
+# Jackknife Instrumental Variable Inference ∗
+
+Federico Crudu †
+
+Universit` a di Siena and CRENoS 
+
+Giovanni Mellace ‡
+
+University of Southern Denmark 
+
+Zsolt S´ andor §
+
+Sapientia Hungarian University of Transylvania 
+
+20th April 2026 
+
+Abstract 
+
+This paper introduces a class of jackknife-based test statistics for linear regression models with endogeneity and heteroskedasticity in the presence of many potentially weak instrumental variables. The tests may be used when considering hypotheses on the full parameter vector or hypotheses defined as linear restrictions. We show that in the limit and under the null the proposed statistics are distributed as a combination of chi squares but by modifying the objective function we derive more familiar chi square limits. An extensive simulation study shows the competitive 
+
+∗Federico Crudu’s research benefited from the financial support provided by the University of Siena via the F-CUR grant 2274-2022-CF-PSR2021-FCUR 001 and by the National Recovery and Resilience Plan (NRRP), Mission 4, Component 2, Investment 1.1, call for tender No. 104 published on 2.2.2022 by the Italian Ministry of University and Research (MUR), funded by the European Union–NextGenerationEU–Project Title Stem in Higher Education & Women INequalitieS [SHE WINS], CUP I53D23004810006, Grant Assignment Decree No. 1060 adopted on 07/17/2023 by the Italian Ministry of Uni-versity and Research (MUR). Giovanni Mellace has benefited from financial support from the Independent Research Fund Denmark via the grant 903800031B. This research has been conducted using the UK Biobank Resource under application number 183120. This work uses data provided by patients and collected by the NHS as part of their care and support. We are grateful to all UK Biobank participants who contributed their data to make this research possible. Individual-level data were accessed by Giovanni Mellace and Magnus Jørck-Thomsen at the University of Southern Denmark. The authors are grateful for helpful comments and suggestions from Jean-Marie Dufour, as well as from participants at the 2024 Inter-national Association for Applied Econometrics Conference, the Aarhus Workshop in Econometrics VII, the 10th edition of the Annual Scientific Conference of Romanian Academic Economists from Abroad in Cluj-Napoca, the Rome Workshop on Econometrics: Frontiers in Causal Inference at EIEF, the Siena Workshop on Econometric Theory and Applications, the Tenth Italian Congress of Econometrics and Empirical Economics, and the Workshop on Causal Inference + Machine Learning at the University of Groningen, and from seminar participants at CEBA St. Petersburg State University, the Gran Sasso Science Institute, the University of Bristol, the University of Genova, and the University of Southern Denmark. We also thank Magnus Jørck-Thomsen for excellent research assistance. 
+
+†Department of Economics and Statistics, Piazza San Francesco 7/8, 53100 Siena, Italy, federico.crudu@unisi.it 
+
+‡Department of Economics, Campusvej 55, 5230 Odense M, Denmark, giome@sam.sdu.dk 
+
+§Department of Business Sciences, Piata Libert˘ atii 1, 530104 Miercurea Ciuc, Romania, sandorzsolt@uni.sapientia.ro 
+
+> arXiv:2604.15437v1 [econ.EM] 16 Apr 2026
+
+finite sample properties of the proposed tests in particular against Anderson-Rubin-type of statistics. Finally, we provide an empirical illustration that applies the proposed tests to study the effect of alcohol consumption on body mass index using genetic variants as instrumental variables using the UK Biobank. 
+
+Key words : inference, many instruments, weak instruments, jackknife, heteroskedasticity, endo-geneity, Mendelian randomisation. 
+
+JEL classification : C12, C13, C23 
+
+21 Introduction 
+
+As emphasized by Mikusheva and Sun (2022), many contemporary empirical applications of instrumental variables (IV) estimation involve a large number of instruments, often with limited identifying content per instrument. Beyond the settings discussed by these authors, similar many-instrument environments arise in shift-share (Bartik) designs that exploit finely disaggregated shocks (Borusyak et al., 2022; Goldsmith-Pinkham et al., 2020), in Mendelian randomization studies that use large sets of genetic variants as in-struments (Davies et al., 2015; Sanderson et al., 2022; Patel et al., 2024), and in recent ma-chine learning–assisted IV approaches that construct instruments from high-dimensional predictors (Belloni et al., 2012; Chernozhukov et al., 2018). In such settings, instrument proliferation combined with weak first-stage relationships can undermine conventional IV inference, creating a demand for robust procedures that address not only estimation but also hypothesis testing. We address this need by developing a unified trinity of Wald, Lagrange multiplier, and distance-type tests for linear IV models with many potentially weak instruments. The construction and asymptotic analysis of estimators and test statistics often rely on the definition of a given objective function. In this context, a typical analytical strategy consists of using some stochastic expansion argument and the application of a suitable central limit theorem (CLT) (see, e.g., Newey and McFadden, 1994). Classical likelihood theory (Engle, 1984) and inference based on the generalised method of moments (henceforth GMM; see Newey and West, 1987; Newey and Windmeijer, 2009) exploit this strategy to derive the well-known trinity of tests, Wald ( W ), Lagrange multiplier ( LM )and likelihood ratio ( LR ) in maximum likelihood, and the corresponding distance statistic (D) in GMM. In line with this idea, we develop an analogous trinity of tests for linear IV models with many weak instruments. In particular, this paper proposes a unified approach to inference for linear regression models with multiple endogenous and exogenous variables, heteroskedastic disturbances and many (potentially weak) instrumental variables (IVs). A jackknife device is typ-ically applied to remove the noise component due to the presence of heteroskedasticity 1while, ideally, retaining the whole signal (matrix) of the instruments (see, among others, Hausman et al., 2012; Chao et al., 2014; Bekker and Crudu, 2015; Crudu et al., 2021; Mikusheva and Sun, 2022; Yap, 2023; Matsushita and Otsu, 2024). 1 In our setup, we allow the number of instruments, say, k to grow proportionally with the sample size, say, 
+
+n and k ≤ n. This is a standard assumption in this literature. There are, however, some studies that allow the number of instruments to be larger than the sample size (see, for example, Hansen and Kozbur, 2014; Dov` ı et al., 2024). Furthermore, while the number of instruments is allowed to diverge, we impose a restriction on the minimal amount of signal the instruments should collectively carry. As shown in Mikusheva and Sun (2022), this is a necessary condition to obtain consistent IV estimators and tests. 2 Our test statistics are derived from two types of objective functions. The first type is defined by quadratic forms, such as those underlying the jackknife IV estimators JIVE1 and JIVE2 (Angrist et al., 1999; Crudu et al., 2021; Mikusheva and Sun, 2022). The second type is defined by ratios of quadratic forms, such as the objective function for the limited inform-ation maximum likelihood (LIML) estimator (see, among others, Anderson and Rubin, 1949; Bekker, 1994; Hansen et al., 2008) and the more general jackknife-based alternat-ives heteroskedasticity-robust LIML (HLIM) and symmetric JIVE (SJIVE) of Hausman et al. (2012) and Bekker and Crudu (2015), respectively. 3 We show that the tests dir-ectly related to objective functions are asymptotically distributed as a weighted average of chi-squares, sometimes referred to as chi-bar-square distribution (Vuong, 1989; Hansen, 2021). The weights of this distribution can be estimated and p values can be computed (Farebrother, 1984). However, by appropriately modifying the objective function, it is possible to obtain more conventional chi-square distributions in the limit. Via extensive Monte Carlo experiments, we investigate the tests’ finite-sample prop-erties in terms of size and power. Although the simulations do not display a clear ranking of the tests, we can still identify specific scenarios where certain statistics outperform the 
+
+> 1See Phillips and Hale (1977) and Angrist et al. (1999) for earlier applications of the jackknife to IV models and Blomquist and Dahlberg (1999) and Davidson and MacKinnon (2006) for extensive simulation studies on the properties of jackknife IV estimators in finite samples.
+> 2The sufficiency part was proven in Chao and Swanson (2005).
+> 3The LIML case is the object of a companion paper.
+
+2others. For example, when instruments are weak, some LM statistics suffer from signi-ficant loss of power against distant alternatives, whereas W may have low power near the null. By contrast, D tends to have good size and power properties across a range of designs. Furthermore, compared to the Anderson-Rubin ( AR ) tests of Crudu et al. (2021) and Mikusheva and Sun (2022), D and W exhibit higher power in our experi-ments. In the JIVE case, these statistics are relatively easy to compute (compared to SJIVE and HLIM) and, in some cases in our simulations, they outperform AR both in terms of size and power. Moreover, our tests are computationally less burdensome in our implementations then their AR counterparts. We further illustrate the practical relevance of our methodology through an empirical application that studies the causal effect of alcohol consumption on body mass index us-ing genetic variants as instrumental variables in the UK Biobank. This setting naturally involves a large number of instruments, a feature that raises concerns about instrument strength and the reliability of conventional IV inference. In this context, the proposed statistics can be implemented straightforwardly and allow us to conduct inference without relying on standard approximations that may perform poorly when instruments are nu-merous or weak. The empirical results therefore complement the simulation findings by showing that the proposed procedures can be effectively applied in a realistic setting with many potentially weak instruments. The main contribution of this paper is fourfold: first, we introduce a trinity of tests for linear IV models robust to many weak instruments; second, we establish the limiting distribution of these tests under the null; third, we compare their finite-sample perform-ance and highlighting scenarios of dominance; four, we illustrate the applicability of the proposed tests in a realistic setting with many potentially weak instruments through an empirical study that uses genetic variants to estimate the effect of alcohol consumption on body mass index. Alongside the main contributions, we provide two auxiliary results that could be of independent interest to the readership: first, we prove a general con-sistency result for constrained and unconstrained jackknife-based estimators; second, we introduce a cross-fit variance estimator for the AR test of Crudu et al. (2021) along the 3lines of that proposed by Mikusheva and Sun (2022). 4
+
+The results in this paper are largely new, particularly for tests based on ratios of quad-ratic forms and the jackknife approach of Bekker and Crudu (2015). They also generalise earlier results, such as the LM test of Hansen et al. (2008) and Bekker’s LIML stat-istic (Kleibergen, 2002), which are developed under the assumption of homoskedasticity. There are, however, some interesting overlaps. In particular, the LM test built on the JIVE2 objective function coincides with that of Matsushita and Otsu (2024). Moreover, the Wald test based on the JIVE2 objective function is related to the results in Yap (2023), while the Wald test based on the HLIM objective function was first introduced by Hausman et al. (2012). This unified treatment of W , LM , and D tests (the latter being novel) under many weak instruments is, to our knowledge, new. Finally, the modification applied to the objective functions to obtain a standard chi-square limit is reminiscent of that used in Kleibergen (2002) to obtain the K statistic (see also Bekker and Kleibergen, 2003, for a many instrument version of the K statistic). Also in our case, the degrees of freedom of the chi-square distribution do not depend on the number of instruments. Our analysis also relates to the weak instrument literature of the 1990s and early 2000s, which showed that standard Wald-type procedures can break down under weak identification and thereby spurred the development of robust alternatives (Nelson and Startz, 1990; Bound et al., 1995; Dufour, 1997; Staiger and Stock, 1997; Wang and Zivot, 1998; Kleibergen, 2002, among others). The present paper complements this literature, and recent contributions such as Keane and Neal (2023), by showing how analogous concerns can be addressed in linear IV models with many potentially weak instruments through a unified testing framework. As noted, several studies have considered W and LM statistics, but, to the best of our knowledge, the D statistic in this paper, both in the chi-bar-square version and in the chi-square version, is new. This fills a gap in the weak-instrument literature, which so far has mostly developed AR -, W - and LM -type tests but lacked an analogue of the 
+
+LR test. The D statistic we propose provides such an analogue, with promising size and 
+
+> 4See Proposition 1 in Appendix B and equation (41) in Section 4.1, respectively.
+
+4power properties when compared to its competitors. There are clear similarities between the conditional LR (CLR ) statistic introduced by Moreira (2003) and its more recent versions designed to allow for instrument numerosity (see Ayyar et al., 2025; Lim et al., 2024), in that both D and CLR are based on a discrepancy between objective functions evaluated at different values. However, there is also a difference, namely that D does not rely on a conditional argument. Moreover, to the best of our knowledge, no previous work in this setting explicitly considers general linear restrictions (including the important case of testing a subset of parameters). This may be an important aspect, as in a conventional linear regression model one may partial out variables, via the Frisch-Waugh-Lovell (FWL) theorem, and conduct inference on the remaining regressors. However, as pointed out by Chao et al. (2023) and Mikusheva and Sun (2024), the FWL theorem prevents the jackknife device from removing the noise component (see also Mikusheva and Sølvsten, 2025, for a similar result in the context of least squares estimation and time series data). Introducing an inferential method for linear restrictions avoids possible issues connected to the interplay between the jackknife approach and the FWL theorem. The remainder of the paper is organised as follows. Section 2 introduces the model and the test statistics for simple hypotheses and linear restrictions and shows the asymptotic behaviour of the tests. Section 3 describes how to modify our statistics to have a chi square limiting distribution. Section 4 studies the finite sample properties of the tests in a Monte Carlo experiment and in an empirical application using genetic instruments. Finally, Section 5 offers some conclusions. Proofs and auxiliary results are deferred to the Appendix. Throughout the paper we use the following notational conventions: unless differently stated a, a and A denote a scalar, a vector and a matrix, respectively; ai is the i-th element of vector a and Aij is the ( i, j )-th element of matrix A. a′ and A′ are the transposes of a and A. For a square matrix A, λ(A) denotes the vector of eigenvalues of matrix A, while λmin (A) and λmax (A) are the smallest and largest eigenvalues of A
+
+respectively. Moreover, rk( A) denotes the rank of matrix A. Finally, I is an identity 5matrix and when we need to be more specific, we include a subindex. Thus, In denotes a n × n identity matrix; similarly, ι and ιn denote vectors of ones. The symbol ∗ is used for elementwise or Hadamard multiplication and (n) denotes elementwise power. Hence, 
+
+a ∗ a ∗ · · · ∗ a| {z }
+
+> n times
+
+= a(n) and A ∗ A ∗ · · · ∗ A| {z }
+
+> n times
+
+= A(n).
+
+Analogously, A(−1) is used for the elementwise inverse of A, where the generic ( i, j ) entry of A(−1) is equal to A−1 
+
+> ij
+
+.
+
+## 2 Model and test statistics 
+
+Let us consider the model 
+
+y = Xβ + εX = ZΠ + V
+
+where X is a n×g matrix containing potentially both endogenous and exogenous variables and Z is a n × k (nonstochastic) matrix of instruments and E[ X] = ZΠ , where the components of Π are allowed to vary with the sample size n. Such assumptions are made for convenience and may be generalised. 5 The rows of the disturbance couple (ε, V ), say ( εi, V ′ 
+
+> i
+
+) i = 1 , . . . , n , are independent with zero mean and covariance matrices 
+
+Σi =
+
+ σ2 
+
+> i
+
+σi12 
+
+σi21 Σi22 
+
+ . (1)    
+
+> 5We may, for example, consider Zto be stochastic and in this case E[ X] should be interpreted as a conditional expectation with respect to Z. The linearity of E[ X] may also be relaxed as suggested in, e.g., Bekker (1994) and Chao et al. (2014).
+
+62.1 Test for the whole parameter vector 
+
+In this section we are interested in test statistics for the null hypothesis 
+
+H0 : β = β0 (2) based on a certain objective function Qn(β) that is assumed to produce consistent estim-ators in the many instruments sense and to be robust to the presence of heteroskedasticity. We consider two types of objective functions. The first type is based on the ratio of two quadratic forms as in Hausman et al. (2012) and Bekker and Crudu (2015); specifically, 
+
+Qn(β) = (y − Xβ )′C(y − Xβ ) 
+
+> 1tr( B)
+
+(y − Xβ )′B(y − Xβ ) (3) where, for the SJIVE estimator of Bekker and Crudu (2015), we have 
+
+C = P +
+
+
+
+P D (I − D)−1P − 12P D (I − D)−1 − 12D(I − D)−1P
+
+
+
+− B (4) 
+
+B = ( I − P )D(I − D)−1(I − P )where D = diag( P ) is a diagonal matrix that contains the diagonal elements of P =
+
+Z(Z′Z)−1Z′. We note that in this case tr( B) = tr( P ) = k. For the HLIM estimator of Hausman et al. (2012) we specify 
+
+C = P − D, B = I. (5) Such estimators mimic the ratio of quadratic forms structure typical of LIML. Another possibility would be to define an objective function that only considers the numerator of equation (3): 
+
+Qn(β) = ( y − Xβ )′C(y − Xβ ). (6) 7The resulting estimator is the JIVE1 if C is chosen as in equation (4) or the JIVE2 if 
+
+C corresponds to the specification in equation (5). 6 7 Whether we use the objective functions in equation (3) or equation (6), the estimator 
+
+bβ = arg min  
+
+> β
+
+Qn(β) (7) is consistent for β under H0.To test the null hypothesis in equation (2) we consider the following statistics 
+
+D = −rmin 
+
+σ2
+
+k
+
+
+
+Qn( bβ) − Qn(β0)
+
+
+
+(8) 
+
+LM = rmin τ ′
+
+> n
+
+H−1τn (9) 
+
+W = rmin ψ′
+
+> n
+
+H−1ψn (10) where H = Π′Z′CZΠ , rmin = λmin (H) is the smallest eigenvalue of H and σ2 is the top left entry of matrix Σ = lim 1tr( B)
+
+Pni=1 Bii Σi as n → ∞ .8 Furthermore, 
+
+τn = 1
+
+√k X′ bC(β0)ε, where (11) 
+
+bC(β) = C − λ(β)B with λ(β) = 1tr( B)Qn(β) and (12) 
+
+ψn = 1
+
+√k H( bβ − β0). (13) When Qn(β) is the objective function of a JIVE estimator (equation (6)), σ2 = 1 and 
+
+λ(β) = 0. The limiting distribution of the tests in equations (8) to (10) is derived in Theorem 1 below under a set of assumptions. 
+
+> 6
+
+Both specifications of C remove the source of bias that would make an estimator inconsistent in the many instruments sense when heteroskedasticity is present. However, they treat the information contained in the IVs differently. In fact, for C defined as in equation (4) E[ X′CX ] = Π′Z′ZΠ , while the specification in equation (5) produces E[ X′CX ] = Π′Z′ZΠ − Π′Z′DZΠ . See Bekker and Crudu (2015) for a discussion. 
+
+> 7
+
+We label the JIVE case with C as in equation (4) as JIVE1. However, it is important to notice that this is a symmetric version of the JIVE1 proposed in Angrist et al. (1999) and it mimics the structure of the SJIVE objective function in Bekker and Crudu (2015). To the best of our knowledge, the corresponding estimator was first introduced in Crudu et al. (2021). 
+
+> 8
+
+We note that in the SJIVE case H = Π′Z′ZΠ while in the HLIM case H = Π′Z′ZΠ −
+
+Π′Z′DZΠ . Notice also that Σ depends on the choice of B. To avoid notation clutter, we omit this dependency. 
+
+8The assumptions we use match those in Bekker and Crudu (2015) but different ver-sions can be found in the literature. Crudu et al. (2021) provide a discussion of some of the assumptions; below we discuss the other assumptions. In what follows it is un-derstood that cu is a generic positive constant that may take different values in different instances. 
+
+Assumption 1. The generic diagonal element Pii of the projection matrix P satisfies 
+
+max i Pii ≤ 1 − 1/c u, with 1 < c u < ∞. In addition, k → ∞ as n → ∞ .
+
+Assumption 2. E[ ε4 
+
+> i
+
+] ≤ cu and E ∥Vi∥4 ≤ cu with 0 < c u < ∞, for any i.
+
+Let rmax = λmax (H) denote the largest eigenvalue of H.
+
+Assumption 3. √k/r min → 0 and rmax /k is bounded when n → ∞ .
+
+Assumption 4. The covariance matrices of the disturbances satisfy 1tr( B)
+
+Pni=1 Bii Σi →
+
+Σ as n → ∞ where Σ =
+
+ σ2 σ12 
+
+σ21 Σ22 
+
+ is positive definite. 
+
+Assumption 5. 1
+
+> k2
+
+Pni=1 ∥Π′Z′Ci∥4 → 0 holds when n → ∞ , where Ci is column i of matrix C.
+
+Assumption 6. The matrix sequence 1 
+
+> k
+
+(F + G) is convergent when n → ∞ , where 
+
+F = Π′Z′CD σ2 CZΠ , (14) 
+
+G = X
+
+> i̸=j
+
+C2
+
+> ij
+
+ σ2 
+
+> j
+
+Σ∗ 
+
+> i22
+
++ σ∗
+
+> i21
+
+σ∗
+
+> j12
+
+ , (15) 
+
+Dσ2 a diagonal matrix containing σ2 
+
+> i
+
+in its diagonal entries and Σ∗ 
+
+> i
+
+= Var 
+
+h εi, V ′ 
+
+> i
+
+− εiσ12 
+
+> σ2
+
+′i
+
+,and lim 1 
+
+> k
+
+(F + G) = Φ.
+
+Some comments are in order. Assumption 1 and Assumption 2 are standard conditions commonly found in the literature (see, e.g., Hausman et al., 2012; Bekker and Crudu, 2015; Crudu et al., 2021): the former is a technical condition on the behaviour of the diagonal elements of the projection matrix P and the latter is a regularity condition on the boundedness of the second moments of the disturbances. Assumption 3 formalises the 9fact that we are dealing with potentially weak instruments. Assumption 4 does not allow for the possibility of including exogenous regressors in the model due to the fact that it requires Σ22 to be positive definite, which excludes that some components of the Vi’s are zero. However, it is straightforward to modify this assumption for the case when some components of the Vi’s are zero, so we do not provide it here. Assumption 5 corresponds to Assumption 5 from Hausman et al. (2012). Notice that      
+
+> 1
+> k2
+> nX
+> i=1
+> ∥Π′Z′Ci∥4=1
+> k2
+> nX
+> i=1
+> (C′
+> iZΠΠ ′Z′Ci)2=1
+> k2
+> nX
+> i=1
+> tr ( C′
+> iZΠΠ ′Z′CiC′
+> iZΠΠ ′Z′Ci).
+
+Since Pni=1 CiC′ 
+
+> i
+
+= C2 and CiC′ 
+
+> i
+
+is positive semidefinite, CiC′ 
+
+> i
+
+≤ C2 for any i. This and 
+
+Z′C2Z ≤ cuZ′Z (see (A.6) from the Supplement to Crudu et al., 2021) imply that 1
+
+k2
+
+> n
+
+X
+
+> i=1
+
+∥Π′Z′Ci∥4 ≤ cu
+
+k2 tr ( ZΠΠ ′Z′ZΠΠ ′Z′) ,
+
+so we obtain that 1
+
+> k2
+
+Pni=1 ∥Π′Z′Ci∥4 ≤ cu 
+
+> k2
+
+tr ( H2). This goes to 0 if rmax /k → 0, so a primitive condition for Assumption 5 is that the instruments are weak. Another primitive condition, which is also valid for strong instruments, is CiC′ 
+
+> i
+
+≤ k−αC2 for any i and for some α > 0. This means that there is no observation i for which CiC′ 
+
+> i
+
+is excessively large. In this case 1
+
+> k2
+
+Pni=1 ∥Π′Z′Ci∥4 ≤ k−α 
+
+> k2
+
+tr ( H2), which goes to 0 by Assumption 3. Finally, Assumption 6 corresponds to Assumption 6 from Hausman et al. (2012). The next result shows that the test statistics specified above are distributed asymp-totically as a weighted sum of chi squares. 
+
+Theorem 1. Let T ∈ { D, LM, W }. If Assumptions 1 to 6 are satisfied and in addition 
+
+rmin H−1 is convergent, then under the null hypothesis T →d ζ′Ξζ ∼ ¯χ2(φ) for ζ ∼N (0, Φ), where Φ is given in Assumption 6, Ξ = lim rmin H−1 and φ is the vector of eigenvalues of ΞΦ .
+
+The statistics D, LM , W are not feasible as they are based on the unknown quantities 
+
+H and σ2. By replacing these by their feasible counterparts 
+
+cH = X′ bC( bβ)X and bσ2 = (y − X bβ)′B(y − X bβ)tr ( B) , (16) 10 respectively, we obtain the feasible statistics 
+
+bD = −brmin 
+
+bσ2
+
+k
+
+
+
+Qn( bβ) − Qn (β0)
+
+
+
+,
+
+dLM = brmin τ ′ 
+
+> n
+
+cH−1τn,
+
+cW = brmin bψ′ 
+
+> n
+
+cH−1 bψn,
+
+where brmin = λmin (cH) and bψn = 1
+
+√k
+
+cH( bβ − β0). 
+
+Corollary 1. Let bT ∈ { bD, dLM , cW }. If the assumptions of Theorem 1 hold, then under the null hypothesis bT →d ζ′Ξζ ∼ ¯χ2(φ) for ζ ∼ N (0, Φ), where Ξ, φ, and Φ are as in Theorem 1. 
+
+It is interesting to notice that test statistics based on quadratic forms such as Wald and 
+
+LM can be easily modified to obtain a more conventional chi square limiting distribution (see also Matsushita and Otsu, 2024). This seems not to be the case for D statistics, unless we take into account the simple case with one endogenous variable ( g = 1). The following example illustrates that case. 
+
+Example 1 (A model with one endogenous variable) . Let us now consider the case of the simple linear regression model with g = 1 :
+
+y = xβ + εx = Zπ + v.
+
+The model is simple but it is commonly encountered in empirical applications (see the review of the literature in Andrews et al., 2019). The simplification allows to write rmin =
+
+rmax = r. In this case the asymptotic distribution of the test statistics in equations (8) to (10) is χ21, as stated in Corollary 2 below. 
+
+Corollary 2. Let T ∈ { D, LM, W }. In the single endogenous regressor case when g = 1 ,under the assumptions of Theorem 1 T →d ζ2 for ζ ∼ N (0 , φ 2). Furthermore, Tφ2 →d χ21.Notice that φ2 is the scalar version of the variance covariance matrix Φ defined in Assumption 6 
+
+11 2.2 General linear restrictions 
+
+Let us assume that the null hypothesis is defined as a set of linear equality restrictions 
+
+H0 : Aβ = a (17) with alternative hypothesis H1 : Aβ ̸ = a, where A is a p × g matrix with g ≥ p and rk( A) = p. The corresponding Lagrangian is 
+
+L(β, γ) = Qn(β) + 2 γ′ (Aβ − a) ,
+
+where Qn(β) is defined as in equation (3). The first order conditions (FOCs) are (see also footnote on page 45) 
+
+∂L
+
+∂β = −2X′ bC(β)( y − Xβ ) 
+
+> 1tr( B)
+
+(y − Xβ )B(y − Xβ ) + 2 A′γ = −2
+
+bσ2(β)X′ bC(β)( y − Xβ ) + 2 A′γ,
+
+(18) 
+
+∂L
+
+∂γ = Aβ − a, (19) where recall bC(β) = C − λ(β)B and λ(β) = 1 
+
+> k
+
+Qn(β). Let us denote by eβ and eγ the values of β and γ that solve the FOCs (i.e., first order conditions). The test statistics for the null in equation (17) are 
+
+Da = −rmin 
+
+σ2
+
+k
+
+
+
+Qn( bβ) − Qn( eβ)
+
+
+
+, (20) 
+
+LM a = rmin ξ′
+
+> n
+
+H−1ξn, (21) 
+
+W1a = rmin 
+
+k (A bβ − a)′(AH −1A′)−1(A bβ − a), (22) 
+
+W2a = rmin ϑ′
+
+> n
+
+H−1ϑn, (23) where 
+
+ξn = 1
+
+√k X′ bC( eβ)( y − X eβ) (24) 12 and 
+
+ϑn = 1
+
+√k H( bβ − eβ). (25) The next result shows that these test statistics are distributed asymptotically as a weighted sum of chi squares. 
+
+Theorem 2. Let T ∈ { Da, LM a, W 1a, W 2a}. If Assumptions 1 to 6 are satisfied and in addition rmin H−1 and (AH −1A′)−1AH −1 are convergent as n → ∞ , then under the null hypothesis (17) T →d ζ′Ξaζ ∼ ¯χ2(φ) for ζ ∼ N (0, Φ) and φ = λ(ΞaΦ), where 
+
+Ξa = lim rmin H−1A′(AH −1A′)−1AH −1 as n → ∞ (26) 
+
+and Φ is given in Assumption 6. 
+
+## 3 Chi square approximations 
+
+Under conditions presented in this section, it is possible to show that the proposed test statistics follow a standard chi square limit instead of a weighted sum of chi squares. In general, it is unclear which approximation provides better finite sample behaviour, yet the former is typically more commonly used by practitioners than the latter. 9 By using appropriate modifications, we can derive a set of test statistics that have a standard chi square limit. In some cases such modifications are relatively straightforward, as in the 
+
+LM case of Matsushita and Otsu (2024) and, in general, for tests defined by quadratic forms. When dealing with distance statistics, the adjustments are not so obvious. Let us suppose we want to define a test statistic for the simple null hypothesis (2). In order to find a chi square limit for the distance statistic we modify the objective function in the following way 
+
+Q∗
+
+> n
+
+(β) = (y − Xβ )′J(y − Xβ ) 
+
+> 1tr( B)
+
+(y − Xβ )′B(y − Xβ ), (27) 
+
+> 9Section 4 explores the finite sample properties of test statistics under either asymptotic distribution.
+
+13 where J = CXΦ −1X′C. Let T ∗ denote a generic test statistic, either distance, Lagrange multiplier or Wald, that is obtained from equation (27) and with bβ the estimator obtained from the optimisation of the objective function in equation (3). Specifically, T ∗ is one of the test statistics 
+
+D∗ = −σ2
+
+k Q∗
+
+> n
+
+( bβ) − Q∗
+
+> n
+
+(β0) + 2 
+
+√kσ2 ψ′
+
+> n
+
+Φ−1X′C(y − X bβ)
+
+!
+
+, (28) 
+
+LM ∗ = τ ′
+
+> n
+
+Φ−1τn, (29) 
+
+W ∗ = ψ′
+
+> n
+
+Φ−1ψn. (30) The following theorem shows that under the null T ∗ converges in distribution to a chi square. 
+
+Theorem 3. If Assumptions 1 to 6 are satisfied, then under the null hypothesis (2) the statistic T ∗ ∈ { D∗, LM ∗, W ∗} is asymptotically chi square distributed with g degrees of freedom. 
+
+If we are testing linear restrictions as defined in (17), we modify the objective function to 
+
+Q∗
+
+> an
+
+(β) = (y − Xβ )′Ja(y − Xβ ) 
+
+> 1tr( B)
+
+(y − Xβ )′B(y − Xβ ), (31) where Ja = CXΓ ′ 
+
+> n
+
+(ΓnΦΓ ′
+
+> n
+
+)+ ΓnX′C with Γn = A′(AH −1A′)−1AH −1 and ( ΓnΦΓ ′
+
+> n
+
+)+
+
+is a generalised inverse of ΓnΦΓ ′ 
+
+> n
+
+that satisfies ΓnΦΓ ′ 
+
+> n
+
+(ΓnΦΓ ′
+
+> n
+
+)+ ΓnΦΓ ′ 
+
+> n
+
+= ΓnΦΓ ′ 
+
+> n
+
+and 14 is bounded as n → ∞ .10 The test statistics for the null hypothesis in equation (17) are 
+
+D∗ 
+
+> 1a
+
+= σ2
+
+k Q∗
+
+> an
+
+( eβ) − Q∗
+
+> an
+
+( bβ) − 2√kσ2 ϑ′ 
+
+> n
+
+(ΓnΦΓ ′
+
+> n
+
+)+ ΓnX′C
+
+
+
+y − X bβ
+
+!
+
+(32) 
+
+D∗ 
+
+> 2a
+
+= σ2
+
+k Q∗
+
+> an
+
+( eβ) − Q∗
+
+> an
+
+( bβ) − 2√kσ2 ξ′ 
+
+> n
+
+(ΓnΦΓ ′
+
+> n
+
+)+ ΓnX′C
+
+
+
+y − X bβ
+
+!
+
+(33) 
+
+LM ∗ 
+
+> a
+
+= ξ′ 
+
+> n
+
+(ΓnΦΓ ′
+
+> n
+
+)+ ξn (34) 
+
+W ∗ 
+
+> 1a
+
+= 1
+
+k (A bβ − a)′(AH −1ΦH −1A′)−1(A bβ − a), (35) 
+
+W ∗ 
+
+> 2a
+
+= ϑ′ 
+
+> n
+
+(ΓnΦΓ ′
+
+> n
+
+)+ ϑn. (36) The following result generalises Theorem 3. 
+
+Theorem 4. Let T be any test statistic defined in equations (32) to (34) and (36) . If Assumptions 1 to 6 are satisfied and in addition (AH −1A′)−1AH −1 is convergent as 
+
+n → ∞ , then under the null hypothesis (17) T is asymptotically chi square distributed with p degrees of freedom. If in addition lim rmin H−1 = Ξ is nonsingular then W ∗ 
+
+> 1a
+
+from (35) is also asymptotically chi square distributed with p degrees of freedom. 
+
+## 4 Numerical results 
+
+In this section, we first describe how to compute feasible versions of the proposed statistics by plugging in estimators for the unknown quantities. Moreover, we investigate the statistics’ finite sample properties in terms of size and power in the context of two data generating processes (DGPs). DGP1 is similar to that in Matsushita and Otsu (2024). The model in DGP2 can be seen as a stylised version of a Cobb-Douglas production function with two endogenous variables corresponding to production factors, say labour and capital, as in Nevo and Rosen (2008) (see also Crudu et al., 2021, for a DGP with two endogenous variables). Finally, we discuss the application of our tests to a real data example that employs genetic variants as instruments to study the effect of alcohol consumption on body mass index. The results of our tests are compared against the      
+
+> 10 Note that since Γnis idempotent, it is not of full rank, and therefore, ΓnΦΓ ′
+> nis not of full rank either.
+
+15 AR tests of Crudu et al. (2021) and Mikusheva and Sun (2022) with both naive and cross-fitted variance estimators. The general expression of the AR test is 
+
+AR (β) = 1
+
+√k
+
+ε′Cε 
+
+pω(β)where ε = y − Xβ , while C in equation (4) produces the AR test of Crudu et al. (2021) and C in equation (5) produces the AR test of Mikusheva and Sun (2022). The naive variance estimator for ω(β) is 
+
+bωnaive (β) = 2
+
+k ε(2) ′
+
+C(2) ε(2) 
+
+while the cross-fitted alternative is 
+
+bωcf (β) = 2
+
+k ε′BD εM D εBε 
+
+with 
+
+M =  diag( B)diag( B)′ + B(2) (−1) ∗ C(2) , (37) where diag( B) is a diagonal matrix containing the diagonal entries of B in the main diagonal. For the version of Crudu et al. (2021) B is as in equation (4), while for the version of Mikusheva and Sun (2022), B = I − P .
+
+4.1 Implementation 
+
+To make the tests operational, we first need to estimate the relevant quantities H, σ2,
+
+Φ. Estimators for H, σ2, Φ are already defined in Bekker and Crudu (2015) (see also Hausman et al., 2012). Specifically, we have cH(β) = X′ bC(β)X, bσ2(β) = 1tr( B) (y −
+
+Xβ )′B(y − Xβ ) and 
+
+bΦ(β) = 1
+
+k
+
+ bF (β) + bG(β)
+
+
+
+= 1
+
+k
+
+ fX(β)′CD 2
+
+> ε
+
+C fX(β) + fX(β)′DεC(2) Dε fX(β)
+
+
+
+(38) 
+
+16 with fX(β) = X − εbσ12 (β) 
+
+> bσ2(β)
+
+and Dε a diagonal matrix with ε = y − Xβ along the main diagonal. We further define the estimator for the variance covariance matrix Σ as 
+
+bΣ(β) = 
+
+1 −β′
+
+0 Ig
+
+ bΩ
+
+ 1 0
+
+−β Ig
+
+ = 1
+
+k
+
+1 −β′
+
+0 Ig
+
+ (y, X)′B(y, X)
+
+ 1 0
+
+−β Ig
+
+
+
+where bΩ is an estimator of Ω = E[( y, X)′B(y, X)] (see Bekker and Crudu, 2015, for additional details and a proof of consistency for the estimator in equation (38)). Thus, 
+
+bσ12 (β) and bσ2(β) correspond to the off-diagonal entry and the top left entry of bΣ(β), respectively. These quantities depend on the parameter vector β, which needs to be replaced by a suitable plug-in estimator. Wald statistics use the unrestricted estimator 
+
+bβ, Lagrange multiplier statistics use either β0 or the restricted estimator eβ, depending on the type of null hypothesis being tested. Finally, distance statistics use the objective function evaluated at both the restricted and unrestricted estimators (see, for example, Engle, 1984); however, the multiplicative coefficient rmin σ2 is evaluated at the unrestricted estimator, say, brmin bσ2( bβ) with brmin = λmin 
+
+cH( bβ)
+
+
+
+. The correction term in the distance statistic, when the test is chi-square distributed, is evaluated at bβ.When the asymptotic distribution is a weighted average of chi-squares, the calculation of the weights φ is based on cH( bβ) and bΦ( bβ) for distance and Wald statistics and on 
+
+cH(β0) and bΦ(β0) or cH( eβ) and bΦ( eβ) for the Lagrange multiplier statistic. Similarly, for distance and Wald statistics, the minimum eigenvalue rmin is estimated, as seen above, by brmin = λmin 
+
+cH( bβ)
+
+
+
+, while for the LM statistic we find ermin = λmin 
+
+cH(β0)
+
+
+
+or 
+
+ermin = λmin 
+
+cH( eβ)
+
+
+
+, depending on the type of null hypothesis under study. The plug-in estimators presented in this section are general in the sense that apply both to tests based on quadratic forms (JIVE1, JIVE2) and tests based on ratios of quadratic forms (SJIVE, HLIM). However, for the former case and in light of the dis-cussion in Section B.2, some simplifications apply. First of all, cH(β) = cH = X′CX ,
+
+brmin = ermin = λmin 
+
+cH
+
+
+
+and fX(β) = X. This implies that the variance covariance 17 matrix bΦ(β) depends on β only through the matrix Dε. Hence, 
+
+bΦ(β) = 1
+
+k
+
+ bF (β) + bG(β)
+
+
+
+= 1
+
+k
+
+ X′CD 2
+
+> ε
+
+CX + X′DεC(2) DεX .
+
+Tests that require a plug-in for rmin use brmin (= ermin ). Moreover, σ2 = 1 and no other quantity related to Σ is required. It is also easy to see that the correction factors in the chi-square distributed distance statistics are zero. As explained in Section B.2, certain tests produce the same value. However, their corresponding p values are computed using different plug-ins for φ, thus generating different rejection rates in the numerical exercises. Specifically, recall from Theorem 1 that φ is the vector of eigenvalues of ΞΦ . Thus, for the LM statistic φ is computed by evaluating the estimators of Ξ and Φ at β0 or eβ. For distance and Wald statistics the estimators of Ξ and Φ are evaluated at bβ. Furthermore, the chi-square tests for the general linear restrictions require the generalised inverse of 
+
+ΓnΦΓ ′
+
+> n
+
+, for example, 
+
+ ΓnΦΓ ′
+
+> n
+
++ = A′(AA ′)−1  AH −1A′   AH −1ΦH −1A′−1  AH −1A′ (AA ′)−1A (39) = A′(AA ′)−1  AH −1A′−1 AH −1ΦH −1A′  AH −1A′−1−1
+
+(AA ′)−1A.
+
+(40) 
+
+Estimation of H and Φ follows the same guidelines as described above in this section. In Appendix C, we also consider the case in which the test statistics use a cross-fit estimator of the variance instead of the expression in equation (38). The cross-fit estimator of Φ is adapted from Mikusheva and Sun (2024): 
+
+bΦcf (β) = 1
+
+k
+
+ fX(β)′CD ε diag( B)−1DvC fX(β) + fX(β)′DvM D v fX(β)
+
+
+
+(41) where v = Bε . The definition of fX(β) follows that of the standard case. 11 
+
+Finally, to make our statistics operational, we need feasible counterparts of ϑn and 
+
+ξn (or ψn and τn). It is easy to see that also in this case we can use suitable plug-in estimators for H and β.
+
+> 11 A proof of consistency for the estimator in equation (41) is available upon request.
+
+18 4.2 Monte Carlo simulations 
+
+This section investigates the finite sample properties of the proposed test statistics for four specifications of the objective function and in the context of two DGPs. DGP1 considers a model with one endogenous variable, while DGP2 focusses on a model with two endogenous variables. Since under the alternative we allow for the presence of estimable nuisance parameters, the test statistics used in the simulations are those described in Theorem 2 and Theorem 4. 12 We study both size and power properties. For size, each experiment uses 5000 replications, whereas power experiments use 1000 replications. For the sake of conciseness, the power comparisons in Figure 1 to Figure 4 involve tests based on SJIVE and JIVE1. As mentioned later in this section, the competing alternatives (based on HLIM and JIVE2) tend to be dominated by SJIVE and JIVE1 statistics, particularly in the case of Lagrange multiplier statistics. Since there are no noticeable differences between W1/W ∗ 
+
+> 1
+
+and W2/W ∗ 
+
+> 2
+
+, Table 1 and Table 2 feature only W1/W ∗ 
+
+> 1
+
+. There are some very small differences between D∗ 
+
+> 1
+
+and D∗ 
+
+> 2
+
+that do not change the interpretation of the results, so in the tables and figures of this section we drop D∗ 
+
+> 2
+
+. It is worth noting that the results in Section B.2 on the behaviour of JIVE1/JIVE2-based tests find confirmation in our simulations. Furthermore, by direct inspection of the respective formulae, it is easy to see that, in general, the proposed statistics are computationally simpler to evaluate than AR statistics mainly due to the Hadamard square in the expression of the variance. The complete set of results can be found in Appendix C. In what follows, we provide a description of the DGPs and some comments on the simulation results. 
+
+4.2.1 DGP1 
+
+This simulation setup considers the model 
+
+y = x1β + X2β2 + ε (42) 
+
+x1 = Zπ + v = Z1π1 + Z2π2 + v. (43)  
+
+> 12 To avoid notation clutter, in tables, figures and the discussion of the results we drop the subscript a.
+
+19 Here, x1 and y are n-dimensional vectors with n = 200. Moreover, X2 = Z2 is a (n × g2)-dimensional matrix with g = g1 + g2 = 1 + g2 being the number of regressors in equation (42). We choose g2 = 5; the first column of X2 contains a vector of ones and the remaining columns are sampled independently from a standard normal. The n × k1
+
+instrument matrix Z1 contains in the first to third column the variables z1, z(2) 1 and z(3) 1
+
+where z1 ∼ N (0, In). The remaining columns are sampled from a standard normal. The number of instruments k = k1 + g2 with k1 = αn . Clearly, the parameter α is the share of instruments with respect to the sample size and is chosen as α ∈ { 0.05 , 0.1}. The disturbance couple ( ε, v) is defined by the relationship 
+
+v = ρ1ε +
+
+q
+
+1 − ρ21u1
+
+ε =
+
+
+
+ιn + ρ2z(2) 1
+
+
+
+∗ u2
+
+with u1 and u2 being mutually independent and distributed as a standard normal. We set β = 1, β2 = ι5, ρ1 = 0 .3 and ρ2 = 0 .2. We also define π = πιk for ιk a scalar π
+
+chosen as 
+
+π =
+
+r(1 + 3 ρ21ρ22)rk
+
+with r ∈ { 32 , 64 } being a measure of instrument strength. The null hypothesis corres-ponds to the linear restrictions 
+
+H0 : Aβ = a
+
+with β = ( β, β′
+
+> 2
+
+)′, A = (1 , 0′), a row vector, and a = β0 = 1. 20 Table 1: Size results for DGP1, 5% nominal level and n = 200. Results based on 5000 repetitions. 
+
+Method α r D W1 LM D∗ 
+
+> 1
+
+W ∗ 
+
+> 1
+
+LM ∗ AR naive AR cf 
+
+SJIVE 0.05 32 0.082 0.055 0.054 0.028 0.055 0.054 SJIVE 0.05 64 0.080 0.066 0.051 0.035 0.066 0.051 SJIVE 0.10 32 0.073 0.051 0.050 0.030 0.051 0.050 SJIVE 0.10 64 0.065 0.059 0.048 0.036 0.059 0.048 HLIM 0.05 32 0.076 0.054 0.050 0.026 0.054 0.050 HLIM 0.05 64 0.073 0.062 0.051 0.033 0.062 0.051 HLIM 0.10 32 0.069 0.049 0.046 0.026 0.049 0.046 HLIM 0.10 64 0.060 0.052 0.046 0.031 0.052 0.046 JIVE1 0.05 32 0.028 0.028 0.054 0.054 0.028 0.054 0.008 0.019 JIVE1 0.05 64 0.049 0.049 0.052 0.052 0.049 0.052 0.008 0.019 JIVE1 0.10 32 0.019 0.019 0.051 0.051 0.019 0.051 0.015 0.038 JIVE1 0.10 64 0.036 0.036 0.048 0.048 0.036 0.048 0.015 0.038 JIVE2 0.05 32 0.023 0.023 0.057 0.057 0.023 0.057 0.007 0.011 JIVE2 0.05 64 0.043 0.043 0.050 0.050 0.043 0.050 0.007 0.011 JIVE2 0.10 32 0.016 0.016 0.054 0.054 0.016 0.054 0.014 0.018 JIVE2 0.10 64 0.031 0.031 0.047 0.047 0.031 0.047 0.014 0.018 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0     
+
+> −2 024
+> β
+> Rejection rate  Test
+> D1*
+> LM *
+> W1*
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −2 024
+> β
+> Rejection rate  Test
+> LM *
+> W1*
+> AR cf
+
+(b) JIVE1 
+
+Figure 1: Power curves for DGP1 ( n = 200, α = 0 .05, r = 32). Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots D∗ 
+
+> 1
+
+, LM ∗, W ∗
+
+> 1
+
+based on the SJIVE objective function; panel (b) plots W ∗ 
+
+> 1
+
+, LM ∗, AR cf based on the JIVE1 objective function. The statistics are all asymptotically χ21 distributed, besides 
+
+AR cf which is N (0 , 1) in the limit. 21 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0     
+
+> −2 024
+> β
+> Rejection rate  Test
+> D1*
+> LM *
+> W1*
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −2 024
+> β
+> Rejection rate  Test
+> LM *
+> W1*
+> AR cf
+
+(b) JIVE1 
+
+Figure 2: Power curves for DGP1 ( n = 200, α = 0 .1, r = 32). Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots D∗
+
+1 , LM ∗, W ∗
+
+1 based on the SJIVE objective function; panel (b) plots W ∗
+
+1 , LM ∗, AR cf based on the JIVE1 objective function. The statistics are all asymptotically χ21 distributed, besides AR cf 
+
+which is N (0 , 1) in the limit. 22 4.2.2 DGP2 
+
+The model in the second DGP consists of two endogenous variables and reads 
+
+y = x1β1 + x2β2 + X3β3 + ε (44) where X3 is a n × 2 matrix with the first column being a vector of ones and the second being sampled from a standard normal, ε = 0 .2u + e with e ∼ N (0, 0.32In) and u ∼N (0, In). Furthermore, 
+
+xj = Zj πj + δj u + vj , j = 1 , 2 (45) where δ1 = 0 .5, δ2 = 0 .4, vj ∼ N (0, σ 2 
+
+> vj
+
+In) with σvj = 0 .3. Furthermore, Zj ∼ N (0, In). Finally, we have πj = q rkj (1 −r) ιkj and kj = αn , n = 200 and α ∈ { 0.05 , 0.1}. In this case, the null hypothesis 
+
+H0 : Aβ = a
+
+has A = (1 , 1, 0′), β = ( β1, β 2, β′
+
+> 3
+
+)′ and a = 1. The true values for the parameters of the endogenous variables are β1 = 0 .3 and β2 = 0 .7, while β3 = ι2.
+
+4.2.3 Comments on simulations 
+
+The performance of the tests is measured in terms of rejection rates compared to a 5% nominal rate. The asymptotically chi-square distributed tests follow a χ21, while the estimated version of φ has a positive number in the first position and g − 1 zeros in the remaining entries. The p values for the chi-bar-squared tests are computed using the R
+
+function farebrother (Duchesne and Lafaye De Micheaux, 2010). For power, we focus on weak instruments. Namely, r = 32 for DGP1 and r = 0 .1 for DGP2. The power plots for experiments with stronger instruments can be found in Appendix C along with results based on tests that use cross-fit variances. As previously mentioned in this section, since some test statistics show the same type of behaviour, they are excluded from the plots 23 Table 2: Size results for DGP2, 5% nominal level and n = 200. Results based on 5000 repetitions.                                                                                                                                                             
+
+> Method αrDW1LM D∗
+> 1W∗
+> 1LM ∗AR naive AR cf
+> SJIVE 0.05 0.1 0.066 0.055 0.054 0.047 0.055 0.054 SJIVE 0.05 0.2 0.062 0.056 0.056 0.051 0.056 0.056 SJIVE 0.10 0.1 0.067 0.052 0.051 0.045 0.052 0.051 SJIVE 0.10 0.2 0.061 0.052 0.051 0.048 0.052 0.051 HLIM 0.05 0.1 0.063 0.052 0.052 0.044 0.052 0.052 HLIM 0.05 0.2 0.060 0.056 0.051 0.046 0.056 0.051 HLIM 0.10 0.1 0.072 0.062 0.057 0.044 0.062 0.057 HLIM 0.10 0.2 0.063 0.061 0.055 0.050 0.061 0.055 JIVE1 0.05 0.1 0.030 0.030 0.056 0.056 0.030 0.056 0.028 0.045 JIVE1 0.05 0.2 0.044 0.044 0.053 0.053 0.044 0.053 0.028 0.046 JIVE1 0.10 0.1 0.035 0.035 0.060 0.060 0.035 0.060 0.036 0.085 JIVE1 0.10 0.2 0.040 0.040 0.056 0.056 0.040 0.056 0.030 0.085 JIVE2 0.05 0.1 0.030 0.030 0.056 0.056 0.030 0.056 0.028 0.034 JIVE2 0.05 0.2 0.043 0.043 0.053 0.053 0.043 0.053 0.028 0.034 JIVE2 0.10 0.1 0.035 0.035 0.059 0.059 0.035 0.059 0.037 0.046 JIVE2 0.10 0.2 0.041 0.041 0.057 0.057 0.041 0.057 0.031 0.046
+
+in Figures 1 to 4. Also in this case, the full set of simulation results can be found in Appendix C. 
+
+Size The size results in Table 1 and Table 2 show similar scenarios. In general we notice that size distortions oscillate between about +3% to about −4% with respect to the 5% nominal size. The former result is observed for the D statistic while the latter is observed for the AR statistic with naive variance estimator. Both cases pertain to DGP1. More specifically, we notice that the LM and LM ∗ tests show the same rejection rates. They consistently maintain good size properties relative to other statistics under the SJIVE/HLIM specification, particularly in the case of DGP1; under DGP2, they have a slight tendency to overreject. Wald statistics perform similarly under both asymptotic approximations, yet they tend to overreject under the SJIVE/HLIM objective functions. The opposite occurs when JIVE1 or JIVE2 is used. As in the case of Lagrange multiplier tests both Wald statistics show the same rejection rates. In contrast, statistics D and 
+
+D∗ display noticeable differences: D tends to overreject relative to the nominal 5% level, whereas D∗ remains conservative, but close to the 5% nominal level. The proposed tests 24 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0     
+
+> −1 012
+> β2
+> Rejection rate  Test
+> D1*
+> LM *
+> W1*
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −1 012
+> β2
+> Rejection rate  Test
+> LM *
+> W1*
+> AR cf
+
+(b) JIVE1 
+
+Figure 3: Power curves for DGP2 ( n = 200, α = 0 .05, r = 0 .1). Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β2 = 0 .7. Panel (a) plots D∗
+
+1 , LM ∗, W ∗
+
+1
+
+based on the SJIVE objective function; panel (b) plots W ∗
+
+1 , LM ∗, AR cf based on the JIVE1 objective function. The statistics are all asymptotically χ21 distributed, besides 
+
+AR cf which is N (0 , 1) in the limit. 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0     
+
+> −1 012
+> β2
+> Rejection rate  Test
+> D1*
+> LM *
+> W1*
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −1 012
+> β2
+> Rejection rate  Test
+> LM *
+> W1*
+> AR cf
+
+(b) JIVE1 
+
+Figure 4: Power curves for DGP2 ( n = 200, α = 0 .1, r = 0 .1). Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 0 .7. Panel (a) plots D∗
+
+1 , LM ∗, W ∗
+
+1
+
+based on the SJIVE objective function; panel (b) plots W ∗
+
+1 , LM ∗, AR cf based on the JIVE1 objective function. The statistics are all asymptotically χ21 distributed, besides 
+
+AR cf which is N (0 , 1) in the limit. are also compared to Anderson-Rubin statistics AR naive and AR cf (Mikusheva and Sun, 2022; Crudu et al., 2021). We observe that the Anderson-Rubin statistics consistently underreject. For DGP1, the tests with cross-fit variance ( AR cf ) remain conservative but show some size improvements with respect to the naive counterpart. 25 Power The power results are shown in Figure 1 to Figure 4. The figures include results for tests based on the SJIVE and JIVE1 objective functions only, as they are similar to and, in some cases, improve over tests based on HLIM and JIVE2. For similar reasons, we exclude tests that are asymptotically distributed as a chi-bar-square. In our experiments, these power differences are noticeable but generally small (see figures in Appendix C), with the exception of the Lagrange multiplier tests. It is known that Lagrange multiplier tests may lose power away from the true value. 13 In our simulations, we observe a signi-ficant power drop for LM tests based on both the SJIVE and HLIM objective functions and for both asymptotic distributions (see panels (a) and (b) of the figures in Appendix C). LM tests based on JIVE1 and JIVE2 show some power loss but not as large as the aforementioned cases (see panels (c) and (d) of the figures in Appendix C). Interestingly, the power loss observed in the case of JIVE1 and in particular in the case of SJIVE is visibly smaller than the corresponding cases for JIVE2 and HLIM, respectively. Intu-itively, this may be attributed to the different jackknife scheme used for SJIVE/JIVE1 tests compared to HLIM/JIVE2 tests. Of the three types of statistics in Figure 1 to Figure 4, we notice that the Wald tests tend to have the largest power in general as we move away from the truth. The Lagrange multiplier tests, despite having good size properties in some cases, tend to have the worst power performance. The distance statistics seem to be somewhere in the middle, showing in a number of cases power properties comparable to those of the Wald tests and good size properties in the case of D∗.Interestingly, while Wald statistics generally demonstrate good size properties and high power away from the true parameter, their power may be low near the true value. This is particularly evident for Wald tests based on JIVE1 and JIVE2 objective functions (see panels (b) and (d) in Figure 1 to Figure 4. This phenomenon is much less visible for SJIVE and HLIM objective functions. In general, the D∗ statistic appears to strike a good balance between size control and power. When compared to Anderson-Rubin statistics, apart from the pathological case of LM and LM ∗, our proposed tests generally 
+
+> 13 Andrews (2016) reports this phenomenon in the context of combination of tests.
+
+26 show clear improvements in terms of power. It is useful to contrast our results with some of the findings of the weak instrument literature developed in the 1990s and early 2000s (and related recent contributions). A key result is that conventional IV estimation and inference can be unreliable under weak identification. In particular, under different definitions of weakness – whether near non-identification as in Dufour (1997) or local-to-zero as in Staiger and Stock (1997) – Wald statistics fail to provide valid inference. This has set the ground for the development of alternative statistics that are robust to the presence of weak instruments. Under the local-to-zero asymptotic framework of Staiger and Stock (1997), Wang and Zivot (1998) show that certain LM and LR statistics can be boundedly pivotal, yielding conservative yet asymptotically valid inference. A complementary approach is to construct statistics with pivotal limiting distributions as in the case of Kleibergen’s K statistic (Kleibergen, 2002) that also address the limitations of the AR test in the overidentified case. More recently, Keane and Neal (2023) highlight additional failures of 2SLS-based t-tests and recommend robust alternatives such as the AR test in exactly identified models and LIML estimation and CLR tests in overidentified settings. Our contribution can be also interpreted as a complement to this literature in a many instruments context. 
+
+4.3 Empirical application: the effect of alcohol consumption on BMI in the UK Biobank 
+
+4.3.1 Data 
+
+We apply our proposed test statistics to examine the causal effect of alcohol consumption on body mass index (BMI) using data from the UK Biobank (UKB). The UK Biobank is a large-scale biomedical database containing extensive genetic and health information for approximately 500,000 individuals aged 40–69 in the United Kingdom (Sudlow et al., 2015; Bycroft et al., 2018). Our starting sample consists of 337,260 participants who were included in the genetic principal component analysis and classified as genetically Caucasian, selected from the 27 501,932 individuals available in the UK Biobank. Mendelian randomisation exploits ge-netic variants as instrumental variables to identify causal effects. Because genetic variants are randomly allocated at conception, they provide a source of exogenous variation that mimics experimental randomisation and can help overcome confounding and reverse caus-ality that typically bias observational estimates of alcohol’s health effects (Davey Smith and Ebrahim, 2003; Burgess and Thompson, 2015). In this application, genetic variants associated with alcohol consumption serve as instruments for alcohol intake. We initially extract 98 single nucleotide polymorphisms (SNPs) previously identified as associated with alcohol consumption. To reduce linkage disequilibrium and ensure instrument independence, we perform a pruning procedure that removes SNPs with pair-wise correlation exceeding 0.15, yielding a final set of 91 instruments. Following Topiwala et al. (2022), alcohol consumption is constructed as total weekly intake in grams of ethanol. Participants report consumption either weekly or monthly across several beverage categories, including red wine, champagne or white wine, beer or cider, spirits, fortified wine, and other alcoholic beverages. Monthly quantities are converted to weekly consumption by dividing by 4.3. Beverage-specific unit conversions are then applied, using factors such as 1.7 units per glass for wine, 2.4 units per pint for beer or cider, and one unit per measure of spirits. Alcohol units are converted to grams using the standard conversion of one UK unit corresponding to eight grams of ethanol. The dataset undergoes several cleaning steps. Observations with missing or unknown alcohol consumption information are removed, resulting in the exclusion of 74,717 par-ticipants. Outliers in alcohol consumption are then removed using Tukey’s fences with parameter k = 1 .5, where the first and third quartiles are Q1 = 54 .4 and Q3 = 200. This procedure excludes an additional 12,991 observations. After dropping all remaining ob-servations with missing values, the final estimation sample consists of 97,987 individuals. The final dataset used for estimation includes the outcome variable BMI, the endo-genous variable total weekly alcohol consumption measured in grams per week, the 91 genetic variants used as instruments, and the following control variables: sex, age at recruitment, age squared, indicators for the UK Biobank assessment center, and the first 28 ten genetic principal components to account for population stratification. 
+
+4.3.2 Results 
+
+The results in Table 3 show uniform and extremely strong rejection of the null hypothesis across all methods and test statistics. All JIVI-based procedures yield p values at or below 0.0002, irrespective of whether inference is conducted using the ¯ χ2 or the standard χ2
+
+reference distribution. This uniformity indicates that inference in the full sample is largely insensitive to both the choice of statistic and the choice of asymptotic approximation. Among the jackknife-based estimators, SJIVE and HLIM deliver virtually identical outcomes across all statistics. Similarly, JIVE1 and JIVE2 produce indistinguishable results, with p values of 0 .0001 for all trinity statistics and 0 .0000 for both Anderson– Rubin implementations. Comparisons across statistics within each method reveal negligible differences between 
+
+D, W1, W2, and LM , as well as their starred counterparts. Switching from the ¯ χ2
+
+distribution to the standard χ2 distribution has no material effect on inference. Finally, the Anderson–Rubin tests (columns 12–13) yield p values of 0 .0000 for JIVE1 and JIVE2, reinforcing the same qualitative conclusion of strong rejection. Overall, the table documents a high degree of robustness across estimators, statistics, and reference distributions in the full sample. 14 
+
+Table 3: Trinity and Anderson-Rubin test results.                                                                                                                    
+
+> ¯χ2χ2N(0 ,1) Method Estimate DW1W2LM D∗
+> 1D∗
+> 2W∗
+> 1W∗
+> 2LM ∗AR naive AR cf
+> SJIVE 0.0141 4.5226 4.1727 4.1727 4.5195 30.3355 30.3386 14.2885 14.2599 14.7589 ––P value –0.0001 0.0002 0.0002 0.0001 0.0000 0.0000 0.0001 0.0002 0.0002 ––HLIM 0.0140 4.5226 4.1727 4.1727 4.5195 30.3355 30.3386 14.2885 14.2599 14.7589 ––P value –0.0001 0.0001 0.0001 0.0001 0.0000 0.0000 0.0001 0.0001 0.0001 ––JIVE1 0.0072 2.2265 2.2265 2.2265 2.2265 14.8291 –14.4355 14.4066 14.7995 28.4865 28.8247 P value –0.0001 0.0001 0.0001 0.0001 0.0001 –0.0001 0.0001 0.0001 0.0000 0.0000 JIVE2 0.0072 2.1857 2.1857 2.1857 2.1857 14.8292 –14.4354 14.5121 14.9080 28.4903 28.6366 P value –0.0001 0.0001 0.0001 0.0001 0.0001 –0.0001 0.0001 0.0001 0.0000 0.0000
+
+Notes: P values for testing H0 : β = 0. Column 2 reports the point estimate. Columns 3–6 report trinity statistics using the ¯ χ2 reference distribution. Columns 7–11 report trinity statistics using the standard χ2 reference distribution. Columns 12–13 report Anderson–Rubin test results. 
+
+> 14
+
+Under the null, we use the OLS estimator for computational convenience. Although OLS is consist-ent, it does not preserve the finite-sample equality among the test statistics mentioned in Section 4.2 and established in Appendix B.2; this discrepancy is purely numerical and has no asymptotic consequence. 
+
+29 To assess whether the uniformity of inference in the full sample is driven by large-sample size, we repeat the analysis using a random subsample of 10,000 observations. 
+
+Table 4: Trinity and Anderson–Rubin test results (random sample of 10,000).                                                                                                                    
+
+> ¯χ2χ2N(0 ,1) Method Estimate DW1W2LM D∗
+> 1D∗
+> 2W∗
+> 1W∗
+> 2LM ∗AR naive AR cf
+> SJIVE 0.0404 0.2053 0.1139 0.1140 0.2239 16.2205 15.9947 5.6537 5.2307 6.3915 ––P value –0.0014 0.0174 0.0174 0.0087 0.0001 0.0001 0.0115 0.0174 0.0222 ––HLIM 0.0400 0.1445 0.0839 0.0840 0.1599 14.9948 14.9374 5.1821 4.8634 5.7860 ––P value –0.0028 0.0228 0.0227 0.0130 0.0001 0.0001 0.0162 0.0228 0.0274 ––JIVE1 0.0244 0.0781 0.0781 0.0781 0.0781 6.2307 –4.1337 3.8164 5.7524 3.6399 3.7173 P value –0.0419 0.0420 0.0419 0.0125 0.0126 –0.0165 0.0420 0.0508 0.0001 0.0001 JIVE2 0.0237 0.0579 0.0577 0.0579 0.0579 5.9893 –4.0755 3.8230 5.6183 3.7171 3.7294 P value –0.0432 0.0435 0.0432 0.0143 0.0144 –0.0178 0.0435 0.0506 0.0001 0.0001
+
+Notes: P values for testing H0 : β = 0. Column 2 reports the point estimate. Columns 3–6 report trinity statistics using the ¯ χ2 reference distribution. Columns 7–11 report trinity statistics using the standard χ2 reference distribution. Columns 12–13 report Anderson–Rubin test results. 
+
+Table 4 shows that, in contrast to the full sample, nontrivial differences across test statistics and reference distributions emerge when inference is based on a smaller sample. Among the jackknife-based estimators, SJIVE and HLIM continue to display very similar behavior. Both yield small p values for the D statistic, while the remaining statistics, W1, W2, and LM produce larger but still statistically significant p values in the 0.01–0.03 range. Under the standard χ2 distribution, all starred statistics remain significant, with LM ∗ delivering the smallest p-values for both methods. For JIVE1 and JIVE2, dispersion across statistics is more pronounced. The weighted-
+
+D statistic yields p values around 0.04, whereas W2 and LM are close to 0.05, implying less pronounced rejection under conventional thresholds. Under the standard χ2 distribution, 
+
+D∗
+
+1 , W ∗
+
+1 , and W ∗
+
+2 cluster around 0.04, while LM ∗ remains around 0.01–0.02. The Anderson–Rubin tests (columns 12–13) yield p values close to 0 .0001 for both JIVE1 and JIVE2, which are substantially smaller than those produced by the trinity statistics. As in the full sample, this illustrates that Anderson–Rubin and trinity proced-ures can generate materially different degrees of rejection in finite samples. Overall, the sub-sample results indicate that the near-complete uniformity observed in the full sample does not extend to smaller samples, and that inference can depend on the particular statistic and reference distribution employed. 30 5 Conclusions 
+
+In analogy with classical likelihood theory, we introduce a unified approach to inference for the parameters of linear regression models in the presence of endogeneity, hetero-skedasticity and many, potentially weak, instruments. The test statistics are based on objective functions commonly encountered in the modern literature on many instruments (see Hausman et al., 2012; Bekker and Crudu, 2015, among others). Our tests can be used for inference on simple hypotheses as well as on hypotheses expressed in terms of linear restrictions. We show that their asymptotic distribution is chi-bar-square but a more conventional chi square limit can be found after appropriate modifications, a result that, in our opinion, is more appealing to practitioners. In an extensive simulation exper-iment we find that, generally, our methods tend to have better finite sample properties than competing Anderson-Rubin statistics both in terms of size and power. We also illustrate the practical relevance of our methodology through an empirical application that studies the causal effect of alcohol consumption on body mass index using genetic variants as instrumental variables in the UK Biobank. This setting naturally gives rise to a large number of instruments, some of which may be weak, making it well suited for the framework developed in this paper. The application demonstrates how the proposed tests can be implemented in a realistic empirical environment with many potentially weak instruments and heteroskedastic disturbances. The results highlight the feasibility of our procedures in large-scale genetic datasets and illustrate how the proposed statistics can provide reliable inference in settings where standard IV methods may perform poorly. It is reasonable to believe that our methodology can be adapted to models with many instruments with fixed effects as in Chao et al. (2023) as well as to models with cluster dependence Frandsen et al. (2025). A further important extension is to develop confidence sets by inverting our tests. This is especially relevant under weak identification, where informative procedures may yield confidence sets with nonstandard geometry (e.g., unbounded or disconnected regions). An important direction is to characterise these shapes by adapting the geometric results of Dufour and Taamouti (2005). Some of these 31 problems are part of our ongoing research agenda. 32 A Useful lemmata 
+
+For this study it is crucial to have a suitable CLT, the most natural reference in this case is Lemma A2 in Chao et al. (2012). 
+
+Lemma A.1 (Lemma A2 in Chao et al. (2012)) . Assume that the following conditions hold. 1. C is a symmetric matrix with zero main diagonal elements whose (i, j ) element denoted by Cij satisfies |Cij | ≤ cu|Pij | for any i̸ = j, where Pij is element (i, j ) of the projection matrix P = Z (Z′Z)−1 Z′;2. (w1n, u1, ε 1), . . . , (wnn , un, ε n) are independent and Dn = Pni=1 E [ win w′
+
+> in
+
+] satisfies 
+
+∥Dn∥ ≤ cu;3. E [ win ] = 0, E [ ui] = 0, E [ εi] = 0 and E [ ∥ui∥4] ≤ cu and E [ ε4 
+
+> i
+
+] ≤ cu;4. Pni=1 E [ ∥win ∥4] → 0;5. k → ∞ as n → ∞ .Then for 
+
+¯Σn = 1
+
+k
+
+> n
+
+X
+
+> i,j =1
+
+C2
+
+> ij
+
+ E [ uiu′
+
+> i
+
+] E ε2
+
+> j
+
+ + E [ uiεi] E εj u′
+
+> j
+
+ 
+
+and any sequences c1n and c2n of conformable vectors with bounded norm and Ξn =
+
+c′
+
+> 1n
+
+Dnc1n + c′ 
+
+> 2n
+
+¯Σnc2n > 1 
+
+> cu
+
+,
+
+Yn = Ξ−1/2 
+
+> n
+
+c′
+
+> 1nn
+
+X
+
+> i=1
+
+win + c′
+
+> 2n
+
+√k
+
+> n
+
+X
+
+> i,j =1
+
+uiCij εj
+
+!
+
+→d N (0 , 1) .
+
+There are some simplifications in Lemma A.1, in particular, it is omitted the con-ditioning on the instruments. This is because we assume the instruments to be fixed. However, if it were convenient to assume the instruments as stochastic we may interpret the expectations as conditional expectations. To apply Lemma A.1 we need to adapt it 33 to our jackknife structure, defined by matrix C. This is done, e.g., in Bekker and Crudu (2015) and Crudu et al. (2021). The next result shows that the distribution of a quadratic form for a normally distrib-uted random vector is chi-bar-square (see Definition 1 in Hansen (2021)). The result is a generalisation of Lemma 1 in Hansen (2021) to the case when the matrix in the quadratic form is not necessarily invertible. 
+
+Lemma A.2. If q = x′Θx where x ∼ N (0, V ) and Θ symmetric positive semidefinite, then q ∼ ¯χ2(φ), where φ is the vector of eigenvalues of ΘV .Proof. Let W be a square matrix such that W W ′ = V . Then x can be written as 
+
+x = W z , where z is a standard normal vector of the same dimension as V , so q =
+
+x′Θx = z′S′ΛSz , where S′ΛS is the eigenvalue decomposition of the symmetric positive semidefinite matrix W ′ΘW with S an orthonormal matrix and Λ a diagonal matrix having the eigenvalues of W ′ΘW on the main diagonal. Since S is orthonormal, t = Sz 
+
+is standard normally distributed, so q = t′Λt = P 
+
+> i
+
+λit2 
+
+> i
+
+, where t2 
+
+> i
+
+are independent χ21-distributed. Note that the vector of eigenvalues of W ′ΘW is the same as the vector of eigenvalues of ΘW W ′ = ΘV , so q is weighted chi square according to Definition 1 in Hansen (2021). 
+
+Lemma A.3 (Lemma 9.7 in Newey and McFadden (1994)) . If z ∼ N (Rρ , R) with 
+
+rk( R) = r and R− is any symmetric matrix satisfying RR −R = R, then z′R−z is chi square distributed with r degrees of freedom and noncentrality parameter ρ′Rρ .
+
+Lemma A.4. Under Assumptions 1, 2, 3, 1. X′CX /r min = H/r min + op (1) , H−1X′CX = Ig + op(1) .2. E [ X′Cε ] = 0, Var [ X′Cε ] ≤ curmax Ig + cukIg.3. E [ ε′Cε ] = 0, Var [ ε′Cε ] ≤ cuk.Proof. The proof is similar to that of Lemma A.4 from Supplement to Crudu et al. (2021). 
+
+Lemma A.5. Suppose that Assumptions 1 to 4 hold. 
+
+34 1. V ′BV /tr ( B) →p Σ22 , X′BX / tr ( B) = Op (1) , bσ2 (βn) →p σ2,
+
+X′B (y − Xβ n) / tr ( B) →p σ21 for any βn consistent estimator of β0.2. bσ2 (β) ≥ σ2 − σ12 Σ−122 σ21 + op (1) for any β, where σ2 − σ12 Σ−122 σ21 > 0.Proof. 1. Consider first X′BX / tr ( B). From X = ZΠ + V we obtain 
+
+X′BX 
+
+tr ( B) = (ZΠ + V )′ B (ZΠ + V )tr ( B)= (ZΠ )′ B (ZΠ )tr ( B) + (ZΠ )′ BV 
+
+tr ( B) + V ′BZΠ 
+
+tr ( B) + V ′BV 
+
+tr ( B) .
+
+Recall that B is either B from Bekker and Crudu (2015) or In. In the former case 
+
+BZ = O, so 
+
+X′BX 
+
+tr ( B) = V ′BV 
+
+tr ( B) .
+
+In order to determine the limit of this, note that by (1) E [ V ′BV ] = 
+
+> n
+
+X
+
+> i=1
+
+Bii Σi22 .
+
+Let v be an arbitrary column of V . Then E [ V ′Bv ] = 
+
+> n
+
+X
+
+> i=1
+
+Bii σvi 22 ,
+
+where σvi 22 is the column of Σi22 corresponding to v. Further, Var [ V ′Bv ] = E [ V ′Bvv ′BV ] − E [ V ′Bv ] E [ V ′Bv ]′ ,
+
+35 where 
+
+E V ′Bvv ′BV  = X
+
+> i,j,k,ℓ
+
+Bij Bkℓ E Vivj vkV ′
+
+> ℓ
+
+
+
+= X
+
+> i,k
+
+Bii Bkk E VivivkV ′
+
+> k
+
+ + X
+
+> i̸=j
+
+B2 
+
+> ij
+
+E Vivj viV ′
+
+> j
+
+ + X
+
+> i̸=j
+
+Bij Bji E Vivj vj V ′
+
+> i
+
+
+
+= X
+
+> i
+
+B2 
+
+> ii
+
+E v2 
+
+> i
+
+ViV ′
+
+> i
+
+ − X
+
+> i
+
+B2
+
+> ii
+
+σvi 22 σ′
+
+> vi 22
+
++ X
+
+> i,k
+
+Bii Bkk σvi 22 σ′ 
+
+> vk 22
+
++ X
+
+> i̸=j
+
+B2 
+
+> ij
+
+σvi 22 σ′ 
+
+> vj 22
+
++ X
+
+> i̸=j
+
+B2 
+
+> ij
+
+σ2
+
+> vj 22
+
+Σi22 .
+
+In the last equality we have used (1) and the symmetry of B; σ2 
+
+> vj 22
+
+is the main diagonal element of Σj22 corresponding to v. Note that the third term is just E [ V ′Bv ] E [ V ′Bv ]′, so Var [ V ′Bv ] = X
+
+> i
+
+B2 
+
+> ii
+
+E v2 
+
+> i
+
+ViV ′
+
+> i
+
+−X
+
+> i
+
+B2
+
+> ii
+
+σvi 22 σ′
+
+> vi 22
+
++X
+
+> i̸=j
+
+B2 
+
+> ij
+
+σvi 22 σ′
+
+> vj 22
+
++X
+
+> i̸=j
+
+B2 
+
+> ij
+
+σ2
+
+> vj 22
+
+Σi22 .
+
+Assumption 2 implies that E [ v2 
+
+> i
+
+ViV ′ 
+
+> i
+
+] ≤ cuIg, σvi 22 σ′ 
+
+> vj 22
+
+≤ cuIg and σ2
+
+> vj 22
+
+Σi22 ≤
+
+cuIg for any i, j , so Var [ V ′Bv ] ≤ cu
+
+X
+
+> i,j
+
+B2
+
+> ij
+
+!
+
+Ig.
+
+It is known that P 
+
+> i,j
+
+B2 
+
+> ij
+
+= tr ( B2) and by the definition of B
+
+tr  B2 = tr  (I − P ) D (I − D)−1 (I − P )2 D (I − D)−1 (I − P )
+
+= tr  (I − P )2 D (I − D)−1 (I − P )2 D (I − D)−1 = tr  BD (I − D)−1 ,
+
+where the latter equality follows from ( I − P ) idempotent. By direct computation we obtain that tr  BD (I − D)−1 =
+
+> n
+
+X
+
+> i=1
+
+Bii 
+
+Pii 
+
+1 − Pii 
+
+,
+
+36 so Assumption 1 implies that tr  B2 ≤ cutr (B) .
+
+Therefore, because tr (B) = k,Var 
+
+V ′Bv 
+
+tr ( B)
+
+
+
+≤ cu
+
+k Ig → O.
+
+Using Assumption 4, E
+
+V ′BV 
+
+tr ( B)
+
+
+
+→ Σ22 ,
+
+so we obtain the probablity limit 
+
+V ′BV 
+
+tr ( B) →p Σ22 .
+
+This also shows that 
+
+X′BX 
+
+tr ( B) = Op (1) . (A.1) Take now the case B = In; then tr ( B) = n and 
+
+X′BX 
+
+tr ( B) = H
+
+n + (ZΠ )′ V
+
+n + V ′ZΠ 
+
+n + V ′BV 
+
+tr ( B) . (A.2) The first term on the right hand side is O (1) by Assumption 3. Let now v be an arbitrary column of V . Note that E
+
+(ZΠ )′ V
+
+n
+
+
+
+= O and Var 
+
+(ZΠ )′ v
+
+n
+
+
+
+= 1
+
+n2 (ZΠ )′ E [ vv ′] ZΠ ≤ cu
+
+n2 H → O,
+
+where the inequality follows by Assumption 2 and the limit by Assumption 3. Consequently, ( ZΠ )′ V /n = op (1) and, similarly, the third term V ′ZΠ /n =37 op (1). In order to determine the limit of the last term, note that by (1) E [ V ′BV ] = 
+
+> n
+
+X
+
+> i=1
+
+Σi22 and E [ V ′Bv ] = 
+
+> n
+
+X
+
+> i=1
+
+σvi 22 ,
+
+where v is an arbitrary column of V . Further, Var [ V ′Bv ] = E [ V ′Bvv ′BV ] − E [ V ′Bv ] E [ V ′Bv ]′ ,
+
+where 
+
+E V ′Bvv ′BV  = X
+
+> i,j,k,ℓ
+
+Bij Bkℓ E Vivj vkV ′
+
+> ℓ
+
+
+
+= X
+
+> i,k
+
+Bii Bkk E VivivkV ′
+
+> k
+
+ + X
+
+> i,j
+
+B2 
+
+> ij
+
+E Vivj viV ′
+
+> j
+
+ + X
+
+> i,j
+
+Bij Bji E Vivj vj V ′
+
+> i
+
+
+
+= X
+
+> i,k
+
+σvi 22 σ′ 
+
+> vk 22
+
++ X
+
+> i
+
+B2
+
+> ii
+
+σvi 22 σ′ 
+
+> vj 22
+
++ X
+
+> i
+
+B2
+
+> ii
+
+σ2
+
+> vj 22
+
+Σi22 .
+
+In the last equality we have used (1) and that the off-diagonal elements of B are 0. Since the first term is just E [ V ′Bv ] E [ V ′Bv ]′,Var [ V ′Bv ] = X
+
+> i
+
+B2
+
+> ii
+
+σvi 22 σ′ 
+
+> vj 22
+
++ X
+
+> i
+
+B2
+
+> ii
+
+σ2
+
+> vj 22
+
+Σi22 ≤ cunIg,
+
+where the inequality follows from Assumption 2. Therefore, because tr ( B) = n,Var 
+
+V ′Bv 
+
+tr ( B)
+
+
+
+≤ cu
+
+n Ig → O.
+
+Using Assumption 4, E
+
+V ′BV 
+
+tr ( B)
+
+
+
+→ Σ22 ,
+
+so we obtain the probability limit 
+
+V ′BV 
+
+tr ( B) →p Σ22 . (A.3) 38 Hence 
+
+X′BX 
+
+tr ( B) = Op (1) . (A.4) Next we consider X′B (y − Xβ n) / tr ( B). Since y − Xβ n = X (β0 − βn) + ε, we obtain 
+
+X′B (y − Xβ n)tr ( B) = X′BX (β0 − βn)tr ( B) + X′Bε 
+
+tr ( B) .
+
+Based on (A.1) and (A.4) and the consistency of βn, the first term on the right hand side is Op (1) · op (1) = op (1). The second term is 
+
+X′Bε 
+
+tr ( B) = (ZΠ )′ Bε 
+
+tr ( B) + V ′Bε 
+
+tr ( B) = op (1) + σ21 , (A.5) where we treat the terms ( ZΠ )′ Bε / tr ( B) and V ′Bε / tr ( B) respectively as (ZΠ )′ BV / tr ( B) and V ′BV / tr ( B) above, and invoke Assumption 4. Hence we obtain 
+
+X′B (y − Xβ n)tr ( B) = σ21 + op (1) . (A.6) Finally we consider bσ2 (βn) ≡ (y − Xβ n)′ B (y − Xβ n) / tr ( B). Using y −Xβ n =
+
+X (β0 − βn) + ε, we obtain (y − Xβ n)′ B (y − Xβ n)tr ( B) = (β0 − βn)′ X′B (y − Xβ n)tr ( B) + ε′BX (β0 − βn)tr ( B) + ε′Bε 
+
+tr ( B).
+
+By (A.5) and the consistency of βn the first two terms are op (1). By Assumption 4 and treating ε′Bε / tr ( B) as V ′BV / tr ( B) above we have 
+
+ε′Bε 
+
+tr ( B) = σ2 + op (1) , (A.7) so the result follows. 39 2. Using y = Xβ 0 + ε we have 
+
+bσ2 (β) = ε′Bε 
+
+tr ( B) − 2ε′BX (β − β0)tr ( B) + (β − β0)′ X′BX (β − β0)tr ( B) . (A.8) In the case when B is as in Bekker and Crudu (2015), BZ = O, so 
+
+bσ2 (β) = ε′Bε 
+
+tr ( B) − 2ε′BV (β − β0)tr ( B) + (β − β0)′ V ′BV (β − β0)tr ( B) .
+
+Using A.7, A.5 and A.3, we get 
+
+bσ2 (β) = σ2 − 2σ12 (β − β0) + ( β − β0)′ Σ22 (β − β0) + op (1) . (A.9) Note that the quadratic function in t
+
+σ2 − 2σ12 t + t′Σ22 t ≥ σ2 − σ12 Σ−122 σ21 ,
+
+where the right hand side is attained for t = Σ−122 σ21 . Since by Assumption 4 
+
+Σ =
+
+ σ2 σ12 
+
+σ21 Σ22 
+
+ is positive definite, its determinant 
+
+|Σ| = |Σ22 |  σ2 − σ12 Σ−122 σ21 
+
+ > 0,
+
+so 
+
+bσ2 (β) ≥ σ2 − σ12 Σ−122 σ21 + op (1) ,
+
+where σ2 − σ12 Σ−122 σ21 > 0. In the case when B = In, using part 1 and H
+
+n ≥ 0, we have 
+
+X′BX 
+
+tr ( B) ≥ Σ22 + op (1) .
+
+40 Therefore, employing the results from part 1 to equation (A.8) we obtain 
+
+bσ2 ≥ σ2 − 2σ12 (β − β0) + ( β − β0)′ Σ22 (β − β0) + op (1) ,
+
+so 
+
+bσ2 (β) ≥ σ2 − σ12 Σ−122 σ21 + op (1) in this case as well. 
+
+Lemma A.6. Let fH be a g×g matrix with fH−1H = Ig +op (1) , A as in (17) and suppose that (AH −1A′)−1AH −1 = O (1) . Then A′
+
+
+
+AfH−1A′
+
+−1
+
+AfH−1 = A′ (AH −1A′)−1 AH −1+
+
+op (1) .Proof. First we prove that 
+
+
+
+AfH−1A′
+
+−1
+
+AH −1A′ = Ip + op (1) . (A.10) Indeed, we have 
+
+AfH−1A′  AH −1A′−1 = AfH−1HH −1A′  AH −1A′−1
+
+= A (Ig + op (1)) H−1A′  AH −1A′−1
+
+= Ip + Aop (1) 
+
+ AH −1A′−1 AH −1
+
+′
+
+= Ip + O (1) op (1) O (1) = Ip + op (1) ,
+
+which implies (A.10). Now note that 
+
+A′ 
+
+AfH−1A′−1
+
+AfH−1 = A′ 
+
+AfH−1A′−1
+
+AH −1A′  AH −1A′−1 AH −1H fH−1
+
+= A′ (Ip + op (1))  AH −1A′−1 AH −1 (Ig + op (1)) = A′  AH −1A′−1 AH −1 + O(1) op (1) + O(1) op (1) O(1) + O(1) op (1) O(1) op (1) = A′  AH −1A′−1 AH −1 + op (1) .
+
+41 42 B Auxiliary results 
+
+B.1 Theorems and proofs of main results 
+
+Proposition 1. Under Assumptions 1 to 4 any estimator βn that satisfies Qn(βn) ≤
+
+Qn(β0) is consistent and (βn − β0)′H(βn − β0)/√k = op (1) .Proof of Proposition 1. Using y − Xβ n = ε − X(βn − β0), we obtain 
+
+Qn(βn)−Qn(β0) = 
+
+ 1
+
+bσ2(βn) − 1
+
+bσ2(β0)
+
+
+
+ε′Cε +(βn − β0)′X′CX (βn − β0)
+
+bσ2(βn) −2ε′CX (βn − β0)
+
+bσ2(βn) ,
+
+(B.11) where we use the notation 
+
+bσ2 (β) ≡ (y − Xβ )′ B (y − Xβ )tr ( B) . (B.12) Now we rescale (B.11) by 1 /r min and observe that by Lemma A.4 and Assumptions 1, 2, 3, 1
+
+rmin 
+
+ε′Cε = op (1) , 1
+
+rmin 
+
+ε′CX = op (1) .
+
+Lemma A.5.1 applied to βn = β0 implies bσ2(β0) →p σ2 and by Lemma A.5.2, bσ2(βn) is bounded away from 0 in the limit, so for the first and the third terms we get 
+
+ 1
+
+bσ2(βn) − 1
+
+bσ2(β0)
+
+ ε′Cε 
+
+rmin 
+
+= Op (1) · op (1) = op (1) , (B.13) 2ε′CX 
+
+rmin 
+
+(βn − β0)
+
+bσ2(βn) = op (1) · Op (1) = op (1) . (B.14) With respect to the second term on the right hand side of (B.11) we first note that from Lemma A.4.1 
+
+X′CX 
+
+rmin 
+
+= H
+
+rmin 
+
++ op (1) . (B.15) 43 Substituting this into the rescaled version of (B.11) and using (B.13) and (B.14) we obtain 
+
+Qn(βn) − Qn(β0)
+
+rmin 
+
+= 1
+
+bσ2(βn)(βn − β0)′ H
+
+rmin 
+
+(βn − β0) + op (1) .
+
+Since H/r min is positive definite in the limit having the eigenvalues ≥ 1, we obtain from the Rayleigh quotient that 
+
+Qn(βn) − Qn(β0)
+
+rmin 
+
+≥ ∥βn − β0∥2
+
+bσ2(βn) + op (1) .
+
+Together with Qn(βn) ≤ Qn(β0) this implies 
+
+∥βn − β0∥2
+
+bσ2(βn) = op (1) .
+
+Since both the numerator and denominator are quadratic in ( βn − β0), this can only happen, if 
+
+βn − β0 = op (1) , (B.16) that is, βn is consistent. Now rescaling (B.11) by 1 /√k and using Qn(βn) ≤ Qn(β0), we get 
+
+ 1
+
+bσ2(βn) − 1
+
+bσ2(β0)
+
+ ε′Cε 
+
+√k + (βn − β0)′X′CX (βn − β0)
+
+bσ2(βn)√k − 2ε′CX (βn − β0)
+
+bσ2(βn)√k ≤ 0. (B.17) Assumptions 1, 2, 3 and Lemma A.4 imply 1
+
+√k ε′Cε = Op (1) , 1
+
+√k ε′CX = Op (1) , (B.18) and in addition, using Lemma A.4, Lemma A.5.1 and (B.16), we obtain that the first and the third terms on the left hand side of (B.17) are op(1). Further, by Lemma A.4.1 44 (B.17) becomes (βn − β0)′H(βn − β0)
+
+√k + op (1) ≤ 0.
+
+Since ( βn − β0)′H(βn − β0)/√k ≥ 0, we find that (βn − β0)′H(βn − β0)
+
+√k = op (1) . (B.19) This completes the proof. 
+
+Proof of Theorem 1. From the first order condition of minimising Qn we have ∇Qn( bβ) = 
+
+0. Since 
+
+∇Qn(β) = −2
+
+bσ2 (β)X′ bC (β) ( y − Xβ )we obtain B.1 
+
+−2
+
+bσ2( bβ)X′ bC( bβ)( y − X bβ) = 0.
+
+Using y − X bβ = ε − X( bβ − β0), (12) and rescaling by 1√k , we obtain 1
+
+√k X′ C − Qn( bβ)tr ( B) B
+
+!
+
+ε = 1
+
+√k X′ bC( bβ)X( bβ − β0). (B.20) From (B.11) rescaled by 1√k , by (B.18), Lemma A.4.1, (B.19), Lemma A.5.1 and the 
+
+> B.1
+
+The gradient of Qn(β) is 
+
+∇Qn(β) = −2X′C(y − Xβ )(y − Xβ )′B(y − Xβ )/ tr( B) − Qn(β) − 2tr( B) X′B(y − Xβ )(y − Xβ )′B(y − Xβ )/ tr( B)= −2 tr( B)(y − Xβ )′B(y − Xβ )
+
+
+
+X′C(y − Xβ ) − Qn(β)tr( B) X′B(y − Xβ )
+
+
+
+= −2
+
+bσ2 (β) X′ bC (β) ( y − Xβ ) .
+
+45 consistency of bβ, we obtain that 1
+
+√k
+
+
+
+Qn( bβ) − Qn(β0)
+
+
+
+= op (1) and (B.21) 1
+
+√k Qn( bβ) = Op (1) . (B.22) Together with Lemma A.5.1, B.22 implies that the expressions on the two sides of (B.20) are Op (1). Substituting Qn( bβ) from (B.21) into the left hand side of (B.20) and using (11), (12) and Lemma A.5.1, we obtain that the left hand side of (B.20) is equal to 1
+
+√k X′ C − Qn( bβ)tr ( B) B
+
+!
+
+ε = τn + op (1) .
+
+With respect to the right hand side of (B.20) we note that from (12) we have 
+
+X′ bC( bβ)XH −1 = X′ C − Qn( bβ)tr ( B) B
+
+!
+
+XH −1 = X′CXH −1 − X′ Qn( bβ)
+
+tr (B) BXH −1,
+
+where by Lemma A.4.1 X′CXH −1 = Ig + op (1) and by Assumption 3, (B.22) and Lemma A.5.1 
+
+X′ Qn( bβ)tr ( B) BXH −1 =
+
+√krmin 
+
+Qn( bβ)
+
+√k
+
+X′BX 
+
+tr ( B) rmin H−1 = o (1) ·Op (1) ·Op (1) ·O (1) = op (1) ,
+
+which implies that 
+
+X′ bC( bβ)XH −1 = Ig + op (1) . (B.23) Therefore, the right hand side of (B.20) is 1
+
+√k X′ bC( bβ)X( bβ − β0) = 1
+
+√k H( bβ − β0) + op (1) .
+
+Consequently, by using (13), (B.20) becomes 
+
+τn = ψn + op (1) = Op (1) . (B.24) 46 Next we show that τn is asymptotically normally distributed. Notice that 
+
+τn = 1
+
+√k Π′Z′Cε + 1
+
+√k
+
+
+
+V ′ − V ′Bε 
+
+tr ( B)tr ( B)
+
+ε′Bε ε′
+
+
+
+Cε .
+
+By the continuous mapping theorem and Lemma A.5.1 we obtain 
+
+V ′Bε 
+
+tr ( B)tr ( B)
+
+ε′Bε = σ21 
+
+σ2 + op (1) .
+
+Based on 1√k ε′Cε = Op (1), which follows from Lemma A.4, we obtain 
+
+τn = 1
+
+√k Π′Z′Cε + 1
+
+√k
+
+
+
+V ′ − σ21 
+
+σ2 ε′
+
+
+
+Cε + op (1) .
+
+This converges in distribution by the central limit theorem from Chao et al. (2012, Lemma A2) in the version stated in Lemma A.1. In order to see this, let win be such that 1
+
+√k Π′Z′Cε =
+
+> n
+
+X
+
+> i=1
+
+win ,
+
+that is, 
+
+win = 1
+
+√k Π′Z′Ciεi.
+
+Next we verify that win satisfies the conditions of Lemma A.1. Condition (1) is satisfied based on equation (A.1) from the Supplement to Crudu et al. (2021). Condition (2) is satisfied because 
+
+> n
+
+X
+
+> i=1
+
+E [ win w′
+
+> in
+
+] = 1
+
+k Π′Z′CD σ2 CZΠ ≡ 1
+
+k F
+
+and this converges by Assumption 6 to a finite matrix. By Assumption 2 and the fact that E [ win ] = 0, Condition (3) is also satisfied. Condition (4) follows by Assumption 2 47 from observing that 
+
+> n
+
+X
+
+> i=1
+
+E ∥win ∥4 ≤ cu
+
+k2
+
+> n
+
+X
+
+> i=1
+
+∥Π′Z′Ci∥4
+
+where the right hand side goes to 0 by Assumption 5. Now applying Lemma A.1 we obtain that 
+
+τn →d N (0, Φ). (B.25) Since from (B.24) 
+
+ψn = τn + op(1) →d N (0 , Φ),
+
+we obtain that 
+
+ψn →d N (0, Φ). (B.26) Consequently, for T ∈ { LM, W } the result follows from Lemma A.2 and the continuous mapping theorem. Now we turn to studying the statistic D. The first term on the right hand side of (B.11) rescaled by rmin /k is 
+
+rmin 
+
+k
+
+bσ2(β0) − bσ2( bβ)
+
+
+
+ε′Cε 
+
+bσ2(β0)bσ2( bβ) = rmin 
+
+k
+
+ε′Cε 
+
+bσ2(β0)bσ2( bβ) tr ( B)2ε′BX ( bβ − β0)
+
+− rmin 
+
+k
+
+ε′Cε 
+
+bσ2(β0)bσ2( bβ) tr ( B)( bβ − β0)′X′BX ( bβ − β0)= rmin 
+
+k
+
+1
+
+bσ2( bβ)
+
+Qn (β0)tr ( B) 2ε′BX ( bβ − β0)
+
+− ε′Cε 
+
+√k
+
+1
+
+bσ2(β0)bσ2( bβ)( bβ − β0)′ X′BX 
+
+tr ( B)
+
+rmin 
+
+√k ( bβ − β0).
+
+By Lemma A.4, Lemma A.5, (B.26) and the consistency of bβ it follows that the second 48 term is 
+
+ε′Cε 
+
+√k
+
+1
+
+bσ2(β0)bσ2( bβ)( bβ−β0)′ X′BX 
+
+tr ( B)
+
+rmin 
+
+√k ( bβ − β0)
+
+
+
+= Op (1) ·Op (1) ·op (1) ·Op (1) ·Op (1) = op (1) .
+
+Using in addition (B.21) and (B.22) we can see that the first term is 
+
+rmin 
+
+k
+
+1
+
+bσ2( bβ)
+
+Qn (β0)tr ( B) 2ε′BX ( bβ − β0) = Qn (β0)
+
+√k
+
+2
+
+bσ2( bβ)
+
+ε′BX 
+
+tr ( B)
+
+rmin 
+
+√k ( bβ − β0)= Op (1) · Op (1) · Op (1) · Op (1) = Op (1) .
+
+Therefore, using (13) and Lemma A.5.1, we find that the first term on the right hand side of (B.11) rescaled by rmin /k is 
+
+rmin 
+
+k
+
+bσ2(β0) − bσ2( bβ)
+
+
+
+ε′Cε 
+
+bσ2(β0)bσ2( bβ) = 2rmin 
+
+σ2√kQn (β0)tr ( B) ε′BXH −1ψn + op (1) . (B.27) The second term on the right hand side of (B.11) rescaled by rmin /k is 
+
+rmin 
+
+k
+
+( bβ − β0)′X′CX ( bβ − β0)
+
+bσ2( bβ) = rmin 
+
+k
+
+( bβ − β0)′HH −1X′CXH −1H( bβ − β0)
+
+bσ2( bβ) .
+
+Using X′CXH −1 = Ig + op (1) from Lemma A.4.1, (13) and Lemma A.5.1, we get 
+
+rmin 
+
+k
+
+( bβ − β0)′X′CX ( bβ − β0)
+
+bσ2( bβ) = rmin 
+
+σ2 ψ′
+
+> n
+
+H−1ψn + op (1) . (B.28) The third term on the right hand side of (B.11) rescaled by rmin /k is 
+
+−2rmin 
+
+k
+
+ε′CX ( bβ − β0)
+
+bσ2( bβ) = −2rmin 
+
+√k
+
+ε′CX 
+
+bσ2( bβ) H−1 1
+
+√k H( bβ − β0).
+
+Using (13) and Lemma A.5.1, we obtain 
+
+−2rmin 
+
+k
+
+ε′CX ( bβ − β0)
+
+bσ2( bβ) = − 2rmin 
+
+σ2√k ε′CXH −1ψn + op (1) . (B.29) Collecting the results in (B.27), (B.28), (B.29) and using (12), we find that (B.11) rescaled 49 by rmin /k is 
+
+rmin 
+
+k
+
+
+
+Qn( bβ) − Qn(β0)
+
+
+
+= 2rmin 
+
+σ2√kQn (β0)tr ( B) ε′BXH −1ψn + rmin 
+
+σ2 ψ′
+
+> n
+
+H−1ψn
+
+− 2rmin 
+
+σ2√k ε′CXH −1ψn + op (1) = − 2rmin 
+
+σ2√k ε′ bC (β0) XH −1ψn + rmin 
+
+σ2 ψ′
+
+> n
+
+H−1ψn + op (1) .
+
+From (11), (B.24) and (10) this becomes 
+
+rmin 
+
+k
+
+
+
+Qn( bβ) − Qn(β0)
+
+
+
+= −2
+
+σ2 W + 1
+
+σ2 W + op (1) = − 1
+
+σ2 W + op (1) ,
+
+so from (8) we have 
+
+D = W + op (1) .
+
+Consequently, the result also follows for D.
+
+Proof of Corollary 1. First notice that 
+
+bD = brmin 
+
+rmin 
+
+bσ2
+
+σ2 D, 
+
+where brmin = λmin (cH). From (B.23) and (16) we have 
+
+cHH −1 = Ig + op (1) . (B.30) By the continuity of the minimal eigenvalue as a function of the matrix (e.g., Horn and Johnson, 2012, Appendix D), 
+
+brmin 
+
+rmin 
+
+→p 1 (B.31) 50 and further, bσ2
+
+σ2 →p 1 by Lemma A.5.1 applied to βn = bβ. Therefore, 
+
+bD = D + op (1) . (B.32) Regarding the statistic dLM we observe that 
+
+brmin cH−1 = brmin 
+
+rmin 
+
+ rmin H−1 H cH−1.
+
+Therefore, by (B.30) and (B.31) 
+
+brmin cH−1 = rmin H−1 + op (1) (B.33) and consequently 
+
+dLM = τ ′
+
+> n
+
+rmin H−1τn + op (1) = LM + op (1) . (B.34) Finally, with respect to the statistic cW = brmin bψ′ 
+
+> n
+
+cH−1 bψn first we note that 
+
+bψn = 1
+
+√k
+
+cH( bβ − β0) = 1
+
+√k
+
+cHH −1H( bβ − β0) = ψn + op (1) ,
+
+where the latter equality follows from (13) and (B.30). Now applying (B.33) we have 
+
+cW = ( ψ′ 
+
+> n
+
++ op (1))  rmin H−1 + op (1)  (ψn + op (1)) = W + op (1) (B.35) because ψn = Op (1) from (B.26) and rmin H−1 = O (1). Based on (B.32), (B.34), (B.35) and Theorem 1 the result follows. 
+
+Proof of Corollary 2. The proof is similar to that of Theorem 1. By the same arguments we find 
+
+−r σ2
+
+k
+
+
+
+Qn( bβ) − Qn(β)
+
+
+
+= r2
+
+k ( bβ − β)2 + op(1) →d ζ2.
+
+51 The result for the LM test follows from similar arguments. The chi square limit follows from a well known relationship between the normal and chi square distributions. 
+
+Proof of Theorem 2. First we observe that eβ is consistent. This follows from Proposition 1 because Qn( eβ) ≤ Qn(β0), which is implied by L( eβ, eγ) ≤ L (β0, γ0) and the fact that the true β0 satisfies H0. Next we concentrate eγ out from the FOCs. The FOC (18) with respect to β implies 
+
+X′ bC( eβ)y − fH eβ = bσ2( eβ)A′ eγ, (B.36) where we use the notation fH = X′ bC( eβ)X. Similar to (B.30) we have 
+
+fHH −1 = Ig + op (1) , (B.37) which implies that fH is invertible in the limit. Multiplied by AfH−1 from the left, (B.36) becomes 
+
+AfH−1X′ bC( eβ)ε = bσ2( eβ)AfH−1A′ eγ,
+
+where we have also used y = Xβ 0 + ε and the linear restriction. From this we express 
+
+bσ2( eβ)eγ =
+
+
+
+AfH−1A′
+
+−1
+
+AfH−1X′ bC( eβ)ε
+
+and substitute it into (B.36); we obtain 
+
+X′ bC( eβ)y − fH eβ = A′
+
+
+
+AfH−1A′
+
+−1
+
+AfH−1X′ bC( eβ)ε.
+
+Using y = Xβ 0 + ε and rescaling by 1√k we obtain 1
+
+√k X′ bC( eβ)ε = 1
+
+√k
+
+fH( eβ − β0) + 1
+
+√k A′
+
+
+
+AfH−1A′
+
+−1
+
+AfH−1X′ bC( eβ)ε. (B.38) Based on (12) and the fact that 1√k
+
+
+
+Qn( eβ) − Qn(β0)
+
+
+
+= op (1) (which follows in the 52 same way as (B.21) in the proof of Theorem 1), the left hand side of (B.38) is 1
+
+√k X′ bC( eβ)ε = 1
+
+√k X′ bC(β0)ε + op (1) ≡ τn + op (1) . (B.39) Based on the fact that the limit of ( AH −1A′)−1AH −1 is finite, by Lemma A.6 the second term on the right hand side of (B.38) is A′ (AH −1A′)−1 AH −1τn + op (1). These facts imply that the first term on the right hand side of (B.38) is Op (1). At the same time, from (24) and (B.39), 1
+
+√k
+
+fH( eβ − β0) = τn − ξn + op (1) = Op (1) . (B.40) Therefore, (B.38) becomes 
+
+τn = τn − ξn + A′  AH −1A′−1 AH −1τn + op (1) ,
+
+that is, 
+
+ξn = A′  AH −1A′−1 AH −1τn + op (1) . (B.41) This together with (21) and (26) implies that 
+
+LM a = τ ′
+
+> n
+
+Ξaτn + op (1) .
+
+Since from (B.25) τn →d N (0, Φ), Lemma A.2 implies that LM a converges in distribution to ¯ χ2(φ). Regarding the statistic W1a from (22)we note that (13), (26) and H0 imply that 
+
+W1a = ψ′
+
+> n
+
+Ξaψn + op (1) .
+
+Therefore, similar to LM a, (B.26) and Lemma A.2 imply that W1a converges in distribu-tion to ¯ χ2(φ). 53 Now we turn to the statistic Da, which involves 
+
+rmin 
+
+k
+
+
+
+Qn( bβ) − Qn( eβ)
+
+
+
+= rmin 
+
+k
+
+bσ2( eβ) − bσ2( bβ)
+
+
+
+ε′Cε 
+
+bσ2( eβ)bσ2( bβ) + rmin 
+
+k
+
+( bβ − β0)′X′CX ( bβ − β0)
+
+bσ2( bβ)(B.42) 
+
+− rmin 
+
+k
+
+( eβ − β0)′X′CX ( eβ − β0)
+
+bσ2( eβ) − 2rmin 
+
+k
+
+ε′CX ( bβ − β0)
+
+bσ2( bβ)+ 2rmin 
+
+k
+
+ε′CX ( eβ − β0)
+
+bσ2( eβ) ≡ A1 + A2 + A3 + A4 + A5.
+
+From bσ2 (β) ≡ (y − Xβ )′ B (y − Xβ ) / tr ( B)
+
+A1 = 2rmin 
+
+k
+
+ε′BX ( bβ − eβ)ε′Cε 
+
+bσ2( eβ)bσ2( bβ) tr ( B) (B.43) + rmin 
+
+k
+
+( eβ − β0)′X′BX ( eβ − β0)ε′Cε 
+
+bσ2( eβ)bσ2( bβ) tr ( B) (B.44) 
+
+− rmin 
+
+k
+
+( bβ − β0)′X′BX ( bβ − β0)ε′Cε 
+
+bσ2( eβ)bσ2( bβ) tr ( B) . (B.45) Since by (B.40), (B.24), (13) and fHH −1 = Ig + op (1), it holds that 1
+
+√k H( bβ − eβ) = ξn + op (1) = Op (1) , (B.46) therefore, 
+
+rmin 
+
+√k ( bβ − eβ) = Op (1) .
+
+Using this fact as well as Lemma A.4, Lemma A.5 and the consistency of bβ and eβ, we get that the right hand side of (B.43) is Op (1) while (B.44), (B.45) are op (1). Since from Lemma A.5 the right hand side of (B.43) is 
+
+rmin 
+
+k
+
+ε′BX ( bβ − eβ)ε′Cε 
+
+bσ2( eβ)bσ2( bβ) tr ( B) = rmin 
+
+k
+
+ε′BX ( bβ − eβ)Qn (β0)
+
+σ2 tr ( B) + op (1) ,
+
+54 we have 
+
+A1 = 2rmin 
+
+k
+
+ε′BX ( bβ − eβ)Qn (β0)
+
+σ2 tr ( B) + op (1) . (B.47) From Lemma A.4, Lemma A.5 and (13), 
+
+A2 = rmin 
+
+σ2 ψ′
+
+> n
+
+H−1ψn + op (1) . (B.48) From Lemma A.4, Lemma A.5, (B.40), fHH −1 = Ig + op (1), (26) and (B.41), 
+
+A3 = −rmin 
+
+σ2 τ ′
+
+> n
+
+H−1τn + 1
+
+σ2 τ ′
+
+> n
+
+Ξaτn + op (1) . (B.49) By Lemma A.5 
+
+A4 + A5 = −2rmin 
+
+k
+
+ε′CX ( bβ − eβ)
+
+σ2 + op (1) (B.50) Now collecting the results from (B.47), (B.48), (B.49), (B.50), we obtain 
+
+rmin 
+
+k
+
+
+
+Qn( bβ) − Qn( eβ)
+
+
+
+= 2rmin 
+
+k
+
+ε′BX ( bβ − eβ)Qn (β0)
+
+σ2 tr ( B) + rmin 
+
+σ2 ψ′
+
+> n
+
+H−1ψn
+
+− rmin 
+
+σ2 τ ′
+
+> n
+
+H−1τn + 1
+
+σ2 τ ′
+
+> n
+
+Ξaτn − 2rmin 
+
+k
+
+ε′CX ( bβ − eβ)
+
+σ2 + op (1) = −2rmin 
+
+kσ 2 ε′ bC (β0) X( bβ − eβ) + 1
+
+σ2 τ ′
+
+> n
+
+Ξaτn + op (1) ,
+
+where the latter equality follows from (12) and (B.24). Using (11), (B.46) and (B.41) for the first term, we obtain 
+
+rmin 
+
+k
+
+
+
+Qn( bβ) − Qn( eβ)
+
+
+
+= − 2
+
+σ2 τ ′
+
+> n
+
+Ξaτn + 1
+
+σ2 τ ′
+
+> n
+
+Ξaτn + op (1) ,
+
+so we obtain that 
+
+Da = τ ′
+
+> n
+
+Ξaτn + op (1) .
+
+55 Therefore, similar to LM a and W1a, Da converges in distribution to ¯ χ2(φ). Finally, consider W2a from (23). From (25) and (B.46) we have that ϑn = ξn + op (1), which together with (21) and (23) implies that W2a = LM a + op (1). Therefore, W2a also converges in distribution to ¯ χ2(φ). 
+
+Proof of Theorem 3. From (27) 1
+
+k
+
+
+
+Q∗
+
+> n
+
+( bβ) − Q∗
+
+> n
+
+(β0)
+
+
+
+= ε′Jε 
+
+kbσ2( bβ)−2( bβ − β0)′X′Jε 
+
+kbσ2( bβ) +( bβ − β0)′X′JX ( bβ − β0)
+
+kbσ2( bβ) − ε′Jε 
+
+kbσ2(β0).
+
+(B.51) Note that from Lemma A.4.2 X′Cε /√k = Op(1) and from Lemma A.4.1 and (B.24) 
+
+X′CX ( bβ − β0)/√k = Op (1), so 
+
+ε′Jε 
+
+k = ε′CX 
+
+√k Φ−1 X′Cε 
+
+√k = Op (1) ,
+
+( bβ − β0)′X′Jε 
+
+k = ( bβ − β0)′X′CX 
+
+√k Φ−1 X′Cε 
+
+√k = Op (1) ,
+
+( bβ − β0)′X′JX ( bβ − β0)
+
+k = ( bβ − β0)′X′CX 
+
+√k Φ−1 X′CX ( bβ − β0)
+
+√k = Op (1) .
+
+Therefore, by Lemma A.5 the first and fourth terms on the right hand side of (B.51) are 
+
+ε′Jε 
+
+kbσ2( bβ) − ε′Jε 
+
+kbσ2(β0) = ε′Jε 
+
+k
+
+1
+
+bσ2( bβ) − 1
+
+bσ2(β0)
+
+!
+
+= Op (1) · op (1) = op (1) . (B.52) Further, expressing X′Cε /√k from 
+
+X′C(y − X bβ)
+
+√k = X′Cε 
+
+√k − X′CXH −1H( bβ − β0)
+
+√k = X′Cε 
+
+√k − ψn + op (1) , (B.53) which follows from Lemma A.4.1 and (13), then substituting it into the second term on the right hand side of (B.51) and using Lemma A.5, Lemma A.4 and (13) again, we obtain 2( bβ − β0)′X′Jε 
+
+kbσ2( bβ) = 2 ψ′
+
+> n
+
+Φ−1 X′C(y − X bβ)
+
+σ2√k + 2ψ′
+
+> n
+
+Φ−1ψn
+
+σ2 + op (1) . (B.54) 56 Finally, from Lemma A.5, Lemma A.4 and (13) the third term on the right hand side of (B.51) is ( bβ − β0)′X′JX ( bβ − β0)
+
+kbσ2( bβ) = ψ′
+
+> n
+
+Φ−1ψn
+
+σ2 + op (1) . (B.55) Collecting the results in (B.52), (B.54), (B.55) we have that 1
+
+k
+
+
+
+Q∗
+
+> n
+
+( bβ) − Q∗
+
+> n
+
+(β0)
+
+
+
+= −2ψ′
+
+> n
+
+Φ−1 X′C(y − X bβ)
+
+σ2√k − ψ′
+
+> n
+
+Φ−1ψn
+
+σ2 + op (1) ,
+
+which implies that 
+
+D∗ = ψ′
+
+> n
+
+Φ−1ψn + op (1) ≡ W ∗ + op (1) ≡ LM ∗ + op(1) .
+
+The chi square limit follows from Lemma A.3 and (B.26). 
+
+Proof of Theorem 4. From (31) 1
+
+k
+
+
+
+Q∗
+
+> an
+
+( eβ) − Q∗
+
+> an
+
+( bβ)
+
+
+
+= ε′Jaε
+
+kbσ2( eβ) − ε′Jaε
+
+kbσ2( bβ) (B.56) + ( eβ − β0)′X′JaX( eβ − β0)
+
+kbσ2( eβ) − ( bβ − β0)′X′JaX( bβ − β0)
+
+kbσ2( bβ)(B.57) + 2( bβ − β0)′X′Jaε
+
+kbσ2( bβ) − 2( eβ − β0)′X′Jaε
+
+kbσ2( eβ) . (B.58) Note that by Lemma A.4.2 ε′CX /√k = Op (1) and we know by assumption that Γn =
+
+O (1) and ( ΓnΦΓ ′
+
+> n
+
+)+ = O (1). Therefore, 
+
+ε′Jaε
+
+k = ε′CX 
+
+√k Γ ′ 
+
+> n
+
+(ΓnΦΓ ′
+
+> n
+
+)+ Γn
+
+X′Cε 
+
+√k = Op (1) and by Lemma A.5.1 the right hand side of (B.56) is 
+
+ε′Jaε
+
+kbσ2( eβ) − ε′Jaε
+
+kbσ2( bβ) = op (1) . (B.59) 57 Further, the first term of (B.57) is ( eβ − β0)′X′JaX( eβ − β0)
+
+kbσ2( eβ) = ( eβ − β0)′X′CXΓ ′ 
+
+> n
+
+(ΓnΦΓ ′
+
+> n
+
+)+ ΓnX′CX ( eβ − β0)
+
+kbσ2( eβ) .
+
+This involves 
+
+ΓnX′CX ( eβ − β0)
+
+√k = ΓnX′CXH −1H( eβ − β0)
+
+√k = Γnτn − Γnξn + op (1) ,
+
+where the latter equality follows from Lemma A.4.1, (B.37) and (B.40) and the fact that 
+
+Γn = O (1). From (B.41) we obtain that 
+
+ΓnX′CX ( eβ − β0)
+
+√k = Γnτn − Γ 2 
+
+> n
+
+τn + op (1) = op (1) , (B.60) where the last equality follows from Γ 2 
+
+> n
+
+= Γn. Using ( ΓnΦΓ ′
+
+> n
+
+)+ = O (1) and Lemma A.5.1 we obtain that ( eβ − β0)′X′JaX( eβ − β0)
+
+kbσ2( eβ) = op (1) . (B.61) The second term of (B.57) is ( bβ − β0)′X′JaX( bβ − β0)
+
+kbσ2( bβ) = ( bβ − β0)′X′CXΓ ′ 
+
+> n
+
+(ΓnΦΓ ′
+
+> n
+
+)+ ΓnX′CX ( bβ − β0)
+
+kbσ2( bβ) ,
+
+which involves 
+
+ΓnX′CX ( bβ − β0)
+
+√k = ΓnX′CXH −1H( bβ − β0)
+
+√k = Γnψn + op (1) , (B.62) where the last equality follows from Γn = O (1), Lemma A.4.1 and (13). Lemma A.5.1 and ( ΓnΦΓ ′
+
+> n
+
+)+ = O (1) imply that the second term of (B.57) is ( bβ − β0)′X′JaX( bβ − β0)
+
+kbσ2( bβ) = 1
+
+σ2 ψ′
+
+> n
+
+Γ ′ 
+
+> n
+
+(ΓnΦΓ ′
+
+> n
+
+)+ Γnψn + op (1) . (B.63) 58 The first expression in (B.58) is 2( bβ − β0)′X′Jaε
+
+kbσ2( bβ) = 2( bβ − β0)′X′CXΓ ′ 
+
+> n
+
+(ΓnΦΓ ′
+
+> n
+
+)+ ΓnX′Cε 
+
+kbσ2( bβ)= 2
+
+σ2 ψnΓ ′ 
+
+> n
+
+(ΓnΦΓ ′
+
+> n
+
+)+ Γn
+
+X′Cε 
+
+√k + op (1) ,
+
+where the last equality follows from Lemma A.5.1 and (B.62). Expressing X′Cε /√k
+
+from (B.53) and substituting it we obtain 2( bβ − β0)′X′Jaε
+
+kbσ2( bβ) = 2
+
+σ2 ψ′
+
+> n
+
+Γ ′ 
+
+> n
+
+(ΓnΦΓ ′
+
+> n
+
+)+ Γnψn
+
++ 2
+
+σ2 ψ′
+
+> n
+
+Γ ′ 
+
+> n
+
+(ΓnΦΓ ′
+
+> n
+
+)+ Γn
+
+X′C
+
+
+
+y − X bβ
+
+
+
+√k + op (1) . (B.64) The second expression in (B.58) is 2( eβ − β0)′X′Jaε
+
+kbσ2( eβ) = 2( eβ − β0)′X′CXΓ ′ 
+
+> n
+
+(ΓnΦΓ ′
+
+> n
+
+)+ ΓnX′Cε 
+
+kbσ2( eβ)= 2
+
+σ2
+
+ Γnτn − Γ 2 
+
+> n
+
+τn + op (1) ′ (ΓnΦΓ ′
+
+> n
+
+)+ Γn
+
+X′Cε 
+
+√k + op (1) = op (1) , (B.65) where the second line follows from (B.60) and Lemma A.5.1 while the probability limit follows from Γ 2 
+
+> n
+
+= Γn, ( ΓnΦΓ ′
+
+> n
+
+)+ = O (1) and ΓnX′Cε /√k = Op (1). Collecting the results in (B.59), (B.61), (B.63), (B.64), (B.65), we obtain 1
+
+k
+
+
+
+Q∗
+
+> an
+
+( eβ) − Q∗
+
+> an
+
+( bβ)
+
+
+
+= 1
+
+σ2 ψ′
+
+> n
+
+Γ ′ 
+
+> n
+
+(ΓnΦΓ ′
+
+> n
+
+)+ Γnψn
+
++ 2
+
+σ2 ψ′
+
+> n
+
+Γ ′ 
+
+> n
+
+(ΓnΦΓ ′
+
+> n
+
+)+ Γn
+
+X′C
+
+
+
+y − X bβ
+
+
+
+√k + op (1) .
+
+Therefore, 
+
+D∗ 
+
+> a
+
+= ψ′
+
+> n
+
+Γ ′ 
+
+> n
+
+(ΓnΦΓ ′
+
+> n
+
+)+ Γnψn + op (1) .
+
+59 Note that Γnψn →d N (0, Γ ΦΓ ′), where Γ is the limit of Γn as n → ∞ . Since Γn is idempotent and Γ 2 
+
+> n
+
+→ Γ 2, Γ is also idempotent and its trace is equal to the limit of the trace of Γn; consequently Γ and Γ ΦΓ ′ have rank equal to p. Therefore, by Lemma (A.3) 
+
+ψ′
+
+> n
+
+Γ ′ 
+
+> n
+
+(ΓnΦΓ ′
+
+> n
+
+)+ Γnψn →d χ2 
+
+> p
+
+and consequently D∗ 
+
+> a
+
+→d χ2
+
+> p
+
+.With respect to the test statistic in (34), from (B.41) by using ( ΓnΦΓ ′
+
+> n
+
+)+ = O (1) we obtain that 
+
+LM ∗ 
+
+> a
+
+= τ ′
+
+> n
+
+Γ ′ 
+
+> n
+
+(ΓnΦΓ ′
+
+> n
+
+)+ Γnτn + op (1) = ψ′
+
+> n
+
+Γ ′ 
+
+> n
+
+(ΓnΦΓ ′
+
+> n
+
+)+ Γnψn + op (1) ,
+
+where the last equality follows from (B.24). Consequently, LM ∗ 
+
+> a
+
+→d χ2
+
+> p
+
+. Since 
+
+ϑn = H( bβ − eβ)
+
+√k = H( bβ − β0)
+
+√k − H( eβ − β0)
+
+√k = ψn − τn + ξn + op (1) ,
+
+where the last equality follows from (13), (B.37) and (B.40), using (B.24) and (B.41) we obtain that ϑn = Γnτn + op (1), so W ∗ 
+
+> 2a
+
+→d χ2
+
+> p
+
+.With respect to W ∗ 
+
+> 1a
+
+from (35) we note that from (13) and (17) under the null hypo-thesis, 
+
+rmin 
+
+√k (A bβ − a) = rmin 
+
+√k A( bβ − β0) = 1
+
+√k Armin H−1H( bβ − β0) = Armin H−1ψn.
+
+From (B.26) and lim rmin H−1 = Ξ nonsingular we have Armin H−1ψn →d N (0, AΞΦΞA ′), where AΞΦΞA ′ has rank is p; therefore, by Lemma (A.3) W ∗ 
+
+> 1a
+
+→d χ2
+
+> p
+
+.
+
+B.2 The JIVE case 
+
+The JIVE case deserves particular attention as the results that produces are, compared to the ratio of quadratic forms case, analytically simpler and easier to implement. This is easy to see by setting the denominator of equation (3) to one and bC(β) = C.This section provides results that correspond to those in Theorems 1 to 4, when the objective function is that of JIVE1/JIVE2. In this case, we need the following slight 60 modification of Assumption 6. 
+
+Assumption 7. The matrix sequence 1 
+
+> k
+
+(F +G) is convergent when n → ∞ and lim 1 
+
+> k
+
+(F +
+
+G) = Φ, where 
+
+F = Π′Z′CD σ2 CZΠ , (B.66) 
+
+G = X
+
+> i̸=j
+
+C2
+
+> ij
+
+ σ2 
+
+> j
+
+Σi22 + σi21 σj12 
+
+ . (B.67) Assumption 7 replaces Assumption 6 used in Theorems 1 to 4. In this section we present the feasible versions of the test statistics because they tend to take simpler forms than the unfeasible versions. In order to define the test statistics we use the following notation: 
+
+cH = X′CX , brmin = λmin 
+
+cH
+
+
+
+, bΓ = A′(AcH−1A′)−1AcH−1,
+
+bΦ = bΦ( bβ), bΦ0 = bΦ(β0), eΦ = bΦ( eβ)with bΦ(β) = 1
+
+k
+
+ X′CD 2
+
+> ε
+
+CX + X′DεC(2) DεX ,
+
+where bβ denotes the JIVE estimator, β0 denotes the null hypothesis in (2), eβ denotes the JIVE estimator restricted by the null hypothesis (17) and Dε is a diagonal matrix with 
+
+ε = y − Xβ along the main diagonal. The following results hold (proofs are omitted because they are similar to those of Theorems 1 to 4). 
+
+Theorem B.1. Suppose that Assumptions 1 to 3, 5 and 7 are satisfied and Φ is specified in Assumption 7. 1. The feasible versions of the test statistics in (8) , (9) , (10) are identical to bT = 
+
+> brmin
+> k
+
+( bβ − β0)′ cH( bβ − β0). If rmin H−1 is convergent as n → ∞ , Ξ = lim rmin H−1
+
+and φ is the vector of eigenvalues of ΞΦ , then under the null hypothesis (2) bT →d
+
+ζ′Ξζ ∼ ¯χ2(φ) for ζ ∼ N (0 , Φ).2. The feasible versions of the test statistics in (20) to (23) are identical to bTa = 
+
+> brmin
+> k
+
+(A bβ − a)′(AcH−1A′)−1(A bβ − a). If rmin H−1 and (AH −1A′)−1AH −1 are con-vergent, Ξa = lim rmin H−1A′(AH −1A′)−1AH −1 and φ is the vector of eigenvalues of ΞaΦ, then under the null hypothesis (17) bTa →d ζ′Ξaζ ∼ ¯χ2(φ) for ζ ∼ N (0, Φ).
+
+61 3. For the feasible versions of the test statistics in (28) , (29) , (30) , we find that bD∗ =
+
+dLM ∗̸ = cW ∗. Under the null hypothesis (2) the tests are asymptotically chi square distributed with g degrees of freedom. 4. For the feasible versions of the test statistics in (32) to (36) we find bD∗ 
+
+> 1a
+
+= bD∗ 
+
+> 2a
+
+=
+
+dLM ∗
+
+> 1a
+
+̸ = cW ∗ 
+
+> 1a
+
+= cW ∗
+
+> 2a
+
+. If (AH −1A′)−1AH −1 is convergent as n → ∞ , then under the null hypothesis (17) the feasible test statistics are asymptotically chi square distributed with p degrees of freedom. 
+
+In points 3. and 4. distance and Lagrange multiplier statistics differ from Wald statistics because the former use an estimator of Φ that relies on β0 or eβ, the latter on the other hand uses an estimator of Φ that employs bβ as a plug-in. Clearly, by using the same estimator for Φ we obtain full equality. Furthermore, we note that the condition that rmin H−1 is convergent is not needed when the statistics are asymptotically chi square distributed, in line with the results from Theorems 1 to 4. 62 C Additional simulation results 
+
+This section contains the full set of simulation results for DGP1 and DGP2 as presented in Section 4.2. 
+
+C.1 DGP1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −2 024
+> β
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −2 024
+> β
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −2 024
+> β
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −2 024
+> β
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(d) JIVE2 
+
+Figure C.1: Power curves for DGP1 ( n = 200, α = 0 .05, r = 32). Trinity of test statist-ics distributed as a ¯ χ2. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 63 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 
+
+−2 0 2 4
+
+β
+
+> Rejection rate
+
+Test 
+
+D1*
+
+D2*
+
+LM *
+
+W1*
+
+W2*(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 
+
+−2 0 2 4
+
+β
+
+> Rejection rate
+
+Test 
+
+D1*
+
+D2*
+
+LM *
+
+W1*
+
+W2* (b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 
+
+−2 0 2 4
+
+β
+
+> Rejection rate
+
+Test 
+
+D1*
+
+LM *
+
+W1*
+
+W2*
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 
+
+−2 0 2 4
+
+β
+
+> Rejection rate
+
+Test 
+
+D1*
+
+LM *
+
+W1*
+
+W2* (d) JIVE2 
+
+Figure C.2: Power curves for DGP1 ( n = 200, α = 0 .05, r = 32). Trinity of test statist-ics distributed as a χ2. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 
+
+Table C.1: Size results for DGP1, 5% nominal level and n = 200. Results based on 5000 repetitions. Method α r D W1 W2 LM Dcf W1,cf W2,cf LM cf D∗ 
+
+> 1
+
+D∗ 
+
+> 2
+
+W ∗ 
+
+> 1
+
+W ∗ 
+
+> 2
+
+LM ∗ D∗ 
+
+> 1,cf
+
+D∗ 
+
+> 2,cf
+
+W ∗ 
+
+> 1,cf
+
+W ∗ 
+
+> 2,cf
+
+LM ∗ 
+
+> cf
+
+AR naive AR cf 
+
+SJIVE 0.05 32 0.082 0.055 0.055 0.054 0.074 0.050 0.050 0.068 0.028 0.030 0.055 0.055 0.054 0.048 0.050 0.050 0.050 0.068 SJIVE 0.05 64 0.080 0.066 0.066 0.051 0.073 0.059 0.059 0.070 0.035 0.037 0.066 0.066 0.051 0.055 0.057 0.059 0.059 0.070 SJIVE 0.10 32 0.073 0.051 0.051 0.050 0.067 0.047 0.047 0.056 0.030 0.035 0.051 0.051 0.050 0.044 0.047 0.047 0.047 0.056 SJIVE 0.10 64 0.065 0.059 0.059 0.048 0.061 0.053 0.053 0.057 0.036 0.038 0.059 0.059 0.048 0.050 0.052 0.053 0.053 0.057 HLIM 0.05 32 0.076 0.054 0.054 0.050 0.070 0.046 0.046 0.066 0.026 0.028 0.054 0.054 0.050 0.044 0.046 0.046 0.047 0.066 HLIM 0.05 64 0.073 0.062 0.062 0.051 0.067 0.056 0.056 0.068 0.033 0.035 0.062 0.062 0.051 0.050 0.051 0.056 0.056 0.068 HLIM 0.10 32 0.069 0.049 0.049 0.046 0.064 0.043 0.043 0.051 0.026 0.030 0.049 0.049 0.046 0.036 0.038 0.043 0.043 0.051 HLIM 0.10 64 0.060 0.052 0.052 0.046 0.055 0.048 0.048 0.052 0.031 0.032 0.052 0.052 0.046 0.038 0.039 0.048 0.048 0.052 JIVE1 0.05 32 0.028 0.028 0.028 0.054 0.029 0.029 0.029 0.075 0.054 0.028 0.028 0.054 0.075 0.029 0.029 0.075 0.008 0.019 JIVE1 0.05 64 0.049 0.049 0.049 0.052 0.051 0.051 0.051 0.073 0.052 0.049 0.049 0.052 0.073 0.051 0.051 0.073 0.008 0.019 JIVE1 0.10 32 0.019 0.019 0.019 0.051 0.020 0.020 0.020 0.058 0.051 0.019 0.019 0.051 0.058 0.020 0.020 0.058 0.015 0.038 JIVE1 0.10 64 0.036 0.036 0.036 0.048 0.037 0.037 0.037 0.057 0.048 0.036 0.036 0.048 0.057 0.037 0.037 0.057 0.015 0.038 JIVE2 0.05 32 0.023 0.023 0.023 0.057 0.022 0.022 0.022 0.067 0.057 0.023 0.023 0.057 0.067 0.022 0.022 0.067 0.007 0.011 JIVE2 0.05 64 0.043 0.043 0.043 0.050 0.040 0.040 0.040 0.064 0.050 0.043 0.043 0.050 0.064 0.040 0.040 0.064 0.007 0.011 JIVE2 0.10 32 0.016 0.016 0.016 0.054 0.016 0.016 0.016 0.054 0.054 0.016 0.016 0.054 0.054 0.016 0.016 0.054 0.014 0.018 JIVE2 0.10 64 0.031 0.031 0.031 0.047 0.029 0.029 0.029 0.053 0.047 0.031 0.031 0.047 0.053 0.029 0.029 0.053 0.014 0.018 64 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −2 024
+> β
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0        
+
+> −2 024
+> β
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −2 024
+> β
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0        
+
+> −2 024
+> β
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(d) JIVE2 
+
+Figure C.3: Power curves for DGP1 ( n = 200, α = 0 .05, r = 32). Trinity of test statistics distributed as a ¯ χ2 with cross-fit variance. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 65 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −2 024
+
+β
+
+> Rejection rate
+
+Test     
+
+> D1,cf *
+> D2,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −2 024
+
+β
+
+> Rejection rate
+
+Test      
+
+> D1,cf *
+> D2,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −2 024
+
+β
+
+> Rejection rate
+
+Test    
+
+> D1,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −2 024
+
+β
+
+> Rejection rate
+
+Test     
+
+> D1,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(d) JIVE2 
+
+Figure C.4: Power curves for DGP1 ( n = 200, α = 0 .05, r = 32). Trinity of test statistics distributed as a χ2 with cross-fit variance. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 66 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −2 024
+> β
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −2 024
+> β
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −2 024
+> β
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −2 024
+> β
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(d) JIVE2 
+
+Figure C.5: Power curves for DGP1 ( n = 200, α = 0 .05, r = 64). Trinity of test statist-ics distributed as a ¯ χ2. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 67 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0     
+
+> −2 024
+> β
+> Rejection rate
+> Test
+> D1*
+> D2*
+> LM *
+> W1*
+> W2*
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −2 024
+> β
+> Rejection rate
+> Test
+> D1*
+> D2*
+> LM *
+> W1*
+> W2*
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0     
+
+> −2 024
+> β
+> Rejection rate  Test
+> D1*
+> LM *
+> W1*
+> W2*
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −2 024
+> β
+> Rejection rate  Test
+> D1*
+> LM *
+> W1*
+> W2*
+
+(d) JIVE2 
+
+Figure C.6: Power curves for DGP1 ( n = 200, α = 0 .05, r = 64). Trinity of test statist-ics distributed as a χ2. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 68 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −2 024
+> β
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0        
+
+> −2 024
+> β
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −2 024
+> β
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0        
+
+> −2 024
+> β
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(d) JIVE2 
+
+Figure C.7: Power curves for DGP1 ( n = 200, α = 0 .05, r = 64). Trinity of test statistics distributed as a ¯ χ2 with cross-fit variance. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 69 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −2 024
+
+β
+
+> Rejection rate
+
+Test     
+
+> D1,cf *
+> D2,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −2 024
+
+β
+
+> Rejection rate
+
+Test      
+
+> D1,cf *
+> D2,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −2 024
+
+β
+
+> Rejection rate
+
+Test    
+
+> D1,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −2 024
+
+β
+
+> Rejection rate
+
+Test     
+
+> D1,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(d) JIVE2 
+
+Figure C.8: Power curves for DGP1 ( n = 200, α = 0 .05, r = 64). Trinity of test statistics distributed as a χ2 with cross-fit variance. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 70 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −2 024
+> β
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −2 024
+> β
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −2 024
+> β
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −2 024
+> β
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(d) JIVE2 
+
+Figure C.9: Power curves for DGP1 ( n = 200, α = 0 .1, r = 32). Trinity of test statistics distributed as a ¯ χ2. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 71 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0     
+
+> −2 024
+> β
+> Rejection rate
+> Test
+> D1*
+> D2*
+> LM *
+> W1*
+> W2*
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −2 024
+> β
+> Rejection rate
+> Test
+> D1*
+> D2*
+> LM *
+> W1*
+> W2*
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0     
+
+> −2 024
+> β
+> Rejection rate  Test
+> D1*
+> LM *
+> W1*
+> W2*
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −2 024
+> β
+> Rejection rate  Test
+> D1*
+> LM *
+> W1*
+> W2*
+
+(d) JIVE2 
+
+Figure C.10: Power curves for DGP1 ( n = 200, α = 0 .1, r = 32). Trinity of test statist-ics distributed as a χ2. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 72 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −2 024
+> β
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0        
+
+> −2 024
+> β
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −2 024
+> β
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0        
+
+> −2 024
+> β
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(d) JIVE2 
+
+Figure C.11: Power curves for DGP1 ( n = 200, α = 0 .1, r = 32). Trinity of test statistics distributed as a ¯ χ2 with cross-fit variance. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 73 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −2 024
+
+β
+
+> Rejection rate
+
+Test     
+
+> D1,cf *
+> D2,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −2 024
+
+β
+
+> Rejection rate
+
+Test      
+
+> D1,cf *
+> D2,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −2 024
+
+β
+
+> Rejection rate
+
+Test    
+
+> D1,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −2 024
+
+β
+
+> Rejection rate
+
+Test     
+
+> D1,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(d) JIVE2 
+
+Figure C.12: Power curves for DGP1 ( n = 200, α = 0 .1, r = 32). Trinity of test statistics distributed as a χ2 with cross-fit variance. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 74 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −2 024
+> β
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −2 024
+> β
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −2 024
+> β
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −2 024
+> β
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(d) JIVE2 
+
+Figure C.13: Power curves for DGP1 ( n = 200, α = 0 .1, r = 64). Trinity of test statist-ics distributed as a ¯ χ2. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 75 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0     
+
+> −2 024
+> β
+> Rejection rate
+> Test
+> D1*
+> D2*
+> LM *
+> W1*
+> W2*
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −2 024
+> β
+> Rejection rate
+> Test
+> D1*
+> D2*
+> LM *
+> W1*
+> W2*
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0     
+
+> −2 024
+> β
+> Rejection rate  Test
+> D1*
+> LM *
+> W1*
+> W2*
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −2 024
+> β
+> Rejection rate  Test
+> D1*
+> LM *
+> W1*
+> W2*
+
+(d) JIVE2 
+
+Figure C.14: Power curves for DGP1 ( n = 200, α = 0 .1, r = 64). Trinity of test statist-ics distributed as a χ2. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 76 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −2 024
+> β
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0        
+
+> −2 024
+> β
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −2 024
+> β
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0        
+
+> −2 024
+> β
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(d) JIVE2 
+
+Figure C.15: Power curves for DGP1 ( n = 200, α = 0 .1, r = 64). Trinity of test statistics distributed as a ¯ χ2 with cross-fit variance. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 77 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −2 024
+
+β
+
+> Rejection rate
+
+Test     
+
+> D1,cf *
+> D2,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −2 024
+
+β
+
+> Rejection rate
+
+Test      
+
+> D1,cf *
+> D2,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −2 024
+
+β
+
+> Rejection rate
+
+Test    
+
+> D1,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −2 024
+
+β
+
+> Rejection rate
+
+Test     
+
+> D1,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(d) JIVE2 
+
+Figure C.16: Power curves for DGP1 ( n = 200, α = 0 .1, r = 64). Trinity of test statistics distributed as a χ2 with cross-fit variance. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 78 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −2 024
+> β
+> Rejection rate  Test
+> AR cf
+> AR naive
+
+(a) JIVE1, r = 32 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0     
+
+> −2 024
+> β
+> Rejection rate  Test
+> AR cf
+> AR naive
+
+(b) JIVE2, r = 32 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −2 024
+> β
+> Rejection rate  Test
+> AR cf
+> AR naive
+
+(c) JIVE1, r = 64 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0     
+
+> −2 024
+> β
+> Rejection rate  Test
+> AR cf
+> AR naive
+
+(d) JIVE2, r = 64 
+
+Figure C.17: Power curves for DGP1 ( n = 200 and α = 0 .05). AR tests distributed as N (0 , 1). Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) and panel (c) plot AR statistics based on the JIVE1 objective function with weak and strong instruments, respectively; panel (b) and panel (d) plot AR statistics based on the JIVE2 objective function for weak and strong instruments, respectively. 79 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −2 024
+> β
+> Rejection rate  Test
+> AR cf
+> AR naive
+
+(a) JIVE1, r = 32 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0     
+
+> −2 024
+> β
+> Rejection rate  Test
+> AR cf
+> AR naive
+
+(b) JIVE2, r = 32 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −2 024
+> β
+> Rejection rate  Test
+> AR cf
+> AR naive
+
+(c) JIVE1, r = 64 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0     
+
+> −2 024
+> β
+> Rejection rate  Test
+> AR cf
+> AR naive
+
+(d) JIVE2, r = 64 
+
+Figure C.18: Power curves for DGP1 ( n = 200 and α = 0 .1). AR tests distributed as 
+
+N (0 , 1). Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) and panel (c) plot AR statistics based on the JIVE1 objective function with weak and strong instruments, respectively; panel (b) and panel (d) plot AR statistics based on the JIVE2 objective function for weak and strong instruments, respectively. 80 C.2 DGP2 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −1 012
+> β2
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −1 012
+> β2
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −1 012
+> β2
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −1 012
+> β2
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(d) JIVE2 
+
+Figure C.19: Power curves for DGP2 ( n = 200, α = 0 .05, r = 0 .1). Trinity of test statistics distributed as a ¯ χ2. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 81 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 
+
+−1 0 1 2
+
+β2
+
+> Rejection rate
+
+Test 
+
+D1*
+
+D2*
+
+LM *
+
+W1*
+
+W2*(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 
+
+−1 0 1 2
+
+β2
+
+> Rejection rate
+
+Test 
+
+D1*
+
+D2*
+
+LM *
+
+W1*
+
+W2* (b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 
+
+−1 0 1 2
+
+β2
+
+> Rejection rate
+
+Test 
+
+D1*
+
+LM *
+
+W1*
+
+W2*
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 
+
+−1 0 1 2
+
+β2
+
+> Rejection rate
+
+Test 
+
+D1*
+
+LM *
+
+W1*
+
+W2* (d) JIVE2 
+
+Figure C.20: Power curves for DGP2 ( n = 200, α = 0 .05, r = 0 .1). Trinity of test statistics distributed as a χ2. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 
+
+Table C.2: Size results for DGP2, 5% nominal level and n = 200. Method α r D W1 W2 LM Dcf W1,cf W2,cf LM cf D∗ 
+
+> 1
+
+D∗ 
+
+> 2
+
+W ∗ 
+
+> 1
+
+W ∗ 
+
+> 2
+
+LM ∗ D∗ 
+
+> 1,cf
+
+D∗ 
+
+> 2,cf
+
+W ∗ 
+
+> 1,cf
+
+W ∗ 
+
+> 2,cf
+
+LM ∗ 
+
+> cf
+
+AR naive AR cf 
+
+SJIVE 0.05 0.1 0.066 0.055 0.055 0.054 0.062 0.052 0.052 0.059 0.047 0.051 0.055 0.055 0.054 0.053 0.058 0.052 0.052 0.059 SJIVE 0.05 0.2 0.062 0.056 0.056 0.056 0.060 0.054 0.054 0.059 0.051 0.052 0.056 0.056 0.056 0.056 0.059 0.054 0.054 0.059 SJIVE 0.10 0.1 0.067 0.052 0.052 0.051 0.061 0.048 0.048 0.058 0.045 0.049 0.052 0.052 0.051 0.053 0.058 0.048 0.048 0.058 SJIVE 0.10 0.2 0.067 0.052 0.052 0.051 0.061 0.048 0.048 0.058 0.045 0.049 0.052 0.052 0.051 0.053 0.058 0.048 0.048 0.058 HLIM 0.05 0.1 0.063 0.052 0.052 0.052 0.058 0.047 0.047 0.055 0.044 0.048 0.052 0.052 0.052 0.049 0.053 0.047 0.047 0.055 HLIM 0.05 0.2 0.060 0.056 0.056 0.051 0.054 0.051 0.051 0.055 0.046 0.047 0.056 0.056 0.051 0.051 0.052 0.051 0.051 0.055 HLIM 0.10 0.1 0.072 0.062 0.062 0.057 0.066 0.056 0.056 0.056 0.044 0.050 0.062 0.062 0.057 0.049 0.054 0.056 0.056 0.056 HLIM 0.10 0.2 0.072 0.062 0.062 0.057 0.066 0.056 0.056 0.056 0.044 0.050 0.062 0.062 0.057 0.049 0.054 0.056 0.056 0.056 JIVE1 0.05 0.1 0.030 0.030 0.030 0.056 0.031 0.031 0.031 0.057 0.056 0.030 0.030 0.056 0.057 0.031 0.031 0.057 0.028 0.045 JIVE1 0.05 0.2 0.044 0.044 0.044 0.053 0.041 0.041 0.041 0.055 0.053 0.044 0.044 0.053 0.055 0.041 0.041 0.055 0.028 0.046 JIVE1 0.10 0.1 0.035 0.035 0.035 0.060 0.035 0.035 0.035 0.055 0.060 0.035 0.035 0.060 0.055 0.035 0.035 0.055 0.036 0.085 JIVE1 0.10 0.2 0.035 0.035 0.035 0.060 0.035 0.035 0.035 0.055 0.060 0.035 0.035 0.060 0.055 0.035 0.035 0.055 0.036 0.085 JIVE2 0.05 0.1 0.030 0.030 0.030 0.056 0.030 0.030 0.030 0.057 0.056 0.030 0.030 0.056 0.057 0.030 0.030 0.057 0.028 0.034 JIVE2 0.05 0.2 0.043 0.043 0.043 0.053 0.040 0.040 0.040 0.054 0.053 0.043 0.043 0.053 0.054 0.040 0.040 0.054 0.028 0.034 JIVE2 0.10 0.1 0.035 0.035 0.035 0.059 0.035 0.035 0.035 0.056 0.059 0.035 0.035 0.059 0.056 0.035 0.035 0.056 0.037 0.046 JIVE2 0.10 0.2 0.035 0.035 0.035 0.059 0.035 0.035 0.035 0.056 0.059 0.035 0.035 0.059 0.056 0.035 0.035 0.056 0.037 0.046 82 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −1 012
+> β2
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0        
+
+> −1 012
+> β2
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −1 012
+> β2
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0        
+
+> −1 012
+> β2
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(d) JIVE2 
+
+Figure C.21: Power curves for DGP2 ( n = 200, α = 0 .05, r = 0 .1). Trinity of test statistics distributed as a ¯ χ2 with cross-fit variance. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 83 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −1 012
+
+β2
+
+> Rejection rate
+
+Test     
+
+> D1,cf *
+> D2,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −1 012
+
+β2
+
+> Rejection rate
+
+Test      
+
+> D1,cf *
+> D2,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −1 012
+
+β2
+
+> Rejection rate
+
+Test    
+
+> D1,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −1 012
+
+β2
+
+> Rejection rate
+
+Test     
+
+> D1,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(d) JIVE2 
+
+Figure C.22: Power curves for DGP2 ( n = 200, α = 0 .05, r = 0 .1). Trinity of test statistics distributed as a χ2 with cross-fit variance. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 84 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −1 012
+> β2
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −1 012
+> β2
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −1 012
+> β2
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −1 012
+> β2
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(d) JIVE2 
+
+Figure C.23: Power curves for DGP2 ( n = 200, α = 0 .05, r = 0 .2). Trinity of test statistics distributed as a ¯ χ2. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 85 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0     
+
+> −1 012
+> β2
+> Rejection rate
+> Test
+> D1*
+> D2*
+> LM *
+> W1*
+> W2*
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −1 012
+> β2
+> Rejection rate
+> Test
+> D1*
+> D2*
+> LM *
+> W1*
+> W2*
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0     
+
+> −1 012
+> β2
+> Rejection rate  Test
+> D1*
+> LM *
+> W1*
+> W2*
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −1 012
+> β2
+> Rejection rate  Test
+> D1*
+> LM *
+> W1*
+> W2*
+
+(d) JIVE2 
+
+Figure C.24: Power curves for DGP2 ( n = 200, α = 0 .05, r = 0 .2). Trinity of test statistics distributed as a χ2. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 86 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −1 012
+> β2
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0        
+
+> −1 012
+> β2
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −1 012
+> β2
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0        
+
+> −1 012
+> β2
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(d) JIVE2 
+
+Figure C.25: Power curves for DGP2 ( n = 200, α = 0 .05, r = 0 .2). Trinity of test statistics distributed as a ¯ χ2 with cross-fit variance. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 87 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −1 012
+
+β2
+
+> Rejection rate
+
+Test     
+
+> D1,cf *
+> D2,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −1 012
+
+β2
+
+> Rejection rate
+
+Test      
+
+> D1,cf *
+> D2,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −1 012
+
+β2
+
+> Rejection rate
+
+Test    
+
+> D1,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −1 012
+
+β2
+
+> Rejection rate
+
+Test     
+
+> D1,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(d) JIVE2 
+
+Figure C.26: Power curves for DGP2 ( n = 200, α = 0 .05, r = 0 .2). Trinity of test statistics distributed as a χ2 with cross-fit variance. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 88 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −1 012
+> β2
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −1 012
+> β2
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −1 012
+> β2
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −1 012
+> β2
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(d) JIVE2 
+
+Figure C.27: Power curves for DGP2 ( n = 200, α = 0 .1, r = 0 .1). Trinity of test statistics distributed as a ¯ χ2. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corres-ponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 89 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0     
+
+> −1 012
+> β2
+> Rejection rate
+> Test
+> D1*
+> D2*
+> LM *
+> W1*
+> W2*
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −1 012
+> β2
+> Rejection rate
+> Test
+> D1*
+> D2*
+> LM *
+> W1*
+> W2*
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0     
+
+> −1 012
+> β2
+> Rejection rate  Test
+> D1*
+> LM *
+> W1*
+> W2*
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −1 012
+> β2
+> Rejection rate  Test
+> D1*
+> LM *
+> W1*
+> W2*
+
+(d) JIVE2 
+
+Figure C.28: Power curves for DGP2 ( n = 200, α = 0 .1, r = 0 .1). Trinity of test statistics distributed as a χ2. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corres-ponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 90 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −1 012
+> β2
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0        
+
+> −1 012
+> β2
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −1 012
+> β2
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0        
+
+> −1 012
+> β2
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(d) JIVE2 
+
+Figure C.29: Power curves for DGP2 ( n = 200, α = 0 .1, r = 0 .1). Trinity of test statistics distributed as a ¯ χ2 with cross-fit variance. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 91 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −1 012
+
+β2
+
+> Rejection rate
+
+Test     
+
+> D1,cf *
+> D2,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −1 012
+
+β2
+
+> Rejection rate
+
+Test      
+
+> D1,cf *
+> D2,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −1 012
+
+β2
+
+> Rejection rate
+
+Test    
+
+> D1,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −1 012
+
+β2
+
+> Rejection rate
+
+Test     
+
+> D1,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(d) JIVE2 
+
+Figure C.30: Power curves for DGP2 ( n = 200, α = 0 .1, r = 0 .1). Trinity of test statistics distributed as a χ2 with cross-fit variance. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 92 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −1 012
+> β2
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −1 012
+> β2
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −1 012
+> β2
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −1 012
+> β2
+> Rejection rate  Test
+> D
+> LM
+> W1
+> W2
+
+(d) JIVE2 
+
+Figure C.31: Power curves for DGP2 ( n = 200, α = 0 .1, r = 0 .2). Trinity of test statistics distributed as a ¯ χ2. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corres-ponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 93 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0     
+
+> −1 012
+> β2
+> Rejection rate
+> Test
+> D1*
+> D2*
+> LM *
+> W1*
+> W2*
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −1 012
+> β2
+> Rejection rate
+> Test
+> D1*
+> D2*
+> LM *
+> W1*
+> W2*
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0     
+
+> −1 012
+> β2
+> Rejection rate  Test
+> D1*
+> LM *
+> W1*
+> W2*
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0      
+
+> −1 012
+> β2
+> Rejection rate  Test
+> D1*
+> LM *
+> W1*
+> W2*
+
+(d) JIVE2 
+
+Figure C.32: Power curves for DGP2 ( n = 200, α = 0 .1, r = 0 .2). Trinity of test statistics distributed as a χ2. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corres-ponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 94 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −1 012
+> β2
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0        
+
+> −1 012
+> β2
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0       
+
+> −1 012
+> β2
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0        
+
+> −1 012
+> β2
+> Rejection rate  Test
+> Dcf
+> LM cf
+> W1,cf
+> W2,cf
+
+(d) JIVE2 
+
+Figure C.33: Power curves for DGP2 ( n = 200, α = 0 .1, r = 0 .2). Trinity of test statistics distributed as a ¯ χ2 with cross-fit variance. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 95 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −1 012
+
+β2
+
+> Rejection rate
+
+Test     
+
+> D1,cf *
+> D2,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(a) SJIVE 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −1 012
+
+β2
+
+> Rejection rate
+
+Test      
+
+> D1,cf *
+> D2,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(b) HLIM 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −1 012
+
+β2
+
+> Rejection rate
+
+Test    
+
+> D1,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(c) JIVE1 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −1 012
+
+β2
+
+> Rejection rate
+
+Test     
+
+> D1,cf *
+> LM cf *
+> W1,cf *
+> W2,cf *
+
+(d) JIVE2 
+
+Figure C.34: Power curves for DGP2 ( n = 200, α = 0 .1, r = 0 .2). Trinity of test statistics distributed as a χ2 with cross-fit variance. Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) plots statistics based on the SJIVE objective function; panel (b) plots statistics based on the HLIM objective function; panel (c) plots statistics based on the JIVE1 objective function; panel (d) plots statistics based on the JIVE2 objective function. 96 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −1 012
+> β2
+> Rejection rate  Test
+> AR cf
+> AR naive
+
+(a) JIVE1, r = 0 .10.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0     
+
+> −1 012
+> β2
+> Rejection rate  Test
+> AR cf
+> AR naive
+
+(b) JIVE2, r = 0 .10.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −1 012
+> β2
+> Rejection rate  Test
+> AR cf
+> AR naive
+
+(c) JIVE1, r = 0 .20.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0     
+
+> −1 012
+> β2
+> Rejection rate  Test
+> AR cf
+> AR naive
+
+(d) JIVE2, r = 0 .2
+
+Figure C.35: Power curves for DGP2 ( n = 200 and α = 0 .05). AR tests distributed as N (0 , 1). Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) and panel (c) plot AR statistics based on the JIVE1 objective function with weak and strong instruments, respectively; panel (b) and panel (d) plot AR statistics based on the JIVE2 objective function for weak and strong instruments, respectively. 97 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −1 012
+> β2
+> Rejection rate  Test
+> AR cf
+> AR naive
+
+(a) JIVE1, r = 0 .10.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0     
+
+> −1 012
+> β2
+> Rejection rate  Test
+> AR cf
+> AR naive
+
+(b) JIVE2, r = 0 .10.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0    
+
+> −1 012
+> β2
+> Rejection rate  Test
+> AR cf
+> AR naive
+
+(c) JIVE1, r = 0 .20.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0     
+
+> −1 012
+> β2
+> Rejection rate  Test
+> AR cf
+> AR naive
+
+(d) JIVE2, r = 0 .2
+
+Figure C.36: Power curves for DGP2 ( n = 200 and α = 0 .1). AR tests distributed as 
+
+N (0 , 1). Results based on 1000 repetitions. The horizontal dotted red line denotes the 5% nominal rejection level, while the vertical dotted black line corresponds to β = 1. Panel (a) and panel (c) plot AR statistics based on the JIVE1 objective function with weak and strong instruments, respectively; panel (b) and panel (d) plot AR statistics based on the JIVE2 objective function for weak and strong instruments, respectively. 98 References 
+
+Anderson, T. W. and Rubin, H. (1949). Estimators of the parameters of a single equation in a complete set of stochastic equations. The Annals of Mathematical Statistics ,21:570–582. Andrews, I. (2016). Conditional linear combination tests for weakly identified models. 
+
+Econometrica , 84(6):2155–2182. Andrews, I., Stock, J. H., and Sun, L. (2019). Weak instruments in instrumental variables regression: Theory and practice. Annual Review of Economics , 11(1):727–753. Angrist, J. D., Imbens, G. W., and Krueger, A. B. (1999). Jackknife instrumental vari-ables estimation. Journal of Applied Econometrics , 14(1):57–67. Ayyar, S., Matsushita, Y., and Otsu, T. (2025). Conditional likelihood ratio test with many weak instruments. Econometric Theory , pages 1–27. Bekker, P. and Kleibergen, F. (2003). Finite-sample instrumental variables inference using an asymptotically pivotal statistic. Econometric Theory , 19(5):744–753. Bekker, P. A. (1994). Alternative approximations to the distributions of instrumental variable estimators. Econometrica , 54:657–682. Bekker, P. A. and Crudu, F. (2015). Jackknife instrumental variable estimation with heteroskedasticity. The Journal of Econometrics , 185:332–342. Belloni, A., Chernozhukov, V., and Hansen, C. (2012). Sparse models and methods for optimal instruments with an application to eminent domain. Econometrica , 80(6):2369– 2429. Blomquist, S. and Dahlberg, M. (1999). Small sample properties of liml and jackknife iv estimators: Experiments with weak instruments. Journal of Applied Econometrics ,14(1):69–88. 99 Borusyak, K., Hull, P., and Jaravel, X. (2022). Quasi-experimental shift-share research designs. Review of Economic Studies , 89(1):181–213. Bound, J., Jaeger, D. A., and Baker, R. M. (1995). Problems with instrumental variables estimation when the correlation between the instruments and the endogenous explan-atory variable is weak. Journal of the American Statistical Association , 90:443–450. Burgess, S. and Thompson, S. G. (2015). Mendelian Randomization: Methods for Using Genetic Variants in Causal Estimation . Chapman and Hall/CRC, Boca Raton. Bycroft, C., Freeman, C., Petkova, D., Band, G., Elliott, L. T., Sharp, K., Motyer, A., Vukcevic, D., Delaneau, O., O’Connell, J., et al. (2018). The uk biobank resource with deep phenotyping and genomic data. Nature , 562(7726):203–209. Chao, J. C., Hausman, J. A., Newey, W. K., Swanson, N. R., and Woutersen, T. (2014). Testing overidentifying restrictions with many instruments and heteroskedasticity. The Journal of Econometrics , 178:15–21. Chao, J. C. and Swanson, N. R. (2005). Consistent estimation with a large number of weak instruments. Econometrica , 73(5):1673–1692. Chao, J. C., Swanson, N. R., Hausman, J. A., Newey, W. K., and Woutersen, T. (2012). Asymptotic distribution of JIVE in a heteroskedastic IV regression with many instru-ments. Econometric Theory , 28:42–86. Chao, J. C., Swanson, N. R., and Woutersen, T. (2023). Jackknife estimation of a cluster-sample iv regression model with many weak instruments. Journal of Econometrics ,235(2):1747–1769. Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W., and Robins, J. (2018). Double/debiased machine learning for treatment and structural parameters. Econometrics Journal , 21(1):C1–C68. Crudu, F., Mellace, G., and S´ andor, Z. (2021). Inference in instrumental variable models with heteroskedasticity and many instruments. Econometric Theory , 37(2):281–310. 100 Davey Smith, G. and Ebrahim, S. (2003). Mendelian randomization: can genetic epi-demiology contribute to understanding environmental determinants of disease? Inter-national Journal of Epidemiology , 32(1):1–22. Davidson, R. and MacKinnon, J. G. (2006). The case against jive. Journal of Applied Econometrics , 21(6):827–833. Davies, N. M., von Hinke Kessler Scholder, S., Farbmacher, H., Burgess, S., Windmeijer, F., and Davey Smith, G. (2015). The many weak instruments problem and mendelian randomization. Statistics in Medicine , 34(3):454–468. Dov` ı, M.-S., Kock, A. B., and Mavroeidis, S. (2024). A ridge-regularized jackknifed anderson-rubin test. Journal of Business & Economic Statistics , 42(3):1083–1094. Duchesne, P. and Lafaye De Micheaux, P. (2010). Computing the distribution of quad-ratic forms: Further comparisons between the liu-tang-zhang approximation and exact methods. Computational Statistics and Data Analysis , 54:858–862. Dufour, J.-M. (1997). Some impossibility theorems in econometrics with applications to structural and dynamic models. Econometrica: Journal of the Econometric Society ,pages 1365–1387. Dufour, J.-M. and Taamouti, M. (2005). Projection-based statistical inference in linear structural models with possibly weak instruments. Econometrica , 73(4):1351–1365. Engle, R. F. (1984). Wald, likelihood ratio, and lagrange multiplier tests in econometrics. 
+
+Handbook of econometrics , 2:775–826. Farebrother, R. (1984). Algorithm as 204: the distribution of a positive linear combination of χ 2 random variables. Applied Statistics , pages 332–339. Frandsen, B., Leslie, E., and McIntyre, S. (2025). Cluster jackknife instrumental variables estimation. Review of Economics and Statistics , pages 1–19. Goldsmith-Pinkham, P., Sorkin, I., and Swift, H. (2020). Bartik instruments: What, when, why, and how. American Economic Review , 110(8):2586–2624. 101 Hansen, B. (2021). Criterion-based inference without the information equality: The weighted chi-square distribution. Working paper .Hansen, C., Hausman, J., and Newey, W. (2008). Estimation with many instrumental variables. Journal of Business & Economic Statistics , 26(4):398–422. Hansen, C. and Kozbur, D. (2014). Instrumental variables estimation with many weak instruments using regularized jive. Journal of Econometrics , 182(2):290–308. Hausman, J. A., Newey, W. K., Woutersen, T., Chao, J. C., and Swanson, N. R. (2012). Instrumental variable estimation with heteroskedasticity and many instru-ments. Quantitative Economics , 3:211–255. Horn, R. A. and Johnson, C. R. (2012). Matrix analysis . Cambridge university press. Keane, M. and Neal, T. (2023). Instrument strength in iv estimation and inference: A guide to theory and practice. Journal of Econometrics , 235(2):1625–1653. Kleibergen, F. (2002). Pivotal statistics for testing structural parameters in instrumental variables regression. Econometrica , 70:1781–1803. Lim, D., Wang, W., and Zhang, Y. (2024). A conditional linear combination test with many weak instruments. Journal of Econometrics , 238(2):105602. Matsushita, Y. and Otsu, T. (2024). A jackknife lagrange multiplier test with many weak instruments. Econometric Theory , 40(2):447–470. Mikusheva, A. and Sølvsten, M. (2025). Linear regression with weak exogeneity. Quant-itative Economics , 16(2):367–403. Mikusheva, A. and Sun, L. (2022). Inference with many weak instruments. The Review of Economic Studies , 89(5):2663–2686. Mikusheva, A. and Sun, L. (2024). Weak identification with many instruments. The Econometrics Journal , 27(2):C1–C28. 102 Moreira, M. J. (2003). A conditional likelihood ratio test for structural models. Econo-metrica , 71:1027–1048. Nelson, C. R. and Startz, R. (1990). The distribution of the instrumental variables estimator and its t-ratio when the instrument is a poor one. The Journal of Business ,63(1):S125–S140. Nevo, A. and Rosen, A. (2008). Identification with imperfect instruments. Technical report, cemmap working paper. Newey, W. K. and McFadden, D. (1994). Large sample estimation and hypothesis testing. 
+
+Handbook of econometrics , 4:2111–2245. Newey, W. K. and West, K. D. (1987). Hypothesis testing with efficient method of moments estimation. International Economic Review , pages 777–787. Newey, W. K. and Windmeijer, F. (2009). Generalized method of moments with many weak moment conditions. Econometrica , 77(3):687–719. Patel, A., Lane, J., and Burgess, S. (2024). Weak instruments in multivariable mendelian randomization: Methods and practice. arXiv preprint arXiv:2408.09868 .Phillips, G. D. A. and Hale, C. (1977). The bias of instrumental variable estimators of simultaneous equation systems. International Economic Review , pages 219–228. Sanderson, E., Richardson, T. G., Morris, T. T., Tilling, K., and Davey Smith, G. (2022). Estimation of causal effects of a time-varying exposure at multiple time points through multivariable mendelian randomization. PLOS Genetics , 18(7):e1010290. Staiger, D. and Stock, J. H. (1997). Instrumental variables regression with weak instru-ments. Econometrica , 65:557–586. Sudlow, C., Gallacher, J., Allen, N., Beral, V., Burton, P., Danesh, J., Downey, P., Elliott, P., Green, J., Landray, M., et al. (2015). Uk biobank: an open access resource for identifying the causes of a wide range of complex diseases of middle and old age. 
+
+PLoS Medicine , 12(3):e1001779. 103 Topiwala, A., Ebmeier, K. P., Maullin-Sapey, T., and Nichols, T. E. (2022). Alcohol consumption and mri markers of brain structure and function: Cohort study of 25,378 uk biobank participants. NeuroImage: Clinical , 35:103066. Vuong, Q. H. (1989). Likelihood ratio tests for model selection and non-nested hypotheses. 
+
+Econometrica: Journal of the Econometric Society , pages 307–333. Wang, J. and Zivot, E. (1998). Inference on a structural parameter in instrumental variables regression with weak instruments. Econometrica , 66:1389–1404. Yap, L. (2023). Valid wald inference with many weak instruments. arXiv preprint arXiv:2311.15932 .104
