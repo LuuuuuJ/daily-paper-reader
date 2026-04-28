@@ -1,0 +1,2406 @@
+Title: Difference-in-differences with a mediator
+
+URL Source: https://arxiv.org/pdf/2604.24049v1
+
+Published Time: Tue, 28 Apr 2026 01:28:53 GMT
+
+Number of Pages: 61
+
+Markdown Content:
+# Difference-in-Differences with a Mediator 
+
+## Yuhao Deng 1, Haoyu Wei 2 and Zhongzhe Ouyang 3∗
+
+1 Fred Hutchinson Cancer Center 2 University of California (San Diego) 3 Guangzhou University 
+
+Abstract 
+
+Causal mediation analysis is a powerful tool for disentangling the total effect of a treatment into its direct effect on the outcome and its indirect effect mediated through an intermediate variable. However, in observational studies, confounding be-tween treatment and potential outcomes typically renders the total and natural effects non-identifiable. In this work, we advance mediation analysis within the difference-in-differences framework. Under a mediator-adjusted parallel trends assumption and additional conditions, we demonstrate that natural indirect, direct, and total effects are identifiable in the treated group. We further derive efficient influence functions for these estimands, enabling the construction of multiply robust and nonparametrically efficient estimators. We establish the asymptotic properties of these estimators. Ap-plying our methodology to data from the Job Corps Study, we find that job training significantly increases both short-term and long-term earnings, after controlling for the indirect effect through the proportion of weeks employed. Keywords: Mediation analysis; natural effect; controlled effect; efficient influence function; multiple robustness; Job Corps 
+
+1
+
+> arXiv:2604.24049v1 [econ.EM] 27 Apr 2026
+
+# 1 Introduction 
+
+In the economic and health sciences, studying the mechanisms by which treatment affects outcomes has been both interesting and challenging. The treatment can exert its effects either directly on the outcome or indirectly through a mediator. Mediation analysis was initially proposed within linear models (Baron and Kenny, 1986). Later, mediation analysis was formalized using potential outcomes, in which the mediator is a potential outcome of the treatment and the primary outcome is a potential outcome of the treatment and the mediator (Rubin, 2004; Goetgeluk et al., 2008). By controlling the mediator at the natural level, the total effect is decomposed into a natural indirect and a natural direct effect. Identifiability assumptions have been proposed to identify the natural indirect and direct effects (Imai et al., 2010,?). In general, mediation analysis methods require that the treatment assignment, mediator, and primary outcome be unconfounded, which is a stringent condition in observational studies. As a quasi-experimental design, difference-in-differences (DiD) was proposed to estimate treatment effects when the treatment is confounded with the outcome using panel data (Heckman et al., 1997; Abadie, 2005). By leveraging pre-treatment outcomes, the change in potential outcomes from pre- to post-treatment is assumed to follow a common time trend across treatment groups. The pre-treatment outcome serves as a negative control variable for the unmeasured confounding (Zivich et al., 2023). Although the average treatment effect on the entire population is not identifiable due to unmeasured confounding, the mean potential outcome under control can be imputed for the treated units. Under appropriate assumptions, the average treatment effect in the treated group is identifiable. Doubly robust and locally efficient estimators have been proposed to estimate this treatment effect by deriving the efficient influence function (Chang, 2020; Sant’Anna and Zhao, 2020; Callaway and Sant’Anna, 2021; Deng et al., 2025). Conducting mediation analysis in a difference-in-differences design can help address non-randomized treatment assignment. Existing work has followed several distinct identification 2strategies. Deuchert et al. (2019) makes a decomposition of the total effect into natural indirect and direct effects in experiments with non-compliance, assuming a monotonic ef-fect of treatment on the binary mediator and imposing a parallel trends assumption within principal strata. Huber et al. (2022) propose an alternative identification strategy based on a changes-in-changes framework that avoids selection-on-observables assumptions and by-passes reliance on instrumental variables, relying instead on distributional restrictions for binary mediators and continuous outcomes. In contrast, Hsia et al. (2025) extended the causal mediation analysis to panel data using linear regression models, in which case the natural indirect effect can be inferred from the product of coefficients. However, the linear model imposes strong restrictions and is not flexible enough to accommodate interactions. Complementary to these works on natural effects, Blackwell et al. (2025) considered efficient estimation of controlled indirect and direct effects when the treatment is randomized with a discrete mediator. They relied on the assumption of no modified direct effect for iden-tification. Another limitation is that their estimation cannot be applied if the mediator is continuous. The controlled effect does not yield a heuristic decomposition of the total effect, especially when the mediator is multi-level or even continuous. Huber and Oberh¨ ansli (2026) identified the treatment effect conditional on an observed mediator in the treated group, and defined natural effects by integrating over the distribution of the mediator. However, their estimand can only be interpreted as a conditional treatment effect rather than a controlled effect that intervenes in the mediator if the mediator is not randomized. Motivated by the Job Corps Study, we aim to study the effect of the job training pro-gram on earnings (Schochet, 2001). Although the assignment was randomized, the actual treatment was not, because participants could decide whether to join training programs re-gardless of their treatment assignment. Some previous work used instrumental variables or principal stratification to account for non-compliance; other work constructed bounds for the treatment effect (Schochet et al., 2008; Lee, 2009; Zhang et al., 2009; Flores-Lagunes et al., 2010; Flores et al., 2012; Blanco et al., 2013; Chen and Flores, 2015). These analyses 3indicated that job training has a significant long-term effect but an insignificant short-term effect on earnings. This is possibly because training takes up a large proportion of time, so the wage is lower than that of full-time employees. Therefore, it is essential to quantify the treatment effect mediated by work time while accounting for non-randomized treatment. In this paper, we consider the identification and estimation of mediated effects in two-period difference-in-differences. Unlike the existing mediation literature in a difference-in-differences design, our strategy is built within a standard DiD framework and allows for unmeasured confounding between treatment and outcomes. Under certain assumptions, we show that the natural direct and indirect effects are identifiable in the treated group. These identifiability assumptions essentially require that there be no unmeasured confounding be-tween the mediator and the treatment, and between the mediator and the change in potential outcomes. The presence of unmeasured confounding between treatment and outcomes is al-lowed. These assumptions are reasonable in the context of the Job Corps Study. Using semiparametric theory, we derive efficient influence functions for the natural and total ef-fects. We then construct estimators that are multiply robust and locally nonparametrically efficient. The estimators are consistent if either two of the propensity score, mediator dis-tribution, and the outcome regression models are correctly specified. We further consider estimation and inference for the controlled effect. To address the challenge of pathwise differ-entiability failure when the mediator is continuous, we use kernel smoothing to approximate the efficient influence functions. The estimator for controlled effects has a lower convergence rate but maintains multiple robustness. By analyzing data from the Job Corps Study, we find that participation in the training program significantly increases short-term earnings, after controlling for the proportion of weeks employed. The remainder of this paper is organized as follows. Section 2 presents the mediation DiD framework, defines the natural indirect and direct effects, and establishes their identifi-ability. Section 3 develops semiparametric estimators based on efficient influence functions. A practical estimation strategy is provided by adopting generalized linear models as work-4ing models. Section 4 extends the estimation and inference to controlled effects. Section 5 investigates the performance of the proposed estimators through simulation studies. Section 6 analyzes data from the Job Corps Study. Section 7 concludes with a discussion. 
+
+# 2 Framework 
+
+## 2.1 Estimands: natural indirect and direct effects 
+
+In a two-group and two-period setting, let G ∈ { 0, 1} be the treatment group assignment and t ∈ { 0, 1} be the period indicator. Let Dt be the treatment received in period t. In the pre-treatment period, all units are unexposed to treatment, D0 = 0; in the post-treatment period, the units in the treated group received active treatment, D1 = G. Therefore, Dt =
+
+Gt ; that is, Dt = 1 only if G = 1 and t = 1. Let Y0(g) denote the potential outcome in the pre-treatment period under treatment assignment g. Suppose there is a mediator that may mediate the treatment effect on the outcome. Let M (g) denote the potential mediator under treatment assignment g. The mediator can be either discrete or continuous. Let Y1(g, m ) denote the potential outcome in the post-treatment period under treatment assignment g given the mediator m. When the mediator is at the natural value M (g) under treatment assignment g, the potential outcome in the post-treatment period is Y1(g, M (g)), which we denote as Y1(g). Sometimes the mediator can be measured in the pre-treatment period, denoted as M0(g). This pre-treatment mediator should not be affected by treatment assignment, as the unit has not been exposed to the treatment. Therefore, it is reasonable to assume no anticipation for the mediator M0(0) = M0(1) and simply treat M0(g) as a baseline covariate. A key question in mediation analysis is the extent to which the treatment effect is medi-ated by the mediator. In our setting, treatment may not be randomized, so the distribution of unmeasured features may differ across treatment groups. Consistent with the difference-in-differences literature, we adopt the treated group G = 1 as the target population to 5minimize the identification requirements. The total effect is 
+
+τ = E{Y1(1) − Y1(0) | G = 1 }
+
+= E{Y1(1 , M (1)) − Y1(0 , M (0)) | G = 1 }.
+
+By switching the treatment associated with the mediator, we define the natural indirect effect (NIE) as 
+
+τIE = E{Y1(0 , M (1)) − Y1(0 , M (0)) | G = 1 }.
+
+By switching the treatment associated with the outcome, we define the natural direct effect (NDE) as 
+
+τDE = E{Y1(1 , M (1)) − Y1(0 , M (1)) | G = 1 }.
+
+The natural indirect effect measures the effect delivered through the mediator, and the natural direct effect measures the effect delivered without being mediated by the mediator. Accordingly, the total effect can be decomposed into the natural indirect and direct effects. 
+
+## 2.2 Identifiability 
+
+Let X be baseline covariates measured prior to treatment, which may include pre-treatment mediator. Let Y0 and Y1 be the observed outcomes in the pre-treatment and post-treatment periods. The observed data consist of n independent and identically distributed copies of 
+
+O = ( G, X, Y 0, M, Y 1). To identify the natural indirect, direct, and total effects for the treated group, we adopt a difference-in-differences framework and impose the following assumptions. 
+
+Assumption 1 (No anticipation) . Y0(1) = Y0(0) .
+
+Assumption 2 (Parallel trends) . E{Y1(0 , m )−Y0(0) | M (0) = m, G = 1 , X } = E{Y1(0 , m )−
+
+Y0(0) | M (0) = m, G = 0 , X }.
+
+Assumption 1 rules out anticipation effects, requiring that future treatment assignment does not affect the potential outcome in the pre-treatment period. In other words, the po-6tential outcome is a function of actual treatment, Y0(g) = Y0(d) and Y1(g, m ) = Y1(d, m ). Assumption 2 extends the standard parallel trends assumption in difference-in-differences to accommodate a mediator, requiring that, conditional on baseline covariates and the ef-fect on the mediator, the time trend in untreated potential outcomes is identical across groups. Although treatment assignment may be confounded with potential outcomes, tak-ing differences over time removes time-invariant unobserved confounding. Compared with other literature on mediational difference-in-differences (Blackwell et al., 2025; Huber and Oberh¨ ansli, 2026), we do not condition on the observed post-treatment variable M in the parallel trends assumption, thereby avoiding potential collider bias. 
+
+Assumption 3 (Sequential ignorability) . G ⊥ M (g) | X, E{Y1(0 , m ) − Y0(0) | M (1) , G =1, X } = E{Y1(0 , m ) − Y0(0) | M (0) = m, G = 1 , X }.
+
+Sequential ignorability is a common assumption in causal mediation analysis, excluding pairwise unmeasured confounding between the treatment, mediator, and outcome. The first part of sequential ignorability requires that there be no unmeasured confounding between treatment assignment and the mediator. The second part of sequential ignorability requires that there be no unmeasured confounding between the mediator M (1) and the change in potential outcomes, so that the change in potential outcomes is independent of the observed mediator in the treated group. In other words, the observed mediator should not modify the underlying parallel trends. This assumption is weaker than the classical sequential ignorability assumption in mediation analysis because it does not require the mediator M (1) to be randomized, i.e., conditionally independent of Y1(1 , m ), in the treated group. To provide intuition for these identification assumptions, we consider the following struc-tural causal model (SCM): SCM 1: G = g(X, U ) + ϵG,Y0 = f0(X) + U + ϵ0,M = m(X, D 1) + ϵM ,
+
+7G
+
+## Y0 Y1
+
+## M
+
+## U
+
+## G | g
+
+## Y0(0)  Y1(g,m)
+
+## M(g) | m
+
+## UFigure 1: Directed acyclic graph (DAG) and single-world intervention graph (SWIG) of the mediator and primary outcomes in SCM 1. The intervention in G introduces an exogenous variable g, and the intervention in M (g) introduces an exogenous variable m on the SWIG. Baseline covariates are omitted for simplicity. 
+
+Y1 = f1(X, D 1, M ) + U + ϵ1,
+
+where ϵG, ϵ0, ϵM , and ϵ1 are external random errors. The unmeasured confounder U influences 
+
+G, Y0, and Y1, but not M , implying the first part of sequential ignorability. The change in potential outcomes under control Y1(0 , m ) − Y0(0) = f1(X, 0, m ) − f0(X) + ϵ1 − ϵ0 does not depend on G (as a function of U and ϵG) and M (0) (as a function of ϵM ) conditional on X,implying the parallel trends. The change in potential outcomes under control and mediator 
+
+m, Y1(0 , m ) − Y0(0) = f1(X, 0, m ) − f0(X) + ϵ1 − ϵ0 does not depend on M (g) (as a function of ϵM ) conditional on X and G, implying the second part of sequential ignorability. Figure 1 shows the directed acyclic graph (DAG) and single-world intervention graph (SWIG) of the mediator and primary outcomes. Due to the unmeasured confounding U between G and Y0,the distribution of Y0 is different between groups. However, since U does not confound M
+
+and ( Y0, Y 1), the change in potential outcomes Y1(g, m ) − Y0(0) is independent of M (g) and the cross-world M (1 − g). The mediator opens a “front door” between G and Y1, unaffected by unmeasured confounding (Pearl, 1995). Another structural causal model that satisfies these assumptions is: SCM 2: G = g(X) + ϵG,
+
+8Y0 = f0(X) + U + ϵ0,M = m(X, D 1, U ) + ϵM ,Y1 = f1(X, D 1, M ) + U + ϵ1.
+
+The treatment assignment G is randomized, but the mediator is influenced by the unmea-sured confounder U . The change in potential outcomes under control, Y1(0 , m ) − Y0(0) = 
+
+f1(X, 0, m ) − f0(X) + ϵ1 − ϵ0, does not depend on G (as a function of ϵG) and M (0) (as a function of U and ϵM ) conditional on X, implying the parallel trends. The potential media-tor M (g) = m(X, g, U ) + ϵM is independent of G conditional on X, implying the first part of sequential ignorability. The change in potential outcomes under control and mediator m,
+
+Y1(0 , m ) − Y0(0) = f1(X, 0, m ) − f0(X) + ϵ1 − ϵ0 does not depend on M (g) (as a function of 
+
+U and ϵM ) conditional on X and G, implying the second part of sequential ignorability. 
+
+Assumption 4 (Positivity) . P (G = 1) > c , P (G = 0 | X) > c , P (G = 0 | M, X ) > c , and 
+
+f (M | X)/f (M | G = 0 , X ) > c for some constant c > 0.
+
+Assumption 5 (Consistency) . M (G) = M , Y0(G) = Y0 and Y1(G, M (G)) = Y1.
+
+Positivity ensures that there are individuals in both groups. The distribution of covariates and mediators should overlap between groups. Consistency links the potential outcomes and observed data. To facilitate identification, we define δ(g, m, x ) = E(Y1 − Y0 | G = g, M = m, X =
+
+x), which characterizes the conditional mean of the change in observed outcomes between periods. The identification problem then reduces to expressing τIE , τDE , and τ in terms of the observable function δ(g, m, x ). The following theorem formalizes this representation and provides an explicit identification of the natural indirect, direct, and total effects. 
+
+Theorem 1. Under Assumptions 1–5, the natural indirect, direct, and total effects are iden-
+
+9tifiable, 
+
+τIE = τ (0 , 1) − τ (0 , 0) , τDE = τ (1 , 1) − τ (0 , 1) , τ = τ (1 , 1) − τ (0 , 0) ,
+
+where τ (g, g ∗) = E[E{δ(g, M, X ) | G = g∗, X } | G = 1] .
+
+There are two expectations for δ(g, M, X ), a function of random variables M and X, in the expression of τ (g, g ∗). The argument g corresponds to the level of treatment, and the argument g∗ corresponds to the level of mediator. The inner expectation integrates M out, transforming the mediator M from the distribution in the group g to the group g∗, giving a function of X. The outer expectation integrates X out, transforming the covariates X
+
+from the distribution in group g∗ to the treated group G = 1. Among these quantities, 
+
+τ (1 , 1) is directly identifiable from the treated group, since τ (1 , 1) = E{δ(1 , M, X ) | G = 1 },whereas τ (0 , 0) and τ (0 , 1) require transporting both mediator and covariate distributions across groups, posing additional challenges for estimation. To represent this shift, we define 
+
+ν(g∗, X ) = E{δ(0 , M, X ) | G = g∗, X }.
+
+# 3 Estimation 
+
+## 3.1 Efficient influence functions 
+
+Motivated by the identifiability result, we observe that τ (g, g ∗) can be estimated by impu-tation. Specifically, we first regress ∆ Y := Y1 − Y0 on ( G, M, X ) and generate predicted pseudo-outcomes bδ(0 , M, X ) based on the regression for each unit given observed ( M, X ). Suppose that we estimate the conditional density of the mediator given G = g∗ and X = x by 
+
+bf (m | g∗, x ). Next, we estimate E{δ(0 , M, X ) | G = g∗, X } by bν(g∗, X ) = R bδ(0 , m, X ) bf (m |
+
+G = g∗, X )dm . Finally, the empirical average of bν(g∗, X ) in the treated group is an estimate for τ (0 , g ∗). However, the imputation-based estimator is prone to model misspecification. If either one of the models δ(0 , m, x ) and f (m | 0, x ) is misspecified, the imputation-based 10 estimator is not consistent. In addition, the imputation-based estimator is inefficient because it does not fully utilize all the information available in the observed data. To improve robustness and efficiency, we derive the efficient influence function (EIF) of 
+
+τ (g, g ∗), where ( g, g ∗) ∈ { (1 , 1) , (0 , 0) , (0 , 1) }. To achieve this, we need to find the tangent space, the collection of all infinitesimal directions in which the data-generating distribution can be perturbed while remaining inside the statistical model. The tangent space of the model space is shown in Lemma 1 of the Supplementary Material. For the estimand τ (g, g ∗), there exists a unique regular and asymptotically linear (RAL) estimator whose influence function is in the tangent space (Bickel et al., 1993). The influence function in the tangent space is called the efficient influence function (EIF). Deriving the efficient influence function enables the construction of estimators that are both robust to nuisance model misspecifica-tion and asymptotically efficient. Let π(x) = P (G = 1 | X = x) be the propensity score, 
+
+f (m | g, x ) be the conditional density (or probability) of the mediator, and δ(g, m, x ) be the conditional mean of the change in observed outcomes. The following theorem provides the closed-form expressions of the efficient influence function for τ (g, g ∗). 
+
+Theorem 2. Suppose Assumptions 1–5 hold. The efficient influence function of τ (1 , 1) is 
+
+φ(1 , 1) = GP (G = 1) {∆Y − τ (1 , 1) }.
+
+The efficient influence function of τ (0 , 0) is 
+
+φ(0 , 0) = 1 − GP (G = 1) 
+
+π(X)1 − π(X){∆Y − E(δ(0 , M, X ) | G = 0 , X )}
+
++ GP (G = 1) {E(δ(0 , M, X ) | G = 0 , X ) − τ (0 , 0) }.
+
+The efficient influence function of τ (0 , 1) is 
+
+φ(0 , 1) = 1 − GP (G = 1) 
+
+π(X)1 − π(X)
+
+f (M | G = 1 , X )
+
+f (M | G = 0 , X ){∆Y − δ(0 , M, X )}
+
+11 + GP (G = 1) {δ(0 , M, X ) − τ (0 , 1) }.
+
+The efficient influence functions of τIE , τDE , and τ are φIE = φ(0 , 1) − φ(0 , 0) , φDE =
+
+φ(1 , 1) − φ(0 , 1) , and φ = φ(1 , 1) − φ(0 , 0) , respectively. 
+
+The efficient influence function provides a lower bound for the variance of regular and asymptotically linear estimators. To show φ(g, g ∗) is the EIF of τ (g, g ∗), it suffices to show that φ(g, g ∗) is in the tangent space ˙T and φ(g, g ∗) is a valid influence function for τ (g, g ∗). The proof is given in the Supplementary Material. The efficient influence functions involve three models: propensity score, conditional den-sity of mediator, and outcome change model. In practice, we evaluate the influence func-tions at estimated nuisance functions bπ(x), bf (m | g, x ), and bδ(g, m, x ). However, mod-eling the conditional density is computationally infeasible because it has too much free-dom. A poor estimation of f (m | g, x ) renders the fitting of φ(0 , 0) and φ(0 , 1) inaccurate. First, the imputation-based method estimates ν(0 , X ) = E{δ(0 , M, X ) | G = 0 , X } by 
+
+bν(0 , X ) = R bδ(0 , m, X ) bf (m | 0, X )dm . Second, f (m | g, x ) directly appears in φ(0 , 1). To avoid the curse of dimensionality in estimating f (m | g, x ), we note that by Bayes’ formula, 
+
+π(X)1 − π(X)
+
+f (M | G = 1 , X )
+
+f (M | G = 0 , X ) = P (G = 1 | M, X )
+
+P (G = 0 | M, X ), (1) so we can summarize the ratio of propensity scores and conditional mediator densities into a pseudo-propensity score ϖ(m, x ) = P (G = 1 | M = m, X = x). The response variable 
+
+G is binary, so modeling ϖ(m, x ) is much easier than modeling the conditional density. For example, it can be fitted by logistic regression, denoted by bϖ(m, x ). The pseudo-propensity score is well defined regardless of whether M is continuous or discrete. Even if M follows a mixture distribution, Equation (1) is valid provided that the Radon-Nikodym derivative of the conditional distribution function of M in G = 1 with respect to G = 0 exists. In addition, ν(0 , x ) can be estimated by imputing m by the estimated conditional mean 12 E(M | G = 0 , X = x) in the regression model δ(0 , m, x ), respecting the dependence structure of Y on both M and X without involving f (m | 0, x ). In this way, we denote the estimate of ν(0 , x ) by bν(0 , x ). 
+
+## 3.2 Estimators based on efficient influence functions 
+
+For any measurable function of data q(o), let P(q) = R q(o)f (o)do be the measure with respect to the true data-generating mechanism and Pn(q) = n−1 Pni=1 q(Oi) be the empirical measure. We denote the L1-norm of q as ∥q∥L1 = P(|q|) and the L2-norm as ∥q∥L2 =
+
+{P(q2)}1/2. In practice, τ (g, g ∗) is estimated by solving the empirical estimating equation 
+
+Pnφ(g, g ∗) = 0, which leads to 
+
+bτ (1 , 1) = 1
+
+Pn(G)Pn(G∆Y ),
+
+bτ (0 , 0) = 1
+
+Pn(G)Pn
+
+
+
+(1 − G) bπ(X)1 − bπ(X){∆Y − bν(0 , X )} + Gbν(0 , X )
+
+
+
+,
+
+bτ (0 , 1) = 1
+
+Pn(G)Pn
+
+
+
+(1 − G) bϖ(M, X )1 − bϖ(M, X ){∆Y − bδ(0 , M, X )} + Gbδ(0 , M, X )
+
+
+
+.
+
+The natural indirect, direct, and total effects are then estimated as 
+
+bτIE = bτ (0 , 1) − bτ (0 , 0) , bτDE = bτ (1 , 1) − bτ (0 , 1) , bτ = bτ (1 , 1) − bτ (0 , 0) .
+
+Next, we establish a general consistency result for the proposed estimators. 
+
+Theorem 3 (Multiple robustness) . Suppose the working models {π(x), ϖ (m, x ), δ (0 , m, x ), ν (0 , x )}
+
+are Glivenko–Cantelli. Then bτ (1 , 1) is consistent for τ (1 , 1) , bτ (0 , 0) is consistent for τ (0 , 0) if either bπ(X) or bν(0 , X ) is L1-consistent, and bτ (0 , 1) is consistent for τ (0 , 1) if either ϖ(m, x )
+
+or δ(0 , m, x ) is L1-consistent. 
+
+The proposed estimator relies on four models: π(x), ϖ(m, x ), δ(0 , m, x ), and ν(0 , x ). The Glivenko–Cantelli condition requires that the working models are not too complex (van der 13 Vaart and Wellner, 2023). Common models satisfy this condition, including (generalized) linear models and kernel regression models. Note that ν(0 , x ) = R 
+
+> m
+
+δ(0 , m, x )f (m | 0, x )dm is a convex hull of δ(0 , m, x ) with weight f (m | 0, x ) and ϖ(m, x ) is a function of π(x) and f (m |
+
+g, x ), so at least three working models should be specified: π(x), f (m | g, x ), and δ(0 , m, x ). With these three working models, this theorem indicates multiple robustness: if either two of π(x), f (m | g, x ), and δ(0 , m, x ) are correctly specified, then τIE , τDE , and τ are all consistent in probability. In practice, ϖ(m, x ) and ν(0 , x ) can be modeled separately. In this case, if either {π(x), δ (0 , m, x )}, {π(x), ϖ (m, x )}, {ν(0 , x ), δ (0 , m, x )}, or {ϖ(m, x ), ν (0 , x )}
+
+are correctly specified, then τIE , τDE , and τ are all consistent in probability. 
+
+Theorem 4 (Nonparametric efficiency) . Suppose the working models {π(x), ϖ (m, x ), δ (0 , m, x ), ν (0 , x )}
+
+are Donsker. Suppose that the fitted models bπ(x), bϖ(m, x ), bδ(0 , m, x ), and bν(0 , x ) are L2-consistent and converge at a rate of op(n−1/4). Then √n{bτ (g, g ∗)−τ (g, g ∗)} d
+
+−→ N {0, Eφ (g, g ∗)2},and the asymptotic variance attains the nonparametric efficiency bound. As a result, √n(bτIE −
+
+τIE ) d
+
+−→ N (0 , Eφ 2 
+
+> IE
+
+), √n(bτDE − τDE ) d
+
+−→ N (0 , Eφ 2 
+
+> DE
+
+), √n(bτ − τ ) d
+
+−→ N (0 , Eφ 2), and they are all nonparameterically efficient. 
+
+The Donsker condition requires that the working models are not too complex. Standard parametric and semiparametric models are Donsker. The fitted models are allowed to con-verge at rates lower than the parametric rate (for example, when using kernel smoothing as the working model). Nevertheless, the estimators for τ (g, g ∗) are regular and asymptotically linear. The influence function in the linear expansion of bτ (g, g ∗) is exactly ϕ(g, g ∗), the EIF of τ (g, g ∗). Since influence functions are additive, the influence functions of bτIE , bτDE , and 
+
+bτ are φIE , φDE , and φ, respectively. Complex machine learning methods such as random forests and neural networks are not Donsker in general. To remove the Donsker condition, cross-fitting can be applied, where a training set is used to fit the nonparametric model, for example, using random forests or neural networks, and an inference set is used to estimate the treatment effects based on fitted influence functions (Chernozhukov et al., 2018). Afinal estimator is obtained by averaging the estimates after switching the training set and 14 inference set. Cross-fitting allows more flexible models; however, when the sample size is small, it may lead to greater finite-sample variation. Therefore, we illustrate our method using simple models satisfying the Donsker condition throughout this paper. Under the conditions of multiple robustness, if part of the working models is misspecified, say bπ(x) → π∗(x), ϖ(m, x ) → ϖ∗(m, x ), bδ(0 , m, x ) → δ∗(0 , m, x ), and bν(0 , x ) → ν∗(x) in the L2-norm, then the influence function would consist of two parts: the EIF with the true models replaced with their limiting models, and a remainder term sue to the uncertainty of the estimated models. The asymptotic variance is not necessarily the smallest among regular and asymptotically linear estimators. In Supplementary Material A, we outline practical estimation and inference procedures using generalized linear models. The standard errors of these estimators can be calculated from the variances of the fitted influence functions. Let bφ(g, g ∗) be the fitted efficient in-fluence function plugging in fitted models and bτ (g, g ∗). Then the standard errors are given by 
+
+s.e. (bτIE ) = 
+
+ 1
+
+nPn{ bφ(0 , 1) − bφ(0 , 0) }2
+
+1/2
+
+, s.e. (bτDE ) = 
+
+ 1
+
+nPn{ bφ(1 , 1) − bφ(0 , 1) }2
+
+1/2
+
+,s.e. (bτ ) = 
+
+ 1
+
+nPn{ bφ(1 , 1) − bφ(0 , 0) }2
+
+1/2
+
+.
+
+The P -values are calculated based on the normal approximation. 
+
+# 4 Extension to controlled effects 
+
+Studying the marginal treatment effect calls for controlling the mediator at a specific value. We define the controlled direct effect (CDE) 
+
+τDE (m) = E{Y1(1 , m ) − Y1(0 , m ) | G = 1 }.
+
+15 The controlled indirect effect reflects the effect of switching treatment when intervening in the mediator at m. If we define ¯ τ (g, m ) = E{Y1(g, m ) − Y0(0) | G = 1 }, then τDE (m) = ¯τ (1 , m ) − ¯τ (0 , m ). Under the identification assumptions, ¯ τ (g, m ) is identifiable and has the efficient influence function in the following theorem. Let δ(·) be the Dirac delta function. 
+
+Theorem 5. Under the above conditions, ¯τ (g, m ) is identified as 
+
+¯τ (g, m ) = E{δ(g, m, X ) | G = 1 }.
+
+Furthermore, the standard Gateaux derivative based on a point mass contamination path of 
+
+¯τ (g, m ) is 
+
+¯φ(g, m ) = I(G = g)δ(M − m)
+
+P (G = 1) 
+
+P (G = 1 | X)
+
+f (G = g, M = m | X)
+
+∆Y − δ(g, m, X )
+
++ GP (G = 1) 
+
+δ(g, m, X ) − ¯τ (g, m ) .
+
+Specifically, when M is discrete, the above Gateaux derivatives will be the efficient influence functions. 
+
+When the mediator is discrete, the corresponding estimator can be constructed by replac-ing the unknown nuisance functions with their estimates, which we denote as bφ(0 , m ) and 
+
+bφ(1 , m ). However, if the mediator is continuous, there will be no efficient influence function as in a Dirac mass at M = m to estimate the conditional mean for the pathwise derivative, which does not belong to L2(P0). In such case, we use kernel smoothing to replace the Dirac mass at m. Let K(x) be a kernel function and Kh(x) = h−1K(x/h ) be a kernel with the bandwidth h. We come up with the smoothing efficient influence functions as ¯φh(g, m ) = I(G = g)Kh(M − m)
+
+P (G = 1) 
+
+P (G = 1 | X)
+
+f (G = g, M = m | X)
+
+∆Y − δ(g, m, X )
+
++ GP (G = 1) 
+
+δ(g, m, X ) − ¯τ (g, m ) .
+
+16 The corresponding estimated smoothing efficient influence functions are denoted as bφh(g, m ). Define the corresponding estimator as 
+
+bτ (g, m ) = Pn
+
+Gbδ(g, m, X )
+
+Pn(G) + Pn[ bφ(g, m )] or bτh(g, m ) = Pn
+
+Gbδ(g, m, X )
+
+Pn(G) + Pn[ bφh(g, m )] (2) solving the estimation equation Pn bφ(g, m ) = 0 or Pn bφh(g, m ) = 0, depending on whether 
+
+M is discrete or continuous). In Supplementary Material A, we outline practical estimation procedures based on kernel smoothing. We use f (m | g, x ) to represent either the conditional probability P (M = m | G =
+
+g, X = x) or the conditional density. In addition, we assume f (m | g, x ) and δ(g, m, x ) are at least two-order smooth with respect to m. The following theorem states that the above estimation based on Theorem 6 achieves the near-optimal asymptotic properties regardless of whether m is discrete or continuous, provided that M is scalar. 
+
+Theorem 6. Let the working models {π(x), δ (g, m, x ), f (m | g, x )} and the fitted models 
+
+bπ(x), bδ(g, m, x ), bf (m | g, x ) be Mworking and Mfitted , respectively. 
+
+• (Multiple robustness) Suppose Mworking are Glivenko-Cantelli, and either bδ or ( bf , bπ)
+
+(for g = 1 , bf is sufficient) in Mfitted are L1-consistent. Then: (i) if M is discrete, 
+
+bτ (g, m ) is consistent; (ii) if M is continuous, then bτh(g, m ) is consistent for ¯τ (g, m )
+
+when K is symmetric kernel with h → 0 and nh → ∞ .
+
+• (Asymptotic normality) Suppose Mworking are Donsker and Mfitted are L2-consistent and coverage at a rate of oP (n−κ) with κ ∈ (0 , 1/4) . Then: (i) if M is discrete, bτ (g, m )
+
+is √n-consistent and achieves the nonparametric efficiency; (ii) if M is continuous, 
+
+bτh(g, m ) − bias (g, m )h2 is √nh -consistent when K is symmetric kernel with bandwidth 
+
+h such that: h → 0, nh → ∞ , nh 5 → 0, and log(1 /h )n−4κ → 0. Here bias (g, m ) is the kernel bias term defined in the Supplementary Material. 
+
+17 Note that kernel smoothing breaks the Donsker condition for ¯ φh(g, m ), so the convergence rate of bτh(g, m ) is smaller than Op(n−1/2). Nevertheless, up to the scale h, the influence func-tion for bτh(g, m ) over ( g, m ) can be Donsker. Although Theorem 6 is stated for the univariate mediator case, the extension to multivariate M is straightforward by appropriately modify-ing the bandwidth conditions in the continuous case. We refer to the result as near-optimal 
+
+because, as shown in Theorem 6, the proposed estimator enjoys double robustness regardless of whether M is discrete or continuous, and it attains the lowest possible asymptotic variance among all regular and asymptotically linear estimators when M is discrete. 
+
+# 5 Simulation 
+
+In this section, we conduct simulation studies to compare our proposed method with the regression-based method in Hsia et al. (2025), which uses regression coefficients to represent treatment effects as an extension to Baron and Kenny (1986). Let the sample size n ∈ { 200 , 1000 , 5000 }. We generate two independent baseline co-variates Xi = ( X1i, X 2i)⊤, with each element following the standard normal distribution. In addition, we generate an individual-level random effect ui ∼ N (0 , 1). We consider two settings for generating the mediator. In Setting 1, the potential mediator is continuous, generated as 
+
+Mi(g) = 0 .6X1i − 0.3X2i + g + εi,
+
+where εi ∼ N (0 , 1). In Setting 2, the potential mediator is binary, generated from 
+
+P (Mi(g) = 1 | X0) = Φ(0 .6X1i − 0.3X2i + g),
+
+where Φ( ·) is the cumulative distribution function of the standard normal distribution. The 18 potential outcomes are generated as 
+
+Y0i(0) = 2 X1i + ui + ϵ0i,Y1i(g, m ) = X1i + X2i + g + 0 .5(1 + 0 .4X2i)m + ui + ϵ1i,
+
+where ϵ0i and ϵ1i are independent random errors following N (0 , 0.52). Finally, the treatment assignment mechanism is 
+
+P (Gi = 1 | Xi) = exp(0 .3 + 0 .4X1 + 0 .5X2)1 + exp(0 .3 + 0 .4X1 + 0 .5X2).
+
+The observed mediator and outcomes Mi = Mi(Gi), Y0i = Y0i(0), and Y1i = Y1i(Gi, M i). The propensity score is modeled by logistic regression, and the change in observed out-comes is modeled by linear regression with interaction between G, M , and X, both of which are correctly specified. The conditional density of the mediator is modeled using the transfor-mation technique in Equation (1). We replicate the data generation 1000 times. The Panel (O) of Table 1 shows the average bias, average standard error (SE), standard deviation (SD), and coverage percentage (CP) of 95% confidence intervals for the estimated natural indirect, direct, and total effects. We observe that the regression-based method exhibits considerable bias in estimating τIE and τ , because the linear model does not account for the interaction between M and X. In contrast, the bias of the proposed method is minor. The average standard error and standard deviation are in close agreement. The coverage percentage of the 95% confidence intervals is close to the nominal level. To demonstrate the potential bias in estimation and inference when models are misspeci-fied, we consider two alternative data-generating mechanisms. First, we assume the potential outcomes are generated as 
+
+Y0i(0) = 2 X1i log(1 + |X2i|) + ui + ϵ0i,Y1i(g, m ) = ( X1i + X2i)X2i + g + 0 .5(1 + 0 .5gX 2i)m + ui + ϵ1i,
+
+19 Table 1: Simulation results for the estimated natural indirect, direct, and total effects Setting 1: continuous mediator Setting 2: binary mediator 
+
+n Regression-based Proposed Regression-based Proposed 
+
+τIE τDE τ τIE τDE τ τIE τDE τ τIE τDE τ
+
+(O) Models correctly specified 200 Bias -.047 -.011 -.058 -.001 -.008 -.008 -.013 -.004 -.017 -.004 -.002 -.006 SE .093 .123 .133 .142 .147 .151 .050 .112 .111 .077 .126 .121 SD .090 .119 .124 .163 .167 .148 .050 .107 .104 .084 .127 .117 CP .893 .956 .951 .897 .916 .957 .916 .954 .956 .898 .939 .945 1000 Bias -.039 -.013 -.051 .001 .000 .001 -.010 -.002 -.012 -.000 .001 .001 SE .042 .055 .060 .069 .071 .068 .022 .050 .050 .034 .057 .054 SD .042 .055 .061 .073 .075 .070 .023 .050 .050 .034 .060 .055 CP .822 .941 .857 .932 .939 .953 .903 .940 .939 .936 .935 .945 5000 Bias -.040 -.014 -.054 -.001 .000 -.001 -.012 -.004 -.016 -.002 -.000 -.002 SE .019 .025 .027 .031 .033 .031 .010 .023 .022 .015 .026 .024 SD .019 .025 .027 .032 .033 .030 .010 .023 .023 .015 .025 .024 CP .425 .903 .490 .946 .941 .962 .754 .939 .875 .945 .955 .954 (A) Outcome model misspecified 200 Bias .048 -.206 -.158 -.086 .147 .061 .059 -.182 -.123 -.016 .070 .054 SE .171 .305 .277 .359 .543 .443 .118 .284 .265 .258 .481 .428 SD .170 .300 .276 .523 .682 .439 .123 .283 .263 .328 .522 .427 CP .960 .891 .915 .858 .882 .956 .938 .903 .918 .949 .930 .950 1000 Bias .051 -.236 -.185 -.023 .023 -.001 .058 -.202 -.143 .006 -.001 .005 SE .078 .138 .125 .198 .295 .215 .053 .128 .119 .118 .240 .210 SD .078 .139 .124 .246 .312 .187 .052 .128 .119 .120 .226 .184 CP .912 .578 .673 .904 .934 .980 .831 .646 .768 .970 .968 .978 5000 Bias .058 -.234 -.176 -.001 .005 .004 .062 -.205 -.143 .011 -.009 .001 SE .035 .062 .056 .103 .144 .097 .024 .058 .053 .055 .109 .094 SD .036 .060 .054 .110 .136 .083 .024 .055 .052 .053 .096 .081 CP .615 .034 .118 .937 .954 .974 .253 .051 .240 .958 .969 .975 (B) Propensity score misspecified 200 Bias -.052 .021 -.031 -.003 .007 .004 -.015 .012 -.002 -.004 .010 .006 SE .096 .127 .138 .156 .159 .153 .052 .117 .115 .092 .138 .122 SD .100 .127 .138 .200 .212 .179 .054 .118 .115 .105 .162 .139 CP .874 .934 .942 .868 .848 .909 .896 .929 .946 .891 .898 .912 1000 Bias -.052 .022 -.030 .000 .003 .003 -.016 .011 -.005 -.002 .003 .001 SE .043 .057 .062 .081 .084 .069 .023 .052 .052 .044 .066 .055 SD .044 .056 .061 .094 .097 .079 .023 .052 .051 .047 .071 .062 CP .749 .945 .924 .897 .900 .916 .855 .959 .950 .928 .919 .921 5000 Bias -.044 .020 -.024 .007 .001 .007 -.011 .008 -.002 .002 .000 .002 SE .019 .026 .028 .038 .039 .031 .010 .024 .023 .020 .030 .025 SD .020 .026 .027 .043 .045 .034 .010 .024 .023 .020 .033 .027 CP .395 .868 .865 .912 .916 .916 .806 .929 .958 .943 .924 .920 20 where ϵ0i and ϵ1i are independent random errors following N (0 , 0.52), so that the outcome model is misspecified. Second, we assume the treatment assignment is generated from 
+
+P (Gi = 1 | Xi) = Φ(0 .3 + 0 .4X1i + 0 .5X2i + 0 .3X1iX2i),
+
+so that the propensity score is misspecified. The Panels (A) and (B) of Table 2 show the average bias, average standard error (SE), standard deviation (SD), and coverage percentage (CP) of 95% confidence intervals for the estimated natural indirect, direct, and total effects when either the outcome model or propen-sity score is misspecified. The regression-based method shows considerable bias because the linear model does not correctly specify the data-generating mechanism. Even if a working model is severely misspecified, the bias of the proposed method remains small, and the cov-erage percentage of the 95% confidence intervals is near the nominal level. In this case, the proposed method is not efficient. Finally, we also compare our proposed estimator with regression-based methods for esti-mating the controlled effects at m = 0, considering both continuous and binary mediators under the same setting as above. For the continuous mediator setting, we employ the kernel-weighted local polynomial with degree two to estimate the conditional outcome, utilizing the Gaussian kernel with the bandwidth selected using Silverman’s rule of thumb (Silverman, 2018), to localize the estimation around the target mediator. The results are reported in Table 2. 
+
+# 6 Application to Job Corps Study 
+
+The U.S. Job Corps experimental study is a job training program for disadvantaged youths (Schochet, 2001). Participants in the treated group are provided access to academic and vocational training. Approximately 60.4% of the 9240 participants were assigned to the treated group. Although the treatment assignment was randomized, not all participants 21 Table 2: Simulation results for estimated mean potential outcomes at m = 0 and τDE (0) Setting 1: continuous mediator Setting 2: binary mediator 
+
+n Regression-based Proposed Regression-based Proposed ¯τ (1 , 0) ¯ τ (0 , 0) τDE (0) ¯ τ (1 , 0) ¯ τ (0 , 0) τDE (0) ¯ τ (1 , 0) ¯ τ (0 , 0) τDE (0) ¯ τ (1 , 0) ¯ τ (0 , 0) τDE (0) (O) Models correctly specified 200 Bias -.067 -.031 -.036 -.029 .011 -.040 -.071 -.001 -.071 -.011 -.006 -.006 SE .101 .086 .133 .235 .181 .305 .164 .116 .202 .552 .204 .605 SD .136 .138 .135 .216 .191 .249 .200 .141 .199 .424 .183 .430 CP .844 .748 .924 .948 .920 .980 .844 .876 .940 .933 .948 .975 1000 Bias -.066 -.035 -.031 -.012 -.007 -.005 -.082 .005 -.087 -.013 -.006 -.007 SE .045 .037 .058 .094 .077 .122 .072 .051 .088 .127 .067 .145 SD .063 .058 .060 .097 .087 .117 .091 .066 .084 .127 .075 .132 CP .624 .712 .912 .932 .912 .948 .716 .880 .844 .924 .924 .956 5000 Bias -.062 -.031 -.031 -.003 -.005 .003 -.078 .004 -.082 -.002 -.003 .001 SE .020 .017 .026 .045 .038 .059 .032 .023 .039 .049 .028 .056 SD .027 .025 .024 .047 .043 .056 .037 .031 .039 .052 .032 .057 CP .172 .512 .804 .936 .900 .964 .344 .852 .464 .948 .912 .932 (A) Outcome model misspecified 200 Bias .041 .020 .021 -.031 -.011 -.020 .358 -.145 .503 -.046 -.018 -.027 SE .241 .204 .318 .234 .183 .307 .473 .268 .549 .565 .195 .615 SD .226 .196 .286 .219 .192 .254 .459 .285 .526 .438 .193 .457 CP .956 .956 .980 .932 .920 .972 .944 .864 .900 .930 .920 .971 1000 Bias .056 .060 -.003 .005 .005 -.000 .419 -.143 .563 .006 .007 -.001 SE .108 .093 .143 .095 .077 .123 .212 .119 .244 .119 .066 .137 SD .112 .093 .143 .098 .086 .111 .218 .106 .241 .121 .078 .139 CP .936 .916 .940 .940 .888 .976 .492 .788 .360 .940 .892 .944 5000 Bias .054 .055 -.001 -.002 .003 -.004 .414 -.150 .564 -.003 .000 -.003 SE .048 .041 .064 .045 .038 .060 .094 .053 .108 .049 .028 .056 SD .048 .045 .062 .054 .047 .057 .092 .048 .104 .053 .036 .052 CP .824 .728 .940 .896 .892 .952 .000 .196 .000 .924 .868 .972 (B) Propensity score misspecified 200 Bias -.062 -.039 -.023 -.039 -.006 -.032 -.074 .017 -.091 .011 .006 -.002 SE .100 .091 .135 .243 .259 .371 .161 .119 .201 .564 .241 .634 SD .130 .124 .130 .222 .236 .301 .198 .155 .183 .442 .250 .491 CP .812 .816 .960 .944 .924 .980 .896 .876 .960 .974 .916 .962 1000 Bias -.047 -.042 -.004 .007 .005 .003 -.062 .012 -.075 .011 -.000 .011 SE .044 .040 .059 .098 .098 .140 .071 .052 .089 .130 .082 .156 SD .065 .057 .060 .106 .091 .132 .083 .072 .085 .132 .095 .150 CP .692 .712 .952 .916 .940 .960 .784 .844 .876 .944 .908 .952 5000 Bias -.055 -.046 -.009 -.006 -.005 -.001 -.068 .013 -.081 .001 -.001 .002 SE .019 .018 .026 .048 .048 .068 .032 .023 .039 .051 .035 .062 SD .026 .026 .024 .050 .051 .063 .038 .030 .038 .056 .040 .062 CP .256 .360 .956 .904 .932 .964 .440 .848 .432 .928 .904 .944 22 complied with the assignment. In the first year after assignment, only 71.1% actually enrolled in education and/or vocational training. As a result, the realized treatment is no longer randomized. In particular, individuals with more pessimistic expectations about their labor market prospects were more likely to take up the training. The primary outcome of interest is weekly earnings. Previous studies using instrumental variables methods find that job training has a significant effect on earnings three years after assignment, whereas the effect in the first two years is not statistically significant. Participants in the training program spent a substantial amount of time on training, leaving less time available for work. Consequently, earnings tend to be lower when employees cannot work full-time. Existing studies did not consider this fact and reckon that job training has only long-term effects (Schochet et al., 2008). In this study, we aim to adjust for the treatment effect on earnings mediated by work time. We let G be the actual enrollment in education and/or vocational training. The pre-treatment outcome Y0 is the average weekly gross earnings at assignment, after log(1 + x) transformation. The post-treatment Y1 is the average weekly earnings in the second year after assignment, after log(1 + x) transformation. The mean non-zero income is 151 at pre-treatment and 175 at post-treatment, much larger than 1; thus, the log transformation is insensitive to the constant. Such a transformation ensures that zero income is always zero before and after the transformation. The mediator 
+
+M is the proportion of weeks employed during the second year after assignment. We control for four baseline covariates in X: sex, age, year of education, and race. In the control group ( G = 0), 23.7% of the participants did not work in the second year after the assignment, and 19.8% worked full-time. In the treated group ( G = 1), 25.1% of the participants did not work in the second year after the assignment, and 14.8% worked full-time. The average proportion of weeks employed is 49.0% in the control group and 45.0% in the treated group. The average difference in Y1 and Y0 (average ratio of weekly earnings between post-treatment and pre-treatment) is 3.07 in the control group and 3.00 in the treated group. After adjusting for covariates, the average weeks employed is 1.4% lower 23 in the treated group, and the increase in logarithmic earnings is 4.5% larger in the treated group, but the effects are not significant. For each individual, baseline earnings do not depend on whether he/she will enroll in the training program in the future, so the no anticipation assumption is reasonable. We assume that there is a common trend for the change in logarithmic earnings. The proportion of weeks employed is unlikely to be confounded with treatment or outcome, as the work time mainly depends on how long the participant spends on training. Therefore, we assume sequential ignorability. Positivity and consistency naturally hold. Based on the proposed method, the total effect (average treatment effect in the treated group) is estimated at 0.0609 (s.e. 0.0623, 95%CI [-0.0612, 0.1830]). The natural indirect effect is estimated at -0.0447 (s.e. 0.0436, 95%CI [-0.1302, 0.0408]), indicating that joining the training program slightly reduces earnings by reducing work time, while this effect is insignificant. The natural direct effect is estimated at 0.1055 (s.e. 0.0445, 95%CI [0.0183, 0.1927]), indicating that joining the training program significantly leads to higher earnings if the participant had not reduced work time ( P = 0 .0178). Similarly, we take the actual training in the second year as the treatment, the weekly earnings in the second year as the pre-treatment outcome, the weekly earnings in the third year as the post-treatment outcome, and the proportion of weeks employed in the third year as the mediator. After adjusting for covariates, the average weeks employed is 1.5% higher in the treated group, and the increase in logarithmic earnings is 41.8% higher in the treated group. Based on the proposed method, the total effect is estimated at 0.4129 (s.e. 0.0452, 95%CI [0.3243, 0.5015]), the natural indirect effect is estimated at 0.0295 (s.e. 0.0143, 95%CI [0.0014, 0.0575]), and the natural direct effect is estimated at 0.3834 (s.e. 0.0429, 95%CI [0.2993, 0.4675]). All the effects are significant. The direct effect indicates that training has a positive effect on earnings. The indirect effect indicates that participants can work with ease in the third year after getting trained. Since a large proportion of M is observed at 0 and 1, we further conduct a sensitivity 24 Table 3: Estimated treatment effects in the Job Corps Study Method Year 1 Year 2 
+
+τIE τDE τ τIE τDE τ
+
+Continuous M -0.0447 0.1055 0.0609 0.0295 0.3834 0.4129 (0.0436) (0.0445)* (0.0623) (0.0143)* (0.0429)*** (0.0452)*** Ordinal M -0.0704 0.1324 0.0621 0.0270 0.3865 0.4135 (0.0438) (0.0435)** (0.0623) (0.0139) (0.0430)*** (0.0452)*** analysis by categorizing M into four levels: 0 for unemployed ( M = 0), 1 for part-time employed (0 < M ≤ 0.5), 2 for almost employed (0 .5 < M < 1), and 3 for full-time employed (M = 1). In the first year after training, the total effect is estimated at 0.0621 (s.e. 0.0623, 95%CI [-0.0600, 0.1841]), the natural indirect effect is estimated at -0.0704 (s.e. 0.0438, 95%CI [-0.1562, 0.0155]), and the natural direct effect is estimated at 0.1324 (s.e. 0.0435, 95%CI [0.0472, 0.2176]). In the second year after training, the total effect is estimated at 0.4135 (s.e. 0.0452, 95%CI [0.3249, 0.5020]), the natural indirect effect is estimated at 0.0270 (s.e. 0.0139, 95%CI [-0.0003, 0.0543]), and the natural direct effect is estimated at 0.3865 (s.e. 0.0430, 95%CI [0.3022, 0.4708]). The substantial conclusion remains the same. Table 3 lists the estimates obtained using the proposed method. To further investigate how the treatment effect varies with the intensity of employment, we estimate the controlled direct effect (CDE) curve τDE (m) as a function of m ranging from 0 to 1. This represents the expected causal effect of training on potential earnings growth for the treated population had they fixed their employment level at m. Because earnings are zero when unemployed, the CDE is zero at m = 0, reflecting the absence of an economically meaningful growth effect when no employment occurs. Figure 2 presents the resulting CDE curves for both continuous and ordinal measures of employment intensity over two post-treatment years. In Year 1, the estimated CDE is generally small and fluctuates around zero across most values of m. For the continuous mediator, the confidence interval covers the null line. A similar pattern appears in the ordinal specification. Nevertheless, the natural direct effect is significant in an average sense. In Year 2, CDE exhibits clearer evidence 25 -0.2 0.0 0.2 0.4 0.00 0.25 0.50 0.75 1.00 Mediator value m           
+
+> τ^DE (m)
+> Year 1: Treatment effect curve (continuous M)
+> 0.00 0.25 0.50 0.75 0.00 0.25 0.50 0.75 1.00 Mediator value m
+> τ^DE (m)
+> Year 2: Treatment effect curve (continuous M)
+> -0.2 -0.1 0.0 0.1 0.2 0.3 0123Mediator level m
+> τ^DE (m)
+> Year 1: Treatment effect curve (ordinal M)
+> 0.0 0.2 0.4 0.6 0123Mediator level m
+> τ^DE (m)
+> Year 2: Treatment effect curve (ordinal M)
+
+Figure 2: Controlled direct effect curves in the Job Corps Study. The shaded regions and error bars represent 95% confidence intervals. The red line segments and points indicate statistical significance. of a positive direct effect of training. For both the continuous and ordinal mediators, the estimated CDE is significantly positive across a broad range of employment levels. This pattern indicates that, in the longer run, the Job Corps program enhances earnings capacity conditional on employment, consistent with delayed human capital accumulation beyond its impact on employment participation alone. 
+
+# 7 Discussion 
+
+In this paper, we studied the causal mediation analysis in difference-in-differences. Under a set of assumptions, we showed that the total effect, natural indirect effect, and natu-ral direct effect are identifiable in the treated group. Based on semiparametric theory, we derived the efficient influence function for the causal estimand and then proposed estima-tors that are multiply robust and nonparametrically efficient. Furthermore, we illustrated a practical strategy for estimation and inference using parametric models. The proposed 26 framework addresses the challenges of mediation analysis in observational studies by con-sidering difference-in-differences. The proposed framework can be extended to staggered designs. The parallel trends assumption should condition on the counterfactual mediator process. The sequential ignorability can be generalized by considering adjacent periods. However, nonparametrically efficient estimation is very challenging because every period has multiple working models. To reduce the computational burden, model-based methods would be an alternative, with a trade-off between statistical efficiency and model flexibility. A limitation of causal mediation analysis is that sequential ignorability is difficult to interpret and impossible to verify, which means the mediator must be randomized. There have been approaches to relax sequential ignorability, such as imposing structural models for the potential outcomes, where the identifiability of treatment effects is reduced to parameter identifiability (Zheng and Zhou, 2015). Alternative frameworks to natural effects have also been proposed, such as randomized interventional effects, in which the mediator is assumed to be manipulable according to a given distribution (VanderWeele and Tchetgen Tchetgen, 2017). When auxiliary data are available, instrumental variables help to identify mediated effects (Fr¨ olich and Huber, 2017; Rudolph et al., 2024). Another limitation of the proposed estimation method is that the conditional density of the mediator is hard to estimate. Although we transformed the ratio of conditional densities into the ratio of pseudo-propensity scores, the model does not reflect the data-generating mechanism because it involves post-treatment variables. Therefore, the propensity score model and the pseudo-propensity score model may not be compatible. Complex nonpara-metric models, on the other hand, may not satisfy the Donsker condition, so cross-fitting is a possible approach at a higher computational cost and a larger finite-sample variation. In the Job Corps Study, some participants’ earnings are zero, a phenomenon known as the truncation-by-death problem (Zhang et al., 2009). Zero earnings may result from self-selection in the job market, with a higher expected wage than the offered wage. Our analysis did not address this problem. 27 Conflict of interest 
+
+The authors declare no conflict of interest. 
+
+# Data availability statement 
+
+The data that support the findings of this paper are publicly available in the R package “causalweight”. 
+
+# Supplementary material 
+
+The supplementary material includes proofs of theoretical results. 
+
+# References 
+
+Abadie, A. (2005). Semiparametric difference-in-differences estimators. The Review of Eco-nomic Studies 72 (1), 1–19. Baron, R. M. and D. A. Kenny (1986). The moderator–mediator variable distinction in social psychological research: conceptual, strategic, and statistical considerations. Journal of Personality and Social Psychology 51 (6), 1173. Bickel, P. J., C. A. Klaassen, P. J. Bickel, Y. Ritov, J. Klaassen, J. A. Wellner, and Y. Ritov (1993). Efficient and adaptive estimation for semiparametric models , Volume 4. Springer. Blackwell, M., A. N. Glynn, H. Hilbig, and C. H. Phillips (2025). Estimating controlled direct effects with panel data: an application to reducing support for discriminatory policies. 
+
+Journal of the Royal Statistical Society Series A: Statistics in Society , qnaf042. Blanco, G., C. A. Flores, and A. Flores-Lagunes (2013). Bounds on average and quantile 28 treatment effects of job corps training on wages. Journal of Human Resources 48 (3), 659–701. Callaway, B. and P. H. Sant’Anna (2021). Difference-in-differences with multiple time peri-ods. Journal of Econometrics 225 (2), 200–230. Chang, N.-C. (2020). Double/debiased machine learning for difference-in-differences models. 
+
+The Econometrics Journal 23 (2), 177–191. Chen, X. and C. A. Flores (2015). Bounds on treatment effects in the presence of sample se-lection and noncompliance: the wage effects of job corps. Journal of Business & Economic Statistics 33 (4), 523–540. Chernozhukov, V., D. Chetverikov, M. Demirer, E. Duflo, C. Hansen, W. Newey, and J. Robins (2018). Double/debiased machine learning for treatment and structural pa-rameters. The Econometrics Journal 21 (1), C1–C68. Deng, Y., T. Zhang, X. Peng, and Q. Liu (2025). Improved two-period difference-in-differences by targeted estimation. Economics Letters , 112600. Deuchert, E., M. Huber, and M. Schelker (2019). Direct and indirect effects based on difference-in-differences with an application to political preferences following the vietnam draft lottery. Journal of Business & Economic Statistics 37 (4), 710–720. Flores, C. A., A. Flores-Lagunes, A. Gonzalez, and T. C. Neumann (2012). Estimating the effects of length of exposure to instruction in a training program: The case of Job Corps. 
+
+Review of Economics and Statistics 94 (1), 153–171. Flores-Lagunes, A., A. Gonzalez, and T. Neumann (2010). Learning but not earning? the impact of Job Corps training on hispanic youth. Economic Inquiry 48 (3), 651–667. Fr¨ olich, M. and M. Huber (2017). Direct and indirect treatment effects–causal chains and 29 mediation analysis with instrumental variables. Journal of the Royal Statistical Society Series B: Statistical Methodology 79 (5), 1645–1666. Goetgeluk, S., S. Vansteelandt, and E. Goetghebeur (2008). Estimation of controlled direct effects. Journal of the Royal Statistical Society Series B: Statistical Methodology 70 (5), 1049–1066. Heckman, J. J., H. Ichimura, and P. E. Todd (1997). Matching as an econometric evaluation estimator: Evidence from evaluating a job training programme. The Review of Economic Studies 64 (4), 605–654. Hsia, P.-H., A.-S. Tai, C.-L. M. Kao, Y.-H. Lin, and S.-H. Lin (2025). Causal mediation analysis for difference-in-difference design and panel data. Epidemiologic Methods 14 (1), 20240025. Huber, M. and S. J. Oberh¨ ansli (2026). Difference-in-differences for mediation analysis using double machine learning. arXiv preprint arXiv:2602.23877 .Huber, M., M. Schelker, and A. Strittmatter (2022). Direct and indirect effects based on changes-in-changes. Journal of Business & Economic Statistics 40 (1), 432–443. Imai, K., L. Keele, and D. Tingley (2010). A general approach to causal mediation analysis. 
+
+Psychological Methods 15 (4), 309. Imai, K., L. Keele, and T. Yamamoto (2010). Identification, inference and sensitivity analysis for causal mediation effects. Statistical Science 25 (1), 51–71. Lee, D. S. (2009). Training, wages, and sample selection: Estimating sharp bounds on treatment effects. The Review of Economic Studies 76 (3), 1071–1102. Pearl, J. (1995). Causal diagrams for empirical research. Biometrika 82 (4), 669–688. Rubin, D. B. (2004). Direct and indirect causal effects via potential outcomes. Scandinavian Journal of Statistics 31 (2), 161–170. 30 Rudolph, K. E., N. Williams, and I. D´ ıaz (2024). Using instrumental variables to address unmeasured confounding in causal mediation analysis. Biometrics 80 (1), ujad037. Sant’Anna, P. H. and J. Zhao (2020). Doubly robust difference-in-differences estimators. 
+
+Journal of Econometrics 219 (1), 101–122. Schochet, P. Z. (2001). National Job Corps Study: the impacts of Job Corps on participants’ employment and related outcomes . US Department of Labor, Employment and Training Administration, Office of Policy and Research. Schochet, P. Z., J. Burghardt, and S. McConnell (2008). Does job corps work? impact findings from the national Job Corps study. American economic review 98 (5), 1864–1886. Silverman, B. W. (2018). Density estimation for statistics and data analysis . Routledge. van der Vaart, A. and J. A. Wellner (2023). Empirical processes. In Weak Convergence and Empirical Processes: With Applications to Statistics , pp. 127–384. Springer. VanderWeele, T. J. and E. J. Tchetgen Tchetgen (2017). Mediation analysis with time vary-ing exposures and mediators. Journal of the Royal Statistical Society Series B: Statistical Methodology 79 (3), 917–938. Zhang, J. L., D. B. Rubin, and F. Mealli (2009). Likelihood-based analysis of causal effects of job-training programs using principal stratification. Journal of the American Statistical Association 104 (485), 166–176. Zheng, C. and X.-H. Zhou (2015). Causal mediation analysis in the multilevel intervention and multicomponent mediator case. Journal of the Royal Statistical Society Series B: Statistical Methodology 77 (3), 581–615. Zivich, P. N., S. R. Cole, J. K. Edwards, G. E. Mulholland, B. E. Shook-Sa, and E. J. Tchetgen Tchetgen (2023). Introducing proximal causal inference for epidemiologists. 
+
+American Journal of Epidemiology 192 (7), 1224–1227. 31 Web Appendices for “Difference-in-Differences with a Mediator” 
+
+# A Practical estimation and inference 
+
+## A.1 Natural effects 
+
+In this section, we present examples of working models to illustrate estimation and inference. The sample of observed data {Oi = ( Gi, X i, Y 0i, M i, Y 1i) : i = 1 , . . . , n }. We model the conditional mean change in observed outcomes δ(g, m, x ) by linear regression, 
+
+E(Yii − Y0i | Gi, M i, X i) = β0 + β⊤Xi + αG i + γM i.
+
+The parameters ( β0, β ⊤, α, γ ) are estimated by ordinary least squares, denoted by ( ̂β0,̂ β⊤,̂α, ̂γ). Then ̂ δ(g, m, x ) = ̂ β0 +̂ β⊤x +̂αg +̂γm . We model the propensity score π(x) by logistic regression, 
+
+P (Gi = 1 | Xi) = exp( η0 + η⊤Xi)1 + exp( η0 + η⊤Xi).
+
+The parameters ( η0, η ⊤) are estimated by maximum likelihood, denoted by ( ̂η 0,̂η ⊤). The estimated propensity score ̂π(x) = 1 /{1 + exp( −̂η 0 −̂η ⊤x)}.To avoid modeling the conditional density f (m | g, x ), we model the pseudo-propensity 1score ϖ(m, x ) by logistic regression, 
+
+P (Gi = 1 | Mi, X i) = exp( ζ0 + ξM i + ζ⊤Xi)1 + exp( ζ0 + ξM i + ζ⊤Xi).
+
+The parameters ( ζ0, ξ 0, ζ ⊤) are estimated by maximum likelihood, denoted by ( ̂ζ0,̂ ξ, ̂ ζ⊤). The estimated pseudo-propensity score is then ̂ϖ(m, x ) = 1 /{1 + exp( −̂ ζ0 −̂ ξm −̂ ζ⊤x)}. To avoid integration over the mediator distribution in ν(0 , X ), we model the conditional mean of M given X by 
+
+E(Mi | Xi, G i = 0) = ω0 + ω⊤Xi.
+
+The parameters ( ω0, ω ⊤) are estimated by ordinary least squares in the subsample {i : Gi =0}, denoted by ( ̂ω 0,̂ω ⊤). Then we predict Mi(0) given covariates Xi = x by ̂m(x) = ̂ω 0 +̂ω ⊤x,and calculate ̂ν(0 , x ) = ̂ δ(0 ,̂m(x), x ) = ̂ β0 +̂ β⊤x +̂γ̂m(x). More generally, the linear terms in (generalized) linear models can be augmented with interaction terms and quadratic terms to improve flexibility. Since all models are parametric, they are Glivenko–Cantelli and Donsker, with conver-gence rates of Op(n−1/2). The estimators for τ (g, g ∗) are given by ̂
+
+τ (1 , 1) = 1
+
+∑ni=1 Gin∑
+
+> i=1
+
+Gi∆Yi,̂
+
+τ (0 , 0) = 1
+
+∑ni=1 Gin∑
+
+> i=1
+
+[
+
+(1 − Gi)̂ π(X i)1 −̂π(X i){∆Yi −̂ν(0 , X i)} + Gîν(0 , X i)
+
+]
+
+,̂
+
+τ (0 , 1) = 1
+
+∑ni=1 Gin∑
+
+> i=1
+
+[
+
+(1 − Gi)̂ ϖ(M i, X i)1 −̂ϖ(M i, X i){∆Yi −̂ δ(0 , M i, X i)} + Gî δ(0 , M i, X i)
+
+]
+
+.
+
+The estimators for natural indirect, direct, and total effects are obtained accordingly, ̂
+
+τ IE =̂τ (0 , 1) −̂τ (0 , 0) ,̂ τ DE =̂τ (1 , 1) −̂τ (0 , 1) ,̂ τ =̂τ (1 , 1) −̂τ (0 , 0) .
+
+2A.2 Controlled effects 
+
+In practice, one may replace ̂ δ(g, m, X ) by ̂ δ(g, M, X ) in the estimator ̂τ h(g, m ) to improve finite-sample performance. This approach corresponds to the “self-normalized stabilization” proposed by Hirano et al. (2003) in the discrete mediator case. When M is continuous, to simplify implementation, we first rewrite ¯ φh(g, m ) as ¯φh(g, m ) = 
+
+> debiased term
+
+︷ ︸︸ ︷
+
+I(G = g)
+
+P (G = 1) 
+
+P (G = 1 | X)
+
+P (G = g | X)
+
+Kh(M − m)
+
+f (m | G = g, X )
+
+︸ ︷︷ ︸   
+
+> kernel weight Wh(g, m ;X, M )
+
+{∆Y − δ(g, m, X )}
+
++ GP (G = 1) 
+
+{δ(g, m, X ) − ¯τ (g, m )}.
+
+Here, the kernel weight Wh(g, m ; X, M ) involves the unknown inverse conditional density 
+
+f (m | G = g, X ), which often leads to severe numerical instability. To mitigate this issue, our implementation adopts the “density-weighted” strategy in practice (Fan & Gijbels 1996). Specifically, we choose the practical estimated kernel weight as ̂
+
+Wh(g, m ; X, M ) := f (m | G = g, X ) ×̂ P (G = 1 | X)̂
+
+P (G = g | X)
+
+Kh(M − m)
+
+f (m | G = g, X )=̂ P (G = 1 | X)̂
+
+P (G = g | X)Kh(M − m).
+
+Then, the local polynomial kernel estimator ̂ δh(g, m, X ) = ̂ β0 +̂ β⊤ 
+
+> 1
+
+poly( X) is obtained from (̂ β0,̂ β⊤ 
+
+> 1
+
+) = arg min 
+
+> β0,β 1
+
+Pn
+
+{
+
+I(G = g)̂Wh(g, m ; X, M )
+
+{
+
+∆Y − (β0 + β⊤ 
+
+> 1
+
+poly( X))}2}
+
+,
+
+where poly( X) denotes a polynomial basis of X with a pre-specified degree. Under this construction, the estimator ̂τ h(g, m ) simplifies to ̂
+
+τ h(g, m ) = Pn[Ĝδh(g, m, X )] 
+
+Pn(G) +̂ Rh(g, m ),
+
+3where ̂ Rh(g, m ) is the one-step EIF correction term defined as ̂
+
+Rh(g, m ) := Pn
+
+[I(G = g)
+
+Pn(G)̂ Wh(g, m ; X, M ){∆Y −̂ δh(g, m, X )}]
+
+.
+
+It is worth noting that although ¯ φh(g, m ) involves the conditional density f (m | G = g, X ), we do not explicitly estimate this quantity in practice. Instead, both the nuisance regression 
+
+δ(g, m, X ) and the one-step correction are implemented using the same local kernel weighting. Specifically, within a shrinking neighborhood of m, the conditional density f (M | G = g, X )is well approximated by f (m | G = g, X ) and therefore behaves as a multiplicative constant. As a result, the estimating equations obtained by including or excluding the density term are asymptotically equivalent. Further discussion can be found in Fan & Gijbels (1996). It is important to emphasize that the weighted least squares (WLS) estimator for δh(g, m, X )does not, in general, eliminate the residual correction term ̂ Rh(g, m ). Specifically, the WLS solution satisfies the orthogonality condition only with respect to the finite-dimensional re-gression basis poly( X) used in the model. In contrast, the EIF correction involves a weight function proportional to Kh(M − m)/f (m | G = g, X ), which is generally not contained in the linear span of the chosen regression basis. In practice, when the regression model for 
+
+δ(g, m, X ) is sufficiently rich such that the EIF weight function is well approximated within the regression space, the empirical correction term may be numerically small, which is the case we adopt in the simulation section. 
+
+# B Useful Lemma 
+
+We decompose the likelihood of a single piece of data O = ( X, G, M, Y 0, Y 1) as 
+
+f (O) = f (G, X )f (M | G, X )f (Y0 | M, G, X )f (Y1 | Y0, M, G, X ).
+
+4The (conditional) densities in the likelihood are assumed to be fully nonparametric. The identifiability assumptions impose no restrictions on observed data, so the (conditional) densities in the likelihood are not subject to restrictions. Under this nonparametric model, the tangent space can be characterized as follows. The tangent space is a characterization of the possible set of score functions. 
+
+Lemma 1. The tangent space of the nonparametric model is 
+
+˙T = ˙T0 ⊕ ˙T1 ⊕ ˙T2 ⊕ ˙T3,
+
+where 
+
+˙T0 = {h(G, X ) : E[h(G, X )] = 0 },
+
+˙T1 = {h(M, G, X ) : E[h(M, G, X ) | G, X ] = 0 },
+
+˙T2 = {h(Y0, M, G, X ) : E[h(Y0, M, G, X ) | M, G, X ] = 0 },
+
+˙T3 = {h(Y1, Y 0, M, G, X ) : E[h(Y1, Y 0, M, G, X ) | Y0, M, G, X ] = 0 }.
+
+# C Proof of Theorem 1 
+
+When g = 1 and g∗ = 1, we have 
+
+E{Y1(1 , M (1)) − Y0(0) | G = 1 , X }
+
+= E{Y1(1 , M (1)) − Y0(1) | G = 1 , X }
+
+=
+
+∫
+
+E{Y1(1 , M (1)) − Y0(1) | M (1) = m, G = 1 , X }P (M (1) = m | G = 1 , X )dm 
+
+=
+
+∫
+
+E(Y1 − Y0 | M = m, G = 1 , X )P (M = m | G = 1 , X )dm 
+
+= E{δ(1 , M, X ) | G = 1 , X }. (1) 5The first equation follows from no anticipation; the second from the total probability formula; the third from consistency; and the last from the definition. When g = 0 and g∗ = 1, we have 
+
+E{Y1(0 , M (1)) − Y0(0) | G = 1 , X }
+
+=
+
+∫
+
+E{Y1(0 , m ) − Y0(0) | M (1) = m, G = 1 , X }P (M (1) = m | G = 1 , X )dm 
+
+=
+
+∫
+
+E{Y1(0 , m ) − Y0(0) | M (0) = m, G = 1 , X }P (M (1) = m | G = 1 , X )dm 
+
+=
+
+∫
+
+E{Y1(0 , m ) − Y0(0) | M (0) = m, G = 0 , X }P (M (1) = m | G = 1 , X )dm. 
+
+The first equation follows from the total probability formula, the second from sequential ignorability, and the third from parallel trends. When g = 0 and g∗ = 0, we have 
+
+E{Y1(0 , M (0)) − Y0(0) | G = 1 , X }
+
+=
+
+∫
+
+E{Y1(0 , m ) − Y0(0) | M (0) = m, G = 1 , X }P (M (0) = m | G = 1 , X )dm 
+
+=
+
+∫
+
+E{Y1(0 , m ) − Y0(0) | M (0) = m, G = 0 , X }P (M (0) = m | G = 1 , X )dm. 
+
+The first equation follows from the total probability formula, and the second from parallel trends. In general, 
+
+E{Y1(0 , M (g∗)) − Y0(0) | G = 1 , X }
+
+=
+
+∫
+
+E{Y1(0 , m ) − Y0(0) | M (0) = m, G = 0 , X }P (M (g∗) = m | G = 1 , X )dm 
+
+=
+
+∫
+
+E{Y1(0 , M (0)) − Y0(0) | M (0) = m, G = 0 , X }P (M (g∗) = m | G = g∗, X )dm 
+
+=
+
+∫
+
+E(Y1 − Y0 | M = m, G = 0 , X )P (M = m | G = g∗, X )dm 
+
+= E{δ(0 , M, X ) | G = g∗, X }. (2) The second equation follows from sequential ignorability, the third from consistency, and the 6last from the definition. Then, the natural indirect effect can be rewritten as 
+
+τIE = E{Y1(0 , M (1)) − Y0(0) | G = 1 } − E{Y1(0 , M (0)) − Y0(0) | G = 1 }
+
+= E[E{Y1(0 , M (1)) − Y0(0) | G = 1 , X } | G = 1] 
+
+− E[E{Y1(0 , M (0)) − Y0(0) | G = 1 , X } | G = 1] = E[E{δ(0 , M, X ) | G = 1 , X } | G = 1] − E[E{δ(0 , M, X ) | G = 0 , X } | G = 1] = τ (0 , 1) − τ (0 , 0) ,
+
+where the third equality follows from (2) by taking g∗ = 1 and g∗ = 0. The natural direct effect is equivalent to 
+
+τDE = E{Y1(1 , M (1)) − Y0(0) | G = 1 } − E{Y1(0 , M (1)) − Y0(0) | G = 1 }
+
+= E[E{Y1(1 , M (1)) − Y0(0) | G = 1 , X } | G = 1] 
+
+− E[E{Y1(0 , M (1)) − Y0(0) | G = 1 , X } | G = 1] = E[E{δ(1 , M, X ) | G = 1 , X } | G = 1] − E[E{δ(0 , M, X ) | G = 1 , X } | G = 1] = τ (1 , 1) − τ (0 , 1) ,
+
+where the third equality follows from (1) and (2). Therefore, the total effects 
+
+τ = τIE + τDE = τ (1 , 1) − τ (0 , 0) .
+
+7D Proof of Lemma 1 
+
+For any h0 ∈ ˙T1, h1 ∈ ˙T2, h2 ∈ ˙T2, and h3 ∈ ˙T3, we consider the following submodels 
+
+f0(G, X ) = f (G, X ){1 + θ0h0(G, X )},f1(M | G, X ) = f (M | G, X ){1 + θ1h1(M, G, X )},f2(Y0 | M, G, X ) = f (Y0 | M, G, X ){1 + θ2h2(Y0, M, G, X )},f3(Y1 | Y0, M, G, X ) = f (Y1 | Y0, M, G, X ){1 + θ3h3(Y1, Y 0, M, G, X )},
+
+where θj (j = 0 , . . . , 3) is sufficiently small vectors such that 1 + θj hj (·) ≥ 0. It follows that f0(G, X ) ≥ 0. Additionally, since E{h0(G, X )} = 0, the submodel f0(G, X ) satisfies 
+
+∫ f0(G, X ) = 1 Thus, f0(G, X ) is a density function. The score for this submodel is h0(G, X ). This implies that h0 ∈ ˙T . Similarly, we can show that h1, h 2, h 3 ∈ ˙T . Since for each 
+
+j = 0 , . . . , 3, ˙Tj ⊂ ˙T , we have ˙T0 + ˙T1 + ˙T2 + ˙T3 ⊂ ˙T .Conversely, Let h(O) be the score of of an arbitrary submodel {fθ} with f0 = f . Then, log fθ(O) = log fθ(G, X ) + log fθ(M | G, X ) + log fθ(Y0 | M, G, X ) + log fθ(Y1 | Y0, M, G, X ). Differentiate at θ = 0 to obtain h(O) = h0(G, X )+ h1(M | G, X )+ h2(Y0 | M, G, X )+ h3(Y1 |
+
+Y0, M, G, X ), where h0(G, X ) = ∂ log fθ(G, X )/∂θ , h1(M | G, X ) = ∂ log fθ(M | G, X )/∂θ ,and similarly for h2 and h3. Since fθ(G, X ) is a density function, the corresponding score satisfies E{h0(G, X )} = 0. Similarly, we obtain that E{h1(M | G, X ) | G, X } = 0, E{h2(Y0 |
+
+M, G, X ) | M, G, X } = 0, and E{h3(Y1 | Y0, M, G, X ) | Y0, M, G, X } = 0. This implies that 
+
+h(O) ∈ ˙T0 + ˙T1 + ˙T2 + ˙T3. It follows that ˙T ⊂ ˙T0 + ˙T1 + ˙T2 + ˙T3.In addition, for any hj ∈ ˙Tj satisfy h0(G, X ) + h1(M | G, X ) + h2(Y0 | M, G, X ) + h3(Y1 |
+
+Y0, M, G, X ) = 0. Taking conditional expectation with respect to Y0, M, G, X on both side, we obtain that h0(G, X )+ h1(M | G, X )+ h2(Y0 | M, G, X ) = 0. Next, taking the conditional expectation with respect to M, G, X on both sides, we obtain that h0(G, X )+ h1(M | G, X ) = 0. Again, taking the conditional expectation with respect to G, X on both sides, we obtain that h0(G, X ) = 0. Substituting h0 back into the previous equations yields h1 = h2 = h3 = 0. 8Thus, the sum is direct. Consequently, the tangent space is equal to ˙T = ˙T0 ⊕ ˙T1 ⊕ ˙T2 ⊕ ˙T3
+
+# E Proof of Theorem 2 
+
+First, we show that φ(g, g ∗) is in the tangent space. For ( g, g ∗) = (1 , 1), we notice that 
+
+φ(1 , 1) = GP (G = 1) {Y1 − E(Y1 | G = 1 , M, X, Y 0)}
+
++ GP (G = 1) {E(Y1 | G = 1 , M, X, Y 0) − E(Y1 | G = 1 , M, X )}− GP (G = 1) {Y0 − E(Y0 | G = 1 , M, X )}
+
++ GP (G = 1) {E(Y1 − Y0 | G = 1 , M, X ) − E(Y1 − Y0 | G = 1 , X )}
+
++ GP (G = 1) {E(Y1 − Y0 | G = 1 , X ) − τ (1 , 1) }.
+
+In the right-hand side of the equality, the first term is in ˙T3, the second and third terms are in ˙T2, the fourth term is in ˙T1, and the fifth term is in ˙T0.For ( g, g ∗) = (0 , 0), we notice that 
+
+φ(0 , 0) = 1 − GP (G = 1) 
+
+π(X)1 − π(X){Y1 − E(Y1 | G = 0 , M, X, Y 0)}
+
++ 1 − GP (G = 1) 
+
+π(X)1 − π(X){E(Y1 | G = 0 , M, X, Y 0) − E(Y1 | G = 0 , M, X )}− 1 − GP (G = 1) 
+
+π(X)1 − π(X){Y0 − E(Y0 | G = 0 , M, X )}
+
++ 1 − GP (G = 1) 
+
+π(X)1 − π(X){E(Y1 − Y0 | G = 0 , M, X ) − E(Y1 − Y0 | G = 0 , X )}
+
++ 1 − GP (G = 1) 
+
+π(X)1 − π(X){E(Y1 − Y0 | G = 0 , X ) − E(δ(0 , M, X ) | G = 0 , X )}
+
++ GP (G = 1) {E(δ(0 , M, X ) | G = 0 , X ) − τ (0 , 0) }.
+
+In the right-hand side of the equality, the first term is in ˙T3, the second and third terms are in ˙T2, the fourth term is in ˙T1, the fifth term is zero, and the sixth term is in ˙T0.9For ( g, g ∗) = (0 , 1), we notice that 
+
+φ(0 , 1) = 1 − GP (G = 1) 
+
+f (M | G = 1 , X )
+
+f (M | G = 0 , X )
+
+π(X)1 − π(X){Y1 − E(Y1 | G = 0 , M, X, Y 0)}
+
++ 1 − GP (G = 1) 
+
+f (M | G = 1 , X )
+
+f (M | G = 0 , X )
+
+π(X)1 − π(X){E(Y1 | G = 0 , M, X, Y 0) − E(Y1 | G = 0 , M, X )}− 1 − GP (G = 1) 
+
+f (M | G = 1 , X )
+
+f (M | G = 0 , X )
+
+π(X)1 − π(X){Y0 − E(Y0 | G = 0 , M, X )}
+
++ 1 − GP (G = 1) 
+
+f (M | G = 1 , X )
+
+f (M | G = 0 , X )
+
+π(X)1 − π(X){E(Y1 − Y0 | G = 0 , M, X ) − δ(0 , M, X )}
+
++ GP (G = 1) {δ(0 , M, X ) − E(δ(0 , M, X ) | G = 1 , X )}
+
++ GP (G = 1) {E(δ(0 , M, X ) | G = 1 , X ) − τ (0 , 1) }
+
+In the right-hand side of the equality, the first term is in ˙T3, the second and third terms are in ˙T2, the fourth term is zero, the fifth term is in ˙T1, and the sixth term is in ˙T0.Next, we should also verify φ(g, g ∗) is a valid influence function. To show this, it suffices to construct a regular and asymptotically linear estimator whose influence function is φ(g, g ∗). We delay this to the proof of Theorem 4. 
+
+# F Proof of Theorem 3 
+
+For ̂τ (1 , 1), consistency follows directly from the law of large numbers. Since the estimator depends only on empirical averages of G and G∆Y , we have 
+
+Pn(G) p
+
+→ E(G), Pn(G∆Y ) p
+
+→ E(G∆Y ).
+
+Thus, ̂τ (1 , 1) p
+
+→ τ (1 , 1). For ̂τ (0 , 0), since P n(G) p
+
+→ E(G) and by the GC property, we have ̂
+
+τ (0 , 0) p
+
+→ 1
+
+E(G)E
+
+[
+
+(1 − G) π∗(X)1 − π∗(X){∆Y − ν∗(X)} + Gν ∗(X)
+
+]
+
+,
+
+10 where π∗(X) and ν∗(X) are the probability limit of ̂π(X) and ̂ν(0 , X ). When ̂π(X) is L 1-consistent, π∗(X) = π(X) and 
+
+E
+
+[
+
+(1 − G) π∗(X)1 − π∗(X){∆Y − ν∗(X)} + Gν ∗(X)
+
+]
+
+=E
+
+{ π(X)1 − π(X)E[(1 − G){∆Y − ν∗(X)}| X] + Gν ∗(X)
+
+}
+
+=E{π(X)E[∆ Y − ν∗(X)|G = 0 , X ] + Gν ∗(X)}
+
+=E{π(X){ν(0 , X ) − ν∗(X)} + Gν ∗(X)}
+
+=E{Gν (0 , X )},
+
+where the last equality follows from the fact that E{π(X)ν(0 , X )} = E{Gν (0 , X )} and 
+
+E{π(X)ν∗(X)} = E{Gν ∗(X)}. It follows that ̂τ (0 , 0) p
+
+→ τ (0 , 0) when ̂π(X) is L 1-consistent. When ̂ν(0 , X ) is L 1-consistent, ν∗(X) = ν(0 , X ) and 
+
+E
+
+[
+
+(1 − G) π∗(X)1 − π∗(X){∆Y − ν∗(X)} + Gν ∗(X)
+
+]
+
+=E
+
+[
+
+(1 − G) π∗(X)1 − π∗(X){∆Y − ν(0 , X )} + Gν (0 , X )
+
+]
+
+=E
+
+[
+
+(1 − G) π∗(X)1 − π∗(X){1 − π(X)}E{{ ∆Y − ν(0 , X )}| G = 0 , X } + Gν (0 , X )
+
+]
+
+=E[Gν (0 , X )] .
+
+It follows that ̂τ (0 , 0) p
+
+→ τ (0 , 0) when ̂ν(0 , X ) is L 1-consistent. In summary, ̂τ (0 , 0) is consistent if either ̂π(X) or ̂ν(0 , X ) is L 1-consistent. For ̂τ (0 , 1), the proof is completely analogous, but now conditional expectations are taken with respect to ( M, X ) instead of X.11 G Proof of Theorem 4 
+
+We construct an estimator by solving the estimating equation that Pn̂φ(g, g ∗) = 0 by plugging in predicted models, ̂
+
+τ (1 , 1) = 1
+
+Pn(G)Pn(G∆Y ),̂
+
+τ (0 , 0) = 1
+
+Pn(G)Pn
+
+[
+
+(1 − G)̂ π(X)1 −̂π(X) {∆Y −̂ν(0 , X )} + Ĝν(0 , X )
+
+]
+
+,̂
+
+τ (0 , 1) = 1
+
+Pn(G)Pn
+
+[
+
+(1 − G)̂ ϖ(M, X )1 −̂ϖ(M, X ) {∆Y −̂ δ(0 , M, X )} + Ĝδ(0 , M, X )
+
+]
+
+.
+
+We define ̂
+
+ϕ(1 , 1) = 1
+
+Pn(G)G{∆Y − τ (1 , 1) },̂
+
+ϕ(0 , 0) = 1
+
+Pn(G)
+
+[
+
+(1 − G)̂ π(X)1 −̂π(X) {∆Y −̂ν(0 , X )} + G{̂ν(0 , X ) − τ (0 , 0) }
+
+]
+
+,̂
+
+ϕ(0 , 1) = 1
+
+Pn(G)
+
+[
+
+(1 − G)̂ ϖ(M, X )1 −̂ϖ(M, X ) {∆Y −̂ δ(0 , M, X )} + G{̂δ(0 , M, X ) − τ (0 , 1) }
+
+]
+
+.
+
+For each ( g, g ∗) ∈ { (1 , 1) , (0 , 0) , (0 , 1) },
+
+√n{̂τ (g, g ∗) − τ (g, g ∗)} = √nPn̂ ϕ(g, g ∗)= √nPnφ(g, g ∗) + √n(Pn − P){̂ ϕ(g, g ∗) − φ(g, g ∗)} + √nP̂ ϕ(g, g ∗).
+
+By the central limit theorem, the first term √nPnφ(g, g ∗) converges to N {0, Eφ (g, g ∗)2}.Since ϕ(g, g ∗) is Lipschitz continuous with respect to π(x), ϖ(m, x ), δ(0 , g, m ), and ν(0 , x ), the L2-consistency implies ∥̂ ϕ(g, g ∗) − φ(g, g ∗)∥L2 = op(1) and ̂ ϕ(g, g ∗) is Donsker. Therefore, the second term √n(Pn − P){̂ϕ(g, g ∗) − φ(g, g ∗)} = op(1). The key to establishing the convergence rate is the remainder term √nP̂ϕ(g, g ∗). 12 For ( g, g ∗) = (1 , 1), 
+
+P̂ ϕ(1 , 1) = 1
+
+Pn(G)P{∆Y − τ (1 , 1) | G = 1 } = 0 For ( g, g ∗) = (0 , 0), 
+
+P̂ ϕ(0 , 0) = 1
+
+Pn(G)P
+
+[̂ 
+
+π(X) 1 − π(X)1 −̂π(X) {ν(0 , X ) −̂ν(0 , X )} + π(X){̂ν(0 , X ) − ν(0 , X )}
+
+]
+
+= 1
+
+Pn(G)P
+
+[{̂ 
+
+π(X) 1 − π(X)1 −̂π(X) − π(X)
+
+}
+
+{ν(0 , X ) −̂ν(0 , X )}
+
+]
+
+≤ 1
+
+Pn(G)
+
+∥∥∥∥̂ π(X) 1 − π(X)1 −̂π(X) − π(X)
+
+∥∥∥∥L2
+
+∥∥̂ ν(0 , X ) − ν(0 , X ) ∥∥L2
+
+By positivity, 1 −̂π(X) is bounded away from zero. Each L 2-norm is op(n−1/4), so √nP̂ ϕ(0 , 0) = 
+
+op(1). For ( g, g ∗) = (0 , 1), 
+
+Pϕ(0 , 1) = 1
+
+Pn(G)P
+
+[
+
+{1 − π(X)}̂ ϖ(M, X )1 −̂ϖ(M, X )
+
+f (M | G = 0 , X )
+
+f (M | X) {δ(0 , M, X ) −̂ δ(0 , M, X )}
+
++ π(X)f (M | G = 1 , X )
+
+f (M | X) {̂ δ(0 , M, X ) − δ(0 , M, X )}
+
+]
+
+= 1
+
+Pn(G)P
+
+[
+
+{1 − π(X)}̂ ϖ(M, X )1 −̂ϖ(M, X )
+
+f (M | G = 0 , X )
+
+f (M | X) {δ(0 , M, X ) −̂ δ(0 , M, X )}
+
++ {1 − π(X)} ϖ(M, X )1 − ϖ(M, X )
+
+f (M | G = 0 , X )
+
+f (M | X) {̂δ(0 , M, X ) − δ(0 , M, X )}
+
+]
+
+= 1
+
+Pn(G)P
+
+[
+
+{1 − π(X)}f (M | G = 0 , X )
+
+f (M | X)
+
+{̂ ϖ(M, X )1 −̂ϖ(M, X ) − ϖ(M, X )1 − ϖ(M, X )
+
+}
+
+{δ(0 , M, X ) −̂ δ(0 , M, X )}
+
+]
+
+≤ 1
+
+Pn(G)
+
+∥∥∥∥{1 − π(X)}f (M | G = 0 , X )
+
+f (M | X)
+
+∥∥∥∥∞
+
+∥∥∥∥̂ 
+
+ϖ(M, X )1 −̂ϖ(M, X ) − ϖ(M, X )1 − ϖ(M, X )
+
+∥∥∥∥L2
+
+∥∥̂ δ(0 , M, X ) − δ(0 , M, X )∥∥L2 .
+
+By positivity, the first term is finite, while 1 −̂ϖ(M, X ) and 1 − ϖ(M, X ) are bounded away from zero. The two L2-norms are op(n−1/4), so √nP̂ϕ(0 , 1) = op(1). 13 In summary, for each ( g, g ∗), the influence function of ̂τ (g, g ∗) is φ(g, g ∗). Since the in-fluence function φ(g, g ∗) is in the tangent space, we conclude that ̂τ (g, g ∗) is asymptotically most efficient. By the additivity of influence functions, the influence functions of τIE , τDE ,and τ are also in the tangent space. Therefore, ̂τ IE ,̂τ DE , and ̂τ are also asymptotically effi-cient, in that their asymptotic variances attain their corresponding nonparametric efficiency bounds. 
+
+# H Proof of Theorem 5 
+
+Following the same idea to prove Theorem 1 but removing the integration, we can show the identification ¯τ (g, m ) = E{δ(g, m, X ) | G = 1 }.
+
+For the Gateaux derivative based on a point mass contamination path Pθ(o) = (1 −θ)P0(o)+ 
+
+ϵI (o = O′), where O′ is an i.i.d. copy of O. It is straightforward to see that 
+
+ddθ ¯τ (Pθ)( g, m )= ddθ 
+
+1
+
+Pθ(G = 1) EPθ {δ(g, m, X )I(G = 1) }
+
+= ddθ 
+
+1
+
+Pθ(G = 1) EPθ {EPθ (∆ Y | G = g, M = m, X )I(G = 1) }
+
+= T1 − T2.
+
+By the product rule, we have 
+
+T2 = 1
+
+P 2 
+
+> θ
+
+(G = 1) EPθ {δ(g, m, X )I(G = 1) } ddθ Pθ(G = 1) = 1
+
+P 2(G = 1) E{δ(g, m, X )I(G = 1) }{I(G′ = 1) − P (G = 1) }
+
+14 = G′
+
+P (G′ = 1) ¯τ (g, m ) − ¯τ (g, m )= GP (G = 1) ¯τ (g, m ) − ¯τ (g, m )and 
+
+T1 = 1
+
+P (G = 1) 
+
+ddθ EPθ {EPθ (∆ Y | G = g, M = m, X )I(G = 1) }
+
+= 1
+
+P (G = 1) 
+
+{E(∆ Y | G = g, M = m, X )I(G′ = 1) − E{E(∆ Y | G = g, M = m, X )I(G = 1) }}
+
++ 1
+
+P (G = 1) 
+
+∫
+
+I(g = 1) dP (g, x )δ(G′ − g, M ′ − m, X ′ = X = x)
+
+f (G′ = g, M ′ = m, X ′ = x)
+
+× {∆Y ′ − E(∆ Y | G = g, M = m, X )}
+
+= GP (G = 1) δ(g, m, X ) − ¯τ (g, m )+ I(G = g)δ(M − m)
+
+P (G = 1) 
+
+P (G = 1 | X)
+
+f (G = g, M = m | X)
+
+{∆Y − δ(g, m, X )}.
+
+which implies 
+
+ddθ ¯τ (Pθ)( g, m )= GP (G = 1) δ(g, m, X ) − ¯τ (g, m )+ I(G = g)δ(M − m)
+
+P (G = 1) 
+
+P (G = 1 | X)
+
+f (G = g, M = m | X)
+
+{∆Y − δ(g, m, X )}
+
+−
+
+{ GP (G = 1) ¯τ (g, m ) − ¯τ (g, m )
+
+}
+
+= I(G = g)δ(M − m)
+
+P (G = 1) 
+
+P (G = 1 | X)
+
+f (G = g, M = m | X)
+
+{∆Y − δ(g, m, X )}
+
++ GP (G = 1) 
+
+{δ(g, m, X ) − ¯τ (g, m )}.
+
+The expressions in the theorem follow from Bayes theorem. The statement of EIF is also straightforward, as Lemma 1, as the tangent space of the model is the full nonparametric space. 15 I Proof of Theorem 6 
+
+Let 
+
+ω(g, m, X ) := P (G = 1 | X)
+
+f (G = g, M = m | X) =
+
+  
+
+> 1
+> f(m|G=1 ,X )
+
+, if g = 1   
+
+> π(X)1−π(X)1
+> f(m|G=0 ,X )
+
+, if g = 0 .
+
+Note that the asymptotic normality of kernel estimation requires subtracting a bias term. Thus, we define the smoothing controlled effects as ¯τh(g, m ) := E
+
+{ ∫ 
+
+δ(g, m ′, X )Kh(m′ − m)dm ′ | G = 1 
+
+}
+
+.
+
+We will use ̂τ h(g, m ) − ¯τh(g, m ) instead of ̂τ h(g, m ) − ¯τ (g, m ) to establish to the asymptotic normality when M is continuous, while for consistency we always use ¯ τ (g, m ) as the true value. Besides, the difference between ¯ τh(g, m ) and ¯ τ (g, m ) is the bias term we define in the theorem. Let μ2(K) = ∫ u2K(u)du and ( δ×f )( g, m, X ) := δ(g, m, X ) × f (m | G = g, X ). To calculate the bias, we use the identification formula in Theorem 5 and kernel convolution, and obtain ¯τh(g, m ) − ¯τ (g, m )= 1
+
+P (G = 1) E
+
+{
+
+P (G = 1 | X)
+
+(Kh ∗ (δ×f )( g, m, X )
+
+f (m | G = g, X ) − δ(g, m, X )
+
+)} 
+
+where 
+
+Kh ∗ (δ×f )( g, m, X ) = ( δ×f )( g, m, X ) + 0 + h2
+
+2 μ2(K) ¨(δ×f )( g, m, X ) + o(h2).
+
+Thus, we define the bias term as 
+
+bias (g, m ) := μ2(K)2 E
+
+{ ¨(δ×f )( g, m, X )
+
+f (m | G = g, X ) | G = 1 
+
+}
+
+. (3) 16 Then ¯ τh(g, m ) − ¯τ (g, m ) = bias (g, m )h2 + o(h2). To simplify the notation in the proof, we drop the subindex h when it does not cause confusion in estimation as well as in the parameter. Note that the estimation equation is from the following population version ˇφ(g, m ) = 
+
+
+
+¯φ(g, m ), if M is discrete ˇφh(g, m ) = I(G=g)Kh(M −m)  
+
+> P(G=1)
+
+ω(g, m, X ){∆Y − δ(g, m, X )}
+
++ GP (G=1) {δ(g, m, X ) − ¯τ (g, m )}
+
+, if M is continuous ,
+
+which is the smoothing version for ¯ φ(g, m ) when M is continuous. Define 
+
+χ(M − m) := 
+
+
+
+I(M = m), if M is discrete 
+
+χh(M − m) = Kh(M − m), if M is continuous .
+
+We can decompose ¯ φ(g, m ) and ˇ φ(g, m ) as ¯φ(g, m ) = T 01 (g, m ) + T2(g, m ) + T3(g, m ),
+
+ˇφ(g, m ) = T1(g, m ) + T2(g, m ) + T3(g, m ).
+
+Here, the four terms are 
+
+T 01 (g, m ) = I(G = g)
+
+P (G = 1) δ(M − m)ω(g, m, X ){∆Y − δ(g, m, X )}
+
+T1(g, m ) = I(G = g)
+
+P (G = 1) χ(M − m)ω(g, m, X ){∆Y − δ(g, m, X )}
+
+T2(g, m ) = GP (G = 1) δ(g, m, X ) and T3(g, m ) = − GP (G = 1) ¯τ (g, m ).
+
+Since for any fitted model Mfitted , we have 
+
+Pn
+
+[T2(g, m ; Mfitted ) + T3(g, m ; Mfitted )]
+
+17 = Pn
+
+[ G
+
+Pn(G)̂ δ(g, m, X ) − G
+
+Pn(G)̂
+
+τ (g, m )
+
+]
+
+= Pn
+
+[ G
+
+Pn(G)̂ δ(g, m, X ) − G
+
+Pn(G)Pn
+
+( G
+
+Pn(G)̂ δ(g, m, X )
+
+)] 
+
+= 1
+
+Pn(G)Pn
+
+[Ĝδ(g, m, X )] − Pn(G)
+
+Pn(G)1
+
+Pn(G)Pn
+
+[Ĝδ(g, m, X )] = 0 ,
+
+and similarly, 
+
+E[T2(g, m ; Mfitted ) + T3(g, m ; Mfitted )]
+
+= E
+
+[ G
+
+Pn(G)̂ δ(g, m, X ) − G
+
+Pn(G)̂
+
+τ (g, m )
+
+]
+
+= E[̂ δ(g, m, X ) | G = 1] − { ̂τ (g, m ) + o p(1) } = op(1) .
+
+For consistency, it is sufficient to T 01 (g, m ; Mfitted ) when verifying multiple robustness. In-deed, let the Dirac delta estimator be ̂
+
+δ(M − m) := 
+
+
+
+I(M = m), if M is discrete 
+
+Kh(M − m), if M is continuous .
+
+which satisfying ̂ δ(M − m) − δ(M − m) = op(1), then we can rewrite it as 
+
+E[T 01 (g, m ; Mfitted )] = E
+
+[I(G = g)
+
+Pn(G)̂ δ(M − m)̂ω(g, m, X ) {∆Y −̂ δ(g, m, X )}]
+
+= 1 + op(1) 
+
+P (G = 1) E[I(G = g)̂δ(M − m)̂ω(g, m, X ) {∆Y −̂ δ(g, m, X )}] 
+
+= 1 + op(1) 
+
+P (G = 1) E
+
+{
+
+E[I(G = g)̂δ(M − m)̂ω(g, m, X ) {∆Y −̂ δ(g, m, X )} | G = g, M = m, X ]}
+
+= 1 + op(1) 
+
+P (G = 1) E[I(G = g)̂δ(M − m)̂ω(g, m, X ) {δ(g, m, X ) −̂ δ(g, m, X )}] .
+
+Therefore, 18 • When ̂ δ(g, m, X ) is L1-consistent, we immediately have 
+
+E[T 01 (g, m ; Mfitted )] = 1 + op(1) 
+
+P (G = 1) E[I(G = g)̂δ(M − m)̂ω(g, m, X )o p(1) ] = op(1) ,
+
+which implies Pn[̂φ(g, m )] = o p(1) and thus ̂
+
+τ (g, m ) = 1
+
+Pn(G)Pn
+
+[Ĝδ(g, m, X )] + Pn[̂φ(g, m )] = E{̂ δ(g, m, X ) | G = 1 } + op(1) = E{δ(g, m, X ) | G = 1 } + op(1) .
+
+• When ̂ω(g, m, X ) is L 1-consistent and Kh satisfying the condition in the theorem if M
+
+is continuous, we first have 
+
+E[T 01 (g, m ; Mfitted )] = 1 + op(1) 
+
+P (G = 1) E[I(G = g)̂δ(M − m)̂ω(g, m, X ) {δ(g, m, X ) −̂ δ(g, m, X )}] 
+
+= 1 + op(1) 
+
+P (G = 1) E
+
+{
+
+E[I(G = g)̂δ(M − m)̂ω(g, m, X ) {δ(g, m, X ) −̂ δ(g, m, X )} | X]}
+
+= 1 + op(1) 
+
+P (G = 1) E
+
+{{δ(g, m, X ) −̂ δ(g, m, X )}E[I(G = g)̂δ(M − m)̂ω(g, m, X ) | X ]}
+
+.
+
+Then we observe that 
+
+E[I(G = g)̂δ(M − m)̂ω(g, m, X ) | X ]
+
+= E[I(G = g)δ(M − m) | X] P (G = 1 | X)
+
+f (G = g, M = m | X) + op(1) = f (G = g, M = m | X) P (G = 1 | X)
+
+f (G = g, M = m | X) + op(1) = P (G = 1 | X) + op(1) .
+
+19 Hence, 
+
+E[T1(g, m ; Mfitted )] = 1 + op(1) 
+
+P (G = 1) E
+
+{{δ(g, m, X ) −̂ δ(g, m, X )}E[I(G = g)̂δ(M − m)̂ω(g, m, X ) | X ]}
+
+= 1
+
+P (G = 1) E
+
+{{δ(g, m, X ) −̂ δ(g, m, X )}P (G = 1 | X)
+
+}
+
++ op(1) =E{δ(g, m, X ) −̂ δ(g, m, X ) | G = 1 } + op(1) .
+
+Under this case, the consistency follows by ̂
+
+τ (g, m ) = 1
+
+Pn(G)Pn
+
+[Ĝδ(g, m, X )] + Pn[̂φ(g, m )] = E[̂ δ(g, m, X ) | G = 1] + E[T1(g, m ; Mfitted )] + op(1) = E[̂ δ(g, m, X ) | G = 1] + E{δ(g, m, X ) −̂ δ(g, m, X ) | G = 1 } + op(1) = E{δ(g, m, X ) | G = 1 } + op(1) .
+
+For the asymptotic normality part, we should use T1(g, m ) instead of T 01 (g, m ) as T 01̸ ∈ L2.We notice that 
+
+• When M is discrete, ̂
+
+τ (g, m ) − ¯τ (g, m )= 1
+
+Pn(G)Pn
+
+[Ĝδ(g, m, X )] + Pn[̂φ(g, m )] − ¯τ (g, m )= Pn
+
+[ 1
+
+Pn(G)Ĝδ(g, m, X )
+
+]
+
++ Pn[̂φ(g, m )] − E
+
+[ 1
+
+P (G = 1) Gδ (g, m, X )
+
+]
+
+− 0= Pn
+
+[Ĝδ(g, m, X )
+
+Pn(G) +̂φ(g, m )
+
+]
+
+− E
+
+[Gδ (g, m, X )
+
+P (G = 1) + ¯ φ(g, m )
+
+]
+
+= {Pn̂φ(g, m ) − E ¯φ(g, m ) } +
+
+{
+
+Pn
+
+[Ĝδ(g, m, X )
+
+Pn(G)
+
+]
+
+− E
+
+[Gδ (g, m, X )
+
+P (G = 1) 
+
+]}
+
+.
+
+20 • When M is continuous, similarly, ̂
+
+τ (g, m ) − ¯τ h(g, m )= Pn
+
+[ 1
+
+Pn(G)Ĝδ(g, m, X )
+
+]
+
++ Pn[̂φ h(g, m )] − E
+
+[ 1
+
+P (G = 1) G
+
+∫
+
+δ(g, m ′, X )Kh(m′ − m)dm ′
+
+]
+
+= {Pn̂φ(g, m ) − E ˇφ(g, m ) }
+
++
+
+{
+
+Pn
+
+[Ĝδ(g, m, X )
+
+Pn(G)
+
+]
+
+− E
+
+[ GP (G = 1) 
+
+∫
+
+δ(g, m ′, X )Kh(m′ − m)dm ′
+
+]}
+
+.
+
+Let 
+
+δ0(g, m, X ) := 
+
+
+
+δ(g, m, X ), if M is discrete 
+
+∫ δ(g, m ′, X )Kh(m′ − m)dm ′, if M is continuous .
+
+Then we have ̂
+
+τ (g, m ) − ¯τ (g, m ) = {Pn̂φ(g, m ) − E ˇφ(g, m ) } +
+
+{
+
+Pn
+
+[Ĝδ(g, m, X )
+
+Pn(G)
+
+]
+
+− E
+
+[Gδ 0(g, m, X )
+
+P (G = 1) 
+
+]}
+
+Again, here we drop the subindex h when there is no confusion. For the second term in the difference ̂τ (g, m ) − ¯τ (g, m ), by P n(G) − P (G = 1) = Op(n−1/2), the Taylor expansion implies 
+
+Pn
+
+[Ĝδ(g, m, X )
+
+Pn(G)
+
+]
+
+− E
+
+[Gδ 0(g, m, X )
+
+P (G = 1) 
+
+]
+
+= 1
+
+P (G = 1) 
+
+{Pn[Ĝδ(g, m, X )] − E[Gδ 0(g, m, X )] }
+
+− Pn(G) − P (G = 1) 
+
+P 2(G = 1) Pn[Ĝδ(g, m, X )] + op(n−1/2).
+
+For the first term, it can be reduced to 1
+
+P (G = 1) 
+
+{Pn[Ĝδ(g, m, X )] − E[Gδ 0(g, m, X )] }
+
+21 = 1
+
+P (G = 1) 
+
+{(Pn − E)[ Gδ 0] + E[G(̂δ − δ0)] + ( Pn − E)[ G(̂δ − δ0)] }.
+
+• When M is discrete, the Donsker condition and Lemma 19.24 in van der Vaart & Wellner (2023) give (Pn − E)[ G(̂δ − δ0)] = ( Pn − E)[ G(δ − δ0)] + op(n−1/2)= ( Pn − E)[ G(δ − δ)] + op(n−1/2) = op(n−1/2).
+
+• When M is continuous, we first calculate the L2 bias of ̂ δ−δ0. Using K is the symmetric kernel, we obtain 
+
+E{̂δ − δ0}2 = E
+
+{̂ 
+
+δ(g, m, X ) −
+
+∫
+
+δ(g, m ′, X )Kh(m − m′)dm ′
+
+}2
+
+≤ 2∥̂δ − δ∥22 + 2 E
+
+{ ∫ {δ(g, m, X ) − δ(g, m ′, X )}Kh(m − m′)dm ′
+
+}2
+
+= 2 O(n−2κ) + 2 
+
+{h2
+
+2 μ2(K)¨δ(g, m, X ) + o(h2)
+
+}2
+
+= O(n−2κ) + O(h4).
+
+Then the Talagrand’s inequality for kernel (see Lemma 1 in Gin´ e & Nickl (2008)) implies 
+
+E∥(Pn − E)[ G(̂δ − δ0)] ∥∞ ≲
+
+√log(1 /h ) ∨ log log n
+
+√nh 
+
+{O(n−2κ) + O(h4)}.
+
+As a result, we conclude that the first term will be 1
+
+P (G = 1) 
+
+{Pn[Ĝδ(g, m, X )] − E[Gδ 0(g, m, X )] }
+
+= 1
+
+P (G = 1) 
+
+{(Pn − E)[ Gδ 0] + E[G(̂δ − δ0)] } + R1
+
+22 where R1 is the reminder such that 
+
+R1 =
+
+
+
+op(n−1/2), if M is discrete 
+
+Op
+
+(√log(1 /h )∨log log n 
+
+> √nh
+
+{n−2κ + h4}
+
+)
+
+, if M is continuous .
+
+Similarly, by using the equation we obtained in the first term, i.e., 
+
+Pn[Ĝδ] = ( Pn − E)[ Gδ 0] + E[G(̂δ − δ0)] + E[Gδ 0] + R1.
+
+The second term can be rewritten as 
+
+Pn(G) − P (G = 1) 
+
+P 2(G = 1) Pn[Ĝδ(g, m, X )] = Pn(G) − P (G = 1) 
+
+P 2(G = 1) 
+
+{(Pn − E)[ Gδ 0] + E[G(̂δ − δ0)] + E[Gδ 0] + R1
+
+}
+
+= (Pn − E)GP 2(G = 1) 
+
+{(Pn − E)[ Gδ 0] + E[Ĝδ] + R1
+
+}.
+
+Once again, by ( Pn − E)G = Op(n−1/2), as well as R1 = op(1) given the conditions, we observe that (Pn − E)G{(Pn − E)[ Gδ 0] + E[Ĝδ] + R1
+
+}
+
+= ( Pn − E)G{E[Gδ 0] + ( Pn − E)[ Gδ 0] + E[G(̂δ − δ0)] + R1
+
+}
+
+= ( Pn − E)G{E[Gδ 0] + Op(n−1/2) + E[G(̂δ − δ0)] + R1
+
+}
+
+= ( Pn − E){GE [Gδ 0]} + op(n−1/2) + op(R1) + ( Pn − E){G{E[G(̂δ − δ0)] }}.
+
+For the last term, since G ∈ { 0, 1}, we again apply the Talagrand’s inequality and obtain (Pn − E){G{E[G(̂δ − δ0)] }} = Op
+
+(√ log(1 /h ) ∨ log log n
+
+√nh 
+
+{n−2κ + h4})
+
+.
+
+23 Hence, we have 
+
+Pn(G) − P (G = 1) 
+
+P 2(G = 1) Pn[Ĝδ(g, m, X )] = ( Pn − E)
+
+[ GE [Gδ 0]
+
+P 2(G = 1) 
+
+]
+
++ R1.
+
+Therefore, we conclude the second term in the difference ̂τ (g, m ) − ¯τ (g, m ) can be expressed as 
+
+Pn
+
+[Ĝδ(g, m, X )
+
+Pn(G)
+
+]
+
+− E
+
+[Gδ 0(g, m, X )
+
+P (G = 1) 
+
+]
+
+= (Pn − E)[ Gδ 0] + E[G(̂δ − δ0)] 
+
+P (G = 1) − (Pn − E)
+
+[ GE [Gδ 0]
+
+P 2(G = 1) 
+
+]
+
++ R1
+
+= E[G(̂δ − δ0)] 
+
+P (G = 1) + ( Pn − E)
+
+[ Gδ 0
+
+P (G = 1) − GE [Gδ 0]
+
+P 2(G = 1) 
+
+]︸ ︷︷ ︸
+
+> := ψ
+
++R1
+
+= E[G(̂δ − δ0)] 
+
+P (G = 1) + ( Pn − E)ψ + R1.
+
+Now, switch to the first term in the difference ̂τ (g, m ) − ¯τ (g, m ). We decompose it as 
+
+Pn̂φ(g, m ) − E ˇφ(g, m )= ( Pn − E) ˇ φ(g, m ) + E{̂ 
+
+φ(g, m ) − ˇφ(g, m ) } + ( Pn − E){̂ 
+
+φ(g, m ) − ˇφ(g, m ) }.
+
+Let Tj := Tj (g, m ; Mworking ) and ̂ Tj := Tj (g, m ; Mworking ), and define p1 = P (G = 1) and 
+
+Gg = I(G = g). Note that in the consistency part, we have already shown 
+
+Pn{̂ T2 +̂ T3}
+
+=Pn
+
+[ G
+
+Pn(G)̂ δ − G
+
+Pn(G)Pn
+
+{ G
+
+Pn(G)̂ δ
+
+}] 
+
+=0 .
+
+24 Then for the last two terms in the decomposition, 
+
+E{̂ 
+
+φ(g, m ) − ˇφ(g, m ) } + ( Pn − E){̂ 
+
+φ(g, m ) − ˇφ(g, m ) }
+
+= Pn
+
+{̂ 
+
+φ(g, m ) − ˇφ(g, m ) }
+
+= Pn
+
+[{̂ T1 +̂ T2 +̂ T3
+
+} − {T1 + T2 + T3
+
+}]
+
+= Pn
+
+[{̂ T1 − T1
+
+} − {T2 + T3
+
+}]
+
+= E{̂ T1 − T1
+
+} + ( Pn − E){̂ T1 − T1
+
+} − Pn
+
+{T2 + T3
+
+}.
+
+We organize these terms into the original difference leading to ̂
+
+τ (g, m ) − ¯τ (g, m )= ( Pn − E) ˇ φ(g, m ) + E{̂ 
+
+φ(g, m ) − ˇφ(g, m ) } + ( Pn − E){̂ 
+
+φ(g, m ) − ˇφ(g, m ) }
+
++
+
+{
+
+Pn
+
+[Ĝδ(g, m, X )
+
+Pn(G)
+
+]
+
+− E
+
+[Gδ 0(g, m, X )
+
+P (G = 1) 
+
+]}
+
+= ( Pn − E) ˇ φ + E{̂ T1 − T1
+
+} + ( Pn − E){̂ T1 − T1
+
+} − Pn
+
+{T2 + T3
+
+} + 0 + E[G(̂δ − δ0)] 
+
+P (G = 1) + ( Pn − E)ψ + R1
+
+= ( Pn − E){ ˇφ + ψ} + E
+
+{
+
+(̂T1 − T1) + G(̂δ − δ0)
+
+p1
+
+}
+
++ ( Pn − E){̂ T1 − T1
+
+} − Pn
+
+{T2 + T3
+
+} + E{T2 + T3
+
+} + R1
+
+= ( Pn − E){ ˇφ + ψ − (T2 + T3)} + ( Pn − E){̂ T1 − T1
+
+}
+
++ E
+
+{
+
+(̂T1 − T1) + G(̂δ − δ0)
+
+p1
+
+}
+
++ R1
+
+= ( Pn − E){ ˇφ + ψ − (T2 + T3)} + E
+
+{
+
+(̂T1 − T1) + G(̂δ − δ0)
+
+p1
+
+}
+
++ R1, (4) where in the last step we use the Donsker class again, such that (Pn − E){̂ T1 − T1
+
+} = ( Pn − E){T1 − T1
+
+} + op(n−1/2) = op(n−1/2).
+
+25 It is worthy to note that the there is no h in the convergence rate of ( Pn − E){̂ T1 − T1
+
+} as 
+
+Kh is in both ̂ T1 and T1 when M is continuous. We first look into the second term in (4) and re-express it as a second-order term. Indeed, 
+
+E
+
+{
+
+(̂ T1 − T1) + G(̂δ − δ0)
+
+p1
+
+}
+
+= E
+
+{̂ 
+
+T1 − 0 + G(̂δ − δ0)
+
+p1
+
+}
+
+= E
+
+{Gg
+
+p1̂ δ̂ω(∆ Y −̂ δ) + G(̂δ − δ0)
+
+p1
+
+}
+
+= E
+
+{Gg
+
+p1̂ δ(ω +̂ω − ω)( δ −̂ δ) + G(̂δ − δ0)
+
+p1
+
+}
+
+= E
+
+{Gg
+
+p1̂ δ(̂ω − ω)( δ 0 −̂ δ)
+
+}
+
++ E
+
+{Gg
+
+p1̂ δω(δ0 −̂ δ) + G(̂δ − δ0)
+
+p1
+
+}
+
+.
+
+In the above, the first term is the second-order term we seek; for the second term, we must treat the discrete and continuous cases separately. 
+
+• If M is discrete, the first part in it can be reduced to 
+
+E
+
+{Gg
+
+p1̂ δω(δ0 −̂ δ)
+
+}
+
+= E
+
+{Gg
+
+p1
+
+I(M = m)ω(g, m, X )(δ0(g, m, X ) −̂ δ(g, m, X ))}
+
+= E
+
+{ 1
+
+p1
+
+E{I(G = g)I(M = m)ω(g, m, X ) | X}( δ0(g, m, X ) −̂ δ(g, m, X ))}
+
+= E
+
+{ 1
+
+p1
+
+P (G = 1 | X)(δ0(g, m, X ) −̂ δ(g, m, X ))}
+
+= E
+
+{G(δ0 −̂ δ)
+
+p1
+
+}
+
+.
+
+Hence, when M is discrete, it just be zero: 
+
+E
+
+{Gg
+
+p1̂ δω(δ0 −̂ δ) + G(̂δ − δ0)
+
+p1
+
+}
+
+= E
+
+{G(δ0 −̂ δ)
+
+p1
+
+}
+
++ E
+
+{G(̂δ − δ0)
+
+p1
+
+}
+
+= 0 .
+
+26 • If M is continuous, we observe the first part will be 
+
+E
+
+{Gg
+
+p1̂ δω(δ0 −̂ δ)
+
+}
+
+= E
+
+{ 1
+
+p1
+
+E{I(G = g)Kh(M − m)ω(g, m, X ) | X}( δ0(g, m, X ) −̂ δ(g, m, X ))}
+
+.
+
+Here, using the symmetric kernel property, we rewrite the inner expectation as a kernel convolution: 
+
+E{I(G = g)Kh(M − m)ω(g, m, X ) | X}
+
+= P (G = 1 | X)(Kh ∗ f )( m | G = g, X )
+
+f (m | G = g, X ) ,
+
+where (Kh ∗ f )( m | G = g, X ) = f (m | G = g, X ) + 0 + h2
+
+2 μ2(K) ¨f (m | G = g, X ) + o(h2).
+
+Let this bias term be 
+
+bias 2,h = P (G = 1 | X)
+
+P (G = 1) 
+
+h2μ22(K) ¨f (m | G = g, X )
+
+f (m | G = g, X ) , (5) which implies 
+
+E
+
+{Gg
+
+p1̂ δω(δ0 −̂ δ)
+
+}
+
+= E
+
+{ 1
+
+p1
+
+P (G = 1 | X)
+
+{
+
+1 + h2μ2(K) ¨f (m | G = g, X )
+
+f (m | G = g, X ) + o(h2)
+
+}(δ0(g, m, X ) −̂ δ(g, m, X ))}
+
+= E
+
+{G(δ0 −̂ δ)
+
+p1
+
+}
+
++ E{bias 2,h (δ0 −̂ δ)} + o(h2).
+
+27 Hence, when M is continuous, it will be a small order term as 
+
+E
+
+{Gg
+
+p1̂ δω(δ0 −̂ δ) + G(̂δ − δ0)
+
+p1
+
+}
+
+= E{bias 2,h (δ0 −̂ δ)} + o(h2)
+
+︸ ︷︷ ︸
+
+> =O(h2)
+
+.
+
+Let 
+
+R2 =
+
+
+
+0, if M is discrete 
+
+E{bias 2,h (δ0 −̂ δ)} + o(h2) ≍ O(h2), if M is continuous .
+
+We summarize that the second term in (4) will be 
+
+E
+
+{
+
+(̂ T1 − T1) + G(̂δ − δ0)
+
+p1
+
+}
+
+= E
+
+{Gg
+
+p1̂ δ(̂ω − ω)( δ 0 −̂ δ)
+
+}
+
++ R2.
+
+Finally, for the first term in (4), we note that 
+
+ψ − (T2 + T3)= Gδ p1
+
+− GE [Gδ 0]
+
+p21
+
+−
+
+(Gδ 0
+
+p1
+
+− Gp1
+
+¯τ
+
+)
+
+= Gδ 0
+
+p1
+
+− GE [Gδ 0]
+
+p21
+
+−
+
+(Gδ 0
+
+p1
+
+− Gp1
+
+E[Gδ 0]
+
+p1
+
+)
+
+= 0 .
+
+Therefore, we conclude that ̂
+
+τ (g, m ) − ¯τ (g, m )= ( Pn − E) ˇ φ + E
+
+{Gg
+
+p1̂ δ(̂ω − ω)( δ 0 −̂ δ)
+
+}
+
++ R1 + R2.
+
+For the case M is discrete, we have 
+
+√n(Pn − E) ˇ φ = √n(Pn − E) ¯ φ ⇝ N (0, [EIF {¯τ (g, m )}]2).
+
+28 Also, R1 + R2 = op(n−1/2) and 
+
+∣∣∣∣E
+
+{Gg
+
+p1̂ δ(̂ω − ω)( δ 0 −̂ δ)
+
+}∣ ∣∣∣
+
+=
+
+∣∣∣∣E
+
+{Gg
+
+p1̂ δ(̂ω − ω)( δ −̂ δ)
+
+}∣ ∣∣∣ ≤ ∥∥̂ ω − ω ∥∥L2
+
+∥∥̂ δ − δ∥∥L2 .
+
+The nonparametric efficiency is straightforward with the desired convergence rates stated in the theorem. For the case that M is continuous, the term 
+
+E
+
+{Gg
+
+p1̂ δ(̂ω − ω)( δ 0 −̂ δ)
+
+}
+
+is still op(n−1/2) as Kh is in both δ0 and ̂ δ. Applying the kernel central limit theorem on (Pn − E) ˇ φ (see Section 1.5 in Tsybakov (2008) for example), we obtain 
+
+√nh (Pn − E) ˇ φ ⇝ N (0, σ 2ˇφ(g, m )),
+
+where 
+
+σ2ˇφ(g, m ) = μ22(K)
+
+p21
+
+E
+
+{ π2(X)
+
+P (G = g | X)f (m | g, X )var (∆ Y | G = g, M = m, X )
+
+}
+
+.
+
+Then the asymptotic normality follows by √nh (R1 + R2) = op(1) provided the conditions in the theorem. 
+
+# References 
+
+Fan, J. & Gijbels, I. (1996), Local Polynomial Modelling and Its Applications: Monographs on Statistics and Applied Probability 66 , Chapman & Hall/CRC Monographs on Statistics & Applied Probability, Taylor & Francis. 29 Gin´ e, E. & Nickl, R. (2008), ‘Adaptation on the space of finite signed measures’, Mathemat-ical Methods of Statistics 17 (2), 113–122. Hirano, K., Imbens, G. W. & Ridder, G. (2003), ‘Efficient estimation of average treatment effects using the estimated propensity score’, Econometrica 71 (4), 1161–1189. Tsybakov, A. (2008), Introduction to Nonparametric Estimation , Springer Series in Statistics, Springer New York. van der Vaart, A. & Wellner, J. A. (2023), Weak Convergence and Empirical Processes: With Applications to Statistics , Springer Nature. 30
