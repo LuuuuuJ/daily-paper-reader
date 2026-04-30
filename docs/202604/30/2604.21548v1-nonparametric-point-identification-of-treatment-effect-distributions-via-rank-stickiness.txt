@@ -1,0 +1,2241 @@
+Title: Nonparametric Point Identification of Treatment Effect Distributions via Rank Stickiness
+
+URL Source: https://arxiv.org/pdf/2604.21548v1
+
+Published Time: Fri, 24 Apr 2026 00:46:41 GMT
+
+Number of Pages: 25
+
+Markdown Content:
+# Nonparametric Point Identification of Treatment Effect Distributions via Rank Stickiness 
+
+# Tengyuan Liang The University of Chicago April 24, 2026 
+
+Abstract 
+
+Treatment effect distributions are not identified without restrictions on the joint distribution of potential outcomes. Existing approaches either impose rank preservation—a strong assumption— or derive partial identification bounds that are often wide. We show that a single scalar parameter, rank stickiness, suffices for nonparametric point identification while permitting rank violations. The identified joint distribution—the coupling that maximizes average rank correlation subject to a relative entropy constraint, which we call the Bregman-Sinkhorn copula—is uniquely determined by the marginals and rank stickiness. Its conditional distribution is an exponential tilt of the marginal with a Bregman divergence as the exponent, yielding closed-form conditional moments and rank violation probabilities; the copula nests the comonotonic and Gaussian copulas as special cases. The empirical Bregman-Sinkhorn copula converges at the parametric 
+
+√𝑛 -rate with a Gaussian process limit, despite the infinite-dimensional parameter space. We apply the framework to estimate the full treatment effect distribution, derive a variance estimator for the average treatment effect tighter than the Fr ´echet–Hoeffding and Neyman bounds, and extend to observational studies under unconfoundedness. 
+
+Keywords— treatment effect distribution, identification, heterogeneity, imputation, nonparametric copula, sensitivity analysis. 
+
+# 1 Introduction 
+
+When the goal of a policy evaluation is to understand who benefits and who is harmed, the Average Treatment Effect (ATE) or Quantile Treatment Effects (QTE) are insufficient—what is needed is the entire Treatment 
+
+1
+
+> arXiv:2604.21548v1 [econ.EM] 23 Apr 2026
+
+Effect Distribution (TED). Consider a job training program: a positive ATE on earnings may obscure the fact that gains are concentrated among high-skilled workers while low-skilled workers experience adverse effects. The TED thus reveals the complete pattern of individual heterogeneity in program impacts. However, the TED is not identified without additional assumptions: only one potential outcome is observed per unit, so the joint distribution (𝑌 0, 𝑌 1) ∼ 𝜋 is never observed. The existing literature faces a sharp trade-off between the strength of assumptions and informativeness of conclusions. At one extreme, Manski [1990, 1997] derive partial identification bounds under minimal assumptions, but these worst-case bounds are often wide [Blundell et al., 2007]. Sharper bounds exploit the coupling structure: Heckman et al. [1997] and Fan and Park [2010] employ Fr ´echet–Hoeffding copula bounds; Kim [2014] tighten these under shape restrictions; Firpo and Ridder [2019] derive bounds on functionals of the joint distribution. At the other extreme, rank preservation—the requirement that each individual’s rank in the outcome distribution is unchanged by treatment, 
+
+(𝑌 0 − 𝑌 ′
+
+> 0
+
+) · ( 𝑌 1 − 𝑌 ′
+
+> 1
+
+) > 0 a.s. for independent draws (𝑌 0, 𝑌 1), (𝑌 ′
+
+> 0
+
+, 𝑌 ′
+
+> 1
+
+) ∼ 𝜋 , 
+
+—yields point identification: the TED reduces to the quantile-by-quantile difference of the two marginals [Firpo, 2007]; conditional variants have been studied by Chernozhukov and Hansen [2005] and Athey and Imbens [2006]. Yet Heckman et al. [1997] argue this assumption is implausible in many empirical settings; indeed, under existing approaches, even mild departures from rank preservation undermine nonparametric point identification of the TED. This paper shows that point identification does not require rank preservation. We introduce a single structural parameter—rank stickiness 𝜌 —that governs the degree of departure from comonotonicity and suffices for nonparametric point identification of the TED given the marginals. Rank stickiness captures the empirical regularity that treatment shifts the distribution of outcomes while individual ranks exhibit persistence, a phenomenon well-documented in earnings mobility both within individual lifetimes [Kopczuk et al., 2010] and across generations [Chetty et al., 2014]. We treat 𝜌 as a sensitivity parameter: rather than assuming a single value, we characterize how the identified TED varies with 𝜌 .Formally, we model the joint distribution of (𝑌 0, 𝑌 1) ∼ 𝜋 as the coupling that maximizes average rank correlation subject to a relative entropy constraint parameterized by 𝜌 ∈ ( 0, 1]:max           
+
+> 𝜋 ∈Π(𝜇,𝜈 )s.t. KL (𝜋 |𝜇 ⊗𝜈 ) ≤ 𝑅 (𝜌 )
+
+E    
+
+> (𝑌 0,𝑌 1)∼ 𝜋
+
+E     
+
+> (𝑌 ′
+> 0,𝑌 ′
+> 1)∼ 𝜋
+
+(𝑌 0 − 𝑌 ′
+
+> 0
+
+) · ( 𝑌 1 − 𝑌 ′
+
+> 1
+
+) ,
+
+where Π(𝜇, 𝜈 ) is the set of couplings with marginals 𝜇, 𝜈 , and 𝑅 (𝜌 ) is a monotone function of 𝜌 that calibrates the degree of rank stickiness. We call the solution the Bregman-Sinkhorn copula. The conditional distribution of 𝑌 1 | 𝑌 0 takes the form of an exponential tilting of the treatment marginal, with exponent given by a Bregman divergence—yielding closed-form conditional moments and rank violation probabilities. The copula nests the comonotonic copula as 𝜌 → 1 and generalizes the Gaussian copula to the nonparametric setting. The Bregman-Sinkhorn copula is nonparametrically identified by (𝜇, 𝜈, 𝜌 ) alone under mild regularity conditions on the marginals. Although rank violations occur with non-vanishing probability at every 
+
+2𝜌 ∈ ( 0, 1), the conditional rank of 𝑌 1 given 𝑌 0 remains sticky around the identity as 𝜌 → 1, with an explicit Bregman-divergence characterization of the conditional distribution. The relaxation of rank preservation incurs no loss in statistical efficiency: the empirical Bregman-Sinkhorn copula converges at the parametric 
+
+√𝑛 -rate with a Gaussian process limit for any 𝜌 ∈ ( 0, 1], despite the infinite-dimensional parameter space. Applied to causal inference, efficient estimation of 𝜋 𝜌 yields the entire treatment effect distribution 
+
+L( 𝑌 1 − 𝑌 0) and any functional of the joint distribution (𝑌 0, 𝑌 1). We derive a closed-form variance estimator for the ATE that is tighter than the Fr ´echet–Hoeffding and Neyman bounds, and verify this in simulations that also examine sensitivity of the estimated TED to 𝜌 . Empirically, we find the comonotonic copula ( 𝜌 = 1)simultaneously underestimates treatment effect heterogeneity and overestimates the variance of the ATE estimator; the Bregman-Sinkhorn copula corrects both. The framework extends to observational studies: under unconfoundedness, a covariate-specific stickiness parameter identifies the conditional joint distribution stratum by stratum, and the per-stratum transport map is computed via a gradient flow whose driving term can be estimated via binary classification on the observed data. At a broader level, access to the joint distribution of potential outcomes goes well beyond what conditional average treatment effects can deliver [Athey and Imbens, 2017, 2019]: the conditional mean identifies which subgroups benefit on average [Farrell et al., 2021, Athey and Wager, 2021], but the TED reveals the probability that a given individual is harmed by treatment—information essential for targeting and policy design. We conclude this section by collecting notation used throughout. Let Y be a compact subset of 
+
+R𝑑 , P(Y) the set of Borel probability measures on Y, and Π(𝜇, 𝜈 ) the set of couplings with marginals 
+
+𝜇, 𝜈 ∈ P(Y) . We denote by L( 𝑌 ) the law of a random variable 𝑌 and by 𝑇♯𝜇 the pushforward of 𝜇 under a measurable map 𝑇 , defined by (𝑇♯𝜇 )( 𝐵 ) = 𝜇 (𝑇 −1 (𝐵 )) for every Borel set 𝐵 . For scalar-valued potential outcomes (𝑌 0, 𝑌 1) ∼ 𝜋 ∈ Π(𝜇, 𝜈 ), we write 𝐹 (𝑦 0) = 𝜇 ((−∞ , 𝑦 0]) and 𝐺 (𝑦 1) = 𝜈 ((−∞ , 𝑦 1]) for the marginal distribution functions, and 𝐹 −1, 𝐺 −1 for the corresponding quantile functions. The stickiness parameter is 
+
+𝜌 ∈ ( 0, 1], and we set 𝜖 (𝜌 ) := (1 − 𝜌 )/ 𝜌 unless otherwise stated. 
+
+# 2 Rank Violations and Optimal Transport 
+
+For a given individual, let 𝑌 0 and 𝑌 1 denote the potential outcomes under control and treatment, respectively; the individual treatment effect is 𝑌 1 − 𝑌 0. Since 𝑌 0 and 𝑌 1 are never jointly observed for the same unit, the law of 𝑌 1 − 𝑌 0 is not identified without additional restrictions on the coupling (𝑌 0, 𝑌 1) ∼ 𝜋 ∈ P (Y × Y) .A canonical identifying restriction for scalar outcomes is strict rank preservation :
+
+(𝑌 0, 𝑌 1) ∼ 𝜋 = (𝐹 −1, 𝐺 −1)♯𝑈, 𝑈 ∼ Unif (0, 1) .
+
+This is a strong restriction: it implies 𝑌 1 = 𝐺 −1 ◦ 𝐹 (𝑌 0) almost surely. Equivalently, if a unit is at quantile 
+
+𝑢 of the control-outcome distribution, that unit is also at quantile 𝑢 of the treatment-outcome distribution. Heckman et al. [1997] argue that this assumption is often implausible. We therefore consider a weaker notion, which we call average rank preservation .
+
+32.1 Optimal Transport and Average Rank Preservation 
+
+We define average rank preservation in the general multivariate setting ( Y = R𝑑 ). 
+
+Definition 2.1 (Average rank preservation) . A coupling 𝜋 ∈ Π(𝜇, 𝜈 ) satisfies average rank preservation if 
+
+R(𝜋 ) := 12 E    
+
+> (𝑌 0,𝑌 1)∼ 𝜋
+
+E     
+
+> (𝑌 ′
+> 0,𝑌 ′
+> 1)∼ 𝜋
+
+⟨𝑌 0 − 𝑌 ′
+
+> 0
+
+, 𝑌 1 − 𝑌 ′
+
+> 1
+
+⟩ > 0 ,
+
+where (𝑌 0, 𝑌 1) and (𝑌 ′
+
+> 0
+
+, 𝑌 ′
+
+> 1
+
+) are independent draws from 𝜋 . This quantity is the expected inner product between the control-outcome gap and the treatment-outcome gap for two independent units. The following notion ties the average rank preservation measure to the Kullback-Leibler divergence of 𝜋 
+
+from the independence coupling. 
+
+Definition 2.2 (𝜌 -rank preservation) . For 𝜌 ∈ ( 0, 1] and 𝜖 (𝜌 ) := (1 − 𝜌 )/ 𝜌 , a coupling 𝜋 ∈ Π(𝜇, 𝜈 ) satisfies 
+
+𝜌 -rank preservation if 
+
+R(𝜋 ) > 𝜖 (𝜌 ) KL  𝜋 | 𝜇 ⊗ 𝜈  .𝜌 -rank preservation generalizes average rank preservation: the case 𝜌 = 1 reduces to the condition R(𝜋 ) > 0.We now formalize the connection between rank-preservation and optimal transport (OT). 
+
+Proposition 2.3 (Rank correlation and entropic OT) . Suppose 𝜇, 𝜈 ∈ P(Y) with bounded second moments. (i) Suppose 𝜇 is absolutely continuous with respect to the Lebesgue measure. Then the unique maximizer of R(𝜋 ) over Π(𝜇, 𝜈 ) is the Monge–Kantorovich coupling 𝜋 1 = (𝑖𝑑, ∇𝜙 1)♯𝜇 , where ∇𝜙 1 is the Brenier map from 𝜇 to 𝜈 .(ii) For each 𝜌 ∈ ( 0, 1) and 𝜖 (𝜌 ) := (1 − 𝜌 )/ 𝜌 , maximizing R(𝜋 ) − 𝜖 (𝜌 ) KL (𝜋 | 𝜇 ⊗ 𝜈 ) over Π(𝜇, 𝜈 ) is equivalent to solving the entropic OT problem 
+
+min    
+
+> 𝜋 ∈Π(𝜇,𝜈 )
+
+∫
+
+> Y×Y
+
+12 ∥𝑦 0 − 𝑦 1 ∥2 d𝜋 (𝑦 0, 𝑦 1) + 𝜖 (𝜌 ) KL (𝜋 | 𝜇 ⊗ 𝜈 ) .
+
+# 2.2 Rank Violations 
+
+Consider the scalar case with Y = R. The coupling maximizing 𝜌 -rank preservation exhibits rank violations for every 𝜌 ∈ ( 0, 1).For the case 𝜌 = 1, maximizing average rank preservation R(𝜋 ) over Π(𝜇, 𝜈 ) uniquely identifies the Monge–Kantorovich coupling 𝜋 1 = (𝑖𝑑, 𝐺 −1 ◦ 𝐹 )♯𝜇 . This coupling exhibits perfect rank preservation: if a unit is at quantile 𝑢 of the control-outcome distribution with 𝑌 0 = 𝐹 −1 (𝑢 ), that unit is also at quantile 𝑢 of the treatment-outcome distribution with 𝑌 1 = 𝐺 −1 (𝑢 ).
+
+4For the case 𝜌 ∈ ( 0, 1), we will prove in Theorem 4.2 that under mild regularity conditions on 𝜇, 𝜈 ,maximizing 𝜌 -rank preservation over Π(𝜇, 𝜈 ) uniquely identifies a nonparametric coupling 𝜋 𝜌 
+
+𝜋 𝜌 := arg max    
+
+> 𝜋 ∈Π(𝜇,𝜈 )
+
+R(𝜋 ) − 𝜖 (𝜌 ) KL (𝜋 | 𝜇 ⊗ 𝜈 ) . (2.1) 
+
+Proposition 2.4 (Rank violations) . Let Y ∈ R be a bounded interval, and let 𝜇 and 𝜈 be absolutely continuous with respect to the Lebesgue measure with strictly positive densities. For 𝜌 ∈ ( 0, 1), consider the coupling 
+
+(𝑌 0, 𝑌 1) ∼ 𝜋 𝜌 ∈ Π(𝜇, 𝜈 ) uniquely defined in Equation (2.1) . Then for any 𝑢 ∈ ( 0, 1),
+
+P
+
+
+
+𝑌 1 ≠ 𝐺 −1 (𝑢 ) | 𝑌 0 = 𝐹 −1 (𝑢 )
+
+
+
+> 0 .
+
+# 3 Bregman-Sinkhorn Copula 
+
+Before formally deriving the nonparametric identification result under regularity conditions, we introduce the key properties of the Bregman-Sinkhorn copula, taking uniqueness of the solution to Equation (2.1) as given; the proof of uniqueness is deferred to Theorem 4.2. 
+
+# 3.1 Sinkhorn Copula 
+
+Let 𝜖 (𝜌 ) := (1 − 𝜌 )/ 𝜌 ∈ ( 0, ∞) . The Sinkhorn dual potentials 𝜙 𝜌 , 𝜓 𝜌 : Y → R satisfy the system of equations 
+
+𝜙 𝜌 (𝑦 0) = 𝜖 (𝜌 ) log 
+
+∫
+
+> Y
+
+exp 
+
+ ⟨𝑦 0, 𝑦 1⟩ − 𝜓 𝜌 (𝑦 1)
+
+𝜖 (𝜌 )
+
+
+
+d𝜈 (𝑦 1) ,𝜓 𝜌 (𝑦 1) = 𝜖 (𝜌 ) log 
+
+∫
+
+> Y
+
+exp 
+
+ ⟨𝑦 1, 𝑦 0⟩ − 𝜙 𝜌 (𝑦 0)
+
+𝜖 (𝜌 )
+
+
+
+d𝜇 (𝑦 0) . (3.1) Under regularity conditions, the pair (𝜙 𝜌 , 𝜓 𝜌 ) is uniquely identified by the marginals 𝜇, 𝜈 and the stickiness parameter 𝜌 (to be shown in Theorem 4.2), up to an additive constant (𝜙 𝜌 , 𝜓 𝜌 ) ↦ → ( 𝜙 𝜌 − 𝑐, 𝜓 𝜌 + 𝑐 ).With these convex dual functions, we define the Sinkhorn copula 𝜋 𝜌 ∈ Π(𝜇, 𝜈 ) as d𝜋 𝜌 (𝑦 0, 𝑦 1)
+
+d𝜇 (𝑦 0) d𝜈 (𝑦 1) := exp 
+
+ ⟨𝑦 0, 𝑦 1⟩ − 𝜙 𝜌 (𝑦 0) − 𝜓 𝜌 (𝑦 1)
+
+𝜖 (𝜌 )
+
+
+
+. (3.2) The name Sinkhorn copula comes from the fact that in the scalar-valued case, 
+
+P(𝑌 0 ≤ 𝑦 0, 𝑌 1 ≤ 𝑦 1) =
+
+∫ 𝐹 ( 𝑦 0 )
+
+> 0
+
+d𝑢 0
+
+∫ 𝐺 ( 𝑦 1 )
+
+> 0
+
+d𝑢 1 exp 
+
+ 𝐹 −1 (𝑢 0)𝐺 −1 (𝑢 1) − 𝜙 𝜌 ◦ 𝐹 −1 (𝑢 0) − 𝜓 𝜌 ◦ 𝐺 −1 (𝑢 1)
+
+𝜖 (𝜌 )
+
+
+
+,
+
+where the density of the copula satisfies 
+
+𝑐 𝜌  
+
+> S
+
+(𝑢 0, 𝑢 1) := exp 
+
+ 𝐹 −1 (𝑢 0)𝐺 −1 (𝑢 1) − 𝜙 𝜌 ◦ 𝐹 −1 (𝑢 0) − 𝜓 𝜌 ◦ 𝐺 −1 (𝑢 1)
+
+𝜖 (𝜌 )
+
+
+
+. (3.3) 
+
+53.2 Bregman Divergence and Conditional Exponential Family 
+
+The name Bregman-Sinkhorn copula reflects the following structure: under 𝜋 𝜌 , the conditional distribution of 
+
+𝑌 1 given 𝑌 0 is an exponential tilt of the marginal 𝜈 = L( 𝑌 1), with a Bregman divergence as the exponent. 
+
+Proposition 3.1 (Bregman divergence representation) . Consider Y = R𝑑 . Let (𝑌 0, 𝑌 1) ∼ 𝜋 𝜌 be the Sinkhorn copula defined in Equation (3.2) , then for any 𝑦 0 ∈ Y , the conditional distribution of 𝑌 1 | 𝑌 0 = 𝑦 0 is given by 
+
+P( d𝑦 1 | 𝑌 0 = 𝑦 0) =
+
+exp 
+
+ −𝐵 𝜓𝜌 ( 𝑦 1 | ∇ 𝜓 ∗    
+
+> 𝜌 (𝑦 0) )
+> 𝜖 (𝜌 )
+
+
+
+d𝜈 (𝑦 1)
+
+∫ 
+
+> Y
+
+exp 
+
+ −𝐵 𝜓𝜌 ( 𝑦 ′      
+
+> 1| ∇ 𝜓 ∗
+> 𝜌 (𝑦 0) )
+> 𝜖 (𝜌 )
+
+
+
+d𝜈 (𝑦 ′
+
+> 1
+
+)
+
+, (3.4) 
+
+where 𝐵 𝜓 𝜌 (𝑦 1 | 𝑦 ′
+
+> 1
+
+) := 𝜓 𝜌 (𝑦 1) − 𝜓 𝜌 (𝑦 ′
+
+> 1
+
+) − ⟨ 𝑦 1 − 𝑦 ′
+
+> 1
+
+, ∇𝜓 𝜌 (𝑦 ′
+
+> 1
+
+)⟩ is the Bregman divergence associated with 𝜓 𝜌 ,and 𝜓 ∗ 
+
+> 𝜌
+
+(𝑦 0) := sup 𝑦 1 ∈ Y {⟨ 𝑦 0, 𝑦 1⟩ − 𝜓 𝜌 (𝑦 1)} is the convex conjugate of 𝜓 𝜌 .Proof of Proposition 3.1. By definition of 𝜋 𝜌 in Equation (3.2) 
+
+P( d𝑦 1 | 𝑌 0 = 𝑦 0) := exp 
+
+ ⟨𝑦 0, 𝑦 1⟩ − 𝜙 𝜌 (𝑦 0) − 𝜓 𝜌 (𝑦 1)
+
+𝜖 (𝜌 )
+
+
+
+d𝜈 (𝑦 1) .
+
+By the Sinkhorn equation 𝜙 𝜌 (𝑦 0) = 𝜖 (𝜌 ) log ∫ 
+
+> Y
+
+exp 
+
+ ⟨ 𝑦 0 ,𝑦 1 ⟩− 𝜓 𝜌 ( 𝑦 1 ) 
+
+> 𝜖 (𝜌 )
+
+
+
+d𝜈 (𝑦 1), we have 
+
+P( d𝑦 1 | 𝑌 0 = 𝑦 0) =
+
+exp 
+
+ ⟨ 𝑦 0 ,𝑦 1 ⟩− 𝜓 𝜌 ( 𝑦 1 ) 
+
+> 𝜖 (𝜌 )
+
+
+
+d𝜈 (𝑦 1)
+
+∫ 
+
+> Y
+
+exp 
+
+ ⟨ 𝑦 0 ,𝑦 ′      
+
+> 1⟩− 𝜓 𝜌 (𝑦 ′
+> 1)
+> 𝜖 (𝜌 )
+
+
+
+d𝜈 (𝑦 ′
+
+> 1
+
+)
+
+=
+
+exp 
+
+ −𝐵 𝜓𝜌 ( 𝑦 1 | ∇ 𝜓 ∗    
+
+> 𝜌 (𝑦 0) )
+> 𝜖 (𝜌 )
+
+
+
+d𝜈 (𝑦 1)
+
+∫ 
+
+> Y
+
+exp 
+
+ −𝐵 𝜓𝜌 ( 𝑦 ′      
+
+> 1| ∇ 𝜓 ∗
+> 𝜌 (𝑦 0) )
+> 𝜖 (𝜌 )
+
+
+
+d𝜈 (𝑦 ′
+
+> 1
+
+)
+
+.
+
+Here the last step follows from the fact that ∇𝜓 ∗ 
+
+> 𝜌
+
+(𝑦 0) = arg max 𝑦 1 {⟨ 𝑦 0, 𝑦 1⟩ − 𝜓 𝜌 (𝑦 1)} and 𝜓 ∗ 
+
+> 𝜌
+
+(𝑦 0) =
+
+⟨𝑦 0, ∇𝜓 ∗ 
+
+> 𝜌
+
+(𝑦 0)⟩ − 𝜓 𝜌 (∇ 𝜓 ∗ 
+
+> 𝜌
+
+(𝑦 0)) , and thus 
+
+⟨𝑦 0, 𝑦 1⟩ − 𝜓 𝜌 (𝑦 1) − 𝜓 ∗ 
+
+> 𝜌
+
+(𝑦 0) = −𝐵 𝜓 𝜌 (𝑦 1 | ∇ 𝜓 ∗ 
+
+> 𝜌
+
+(𝑦 0)) .
+
+□
+
+The conditional distribution of 𝑌 1 | 𝑌 0 = 𝑦 0 under the Sinkhorn copula is a member of the natural exponential family. Equivalently, letting 𝑔 (𝑦 1) := d𝜈 (𝑦 1)/ d𝑦 1 denote the density of 𝜈 , the conditional density of 𝑌 1 | 𝑌 0 = 𝑦 0 is 
+
+𝑝 (𝑌 1 = 𝑦 1 | 𝑌 0 = 𝑦 0) = exp 
+
+ ⟨𝑦 1, 𝑦 0⟩ − 𝜙 𝜌 (𝑦 0) − 𝜓 𝜌 (𝑦 1)
+
+𝜖 (𝜌 )
+
+
+
+𝑔 (𝑦 1) . (3.5) This is a member of the natural exponential family with natural parameter 𝑦 0/𝜖 (𝜌 ) and log-partition function 
+
+𝜙 𝜌 (𝑦 0)/ 𝜖 (𝜌 ). Consequently, the conditional mean and variance of 𝑌 1 | 𝑌 0 = 𝑦 0 are given by the first and second derivatives of 𝜙 𝜌 .
+
+6Proposition 3.2 (Conditional moments) . Let (𝑌 0, 𝑌 1) ∼ 𝜋 𝜌 , the Bregman-Sinkhorn copula, and let 𝜙 𝜌 be a solution to the Sinkhorn equation (3.1) , then, for any 𝑦 0 ∈ Y ,
+
+E[𝑌 1 | 𝑌 0 = 𝑦 0] = ∇𝜙 𝜌 (𝑦 0) ,𝐶𝑜𝑣 [𝑌 1 | 𝑌 0 = 𝑦 0] = 𝜖 (𝜌 ) ∇ 2𝜙 𝜌 (𝑦 0) .
+
+# 3.3 Connection to Gaussian and Fr´ echet-Hoeffding Copulas 
+
+We restrict to the scalar case Y = R and establish connections to the Fr ´echet–Hoeffding and Gaussian copulas. Consider the conditional Bregman-Sinkhorn copula: for any 𝜌 ∈ ( 0, 1] and 𝜖 ∈ [ 0, 1), the conditional density of 𝐺 (𝑌 1) = 𝑢 1 | 𝐹 (𝑌 0) = 𝑢 0 is given by 
+
+𝑐 𝜌, 𝜖  
+
+> B
+
+(𝑢 1 | 𝑈 0 = 𝑢 0) ∝ exp 
+
+ −𝐵 𝜓 𝜌 
+
+ 𝐺 −1 (𝑢 1) | ¤ 𝜓 ∗ 
+
+> 𝜌
+
+◦ 𝐹 −1 (𝑢 0)
+
+𝜖 
+
+
+
+. (3.6) Here 𝜓 𝜌 is the solution to the Sinkhorn system, and 𝜓 ∗ 
+
+> 𝜌
+
+is its convex conjugate. The Bregman-Sinkhorn copula nests two classical copulas as special cases: (i) The Bregman-Sinkhorn copula generalizes the Gaussian copula to the nonparametric setting. The Bregman divergence reduces to a Mahalanobis distance when 𝜓 𝜌 (𝑥 ) = 𝜌𝑥 2/2 , a quadratic function. With this parametric choice of (𝜓 𝜌 , 𝜓 ∗
+
+> 𝜌
+
+), 𝐺 = 𝐹 = Φ the standard Gaussian CDF, and the choice 𝜖 = (1 − 𝜌 2)/ 𝜌 ,Equation (3.6) reduces to the conditional distribution of the Gaussian copula with correlation 𝜌 ∈ [ 0, 1)
+
+𝑐 𝜌  
+
+> G
+
+(𝑢 1 | 𝑈 0 = 𝑢 0) ∝ exp 
+
+ 2𝜌 Φ−1 (𝑢 0)Φ−1 (𝑢 1) − 𝜌 2Φ−1 (𝑢 1)2 − Φ−1 (𝑢 0)2
+
+2(1 − 𝜌 2)
+
+
+
+,
+
+with joint copula density 
+
+𝑐 𝜌  
+
+> G
+
+(𝑢 1, 𝑢 0) := 1√︁ 
+
+1 − 𝜌 2 exp 
+
+ 2𝜌 Φ−1 (𝑢 0)Φ−1 (𝑢 1) − 𝜌 2Φ−1 (𝑢 1)2 − 𝜌 2Φ−1 (𝑢 0)2
+
+2(1 − 𝜌 2)
+
+
+
+. (3.7) (ii) The Bregman-Sinkhorn copula reduces to the comonotonic copula in the limit when 𝜌 → 1 and 
+
+𝜖 → 0. In this case, 𝜓 ∗ 
+
+> 1
+
+= 𝐺 −1 ◦ 𝐹 that achieves the Fr´ echet-Hoeffding copula, namely 
+
+𝑐 FH (𝑢 1 | 𝑈 0 = 𝑢 0) := 𝛿 𝑢 0 (𝑢 1) .
+
+# 3.4 Rank Stickiness 
+
+We now study the rank stickiness property of the nonparametric Bregman-Sinkhorn copula. The conditional rank distribution 𝐺 (𝑌 1) | 𝐹 (𝑌 0) = 𝑢 0 admits an analytic formula via the Bregman divergence representation in Proposition 3.1. We characterize the rank distortion of the Bregman-Sinkhorn copula compared to the comonotonic copula, in the limiting case 𝜌 → 1 and 𝜖 → 0. 
+
+7Proposition 3.3 (Rank stickiness) . Consider the Bregman-Sinkhorn copula (𝐺 (𝑌 1), 𝐹 (𝑌 0)) ∼ 𝑐 𝜌, 𝜖  
+
+> B
+
+defined in Equation (3.6) with 𝜖 ∈ [ 0, 1) and 𝜌 ∈ ( 0, 1]. Assume that potential 𝜓 𝜌 is strictly convex and 𝜇, 𝜈 have strictly positive and smooth densities supported on a bounded interval. Then the following rank stickiness properties hold for any fixed 𝑢 0 ∈ [ 0, 1] and 𝜌 ∈ ( 0, 1] and a sequence 
+
+𝜖 𝑛 → 0:
+
+E[𝐺 (𝑌 1) | 𝐹 (𝑌 0) = 𝑢 0] = 𝐺 ◦ ¤ 𝜓 ∗ 
+
+> 𝜌
+
+◦ 𝐹 −1 (𝑢 0) + 𝑜 𝑛 (1)
+
+𝑉 𝑎𝑟 [𝐺 (𝑌 1) | 𝐹 (𝑌 0) = 𝑢 0] = 𝑜 𝑛 (1)
+
+Remark 3.4 . We call this rank stickiness for the following reason: when 𝜌 = 1 and 𝜖 𝑛 small, the conditional rank of 𝐺 (𝑌 1) | 𝐹 (𝑌 0) = 𝑢 0 is concentrated around 𝐺 ◦ ¤ 𝜓 ∗ 
+
+> 1
+
+◦ 𝐹 −1 (𝑢 0) = 𝐺 ◦ ( 𝐺 −1 ◦ 𝐹 ) ◦ 𝐹 −1 (𝑢 0) = 𝑢 0, with bias and variance both of the order 𝑜 𝑛 (1).Together with Proposition 2.4, this shows that the Bregman-Sinkhorn copula exhibits rank stickiness in the sense that the conditional rank of 𝑌 1 given 𝑌 0 is near the true rank when 𝜌 → 1 , while still allowing for rank violations with non-vanishing probability when 𝜌 ∈ ( 0, 1).
+
+# 4 Identification and Inference 
+
+# 4.1 Identification 
+
+We now prove that the Bregman-Sinkhorn copula is nonparametrically identifiable and unique under the following assumptions, without imposing any parametric restrictions on the marginals 𝜇, 𝜈 or the copula 𝜋 𝜌 .We establish the result via an asymmetric contraction argument suited for the Sinkhorn system (3.1). 
+
+Assumption 4.1. (i) Y ⊂ R𝑑 is compact. (ii) 𝜇, 𝜈 are absolutely continuous w.r.t. the Lebesgue measure and have strictly positive densities. 
+
+Theorem 4.2 (Nonparametric identifiability) . Under Assumption 4.1, the 𝜌 -Bregman-Sinkhorn copula 𝜋 𝜌 
+
+that solves Equation (2.1) is uniquely identifiable given the marginals 𝜇, 𝜈 , for any 𝜌 ∈ ( 0, 1].Proof of Theorem 4.2. The case 𝜌 = 1 follows from Brenier’s theorem [Brenier, 1991]. We hence consider 
+
+𝜌 ∈ ( 0, 1) and denote 𝜖 := 𝜖 (𝜌 ) > 0 . By standard Sinkhorn theory for strictly positive continuous costs on compact spaces, there exists a bounded continuous pair (𝜙 𝜌 , 𝜓 𝜌 ) solving 
+
+𝜙 𝜌 (𝑦 0) = 𝜖 log 
+
+∫
+
+> Y
+
+exp 
+
+ ⟨𝑦 0, 𝑦 1⟩ − 𝜓 𝜌 (𝑦 1)
+
+𝜖 
+
+
+
+d𝜈 (𝑦 1) ,𝜓 𝜌 (𝑦 1) = 𝜖 log 
+
+∫
+
+> Y
+
+exp 
+
+ ⟨𝑦 1, 𝑦 0⟩ − 𝜙 𝜌 (𝑦 0)
+
+𝜖 
+
+
+
+d𝜇 (𝑦 0) .
+
+It therefore suffices to prove uniqueness of such a pair up to additive constants: namely, the pair (𝜙 𝜌 , 𝜓 𝜌 ) is the unique solution to the above system up to the transformation (𝜙 𝜌 , 𝜓 𝜌 ) ↦ → ( 𝜙 𝜌 − 𝑐, 𝜓 𝜌 + 𝑐 ) for any 𝑐 ∈ R.
+
+8Let (𝜙 0, 𝜓 0) and (𝜙 1, 𝜓 1) be two bounded continuous solutions. Define 
+
+ℎ(𝑦 1) := 𝜓 1 (𝑦 1) − 𝜓 0 (𝑦 1) , 𝑀 𝜓 = ∥ℎ∥∞ := sup  
+
+> 𝑦 1∈ Y
+
+|ℎ(𝑦 1)| .
+
+We claim ℎ must be constant; suppose for contradiction that ℎ is non-constant. For 𝑡 ∈ [ 0, 1], define 
+
+𝜓 𝑡 := (1 − 𝑡 )𝜓 0 + 𝑡𝜓 1 , 𝜙 𝑡 (𝑦 0) := 𝜖 log 
+
+∫
+
+> Y
+
+exp 
+
+ ⟨𝑦 0, 𝑦 1⟩ − 𝜓 𝑡 (𝑦 1)
+
+𝜖 
+
+
+
+d𝜈 (𝑦 1) .
+
+Since 𝜓 0, 𝜓 1 are bounded and continuous and Y is compact, differentiation is justified, and for each 𝑦 0 ∈ Y ,
+
+𝜙 1 (𝑦 0) − 𝜙 0 (𝑦 0) =
+
+∫ 10
+
+𝜕𝜙 𝑡 (𝑦 0)
+
+𝜕𝑡 d𝑡 = −
+
+∫ 10
+
+∫
+
+> Y
+
+ℎ(𝑦 1)𝑤 𝑡 (𝑦 0, d𝑦 1) d𝑡 , 
+
+where 
+
+𝑤 𝑡 (𝑦 0, d𝑦 1) := exp  (⟨ 𝑦 0, 𝑦 1⟩ − 𝜓 𝑡 (𝑦 1))/ 𝜖 ∫ 
+
+> Y
+
+exp  (⟨ 𝑦 0, 𝑦 ′
+
+> 1
+
+⟩ − 𝜓 𝑡 (𝑦 ′
+
+> 1
+
+))/ 𝜖  d𝜈 (𝑦 ′
+
+> 1
+
+) d𝜈 (𝑦 1)
+
+is a probability measure on Y.Because ℎ is continuous and non-constant on the compact set Y, there exist 𝛿 𝜓 ∈ ( 0, 1) and a nonempty open set 
+
+𝐴 𝜓 := {𝑦 1 ∈ Y : |ℎ(𝑦 1)| < (1 − 𝛿 𝜓 )𝑀 𝜓 }
+
+with 𝜈 ( 𝐴 𝜓 ) > 0. Next, let 
+
+𝑅 := sup   
+
+> 𝑦 0,𝑦 1∈ Y
+
+|⟨ 𝑦 0, 𝑦 1⟩| < ∞ , 𝐵 𝜓 := max {∥ 𝜓 0 ∥∞, ∥𝜓 1 ∥∞} .
+
+Then for every 𝑡 ∈ [ 0, 1] and 𝑦 0, 𝑦 1 ∈ Y ,exp 
+
+ −𝑅 − 𝐵 𝜓 
+
+𝜖 
+
+
+
+≤ exp 
+
+ ⟨𝑦 0, 𝑦 1⟩ − 𝜓 𝑡 (𝑦 1)
+
+𝜖 
+
+
+
+≤ exp 
+
+ 𝑅 + 𝐵 𝜓 
+
+𝜖 
+
+
+
+.
+
+Hence, for every measurable 𝐴 ⊂ Y ,
+
+𝑤 𝑡 (𝑦 0, 𝐴 ) ≥ exp 
+
+
+
+− 2(𝑅 + 𝐵 𝜓 )
+
+𝜖 
+
+
+
+𝜈 ( 𝐴 ) =: 𝑐 𝜓 𝜈 ( 𝐴 ) ,
+
+9uniformly in 𝑦 0 and 𝑡 . Therefore, 
+
+𝜙 1 (𝑦 0) − 𝜙 0 (𝑦 0) ≤
+
+∫ 10
+
+∫
+
+> Y
+
+|ℎ(𝑦 1)| 𝑤 𝑡 (𝑦 0, d𝑦 1) d𝑡 
+
+≤
+
+∫ 10
+
+(1 − 𝛿 𝜓 )𝑀 𝜓 𝑤 𝑡 (𝑦 0, 𝐴 𝜓 ) + 𝑀 𝜓 𝑤 𝑡 (𝑦 0, Y \ 𝐴 𝜓 ) d𝑡 
+
+≤  1 − 𝛿 𝜓 𝑐 𝜓 𝜈 ( 𝐴 𝜓 ) 𝑀 𝜓 .
+
+Taking the supremum over 𝑦 0 gives 
+
+∥𝜙 1 − 𝜙 0 ∥∞ ≤ 𝛼 𝜓 ∥𝜓 1 − 𝜓 0 ∥∞ , 𝛼 𝜓 := 1 − 𝛿 𝜓 𝑐 𝜓 𝜈 ( 𝐴 𝜓 ) < 1 . (4.1) The same interpolation applied to the second fixed-point equation gives, for each 𝑦 1 ∈ Y ,
+
+𝜓 1 (𝑦 1) − 𝜓 0 (𝑦 1) = −
+
+∫ 10
+
+∫
+
+> Y
+
+ 𝜙 1 (𝑦 0) − 𝜙 0 (𝑦 0) 𝑣 𝑡 (𝑦 1, d𝑦 0) d𝑡 , 
+
+where 𝑣 𝑡 (𝑦 1, d𝑦 0) is the analogous probability measure with (𝜇, 𝜙 ) in place of (𝜈, 𝜓 ). Since 𝑣 𝑡 (𝑦 1, ·) is a probability measure, 
+
+∥𝜓 1 − 𝜓 0 ∥∞ ≤ ∥ 𝜙 1 − 𝜙 0 ∥∞ .
+
+Combining with (4.1) yields 
+
+∥𝜓 1 − 𝜓 0 ∥∞ ≤ 𝛼 𝜓 ∥𝜓 1 − 𝜓 0 ∥∞ .
+
+Since 𝛼 𝜓 < 1 and 𝑀 𝜓 > 0 (𝜓 0 ≠ 𝜓 1), this is a contradiction. Therefore ℎ must be constant, i.e., 𝜓 1 − 𝜓 0 ≡ 𝑐 
+
+for some 𝑐 ∈ R.Substituting 𝜓 1 = 𝜓 0 + 𝑐 into the first fixed-point equation gives, for every 𝑦 0 ∈ Y ,
+
+𝜙 1 (𝑦 0) = 𝜖 log 
+
+∫
+
+> Y
+
+exp 
+
+ ⟨𝑦 0, 𝑦 1⟩ − 𝜓 0 (𝑦 1) − 𝑐 𝜖 
+
+
+
+d𝜈 (𝑦 1) = 𝜙 0 (𝑦 0) − 𝑐 . 
+
+Hence any two solutions differ by additive constants of opposite sign. Finally, the coupling defined by Equation (3.2) is invariant under the transformation (𝜙, 𝜓 ) ↦ → ( 𝜙 −𝑐, 𝜓 +𝑐 ).Therefore the resulting coupling 𝜋 𝜌 is uniquely determined by (𝜇, 𝜈 ). This proves identifiability for 𝜌 ∈ ( 0, 1),and the case 𝜌 = 1 was treated above. □
+
+# 4.2 Limit Theorem 
+
+Suppose (𝑌 0,𝑖 )𝑛 𝑖 =1
+
+> 𝑖.𝑖.𝑑.
+
+∼ 𝜇 and (𝑌 1,𝑖 )𝑛 𝑖 =1
+
+> 𝑖.𝑖.𝑑.
+
+∼ 𝜈 are independent samples. Let 𝜇 𝑛 , 𝜈 𝑛 be the corresponding empirical measures, 𝜇 𝑛 := 1
+
+> 𝑛
+
+Í𝑛 𝑖 =1 𝛿 𝑌 0,𝑖 and 𝜈 𝑛 := 1
+
+> 𝑛
+
+Í𝑛 𝑖 =1 𝛿 𝑌 1,𝑖 . Let 𝐹 𝑛 , 𝐺 𝑛 be the empirical CDFs of 𝜇 𝑛 , 𝜈 𝑛 ,and let (𝜙 𝑛 , 𝜓 𝑛 ) be the empirical Sinkhorn potentials constructed from 𝜇 𝑛 , 𝜈 𝑛 as in Equation (3.1). 
+
+10 We establish central limit theorems (CLT) for the empirical potentials 𝜙 𝑛 ⊕ 𝜓 𝑛 (𝑦 0, 𝑦 1) := 𝜙 𝑛 (𝑦 0) + 𝜓 𝑛 (𝑦 1)
+
+constructed from the marginal empirical measures 𝜇 𝑛 , 𝜈 𝑛 . These complement the identifiability result of Theorem 4.2: the Bregman-Sinkhorn copula is not only nonparametrically identified but also estimable at the parametric √𝑛 -rate, with a Gaussian process limit distribution. The following two theorems use different proof strategies. For 𝜌 = 1, the empirical rank-preserving map 
+
+𝐺 −1 
+
+> 𝑛
+
+◦ 𝐹 𝑛 is Hadamard differentiable as a composition of quantile functional, and the result follows from the functional delta method [van der Vaart and Wellner, 1996, Theorem 3.9.4]. For 𝜌 ∈ ( 0, 1), the Sinkhorn dual potentials are defined implicitly by the fixed-point system (3.1) ; the main technical work is to establish (i) the Fr ´echet derivative of the Sinkhorn operator with respect to ℎ = 𝜙 ⊕ 𝜓 , and (ii) that the linearized operator (the derivative) is a bounded linear isomorphism on a gauge-centered Banach subspace, using a variant of the argument in Theorem 4.2. The CLT then follows by applying the implicit function theorem in Banach spaces. We defer the proofs to the appendix. We first establish the limit theorem for the rank-preserving case 𝜌 = 1, where 𝐺 −1 
+
+> 𝑛
+
+◦ 𝐹 𝑛 and 𝐺 −1 ◦ 𝐹 
+
+denote the empirical and population couplings, respectively. 
+
+Theorem 4.3 (CLT for empirical approximation, 𝜌 = 1). Let Y ⊂ R be a bounded interval. Denote ℓ∞ (Y) 
+
+as the space of bounded measurable functions. Suppose (𝑌 0,𝑖 )𝑛 𝑖 =1
+
+> 𝑖.𝑖.𝑑.
+
+∼ 𝜇 and (𝑌 1,𝑖 )𝑛 𝑖 =1
+
+> 𝑖.𝑖.𝑑.
+
+∼ 𝜈 are independent samples. Assume 𝐹 and 𝐺 are continuously differentiable on Y with densities 𝑓 , 𝑔 , and 
+
+0 < inf   
+
+> 𝑦 ∈ Y
+
+𝑓 (𝑦 ) ≤ sup  
+
+> 𝑦 ∈ Y
+
+𝑓 (𝑦 ) < ∞ , 0 < inf   
+
+> 𝑦 ∈ Y
+
+𝑔 (𝑦 ) ≤ sup  
+
+> 𝑦 ∈ Y
+
+𝑔 (𝑦 ) < ∞ .
+
+Then, in ℓ∞ (Y) , we have the following limit: 
+
+√𝑛  𝐺 −1 
+
+> 𝑛
+
+◦ 𝐹 𝑛 (𝑦 ) − 𝐺 −1 ◦ 𝐹 (𝑦 ) ⇝
+
+√2 B(𝐹 (𝑦 )) 
+
+𝑔 (𝐺 −1 (𝐹 (𝑦 ))) ,
+
+for a standard Brownian bridge B.
+
+Now we establish the limit theorem for the 𝜌 ∈ ( 0, 1) case. We prove for the general multivariate case 
+
+Y ⊂ R𝑑 with 𝑑 ≥ 1 under Assumption 4.1. Limit theorems for entropic OT have been established in the recent literature [Gonzalez-Sanz et al., 2022, Goldfeld et al., 2024], here we provide a self-contained analysis. 
+
+Theorem 4.4 (CLT for empirical approximation, 𝜌 ∈ ( 0, 1)). Let Assumption 4.1 hold and consider 𝜌 ∈ ( 0, 1).Denote C(Y) as the space of continuous functions. Suppose (𝑌 0,𝑖 )𝑛 𝑖 =1
+
+> 𝑖.𝑖.𝑑.
+
+∼ 𝜇 and (𝑌 1,𝑖 )𝑛 𝑖 =1
+
+> 𝑖.𝑖.𝑑.
+
+∼ 𝜈 are independent samples. Let (𝜙 𝜌 , 𝜓 𝜌 ) be Sinkhorn dual potentials for (𝜇, 𝜈 ), and (𝜙 𝑛 , 𝜓 𝑛 ) the corresponding empirical dual potentials for (𝜇 𝑛 , 𝜈 𝑛 ), as in Equation (3.1) .Then, in 𝐶 (Y) ⊕ 𝐶 (Y) ⊂ 𝐶 (Y × Y) ,
+
+√𝑛  𝜙 𝑛 ⊕ 𝜓 𝑛 − 𝜙 𝜌 ⊕ 𝜓 𝜌 
+
+ ⇝ Z𝜌 := Z0,𝜌 ⊕ Z1,𝜌 ,
+
+where (Z0,𝜌 , Z1,𝜌 ) is a jointly mean-zero Gaussian process in 𝐶 (Y) × 𝐶 (Y) .
+
+11 5 Application to Causal Inference 
+
+This section applies the Bregman-Sinkhorn copula to three problems in causal inference: (i) Section 5.1 on estimation of the treatment effect distribution (TED), (ii) Section 5.2 on estimation of the variance of the ATE estimator under rank violations, and (iii) Section 5.3 on extending the framework to observational studies via covariate adjustment. We adopt the potential outcomes framework. Let (𝑌 0, 𝑌 1) ∈ Y × Y denote the potential outcomes under control and treatment, respectively, and let 𝑇 ∈ { 0, 1} be a binary treatment indicator. The observed outcome is 𝑌 𝑖 = 𝑇 𝑖 𝑌 1,𝑖 + ( 1 − 𝑇 𝑖 )𝑌 0,𝑖 , and we observe 𝑛 i.i.d. copies {( 𝑌 𝑖 , 𝑇 𝑖 )} 𝑛 𝑖 =1. The object of interest is the treatment effect distribution (TED) L( 𝑌 1 − 𝑌 0) and functionals thereof, including the variance of the Horvitz-Thompson estimator of the ATE. 
+
+# 5.1 Treatment Effect Distribution 
+
+We first work in the experimental setting where 𝑇 ∼ Bern (1/2) is independent of (𝑌 0, 𝑌 1). The joint distribution of potential outcomes is assumed to follow the Bregman-Sinkhorn copula: (𝑌 0, 𝑌 1) ∼ 𝜋 𝜌 ∈ Π(𝜇, 𝜈 ), where 𝜇 
+
+and 𝜈 are the marginal distributions of 𝑌 0 and 𝑌 1, respectively. The Bregman-Sinkhorn copula b𝜋 𝜌 is estimated by solving the Sinkhorn system with empirical marginals 
+
+𝜇 𝑛 (𝑦 0) = 1
+
+𝑛 C∑︁ 𝑖 ∈C
+
+𝛿 𝑌 𝑖 |𝑇 𝑖 =0 (𝑦 0) , 𝜈 𝑛 (𝑦 1) = 1
+
+𝑛 T∑︁ 𝑖 ∈T
+
+𝛿 𝑌 𝑖 |𝑇 𝑖 =1 (𝑦 1) ,
+
+where C := {𝑖 : 𝑇 𝑖 = 0} and T := {𝑖 : 𝑇 𝑖 = 1} are the control and treatment groups, with sizes 𝑛 C and 
+
+𝑛 T, respectively. Since 𝑇 ⊥⊥ ( 𝑌 0, 𝑌 1), we have L( 𝑌 | 𝑇 = 0) = L( 𝑌 0) and L( 𝑌 | 𝑇 = 1) = L( 𝑌 1), so the empirical marginals 𝜇 𝑛 , 𝜈 𝑛 are consistent for 𝜇, 𝜈 .The Sinkhorn system (3.1) is solved iteratively until convergence, yielding empirical dual potentials 
+
+(𝜙 𝑛 , 𝜓 𝑛 ). The empirical copula b𝜋 𝜌 is then obtained by substituting (𝜙 𝑛 , 𝜓 𝑛 ) and (𝜇 𝑛 , 𝜈 𝑛 ) into Equation (3.2). The TED is then estimated by pushing b𝜋 𝜌 forward through the map (𝑦 0, 𝑦 1) ↦ → 𝑦 1 − 𝑦 0:
+
+L𝜌 (𝑌 1 − 𝑌 0) := (𝑦 1 − 𝑦 0)♯b𝜋 𝜌 ∈ P(Y) .
+
+Figure 1 illustrates the imputed TED L𝜌 (𝑌 1 − 𝑌 0) under two data-generating processes (DGPs): aBregman-Sinkhorn copula DGP with (𝐹 (𝑌 0), 𝐺 (𝑌 1)) ∼ 𝑐 𝜌 1=0.99  
+
+> S
+
+as in Equation (3.3), and a Gaussian copula DGP with (𝐹 (𝑌 0), 𝐺 (𝑌 1)) ∼ 𝑐 𝜌 2=0.90  
+
+> G
+
+as in Equation (3.7). Both DGPs exhibit non-trivial rank violations, as evidenced by Figures 1a and 1b. The top row of Figure 1 displays the sampling distribution of the ATE estimator b𝜏 = 𝑛 −1
+
+> T
+
+Í𝑖 ∈T 𝑌 𝑖 − 𝑛 −1
+
+> C
+
+Í𝑖 ∈C 𝑌 𝑖 across 1000 runs of the treatment assignment 𝑇 , holding the potential outcomes fixed; the population ATE is a small positive constant in both cases. For each DGP, 𝑛 = 2000 i.i.d. draws of (𝑌 0, 𝑌 1, 𝑇 ) are generated, and the imputed TED L𝜌 (𝑌 1 − 𝑌 0) is computed for stickiness levels 𝜌 ∈ { 0.90 , 0.95 , 0.99 , 0.999 , 1.00 }. Rows 2–3 of Figure 1 compare the imputed TED L𝜌 (𝑌 1 − 𝑌 0) against the true, unobserved L𝜌 (𝑌 1 − 𝑌 0) for each DGP across these values of 𝜌 .
+
+12 (a) Bregman-Sinkhorn copula DGP, ATE distribution. (b) Gaussian copula DGP, ATE distribution. 
+
+(c) Imputed TED L𝜌 (𝑌 1 − 𝑌 0), Bregman-Sinkhorn copula DGP, varying 𝜌 .
+
+(d) Imputed TED L𝜌 (𝑌 1 − 𝑌 0), Gaussian copula DGP, varying 𝜌 .
+
+Figure 1: Numerical illustrations. Row 1 : ATE estimator distribution under each copula DGP. Rows 2–3 :imputed treatment effect distributions across stickiness levels 𝜌 under the Bregman-Sinkhorn copula DGP (row 2) and Gaussian copula DGP (row 3). 
+
+13 Both DGPs are calibrated so that the population ATE 𝜏 := 𝑛 −1 Í𝑛 𝑖 =1 (𝑌 1,𝑖 − 𝑌 0,𝑖 ) is small and positive, yet the TED is bimodal: approximately 60% of units experience a negative individual treatment effect and 40% experience a positive one. The imputed TED L𝜌 (𝑌 1 − 𝑌 0) recovers this bimodal structure across all stickiness levels 𝜌 , and a well-chosen 𝜌 (e.g., 𝜌 = 0.99 ) closely approximates the true population TED. By contrast, the ATE estimator fails to capture this heterogeneity and, under the couplings considered here, exhibits substantial variance, rendering ATE-based inference uninformative. The comonotonic coupling ( 𝜌 = 1) underestimates treatment effect heterogeneity by producing an overly concentrated TED. The Bregman-Sinkhorn copula with 𝜌 < 1 permits rank violations, interpolating between the comonotonic coupling ( 𝜌 = 1 , which over-shrinks the TED) and the independence coupling ( 𝜌 → 0 ,which over-disperses it), and recovering the full heterogeneity at intermediate values of 𝜌 .
+
+# 5.2 Variance Functional of ATE Estimator 
+
+The Horvitz-Thompson estimator of the ATE and its exact variance are 
+
+b𝜏 := 2
+
+𝑛 
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+𝑌 𝑖 𝑇 𝑖 − 2
+
+𝑛 
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+𝑌 𝑖 (1 − 𝑇 𝑖 ) , 𝑉 𝑎𝑟 (b𝜏 ) = 1
+
+𝑛 2
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+(𝑌 0,𝑖 + 𝑌 1,𝑖 )2 .
+
+Since 𝑉 𝑎𝑟 (b𝜏 ) depends on the unobserved joint distribution of (𝑌 0, 𝑌 1), it must be bounded or imputed under structural assumptions. Under the structural assumption (𝑌 0, 𝑌 1) ∼ 𝜋 𝜌 , the Bregman-Sinkhorn copula, the conditional moment formulas of Proposition 3.2 yield a tractable expression for imputation. 
+
+Proposition 5.1 (Variance functional) . Under the Bregman-Sinkhorn copula (𝑌 0, 𝑌 1) ∼ 𝜋 𝜌 ,
+
+E(𝑌 0,𝑖 + 𝑌 1,𝑖 )2 = E  𝑌 0,𝑖 + ¤ 𝜙 𝜌 (𝑌 0,𝑖 )2 + 𝜖 (𝜌 ) ¥ 𝜙 𝜌 (𝑌 0,𝑖 ) = E  𝑌 1,𝑖 + ¤ 𝜓 𝜌 (𝑌 1,𝑖 )2 + 𝜖 (𝜌 ) ¥ 𝜓 𝜌 (𝑌 1,𝑖 ) .
+
+The resulting plug-in estimator of 𝑉 𝑎𝑟 (b𝜏 ) is 
+
+d𝑉 𝑎𝑟 SB (b𝜏 ) := 1
+
+𝑛 2
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+n 𝑌 𝑖 + ¤ 𝜙 𝜌 (𝑌 𝑖 )2 + 𝜖 (𝜌 ) ¥ 𝜙 𝜌 (𝑌 𝑖 )
+
+o
+
+𝑇 𝑖 +
+
+n 𝑌 𝑖 + ¤ 𝜓 𝜌 (𝑌 𝑖 )2 + 𝜖 (𝜌 ) ¥ 𝜓 𝜌 (𝑌 𝑖 )
+
+o
+
+(1 − 𝑇 𝑖 ) .
+
+Proof. Apply Proposition 3.2 and the law of total expectation. □
+
+In practice, ¤𝜙 𝜌 and ¥𝜙 𝜌 are computed from the empirical dual potentials 𝜙 𝑛 , 𝜓 𝑛 obtained by running the Sinkhorn algorithm on 𝜇 𝑛 , 𝜈 𝑛 . By Proposition 3.2, the empirical counterparts are (with ¤𝜓 𝜌 and ¥𝜓 𝜌 defined analogously): 
+
+c¤𝜙 𝜌 (𝑦 0) =
+
+E𝑌 1∼𝜈 𝑛 
+
+h
+
+𝑌 1 exp 
+
+ 𝑦 0𝑌 1 − 𝜓 𝑛 (𝑌 1 )
+
+> 𝜖
+
+i 
+
+E𝑌 1∼𝜈 𝑛 
+
+h
+
+exp 
+
+ 𝑦 0𝑌 1 − 𝜓 𝑛 (𝑌 1 )
+
+> 𝜖
+
+i , c¥𝜙 𝜌 (𝑦 0) =
+
+E𝑌 1∼𝜈 𝑛 
+
+h 𝑌 1 − c¤𝜙 𝜌 (𝑦 0)2 exp 
+
+ 𝑦 0𝑌 1 − 𝜓 𝑛 (𝑌 1 )
+
+> 𝜖
+
+i 
+
+E𝑌 1∼𝜈 𝑛 
+
+h
+
+exp 
+
+ 𝑦 0𝑌 1 − 𝜓 𝑛 (𝑌 1 )
+
+> 𝜖
+
+i .
+
+We benchmark d𝑉 𝑎𝑟 SB against two competitors. The first is the Fr ´echet-Hoeffding bound, corresponding 
+
+14 to the special case 𝜌 = 1 (rank preservation): 
+
+d𝑉 𝑎𝑟 FH (b𝜏 ) := 1
+
+𝑛 2
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+ 𝑌 𝑖 + b𝐺 −1 ◦ b𝐹 (𝑌 𝑖 )2𝑇 𝑖 +  𝑌 𝑖 + b𝐹 −1 ◦ b𝐺 (𝑌 𝑖 )2 (1 − 𝑇 𝑖 ) .
+
+The second is the classical upper bound of Neyman [1923], which relies only on the marginal variances: 
+
+d𝑉 𝑎𝑟 N (b𝜏 ) := 1
+
+𝑛 
+
+b𝑉 0 + b𝑉 1 + 2√︃ b𝑉 0 b𝑉 1
+
+
+
+, b𝑉 0 := 2
+
+𝑛 
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+𝑌 2 
+
+> 𝑖
+
+(1 − 𝑇 𝑖 ) , b𝑉 1 := 2
+
+𝑛 
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+𝑌 2 
+
+> 𝑖
+
+𝑇 𝑖 .
+
+(a) Bregman–Sinkhorn copula DGP. (b) Gaussian copula DGP. 
+
+Figure 2: Variance bounds of the ATE: cVar FH , cVar N versus cVar SB by varying the stickiness parameter 
+
+𝜌 ∈ { 0.9, 0.95 , 0.99 }, under the Bregman–Sinkhorn copula DGP (left) and the Gaussian copula DGP (right). The top row visualizes the copula DGPs and rank violations by plotting the unobserved (𝑌 0, 𝑌 1) pairs. The bottom row compares the variance bounds against the true variance across 500 independent draws of 𝑇 .Figure 2 reports a numerical comparison of all three bounds under two DGPs: (i) a Bregman-Sinkhorn copula DGP with (𝐹 (𝑌 0), 𝐺 (𝑌 1)) ∼ 𝑐 𝜌 0=0.95  
+
+> S
+
+and pronounced rank violations, and (ii) a Gaussian copula DGP with (𝐹 (𝑌 0), 𝐺 (𝑌 1)) ∼ 𝑐 𝜌 0=0.95  
+
+> G
+
+with moderate rank violations. Each bound is evaluated across 500 independent draws of 𝑇 , with the potential outcomes held fixed, and compared against the true 𝑉 𝑎𝑟 (b𝜏 )
+
+computed from the unobserved (𝑌 0, 𝑌 1). The Bregman-Sinkhorn bound d𝑉 𝑎𝑟 SB is substantially tighter than 
+
+15 both d𝑉 𝑎𝑟 FH and d𝑉 𝑎𝑟 N, which overestimate the true variance across all replications. The comonotonic coupling ( 𝜌 = 1) errs in both directions: it underestimates treatment effect heterogeneity by producing an overly concentrated TED, and overestimates the variance of the ATE estimator. The Bregman-Sinkhorn copula corrects both simultaneously: it recovers the full heterogeneity of the TED and yields a tighter variance estimator for the ATE. 
+
+# 5.3 Covariate Adjustment 
+
+In observational studies, treatment assignment 𝑇 may depend on covariates 𝑋 , so (𝑌 0, 𝑌 1)̸ ⊥ ⊥ 𝑇 . The Bregman-Sinkhorn framework extends naturally to this setting by conditioning on 𝑋 .
+
+Assumption 5.2 (Unconfoundedness) . (𝑌 0, 𝑌 1) ⊥ ⊥ 𝑇 | 𝑋 = 𝑥 for every 𝑥 ∈ X .
+
+Assumption 5.3 (Conditional Bregman-Sinkhorn copula) . For every 𝑥 ∈ X , the conditional distribution of 
+
+(𝑌 0, 𝑌 1) given 𝑋 = 𝑥 is a Bregman-Sinkhorn copula with stickiness parameter 𝜌 𝑥 ∈ ( 0, 1]:
+
+(𝑌 0, 𝑌 1) | 𝑋 = 𝑥 ∼ 𝜋 𝜌 𝑥 (· | 𝑋 = 𝑥 ) ∈ Π(𝜇 𝑥 , 𝜈 𝑥 ),
+
+where 𝜇 𝑥 and 𝜈 𝑥 denote the conditional distributions of 𝑌 0 and 𝑌 1 given 𝑋 = 𝑥 , respectively. Assumption 5.3 generalizes the conditional rank preservation assumption of Chernozhukov and Hansen [2005] and Athey and Imbens [2006], which corresponds to 𝜌 𝑥 = 1 for every 𝑥 .Under Assumption 5.2, the conditional marginals 𝜇 𝑥 = L( 𝑌 0 | 𝑋 = 𝑥 ) = L( 𝑌 | 𝑋 = 𝑥, 𝑇 = 0) and 
+
+𝜈 𝑥 = L( 𝑌 1 | 𝑋 = 𝑥 ) = L( 𝑌 | 𝑋 = 𝑥, 𝑇 = 1) are identified from the observed data. Under Assumption 5.3, the conditional joint distribution 𝜋 𝜌 𝑥 (· | 𝑋 = 𝑥 ) is then identified as 
+
+𝜋 𝜌 𝑥 (· | 𝑋 = 𝑥 ) := arg max      
+
+> 𝜋 ∈Π(𝜇 𝑥 ,𝜈 𝑥 )
+
+R(𝜋 ) − 𝜖 (𝜌 𝑥 ) KL (𝜋 | 𝜇 𝑥 ⊗ 𝜈 𝑥 ) .
+
+The conditional TED L( 𝑌 1 − 𝑌 0 | 𝑋 = 𝑥 ) is recovered by pushing 𝜋 𝜌 𝑥 (· | 𝑋 = 𝑥 ) forward through 
+
+(𝑦 0, 𝑦 1) ↦ → 𝑦 1 − 𝑦 0, and the marginal TED L( 𝑌 1 − 𝑌 0) is obtained by integrating over the distribution of 𝑋 .When 𝜌 𝑥 = 1 for every 𝑥 , the conditional Bregman-Sinkhorn copula reduces to the conditional rank-preserving coupling, yet the marginal distribution of (𝑌 0, 𝑌 1) need not be rank-preserving—a feature unavailable to any single unconditional Bregman-Sinkhorn copula. To see this, let 𝑋 ∈ { 0, 1} with equal probability, 
+
+(𝑌 0, 𝑌 1) | 𝑋 = 0 ∼ 12 𝛿 (0.5, 0.25 ) + 12 𝛿 (0.75 , 1) , and (𝑌 0, 𝑌 1) | 𝑋 = 1 ∼ 12 𝛿 (0.25 , 0.5) + 12 𝛿 (1, 0.75 ) : each conditional is rank-preserving, yet the marginal is not. The conditional Bregman-Sinkhorn mixture therefore generates a strictly richer class of marginal dependence structures, accommodating heterogeneous rank dependence across covariate strata. We now present an algorithm that computes the conditional rank-preserving Bregman-Sinkhorn copula 
+
+𝜋 𝜌 𝑥 ≡1 (· | 𝑋 = 𝑥 ) jointly over all 𝑥 ∈ X , for Y = R. The algorithm generalizes the parabolic Monge–Amp `ere PDE of Deb and Liang [2025], which computes the optimal transport map between L( 𝑌 0 | 𝑋 = 𝑥 ) and 
+
+16 L( 𝑌 1 | 𝑋 = 𝑥 ). The parabolic Monge–Amp `ere PDE defines a gradient flow that converges to ¤𝜙 ∞ (𝑦 ; 𝑥 ) as 
+
+𝑡 → ∞ : with initial condition ¤𝜙 0 (𝑦 ; 𝑥 ) = 𝑦 ,
+
+𝜕 𝑡 ¤𝜙 𝑡 (𝑦 ; 𝑥 ) = − ¥ 𝜙 𝑡 (𝑦 ; 𝑥 )ℎ( ¤ 𝜙 𝑡 (𝑦 ; 𝑥 ); 𝑥 ) ,
+
+where ℎ(· ; 𝑥 ) is the score of the conditional log-density ratio, 
+
+ℎ(𝑦 ; 𝑥 ) := 𝜕 𝑦 log P( ¤ 𝜙 𝑡 (𝑌 0; 𝑥 ) = 𝑦 | 𝑋 = 𝑥 )
+
+P(𝑌 1 = 𝑦 | 𝑋 = 𝑥 ) .
+
+Setting the right-hand side to zero yields static Monge–Amp `ere equations [Liang, 2025b,a] that characterize the optimal transport map ¤𝜙 ∞ (· ; 𝑥 ) for each 𝑥 :
+
+¤𝜙 ∞ (· ; 𝑥 )♯L( 𝑌 0 | 𝑋 = 𝑥 ) = L( 𝑌 1 | 𝑋 = 𝑥 ) .
+
+Under Assumption 5.2, ℎ(· ; 𝑥 ) is identified from the observed data (𝑌 , 𝑋, 𝑇 ):
+
+ℎ(𝑦 ; 𝑥 ) = 𝜕 𝑦 log P( ¤ 𝜙 𝑡 (𝑌 0; 𝑥 ) = 𝑦 | 𝑋 = 𝑥, 𝑇 = 0)
+
+P(𝑌 1 = 𝑦 | 𝑋 = 𝑥, 𝑇 = 1) (unconfoundedness) ,
+
+= 𝜕 𝑦 log P( ¤ 𝜙 𝑡 (𝑌 ; 𝑋 ) = 𝑦 | 𝑋 = 𝑥, 𝑇 = 0) P(𝑋 = 𝑥 | 𝑇 = 0)
+
+P(𝑌 = 𝑦 | 𝑋 = 𝑥, 𝑇 = 1) P(𝑋 = 𝑥 | 𝑇 = 1) (since 𝜕 𝑦 log P(𝑋 = 𝑥 | 𝑇 = 0)
+
+P(𝑋 = 𝑥 | 𝑇 = 1) = 0) ,
+
+= 𝜕 𝑦 log P( ¤ 𝜙 𝑡 (𝑌 ; 𝑋 ) = 𝑦, 𝑋 = 𝑥 | 𝑇 = 0)
+
+P(𝑌 = 𝑦, 𝑋 = 𝑥 | 𝑇 = 1) (Bayes’ rule) .
+
+The joint log-likelihood ratio log P( ¤ 𝜙 𝑡 (𝑌 ;𝑋 )=𝑦,𝑋 =𝑥 |𝑇 =0)   
+
+> P(𝑌 =𝑦,𝑋 =𝑥 |𝑇 =1)
+
+is identified from the observed data and can be estimated by training a binary classifier to predict 𝑇 from the pooled sample {( ¤ 𝜙 𝑡 (𝑌 𝑖 ; 𝑋 𝑖 ), 𝑋 𝑖 ) : 𝑇 𝑖 = 0} and 
+
+{( 𝑌 𝑖 , 𝑋 𝑖 ) : 𝑇 𝑖 = 1}. Formal consistency guarantees for the resulting plug-in estimator of the conditional TED are left for future work. 
+
+# Acknowledgements 
+
+TL gratefully acknowledges support from the NSF Career Award (DMS-2042473) and the Wallman Society of Fellows at the University of Chicago. 
+
+# References 
+
+S. Athey and G. W. Imbens. Identification and inference in nonlinear difference-in-differences models. 
+
+Econometrica , 74(2):431–497, 2006. S. Athey and G. W. Imbens. The state of applied econometrics: Causality and policy evaluation. Journal of Economic perspectives , 31(2):3–32, 2017. 
+
+17 S. Athey and G. W. Imbens. Machine learning methods that economists should know about. Annual Review of Economics , 11(1):685–725, 2019. S. Athey and S. Wager. Policy learning with observational data. Econometrica , 89(1):133–161, 2021. R. Blundell, A. Gosling, H. Ichimura, and C. Meghir. Changes in the distribution of male and female wages accounting for employment composition using bounds. Econometrica , 75(2):323–363, 2007. Y. Brenier. Polar factorization and monotone rearrangement of vector-valued functions. Communications on pure and applied mathematics , 44(4):375–417, 1991. V. Chernozhukov and C. Hansen. An IV model of quantile treatment effects. Econometrica , 73(1):245–261, 2005. R. Chetty, N. Hendren, P. Kline, E. Saez, and N. Turner. Is the united states still a land of opportunity? recent trends in intergenerational mobility. American economic review , 104(5):141–147, 2014. I. Csisz ´ar. I-divergence geometry of probability distributions and minimization problems. The Annals of Probability , 3(1):146–158, 1975. doi: 10.1214/aop/1176996454. N. Deb and T. Liang. No-regret generative modeling via parabolic monge-amp `ere pde. The Annals of Statistics , 2025. forthcoming. Y. Fan and S. S. Park. Sharp bounds on the distribution of treatment effects and their statistical inference. 
+
+Econometric Theory , 26(3):931–951, 2010. M. H. Farrell, T. Liang, and S. Misra. Deep neural networks for estimation and inference. Econometrica , 89 (1):181–213, 2021. S. Firpo. Efficient semiparametric estimation of quantile treatment effects. Econometrica , 75(1):259–276, 2007. S. Firpo and G. Ridder. Partial identification of the treatment effect distribution and its functionals. Journal of Econometrics , 213(1):210–234, 2019. Z. Goldfeld, K. Kato, G. Rioux, and R. Sadhu. Limit theorems for entropic optimal transport maps and sinkhorn divergence. Electronic Journal of Statistics , 18(1):980–1041, 2024. A. Gonzalez-Sanz, J.-M. Loubes, and J. Niles-Weed. Weak limits of entropy regularized optimal transport; potentials, plans and divergences. arXiv preprint arXiv:2207.07427 , 2022. J. J. Heckman, J. Smith, and N. Clements. Making the most out of programme evaluations and social experiments: Accounting for heterogeneity in programme impacts. The Review of Economic Studies , 64 (4):487–535, 1997. 
+
+18 J. H. Kim. Identifying the distribution of treatment effects under support restrictions. arXiv preprint arXiv:1410.5885 , 2014. W. Kopczuk, E. Saez, and J. Song. Earnings inequality and mobility in the united states: Evidence from social security data since 1937. The Quarterly Journal of Economics , 125(1):91–128, 2010. T. Liang. Distributional shrinkage i: Universal denoisers in multi-dimensions. arXiv preprint arXiv:2511.09500 ,2025a. T. Liang. Distributional shrinkage ii: Optimal transport denoisers with higher-order scores. arXiv preprint arXiv:2512.09295 , 2025b. C. F. Manski. Nonparametric bounds on treatment effects. The American Economic Review , 80(2):319–323, 1990. C. F. Manski. Monotone treatment response. Econometrica , 65(6):1311–1334, 1997. J. Neyman. On the application of probability theory to agricultural experiments. essay on principles. Ann. Agricultural Sciences , pages 1–51, 1923. M. Nutz. Introduction to entropic optimal transport. Lecture notes, Columbia University , 2021. A. W. van der Vaart and J. A. Wellner. Weak convergence and empirical processes: with applications to statistics . Springer, New York, 1996. 
+
+# A Proofs 
+
+# A.1 Proofs for Section 2 
+
+Proof of Proposition 2.3. Both claims follow from Brenier’s Theorem [Brenier, 1991] and the identity 
+
+> R
+
+(𝜋 ) = −
+
+∫
+
+> Y×Y
+
+12 ∥𝑦 0 − 𝑦 1 ∥2 d𝜋 (𝑦 0, 𝑦 1) + 
+
+∫
+
+> Y×Y
+
+12 ∥𝑦 0 − 𝑦 1 ∥2 d𝜇 (𝑦 0) d𝜈 (𝑦 1) .
+
+Since the second term is a constant with respect to 𝜋 , maximizing R(𝜋 ) is equivalent to minimizing the squared-distance transport cost, whose unique solution under absolute continuity is the Brenier map by Brenier’s Theorem. For part (ii), the regularized objective −R(𝜋 ) + 𝜖 (𝜌 )KL (𝜋 | 𝜇 ⊗ 𝜈 ) is the entropic OT objective up to a constant. □
+
+Proof of Proposition 2.4. By Theorem 4.2, the unique solution to Equation (2.1) implies that 𝜋 𝜌 admits a density with respect to 𝜇 ⊗ 𝜈 of the form 
+
+P(𝑌 1 = d𝑦 1 | 𝑌 0 = 𝑦 0) = exp 
+
+ 𝑦 0 · 𝑦 1 − 𝜙 𝜌 (𝑦 0) − 𝜓 𝜌 (𝑦 1)
+
+𝜖 (𝜌 )
+
+
+
+d𝜈 (𝑦 1) .
+
+19 Then for any 𝑢 ∈ ( 0, 1) and 𝛿 < min (𝑢, 1 − 𝑢 )
+
+P
+
+
+
+𝑌 1 ∉ [𝐺 −1 (𝑢 − 𝛿 ), 𝐺 −1 (𝑢 + 𝛿 )] | 𝑌 0 = 𝐹 −1 (𝑢 )
+
+
+
+=
+
+∫    
+
+> R\[ 𝐺 −1(𝑢 −𝛿 ),𝐺 −1(𝑢 +𝛿 ) ]
+
+exp 
+
+ 𝐹 −1 (𝑢 ) · 𝑦 1 − 𝜙 𝜌 (𝐹 −1 (𝑢 )) − 𝜓 𝜌 (𝑦 1)
+
+𝜖 (𝜌 )
+
+
+
+d𝜈 (𝑦 1) .
+
+Since 𝜈 has a strictly positive density and Y is bounded, by standard Sinkhorn theory for strictly positive continuous costs on compact spaces [Csisz ´ar, 1975, Nutz, 2021], there exists a bounded continuous pair (𝜙 𝜌 , 𝜓 𝜌 )
+
+solving the Sinkhorn equations and ∥𝜙 𝜌 (𝑦 0) + 𝜓 𝜌 (𝑦 1)∥ ∞ < ∞. Hence exp 
+
+ 𝑦 0 ·𝑦 1 − 𝜙 𝜌 ( 𝑦 0 ) − 𝜓 𝜌 ( 𝑦 1 ) 
+
+> 𝜖 (𝜌 )
+
+
+
+≥ 𝑐 (Y , 𝜋 𝜌 )
+
+uniformly in 𝑦 1, 𝑦 0 ∈ Y for some constant 𝑐 (Y , 𝜋 𝜌 ) > 0. Therefore, 
+
+P
+
+
+
+𝑌 1 ∉ [𝐺 −1 (𝑢 − 𝛿 ), 𝐺 −1 (𝑢 + 𝛿 )] | 𝑌 0 = 𝐹 −1 (𝑢 )
+
+
+
+≥ 𝑐 (Y , 𝜋 𝜌 ) · ( 1 − 2𝛿 ) .
+
+□
+
+# A.2 Proofs for Section 3 
+
+Proof of Proposition 3.2. The conditional distribution of 𝑌 1 | 𝑌 0 = 𝑦 0 is given by Equation (3.5), which is a member of the natural exponential family with natural parameter 𝑦 0/𝜖 (𝜌 ) and log-partition function 
+
+𝜙 𝜌 (𝑦 0)/ 𝜖 (𝜌 ). The first and second moments of an exponential family distribution follow from the first and second derivatives of the log-partition function, giving the desired result. □
+
+Proof of Proposition 3.3. The conditional distribution of 𝐺 (𝑌 1) | 𝐹 (𝑌 0) = 𝑢 0 is given by 
+
+P(𝐺 (𝑌 1) = 𝑢 1 | 𝐹 (𝑌 0) = 𝑢 0) =
+
+exp 
+
+ −𝐵 𝜓𝜌 
+
+ 𝐺 −1 (𝑢 1 ) | ¤ 𝜓 ∗  
+
+> 𝜌 ◦𝐹 −1(𝑢 0)
+
+
+
+> 𝜖
+
+∫ 10 exp 
+
+ −𝐵 𝜓𝜌 
+
+ 𝐺 −1 (𝑢 ′   
+
+> 1) | ¤ 𝜓 ∗
+> 𝜌 ◦𝐹 −1(𝑢 0)
+
+
+
+> 𝜖
+
+
+
+d𝑢 ′
+
+> 1
+
+.
+
+By the strict convexity of 𝜓 𝜌 , the Bregman divergence 𝐵 𝜓 𝜌 
+
+ 𝐺 −1 (𝑢 1) | ¤ 𝜓 ∗ 
+
+> 𝜌
+
+◦ 𝐹 −1 (𝑢 0) has a strict minimum at 
+
+𝑢 1 = 𝐺 ◦ ¤ 𝜓 ∗ 
+
+> 𝜌
+
+◦𝐹 −1 (𝑢 0). By the assumption of strictly positive and smooth densities, the map 𝑢 1 ↦ → 𝜓 𝜌 ◦𝐺 −1 (𝑢 1)
+
+has strictly positive second derivative at 𝑢 1 = 𝐺 ◦ ¤ 𝜓 ∗ 
+
+> 𝜌
+
+◦ 𝐹 −1 (𝑢 0). Applying the Laplace method, we have for any positive function ℎ(𝑢 1) that is bounded and smooth, 
+
+∫ 10 ℎ(𝑢 1) exp 
+
+ −𝐵 𝜓𝜌 
+
+ 𝐺 −1 (𝑢 1 ) | ¤ 𝜓 ∗  
+
+> 𝜌 ◦𝐹 −1(𝑢 0)
+
+
+
+> 𝜖 𝑛
+
+
+
+d𝑢 1
+
+∫ 10 exp 
+
+ −𝐵 𝜓𝜌 
+
+ 𝐺 −1 (𝑢 1 ) | ¤ 𝜓 ∗  
+
+> 𝜌 ◦𝐹 −1(𝑢 0)
+
+
+
+> 𝜖 𝑛
+
+
+
+d𝑢 1
+
+= ℎ 𝐺 ◦ ¤ 𝜓 ∗ 
+
+> 𝜌
+
+◦ 𝐹 −1 (𝑢 0) + 𝑜 𝑛 (1) .
+
+The desired result follows by applying the above display to ℎ(𝑢 1) = 𝑢 1 and ℎ(𝑢 1) = 𝑢 21, respectively. □
+
+20 A.3 Proofs for Section 4 
+
+Proof of Theorem 4.3. Let 𝐹 𝑛 and 𝐺 𝑛 be the empirical CDFs, and define the empirical quantile function 
+
+𝐺 −1 
+
+> 𝑛
+
+(𝑢 ) := inf {𝑦 ∈ Y : 𝐺 𝑛 (𝑦 ) ≥ 𝑢 }, 𝑢 ∈ [ 0, 1].
+
+By Donsker’s theorem and the quantile-process theorem, we have 
+
+√𝑛  𝐹 𝑛 (𝑦 ) − 𝐹 (𝑦 ) ⇝ B0 (𝐹 (𝑦 )) ,
+
+√𝑛  𝐺 −1 
+
+> 𝑛
+
+(𝑢 ) − 𝐺 −1 (𝑢 ) ⇝ B1 (𝑢 )
+
+𝑔 (𝐺 −1 (𝑢 )) .
+
+Because the two samples are independent, the convergence holds jointly in ℓ∞ (Y) × ℓ∞ ([ 0, 1]) , and the Gaussian limit has almost surely continuous sample paths, i.e., it lies in 𝐶 (Y) × 𝐶 ([ 0, 1]) .Now consider the map 
+
+𝛷 : ℓ∞ (Y) × ℓ∞ ([ 0, 1]) → ℓ∞ (Y) , 𝛷 (ℎ, 𝑘 ) := 𝑘 ◦ ℎ. 
+
+Under the stated smoothness and positivity assumptions, 𝛷 is Hadamard differentiable at (𝐹, 𝐺 −1), with derivative 
+
+¤𝛷 (𝐹, 𝐺 −1) [ ℎ, 𝑘 ] ( 𝑦 ) = ℎ(𝑦 )
+
+𝑔 (𝐺 −1 (𝐹 (𝑦 ))) + 𝑘 (𝐹 (𝑦 )) .
+
+Applying the functional delta method [van der Vaart and Wellner, 1996, Theorem 3.9.4] to (𝐹 𝑛 , 𝐺 −1 
+
+> 𝑛
+
+) yields 
+
+√𝑛  𝐺 −1 
+
+> 𝑛
+
+◦ 𝐹 𝑛 (𝑦 ) − 𝐺 −1 ◦ 𝐹 (𝑦 ) ⇝ B0 (𝐹 (𝑦 )) 
+
+𝑔 (𝐺 −1 ◦ 𝐹 (𝑦 )) + B1 (𝐹 (𝑦 )) 
+
+𝑔 (𝐺 −1 ◦ 𝐹 (𝑦 )) .
+
+The limit is mean-zero Gaussian with covariance 
+
+Σ(𝑦, 𝑦 ′) = 2 𝐹 (𝑦 ∧ 𝑦 ′) − 𝐹 (𝑦 )𝐹 (𝑦 ′)
+
+𝑔 (𝐺 −1 ◦ 𝐹 (𝑦 )) 𝑔 (𝐺 −1 ◦ 𝐹 (𝑦 ′)) .
+
+The limit process has almost surely continuous sample paths on Y. The equivalent representation with √2 B
+
+follows since the sum of two independent standard Brownian bridges is distributed as √2 times a standard Brownian bridge. □
+
+Proof of Theorem 4.4. Let 𝜖 := 𝜖 (𝜌 ). Define 
+
+ℎ𝜌 := 𝜙 𝜌 ⊕ 𝜓 𝜌 , ℎ𝑛 := 𝜙 𝑛 ⊕ 𝜓 𝑛 ,
+
+21 and the Banach subspace 
+
+H0 :=
+
+n
+
+ℎ ∈ 𝐶 (Y × Y) : ℎ(𝑦 0, 𝑦 1) = 𝜙 (𝑦 0) + 𝜓 (𝑦 1), 𝜙, 𝜓 ∈ 𝐶 (Y) ,
+
+∫
+
+> Y
+
+𝜙 d𝜇 = 0
+
+o
+
+with the sup norm. Let 𝛹 : 𝐶 (Y × Y) × P(Y) × P(Y) → 𝐶 (Y × Y) be 
+
+𝛹 (ℎ; 𝜇, 𝜈 )( 𝑦 0, 𝑦 1) := ℎ(𝑦 0, 𝑦 1) − 𝜖 log 
+
+∫
+
+> Y×Y
+
+exp 
+
+ ⟨𝑦 0, 𝑦 ′
+
+> 1
+
+⟩ + ⟨ 𝑦 ′
+
+> 0
+
+, 𝑦 1⟩ − ℎ(𝑦 ′
+
+> 0
+
+, 𝑦 ′
+
+> 1
+
+)
+
+𝜖 
+
+
+
+d𝜇 (𝑦 ′
+
+> 0
+
+) d𝜈 (𝑦 ′
+
+> 1
+
+).
+
+For ℎ = 𝜙 ⊕ 𝜓 in the separable class, define the gauge-centering projection 
+
+Π0 (ℎ) :=  𝜙 −
+
+∫
+
+> Y
+
+𝜙 d𝜇  ⊕  𝜓 +
+
+∫
+
+> Y
+
+𝜙 d𝜇  ∈ H 0.ℎ𝜌 ∈ H 0 by the population Sinkhorn normalization. For ℎ𝑛 : the fixed-point equation 𝛹 (· ; 𝜇 𝑛 , 𝜈 𝑛 ) = 0is invariant under (𝜙 𝑛 , 𝜓 𝑛 ) ↦ → ( 𝜙 𝑛 + 𝑐, 𝜓 𝑛 − 𝑐 ) for any constant 𝑐 , so we choose the unique 𝑐 𝑛 with 
+
+∫ (𝜙 𝑛 + 𝑐 𝑛 ) d𝜇 = 0; the sum ℎ𝑛 = 𝜙 𝑛 ⊕ 𝜓 𝑛 is unchanged, giving ℎ𝑛 ∈ H 0. Thus, 
+
+𝛹 (ℎ𝜌 ; 𝜇, 𝜈 ) = 0, 𝛹 (ℎ𝑛 ; 𝜇 𝑛 , 𝜈 𝑛 ) = 0.
+
+By Lemma A.1, 
+
+A := ¤𝛹 (ℎ𝜌 ; 𝜇, 𝜈 )| H0 : H0 → H 0
+
+is continuously invertible. By Lemma A.2, there exists a centered Gaussian element W ∈ H 0 such that 
+
+√𝑛 Π0
+
+ 𝛹 (ℎ𝜌 ; 𝜇 𝑛 , 𝜈 𝑛 ) − 𝛹 (ℎ𝜌 ; 𝜇, 𝜈 ) ⇝ W in H0 ⊂ 𝐶 (Y × Y) .
+
+Apply the implicit functional delta method at (ℎ𝜌 ; 𝜇, 𝜈 ) on the Banach space H0:
+
+√𝑛 (ℎ𝑛 − ℎ𝜌 ) = −A −1√𝑛 Π0
+
+ 𝛹 (ℎ𝜌 ; 𝜇 𝑛 , 𝜈 𝑛 ) − 𝛹 (ℎ𝜌 ; 𝜇, 𝜈 ) + 𝑜 𝑝 (1)
+
+in H0. The projection Π0 appears because ℎ𝑛 − ℎ𝜌 ∈ H 0 and A : H0 → H 0, so both sides lie in H0; applying 
+
+Π0 to the forcing term −𝛹 (ℎ𝜌 ; 𝜇 𝑛 , 𝜈 𝑛 ) (which is separable but not necessarily centered) projects out the component outside H0 without affecting the equation. Therefore, 
+
+√𝑛 (ℎ𝑛 − ℎ𝜌 ) ⇝ −A −1W =: Z𝜌 in H0  𝐶 (Y) ⊕ 𝐶 (Y) .
+
+Since A−1 is continuous linear and W is centered Gaussian, Z𝜌 is centered Gaussian. Writing Z𝜌 = Z0,𝜌 ⊕Z1,𝜌 
+
+with Z0,𝜌 , Z1,𝜌 ∈ 𝐶 (Y) , the convergence holds jointly for the individual potentials in 𝐶 (Y) × 𝐶 (Y) . □
+
+22 A.4 Proofs of Auxiliary Lemmas 
+
+Lemma A.1 (Invertibility on H0). Fix 𝜌 ∈ ( 0, 1) and write 𝜖 := 𝜖 (𝜌 ). Let 
+
+ℎ𝜌 = 𝜙 𝜌 ⊕ 𝜓 𝜌 , H0 :=
+
+n
+
+ℎ ∈ 𝐶 (Y × Y) : ℎ(𝑦 0, 𝑦 1) = 𝜙 (𝑦 0) + 𝜓 (𝑦 1), 𝜙, 𝜓 ∈ 𝐶 (Y) ,
+
+∫
+
+𝜙 d𝜇 = 0
+
+o
+
+,
+
+and 
+
+𝛹 (ℎ; 𝜇, 𝜈 )( 𝑦 0, 𝑦 1) := ℎ(𝑦 0, 𝑦 1) − 𝜖 log 
+
+∫
+
+> Y×Y
+
+exp 
+
+ ⟨𝑦 0, 𝑦 ′
+
+> 1
+
+⟩ + ⟨ 𝑦 ′
+
+> 0
+
+, 𝑦 1⟩ − ℎ(𝑦 ′
+
+> 0
+
+, 𝑦 ′
+
+> 1
+
+)
+
+𝜖 
+
+
+
+d𝜇 (𝑦 ′
+
+> 0
+
+) d𝜈 (𝑦 ′
+
+> 1
+
+).
+
+Then, (i) 𝛹 (· ; 𝜇, 𝜈 ) is Fr´ echet differentiable at ℎ𝜌 on 𝐶 (Y × Y) , denoted by ¤𝛹 (ℎ𝜌 ; 𝜇, 𝜈 ).(ii) The restriction 
+
+A := ¤𝛹 (ℎ𝜌 ; 𝜇, 𝜈 )| H0 : H0 → H 0
+
+is a bounded linear isomorphism. Proof. Part (i) follows from differentiation under the integral sign and smoothness of log and the compact domain assumption. Specifically, for any 𝑢 ∈ 𝐶 (Y × Y) ,
+
+¤𝛹 (ℎ𝜌 ; 𝜇, 𝜈 ) [ 𝑢 ] ( 𝑦 0, 𝑦 1) = 𝑢 (𝑦 0, 𝑦 1) + 
+
+∫
+
+> Y×Y
+
+𝑢 (𝑦 ′
+
+> 0
+
+, 𝑦 ′
+
+> 1
+
+) 𝑤 𝜌 (𝑦 0, 𝑦 1; d 𝑦 ′
+
+> 0
+
+, d𝑦 ′
+
+> 1
+
+)
+
+where the probability transition 𝑤 𝜌 (𝑦 0, 𝑦 1; ·) is given by 
+
+𝑤 𝜌 (𝑦 0, 𝑦 1; d 𝑦 ′
+
+> 0
+
+, d𝑦 ′
+
+> 1
+
+) :=
+
+exp 
+
+ ⟨ 𝑦 0 ,𝑦 ′        
+
+> 1⟩+⟨ 𝑦 ′
+> 0,𝑦 1⟩− ℎ𝜌 (𝑦 ′
+> 0,𝑦 ′
+> 1)
+> 𝜖
+
+∫ 
+
+> Y×Y
+
+exp 
+
+ ⟨ 𝑦 0 ,𝑦 ′′         
+
+> 1⟩+⟨ 𝑦 ′′
+> 0,𝑦 1⟩− ℎ𝜌 (𝑦 ′′
+> 0,𝑦 ′′
+> 1)
+> 𝜖
+
+
+
+d𝜇 (𝑦 ′′  
+
+> 0
+
+) d𝜈 (𝑦 ′′  
+
+> 1
+
+)
+
+d𝜇 (𝑦 ′
+
+> 0
+
+) d𝜈 (𝑦 ′
+
+> 1
+
+) .
+
+For part (ii), A = 𝐼 + K where 
+
+K ℎ(𝑦 0, 𝑦 1) :=
+
+∫
+
+ℎ(𝑦 ′
+
+> 0
+
+, 𝑦 ′
+
+> 1
+
+) 𝑤 𝜌 (𝑦 0, 𝑦 1; d 𝑦 ′
+
+> 0
+
+, d𝑦 ′
+
+> 1
+
+) .
+
+The operator preserves H0 since ℎ𝜌 is separable, and therefore the probability transition factorizes 
+
+𝑤 𝜌 (𝑦 0, 𝑦 1; d 𝑦 ′
+
+> 0
+
+, d𝑦 ′
+
+> 1
+
+) = 𝑤 𝜌 (𝑦 1; d 𝑦 ′
+
+> 0
+
+)𝑤 𝜌 (𝑦 0; d 𝑦 ′
+
+> 1
+
+), where 
+
+𝑤 𝜌 (𝑦 1; d 𝑦 ′
+
+> 0
+
+) :=
+
+exp 
+
+ ⟨ 𝑦 ′      
+
+> 0,𝑦 1⟩− 𝜙 𝜌 (𝑦 ′
+> 0)
+> 𝜖
+
+∫ 
+
+> Y
+
+exp 
+
+ ⟨ 𝑦 ′′       
+
+> 0,𝑦 1⟩− 𝜙 𝜌 (𝑦 ′′
+> 0)
+> 𝜖
+
+
+
+d𝜇 (𝑦 ′′  
+
+> 0
+
+)
+
+d𝜇 (𝑦 ′
+
+> 0
+
+) ,𝑤 𝜌 (𝑦 0; d 𝑦 ′
+
+> 1
+
+) :=
+
+exp 
+
+ ⟨ 𝑦 0 ,𝑦 ′     
+
+> 1⟩− 𝜓 𝜌 (𝑦 ′
+> 1)
+> 𝜖
+
+∫ 
+
+> Y
+
+exp 
+
+ ⟨ 𝑦 0 ,𝑦 ′′      
+
+> 1⟩− 𝜓 𝜌 (𝑦 ′′
+> 1)
+> 𝜖
+
+
+
+d𝜈 (𝑦 ′′  
+
+> 1
+
+)
+
+d𝜈 (𝑦 ′
+
+> 1
+
+) .
+
+23 For ℎ = 𝑎 ⊕ 𝑏 ∈ H 0,
+
+K ℎ(𝑦 0, 𝑦 1) :=
+
+∫
+
+> Y×Y
+
+ℎ(𝑦 ′
+
+> 0
+
+, 𝑦 ′
+
+> 1
+
+)𝑤 𝜌 (𝑦 1; d 𝑦 ′
+
+> 0
+
+)𝑤 𝜌 (𝑦 0; d 𝑦 ′
+
+> 1
+
+)
+
+=
+
+∫
+
+> Y
+
+𝑏 (𝑦 ′
+
+> 1
+
+)𝑤 𝜌 (𝑦 0; d 𝑦 ′
+
+> 1
+
+) + 
+
+∫
+
+> Y
+
+𝑎 (𝑦 ′
+
+> 0
+
+)𝑤 𝜌 (𝑦 1; d 𝑦 ′
+
+> 0
+
+)
+
+= Π 0
+
+∫
+
+> Y
+
+𝑏 (𝑦 ′
+
+> 1
+
+)𝑤 𝜌 (𝑦 0; d 𝑦 ′
+
+> 1
+
+) + 
+
+∫
+
+> Y
+
+𝑎 (𝑦 ′
+
+> 0
+
+)𝑤 𝜌 (𝑦 1; d 𝑦 ′
+
+> 0
+
+)
+
+
+
+∈ H 0 ,
+
+where the last equality holds because Π0 does not change the pointwise value of the function: for any 
+
+𝜙, 𝜓 ∈ 𝐶 (Y) ,
+
+Π0 (𝜙 ⊕ 𝜓 )( 𝑦 0, 𝑦 1) :=
+
+
+
+𝜙 (𝑦 0) − 𝑐 
+
+
+
++
+
+
+
+𝜓 (𝑦 1) + 𝑐 
+
+
+
+= 𝜙 (𝑦 0) + 𝜓 (𝑦 1), 𝑐 :=
+
+∫
+
+𝜙 d𝜇 , 
+
+so the second and third lines are equal as functions; Π0 merely re-centers the split to place the result in H0.We now prove injectivity. Suppose A [ 𝑢 ] = 0 for 𝑢 = 𝑎 ⊕ 𝑏 ∈ H 0, so (𝐼 + K)( 𝑎 ⊕ 𝑏 ) = 0. From the factorization of K and the gauge condition ∫ 𝑎 d𝜇 = 0, separating the 𝑦 0- and 𝑦 1-dependent parts gives 
+
+𝑎 (𝑦 0) + 
+
+∫
+
+> Y
+
+𝑏 (𝑦 ′
+
+> 1
+
+) 𝑤 𝜌 (𝑦 0; d 𝑦 ′
+
+> 1
+
+) = 0 , 𝑏 (𝑦 1) + 
+
+∫
+
+> Y
+
+𝑎 (𝑦 ′
+
+> 0
+
+) 𝑤 𝜌 (𝑦 1; d 𝑦 ′
+
+> 0
+
+) = 0 .
+
+Substituting the second equation into the first yields 𝑎 = 𝑇 𝜌 𝑎 , where 
+
+𝑇 𝜌 𝑎 (𝑦 0) :=
+
+∫
+
+> Y
+
+∫
+
+> Y
+
+𝑎 (𝑦 ′
+
+> 0
+
+) 𝑤 𝜌 (𝑦 1; d 𝑦 ′
+
+> 0
+
+) 𝑤 𝜌 (𝑦 0; d 𝑦 1) .
+
+Since 𝑎 ∈ H 0 satisfies ∫ 𝑎 d𝜇 = 0, any nonzero 𝑎 must be non-constant. The same argument used in the proof of Theorem 4.2 (applied to the probability kernels 𝑤 𝜌 (𝑦 0; ·) and 𝑤 𝜌 (𝑦 1; ·) , which have strictly positive densities under Assumption 4.1) then gives ∥𝑇 𝜌 𝑎 ∥∞ < ∥𝑎 ∥∞, contradicting 𝑎 = 𝑇 𝜌 𝑎 . Hence 𝑎 = 0 and 𝑏 = 0.Thus ker (A) = {0}.Because 𝑤 𝜌 (𝑦 0, 𝑦 1; ·) has a jointly continuous density on Y × Y , for any bounded set 𝐵 ⊂ H 0 the image 
+
+K ( 𝐵 ) is uniformly bounded and, by the joint continuity of (𝑦 0, 𝑦 1) ↦ → ∫ ℎ d𝑤 𝜌 (𝑦 0, 𝑦 1; ·) , equicontinuous in (𝑦 0, 𝑦 1); Arzel `a–Ascoli then gives relative compactness of K ( 𝐵 ) in 𝐶 (Y × Y) , so K : H0 → H 0 is compact. Hence A = 𝐼 + K is Fredholm of index zero; injectivity ( ker A = {0}) implies surjectivity by the Fredholm alternative, and bijectivity on the Banach space H0 gives a bounded inverse by the bounded inverse theorem. □
+
+Lemma A.2 (CLT on H0). Under the assumptions of Theorem 4.4, there exists a centered Gaussian process 
+
+W ∈ H 0 such that 
+
+√𝑛 Π0
+
+ 𝛹 (ℎ𝜌 ; 𝜇 𝑛 , 𝜈 𝑛 ) − 𝛹 (ℎ𝜌 ; 𝜇, 𝜈 ) ⇝ W in H0 .
+
+Proof. The partial Fr ´echet derivatives of 𝛹 (ℎ𝜌 ; ·, ·) at (𝜇, 𝜈 ) with respect to each marginal are the linear maps 
+
+24 B𝜇 : M(Y) → 𝐶 (Y) and B𝜈 : M(Y) → 𝐶 (Y) defined by 
+
+B𝜇 [𝜂 ] ( 𝑦 1) := −𝜖 
+
+∫
+
+> Y
+
+exp 
+
+ ⟨ 𝑦 ′      
+
+> 0,𝑦 1⟩− 𝜙 𝜌 (𝑦 ′
+> 0)
+> 𝜖
+
+∫ 
+
+> Y
+
+exp 
+
+ ⟨ 𝑦 ′′       
+
+> 0,𝑦 1⟩− 𝜙 𝜌 (𝑦 ′′
+> 0)
+> 𝜖
+
+
+
+d𝜇 (𝑦 ′′  
+
+> 0
+
+)
+
+d𝜂 (𝑦 ′
+
+> 0
+
+) .
+
+B𝜈 [𝜁 ] ( 𝑦 0) := −𝜖 
+
+∫
+
+> Y
+
+exp 
+
+ ⟨ 𝑦 0 ,𝑦 ′     
+
+> 1⟩− 𝜓 𝜌 (𝑦 ′
+> 1)
+> 𝜖
+
+∫ 
+
+> Y
+
+exp 
+
+ ⟨ 𝑦 0 ,𝑦 ′′      
+
+> 1⟩− 𝜓 𝜌 (𝑦 ′′
+> 1)
+> 𝜖
+
+
+
+d𝜈 (𝑦 ′′  
+
+> 1
+
+)
+
+d𝜁 (𝑦 ′
+
+> 1
+
+) .
+
+For fixed ℎ𝜌 , the map (𝜂, 𝜁 ) ↦ → 𝛹 (ℎ𝜌 ; 𝜂, 𝜁 ) is Fr ´echet differentiable at (𝜇, 𝜈 ) in signed-measure directions, so 
+
+𝛹 (ℎ𝜌 ; 𝜇 𝑛 , 𝜈 𝑛 ) − 𝛹 (ℎ𝜌 ; 𝜇, 𝜈 ) = B𝜇 [𝜇 𝑛 − 𝜇 ] + B 𝜈 [𝜈 𝑛 − 𝜈 ] + 𝑟 𝑛 ,
+
+Consider the function classes indexed by the parameter 𝑦 1 ∈ Y (resp. 𝑦 0 ∈ Y ): 
+
+F𝜇 :=
+
+n
+
+𝑓 𝑦 1 (𝑦 ′
+
+> 0
+
+) := −𝜖 exp   ⟨ 𝑦 ′      
+
+> 0,𝑦 1⟩− 𝜙 𝜌 (𝑦 ′
+> 0)
+> 𝜖
+
+∫ 
+
+> Y
+
+exp   ⟨ 𝑦 ′′       
+
+> 0,𝑦 1⟩− 𝜙 𝜌 (𝑦 ′′
+> 0)
+> 𝜖
+
+ d𝜇 (𝑦 ′′  
+
+> 0
+
+)
+
+: 𝑦 1 ∈ Y 
+
+o
+
+,
+
+F𝜈 :=
+
+n
+
+𝑔 𝑦 0 (𝑦 ′
+
+> 1
+
+) := −𝜖 exp   ⟨ 𝑦 0 ,𝑦 ′     
+
+> 1⟩− 𝜓 𝜌 (𝑦 ′
+> 1)
+> 𝜖
+
+∫ 
+
+> Y
+
+exp   ⟨ 𝑦 0 ,𝑦 ′′      
+
+> 1⟩− 𝜓 𝜌 (𝑦 ′′
+> 1)
+> 𝜖
+
+ d𝜈 (𝑦 ′′  
+
+> 1
+
+)
+
+: 𝑦 0 ∈ Y 
+
+o
+
+,
+
+so that B𝜇 [𝜂 ] ( 𝑦 1) = ∫ 𝑓 𝑦 1 d𝜂 and B𝜈 [𝜁 ] ( 𝑦 0) = ∫ 𝑔 𝑦 0 d𝜁 . By compactness of Y, joint continuity of 
+
+(𝑦 ′
+
+> 0
+
+, 𝑦 1) ↦ → ⟨ 𝑦 ′
+
+> 0
+
+, 𝑦 1⟩, continuity of 𝜙 𝜌 and 𝜓 𝜌 , and the density positivity assumption (which keeps the denominators bounded away from zero), the classes F𝜇 and F𝜈 are uniformly bounded and equicontinuous as functions of 𝑦 ′ 
+
+> 0
+
+(resp. 𝑦 ′
+
+> 1
+
+) uniformly over the index 𝑦 1 (resp. 𝑦 0). Hence both classes have finite uniform entropy integral and are Donsker. In particular, 
+
+B𝜇 
+
+√𝑛 (𝜇 𝑛 − 𝜇 ) (𝑦 1) ⇝ G𝜇 (𝑦 1) in 𝐶 (Y) , B𝜈 
+
+√𝑛 (𝜈 𝑛 − 𝜈 ) (𝑦 0) ⇝ G𝜈 (𝑦 0) in 𝐶 (Y) ,
+
+jointly and independently. Note ∥𝑟 𝑛 ∥∞ = 𝑜 𝑝 (𝑛 −1/2). Therefore, 
+
+√𝑛  𝛹 (ℎ𝜌 ; 𝜇 𝑛 , 𝜈 𝑛 ) − 𝛹 (ℎ𝜌 ; 𝜇, 𝜈 ) = B𝜇 
+
+ √𝑛 (𝜇 𝑛 − 𝜇 ) + B 𝜈 
+
+ √𝑛 (𝜈 𝑛 − 𝜈 ) + 𝑜 𝑝 (1) .
+
+Applying the continuous linear maps B𝜇 , B𝜈 , then Π0, gives the claimed convergence with 
+
+W(𝑦 0, 𝑦 1) := Π 0
+
+ G𝜇 (𝑦 1) + G𝜈 (𝑦 0) ∈ H 0 .
+
+□
+
+25
