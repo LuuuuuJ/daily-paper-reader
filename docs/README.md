@@ -6,64 +6,61 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-04-30
-- 运行时间：2026-04-30 20:36:29 UTC
+- 最新运行日期：2026-05-01
+- 运行时间：2026-05-01 19:57:32 UTC
 - 运行状态：成功
-- 本次总论文数：14
-- 精读区：3
+- 本次总论文数：13
+- 精读区：2
 - 速读区：11
 
 ### 今日简报（AI）
-今日精选 14 篇前沿文献，深度解析了 SHARELIFE 高分数据插补与因果推断方法论的最新进展。
-重点关注 9.5 分的 SHARELIFE 缺失值处理方案及堆叠三重差分法，这两项研究为复杂实证分析提供了更稳健的工具。
-建议优先研读高精度插补技术以优化数据质量，并同步关注公共教育政策对特殊群体的长远社会影响。
-- 详情：[/202604/30/README](/202604/30/README)
+今日精选 13 篇因果推断前沿论文，深度解析中介效应下的双重差分与堆叠三重差分法。
+重点关注 DiD 模型中引入中介变量的最新框架，以及处理多时点干预异质性的堆叠三重差分技术。
+建议优先研读两篇高分差分法论文，掌握复杂政策评估中的机制分析与稳健估计技巧。
+- 详情：[/202605/01/README](/202605/01/README)
 
 ### 精读区论文标签
-1. [SHARELIFE Imputations](/202604/30/2604.20416v1-sharelife-imputations)  
-   标签：评分：9.5/10、query:profile-1
-   evidence：涵盖生育和货币变量的生命历程数据
-2. [Stacked Triple Differences](/202604/30/2604.22982v1-stacked-triple-differences)  
-   标签：评分：8.5/10、query:profile-1
-   evidence：引入堆叠三重差分法用于事件窗口中的因果识别
-3. [Difference-in-differences with a mediator](/202604/30/2604.24049v1-difference-in-differences-with-a-mediator)  
-   标签：评分：8.0/10、query:q9
-   evidence：用于因果中介分析的双重差分框架
+1. [Difference-in-differences with a mediator](/202605/01/2604.24049v1-difference-in-differences-with-a-mediator)  
+   标签：评分：8.5/10、query:q9
+   evidence：在双重差分框架下推进中介分析，用于因果识别。
+2. [Stacked Triple Differences](/202605/01/2604.22982v1-stacked-triple-differences)  
+   标签：评分：8.0/10、query:profile-1
+   evidence：应用经济学中因果识别的堆叠三重差分法
 
 ### 速读区论文标签
-1. [The Short- and Long-Term Impacts of Expanding Public Education for Disabled Students](/202604/30/2604.25767v1-the-short--and-long-term-impacts-of-expanding-public-education-for-disabled-students)  
+1. [A Riesz Representer Perspective on Targeted Learning](/202605/01/2604.21721v1-a-riesz-representer-perspective-on-targeted-learning)  
    标签：评分：7.5/10、query:profile-1
-   evidence：教育政策长期影响的双重差分设计
-2. [Efficient Symbolic Computations for Identifying Causal Effects](/202604/30/2604.20516v1-efficient-symbolic-computations-for-identifying-causal-effects)  
+   evidence：时变处理和中介分析的因果推断
+2. [A Novel Computational Framework for Causal Inference: Tree-Based Discretization with ILP-Based Matching](/202605/01/2604.27307v1-a-novel-computational-framework-for-causal-inference-tree-based-discretization-with-ilp-based-matching)  
+   标签：评分：7.5/10、query:q7
+   evidence：提出了一种用于观察数据中因果推断和匹配的新型计算框架。
+3. [Estimator-Aligned Prospective Sample Size Determination for Designs Using Inverse Probability of Treatment Weighting](/202605/01/2604.21658v1-estimator-aligned-prospective-sample-size-determination-for-designs-using-inverse-probability-of-treatment-weighting)  
    标签：评分：7.0/10、query:profile-1
-   evidence：从观测数据中识别因果效应
-3. [Double Robust Weighted Regression with Missing Confounders](/202604/30/2604.20630v1-double-robust-weighted-regression-with-missing-confounders)  
-   标签：评分：7.0/10、query:profile-1
-   evidence：缺失混杂因素下的双重稳健因果效应估计
-4. [Causal Identification under Interference: The Role of Treatment Assignment Independence](/202604/30/2604.22532v1-causal-identification-under-interference-the-role-of-treatment-assignment-independence)  
+   evidence：观察性研究中的因果估计量和样本量确定
+4. [Causal Identification under Interference: The Role of Treatment Assignment Independence](/202605/01/2604.22532v1-causal-identification-under-interference-the-role-of-treatment-assignment-independence)  
    标签：评分：7.0/10、query:q9
-   evidence：包括双重差分法在内的因果识别公式
-5. [Estimation of Time-Varying Treatment Effects in a Joint Model for Longitudinal and Recurrent Event Outcomes in Mobile Health Data](/202604/30/2604.23006v1-estimation-of-time-varying-treatment-effects-in-a-joint-model-for-longitudinal-and-recurrent-event-outcomes-in-mobile-health-data)  
-   标签：评分：7.0/10、query:profile-1
-   evidence：估计纵向和事件结果中的随时间变化的治疗效应
-6. [Linear estimations of dynamic fixed effects logit models only with time effects](/202604/30/2604.24150v1-linear-estimations-of-dynamic-fixed-effects-logit-models-only-with-time-effects)  
-   标签：评分：7.0/10、query:profile-1
-   evidence：动态固定效应Logit模型的线性估计方法
-7. [Investigating Targeting Strategies and Truncation in TMLE for the Average Treatment Effect under Practical Positivity Violations](/202604/30/2604.20059v2-investigating-targeting-strategies-and-truncation-in-tmle-for-the-average-treatment-effect-under-practical-positivity-violations)  
+   evidence：存在干扰的双重差分法因果识别
+5. [Nonparametric Point Identification of Treatment Effect Distributions via Rank Stickiness](/202605/01/2604.21548v1-nonparametric-point-identification-of-treatment-effect-distributions-via-rank-stickiness)  
    标签：评分：6.5/10、query:profile-1
-   evidence：在观察数据中估计平均处理效应的方法论相关性
-8. [Nonparametric Point Identification of Treatment Effect Distributions via Rank Stickiness](/202604/30/2604.21548v1-nonparametric-point-identification-of-treatment-effect-distributions-via-rank-stickiness)  
+   evidence：因果分析中处理效应分布的识别方法
+6. [MOCA: A Transformer-based Modular Causal Inference Framework with One-way Cross-attention and Cutting Feedback](/202605/01/2604.23107v1-moca-a-transformer-based-modular-causal-inference-framework-with-one-way-cross-attention-and-cutting-feedback)  
+   标签：评分：6.5/10、query:profile-1
+   evidence：用于观察数据的模块化因果推断框架
+7. [Network-aware IV Regression for Causal Node Discovery and Estimation](/202605/01/2604.24969v1-network-aware-iv-regression-for-causal-node-discovery-and-estimation)  
    标签：评分：6.5/10、query:q7
-   evidence：处理效应分布的识别
-9. [Effects conditional on post-treatment events generated by independent mechanisms](/202604/30/2604.21837v1-effects-conditional-on-post-treatment-events-generated-by-independent-mechanisms)  
+   evidence：金融因果效应的因果节点发现和工具变量回归
+8. [The Short- and Long-Term Impacts of Expanding Public Education for Disabled Students](/202605/01/2604.25767v1-the-short--and-long-term-impacts-of-expanding-public-education-for-disabled-students)  
+   标签：评分：6.5/10、query:q9
+   evidence：利用政策时间差异的双重差分设计研究长期结果
+9. [Flexible semiparametric modeling with application to Causal Inference](/202605/01/2604.26729v1-flexible-semiparametric-modeling-with-application-to-causal-inference)  
    标签：评分：6.5/10、query:profile-1
-   evidence：基于处理后事件的效应因果解释
-10. [Hierarchical Probabilistic Principal Component Analysis of Longitudinal Data](/202604/30/2604.22015v1-hierarchical-probabilistic-principal-component-analysis-of-longitudinal-data)  
+   evidence：用于计量经济学中二元工具变量的因果推断框架
+10. [Bootstrap Inference in Nonlinear Panel Data Models with Interactive Fixed Effects](/202605/01/2604.26826v1-bootstrap-inference-in-nonlinear-panel-data-models-with-interactive-fixed-effects)  
    标签：评分：6.5/10、query:profile-1
-   evidence：具有嵌套变异源的纵向数据分析
-11. [Flexible semiparametric modeling with application to Causal Inference](/202604/30/2604.26729v1-flexible-semiparametric-modeling-with-application-to-causal-inference)  
-   标签：评分：6.5/10、query:profile-1
-   evidence：提供适用于生育冲击等二元工具变量的半参数因果推断方法
+   evidence：具有固定效应的非线性面板数据模型推断
+11. [Treatment-effect heterogeneity and interactive fixed effects: Can we control for too much?](/202605/01/2604.27187v1-treatment-effect-heterogeneity-and-interactive-fixed-effects-can-we-control-for-too-much)  
+   标签：评分：6.5/10、query:q9
+   evidence：具有异质处理效应的面板数据中的交互固定效应
 
 
 <div class="dpr-home-promo-card">
