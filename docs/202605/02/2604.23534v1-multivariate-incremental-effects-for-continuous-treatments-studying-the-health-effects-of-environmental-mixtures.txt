@@ -1,0 +1,4576 @@
+Title: Multivariate incremental effects for continuous treatments: Studying the health effects of environmental mixtures
+
+URL Source: https://arxiv.org/pdf/2604.23534v1
+
+Published Time: Tue, 28 Apr 2026 00:59:31 GMT
+
+Number of Pages: 60
+
+Markdown Content:
+# Multivariate incremental effects for continuous treatments: Studying the health effects of environmental mixtures 
+
+## Zhuochao Huang ∗ Kejin Dong ∗ Tuo Lin † Joseph Antonelli ∗
+
+Abstract 
+
+Evaluating the causal health effects of multivariate, continuous exposures, such as air pollution mix-tures, is a critical public health challenge. A primary obstacle is the frequent violation of the positivity assumption, which renders the effects of standard deterministic interventions unidentified or heavily re-liant on unreliable model extrapolation. In this paper, we develop a novel causal inference framework to address this challenge. We extend exponential tilting to multivariate exposures and address the crit-ical question of how to compare different intervention directions fairly. This establishes a systematic framework for defining and evaluating various policy-relevant causal estimands, allowing researchers to address diverse scientific questions. We develop numerous methodological advancements, including ef-ficient one-step estimation strategies, a Riemannian BFGS algorithm to solve a constrained manifold optimization problem, semiparametric efficiency bounds for causal estimands, minimax rates for esti-mators, and asymptotic normality results. We demonstrate our framework’s utility by applying it to a nationwide environmental health dataset to identify the optimal strategy for reducing adverse health outcomes associated with a PM 2.5 chemical mixture. 
+
+# 1 Introduction 
+
+Understanding the causal effects of complex air exposure mixtures is crucial for effective public health policy, but traditional statistical methods face significant challenges. A key challenge is that individuals are exposed to a complex mixture of correlated substances. Single-pollutant analyses often fall short, as they fail to account for the confounding effect of pollutants and cannot capture potential interaction effects, leading to misleading policy recommendations (Bobb et al., 2015; Antonelli and Zigler, 2024). This necessitates a causal inference framework for multivariate continuous exposures. A primary obstacle in evaluating the causal effects of multivariate continuous exposures is the positivity assumption. This assumption requires that for any given set of covariates, the exposure levels of interest have nonzero density. In environmental mixtures, this assumption is frequently violated; certain combinations of pollutants may be physically implausible or absent from observational data (Peters et al., 2012). Consequently, estimating the effect of deterministic interventions, such as setting a pollutant mixture to a specific counterfactual level, becomes impossible without resorting to unreliable extrapolation (Antonelli and Zigler, 2024; Rudolph et al., 2025). In the presence of positivity violations, there are (at least) two potential solutions. The less frequently used approach is to modify the estimation method to be robust to extrapolation, such as “extrapolation-aware” inferential methods that explicitly bound or characterize the uncertainty when moving outside the data support (Pfister and B¨ uhlmann, 2021). The more common approach, and the one we focus on throughout, is to modify the scientific question by redefining the estimand. One useful strategy for modifying the estimand with continuous treatments involves identifying and estimating the derivative of the exposure-response function, then integrating this derivative to recover the full curve. By focusing on local effects first and developing novel bias-corrected and Neyman Orthogonal estimators for the derivative function, this “differentiate-then-integrate” approach can circumvent the need for a global positivity assumption and has been a subject of significant recent research (Zhang et al., 2023; Kallus and Oprescu, 2022; Rothenh¨ ausler and Yu, 2021). Another alternative is to leverage instrumental  
+
+> ∗Department of Statistics, University of Florida. Corresponding author: Zhuochao Huang, zhuochao.huang@ufl.edu
+> †Department of Biostatistics, University of Florida.
+
+1
+
+> arXiv:2604.23534v1 [stat.ME] 26 Apr 2026
+
+variables, where recent advances have extended these methods to continuous treatments without relying on positivity to identify local effects (Dorn and Guo, 2024; Bruns and Kallus, 2024). While these methods are powerful, a distinct set of approaches that are flexible and policy-relevant rely on the use of stochastic interventions. These interventions generally define a policy that modifies the observed distribution of exposures rather than replacing it with a fixed value. Motivated by defining more realistic policies, early applications have been seen in epidemiology. For example, considering interventions that would truncate the exposure distribution, such as enforcing pollution levels below a certain cutoff (Taubman et al., 2009). This idea was later formalized in the statistical literature to provide a general framework for evaluating the population causal effect of shifting an entire exposure distribution (D´ ıaz and van der Laan, 2012). Over the past decade, several distinct stochastic interventions have been developed. One approach is the shift intervention, which defines the post-intervention exposure as the natural exposure value shifted by a certain amount (Haneuse and Rotnitzky, 2013). A second, influential family of interventions is based on the natural value of treatment. These policies, often called Modified Treatment Policies (MTPs), define the counterfactual exposure as a function of the exposure that would have naturally occurred. This concept was pioneered in the context of dynamic treatment regimes (Robins et al., 2004) and later formalized for single time points (Young et al., 2011; Richardson and Robins, 2013). The framework has since been extended to handle longitudinal scenarios with continuous treatments (D´ ıaz et al., 2023). There is ongoing research exploring the properties of generalized policies that depend on an individual’s natural value of treatment, for example using optimal transport to derive tighter bounds under unmeasured confounding (Kallus and Mbougwe, 2024). Generally speaking, this class of estimands relies on weaker positivity conditions than most deterministic estimands, however, they still rely on positivity holding for certain exposure values. When positivity violations are a big concern and are likely to occur, a potentially more robust alternative that inherently respects the data’s support and thereby does not rely on positivity is the incremental inter-vention. This approach was initially developed for binary and longitudinal treatments through incremental shifts in propensity scores, and defines a new interventional distribution by tilting the exposure distribution with an exponential function in a specified direction (Kennedy, 2019). This concept has subsequently been generalized to univariate continuous treatments as well (D´ ıaz and Hejazi, 2020; Schindl et al., 2024). Some recent work has criticized exponential tilted estimands such as these (Schindl and Wasserman, 2025) due to their less intuitive parameterization, asymmetric reallocation of probability mass, and for possessing less favorable asymptotic properties compared to certain alternatives. Regardless of their form, stochastic inter-ventions, typically present their own set of challenges. One key concern is that estimands identified under positivity violations may correspond to interventions that are not directly implementable, revealing a funda-mental “interpretability-implementability tradeoff” (Rudolph et al., 2024). Furthermore, when comparing the effects of different stochastic interventions, one must ensure the comparisons are fair, a concept that related work in different contexts has begun to formalize to prevent misleading conclusions (McClean et al., 2024). Nearly all work to date has focused on univariate treatments, which is insufficient for addressing problems raised in the analysis of environmental mixtures. In this work, we build on the existing literature by using exponentially tilted estimands within the multivariate treatment context. This extension to the multivariate setting is non-trivial and introduces several new, complex questions. First, the intervention parameter becomes a vector, creating an infinite space of possible intervention directions. This raises a variety of policy questions about how to shift all exposures at once and which direction is best. Second, a fair basis for comparing these different directional shifts is needed; interventions must be constrained to be of the same size for meaningful comparisons, where the definition of fair is not unique. We propose solutions to each of these issues and explore a variety of estimands within this framework that target different policy-relevant questions of interest in environmental epidemiology. We show that these different estimands vary in terms of how efficiently they can be estimated from the data, and we provide algorithms for finding optimal policies in terms of shifts in exposures that lead to the biggest reduction in adverse health outcomes. We provide theoretical support in terms of minimax rates that show how well the estimands can be estimated and how the difficulty of estimation intrinsically depends on the conditional covariance matrix of the exposures. We also develop efficient influence function based estimators that can achieve root-n convergence and asymptotic normality using complex, machine learning estimators for nuisance function estimation. 22 Exposure Shifts under Exponential Tilts 
+
+## 2.1 Notation and Potential Outcomes under SUTVA 
+
+Let our observed data consist of n independent and identically distributed samples {Zi}ni=1 , drawn from some underlying distribution P0. Each observation Zi = ( Xi, W i, Y i) is composed of a p-dimensional vector of covariates Xi ∈ X ⊆ Rp, a q-dimensional vector representing the environmental exposures or treatments 1
+
+W i = ( Wi1, . . . , W iq ) ∈ W ⊆ Rq , and a scalar outcome of interest Yi ∈ R. We denote the conditional density of the exposure mixture given the covariates as f (w | x). To formally define causal effects, we operate within the potential outcomes framework. For each individual 
+
+i and any potential exposure vector w ∈ W , we let Yi(w) denote the potential outcome that would have been observed had individual i received exposure level w. This notation relies on the Stable Unit Treatment Value Assumption (SUTVA, (Rubin, 1980)), which comprises two key principles: 1. No Interference: The potential outcome for one individual is unaffected by the exposure assignments of other individuals. That is, Yi(w) depends only on the exposure w assigned to individual i.2. No multiple versions of treatment: Treatment is well-defined in the sense that there are not two distinct treatments that lead to the same value of W i.Importantly, this assumption ensures that an individual’s observed outcome corresponds to their potential outcome under their observed exposure. Formally, if an individual i is observed to have exposure W i, their observed outcome is Yi = Yi(W i). 
+
+## 2.2 Estimands using Exponential Tilts 
+
+In this work, we extend the framework of exponential tilting incremental causal effects to the multivariate treatment setting. This type of stochastic treatment was first proposed for binary treatments (Kennedy, 2019) and later generalized to single continuous treatments (D´ ıaz and Hejazi, 2020; Schindl et al., 2024). We adapt this formulation to define interventions on the entire q-dimensional exposure vector, W . Given the conditional density of the exposure mixture, f (w | x), we define an exponentially tilted interventional density, gδ (w | x), indexed by a user-specified vector δ ∈ Rq :
+
+gδ (w | x) = exp( δ⊤w)f (w | x)
+
+R 
+
+> W
+
+exp( δ⊤v)f (v | x) dv (1) Here, the denominator is a normalizing constant that ensures gδ integrates to one, and δ is a vector deter-mining both the direction and magnitude of how the natural density is shifted. Our causal estimand of interest, the incremental effect, is the expected potential outcome under the stochastic intervention defined by the tilted density gδ . We denote this estimand as ψ(δ): 
+
+ψ(δ) = E[Y gδ ]This represents the population average outcome if, for covariates X = x, each individual’s exposure were a random draw from the shifted distribution gδ (w | x). In order to identify this quantity from the observed data, we must make a standard no unmeasured confounding assumption: for all w ∈ W ,
+
+Y (w) ⊥ W | X.
+
+We develop sensitivity analysis approaches to assess violations of this assumption in Section 5. Under SUTVA and the no unmeasured confounding assumption, this causal quantity is identified from the observed data distribution via: 
+
+ψ(δ) = 
+
+Z
+
+> X
+
+Z
+
+> W
+
+E[Y | W = w, X = x] gδ (w | x) dw dP (x) (2) 
+
+> 1Note that we use the terms treatment and exposure interchangeably throughout the manuscript. Also note that environ-mental mixture simply refers to a vector of environmental exposures.
+
+3where P (x) denotes the marginal probability measure of the covariates X. Note that because the support of 
+
+gδ is identical to the support of f , we do not have to invoke any positivity assumptions and the intervention does not require us to estimate outcomes for exposure combinations that are never observed in the data. The parameter δ has a similar interpretation as the constant gradient of the log-likelihood ratio between the interventional and observational densities as in (Schindl et al., 2024): 
+
+δ = ∂∂w log 
+
+ gδ (w | x)
+
+f (w | x)
+
+
+
+.
+
+This means that each component, δj , quantifies the change in this log density ratio for an infinitesimal increase in the j-th exposure component, wj . Intuitively, setting δ = (1 , 0, . . . , 0) ⊤ defines an intervention that tilts the distribution to favor higher values of the first exposure, W1.
+
+## 2.3 Different Exposure Shifts and Efficiency 
+
+Let μ(x, w) = E[Y | X = x, W = w]. Following the same derivation as (Schindl et al., 2024) but generalized to the multivariate setting, we get the following formula for the efficient influence function. 
+
+Proposition 1. The efficient influence function of ψ(δ) under a nonparametric model is given by φ(Z; δ) = 
+
+DY + Dg,μ + Dψ for 
+
+DY = gδ (W | X)
+
+f (W | X) (Y − μ(X, W )) 
+
+Dg,μ = gδ (W | X)
+
+f (W | X) (μ(X, W ) − Egδ [μ(X, W ) | X]) 
+
+Dψ = Egδ [μ(X, W ) | X] − ψ
+
+Note the subscript gδ denotes expectations with respect to the tilted exposure density. The asymptotic variance of any regular and asymptotically linear (RAL) estimator for ψ(δ) is equal to the variance of its EIF, Var( φ(Z; δ)). A critical observation from the structure of φ is the repeated appearance of the density ratio, gδ (W | X)/f (W | X). When this ratio exhibits high variability, it inflates the variance of the first two components of the EIF, leading to less precise estimates of the causal effect. Therefore, to improve statistical efficiency for a given intervention strength, we could select an intervention direction δ
+
+that minimizes the variance of this density ratio, Var( gδ /f ). The third term, on the other hand, represents the deviation between the average post-intervention effect for a specific covariate group and the overall average post-intervention effect. It quantifies how much higher or lower the expected intervention effect for an individual with covariates X is compared to the overall population average. To gain analytical insight into this variance, we can let the exposures follow a multivariate normal distribution, f (w | x) ∼ N (μx, Σ). Under this assumption, we have two key results. First, the tilted distribution gδ (w | x) is also normal, with a shifted mean: 
+
+gδ (w | x) ∼ N (μx + Σδ, Σ)This provides a clear interpretation of the intervention: it is a shift of the mean of the exposure distribution in the direction Σδ. Second, the variance of the density ratio has a simple, closed-form expression: Var 
+
+ gδ (W | X)
+
+f (W | X)
+
+
+
+= exp( δ⊤Σδ) − 1Minimizing this variance is equivalent to minimizing the quadratic form δ⊤Σδ.The question of interest thus becomes an optimization problem: which direction δ minimizes δ⊤Σδ sub-ject to a constraint on the “strength” of the intervention? While various constraints are possible (e.g., fixing 
+
+δ⊤δ), a particularly meaningful constraint is to fix the distance between the original and tilted distributions, for which the 2-Wasserstein distance provides a natural metric. We discuss the choice of this metric in the following section. For the multivariate normal case with the same covariance matrix, the squared Wasserstein distance has a simple closed-form expression as d2 
+
+> W
+
+(f, g δ ) = || (μx + Σδ) − μx|| 2 = || Σδ|| 2 = δ⊤Σ2δ.4If our goal then is to find a shift that we can estimate with a high degree of efficiency, we can solve the following: min  
+
+> δ
+
+δ⊤Σδ subject to δ⊤Σ2δ = c2
+
+for some constant c defining the size of intervention. It is straightforward to show that this expression is minimized when δ is chosen to be proportional to the eigenvector of Σ corresponding to its largest eigenvalue, 
+
+λmax . Hence our finding demonstrates that for a fixed intervention strength (as measured by the Wasserstein distance), the most statistically efficient causal effect to estimate, at least in terms of this density ratio, is the one that corresponds to shifting the exposure mixture along its primary axis of variation. Note that this result only holds exactly under a multivariate normal distribution, but we have seen empirically that this choice of δ typically leads to efficient estimates of ψ(δ) under a variety of exposure distributions. 
+
+## 2.4 Fair Exposure Shifts under Fixed Gelbrich Distance 
+
+A primary motivation for developing our framework is to answer policy-relevant questions, such as identifying the optimal way to modify an environmental exposure mixture to achieve the greatest public health benefit. This naturally leads to an optimization problem: finding the intervention vector δ that maximizes (or minimizes) the causal estimand ψ(δ). However, a naive comparison across all possible δ vectors is misleading. For any intervention direction that yields a beneficial effect, one could simply increase the intervention’s strength, for example, by scaling the magnitude of δ to produce an arbitrarily larger (or smaller) value of ψ(δ). This would invariably lead to trivial solutions that correspond to extreme, unrealistic shifts in the exposure distribution. A more relevant policy question is “for a fixed amount of interventional effort, what is the best direction to apply that effort?”. To formalize this, we must first establish a fair basis for comparison, constraining our search to a set of interventions that are of the same size, which captures the actual movement of the exposure values, not just the magnitude of the parameter δ. Note that the notion of fairness here is with respect to the size of the intervention being applied, which differs from typical notions of fairness in causal inference or related fields, such as in recent work that defines a fairness criterion based on whether an estimand preserves the ordinal ranking of effects across all covariate subgroups.(McClean et al., 2024) In order to establish our notion of fairness between interventions, we can use the 2-Wasserstein distance, 
+
+dW (f, g δ ), which is widely studied and serves this purpose (Panaretos and Zemel, 2019). Intuitively, the Wasserstein distance measures the minimum cost of transporting the probability mass of one distribution to match another, akin to the cost of moving a pile of dirt. By fixing the Wasserstein distance, we ensure that the total amount of shift between the old and new distributions is fixed. The optimization problem thus becomes a meaningful search for the δ that minimizes ψ(δ) among all possible intervention directions of a comparable magnitude. This distributional fairness notion is widely used in both the operations and statistics research literatures. (Mohajerin Esfahani and Kuhn, 2018; Blanchet and Murthy, 2019; Duchi and Namkoong, 2021; Gao and Kleywegt, 2023) For analytical tractability, we rely on a well-established result providing a formula for the squared 2-Wasserstein distance d2 
+
+> W
+
+based on the means ( μ1, μ2) and covariance matrices ( Σ1, Σ2) of two distributions (P1, P 2), which is referred to as the Gelbrich formula (Gelbrich, 1990). Crucially, this formula serves as a general lower bound for the true squared 2-Wasserstein distance between any two probability measures on 
+
+Rq with finite second moments. Specifically, we have that 
+
+d2 
+
+> W
+
+(P1, P 2) ≥ ∥ μ1 − μ2∥2 + tr 
+
+
+
+Σ1 + Σ2 − 2
+
+
+
+Σ1/21 Σ2Σ1/21
+
+1/2
+
+:= d2 
+
+> G
+
+(P1, P 2)Furthermore, this bound becomes an exact equality for any two distributions belonging to the same family of elliptically contoured distributions, a class which notably includes all multivariate normal distributions as well as uniform distributions on ellipsoids. The tractability of the Gelbrich formula has invited various researchers to use it as a surrogate for the 2-Wasserstein distance, a method frequently employed to overcome the computational complexity associated with the Wasserstein metric (Kuhn et al., 2019; Hakobyan and Yang, 2024), since the empirical 2-Wasserstein distance lacks a closed-form formula from data and can only be approached by numerical methods (Panaretos and Zemel, 2020). Moreover, the lower bound it provides has been shown to be tight in a fairly general situation against an upper bound derived for the 2-Wasserstein 5distance (Biswas and Mackey, 2024; Papp and Sherlock, 2024), and is therefore generally close to the 2-Wasserstein distance (Nguyen et al., 2021; Ye et al., 2024). Therefore, we believe our use of the Gelbrich formula as an approximation formula for the true 2-Wasserstein distance is reasonable. This provides a computationally tractable and well-justified measure of intervention size. Accordingly, we measure intervention size through the Gelbrich formula applied to the marginal baseline and tilted laws of W ,and write the resulting quantity as G(δ). Comparing interventions on the level set G(δ) = c2 puts them on a common scale. Under a multivariate normal model this coincides with the squared 2-Wasserstein distance, while in more general settings it remains a rigorous lower bound. The optimization problem thus becomes a search for the δ that minimizes ψ(δ) among all possible intervention directions of a comparable size, allowing us to disentangle the direction of an intervention from its size and enabling a principled exploration of which changes to an environmental exposure mixture are most beneficial or harmful. 
+
+## 2.5 Choice of Estimand 
+
+Having established a principled method for comparing interventions of equivalent magnitude, we are now positioned to define our estimands of interest. The framework of incremental effects, when extended to a multivariate setting, moves beyond simply estimating the effect of a single, pre-specified shift or simply examining how the causal effect depends on shift size. Instead, it allows us to explore the entire space of potential interventions to identify those that are most impactful. 
+
+2.5.1 Optimal Shifts 
+
+In environmental contexts, a key objective is to determine the most effective strategy for intervention given limited resources. For instance, how should regulators modify a complex mixture of air pollutants to achieve the greatest improvement in health outcomes? Our framework directly addresses this question by defining an estimand for the optimal policy shift. We define our primary estimand of interest, δ∗ 
+
+> c
+
+, as the intervention direction that minimizes the causal effect ψ(δ) over the set of all “fair shifts” of a given size c:
+
+δ∗ 
+
+> c
+
+= arg min 
+
+> δ∈A c
+
+ψ(δ)where 
+
+Ac = {δ : G(δ) = c2}.
+
+The corresponding value of this optimal policy is ψ∗ 
+
+> c
+
+= ψ(δ∗ 
+
+> c
+
+). To provide some intuition for the optimal δ,we can explore it analytically in a simplified setting. If we assume the outcome model is linear ( μ(x, w) = 
+
+α⊤x + β⊤w) and the exposure distribution is normal ( f ∼ N (μx, Σ)), the causal effect is minimized when 
+
+δ is proportional to −Σ−1β. This result provides some intuition: the optimal direction is a balance between the direct effect of each pollutant on the outcome (the vector β) and the correlation structure of the mixture (represented by Σ−1). This highlights a key insight of our multivariate approach: the covariance of the exposures is critical for determining not only which shifts are easiest to estimate, but also which shifts are most impactful. While the optimal policy shift is one primary goal, our framework is flexible and allows for the definition of other estimands that can be useful in answering other scientific questions of interest in environmental epidemiology. We now detail these in the following sections. 
+
+2.5.2 Single Exposure Shifts 
+
+A common goal in the analysis of environmental mixtures is to identify the components of the mixture that are most harmful. This has led to a wide range of statistical approaches aimed at performing exposure selection (Bobb et al., 2015; Antonelli et al., 2020; Ferrari and Dunson, 2020; Wei et al., 2020; Samanta and Antonelli, 2022). These approaches have inherently disregarded the potential impacts of positivity violations when examining which exposures are most harmful, but we can adapt our approach here to target similar questions without the need for strong positivity assumptions. A natural choice is to let δ be a vector of zeros with a single non-zero component, e.g., δj = (0 , . . . , t j , . . . , 0). The magnitude tj would be chosen to satisfy the same fairness constraint, G(δj ) = c2. While this estimand would encourage the jth component of the exposures to increase more than others, in the presence of correlated exposures, it will also shift the 6remaining exposures, and the extent to which this occurs is less clear. A distinct approach is to define a value of δ such that the means of the exposures in the tilted distribution are the same, except for the jth 
+
+exposure, thereby isolating the impact of that single exposure. If the exposures follow a multivariate normal distribution, this is straightforward since the mean shift is given by Σδ. If we want to ensure that only the jth 
+
+exposure’s mean is shifted, then we could set δj = Σ−1ej where ej = (0 , . . . , t j , . . . , 0) and again tj is chosen to ensure a fair shift. Note that this analytical form only holds when the exposure follows a multivariate normal distribution, which won’t be true in general. We can instead use this value of δj as a starting point in a numerical algorithm that searches for the exponential tilt that only shifts the jth component. Once these are obtained, we can calculate ψ(δj ) for all j = 1 , . . . , q to infer which exposures have the biggest effect on the outcome. Further note that this approach can be naturally extended to explore interactions or combined effects. For example, by setting two components of δ to be non-zero, one could investigate whether simultaneously increasing two pollutants has a synergistic effect greater than the sum of their individual impacts. We point readers to recent work examining stochastic interventions to identify interactions, as similar ideas could be applied within our framework, though we focus here on single exposure effects for now (McCoy et al., 2023). 
+
+2.5.3 Efficient Exposure Shifts 
+
+While the previous two estimands are arguably the most scientifically and policy-relevant in most applica-tions, there are other considerations at play, such as how efficiently we can estimate the chosen estimand. Environmental applications in particular are known to have relatively small effect sizes, and therefore ef-ficiency can be particularly important when sample sizes are not exceedingly large. As we established in Section 2.3, the statistical difficulty of estimating ψ(δ) is heavily driven by the variance of the density ratio, Var( gδ /f ). For a fixed intervention size, as defined by the Wasserstein distance, we showed that the most efficient intervention direction, in terms of minimizing this variance, is proportional to the first eigenvector of the exposure covariance matrix, Σ. We call this direction δeff , and it is clear that this direction depends only on the correlation structure of the observed exposures. While this direction is only the most efficient one under normality of the exposures, we proceed with this choice in general, as we have found that it leads to efficient estimates in more general settings, and deriving the most efficient direction in general is a difficult task. However, the optimal policy direction, δ∗ 
+
+> c
+
+, which maximizes the causal effect ψ(δ), depends on both the exposure distribution and the exposure-outcome relationship, μ(x, w). In simplified linear models, the direction of steepest ascent for the causal effect is proportional to Σ−1β. In general, there is no reason for the direction of maximal statistical efficiency (related to the eigenvectors of Σ) to be the same as the direction of the maximal causal effect (related to Σ−1β). To see this, consider an intuitive example with two highly and positively correlated pollutants, where the first principal component is approximately in the (1 , 1) direction, which corresponds to the direction that is “easiest” to estimate with the observed data. Now, suppose that only the second pollutant has a strong causal effect on the outcome (i.e., β ≈ (0 , β 2)). The optimal policy would primarily involve shifting the second pollutant. Our framework reveals an inherent tension: the policy we most want to evaluate (shifting the second pollutant alone) is statistically difficult because it moves in a direction against the data’s strong correlation structure, leading to a high-variance density ratio and thus high uncertainty in our estimate of its effect. In general, this presents a trade-off between interpretability and statistical efficiency, and users can decide based on features of their observed data which estimand to target. 
+
+# 3 Estimation and Inference 
+
+## 3.1 Estimating ψ(δ)
+
+For a fixed intervention vector δ, the target estimand is the expected outcome under the tilted exposure distribution: 
+
+ψ(δ) = E
+
+Z 
+
+> W
+
+μ(X, w)gδ (w | X) dw
+
+
+
+7where the outer expectation is over the marginal distribution of covariates X. Therefore, a direct approach to estimating ψ(δ) is through a plug-in procedure. This method involves replacing each component in the expression above with a corresponding empirical estimate, which leads to the plug-in estimator: ˆψplugin (δ) = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Z 
+
+> W
+
+ˆμ(Xi, w)ˆ gδ (w | Xi) dw
+
+
+
+However, this estimator faces certain practical and theoretical challenges. One issue is that the estimator’s performance is highly dependent on an accurate estimate of the multivariate conditional density ˆf (w|x), which can be difficult to estimate for multivariate exposures, and will likely have slower convergence rates. Furthermore, this approach does not leverage the structure of the efficient influence function and, as a result, is generally not statistically efficient. These limitations motivate alternative estimators with superior statistical properties. 
+
+3.1.1 One-step Estimation and Cross-fitting 
+
+To overcome the limitations of the plug-in estimator, we employ an approach rooted in semiparametric efficiency theory. This method uses the efficient influence function (EIF) to construct an estimator that is consistent under weaker conditions and achieves the optimal asymptotic variance. The EIF for the estimand 
+
+ψ(δ) is given in Section 2 by φ(Z; δ) = DY + Dg,μ + Dψ . In our notation, substituting the EIF components and algebraically combining the first two terms yields 
+
+φ(Z; ψ, μ, f ) = rδ (W , X)
+
+n
+
+Y − Egδ [μ | X]
+
+o
+
++ Egδ [μ | X] − ψ, 
+
+where rδ (w, x) = gδ (w | x)/f (w | x) and expectations with subscript gδ are taken with respect to gδ (· | X). The one-step estimation procedure utilizes this EIF to correct an initial parameter estimate by adding the empirical average of the EIF to the initial plug-in estimate, which serves as a bias-correction term: ˆψonestep (δ) = ˜ψplugin (δ) + 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+φ Zi; ˜ψplugin , ˆμ, ˆf .
+
+This can be re-written to show that the one-step estimator takes the following form: ˆψonestep (δ) = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ˆr(W i, Xi)Yi − Eˆgδ [ˆ μ | Xi] + 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Eˆgδ [ˆ μ | Xi].
+
+This estimator has a number of key features that we will describe in subsequent sections when we study the asymptotic properties of this estimator. To summarize, it allows the use of flexible machine learning methods for estimation of each of the nuisance functions, and it is asymptotically efficient given its construction based on the EIF. The practical performance of the estimator is highly dependent on an estimate of the conditional density of the exposures, given by f , which can be challenging with a moderate number of exposures. This density shows up in the expectations with respect to gδ , but also in the ratio term, denoted by rδ (W , X). First, we detail how to estimate this quantity directly using estimates of f and μ, though in Section 3.1.2 we propose an approach to directly estimating this quantity using regression techniques that may not have the same theoretical properties, but can have good finite-sample performance when there are a moderate number of exposures. To ensure the desirable asymptotic properties of our final estimator for ψ(δ), the entire estimation procedure is embedded within a cross-fitting framework. Cross-fitting is a technique designed to eliminate a key source of bias that arises when the same data is used both to train nuisance parameters and to evaluate the final parameter of interest. This prevents overfitting inherent in data-adaptive methods (Zheng and van der Laan, 2011; Chernozhukov et al., 2018) and has been shown to improve performance for related EIF based estimators. The procedure is implemented as follows. The data is randomly partitioned into K
+
+disjoint folds of approximately equal size. For each fold k ∈ { 1, . . . , K }, we treat it as the evaluation set and use the remaining K − 1 folds as the training set. On the training set, we fit our nuisance models, including the outcome regression ˆ μ−k(x, w) and the exposure density ˆf−k(w, x). These models, trained on 8data not in fold k, are then used to compute the components of the efficient influence function for every observation i only within the evaluation fold k. The final estimate, ˆψ(δ), is then constructed by solving the estimating equation aggregated across all K folds, ensuring that the nuisance function estimates for any given observation are always independent of that observation itself. This approach to nuisance function estimation has theoretical advantages by allowing for less restrictive assumptions on the nuisance functions, and important finite-sample properties as it tends to reduce bias in the estimated causal effects that is induced from overfitting. 
+
+3.1.2 Direct estimation using regression approaches 
+
+When there are a moderate number of exposures, estimation of ψ(δ) becomes increasingly challenging, even for the efficient one-step estimators described above due to the inherent difficulty of estimating a multivariate, conditional distribution f (w | x). For this reason we also explore an approach, first described in Schindl et al. (2024), that does not require estimation of the exposure density at all. This can be advantageous in finite samples, particularly when estimation of the density ratio rδ (W , X) is unstable. The first key insight is that the density ratio can be written as 
+
+rδ (W , X) = exp( δ⊤w)
+
+R 
+
+> W
+
+exp( δ⊤v)f (v | x) dv = exp( δ⊤w)
+
+E[exp( δ⊤W ) | X] = exp( δ⊤w)
+
+νδ (X) ,
+
+which shows the density ratio can be estimated by estimating the conditional expectation νδ (X). This does not require the conditional density of the exposures and can be carried out using flexible, univariate regression techniques. Further, the other key component of our one-step estimator can be written as                               
+
+> Z
+> W
+> μ(X,w)gδ(w|X)dw=
+> R
+> Wμ(X,w) exp( δ⊤w)f(w|x)dw
+> R
+> Wexp( δ⊤v)f(v|x)dv=E[exp( δ⊤W)μ(X,W)|X]
+> νδ(X)=ηδ(X)
+> νδ(X).
+
+This shows that this quantity can be estimated by taking the ratio of two quantities, each of which can be estimated using flexible, univariate regression techniques. This was introduced in Schindl et al. (2024), though they did not implement this estimator as they found it to be unstable by taking the ratio of the estimates for these two conditional expectations. They were working, however, in the univariate exposure setting where estimating the conditional density of the exposures is more straightforward. In our setting, with multiple exposures, conditional density estimation can be very difficult, whereas this approach relies on univariate prediction models only. Additionally note, that one can take a third strategy, which is to still estimate the conditional density of the exposures and use it whenever calculating R 
+
+> W
+
+μ(X, w)gδ (w | X) dw,but then use the regression approach described above for estimating the density ratio to improve stability of our estimates. While potentially useful for estimation, these estimators that obviate the need to estimate the exposure density will not inherit the same theoretical properties as the one-step estimator that directly uses estimates of f and μ, which we study theoretically in Section 4. They may, however, produce better finite sample performance, which we study in the simulation studies in Section 6 across a wide range of exposure distributions. 
+
+## 3.2 Optimizing over a Manifold 
+
+Our primary estimand, the optimal policy shift δ∗ 
+
+> c
+
+, is defined as the solution to min  
+
+> δ∈M
+
+ψ(δ),
+
+where M := {δ ∈ Rd : G(δ) = c2} and G is the Gelbrich quantity defined in Section 2.4. We assume 
+
+c2 is a regular value of G (equivalently, ∇G(δ)̸ = 0 for all δ ∈ M ), so that M is a smooth embedded hypersurface. This regularity holds generically and is verified for the Gelbrich constraint in Appendix B. Standard Euclidean optimization algorithms such as gradient descent are not directly applicable as a gradient step taken from a point on the manifold will likely lead to a point outside of the feasible set. To properly solve this problem, we must recognize that the constraint set forms a smooth, curved space known as a Riemannian manifold. Optimization on manifolds requires specialized techniques that generalize concepts from Euclidean optimization. The core idea is to perform optimization steps within the tangent 9space at each point on the manifold, which is a local linear approximation of the manifold, and then map the result back onto the manifold itself. For our specific constrained problem, we employ a Riemannian Broyden Fletcher Goldfarb Shanno (BFGS) algorithm. This is a powerful quasi-Newton method adapted for optimization on manifolds, which generally offers faster convergence than simpler first-order methods. In practice, the method is implemented with two computationally light ingredients: a projection-based retraction back to the level set, and an inexpensive projection-based vector transport between tangent spaces. The key components of this algorithm for our problem are: 1. Preliminary definitions: A definition of the tangent space is to take any small smooth curve on M
+
+γ : ( −ε, ε ) → M , γ(0) = δ.
+
+Then 
+
+γ′(0) ∈ Rd,
+
+is a valid tangent vector. The tangent space at a point δ is the collection of all such vectors: 
+
+Tδ M = {γ′(0) : γ(0) = δ, γ (t) ∈ M for all t}
+
+For a level set M = {δ : G(δ) = c2}, we also have the equivalent characterization Tδ M = Null( ∇G(δ)⊤). The BFGS (Broyden–Fletcher–Goldfarb–Shanno) algorithm is a highly effective quasi-Newton method, which finds an optimum by maintaining and iteratively updating an approximation B of the inverse Hessian matrix. In Euclidean space Rn, the standard update formula is: 
+
+Bk+1 = Bk + bkb⊤
+
+> k
+
+b⊤ 
+
+> k
+
+ak
+
+− (Bkak)( Bkak)⊤
+
+a⊤ 
+
+> k
+
+Bkak
+
+Where: 
+
+• Bk+1 is the updated approximation of the inverse Hessian, which is the target of the update. 
+
+• Bk is the current approximation of the inverse Hessian. 
+
+• ak is the change in position (step), defined as ak = δk+1 − δk.
+
+• bk is the change in gradient, defined as bk = ∇ψ(δk+1 ) − ∇ ψ(δk)2. Riemannian Gradient: The standard (Euclidean) gradient, ∇ψ(δ), must be projected onto the tangent space at the current point δ to find the direction of steepest ascent along the manifold. Let ∇G(δ)denote the Euclidean normal to the level set at δ, and let n(δ) = ∇G(δ)/∥∇ G(δ)∥ be the corresponding unit normal vector. The orthogonal projection matrix onto the tangent space is defined as Pδ := 
+
+I − n(δ)n(δ)⊤. Consequently, the Riemannian gradient under the induced Euclidean metric is given by grad ψ(δ) = Pδ ∇ψ(δ).
+
+3. Retraction: Even though we are moving based on a Riemannian gradient step that is in the current point’s tangent space (which is essentially a linear approximation of the manifold at the current point), we are still technically moving out of the manifold. After finding a search direction v, we need a retraction to map the point from the tangent space back onto the manifold. For the level-set manifold 
+
+M, we take the projection retraction Rδ (ξ) = Π( δ + ξ), where Π is the orthogonal projection onto M,which is a canonical construction for embedded manifolds. In our code, Π is computed approximately by a single normal-direction correction, which can be interpreted as a projection-like update that preserves the local first-order accuracy required of a retraction while substantially reducing computational cost. 4. Vector Transport: Vector transport is required to compare tangent vectors that live in different tangent spaces across iterates. For our embedded level-set manifold, we use the simple projection transport: 
+
+eTδ→δ+ (ζ) := Pδ+ ζ,
+
+namely, orthogonally projecting an ambient vector onto the new tangent space. Such a transport is generally not an isometry, even though it is often computationally attractive. This transport is also used to move tangent-space quantities between iterates when forming the RBFGS update. 10 To summarize, the iterative process of the Riemannian BFGS algorithm is outlined as follows. 
+
+Algorithm 1 Riemannian BFGS for Optimal Policy Shift Initialize: k = 0, choose δ0 on the manifold (s.t. G(δ0) = c2). Compute Euclidean gradient ∇ψ(δ0) and Riemannian gradient grad ψ(δ0) = Pδ0 ∇ψ(δ0). Initialize inverse Hessian approximation B0 = I.
+
+while not converged (e.g., ∥ grad ψ(δk)∥ > ϵ ) do 
+
+Compute search direction: pk = −Bk grad ψ(δk). Perform a weak Wolfe line search along the retraction curve. Update point via retraction: δk+1 = Rδk (αkpk). Compute new Riemannian gradient grad ψ(δk+1 ). Update Bk+1 : apply the RBFGS update and transport Bk to the new tangent space as needed. 
+
+k ← k + 1. 
+
+end while return δk
+
+When the objective is to minimize ψ(δ) over the Gelbrich level set, convergence guarantees for RBFGS depend on the line-search conditions, the regularity of the objective along retraction curves, and the choice of vector transport. Under the assumptions stated in Appendix B, the global convergence result in Theorem 4.2 of Huang et al. (2018) yields lim inf k→∞ ∥ grad ψ(δk)∥ = 0 for the RBFGS scheme equipped with a suitable isometric vector transport and weak Wolfe line search. Appendix B verifies the geometric regularity of the Gelbrich level set, establishes objective regularity along the retraction curve, and invokes the existence of a weak Wolfe step. The proof therefore uses a fully rigorous projection retraction and the scaled isometric vector transport T S (Huang et al., 2015) together with an explicit boundary condition on G that yields compactness of the relevant level set. Generally, however, these stricter choices are made for the convergence proof. In the actual implementation we use a computationally cheaper projection-type retraction and the orthogonal projection transport eT , together with safeguard checks on the RBFGS update. This separation between the proof device and the working algorithm is standard in large-scale Riemannian optimization (Ring and Wirth, 2012; Huang et al., 2018). In our numerical work, the simplified implementation converged stably to a local solution while substantially reducing computation time. In embedded-manifold settings, the projection transport ζ 7 → Pδ+ ζ can significantly reduce computational time without degrading practical convergence behavior. This phenomenon is well documented in the RBFGS experiments of Qi et al. (2010), where projection-based transport on the Stiefel manifold reduces wall-clock time from 304 .0 seconds to 24 .0 seconds and also decreases the iteration count from 175 to 83 in the Procrustes problem. Moreover, Huang et al. (2018) compare combinations that satisfy sufficient conditions used in global convergence theory with cheaper combinations that do not, and find that the numbers of function and gradient evaluations (as well as vector transports) are not significantly affected by the choice of retraction and transport; as a result, lower-complexity retractions and transports can be markedly faster in terms of computational time. In our applications, the simplified implementation described above converges reliably and is computationally fast. 
+
+# 4 Semiparametric Efficiency Theory 
+
+This section explores the fundamental limits of estimation for the multivariate incremental effect, ψ(δ). The analysis characterizes how the statistical difficulty of this problem depends not only on the sample size n,but on the intervention vector δ and its interplay with the exposure covariance structure Σ. We generalize and further develop the theoretical analysis for univariate continuous exposures from (Schindl et al., 2024) to our multivariate setting. 
+
+## 4.1 Minimax Lower Bound 
+
+In this section, we establish a minimax lower bound for the incremental effect 
+
+θ(δ) := ψ(δ) − ψ(0),
+
+11 under a flexible nonparametric model. Minimax lower bounds benchmark what is statistically achievable without imposing additional structure: they show that no estimator can attain uniformly smaller risk over a given model class. Before presenting the main results, we must first define a number of important terms. First, we refer to the centered version of the exposures as ˜W := W − E[ W | X].
+
+To analyze the asymptotic variance of the effect difference θ(δ), we decompose the problem into an incre-mental component h(Z) and a baseline influence function φ0(Z). We define 
+
+h(Z) := ˜W
+
+
+
+Y − E[ μ | X]
+
+
+
+− E  E[ μ ˜W | X], φ0(Z) := Y − ψ(0).
+
+Next, we calculate the covariance structure of h(Z). A key part of this variance arises from the outcome regression. To ensure this term represents a proper covariance (centered moment), we compute the raw second moment and subtract the outer product of the mean: 
+
+Σμ, full := E 
+
+h ˜W ˜W ⊤ μ − E[ μ | X]2i
+
+− E  E[ μ ˜W | X] E  E[ μ ˜W | X]⊤.
+
+Then, letting Σ ˜W ˜W ⊤, ε := E  Var( Y | X, W ) ˜W ˜W ⊤ be the residual variance component, we show in the appendix that we can write the full covariance matrix of h(Z) as 
+
+H := Cov  h(Z) = Σ ˜W ˜W ⊤, ε + Σμ, full .
+
+Finally, estimating the incremental effect θ(δ) requires distinguishing the variation in the shift direction from the variation in the baseline. Since the gradient component h(Z) and the baseline influence φ0(Z) are typically correlated, the fundamental difficulty of estimating their difference is governed by the variability of h that cannot be explained by φ0. Mathematically, this corresponds to the residual variance of h after linearly projecting it onto the space spanned by φ0, yielding the Schur–complement covariance 
+
+Γ := H − Cov( h, φ 0) Cov( h, φ 0)⊤
+
+Var( φ0) ⪰ 0.
+
+The next result records how the efficiency bound depends on δ.
+
+Lemma 1 (Variance of the efficient influence function) . Under (A1) –(A5) defined in the appendix and for all ∥δ∥ within a fixed small radius, there exist constants 0 < c low ≤ cup < ∞ (depending only on the model constants and the chosen radius; explicit expressions are given in the Appendix) such that 
+
+clow δ⊤H δ ≤ Var φθ(δ)(Z) ≤ cup δ⊤H δ , H = Σ ˜W ˜W ⊤, ε + Σμ, full .
+
+Lemma 1 makes explicit that the nonparametric efficiency bound (the variance of the efficient influ-ence function) grows quadratically in the tilt magnitude, with geometry determined by the matrix H;this geometry blends the noise component Σ ˜W ˜W ⊤, ε and the outcome–regression component Σμ, full . Since 
+
+H = Σ ˜W ˜W ⊤, ε + Σμ, full ⪰ Σ ˜W ˜W ⊤, ε , the lower bound immediately implies Var {φθ(δ)(Z)} ≥ clow δ⊤Σ ˜W ˜W ⊤, ε δ.
+
+As the direction of δ changes, the bound can increase substantially showing how the most efficient shifts are those proportional to the first eigenvector of Σ ˜W ˜W ⊤, ε . Note that this matrix is not the same as the covariance matrix of the exposures, but is closely related to it, and therefore this result confirms our findings of Section 2 about which directions are most efficient to estimate. Now, we derive minimax bounds for the estimation error of θ(δ). 
+
+Theorem 2 (Minimax lower bound) . Assume (A1) –(A5) and let ∥δ∥ lie in the finite-tilt regime specified in the Appendix. There exists a universal constant C > 0 (independent of n and δ) such that, for any estimator 
+
+bθ based on a sample of size n,
+
+inf 
+
+> bθ
+
+sup 
+
+> P
+
+EP
+
+(bθ − θP (δ)) 2 ≥ C · δ⊤Γ δ
+
+n .
+
+12 Theorem 2 shows that the best possible root mean–squared error obeys RMSE( bθ) ≳
+
+s
+
+δ⊤Γ δ
+
+n ,
+
+revealing an effective sample size of order neff ≍ n/ (δ⊤Γδ). Hence larger tilts and directions aligned with high–variance components of Γ are intrinsically harder, regardless of the estimation strategy. Conversely, if δ lies near a low–variance direction of Γ, faster convergence is attainable. Together with Lemma 1, the theorem clarifies why one must account for δ when assessing estimation difficulty and designing procedures: the geometry induced by Γ determines how precision scales with both the size and the direction of the tilt. 
+
+## 4.2 Convergence and Normality 
+
+Under mild regularity conditions (boundedness, i.i.d. sampling, and a fixed finite tilt), we establish a finite-δ
+
+central limit theorem for our cross-fitted one-step estimator. At first sight, the efficient influence function suggests that asymptotic linearity requires controlling the δ-specific nuisance functions 
+
+mδ (x) = Egδ
+
+μ(X, W ) | X = x, rδ (w, x) = gδ (w | x)
+
+f (w | x) ,
+
+Since both objects are indexed by the tilt parameter δ, and mδ is a nonlinear functional of the observed-data law, it is not obvious how to guarantee the L2 rates needed for one-step asymptotics. Our analysis shows that, for any fixed finite tilt δ, it is in fact sufficient to estimate only two familiar observed-data nuisance components: 
+
+μ(x, w) = E[Y | X = x, W = w], f (w | x),
+
+namely the outcome regression and the (generalized) propensity score. In the Appendix we show that, under bounded support for W and the finite-tilt condition ∥δ∥ ≤ ∆, the maps ( μ, f ) 7 → rδ and ( μ, f ) 7 → mδ are Lipschitz in L2(P ): there exist fixed finite constants C1(∆) , C 2(∆) such that for any estimators ( bμ, bf ), 
+
+∥brδ − rδ ∥2 ≤ C1(∆) ∥ bf − f ∥2, ∥ bmδ − mδ ∥2 ≤ C2(∆)  ∥bμ − μ∥2 + ∥ bf − f ∥2
+
+,
+
+where ( bmδ , brδ ) are obtained from ( bμ, bf ) by the same formulas as above; see Lemma 9. Consequently, the product condition 
+
+∥brδ − rδ ∥2 ∥ bmδ − mδ ∥2 = oP (n−1/2),
+
+which ensures that the second-order remainder is negligible, is implied by the more interpretable requirement that both bμ and bf converge at rate n−1/4 in L2(P ); see Corollary 3. These L2 rates for ( bμ, bf ), and hence for ( bmδ , brδ ), can be guaranteed under standard smoothness and complexity conditions by the highly adaptive lasso (van der Laan, 2017), which attains near-optimal convergence rates for a broad nonparametric class. 
+
+Theorem 3 (Finite-δ CLT) . Assume (A1) –(A3) and (C1) –(C5) in the Appendix. Fix ∆ ∈ (0 , ∞) and any tilt δ with ∥δ∥ ≤ ∆. Then √n { bψ(δ) − ψ(δ)} ⇝ N 0, Var {φψ(δ)(Z)},
+
+where the efficient influence function is 
+
+φψ(δ)(Z) = rδ (W , X){Y − mδ (X)} + mδ (X) − ψ(δ).
+
+Consequently, 
+
+√n {bθ(δ) − θ(δ)} ⇝ N 0, Var {φθ(δ)(Z)}, φθ(δ) := φψ(δ) − φψ(0).
+
+Theorem 3 provides the basis for asymptotic inference, which proceeds in a standard influence-function manner. Let Zi = ( Xi, W i, Y i), and define the empirical influence values for ψ(δ) by 
+
+bφψ(δ)(Zi) := brδ (W i, Xi){Yi − bmδ (Xi)} + bmδ (Xi) − bψ(δ),
+
+13 where brδ and bmδ are constructed from the cross-fitted estimators ( bμ, bf ) as above. A consistent estimator of the asymptotic variance is the sample second moment 
+
+bσ 2 
+
+> ψ(δ)
+
+:= 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+bφψ(δ)(Zi)2,
+
+and analogously for the incremental effect we use 
+
+bφθ(δ)(Zi) := bφψ(δ)(Zi) − bφψ(0)(Zi), bσ 2 
+
+> θ(δ)
+
+:= 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+bφθ(δ)(Zi)2.
+
+These yield Wald-type confidence intervals of the form 
+
+bθ(δ) ± z1−α/ 2
+
+bσθ(δ)
+
+√n ,
+
+with a similar process for ψ(δ). When inference is required for several tilts δ1, . . . , δJ , a joint covariance estimator is obtained by the empirical covariance matrix of the vector 
+
+  bφθ(δ1)(Zi), . . . , bφθ(δJ )(Zi)⊤, i = 1 , . . . , n, 
+
+which enables simultaneous confidence intervals or Wald tests via a multivariate normal approximation. 
+
+# 5 Sensitivity analysis to unmeasured confounding 
+
+In this section we develop a sensitivity analysis approach to assess the robustness of our causal estimates to the presence of unmeasured confounders. Throughout, we assume that there exist unmeasured confounders 
+
+U such that 
+
+Y (w) ⊥⊥ W | X, U , for all w.
+
+For notational clarity, let V := ( X, U ) denote the full adjustment set, reserving Z := ( X, W , Y ) for the observed data throughout. We still consider incremental policies defined by exponential tilting of the observed 
+
+conditional exposure density f (w | X): 
+
+gδ (w | X) = exp( δ⊤w)f (w | X)
+
+E[exp( δ⊤W ) | X] .
+
+The full-data causal estimand is given by 
+
+ψ(δ) = E
+
+Z 
+
+> W
+
+μ(V , w)gδ (w | X) dw
+
+
+
+,
+
+where μ(V , w) = E[Y | V , W = w] is referred to as the long outcome regression. We further denote the estimand obtained by applying the same identification formula while omitting U as 
+
+eψ(δ) = E
+
+Z 
+
+> W
+
+eμ(X, w)gδ (w | X) dw
+
+
+
+= E
+
+Z 
+
+> W
+
+[μ(X, w) + d(X, w)] gδ (w | X) dw
+
+
+
+,
+
+where eμ(X, w) = E[Y | X, W = w] is referred to as the short outcome regression, and d(X, w) captures confounding bias at exposure level w. When there is unmeasured confounding, the identified short estimand 
+
+eψ(δ), which conditions only on observed covariates X, diverges from the causal target ψ(δ) that is defined under conditional exchangeability given V = ( X, U ). We follow Chernozhukov et al. (2022) and leverage the geometry of Riesz representers to derive sharp bias bounds based on L2 norms, yielding interpretable calibration of confounding strength without imposing restrictive structural assumptions on μ(·, ·). 14 5.1 The Bias Representation 
+
+Let f (w | V ) denote the true conditional exposure density given the full adjustment set. The parameter 
+
+ψ(δ) can be written as a linear functional of the long regression evaluated under the observed distribution of ( V , W ): 
+
+ψ(δ) = E [μ(V , W )αδ (V , W )] , αδ (V , W ) = gδ (W | X)
+
+f (W | V ) .
+
+Analogously, the short estimand admits the representation 
+
+eψ(δ) = E [eμ(X, W )αs, δ (X, W )] , αs, δ (X, W ) = gδ (W | X)
+
+f (W | X) .
+
+Under mild regularity conditions ensuring square-integrability of the relevant Riesz representers, Cher-nozhukov et al. (2022) shows that the bias admits the exact representation 
+
+eψ(δ) − ψ(δ) = E [∆ μ(V , W )∆ α(V , W )] ,
+
+where ∆μ(V , W ) = μ(V , W ) − eμ(X, W ), ∆α(V , W ) = αδ (V , W ) − αs, δ (X, W ).
+
+This identity isolates two necessary sources of bias: the additional outcome variation explained by U beyond (X, W ) through ∆ μ, and the additional information about the exposure distribution provided by U beyond 
+
+X through ∆ α. By Cauchy–Schwarz, 
+
+| eψ(δ) − ψ(δ)| ≤ 
+
+q
+
+E[∆ μ(V , W )2]pE[∆ α(V , W )2].
+
+## 5.2 Sensitivity Parameters 
+
+To express the bound in terms of identifiable scale components and partial R2-type sensitivity parameters, define the following identifiable parameters 
+
+σ2 
+
+> s
+
+= E (Y − eμ(X, W )) 2 , ν2 
+
+> s
+
+(δ) = E αs, δ (X, W )2 , S(δ) = σsνs(δ).
+
+We parameterize the outcome component by the nonparametric partial R2 of U with Y given ( X, W ), 
+
+R2   
+
+> Y∼U|X,W
+
+= E ∆μ(V , W )2
+
+σ2
+
+> s
+
+, CY =
+
+q
+
+R2   
+
+> Y∼U|X,W
+
+.
+
+For the treatment component, we use the relative increase in L2 variation of the Riesz representer induced by conditioning on U :
+
+C2 
+
+> D
+
+(δ) = E ∆α(V , W )2
+
+ν2 
+
+> s
+
+(δ) .
+
+Combining these definitions yields the sensitivity bound 
+
+| eψ(δ) − ψ(δ)| ≤ S(δ) · CY · CD (δ).
+
+For the empirical analysis, we parameterize the strength of unmeasured confounding by 
+
+η2 
+
+> Y
+
+:= C2 
+
+> Y
+
+, η2
+
+> α
+
+(δ) := 1 − R2
+
+> α
+
+(δ), C2 
+
+> D
+
+(δ) = η2
+
+> α
+
+(δ)1 − η2
+
+> α
+
+(δ) .
+
+where R2
+
+> α
+
+(δ) is the squared correlation between the long and short Riesz representers. Here η2 
+
+> Y
+
+is the fraction of residual outcome variation explainable by U given ( X, W ), and η2
+
+> α
+
+(δ) is the fraction of RR variation explainable by U along the intervention path indexed by δ. These two quantities determine the width of the bias bound and, in turn, the width of the endpoint confidence bounds. The sensitivity parameters can be set subjectively or calibrated by formal benchmarking against observed covariates (Cinelli and Hazlett, 2020). The benchmarking procedure used in the empirical analysis is given in Appendix E.7. 15 5.3 Sensitivity parameters and confidence bounds for θ(δ)
+
+Our empirical results focus on the incremental effect θ(δ) = ψ(δ) − ψ(0). As shown in Appendix E, the same omitted-variable-bias representation applies to this contrast after replacing the short RR by the RR contrast αs,θ, δ (X, W ) = αs, δ (X, W ) − αs, 0(X, W ). Writing 
+
+ν2 
+
+> s,θ
+
+(δ) := Eαs,θ, δ (X, W )2 ,
+
+the plugin bound used in our analysis is 
+
+bB(δ) = bS(δ)
+
+q
+
+η2
+
+> Y
+
+s
+
+η2
+
+> α
+
+(δ)1 − η2
+
+> α
+
+(δ) , bS(δ) := 
+
+qbσ2 
+
+> s
+
+bν2 
+
+> s,θ
+
+(δ),
+
+with bν2 
+
+> s,θ
+
+(δ) = n−1 Pni=1 bαs,θ, δ (Xi, W i)2. Therefore the estimated point identified set is 
+
+θ(δ) ∈
+
+h bθ(δ) − bB(δ), bθ(δ) + bB(δ)
+
+i
+
+.
+
+For formal sensitivity-adjusted inference, we construct confidence bounds for the estimated endpoints 
+
+bθ−(δ) := bθ(δ) − bB(δ) and bθ+(δ) := bθ(δ) + bB(δ). Appendix E gives the endpoint expansions and the resulting standard errors. The empirical results report a sensitivity-adjusted 95% interval obtained from a lower confidence bound for bθ−(δ) and an upper confidence bound for bθ+(δ): 
+
+hbθ−(δ) − z0.95 bse −(δ), bθ+(δ) + z0.95 bse +(δ)
+
+i
+
+.
+
+# 6 Simulation studies 
+
+We conduct simulation studies to systematically evaluate the finite-sample performance of various nuisance-parameter estimation pipelines. Our goal is to assess how different modeling and estimation pipelines perform when the underlying exposure distribution exhibits complex features such as heavy tails, skewness, or mul-timodality. 
+
+## 6.1 Simulation design 
+
+In all simulations, we fix the sample size at n = 5 , 000 and the dimensions of the covariates and exposures at p = 10 and q = 6, respectively. The results are averaged over 100 independent Monte Carlo repetitions. We generate the covariate vector X = ( X1, . . . , X p)⊤ from a multivariate normal distribution with an autoregressive correlation structure. Specifically, X ∼ N (0 , ΣX ), where the ( j, k )-th entry of the covariance matrix is given by Σ X,jk = 0 .5|j−k|. The exposure vector W is generated conditional on X using a linear location-shift model: 
+
+W = B⊤X + β0 + E
+
+where B ∈ Rp×q is a sparse coefficient matrix with non-zero entries drawn from N (0 , 0.62) (sparsity level 0.4), and β0 is the intercept vector. The error term E determines the distributional characteristics of the exposures. We consider three scenarios to test model robustness: 1. Scenario I (Gaussian): The errors follow a multivariate normal distribution E ∼ N (0 , ΣW ), where 
+
+ΣW has an AR(1) structure with correlation parameter ρ = 0 .6. 2. Scenario II (Skewed): The errors follow a multivariate skew-normal distribution, E ∼ SN (0 , ΣW , α), with a slant parameter vector α = (4 , . . . , 4) ⊤. This scenario introduces substantial asymmetry and non-Gaussianity. 3. Scenario III (Truncated contaminated normal): To investigate robustness against heavy-tail-like deviations while ensuring the finiteness of the normalizing constant required for exponential tilting, we consider a truncated contaminated normal distribution. Specifically, the error distribution follows a 16 mixture of two centered Gaussians, (1 −π)N (0, ΣW )+ πN (0, ω 2ΣW ), with contamination rate π = 0 .2and scale inflation ω = 1 .5. The support is restricted to the region bounded by 6 standard deviations of the baseline component. This setting introduces heavier tails relative to the standard Gaussian assumption while maintaining the required integrability conditions. We generate the outcome under two different scenarios that comprise differing levels of complexity. 1. Scenario I (Simple Linear Model): We generate a continuous outcome Y using a linear model: 
+
+Y = α0 + α⊤X + β⊤W + ϵ, ϵ ∼ N (0 , 1) Here, the regression coefficients are generated from normal distributions: entries of α are drawn from 
+
+N (0 .5, 1), and entries of β are drawn from N (2 , 1), ensuring a strong but different signal for both covariates and exposures. 2. Scenario II (Complex Model): We evaluate a second, more complex DGP for the outcome Y to incorporate structural nonlinearities and interactions. The continuous outcome Y is generated using the following model: 
+
+Y = α0 + α⊤X + c1X22 + β⊤W + c2W1W2 + c3X1W1 + ϵ, ϵ ∼ N (0 , 1) Here, the baseline linear confounding coefficients α and the marginal independent effect coefficients β
+
+are drawn from N (0 .5, 1) and N (2 , 1), respectively. Beyond the linear main effects, the model explicitly introduces a quadratic effect for a specific covariate ( c1X22 , with c1 = 0 .5), a cross-product interaction between two exposures ( c2W1W2, with c2 = 1 .0), and a bilinear interaction between a covariate and an exposure ( c3X1W1, with c3 = 0 .8). This more complex setting is designed to emulate mechanisms often encountered in the health effects of air pollution mixtures. The quadratic covariate term can be viewed as mimicking the classical U-shaped meteorological confounding effect of temperature. The cross-product term W1W2 represents synergistic toxicity between two distinct pollutants, analogous to the combined effects of fine particulate matter (PM 2.5)and ozone (O 3). The interaction X1W1 captures effect modification, reflecting how a vulnerability factor such as patient age can amplify the health impact of a specific exposure. 
+
+## 6.2 Implemented estimators and method comparison 
+
+Our primary estimand is the tilted mean ψ(δ), evaluated at a fixed tilting parameter δ. We compare seven estimation pipelines that differ in how they approximate the nuisance structure induced by the tilted exposure law. For all methods, the outcome regression μ(X, W ) = E[Y | X, W ] is estimated using XGBoost with 5-fold cross-fitting. Our approaches can largely be categorized into two distinct types, which vary in how the exposure distribution is estimated. 1. Semi-parametric location-shift working models. 
+
+We model the exposure distribution using a semi-parametric location-shift decomposition, Wj =
+
+μj (X) + σj εj . For each exposure dimension, the conditional mean μj (X) is flexibly estimated via XGBoost, while the scale parameter σj is estimated as the empirical standard deviation of the residuals within the corresponding training fold. This specification accommodates nonlinear covariate-dependent shifts in the exposure mean while imposing a homoscedastic error structure across the covariate space. We evaluate three variations of this working model based on the specified marginal distributions of the standardized residuals εj . In all three variations, the joint dependence structure of ε = ( ε1, . . . , ε q )⊤
+
+is modeled using a Gaussian copula: 
+
+• Path 2 (Gaussian): Assumes the standardized residuals follow a Gaussian distribution. 
+
+• Path 2 ( t): Models each marginal residual using a scaled Student’s t distribution, Fj = tdf j ,where the degrees of freedom df j are estimated via maximum likelihood. This allows the model to accommodate heavy tails in specific exposure dimensions. 17 • Path 2 (Empirical): Employs a fully nonparametric approach for the marginal residuals. The marginal cumulative distribution function Fj for each residual dimension is flexibly estimated using log-spline density estimation. 2. Direct estimation of nuisance parameters via regression. 
+
+In addition to the standard outcome regression μ(x, w), the one-step estimator depends on nuisance functions that vary with the tilting parameter δ. These are given by νδ (x) and ηδ (x), which are defined in Section 3.1.2. In this pipeline, we use 5-fold cross-fitted SoftBART regression (Linero and Yang, 2018) for estimation of these functions. Within each of the three approaches to conditional density estimation, we explore 1) estimating the density ratio using the estimate of f , and 2) directly estimating the density ratio by estimating νδ (x). This leads to six estimators, though we consider a seventh estimator that involves directly estimating both νδ (x)and ηδ (x) without ever needing to estimate the exposure density. 
+
+## 6.3 Simulation Results 
+
+Figure 1 displays the estimated tilted mean, ψ(δ), across 100 Monte Carlo repetitions for the seven pipelines under the six data-generating designs. Additionally, Table 1 complements the boxplots with numerical summaries aggregated over the six designs. We report the average signed bias together with the average absolute bias and the average RMSE. Table 1: Average performance over the six simulation designs.                                           
+
+> Mean bias Mean absolute bias Mean RMSE Fully direct SoftBART regression 0.32 0.51 1.07 Gaussian residual model 0.78 0.82 1.05 Gaussian residual model with SoftBART estimation of
+> rδ(w,x)0.15 0.37 0.64
+> tresidual model 0.72 0.80 1.01
+> tresidual model with SoftBART estimation of rδ(w,x)0.15 0.37 0.64 Empirical residual model 0.24 0.42 0.66 Empirical residual model with SoftBART estimation of
+> rδ(w,x)0.08 0.31 0.62
+
+Across the six designs, the empirical residual working model is the most reliable default among the three distributional choices. Additionally, the results make it clear that estimating the density ratio directly using SoftBART outperforms estimation of the density ratio by simply plugging in the estimate of f . Regardless of the distributional choice, direct modeling of the density ratio drastically improves both bias and RMSE. Note, however, that the approach that does not model the exposure density at all, and directly estimates all nuisance functions directly through regression, performs poorly with a high RMSE. This highlights that taking a ratio of two estimated nuisance functions leads to additional, undesirable instability. Overall, the simulation results support a concrete practical conclusion: for the one-step estimator considered here, finite-sample performance is determined primarily by accurate estimation of density ratio rδ (w, x) while the remaining choice among the Gaussian, t, and empirical residual families is secondary once that component is well estimated. 
+
+# 7 Application: Assessing Health Impacts of PM 2.5 Component Mixtures 
+
+We now evaluate an important public health question regarding the health impacts of long-term exposure to fine particulate matter (PM 2.5) and its complex chemical mixtures. Specifically, we constructed a county-level dataset across the United States for the year 2019 to estimate the exposure-response relationship between PM 2.5 constituents and age-adjusted hospitalization rates per 10,000 people for Chronic Obstructive 18 Mix Gaussian Complex (Truth = 12.183) 
+
+Skew Complex (Truth = 10.825) 
+
+Gaussian Complex (Truth = 9.065) 
+
+Mix Gaussian Linear (Truth = 10.969) 
+
+Skew Linear (Truth = 8.413) 
+
+Gaussian Linear (Truth = 6.941) 
+
+> softbart / softbart Gaussian / MC / MC Gaussian / softbart / MC T−dist / MC / MC T−dist / softbart / MC Emp / MC / MC Emp / softbart / MC
+> 56789
+> 78910
+> 910 11 12 13
+> 78910 11
+> 910 11 12 13
+> 10 11 12 13 14
+> Estimated  ψ
+
+Figure 1: Boxplots of ψ(δ) across 100 repetitions under six data-generating designs. The dashed horizontal line marks the true value of the estimand. The labels on the horizontal axis identify, from left to right, the residual family, the method used for rδ (w, x), and the method used for estimating mδ (w, x). Throughout, MC represents simply plugging in estimates of f directly, while SoftBART represents direct estimation as described in Section 3.1.2. 19 Pulmonary Disease (COPD). Our analysis obtained health records from the CDC Environmental Public Health Tracking Network (EPHTN) and CDC WONDER. High-resolution estimates of PM 2.5 mass and its chemical constituents are derived from the Atmospheric Composition Analysis Group (Van Donkelaar et al., 2019). To adjust for potential confounding, we integrated a broad set of sociodemographic, behavioral, and clinical covariates compiled from the U.S. Census Bureau and CDC surveillance systems. Our analysis focuses on a q = 5 dimensional PM 2.5 component mixture: black carbon (BC), nitrates (NO 3), organic matter (OM), sulfates (SO 4), and ammonium (NH 4). All reported curves use the cross-fitted one-step estimator from Section 3 together with the empirical residual model shown to perform best in the simulation studies. We study three types of intervention paths corresponding to single exposure shifts, shifting groups of exposures, and finding the optimal shift in terms of reducing overall hospitalization rates. For the single exposure shifts, we utilize shifts of the form δj = (0 , . . . , t j , . . . , 0) when studying exposure j. The magnitude 
+
+tj is chosen to satisfy the corresponding Gelbrich constraint. These paths are useful for comparing feasible directions on the intervention manifold, though they do not necessarily isolate single-pollutant causal effects because the tilted law remains multivariate and continues to alter the entire mixture distribution, not just exposure j. We take a different approach for studying groups of exposures, where we consider three groups: 1) BC+OM, 2) NO 3+SO 4+NH 4, and 3) the full five-pollutant mixture. We solve a numerical algorithm for finding the δ value that shifts the means of each of the exposures within a group, while holding the means of the other exposures constant. We do not apply this idea to the single pollutant shifts, because finding such a shift is not feasible in many cases due to the high correlations among the exposures. Third, for the optimal policy we run the Riemannian BFGS algorithm, though we do so from 100 independent random starting values since the optimization problem is non-convex and global optimality is not guaranteed. NO3+SO4+NH4 All BFGS                                          
+
+> SO4 NH4 BC+OM
+> BC NO3 OM
+> 0.0 0.1 0.2 0.3 0.4 0.5 0.0 0.1 0.2 0.3 0.4 0.5 0.0 0.1 0.2 0.3 0.4 0.5
+> −1.0 −0.5 0.0
+> −0.2 −0.1 0.0 0.1 0.2
+> −6 −4 −2 0
+> −1.5 −1.0 −0.5 0.0
+> −2.0 −1.5 −1.0 −0.5 0.0
+> −0.8 −0.6 −0.4 −0.2 0.0
+> −0.75 −0.50 −0.25 0.00
+> −2.5 −2.0 −1.5 −1.0 −0.5 0.0
+> −1.2 −0.9 −0.6 −0.3 0.0
+> Gelbrich
+> Theta and confidence limits
+> Sensitivity setting
+> ηY2=0.02 ,ηα
+> 2=0.02
+> ηY2=0.05 ,ηα
+> 2=0.05
+> Formal benchmark
+> kY =1,kα=1
+
+Estimated intervention effects with sensitivity analysis 
+
+Figure 2: Estimated incremental effect curves for the five single-pollutant grid paths, the three bundle paths, and the BFGS path. Black points and vertical bars show bθ(δ) and its EIF-based 95% confidence interval. Colored ribbons show the formal sensitivity-adjusted 95% confidence bounds for two fixed sensitivity settings. Dashed blue curves show the formal benchmark with kY = 1 and kα = 1. Figure 2 shows the main empirical results. Among the five single pollutant analyses, all estimated curves are negative indicating a harmful effect of the air pollution mixture. The steepest declines are for SO 4 and 20 NH 4, followed by NO 3 and OM, with BC producing a smaller but still negative curve. Because the single exposure shifts may also be shifting other exposures due to correlation among them, we interpret these as rankings of feasible intervention directions rather than pollutant-specific dose-response effects. Arguably the more interesting and informative results therefore are given by the grouped exposure analyses. The BC+OM path remains close to zero throughout the displayed Gelbrich range, indicating that these two exposures do not strongly impact COPD hospitalizations. The NO 3+SO 4+NH 4 group and the all exposures group, however, show significantly more pronounced effects showing that these three exposures are likely driving the adverse health effects seen. −4 −3 −2 −1 0
+
+> 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50
+> Gelbrich target
+> θ
+> Distribution of theta across 100 paths
+
+Figure 3: Distribution of the BFGS objective values across 100 random-start paths for each Gelbrich target. As expected, the BFGS path has the largest estimated effect showing the biggest reductions in COPD hospitalizations possible at each level of the Gelbrich constraint. To provide more intuition about the results from the optimal policy shift, Figure 3 shows the distribution of the causal effect across the 100 different starting values, and Figure 4 shows the distribution of the δ values for each exposure in the optimal exposure shift across the different starting values. We can see there is some heterogeneity across starting values in both figures, though certain coherent patterns do emerge. The exposures with the most negative tilts assigned to them are SO 4 and NO 3, highlighting that they are potentially the most impactful of the exposures in the air pollution mixture. Figure 2 also summarizes the sensitivity of our results to unmeasured confounding bias. The shaded ribbons correspond to two fixed sensitivity parameter settings, while the dashed blue curves implement the formal benchmark procedure described in Appendix E.7. Intuitively, kY scales how much residual outcome variation an omitted confounder may explain relative to the strongest observed covariate, and kD scales how much additional RR variation it may explain relative to the strongest observed covariate for a given intervention path. In our data, the strongest outcome-side benchmark is the covariate White , whereas the RR-side benchmark is selected separately for each scenario. Under the benchmark kY = 1 and kD = 1, the BC, OM, SO 4, NH 4, NO 3+SO 4+NH 4, all-pollutant, and BFGS curves remain significantly negative throughout the displayed Gelbrich range showing moderate sensitivity to unmeasured confounding. The NO 3 path is more sensitive at the smallest Gelbrich constraints, though it becomes more robust for larger Gelbrich distances. Figure 5 provides an assessment of how large the sensitivity parameters would have to become in order to make any of the results insignificant for each exposure (or group of exposures) examined. 21 SO4 NH4 
+
+BC NO3 OM 
+
+> 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50
+> 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50
+> 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50
+
+0.0 0.5 1.0 
+
+−2.0 −1.5 −1.0 −0.5 0.0 0.5 
+
+0246
+
+−2.0 −1.5 −1.0 −0.5 0.0 
+
+−4 −2 0
+
+Gelbrich target 
+
+> δ
+
+Distribution of optimal shift parameters across 100 paths Figure 4: Distribution of the BFGS δ values for each exposure across 100 random-start paths for each Gelbrich target. 22 For this reason, we refer to this as the least favorable point, because it is the level of confounding required simply to make the result insignificant at any Gelbrich distance, not all distances simultaneously. The NO 3
+
+contour lies closest to the origin, indicating that comparatively small confounding would suffice to remove significance for at least one value of the Gelbrich constraint. At the other end, SO 4, the all-pollutant equal-mean path, and the BFGS path lie farthest from the origin, so they require materially stronger confounding to overturn the estimated negative effects. BC, OM, NH 4, and the NO 3+SO 4+NH 4 group fall between these extremes, still showing a modest degree of robustness to confounding. 0.0 0.1 0.2 0.3 0.4     
+
+> 0.0 0.1 0.2 0.3 0.4
+> ηY2
+> ηα
+> 2
+> Scenario
+> BC
+> NO3
+> OM
+> SO4
+> NH4
+> NO3+SO4+NH4
+> All
+> BFGS
+> Sensitivity combinations at the least−favorable point required to move the upper confidence limit to zero
+
+Figure 5: Sensitivity contours at the least favorable Gelbrich target for each direction with a negative estimated effect. Each curve gives the combinations of η2 
+
+> Y
+
+and η2
+
+> α
+
+(δ) that move the sensitivity-adjusted upper confidence bound to zero; contours farther from the origin therefore indicate greater robustness to unmeasured confounding. 
+
+# 8 Discussion 
+
+In this manuscript we developed methodology for estimating the health effects of multiple air pollutants simultaneously in a way that is robust to the presence of severe positivity violations. By examining stochastic interventions with tilted exposure distributions, we can study which exposures are most harmful without relying on model-based extrapolation. One critical issue in the multivariate setting is how to define a fair shift that corresponds to similar shifts in the exposure distribution, which we do via the 2-Wasserstein distance. We provide asymptotic theory and minimax estimation rates for our proposed estimands, and show in a national study of the health effects of air pollution that there are detrimental effects of the air pollution mixture, but that these are largely driven by nitrates and sulfates. There are a number of directions for future work that could expand upon, and improve, the methodology seen here. For one, our estimators are applicable to any stochastic shift estimand, and future research could target different shifts other than the exponentially tilted ones seen here, which maintain public health relevance and could be potentially more interpretable for practitioners. Additionally, one could expand on the sensitivity analyses developed here by incorporating recent results on sensitivity analysis for multiple 23 exposures (Zheng et al., 2021). These incorporate moderate parametric assumptions in the multiple exposure setting and allow one to produce partial identification regions that could be tighter than those seen here, and allow one to incorporate additional assumptions or sources of information, such as negative control variables. Overall, we believe the proposed framework provides analysts, particularly those involved in the analysis of air pollution mixtures, robust approaches to estimating causal effects of multivariate, continuous exposures. 
+
+# References 
+
+Antonelli, J., Mazumdar, M., Bellinger, D., Christiani, D., Wright, R., and Coull, B. (2020). Estimating the health effects of environmental mixtures using bayesian semiparametric regression and sparsity inducing priors. The Annals of Applied Statistics .Antonelli, J. and Zigler, C. (2024). Causal analysis of air pollution mixtures: estimands, positivity, and extrapolation. American Journal of Epidemiology , 193(10):1392–1398. Biswas, N. and Mackey, L. (2024). Bounding wasserstein distance with couplings. Journal of the American Statistical Association , 119(548):2947–2958. Blanchet, J. and Murthy, K. (2019). Quantifying distributional model risk via optimal transport. Mathe-matics of Operations Research , 44(2):565–600. Bobb, J. F., Valeri, L., Claus Henn, B., Christiani, D. C., Wright, R. O., Mazumdar, M., Godleski, J. J., and Coull, B. A. (2015). Causal inference for mixtures. Statistical science , 30(4):514–530. Bruns, C. and Kallus, N. (2024). Local effects of continuous instruments without positivity. arXiv preprint arXiv:2403.06450 .Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W., and Robins, J. (2018). Double/debiased machine learning for treatment and structural parameters. The Econometrics Journal ,21(1):C1–C68. Chernozhukov, V., Cinelli, C., Newey, W., Sharma, A., and Syrgkanis, V. (2022). Long story short: Omitted variable bias in causal machine learning. Technical report, National Bureau of Economic Research. Cinelli, C. and Hazlett, C. (2020). Making sense of sensitivity: Extending omitted variable bias. Journal of the Royal Statistical Society Series B: Statistical Methodology , 82(1):39–67. D´ ıaz, I. and Hejazi, N. S. (2020). Causal mediation analysis for stochastic interventions. Journal of the Royal Statistical Society Series B: Statistical Methodology , 82(3):661–683. D´ ıaz, I. and van der Laan, M. J. (2012). Population intervention causal effects based on stochastic interven-tions. Biometrics , 68(2):541–549. D´ ıaz, I., Williams, N., Hoffman, K. L., and Schenck, E. J. (2023). Nonparametric causal effects based on longitudinal modified treatment policies. Journal of the American Statistical Association , 118(542):846– 857. Dorn, J. and Guo, J.-Y. (2024). Nonparametric estimation of local treatment effects with continuous instru-ments. Journal of Business & Economic Statistics , pages 1–14. Duchi, J. C. and Namkoong, H. (2021). Learning models with uniform performance via distributionally robust optimization. The Annals of Statistics , 49(3):1378–1406. Ferrari, F. and Dunson, D. B. (2020). Identifying main effects and interactions among exposures using gaussian processes. The annals of applied statistics , 14(4):1743. Gao, R. and Kleywegt, A. (2023). Distributionally robust stochastic optimization with wasserstein distance. 
+
+Mathematics of Operations Research , 48(2):603–655. 24 Gelbrich, M. (1990). On a formula for the l2 wasserstein metric between measures on euclidean and hilbert spaces. Mathematische Nachrichten , 147(1):185–203. Hakobyan, A. and Yang, I. (2024). Wasserstein distributionally robust control of partially observable linear stochastic systems. IEEE Transactions on Automatic Control , 69(9):6121–6136. Haneuse, S. and Rotnitzky, A. (2013). Estimation of the effect of interventions that modify the received treatment. Statistics in medicine , 32(30):5260–5277. Huang, W., Absil, P.-A., and Gallivan, K. A. (2018). A riemannian bfgs method without differentiated retraction for nonconvex optimization problems. SIAM Journal on Optimization , 28(1):470–495. Huang, W., Gallivan, K. A., and Absil, P.-A. (2015). A broyden class of quasi-newton methods for riemannian optimization. SIAM Journal on Optimization , 25(3):1660–1685. Kallus, N. and Mbougwe, E. (2024). Stochastic interventions, sensitivity analysis, and optimal transport. 
+
+The Annals of Statistics , 52(2):522–545. Kallus, N. and Oprescu, M. (2022). Doubly robust inference on causal derivative effects for continuous treatments. arXiv preprint arXiv:2203.01878 .Kennedy, E. H. (2019). Non-parametric causal effects based on incremental propensity score interventions. 
+
+Journal of the Royal Statistical Society: Series B (Statistical Methodology) , 81(4):719–742. Kennedy, E. H. (2024). Semiparametric doubly robust targeted double machine learning: a review. Handbook of statistical methods for precision medicine , pages 207–236. Kuhn, D., Esfahani, P. M., Nguyen, V. A., and Shafieezadeh-Abadeh, S. (2019). Wasserstein distributionally robust optimization: Theory and applications in machine learning. In Operations research & management science in the age of analytics , pages 130–166. Informs. Linero, A. R. and Yang, Y. (2018). Bayesian regression tree ensembles that adapt to smoothness and sparsity. 
+
+Journal of the Royal Statistical Society Series B: Statistical Methodology , 80(5):1087–1110. Malag` o, L., Montrucchio, L., and Pistone, G. (2018). Wasserstein riemannian geometry of gaussian densities. 
+
+Information Geometry , 1(2):137–179. McClean, A., Li, Y., Bae, S., McAdams-DeMarco, M. A., D´ ıaz, I., and Wu, W. (2024). Fair comparisons of causal parameters with many treatments and positivity violations. arXiv preprint arXiv:2410.13522 .McCoy, D. B., Hubbard, A. E., Schuler, A., and van der Laan, M. J. (2023). Semiparametric discovery and es-timation of interaction in mixed exposures using stochastic interventions. arXiv preprint arXiv:2305.01849 .Mohajerin Esfahani, P. and Kuhn, D. (2018). Data-driven distributionally robust optimization using the wasserstein metric: Performance guarantees and tractable reformulations. Mathematical Programming ,171(1):115–166. Nguyen, V. A., Shafiee, S., Filipovi´ c, D., and Kuhn, D. (2021). Mean-covariance robust risk measurement. 
+
+arXiv preprint arXiv:2112.09959 .Panaretos, V. M. and Zemel, Y. (2019). Statistical aspects of wasserstein distances. Annual review of statistics and its application , 6(1):405–431. Panaretos, V. M. and Zemel, Y. (2020). An invitation to statistics in Wasserstein space . Springer Nature. Papp, T. P. and Sherlock, C. (2024). Scalable couplings for the random walk metropolis algorithm. Journal of the Royal Statistical Society Series B: Statistical Methodology , page qkae113. Peters, A., Lall, R., and Dominici, F. (2012). Causal inference for observed sudden changes in the composition of a multi-pollutant mixture: application to the effects of the utah valley steel mill closure. Epidemiology (Cambridge, Mass.) , 23(4):559. 25 Pfister, N. and B¨ uhlmann, P. (2021). Extrapolation-aware nonparametric statistical inference. Journal of the Royal Statistical Society Series B: Statistical Methodology , 83(5):915–941. Qi, C., Gallivan, K. A., and Absil, P.-A. (2010). Riemannian bfgs algorithm with applications. In Recent Ad-vances in Optimization and its Applications in Engineering: The 14th Belgian-French-German Conference on Optimization , pages 183–192. Springer. Richardson, T. S. and Robins, J. M. (2013). Single world intervention graphs (swigs): A unification of the counterfactual and graphical approaches to causality. Center for the Statistics and the Social Sciences, University of Washington Series. Working Paper , 128. Ring, W. and Wirth, B. (2012). Optimization methods on riemannian manifolds and their application to shape space. SIAM Journal on Optimization , 22(2):596–627. Robins, J. M., Hern´ an, M. A., and Siebert, U. (2004). Effects of multiple interventions. In Comparative quantification of health risks: Global and regional burden of disease attributable to selected major risk factors , volume 1, pages 2191–2230. World Health Organization. Rothenh¨ ausler, D. and Yu, B. (2021). Incremental causal effects. Journal of the Royal Statistical Society: Series B (Statistical Methodology) , 83(3):578–605. Rubin, D. B. (1980). Randomization analysis of experimental data: The fisher randomization test comment. 
+
+Journal of the American statistical association , 75(371):591–593. Rudolph, K. E., Hejazi, N. S., and van der Laan, M. J. (2024). Propensity score weighting across counter-factual worlds: longitudinal effects under positivity violations. Statistical Methods in Medical Research ,33(1):137–154. Rudolph, K. E., Inose, S., Williams, N., Diaz, I., Calderon, L., Torres, J. M., and Kioumourtzoglou, M.-A. (2025). Everything all at once: On choosing an estimand for multi-component environmental exposures. 
+
+arXiv preprint arXiv:2509.17960 .Samanta, S. and Antonelli, J. (2022). Estimation and false discovery control for the analysis of environmental mixtures. Biostatistics , 23(4):1039–1055. Schindl, K., Shen, S., and Kennedy, E. H. (2024). Incremental effects for continuous exposures. arXiv preprint arXiv:2409.11967 .Schindl, K. and Wasserman, L. (2025). Causal geodesy: Counterfactual estimation along the path between correlation and causation. arXiv preprint arXiv:2508.08499 .Taubman, S. L., Robins, J. M., Mittleman, M. A., and Hern´ an, M. A. (2009). Intervening on risk factors for coronary heart disease: an application of the parametric g-formula. International journal of epidemiology ,38(6):1599–1611. van der Laan, M. J. (2017). A generally efficient targeted minimum loss based estimator based on the highly adaptive lasso. The International Journal of Biostatistics , 13(2):20160075. Van Donkelaar, A., Martin, R. V., Li, C., and Burnett, R. T. (2019). Regional estimates of chemical composition of fine particulate matter using a combined geoscience-statistical method with information from satellites, models, and monitors. Environmental science & technology , 53(5):2595–2611. Wei, R., Reich, B. J., Hoppin, J. A., and Ghosal, S. (2020). Sparse bayesian additive nonparametric regression with application to health effects of pesticides mixtures. Statistica Sinica , 30(1):55–79. Ye, Q., Hanasusanto, G. A., and Xie, W. (2024). Distributionally fair stochastic optimization using wasser-stein distance. arXiv preprint arXiv:2402.01872 .26 Young, J. G., Hern´ an, M. A., and Robins, J. M. (2011). Identification, estimation and approximation of risk under interventions that depend on the natural value of treatment using observational data. In Statistical models and causal inference: a dialogue with the social sciences , pages 103–128. Cambridge University Press. Zhang, Y., Han, P., Wu, X., and Diao, G. (2023). Nonparametric inference on dose-response curves without the positivity condition. Biometrika , 110(1):219–236. Zheng, J., D’Amour, A., and Franks, A. (2021). Bayesian inference and partial identification in multi-treatment causal inference with unobserved confounding. arXiv preprint arXiv:2111.07973 .Zheng, W. and van der Laan, M. J. (2011). Cross-validated targeted minimum-loss-based estimation. In 
+
+Targeted Learning , pages 459–474. Springer. 
+
+# A Neyman-orthogonality and robustness to misspecified outcome model 
+
+Setup. Let μ(x, w) = E[Y | X = x, W = w] denote the outcome regression, let f (w | x) be the observed exposure density, and let g(w | x) be the tilted density with density ratio rδ (w, x) = g(w | x)/f (w | x). We write Ef [· | X] and Eg [· | X] for conditional expectations with respect to f (· | X) and g(· | X), respectively. Assume standard regularity conditions. Consider the efficient influence function for a scalar parameter ψ:
+
+φ(Z; ψ, μ, r ) := rδ (W , X)
+
+n
+
+Y − Eg [μ(X, W ) | X]
+
+o
+
++ Eg [μ(X, W ) | X] − ψ. 
+
+We utilize the identities: 
+
+E[rδ (W , X) | X] = 1 , E[rδ (W , X)μ(X, W ) | X] = Eg [μ(X, W ) | X].
+
+(a) Orthogonality with respect to μ. Fix r and perturb μ along a path με = μ + εh . Since E[rY ] and 
+
+ψ do not depend on ε, we have: 
+
+ddε E{φ(Z; ψ, μ ε, r )} ε=0 
+
+= E[−rδ (W , X) Eg [h(X, W ) | X] + Eg [h(X, W ) | X]] = E 1 − E[rδ (W , X) | X] Eg [h(X, W ) | X]
+
+= 0 .
+
+Hence, the influence function is Neyman-orthogonal with respect to μ.
+
+(b) Sensitivity in r. Fix μ and perturb r along a normalized path rε = r(1 + εv ), where v(w, x) is a measurable function satisfying the constraint E[rε(W , X) | X] = 1 for all ε. Differentiating this constraint at ε = 0 yields Ef [rδ (W , X)v(w, x) | X] = 0, which is equivalent to Eg [v(w, x) | X] = 0. Let mε(X) := Egε [μ(X, W ) | X], where gε is the tilted density corresponding to rε. Since gε(w | x) = 
+
+rε(w, x)f (w | x), we have: 
+
+ddε mε(X) ε=0 
+
+= Eg [v(w, x)μ(X, W ) | X].
+
+Let m′(X) := Eg [vμ | X]. The influence function along the path is: 
+
+φ(Z; ψ, μ, r ε) = rε(W , X){Y − mε(X)} + mε(X) − ψ. 
+
+27 Differentiating the expected influence function yields: 
+
+ddε E{φ(Z; ψ, μ, r ε)} ε=0 
+
+= Erδ (W , X)v(W , X){Y − m0(X)} + E(1 − rδ (W , X)) m′(X)
+
+= Erδ (W , X)v(W , X)μ(X, W )
+
+− Em0(X)E[rδ (W , X)v(W , X) | X] + E(1 − rδ (W , X)) m′(X)
+
+= Erδ (W , X)v(W , X)μ(X, W ) − E[m0(X) · 0] 
+
+| {z }
+
+> = 0
+
++ E(1 − rδ (W , X)) m′(X)| {z }
+
+> = 0
+
+= E{Eg [v(W , X)μ(X, W ) | X]}.
+
+In general, E{Eg [vμ | X]}̸ = 0. Therefore, the derivative does not vanish, implying that the influence function is not Neyman-orthogonal in the r direction unless additional restrictive constraints are imposed on the perturbation v.This non-orthogonality with respect to r extends directly to the exposure density f . For a fixed target density g, any perturbation in f induces a corresponding change in the density ratio r = g/f . Consider a perturbation path fε = f (1 + εS ), where S(w | x) is a standard score function satisfying Ef [S(W | X) |
+
+X] = 0. Specifically: 
+
+rε(w, x) = g(w | x)
+
+fε(w | x) = g(w | x)
+
+f (w | x)(1 + εS ) = rδ (w, x)(1 + εS )−1.
+
+Differentiating with respect to ε at ε = 0: 
+
+ddε rε ε=0 
+
+= −rδ (w, x)S(w | x).
+
+This corresponds to the perturbation v = −S in the previous derivation for r. Substituting this into the derivative obtained in part (b), we get: 
+
+ddε E{φ(Z; ψ, μ, r ε)} ε=0 
+
+= EEg [−S(W | X)μ(X, W ) | X]
+
+= −EEg [S(W | X)μ(X, W ) | X] .
+
+Since Eg [Sμ | X] is generally non-zero (unless μ is constant or S is orthogonal to μ under g), the derivative does not vanish. Thus, the influence function is not Neyman-orthogonal with respect to the exposure density 
+
+f .
+
+Robustness to misspecified outcome model. Let μ0 be the true outcome regression and r be the true density ratio. Define the target parameter: 
+
+ψ0 := Erδ (W , X) μ0(X, W ) = E
+
+h
+
+Ef {rδ (W , X)μ0(X, W ) | X}
+
+i
+
+,
+
+which represents the average outcome under the tilted distribution g. We now show that at ( ψ0, r ), the influence function is globally robust to μ. That is, for any measurable ˜ μ:
+
+Eφ(Z; ψ0, ˜μ, r ) = 0 .
+
+Consequently, estimators based on the efficient influence function φ, such as the one-step estimator employed in this work, remain consistent for ψ0 even under misspecification of the outcome regression model. 
+
+Proof. Fix any measurable function ˜ μ and define: ˜m(X) := Ef
+
+rδ (W , X)˜ μ(X, W ) | X = Eg [˜ μ(X, W ) | X].
+
+Since ˜ m depends only on X and E[rδ (W , X) | X] = 1, we have: 
+
+Erδ (W , X) ˜ m(X) = E
+
+h
+
+˜m(X) E[rδ (W , X) | X]
+
+i
+
+= E ˜m(X).
+
+28 Thus, at ( ψ0, r ): 
+
+Eφ(Z; ψ0, ˜μ, r ) = Erδ (W , X){Y − ˜m(X)} + E[ ˜ m(X)] − ψ0
+
+= E[rδ (W , X)Y ] − ψ0.
+
+By the law of iterated expectations: 
+
+E[rδ (W , X)Y ] = Erδ (W , X) μ0(X, W ) = ψ0.
+
+Therefore, E[φ(Z; ψ0, ˜μ, r )] = 0 for all ˜ μ. This confirms that consistent estimation of ψ0 relies primarily on the consistency of brδ , rendering the estimator robust to misspecification of μ.
+
+# B Validity for Riemannian BFGS on Gelbrich Constraint for ex-ponential tilting 
+
+The convergence theory of Riemannian optimization algorithms, including Riemannian BFGS with Wolfe line search, is established in, e.g., Ring and Wirth (2012); Huang et al. (2015, 2018). We consider the deterministic level–set constraint 
+
+M = {δ ∈ Rd : G(δ) = c2},
+
+where G(δ) is the squared Gelbrich distance between the marginal baseline distribution of W and the marginal tilted distribution of W induced by δ. The manifold M is equipped with the Riemannian metric induced by the Euclidean inner product on Rd. Global convergence of cautious Riemannian BFGS in the sense that lim inf k→∞ ∥ grad ψ(δk)∥ = 0 follows from Huang et al. (2018, Theorem 4.2) under a compact level-set condition and Lipschitz continuous differentiability with respect to the chosen transport. We establish these properties for the marginal Gelbrich constraint by showing that the level set is a smooth embedded hypersurface, that a C2 retraction and a continuous scaled transport with the pointwise norm-preserving property used in Huang et al. (2015, 2018) are available, and that ψ is regular on a neighbourhood containing the line-search trial points. 
+
+Geometry of the Gelbrich constraint. Let fW denote the marginal baseline law of W on Rd, and let 
+
+μ = EfW [W ] ∈ Rd, Σ = Cov fW (W ) ∈ Sd
+
+> ++
+
+.
+
+For δ ∈ D (an open set on which the marginal log–moment generating function is finite), define 
+
+M (δ) = EfW
+
+h
+
+eδ⊤W i
+
+, gmarg  
+
+> δ
+
+(w) = exp  δ⊤w − log M (δ) fW (w).
+
+Consequently, let μδ = Egmarg  
+
+> δ
+
+[W ] and Σδ = Cov gmarg  
+
+> δ
+
+(W ). Equivalently, 
+
+μδ = ∇δ log M (δ) ∈ Rd, Σδ = ∇2 
+
+> δ
+
+log M (δ) ∈ Sd
+
+> ++
+
+.
+
+The Gelbrich function is 
+
+G(δ) := ∥μδ − μ∥22 + tr 
+
+
+
+Σ + Σδ − 2 Σ1/2Σδ Σ1/21/2
+
+.
+
+Equip Rd with the Euclidean inner product and Sd with the Frobenius inner product ⟨A, B⟩ = tr( A⊤B). For each δ, define the linear map Jδ : Rd → Sd by (Jδ ek)ij := ∂(Σδ )ij 
+
+∂δ k
+
+, k = 1 , . . . , d, 
+
+and extend by linearity so that Jδ v = Pdk=1 vkJδ ek. Let J∗ 
+
+> δ
+
+: Sd → Rd be the adjoint of Jδ with respect to these inner products, that is, 
+
+⟨Jδ v, H⟩ = v⊤ J∗ 
+
+> δ
+
+H (v ∈ Rd, H ∈ Sd),
+
+29 equivalently, for any v ∈ Rd,
+
+v⊤ J∗ 
+
+> δ
+
+H = ⟨Jδ v, H⟩ = tr  (Jδ v)⊤H =
+
+> d
+
+X
+
+> k=1
+
+vk tr  (Jδ ek)⊤H.
+
+Define 
+
+T Σδ →Σ := Σ−1/2
+
+> δ
+
+ Σ1/2 
+
+> δ
+
+Σ Σ 1/2
+
+> δ
+
+1/2Σ−1/2 
+
+> δ
+
+∈ Sd
+
+> ++
+
+.
+
+For A ∈ Sd
+
+> ++
+
+, define the Lyapunov (Sylvester) operator LA(Y ) = AY + Y A , and write L−1 
+
+> A
+
+for its solution operator. 
+
+Lemma 2 (Exact gradient and generic regularity of Gelbrich level sets) . Assume log M (δ) is finite on a nonempty open set D ⊂ Rd. Then log M (δ) is real–analytic on D, hence so are μδ and Σδ .
+
+(i) G is C1 on D and 
+
+∇G(δ) = 2 Σδ
+
+ μδ − μ + J∗
+
+> δ
+
+
+
+I − T Σδ →Σ
+
+
+
+, δ ∈ D .
+
+(ii) Let C = {δ ∈ D : ∇G(δ) = 0} and V = G(C) ⊂ [0 , ∞). Then V has Lebesgue measure zero and empty interior. In particular, for any c > 0 with c2 /∈ V , the level set 
+
+Mc := {δ ∈ D : G(δ) = c2}
+
+is a C∞ (indeed real-analytic) embedded hypersurface and ∇G(δ)̸ = 0 for all δ ∈ M c.Proof. Write G(δ) = Gmean (δ) + Gcov (δ) with 
+
+Gmean (δ) = ∥μδ − μ∥22, Gcov (δ) = Φ( Σδ ),
+
+where Φ( Θ) := tr 
+
+
+
+Σ + Θ − 2 Σ1/2ΘΣ 1/21/2
+
+, Θ ∈ Sd
+
+> ++
+
+.
+
+Let v ∈ Rd and denote the directional derivative by Dv . Since D μδ [v] = Σδ v and Σδ is symmetric, 
+
+Dv Gmean (δ) = 2 ⟨μδ − μ, Σδ v⟩ = 2 v⊤Σδ (μδ − μ),
+
+hence ∇Gmean (δ) = 2 Σδ (μδ − μ). For H ∈ Sd, the first Fr´ echet derivative of Φ is given by DΦ( Θ)[ H] = ⟨I − T Θ→Σ, H⟩,
+
+where T Θ→Σ := Θ−1/2(Θ1/2ΣΘ 1/2)1/2Θ−1/2. This follows from the Fr´ echet derivative of the principal matrix square root, D( A1/2)[ V ] = L−1 
+
+> A1/2
+
+(V ) (Malag` o et al., 2018, Eqs. (14)–(16)). In particular, for A ∈ Sd
+
+> ++
+
+and V ∈ Sd,D tr( A1/2)[ V ] = 12 tr( A−1/2V ).
+
+With A = Σ1/2ΘΣ 1/2 and V = Σ1/2HΣ1/2,DΦ( Θ)[ H] = tr( H) − tr 
+
+
+
+Σ1/2A−1/2Σ1/2H
+
+
+
+= ⟨I − T Θ→Σ, H⟩.
+
+By the chain rule and the definition of Jδ ,
+
+Dv Gcov (δ) = DΦ( Σδ )Jδ v = ⟨ I − T Σδ →Σ , J δ v⟩ = v⊤J∗
+
+> δ
+
+ I − T Σδ →Σ
+
+,
+
+which implies ∇Gcov (δ) = J∗
+
+> δ
+
+ I − T Σδ →Σ
+
+. Summing these terms yields the gradient in (i). For part (ii), log M (δ) is real–analytic on D, hence so are μδ and Σδ , and therefore G is C1 on D.Since G is real–analytic on D, it is C∞ on D, and Sard’s theorem yields that the set of critical values V
+
+has Lebesgue measure zero. Since V has Lebesgue measure zero, it has empty interior. For any c > 0 with 
+
+c2 /∈ V , every δ ∈ M c satisfies ∇G(δ)̸ = 0; the regular level–set theorem yields that Mc is a C∞ (indeed real-analytic) embedded hypersurface. 30 Projection retraction and scaled vector transport. Fix c > 0 such that c2 /∈ V and write Mc =
+
+{δ ∈ D : G(δ) = c2}. For δ ∈ M c, let n(δ) := ∇G(δ)/∥∇ G(δ)∥ be the unit normal vector and denote the orthogonal projection onto the tangent space Tδ Mc by 
+
+Pδ := I − n(δ)n(δ)⊤.
+
+Let Π : N → M c be the orthogonal projection from a tubular neighbourhood N of Mc. For δ ∈ M c,define the retraction Rδ on a sufficiently small ball Bδ ⊂ Tδ Mc by 
+
+Rδ (ξ) := Π( δ + ξ), ξ ∈ B δ .
+
+Define the differentiated-retraction transport 
+
+T R
+
+> δ,ξ
+
+(ζ) := D Rδ (ξ)[ ζ], ζ ∈ Tδ Mc.
+
+Following Huang et al. (2015, Eq. (4.3)), define the scaled transport 
+
+T S
+
+> δ,ξ
+
+(ζ) := 
+
+
+
+∥ζ∥∥T R
+
+> δ,ξ
+
+(ζ)∥ T R
+
+> δ,ξ
+
+(ζ), ζ̸ = 0,
+
+0, ζ = 0,
+
+which is norm-preserving and satisfies the requirements (2.5)–(2.8) therein. For a step ξ ∈ Tδ Mc and 
+
+δ+ := Rδ (ξ), define 
+
+Tδ→δ+ (ζ) := T S
+
+> δ,ξ
+
+(ζ), ζ ∈ Tδ Mc.
+
+Lemma 3 (Validity of transport) . The retraction R and the transport T defined above satisfy: 
+
+(a) there exists an open neighbourhood U ⊂ T Mc of the zero section such that Rδ and Tδ→Rδ (ξ) are well defined for (δ, ξ) ∈ U and are C0 in all arguments; 
+
+(b) Rδ (0) = δ and DRδ (0) = Id Tδ Mc , and for every ζ ∈ Tδ Mc,
+
+Tδ→Rδ (ξ)(ζ) = T R
+
+> δ,ξ
+
+(ζ) + O(∥ξ∥ ∥ ζ∥) (ξ → 0),
+
+and in particular T R 
+
+> δ,0
+
+= Id Tδ Mc ;
+
+(c) for every δ ∈ M c and ξ ∈ B δ ,
+
+∥T δ→Rδ (ξ)(ζ)∥ = ∥ζ∥ (ζ ∈ Tδ Mc),
+
+so for each fixed (δ, ξ), the map ζ 7 → T δ→Rδ (ξ)(ζ) is pointwise norm-preserving on Tδ Mc, and T is uniformly bounded on compact subsets of Mc in the sense that 
+
+∥T δ→Rδ (ξ)(ζ)∥ ≤ ∥ ζ∥
+
+for all admissible (δ, ξ, ζ).Proof. Property (a) follows from the tubular neighbourhood theorem and the C1 smoothness of Π: Rδ (ξ) = Π( δ + ξ) is well defined and C1 for ξ small, and D Rδ (ξ) is a linear map between tangent spaces for ∥ξ∥
+
+sufficiently small. The scaled transport T S satisfies the continuity and first-order conditions invoked in Huang et al. (2015), so T is continuous in all arguments. For (b), Π( δ) = δ and DΠ( δ) = Pδ , hence Rδ (0) = δ and D Rδ (0) = Pδ . Since Pδ is the identity on 
+
+Tδ Mc, D Rδ (0) = Id Tδ Mc . The first–order agreement between T and D Rδ (0) follows from Huang et al. (2015, (2.5)–(2.7), Lem. 3.5). For (c), by construction, 
+
+∥T S
+
+> δ,ξ
+
+(ζ)∥ = ∥ζ∥ (ζ ∈ Tδ Mc),
+
+so Tδ→Rδ (ξ) = T S 
+
+> δ,ξ
+
+is pointwise norm-preserving: 
+
+∥T δ→Rδ (ξ)(ζ)∥ = ∥ζ∥ (ζ ∈ Tδ Mc).
+
+The stated uniform boundedness on compact subsets then follows with constant 1. 31 Objective regularity for the global target. For x ∈ X and δ ∈ U , define the local tilted conditional mean 
+
+ηδ (x) := Ef [μ(x, W )eδ⊤W | X = x], νδ (x) := Ef [eδ⊤W | X = x],mδ (x) := ηδ (x)
+
+νδ (x) , ψ(δ) := Emδ (X) .
+
+Lemma 4 (Conditional regularity of the local tilted mean) . Assume |μ(x, w )| ≤ C(1 + ∥w∥p) for some finite constants C, p > 0. Let U ⊂ Rd be open and let K ⊂ U be compact. Assume 
+
+A(X) := sup 
+
+> δ∈U
+
+Ef
+
+eδ⊤W (1 + ∥W ∥p+2 ) | X < ∞ a.s. , EA(X)2 < ∞, (3) 
+
+and 
+
+inf  
+
+> δ∈K
+
+νδ (X) ≥ Dmin > 0 a.s. (4) 
+
+Then for almost every X, the map δ 7 → mδ (X) is C2 on K. Moreover, there exist finite constants C0, C 1, C 2,depending only on C, p, and Dmin , such that with 
+
+Bj (X) := Cj {1 + A(X) + A(X)2}, j = 0 , 1, 2,
+
+we have almost surely 
+
+sup 
+
+> δ∈K
+
+|mδ (X)| ≤ B0(X), sup 
+
+> δ∈K
+
+∥∇ mδ (X)∥ ≤ B1(X), sup 
+
+> δ∈K
+
+∥∇ 2mδ (X)∥ ≤ B2(X),
+
+and E[Bj (X)] < ∞ for j = 0 , 1, 2.Proof. Fix δ ∈ U . By (3), the maps ηδ (X) and νδ (X) are well defined almost surely, and differentiation under the conditional expectation is justified up to second order because eδ⊤W (1 + ∥W ∥p+2 ) dominates the first- and second-order directional derivatives of both integrands. Thus, for almost every X,
+
+∇ηδ (X) = Ef [μ(X, W )W e δ⊤W | X], ∇2ηδ (X) = Ef [μ(X, W )W W ⊤eδ⊤W | X],
+
+∇νδ (X) = Ef [W e δ⊤W | X], ∇2νδ (X) = Ef [W W ⊤eδ⊤W | X].
+
+The polynomial growth bound on μ implies that there is a finite constant Cη , depending only on C and p,such that almost surely sup 
+
+> δ∈K
+
+
+
+|ηδ (X)| + ∥∇ ηδ (X)∥ + ∥∇ 2ηδ (X)∥ + |νδ (X)| + ∥∇ νδ (X)∥ + ∥∇ 2νδ (X)∥
+
+
+
+≤ Cη A(X).
+
+By (4), the quotient rule gives, for almost every X,
+
+∇mδ (X) = ∇ηδ (X)
+
+νδ (X) − ηδ (X)∇νδ (X)
+
+νδ (X)2 ,
+
+∇2mδ (X) = ∇2ηδ (X)
+
+νδ (X) − ∇ηδ (X)∇νδ (X)⊤ + ∇νδ (X)∇ηδ (X)⊤ + ηδ (X)∇2νδ (X)
+
+νδ (X)2 + 2ηδ (X)∇νδ (X)∇νδ (X)⊤
+
+νδ (X)3 .
+
+Therefore there exist finite constants C0, C 1, C 2, depending only on C, p, and Dmin , such that sup 
+
+> δ∈K
+
+|mδ (X)| ≤ C0{1 + A(X)}, sup 
+
+> δ∈K
+
+∥∇ mδ (X)∥ ≤ C1{1 + A(X) + A(X)2},
+
+sup 
+
+> δ∈K
+
+∥∇ 2mδ (X)∥ ≤ C2{1 + A(X) + A(X)2} a.s. Since E[A(X)2] < ∞, the envelopes Bj (X) = Cj {1 + A(X) + A(X)2} are integrable. This proves the claim. 32 Corollary 1 (Objective regularity and line search on Gelbrich level sets) . Let c > 0 satisfy c2 /∈ V and set 
+
+M = {δ ∈ Rd : G(δ) = c2}. Assume the boundary-separation condition 
+
+G−∞ := lim inf   
+
+> ∥δ∥→∞ ,δ∈D
+
+G(δ) > c 2. (5) 
+
+Choose Rc > 0 such that 
+
+G(δ) > c 2 (δ ∈ D , ∥δ∥ ≥ Rc), (6) 
+
+and define Kc := B(0, R c). Let R and T be as defined above, and let the Riemannian metric be the Euclidean metric on Tδ M. Assume the conditions of Lemma 4 on an open neighbourhood U of Kc. Assume also the constraint regularity on U :
+
+inf   
+
+> δ∈U∩M
+
+∥∇ G(δ)∥ ≥ ϵ∇ > 0, sup 
+
+> δ∈U
+
+∥∇ 2G(δ)∥ ≤ MG < ∞. (7) 
+
+Then M is compact, and: 
+
+(a) ψ is C2 on Kc, with 
+
+∇ψ(δ) = E∇mδ (X), ∇2ψ(δ) = E∇2mδ (X),
+
+and 
+
+sup 
+
+> δ∈Kc
+
+∥∇ 2ψ(δ)∥ ≤ Mψ < ∞.
+
+Consequently, ∇ψ is Mψ –Lipschitz on Kc.
+
+(b) Writing n(δ) = ∇G(δ)/∥∇ G(δ)∥ and P (δ) = I − n(δ)n(δ)⊤, the Riemannian gradient grad ψ(δ) = 
+
+P (δ)∇ψ(δ) is Lipschitz on M, that is, there exists L > 0 such that 
+
+∥ grad ψ(δ) − grad ψ(δ′)∥ ≤ L∥δ − δ′∥ (δ, δ′ ∈ M ).
+
+(c) Fix 0 < c 1 < c 2 < 1. For any δ ∈ M and any descent direction η ∈ Tδ M with ⟨grad ψ(δ), η⟩ < 0,there exists a step size t∗ > 0 in the domain of γ(t) = Rδ (tη) such that γ satisfies the weak Wolfe conditions at t∗.Proof. By (6), every point of M lies in Kc. Since G is continuous on U and Kc ⊂ U , the set 
+
+M = Kc ∩ G−1({c2})is closed in the compact set Kc. Hence M is compact. For part (a), Lemma 4 provides an integrable envelope B2(X) such that sup 
+
+> δ∈Kc
+
+∥∇ 2mδ (X)∥ ≤ B2(X) a.s. The same lemma yields analogous integrable envelopes for mδ (X) and ∇mδ (X). Hence dominated differen-tiation applies to 
+
+ψ(δ) = Emδ (X) ,
+
+which gives 
+
+∇ψ(δ) = E∇mδ (X), ∇2ψ(δ) = E∇2mδ (X).
+
+Therefore sup 
+
+> δ∈Kc
+
+∥∇ 2ψ(δ)∥ ≤ E
+
+h
+
+sup 
+
+> δ∈Kc
+
+∥∇ 2mδ (X)∥
+
+i
+
+≤ EB2(X) =: Mψ < ∞.
+
+The Lipschitz property of ∇ψ on Kc follows from the mean value theorem. For δ, δ′ ∈ M ,grad ψ(δ) − grad ψ(δ′) = P (δ) ∇ψ(δ) − ∇ ψ(δ′) +  P (δ) − P (δ′)∇ψ(δ′).
+
+33 Since ∥P (δ)∥op ≤ 1, 
+
+∥P (δ) ∇ψ(δ) − ∇ ψ(δ′)∥ ≤ Mψ ∥δ − δ′∥.
+
+Let n(δ) = ∇G(δ)/∥∇ G(δ)∥. By (7), ∥∇ G(δ)∥ ≥ ϵ∇ on M, and ∥∇ G(δ) − ∇ G(δ′)∥ ≤ MG∥δ − δ′∥ on Kc.Using 
+
+n(δ) − n(δ′) = ∇G(δ) − ∇ G(δ′)
+
+∥∇ G(δ)∥ +
+
+ 1
+
+∥∇ G(δ)∥ − 1
+
+∥∇ G(δ′)∥
+
+
+
+∇G(δ′),
+
+one obtains 
+
+∥n(δ) − n(δ′)∥ ≤ 2
+
+ϵ∇
+
+∥∇ G(δ) − ∇ G(δ′)∥ ≤ 2MG
+
+ϵ∇
+
+∥δ − δ′∥.
+
+Since P (δ) = I − n(δ)n(δ)⊤,
+
+∥P (δ) − P (δ′)∥ ≤ ∥ n(δ) − n(δ′)∥ ∥n(δ)∥ + ∥n(δ′)∥ ≤ 4MG
+
+ϵ∇
+
+∥δ − δ′∥.
+
+Let M1 = sup δ∈Kc ∥∇ ψ(δ)∥ < ∞. Combining these bounds yields 
+
+∥ grad ψ(δ) − grad ψ(δ′)∥ ≤ 
+
+
+
+Mψ + 4MG
+
+ϵ∇
+
+M1
+
+
+
+∥δ − δ′∥,
+
+so part (b) holds with L = Mψ + (4 MG/ϵ ∇)M1.For part (c), define the one-dimensional line-search function h(t) = ψ(Rδ (tη)). By part (a) and the C1
+
+regularity of R, the map h is continuously differentiable on an interval containing 0. Because Rδ (tη) ∈ M 
+
+whenever the retraction is defined, and because ψ is continuous on the compact set M, the function h is bounded below on its domain. Therefore there exists t∗ > 0 satisfying the weak Wolfe conditions along 
+
+γ(t) = Rδ (tη); see Ring and Wirth (2012, Proposition 1). For an accepted step t∗, define 
+
+s := Tδ→δ+ (t∗η), y := grad ψ(δ+) − T δ→δ+
+
+  grad ψ(δ), δ+ := Rδ (t∗η).
+
+The cautious RBFGS update of Huang et al. (2018, Algorithm 1) is then applied whenever the prescribed curvature condition holds; otherwise the current approximation is transported to the new tangent space without updating the Hessian surrogate. 
+
+Lemma 5 (Feasible initialization and containment) . Let c > 0 satisfy c2 /∈ V and set M = {δ : G(δ) = c2}.Assume the boundary-separation condition (5) . Assume that G satisfies the local quadratic control near the origin: there exist ρ > 0, ε ∈ (0 , 1) and a symmetric positive–definite matrix HG(0) with eigenvalues 
+
+λmin , λ max > 0 such that, for all ∥δ∥ ≤ ρ, 
+
+> 12
+
+(1 − ε)λmin ∥ δ∥2 ≤ G(δ) ≤ 12 (1 + ε)λmax ∥ δ∥2. (8) 
+
+Assume also the hypotheses of Corollary 1. 
+
+(i) For every prescribed local radius r0 ∈ (0 , ρ ], there exists c0 > 0 such that for any c ∈ (0 , c 0) one can select a unit vector v and t∗ ∈ (0 , r 0] with G(t∗v) = c2 and δ0 := t∗v ∈ M ∩ B(0, r 0).
+
+(ii) Let L = {δ ∈ M : ψ(δ) ≤ ψ(δ0)}. Then M is compact, L is compact, and for any sequence {δk}
+
+generated by Riemannian BFGS on M using R and T above with a weak Wolfe line search, one has 
+
+ψ(δk+1 ) ≤ ψ(δk) ≤ ψ(δ0) and hence δk ∈ L for all k ≥ 0.Proof. For part (i), fix r0 ∈ (0 , ρ ]. Fix a unit vector v and define q(t) = G(tv) on [0 , r 0]. Then q is continuous, 
+
+q(0) = 0, and by (8),  
+
+> 12
+
+(1 − ε)λmin t2 ≤ q(t) ≤ 12 (1 + ε)λmax t2 (0 ≤ t ≤ r0).
+
+Let c0 =
+
+q 12 (1 − ε)λmin r0. For any c ∈ (0 , c 0), there exists t∗ ∈ (0 , r 0] with q(t∗) = c2 by the intermediate value theorem. Then δ0 = t∗v ∈ M ∩ B(0, r 0), proving part (i). 34 For part (ii), condition (5) implies the existence of Rc > 0 such that G(δ) > c 2 for all δ ∈ D with 
+
+∥δ∥ ≥ Rc. Hence M ⊂ B(0, R c). By Corollary 1, the level set M is compact and ψ is continuous on M.Hence L is a closed subset of the compact set M, so L is compact. Now proceed by induction. Assume 
+
+δk ∈ L and let ηk ∈ Tδk M be the search direction. Let αk > 0 be produced by the weak Wolfe line search applied to γ(t) = Rδk (tηk) and set δk+1 = Rδk (αkηk). The Armijo condition yields 
+
+ψ(δk+1 ) ≤ ψ(δk) + c1αk ⟨grad ψ(δk), ηk⟩ < ψ(δk) ≤ ψ(δ0),
+
+hence δk+1 ∈ L . Therefore ψ(δk+1 ) ≤ ψ(δk) ≤ ψ(δ0) and δk ∈ L for all k ≥ 0. 
+
+Stationarity conclusion. Under (5), Lemma 5 shows that the initial sublevel set L = {δ ∈ M : ψ(δ) ≤
+
+ψ(δ0)} is compact. Thus Assumption 4.1 in Huang et al. (2018) is satisfied for the RBFGS iterates started at δ0. Together with Assumption 4.2, applied here with the scaled transport T above, Theorem 4.2 yields lim inf  
+
+> k→∞
+
+∥ grad ψ(δk)∥ = 0 .
+
+Since {δk} ⊂ L and L is compact, the sequence admits an accumulation point δ⋆. Continuity of grad ψ
+
+implies that any accumulation point along a subsequence with ∥ grad ψ(δkj )∥ → 0 is Riemannian stationary. 
+
+# C Detailed Proof for Minimax Lower Bound 
+
+## Standing Assumptions and Notation 
+
+Let Z = ( X, W , Y ) with X ∈ Rp, W ∈ Rq , and Y ∈ R. Write f (w | x) for the exposure density, and define the exponential tilt 
+
+gδ (w | x) := exp {δ⊤s(w, x)} f (w | x)
+
+νδ (x) ,νδ (x) := Ef
+
+ exp {δ⊤s(W , X)} | X = x.
+
+Let μ(x, w) := E[Y | X = x, W = w], and denote ˜s(w, x) := s(w, x) − Ef [s(W , X) | X = x].
+
+All bounds are derived for a general tilt and then specialized to s(w, x) = w.Assumptions: 
+
+(A1) Bounded outcomes There exists M < ∞ such that |Y | ≤ M a.s. Hence |μ(x, w)| ≤ M .
+
+(A2) Nondegenerate noise 0 < σ 2 ≤ Var( Y | X, W ) ≤ σ2 < ∞ a.s. 
+
+(A3) Bounded tilt ∥s(w, x)∥ ≤ Ms < ∞ and we require for some finite radius ∆ ∈ (0 , ∞) that ∥δ∥ ≤ ∆. For the purpose of this proof, we assume there exists a fixed constant Cδ > 0 such that 
+
+∥δ∥ ≤ Cδ
+
+Ms
+
+.
+
+(A4) Model richness The class of distributions P is sufficiently rich. There exist constants B, ϵ 0 > 0 such that for any P0 ∈ P , if ϕ ∈ L∞(P0) with E P0 [ϕ(Z)] = 0 and ∥ϕ∥∞ ≤ B, then for all |ϵ| ≤ ϵ0, the density p0(1 + ϵϕ ) corresponds to a distribution P1 ∈ P .
+
+(A5) Pathwise differentiability The functional ψ(·) is pathwise differentiable at any P0 ∈ P . The re-mainder from the von Mises expansion admits a uniform quadratic bound: there exists a constant 
+
+K < ∞ such that for any perturbation ϕ with ∥ϕ∥∞ ≤ B, the bound 
+
+|ψ(P0(1 + ϵϕ )) − ψ(P0) − ϵ EP0 [φ(Z; P0)ϕ(Z)] | ≤ Kϵ 2
+
+holds uniformly for all P0 ∈ P and all valid ϕ.35 Identification and target. Under standard consistency and conditional exchangeability, 
+
+ψP (δ) = EP
+
+h Z
+
+μ(X, w)gδ (w | X) dw
+
+i
+
+,θP (δ) := ψP (δ) − ψP (0).
+
+## C.1 Uniform second-order bounds 
+
+This subsection derives uniform second-order L2(P0) bounds for (i) the density ratio gδ /f and (ii) the tilted conditional mean Egδ [μ | X], valid over a finite-tilt regime. The bounds provide an explicit quadratic remainder for the expansion around δ = 0 and uniform control of second-order terms in the Le Cam two-point construction underlying the minimax lower bound. 
+
+Lemma 6 (Uniform L2 bounds with explicit constants) . Suppose (A1)–(A3). Let τ := ∥δ∥Ms ≤ Cδ . Then for all such δ,
+
+gδ
+
+f − 1 − δ⊤˜s L2(P0)
+
+≤ Cg ∥δ∥2,
+
+Egδ [μ | X] − Ef [μ | X] − δ⊤Ef [μ˜s | X] L2(P0) ≤ Cμ ∥δ∥2,
+
+where one can take 
+
+Cg := 4 e2Cmax M 2 
+
+> s
+
+,Cμ := 4 e2Cmax M M 2 
+
+> s
+
+.
+
+Proof. All vector norms are Euclidean, and all matrix norms are operator norms. Expectations and condi-tional expectations are under the baseline law P0 unless explicitly indicated. Write Ms := sup w,x ∥s(w, x)∥ <
+
+∞ by (A3), and M := sup x,w |μ(x, w)| < ∞ by (A1). Let δ ∈ Rq and define 
+
+τ := ∥δ∥ Ms.
+
+Under (A3), 
+
+∥δ∥ ≤ Cδ
+
+Ms
+
+=⇒ τ ≤ Cδ ,
+
+which yields uniform bounds with explicit constants. Define 
+
+rδ (w, x) := gδ (w | x)
+
+f (w | x) = exp {δ⊤s(w, x)}
+
+νδ (x) ,νδ (x) := Ef
+
+ exp {δ⊤s(W , X)} X = x.
+
+Since |δ⊤s(w, x)| ≤ ∥ δ∥ ∥ s(w, x)∥ ≤ τ ≤ Cδ , we have 
+
+e−τ ≤ exp {δ⊤s(w, x)} ≤ eτ , e−τ ≤ νδ (x) ≤ eτ .
+
+It follows that 0 < e −2τ ≤ rδ (w, x) ≤ e2τ ≤ e2Cmax .
+
+Second-order expansion of rδ and a uniform Hessian bound. Introduce the log-partition function log νδ (x) = log Ef
+
+ exp {δ⊤s(W , X)} X = x.
+
+Then 
+
+rδ (w, x) = exp δ⊤s(w, x) − log νδ (x) .
+
+36 Differentiating with respect to δ yields 
+
+∇δ log νδ (x) = Egδ
+
+s(W , X) X = x =: μg,s (δ, x),
+
+∇2 
+
+> δ
+
+log νδ (x) = Var gδ
+
+ s(W , X) X = x,
+
+and therefore 
+
+∇δ log rδ (w, x) = s(w, x) − μg,s (δ, x),
+
+∇2 
+
+> δ
+
+log rδ (w, x) = − Var gδ
+
+ s(W , X) X = x.
+
+Using ∇F = F ∇ log F and ∇2F = F (∇ log F )( ∇ log F )⊤ + ∇2 log F , we obtain 
+
+∇δ rδ (w, x) = rδ (w, x) s(w, x) − μg,s (δ, x),
+
+∇2 
+
+> δ
+
+rδ (w, x) = rδ (w, x)
+
+s(w, x) − μg,s (δ, x) s(w, x) − μg,s (δ, x)⊤
+
+− Var gδ
+
+ s(W , X) X = x
+
+.
+
+A uniform bound for the Hessian holds on the ball {δ : ∥δ∥ ≤ Cδ /M s}. First, 
+
+∥s(w, x) − μg,s (δ, x)∥ ≤ ∥ s(w, x)∥ + ∥μg,s (δ, x)∥≤ Ms + Egδ [∥s(W , X)∥ | X = x] ≤ 2Ms,
+
+so s − μg,s 
+
+ s − μg,s 
+
+⊤ ≤ ∥ s − μg,s ∥2 ≤ 4M 2 
+
+> s
+
+.
+
+Next, since ∥s − μg,s ∥ ≤ 2Ms,
+
+Var gδ (s | X = x) = Egδ
+
+(s − μg,s )( s − μg,s )⊤ | X = x
+
+≤ Egδ
+
+∥s − μg,s ∥2 | X = x ≤ 4M 2 
+
+> s
+
+.
+
+Combining these bounds with 0 < r δ ≤ e2τ ≤ e2Cmax yields the uniform Hessian bound 
+
+∇2 
+
+> δ
+
+rδ (w, x) ≤ rδ (w, x)  4M 2 
+
+> s
+
++ 4 M 2
+
+> s
+
+ ≤ 8 e2Cmax M 2 
+
+> s
+
+, for all ( w, x) and all ∥δ∥ ≤ Cδ 
+
+> Ms
+
+. (9) Proof of (i). By Taylor’s theorem with integral remainder for the scalar function rδ (w, x) around δ = 0,
+
+rδ (w, x) = r0(w, x) + ∇δ r0(w, x)⊤δ
+
++ δ⊤ Z 10
+
+(1 − t) ∇2 
+
+> δ
+
+rtδ (w, x) dt 
+
+
+
+δ.
+
+Since ν0(x) = 1, 
+
+r0(w, x) = 1 ,
+
+∇δ r0(w, x) = s(w, x) − Ef [s(W , X) | X = x] = ˜ s(w, x).
+
+Therefore, 
+
+rδ (w, x) − 1 − δ⊤˜s(w, x) = δ⊤ Z 10
+
+(1 − t) ∇2 
+
+> δ
+
+rtδ (w, x) dt 
+
+
+
+δ.
+
+By Taylor’s theorem with integral remainder and (9), 
+
+rδ (w, x) − 1 − δ⊤˜s(w, x) ≤
+
+ Z 10
+
+(1 − t) dt 
+
+  
+
+sup  
+
+> ξ:∥ξ∥≤∥ δ∥
+
+∇2 
+
+> δ
+
+rξ(w, x)
+
+
+
+∥δ∥2
+
+≤ 4 e2Cmax M 2 
+
+> s
+
+∥δ∥2.
+
+37 Hence, 
+
+rδ − 1 − δ⊤˜s L2(P0)
+
+≤ 4 e2Cmax M 2 
+
+> s
+
+∥δ∥2,
+
+which proves part (i) with Cg := 4 e2Cmax M 2 
+
+> s
+
+.Proof of (ii). By definition of the tilt, 
+
+Egδ [μ | X] = Ef
+
+μ(X, W ) rδ (W , X) | X.
+
+Therefore, 
+
+Egδ [μ | X] − Ef [μ | X] = Ef
+
+μ(X, W ) {rδ (W , X) − 1} | X
+
+= δ⊤ Ef
+
+μ(X, W ) ˜ s(W , X) | X + Ef
+
+μ(X, W ) r2(W , X; δ) | X,
+
+where 
+
+r2(w, x; δ) := rδ (w, x) − 1 − δ⊤˜s(w, x).
+
+Define 
+
+Rμ(X; δ) := Ef
+
+μ(X, W ) r2(W , X; δ) | X.
+
+By Cauchy–Schwarz and |μ| ≤ M ,
+
+∥Rμ(·; δ)∥2 
+
+> L2(P0)
+
+= E
+
+h  Ef
+
+μ r 2 | X 2 i
+
+≤ E
+
+h
+
+Ef
+
+μ2 r22 | X i
+
+= Eμ2r22
+
+ ≤ M 2 ∥r2∥2
+
+> L2(P0)
+
+.
+
+From part (i), ∥r2∥L2(P0) ≤ Cg ∥δ∥2 with Cg = 4 e2Cmax M 2 
+
+> s
+
+. Hence 
+
+∥Rμ(·; δ)∥L2(P0) ≤ M C g ∥δ∥2 = 4 e2Cmax M M 2 
+
+> s
+
+∥δ∥2.
+
+Thus 
+
+Egδ [μ | X] − Ef [μ | X] − δ⊤Ef [μ˜s | X] L2(P0)
+
+≤ 4 e2Cmax M M 2 
+
+> s
+
+∥δ∥2,
+
+which proves part (ii) with Cμ := 4 e2Cmax M M 2 
+
+> s
+
+.
+
+## C.2 First-order expansion of the EIF and its covariance 
+
+The second-order expansions above imply a first-order expansion of the efficient influence function for ψ(δ)at δ = 0, with leading term δ⊤h(Z) and a quadratic remainder. 
+
+Lemma 7 (EIF expansion from the three-component decomposition) . Let 
+
+φψ(δ)(Z) = DY (Z) + Dg,μ (Z) + Dψ (Z).
+
+Recall ˜s(w, x) := s(w, x) − Ef [s(W , X) | X = x], and define 
+
+h(Z) := ˜ s(W , X)
+
+
+
+Y − Ef [μ | X]
+
+
+
+− E  Ef [μ˜s | X].
+
+Assume (A1)–(A3) and ∥δ∥ ≤ Cδ /M s. Then, with the constants from Lemma 6, 
+
+Cg = 4 e2Cmax M 2 
+
+> s
+
+,Cμ = 4 e2Cmax M M 2 
+
+> s
+
+,
+
+we have the expansion 
+
+φψ(δ)(Z) = Y − ψP (0)
+
+| {z }
+
+> φψ(0)(Z)
+
++δ⊤h(Z) + Rφ(Z; δ),
+
+38 and an explicit quadratic L2 bound 
+
+∥Rφ(·; δ)∥L2(P0) ≤ Cφ ∥δ∥2,Cφ := 4 M 2
+
+> s
+
+
+
+e2Cmax σ + M  e4Cmax + (4 + 2 Cmax )e2Cmax + 1 
+
+.
+
+Consequently, 
+
+φθ(δ)(Z) := φψ(δ)(Z) − φψ(0)(Z) = δ⊤h(Z) + Rφ(Z; δ).
+
+We have E[h(Z)] = 0. Moreover, the leading covariance of the influence function satisfies 
+
+Cov  h(Z) = E 
+
+h
+
+˜s(W , X)˜ s(W , X)⊤ Var( Y | X, W )
+
+i
+
++ Cov 
+
+
+
+˜s(W , X) μ(X, W ) − Ef [μ | X]
+
+=: Σε,s + Σμ, full ,
+
+where 
+
+Σε,s := E  Var( Y | X, W ) ˜ s˜s⊤,
+
+C := E  Ef [μ˜s | X],
+
+Σμ, full := E 
+
+h
+
+˜s˜s⊤ μ − Ef [μ | X]2i
+
+− CC ⊤.
+
+In particular, 
+
+Σμ, full ⪰ Cov   Ef [μ˜s | X]| {z } 
+
+> =: Σμ
+
+.
+
+Equality Σμ, full = Σμ holds if and only if ˜s(W , X){μ(X, W ) − Ef [μ | X]} is conditionally degenerate given 
+
+X.Proof. Preliminaries. Recall 
+
+rδ (W , X) := gδ (W | X)
+
+f (W | X) .
+
+By Lemma 6, for ∥δ∥ ≤ Cδ /M s there exist remainders r2(W , X; δ) and rμ(X; δ) such that 
+
+rδ = 1 + δ⊤˜s + r2, ∥r2∥L2(P0) ≤ Cg ∥δ∥2,
+
+Egδ [μ | X] = E f [μ | X] + δ⊤ Ef [μ˜s | X] + rμ, ∥rμ∥L2(P0) ≤ Cμ∥δ∥2.
+
+The tilt radius implies 0 < r δ ≤ e2τ ≤ e2Cmax with τ = ∥δ∥Ms ≤ Cδ , hence ∥rδ ∥∞ ≤ e2Cmax . We also use 
+
+∥˜s∥∞ ≤ 2Ms, |μ| ≤ M , and ∥ Ef [μ˜s | X]∥∞ ≤ 2M M s.Also, 
+
+ψP (δ) = E[Egδ [μ | X]] = ψP (0) + δ⊤ E[Ef [μ˜s | X]] + E[rμ(X; δ)] .
+
+Expansion of EIF components. Using the displays above, 
+
+DY = rδ (Y − μ) = (1 + δ⊤˜s + r2)( Y − μ)= ( Y − μ) + δ⊤˜s (Y − μ) + r2 (Y − μ),Dg,μ = rδ
+
+ μ − Egδ [μ | X]
+
+= (1 + δ⊤˜s + r2)
+
+
+
+μ − Ef [μ | X] − δ⊤ Ef [μ˜s | X] − rμ
+
+
+
+= ( μ − Ef [μ | X]) + δ⊤˜s (μ − Ef [μ | X]) − δ⊤ Ef [μ˜s | X] + R2,
+
+39 Dψ = E gδ [μ | X] − ψP (δ)= E f [μ | X] − ψP (0) + δ⊤
+
+Ef [μ˜s | X] − E[E f [μ˜s | X]] 
+
+
+
++ ( rμ − E[ rμ]) ,
+
+where the remainder R2 collects all quadratic and higher-order terms: 
+
+R2 := r2(μ − Ef [μ | X]) − (1 + δ⊤˜s + r2) rμ
+
+− (δ⊤˜s) δ⊤ Ef [μ˜s | X] − r2
+
+ δ⊤ Ef [μ˜s | X].
+
+Collection of zero and first-order terms. Adding DY + Dg,μ + Dψ gives 
+
+φψ(δ) =
+
+h
+
+Y − ψP (0)
+
+i
+
++ δ⊤h
+
+˜s Y − Ef [μ | X] − E  Ef [μ˜s | X]i
+
++
+
+n
+
+r2(Y − μ) + R2 + ( rμ − E[ rμ]) 
+
+o| {z }
+
+> =: Rφ
+
+.
+
+Hence the first-order term is δ⊤h(Z). 
+
+Explicit L2 bounds for remainder terms. By Cauchy–Schwarz and (A2), 
+
+∥r2(Y − μ)∥L2 ≤ σ ∥r2∥L2 ≤ Cg σ ∥δ∥2.
+
+Since ∥μ − Ef [μ | X]∥∞ ≤ 2M ,
+
+∥r2(μ − Ef [μ | X]) ∥L2 ≤ 2M ∥r2∥L2 ≤ 2M C g ∥δ∥2.
+
+Using ∥rδ ∥∞ ≤ e2Cmax ,
+
+∥(1 + δ⊤˜s + r2) rμ∥L2 = ∥rδ rμ∥L2 ≤ e2Cmax Cμ ∥δ∥2.
+
+Moreover, 
+
+∥rμ − E[ rμ]∥L2 ≤ ∥rμ∥L2 + ∥ E[ rμ]∥L2 ≤ 2Cμ ∥δ∥2.
+
+For the quadratic product, 
+
+(δ⊤˜s) δ⊤ Ef [μ˜s | X]
+
+> L2
+
+≤ ∥ δ⊤ Ef [μ˜s | X]∥∞ ∥δ⊤˜s∥L2
+
+≤ (2 M M s∥δ∥) (2 Ms∥δ∥) = 4 M M 2 
+
+> s
+
+∥δ∥2.
+
+Finally, 
+
+r2 (δ⊤ Ef [μ˜s | X]) L2 ≤ ∥ r2∥L2 ∥δ⊤ Ef [μ˜s | X]∥∞
+
+≤ Cg ∥δ∥2 · (2 M M s∥δ∥)
+
+≤ 2Cmax M C g ∥δ∥2,
+
+where we used ∥δ∥ ≤ Cδ /M s. Combining all displays yields 
+
+∥Rφ∥L2 ≤ Cg σ ∥δ∥2 + 2 M C g ∥δ∥2 + e2Cmax Cμ ∥δ∥2 + 2 Cμ ∥δ∥2
+
++ 4 M M 2 
+
+> s
+
+∥δ∥2 + 2 Cmax M C g ∥δ∥2 ≤ Cφ ∥δ∥2,
+
+with Cφ as stated. 
+
+Covariance of the gradient. Write 
+
+m(X) = E f [μ | X],
+
+C = E  Ef [μ˜s | X],
+
+h(Z) = ˜ s(W , X) Y − m(X) − C.
+
+40 Set 
+
+U := ˜ s(W , X) Y − μ(X, W ),
+
+V := ˜ s(W , X) μ(X, W ) − m(X),
+
+so that h = U + ( V − C). Because E[U | X, W ] = 0 and V − C is measurable with respect to ( X, W ), Cov( U , V − C) = 0, hence Cov( h) = Cov( U ) + Cov( V − C).
+
+Moreover, conditioning on ( X, W ) gives Cov( U ) = E 
+
+h
+
+˜s˜s⊤ Var( Y | X, W )
+
+i
+
+=: Σε,s ,
+
+and Cov( V − C) = Cov( V ) = E[ V V ⊤] − CC ⊤
+
+= E 
+
+h
+
+˜s˜s⊤ μ − Ef [μ | X]2i
+
+− CC ⊤ =: Σμ, full .
+
+Thus Cov( h) = Σε,s + Σμ, full .Finally, the law of total covariance yields 
+
+Σμ, full = E  Var( V | X) + Cov   E[ V | X] ⪰ Cov   E[ V | X]
+
+= Cov   Ef [μ˜s | X] =: Σμ.
+
+Mean zero property of h. Let m(X) = E f [μ | X] and C = E[E f [μ˜s | X]]. Using the definition of h,
+
+h(Z) = ˜ s(W , X)  Y − m(X) − C
+
+= ˜ s(W , X)  Y − μ(X, W )| {z }
+
+> =: U
+
++ ˜ s(W , X)  μ(X, W ) − m(X)| {z }
+
+> =: V
+
+−C.
+
+The expectation decomposes as E[h] = E[U ] + E[V ] − C.First, 
+
+E[U ] = E˜s(W , X) EY − μ(X, W ) | X, W  
+
+= E[˜ s(W , X) · 0] = 0.
+
+Second, for V ,
+
+E[V ] = EE˜s(W , X) μ(X, W ) | X − Em(X) E˜s(W , X) | X .
+
+By definition ˜ s(W , X) = s(W , X) − Ef [s(W , X) | X], hence 
+
+E˜s(W , X) | X = 0,
+
+so 
+
+E[V ] = E[Ef [μ ˜s | X]] = C.
+
+Putting the pieces together, 
+
+E[h] = E[U ] + E[V ] − C = 0 + C − C = 0.
+
+41 Corollary 2. Specializing Lemma 7 to s(w, x) = w (so ˜s = ˜W ), let 
+
+H := Cov  h(Z) = Σε,s + Σμ, full ⪰ 0.
+
+Then, for all ∥δ∥ ≤ Cδ /M s,
+
+ p
+
+δ⊤H δ − Cφ∥δ∥2 2+ ≤ Var φθ(δ)(Z) ≤  p
+
+δ⊤H δ + Cφ∥δ∥22,
+
+where (x)+ = max {x, 0} and Cφ is the constant in Lemma 7. Moreover, if λmin (H) > 0 and ∥δ∥ ≤ r0 for some 
+
+r0 <
+
+pλmin (H)
+
+Cφ
+
+,
+
+then there exist constants 
+
+clow := 
+
+
+
+1 − Cφ r0
+
+pλmin (H)
+
+2
+
+,cup := 
+
+
+
+1 + Cφ r0
+
+pλmin (H)
+
+2
+
+,
+
+depending only on (H, C φ, r 0) but not on δ, such that 
+
+clow δ⊤H δ ≤ Var φθ(δ)(Z) ≤ cup δ⊤H δ for all ∥δ∥ ≤ r0.
+
+Since 
+
+H = Σε,s + Σμ, full ⪰ Σε,s ,
+
+the lower bound immediately implies 
+
+Var φθ(δ)(Z) ≥ clow δ⊤Σε,s δ.
+
+Proof. By Lemma 7, 
+
+φθ(δ)(Z) = δ⊤h(Z) + Rφ(Z; δ), ∥Rφ(·; δ)∥L2 ≤ Cφ ∥δ∥2, E{h(Z)} = 0.
+
+Write A := δ⊤h and R := Rφ(·; δ), and center the remainder by Rc := R − E[ R]. Then Var φθ(δ)(Z) = Var( A + R) = Var( A + Rc) = ∥A + Rc∥22.
+
+Because E[ h] = 0, we have ∥A∥22 = Var( A) = δ⊤H δ . Also ∥Rc∥2 = pVar( R) ≤ ∥ R∥2 ≤ Cφ∥δ∥2 by Cauchy–Schwarz. By the triangle inequality and its reverse in L2,
+
+∥A∥2 − ∥ Rc∥2 ≤ ∥A + Rc∥2 ≤ ∥A∥2 + ∥Rc∥2.
+
+Using ∥A∥2 =
+
+p
+
+δ⊤Hδ and ∥Rc∥2 ≤ Cφ∥δ∥2 and squaring both sides yields the additive bracket. Suppose λmin (H) > 0. Then, for all δ,
+
+p
+
+δ⊤H δ ≥ pλmin (H) ∥δ∥.
+
+Hence, for any ∥δ∥ ≤ r0,
+
+∥Rc∥2
+
+p
+
+δ⊤H δ 
+
+≤ Cφ∥δ∥2
+
+pλmin (H) ∥δ∥≤ Cφ r0
+
+pλmin (H) =: r∗ < 1.
+
+Dividing the additive bracket by δ⊤Hδ yields the multiplicative squeeze with 
+
+clow = (1 − r∗)2, cup = (1 + r∗)2.
+
+Finally, because H ⪰ Σε,s , the coarser lower bound follows. 42 Lemma 8 (Hardest direction after orthogonalization) . Let φ0(Z) := φψ(0)(Z) = Y − ψ(0) and 
+
+˜ϕ0(Z) := δ⊤h(Z)
+
+q
+
+Var  δ⊤h(Z) ,σ2 
+
+> h
+
+:= Var  δ⊤h(Z).
+
+Define 
+
+ρ := Corr ( ˜ϕ0, φ 0) = E[ ˜ϕ0φ0]
+
+pVar( φ0) ,ϕ(Z) := ˜ϕ0(Z) − E[ ˜ϕ0φ0] · φ0(Z)Var( φ0)
+
+r
+
+1 −
+
+ E[ ˜ϕ0φ0]
+
+2
+
+> Var( φ0)
+
+.
+
+Then E[ϕ] = 0 , Var( ϕ) = 1 , and E[ϕ φ 0] = 0 . Let Assumption (A4) hold with constants (B, ε 0). Consider 
+
+P1 with density p1 = p0(1 + εϕ ), where |ε| ≤ min {ε0, 12B }. Then p1 ∈ P , R p1 = 1 , and p1 ≥ 12 p0. Moreover, for ∥δ∥ ≤ Cδ /M s,
+
+θP1 (δ) − θP0 (δ) = ε Eϕ φ θ(δ)
+
+ + rA5 (ε)= ε
+
+q 
+
+Var( δ⊤h) · p1 − ρ2
+
+
+
++ ε E[ϕ R φ(·; δ)] + rA5 (ε),
+
+where Rφ(·; δ) is the remainder in the linear expansion φθ(δ) = δ⊤h + Rφ(·; δ), and the remainders satisfy 
+
+E[ϕ R φ(·; δ)] ≤ ∥ Rφ(·; δ)∥L2 ≤ Cφ ∥δ∥2,
+
+|rA5 (ε)| ≤ 2K ε 2,
+
+with Cφ as in Lemma 7 and K the differentiability modulus from (A5). Finally, 
+
+χ2(P1, P 0) = ε2 and DKL (P1∥P0) ≤ log(1 + ε2) ≤ ε2.
+
+Proof. Properties of ϕ. Write σ20 := Var( φ0), so ρ = E[ ˜ϕ0φ0]/σ 0. By construction, 
+
+ϕ = ˜ϕ0 − (E[ ˜ϕ0φ0]/σ 20 ) φ0
+
+q
+
+1 − E[ ˜ϕ0φ0]2/σ 20
+
+.
+
+Since E[ ˜ϕ0] = 0 and E[φ0] = 0, we have E[ϕ] = 0. Next, Var( ϕ) = Var( ˜ϕ0) + ( E[ ˜ϕ0φ0]/σ 20 )2 Var( φ0) − 2( E[ ˜ϕ0φ0]/σ 20 ) Cov( ˜ϕ0, φ 0)1 − E[ ˜ϕ0φ0]2/σ 20
+
+= 1 + E[ ˜ϕ0φ0]2/σ 20 − 2E[ ˜ϕ0φ0]2/σ 20
+
+1 − E[ ˜ϕ0φ0]2/σ 20
+
+= 1 .
+
+Also, 
+
+E[ϕ φ 0] = E[ ˜ϕ0φ0] − (E[ ˜ϕ0φ0]/σ 20 ) σ20
+
+q
+
+1 − E[ ˜ϕ0φ0]2/σ 20
+
+= 0 .
+
+Finally, 
+
+E[ϕ ˜ϕ0] = E[ ˜ϕ20] − (E[ ˜ϕ0φ0]/σ 20 )E[ ˜ϕ0φ0]
+
+q
+
+1 − E[ ˜ϕ0φ0]2/σ 20
+
+=
+
+q
+
+1 − E[ ˜ϕ0φ0]2/σ 20 = p1 − ρ2.
+
+43 Because ˜ϕ0 = σ−1 
+
+> h
+
+δ⊤h, we obtain 
+
+Eϕ δ⊤h = σh E[ϕ ˜ϕ0] = σh
+
+p1 − ρ2.
+
+Validity of p1. By the definition of ε0 in (A4), for every ϕ ∈ L∞ with E[ϕ] = 0 and ∥ϕ∥∞ ≤ B, the measure with density p0(1 + εϕ ) lies in P for all |ε| ≤ ε0. Moreover, R p1 = R p0(1 + εϕ ) = 1 + ε E[ϕ] = 1. If 
+
+|ε| ≤ (2 B)−1 then 1 + εϕ ≥ 1 − | ε| ∥ ϕ∥∞ ≥ 1/2, so p1 ≥ 12 p0.
+
+First-order expansion of θ via (A5). By (A5), for |ε| ≤ ε0,
+
+ψP0(1+ εϕ )(δ) − ψP0 (δ) = ε EP0
+
+φψ(δ) ϕ + r1(ε), |r1(ε)| ≤ Kε 2,ψP0(1+ εϕ )(0) − ψP0 (0) = ε EP0
+
+φψ(0) ϕ + r0(ε), |r0(ε)| ≤ Kε 2.
+
+Subtracting gives 
+
+θP1 (δ) − θP0 (δ) = ε Eϕ φ θ(δ)
+
+ + rA5 (ε), |rA5 (ε)| ≤ 2Kε 2.
+
+Evaluation of the leading inner product and remainder bound. By the linearization, 
+
+φθ(δ)(Z) = δ⊤h(Z) + Rφ(Z; δ), ∥Rφ(·; δ)∥L2 ≤ Cφ ∥δ∥2,
+
+for all ∥δ∥ ≤ Cδ /M s. Hence 
+
+Eϕ φ θ(δ)
+
+ = E[ϕ δ⊤h] + E[ϕ R φ]= σh
+
+p1 − ρ2 + E[ϕ R φ], |E[ϕ R φ]| ≤ Cφ ∥δ∥2.
+
+## C.3 Minimax Lower Bound 
+
+Recall 
+
+H := Cov  h(Z),σ20 := Var( φ0) = Var( Y − ψ(0)) .
+
+Define the projected covariance (Schur complement) of the linear regression of h onto the one-dimensional span of φ0:
+
+Γ := H − Cov  h, φ 0
+
+ Cov  h, φ 0
+
+⊤
+
+σ20
+
+⪰ 0.
+
+Theorem 4 (Minimax lower bound) . Assume (A1)–(A5). Fix some κ ∈ (0 , 1) and assume 
+
+∥δ∥ ≤ min 
+
+n Cδ
+
+Ms
+
+, (1 − κ)
+
+pλmin (Γ)
+
+Cφ
+
+o
+
+.
+
+If Γ is positive definite, then there exists a constant C > 0 that depends only on κ and the constants in (A1)–(A5), but not on δ, such that 
+
+lim inf  
+
+> n→∞
+
+inf 
+
+> ˆθ
+
+sup  
+
+> P∈P
+
+n EP
+
+(ˆθ − θP (δ)) 2
+
+δ⊤Γ δ ≥ C. 
+
+In particular, the lower bound is expressed in terms of δ⊤Γδ and generally cannot be strengthened by replacing 
+
+Γ with a larger matrix. 
+
+44 Proof of Theorem 4. Notation. 
+
+Let σ2 
+
+> h
+
+:= Var( δ⊤h(Z)), σ20 := Var( φ0(Z)), and ˜ϕ0 := δ⊤h(Z) 
+
+> σh
+
+.Define ρ := Corr( ˜ϕ0, φ 0(Z)) = Cov( δ⊤h(Z),φ 0(Z))   
+
+> σhσ0
+
+.
+
+Two-point construction. Fix P0 ∈ P and let ϕ be as in Lemma 8. For a given n, choose 
+
+α0 := min 
+
+n
+
+ε0, 12B , 12
+
+o
+
+,ε := α0
+
+√n .
+
+Then |ε| ≤ min {ε0, (2 B)−1}, and the perturbed model P1 defined by p1 = p0(1 + εϕ ) lies in P, integrates to 1, and satisfies p1 ≥ 12 p0.
+
+Parameter gap and the Schur complement. By Lemma 8, 
+
+θP1 (δ) − θP0 (δ) = ε
+
+
+
+σh
+
+p1 − ρ2
+
+
+
++ ε E[ϕ R φ(·; δ)] + rA5 (ε),
+
+with 
+
+|E[ϕ R φ(·; δ)] | ≤ Cφ∥δ∥2, |rA5 (ε)| ≤ 2Kε 2.
+
+Moreover, 
+
+σh
+
+p1 − ρ2 =
+
+s
+
+Var( δ⊤h(Z)) − Cov( δ⊤h(Z), φ 0(Z)) 2
+
+Var( φ0(Z)) =
+
+p
+
+δ⊤Γ δ.
+
+Therefore 
+
+θP1 (δ) − θP0 (δ) ≥ | ε|
+
+p 
+
+δ⊤Γδ − Cφ∥δ∥2
+
+− 2Kε 2.
+
+Using 
+
+p
+
+δ⊤Γδ ≥ pλmin (Γ)∥δ∥ and the assumption ∥δ∥ ≤ (1 − κ)pλmin (Γ)/C φ, we have 
+
+Cφ∥δ∥2
+
+p
+
+δ⊤Γδ
+
+≤ Cφ∥δ∥
+
+pλmin (Γ) ≤ 1 − κ, 
+
+hence p
+
+δ⊤Γδ − Cφ∥δ∥2 ≥ κ
+
+p
+
+δ⊤Γδ.
+
+Thus 
+
+θP1 (δ) − θP0 (δ) ≥ | ε| κ
+
+p
+
+δ⊤Γδ − 2Kε 2.
+
+With ε = α0/√n,
+
+θP1 (δ) − θP0 (δ) ≥ α0
+
+√n κ
+
+p
+
+δ⊤Γδ − 2Kα 20
+
+n .
+
+KL and TV control. From Lemma 8, 
+
+DKL (P1∥P0) ≤ ε2 = α20
+
+n ,DKL (P ⊗n 
+
+> 1
+
+∥P ⊗n 
+
+> 0
+
+) = nD KL (P1∥P0) ≤ α20.
+
+By Pinsker’s inequality, TV( P ⊗n 
+
+> 0
+
+, P ⊗n 
+
+> 1
+
+) ≤
+
+r 12 DKL (P ⊗n 
+
+> 1
+
+∥P ⊗n 
+
+> 0
+
+) ≤ α0
+
+√2 ,
+
+45 so 1 − TV( P ⊗n 
+
+> 0
+
+, P ⊗n 
+
+> 1
+
+) ≥ 1 − α0
+
+√2 =: cTV > 0.
+
+Le Cam two-point inequality and asymptotic lower bound. Le Cam’s two-point inequality yields, for any estimator ˆθ,sup  
+
+> P∈{ P0,P 1}
+
+EP
+
+(ˆθ − θP (δ)) 2 ≥ 18
+
+
+
+θP1 (δ) − θP0 (δ)
+
+2
+
+1 − TV( P ⊗n 
+
+> 0
+
+, P ⊗n 
+
+> 1
+
+)
+
+
+
+.
+
+Using the TV bound above, sup  
+
+> P∈{ P0,P 1}
+
+EP
+
+(ˆθ − θP (δ)) 2 ≥ cTV 
+
+8
+
+
+
+θP1 (δ) − θP0 (δ)
+
+2
+
+.
+
+Now apply the parameter gap bound and divide by δ⊤Γδ/n :
+
+n
+
+δ⊤Γδ sup  
+
+> P∈{ P0,P 1}
+
+EP
+
+(ˆθ − θP (δ)) 2 ≥ cTV 
+
+8 · n
+
+δ⊤Γδ
+
+ α0
+
+√n κ
+
+p
+
+δ⊤Γδ − 2Kα 20
+
+n
+
+2
+
+.
+
+The term 2 Kα 20/n is o(n−1/2) and does not contribute to the limit after normalization by δ⊤Γδ/n . Therefore, lim inf 
+
+> n→∞
+
+n
+
+δ⊤Γδ sup  
+
+> P∈{ P0,P 1}
+
+EP
+
+(ˆθ − θP (δ)) 2 ≥ cTV 
+
+8 · α20κ2.
+
+Since {P0, P 1} ⊂ P , taking inf ˆθ and sup P ∈P yields the same lower bound, proving the theorem with C =(cTV /8) α20κ2.On positive definiteness of Γ.
+
+H = Cov( h),
+
+Γ := H − Cov( h, φ 0) Cov( h, φ 0)⊤
+
+σ20
+
+,σ20 := Var( φ0).
+
+Let 
+
+β := Cov( h, φ 0)
+
+σ20
+
+,
+
+h⊥ := h − β φ0.
+
+Then 
+
+Γ = Cov( h⊥) = Cov  h − fspan( φ0)h ⪰ 0.
+
+The matrix Γ is positive definite if and only if the residual h⊥ is nondegenerate, that is 
+
+∀ δ̸ = 0 : Var  δ⊤h⊥
+
+ = Var( δ⊤h) − Cov( δ⊤h, φ 0)2
+
+Var( φ0) > 0,
+
+equivalently Corr( δ⊤h, φ 0)̸ = ±1 for every nonzero δ.If Corr( δ⊤h, φ 0) = ±1 for some δ̸ = 0, then there exist scalars a, b such that 
+
+δ⊤h(Z) = a φ 0(Z) + b a.s. 46 Recall φ0(Z) = Y −E[ Y ] and h(Z) = ˜ s(W , X) Y −m(X)−C with m(X) = E f [μ | X] and C = E[E f [μ˜s |
+
+X]]. Collecting coefficients of Y yields 
+
+ δ⊤˜s(W , X) − a Y = δ⊤˜s(W , X) m(X) + δ⊤C − a E[ Y ] + b. 
+
+By (A2), Var( Y | X, W ) > 0 a.s., hence 
+
+δ⊤˜s(W , X) − a = 0 a.s. Taking conditional expectation given X and using E[˜ s(W , X) | X] = 0 gives a = 0 and thus 
+
+δ⊤˜s(W , X) ≡ 0 a.s. Thus, failure of Γ ≻ 0 requires a nontrivial direction δ along which ˜ s(W , X) is almost surely degenerate. 
+
+Linear Incremental Effect By explicitly specializing the general tilt function to the linear form s(w, x) = 
+
+w, the projected covariance Γ recovers the exact geometric structure defined in Section 4.1, thereby com-pleting the minimax lower bound for the linear incremental effect θ(δ) evaluated in the main text. 
+
+# D On convergence and normality 
+
+We first establish a key auxiliary result under the same assumptions and notation used in the proof of the minimax lower bound. We clarify how our rate conditions on the tilted nuisances ( mδ , r δ ) translate into standard L2 rates for the outcome regression μ and the exposure density f .
+
+Lemma 9 (Reduction to outcome regression and exposure density) . Assume (A1)–(A3), and let f (w | x)
+
+denote the conditional density of W given X = x, with support W ⊂ Rq of finite Lebesgue measure |W| < ∞.Suppose there exist constants 0 < f min ≤ fmax < ∞ such that 
+
+fmin ≤ f (w | x) ≤ fmax for all (x, w) in the support of (X, W ).Let μ(x, w) = E[Y | X = x, W = w], and fix ∆ < ∞. For any δ with ∥δ∥ ≤ ∆ define 
+
+νδ (x) := 
+
+Z
+
+> W
+
+exp {δ⊤s(w, x)} f (w | x) dw,ηδ (x) := 
+
+Z
+
+> W
+
+exp {δ⊤s(w, x)} μ(x, w) f (w | x) dw,
+
+and 
+
+mδ (x) := ηδ (x)
+
+νδ (x) ,rδ (w, x) := exp {δ⊤s(w, x)}
+
+νδ (x) .
+
+Let bμ, bf be any estimators of μ, f , and construct 
+
+bνδ (x) := 
+
+Z
+
+> W
+
+exp {δ⊤s(w, x)} bf (w | x) dw,
+
+bηδ (x) := 
+
+Z
+
+> W
+
+exp {δ⊤s(w, x)} bμ(x, w) bf (w | x) dw,
+
+To ensure the denominators in bmδ and brδ are strictly bounded away from zero, we define the truncated estimator bν† 
+
+> δ
+
+below. Later we show this regularization enforces positivity constraints consistent with the true 
+
+νδ without compromising the L2 convergence rates inherited from the nuisance estimators. 
+
+47 bν† 
+
+> δ
+
+(x) := min 
+
+n
+
+max  bνδ (x), e −τ∆ /2, 2eτ∆
+
+o
+
+,
+
+bmδ (x) := bηδ (x)
+
+bν† 
+
+> δ
+
+(x) ,
+
+brδ (w, x) := exp {δ⊤s(w, x)}
+
+bν† 
+
+> δ
+
+(x) .
+
+Then there exist finite constants C1(∆) , C 2(∆) < ∞, depending only on (∆ , f min , f max , |W| , M ) and the bound on s(W , X), such that 
+
+∥brδ − rδ ∥2 ≤ C1(∆) ∥ bf − f ∥2, (10) 
+
+∥ bmδ − mδ ∥2 ≤ C2(∆)  ∥bμ − μ∥2 + ∥ bf − f ∥2
+
+, (11) 
+
+where ∥ · ∥ 2 denotes the L2(P )–norm with respect to the law of (X, W ).Proof. Since ∥δ∥ ≤ ∆ and s(W , X) is bounded, there exists τ∆ < ∞ such that | exp {δ⊤s(W , X)}| ≤ eτ∆
+
+almost surely. Hence, for all such δ,
+
+e−τ∆ ≤ νδ (x) ≤ eτ∆ for all x.In particular, νδ is bounded away from 0 and ∞; the same holds for bν† 
+
+> δ
+
+by construction. 
+
+Control of bνδ − νδ . By definition, 
+
+bνδ (x) − νδ (x) = 
+
+Z
+
+> W
+
+exp {δ⊤s(w, x)} bf (w | x) − f (w | x) dw.
+
+Taking absolute values and using the bound on the exponential tilt gives 
+
+|bνδ (x) − νδ (x)| ≤ eτ∆
+
+Z
+
+> W
+
+bf (w | x) − f (w | x) dw.
+
+By Cauchy–Schwarz and finiteness of |W| ,
+
+Z
+
+> W
+
+bf − f dw ≤ |W| 1/2 Z
+
+> W
+
+bf − f 2 dw
+
+1/2
+
+.
+
+Squaring both sides and integrating over x with respect to PX gives 
+
+Z
+
+{bνδ (x) − νδ (x)}2 dP X (x) ≤ e2τ∆ |W| 
+
+Z Z 
+
+> W
+
+bf (w | x) − f (w | x) 2 dw dP X (x).
+
+By definition, 
+
+∥ bf − f ∥22 =
+
+Z Z 
+
+> W
+
+bf (w | x) − f (w | x) 2f (w | x) dw dP X (x).
+
+Under the boundedness assumption on the exposure density, there exists fmin > 0 such that f (w | x) ≥ fmin 
+
+for all ( x, w). Hence, for any non-negative integrand h(x, w) we have 
+
+Z Z 
+
+> W
+
+h(x, w) dw dP X (x) = 
+
+Z Z 
+
+> W
+
+h(x, w)
+
+f (w | x) f (w | x) dw dP X (x)
+
+≤ f −1min 
+
+Z Z 
+
+> W
+
+h(x, w) f (w | x) dw dP X (x).
+
+Applying this with h(x, w) = bf (w | x) − f (w | x) 2 yields 
+
+Z Z 
+
+> W
+
+bf (w | x) − f (w | x) 2 dw dP X (x) ≤ f −1min ∥ bf − f ∥22.
+
+48 Substituting into the previous display, and noting that for any function depending only on X we have 
+
+∥bνδ − νδ ∥22 =
+
+Z
+
+{bνδ (x) − νδ (x)}2 dP X (x),
+
+we obtain 
+
+∥bνδ − νδ ∥22 ≤ e2τ∆ |W| f −1min ∥ bf − f ∥22,
+
+and hence 
+
+∥bνδ − νδ ∥2 ≤ eτ∆ |W| 1/2f −1/2min ∥ bf − f ∥2.
+
+Moreover, since νδ (x) ∈ [e−τ∆ , e τ∆ ] ⊂ [e−τ∆ /2, 2eτ∆ ] for all x and the truncation map is 1–Lipschitz, we have 
+
+∥bν† 
+
+> δ
+
+− νδ ∥2 ≤ ∥ bνδ − νδ ∥2.
+
+Control of brδ − rδ . We have 
+
+brδ (w, x) − rδ (w, x) = exp {δ⊤s(w, x)}
+
+n 1
+
+bν† 
+
+> δ
+
+(x) − 1
+
+νδ (x)
+
+o
+
+= exp {δ⊤s(w, x)} νδ (x) − bν† 
+
+> δ
+
+(x)
+
+bν† 
+
+> δ
+
+(x)νδ (x) .
+
+Using the finite-∆ bounds on the numerator and denominators, there exists a constant Cr (∆) such that 
+
+|brδ − rδ | ≤ Cr (∆) |bν† 
+
+> δ
+
+− νδ |,
+
+so that 
+
+∥brδ − rδ ∥2 ≤ Cr (∆) ∥bν† 
+
+> δ
+
+− νδ ∥2 ≤ Cr (∆) ∥bνδ − νδ ∥2
+
+≤ C1(∆) ∥ bf − f ∥2,
+
+with C1(∆) := Cr (∆) eτ∆ |W| 1/2f −1/2min , which proves (10). 
+
+Control of bηδ − ηδ . Using the product expansion bμ bf − μf = ( bμ − μ) bf + μ( bf − f ), we find 
+
+bηδ (x) − ηδ (x) = 
+
+Z
+
+> W
+
+exp {δ⊤s(w, x)}(bμ − μ)( x, w) bf (w | x) + μ(x, w) bf (w | x) − f (w | x)  dw.
+
+Assumption (A1) implies |μ(x, w)| ≤ M < ∞, and the bounds on f, bf give 0 ≤ bf ≤ fmax + oP (1). Hence 
+
+|bηδ (x) − ηδ (x)| ≤ eτ∆
+
+h Z
+
+> W
+
+|(bμ − μ)( x, w)| bf (w | x) dw + M
+
+Z
+
+> W
+
+| bf (w | x) − f (w | x)| dw
+
+i
+
+.
+
+On an event whose probability tends to one we have 0 ≤ bf ≤ fmax + 1, and another application of Cauchy–Schwarz yields 
+
+∥bηδ − ηδ ∥2 ≤ Cη (∆)  ∥bμ − μ∥2 + ∥ bf − f ∥2
+
+
+
+for some finite constant Cη (∆). 
+
+Control of bmδ − mδ . By the algebraic identity a/b − c/d = ( a − c)/b + c(1 /b − 1/d ), 
+
+bmδ (x) − mδ (x) = bηδ (x) − ηδ (x)
+
+bν† 
+
+> δ
+
+(x) + ηδ (x)
+
+n 1
+
+bν† 
+
+> δ
+
+(x) − 1
+
+νδ (x)
+
+o
+
+.
+
+Using again the uniform bounds on ηδ , ν δ , bν† 
+
+> δ
+
+implied by (A1)–(A3), we obtain 
+
+| bmδ − mδ | ≤ Cm(∆) 
+
+
+
+|bηδ − ηδ | + |bν† 
+
+> δ
+
+− νδ |
+
+
+
+for some finite constant Cm(∆). Taking L2(P )–norms and combining the bounds above gives (11) with 
+
+C2(∆) := Cm(∆)  Cη (∆) + eτ∆ |W| 1/2.
+
+49 Corollary 3 (Rate condition in terms of ( μ, f )) . Under the conditions of Lemma 9, if 
+
+∥bμ − μ∥2 = oP (n−1/4) and ∥ bf − f ∥2 = oP (n−1/4),
+
+then, for every fixed δ with ∥δ∥ ≤ ∆,
+
+∥brδ − rδ ∥2 = oP (n−1/4), ∥ bmδ − mδ ∥2 = oP (n−1/4),
+
+and hence the product condition ∥brδ − rδ ∥2 ∥ bmδ − mδ ∥2 = oP (n−1/2) required in Theorem 5 holds. 
+
+We now turn to the von Mises expansion and the second-order remainder bound that underpin the finite-
+
+δ central limit theorem in the main text. The results in this subsection are stated in terms of the tilted nuisances ( mδ , r δ ); together with Corollary 3, they imply Theorem 3. We work with the cross-fitted one-step estimator written directly in density-ratio form, 
+
+bψ(δ) = Pn
+
+brδ (W , X){Y − bmδ (X)} + Pn
+
+ bmδ (X), bθ(δ) := bψ(δ) − bψ(0), (12) where, for a fixed tilt δ with ∥δ∥ ≤ ∆, 
+
+mδ (x) := Egδ [μ(X, W ) | X = x]=
+
+E
+
+h
+
+exp {δ⊤s(W , X)}μ(X, W ) | X = x
+
+i
+
+E
+
+h
+
+exp {δ⊤s(W , X)} | X = x
+
+i
+
+= ηδ (x)
+
+νδ (x) ,
+
+and 
+
+νδ (x) := E
+
+h
+
+exp {δ⊤s(W , X)} | X = x
+
+i
+
+,ηδ (x) := E
+
+h
+
+exp {δ⊤s(W , X)}μ(X, W ) | X = x
+
+i
+
+,
+
+bν† 
+
+> δ
+
+(x) := min 
+
+n
+
+max  bνδ (x), e −τ∆ /2, 2eτ∆
+
+o
+
+,rδ (W , X) := exp {δ⊤s(W , X)}
+
+νδ (X) ,
+
+brδ (W , X) := exp {δ⊤s(W , X)}
+
+bν† 
+
+> δ
+
+(X) ,
+
+bmδ (X) := bηδ (X)
+
+bν† 
+
+> δ
+
+(X) .
+
+Here bνδ and bηδ are obtained from cross-fitted regressions of the transformed outcomes exp {δ⊤s(W , X)}
+
+and exp {δ⊤s(W , X)}μ(X, W ) on X, respectively. From the von Mises decomposition (see, e.g., Kennedy, 2024) and by adding and subtracting P φ ψ(δ),
+
+Pnφψ(δ), and Pn bφψ(δ) on the right-hand side, we obtain 
+
+bψ(δ) − ψ(δ) = ( Pn − P ){φψ(δ)(Z)} + ( Pn − P ) bφψ(δ)(Z) − φψ(δ)(Z) + R2( bP , P ; δ), (13) where 
+
+φψ(δ)(Z) := rδ (W , X){Y − mδ (X)} + mδ (X) − ψ(δ),
+
+bφψ(δ)(Z) := brδ (W , X){Y − bmδ (X)} + bmδ (X) − bψ(δ),
+
+and the second-order remainder is 
+
+R2( bP , P ; δ) := bψ(δ) − ψ(δ) + P  bφψ(δ)
+
+ .
+
+50 Lemma 10 (Second-order remainder) . For any fixed δ with ∥δ∥ ≤ ∆,
+
+R2( bP , P ; δ) ≤ ∥brδ − rδ ∥2 ∥ bmδ − mδ ∥2.
+
+Proof. Starting from the estimator representation (12), the definition of R2 gives 
+
+R2 = Ebrδ (W , X){Y − bmδ (X)} + bmδ (X)
+
+− Erδ (W , X){Y − mδ (X)} + mδ (X)
+
+= E(brδ − rδ ){Y − mδ (X)} − E(brδ − rδ ){ bmδ (X) − mδ (X)}.
+
+The first term vanishes by iterated expectation: 
+
+E(brδ − rδ ){Y − μ(X, W )} = E
+
+h
+
+E(brδ − rδ ){Y − μ(X, W )} | X, W i
+
+= 0 ,
+
+and 
+
+E(brδ − rδ ){μ(X, W ) − mδ (X)} | X = E[brδ μ | X] − mδ (X)E[brδ | X]
+
+− E[rδ μ | X] + mδ (X)E[rδ | X]= ηδ (X)
+
+bν† 
+
+> δ
+
+(X) − ηδ (X)
+
+νδ (X)
+
+− ηδ (X)
+
+νδ (X)
+
+ νδ (X)
+
+bν† 
+
+> δ
+
+(X) − 1
+
+
+
+= 0 .
+
+Hence R2 = −E[( brδ − rδ )( bmδ − mδ )], and the Cauchy–Schwarz inequality yields 
+
+R2( bP , P ; δ) ≤ ∥ brδ − rδ ∥2 ∥ bmδ − mδ ∥2.
+
+Theorem 5 (Asymptotic normality at √n rate) . Assume (A1) –(A3) . Let Z := ( X, W , Y ) and suppose 
+
+{Zi}ni=1 are i.i.d. draws from P . Fix δ with ∥δ∥ ≤ ∆ < ∞, and use K-fold cross-fitting to obtain the nuisance estimators (brδ , bmδ ). Suppose 
+
+∥brδ − rδ ∥2 = oP (1) , ∥ bmδ − mδ ∥2 = oP (1) ,
+
+and the product condition 
+
+∥brδ − rδ ∥2 ∥ bmδ − mδ ∥2 = oP (n−1/2).
+
+A convenient sufficient condition is 
+
+∥brδ − rδ ∥2 = oP (n−1/4), ∥ bmδ − mδ ∥2 = oP (n−1/4),
+
+which can be achieved by suitable cross-fitted learners under standard regularity conditions. Then 
+
+√n  bψ(δ) − ψ(δ) ⇝ N 0, Var {φψ(δ)(Z)}.
+
+Consequently, for the incremental effect bθ(δ) = bψ(δ) − bψ(0),
+
+√n bθ(δ) − θ(δ) ⇝ N 0, Var {φθ(δ)(Z)}, φθ(δ) := φψ(δ) − φψ(0).
+
+Proof. Control of the leading empirical process term. For any ∥δ∥ ≤ ∆, boundedness of s(W , X) implies there exists τ∆ < ∞ such that 
+
+e−τ∆ ≤ exp {δ⊤s(W , X)} ≤ eτ∆ , e−τ∆ ≤ νδ (X) ≤ eτ∆ ,
+
+51 so that e−2τ∆ ≤ rδ (W , X) ≤ e2τ∆ . Under (A1), |Y | ≤ M almost surely, and hence |mδ (X)| ≤ M as well. Therefore 
+
+|φψ(δ)(Z)| ≤ e2τ∆ |Y − mδ (X)| + |mδ (X) − ψ(δ)|≤ 2M e 2τ∆ + 2 M < ∞.
+
+Since {Zi}ni=1 are i.i.d., the classical Lindeberg–Feller CLT applies and yields 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+φψ(δ)(Zi) ⇝ N 0, Var {φψ(δ)(Z)}.
+
+Control of the estimated influence term. From the definitions, 
+
+bφψ(δ)(Z) = brδ {Y − bmδ } + bmδ − bψ(δ),φψ(δ)(Z) = rδ {Y − mδ } + mδ − ψ(δ),
+
+so that 
+
+bφψ(δ) − φψ(δ) = ( brδ − rδ ){Y − mδ } +  1 − brδ
+
+{ bmδ − mδ } − { bψ(δ) − ψ(δ)}.
+
+Taking Pn − P of both sides and noting that ( Pn − P ){ bψ(δ) − ψ(δ)} = 0, we obtain (Pn − P ) bφψ(δ) − φψ(δ) = ( Pn − P )(brδ − rδ ){Y − mδ } +  1 − brδ
+
+{ bmδ − mδ } .
+
+Using |Y | ≤ M , the finite-∆ bounds on rδ and brδ , and the Cauchy–Schwarz inequality, it follows that (Pn − P ) bφψ(δ) − φψ(δ) = OP
+
+ ∥brδ − rδ ∥2 + ∥ bmδ − mδ ∥2
+
+√n
+
+
+
+= oP (1) ,
+
+under the assumed L2 rates. In particular, 
+
+√n (Pn − P ) bφψ(δ) − φψ(δ) = OP
+
+
+
+∥brδ − rδ ∥2 + ∥ bmδ − mδ ∥2
+
+
+
+= oP (1) .
+
+Control of the remainder. By Lemma 10, 
+
+R2( bP , P ; δ) ≤ ∥ brδ − rδ ∥2 ∥ bmδ − mδ ∥2,
+
+and the product condition implies √n R 2( bP , P ; δ) = oP (1). 
+
+Conclusion. Combining (13) with the three displays above and applying Slutsky’s theorem yields 
+
+√n{ bψ(δ) − ψ(δ)} ⇝ N 0, Var {φψ(δ)(Z)}.
+
+Moreover, applying the same argument at δ = 0 and using the multivariate Lindeberg–Feller CLT gives the joint convergence 
+
+√n
+
+ bψ(δ) − ψ(δ), bψ(0) − ψ(0)
+
+
+
+⇝ N
+
+
+
+0, Cov  φψ(δ)(Z), φ ψ(0)(Z)
+
+.
+
+Therefore, by the continuous mapping theorem, 
+
+√nbθ(δ) − θ(δ) = √n
+
+ bψ(δ) − ψ(δ) −  bψ(0) − ψ(0)
+
+
+
+⇝ N 0, Var {φθ(δ)(Z)}.
+
+Combining Theorem 5 with Corollary 3 immediately yields the finite-δ CLT stated in Theorem 3 in the main text. 52 E Sensitivity analysis for unmeasured confounding 
+
+This section assesses the robustness of our incremental policy estimands to violations of the no-unmeasured-confounding assumption and follows the framework of (Chernozhukov et al., 2022). 
+
+## E.1 Setup: long vs. short worlds 
+
+Let the observed data be Zi = ( Xi, Wi, Y i) drawn i.i.d. from P0. Assume there exists an unobserved confounder U such that, with V := ( X, U ), the potential outcomes {Y (w) : w ∈ W} satisfy 
+
+Y (w) ⊥⊥ W V, ∀w ∈ W , (14) together with SUTVA/consistency. Define the long and short outcome regressions 
+
+μ(v, w) := E[ Y | V = v, W = w], μs(x, w) := E[ Y | X = x, W = w].
+
+Let f (w | v) denote the long conditional density of W given V, and f (w | x) the short conditional density of W given X (i.e. the observed conditional law of the exposure mixture given X). 
+
+Stochastic intervention fixed from observed data. We keep the intervention rule identical to Sec-tion 2: for any fixed δ ∈ Rq ,
+
+gδ (w | x) = exp( δ⊤w) f (w | x)
+
+R 
+
+> W
+
+exp( δ⊤v) f (v | x) dv . (15) Importantly, gδ (· | x) depends only on x and is therefore implementable; it is well-defined regardless of whether U exists. 
+
+Target (long) estimand. Let Y gδ denote the counterfactual outcome under the intervention that draws 
+
+W from gδ (· | X) (independently of U given X). Under (14), the causal estimand is 
+
+ψ(δ) := E Y gδ
+
+ = E 
+
+h Z
+
+> W
+
+μ(V, w) gδ (w | X) dw
+
+i
+
+. (16) 
+
+Identified (short) estimand under ignorability given X. If one incorrectly assumes ignorability given 
+
+X only, the same g-formula yields the identified estimand 
+
+ψs(δ) := E 
+
+h Z
+
+> W
+
+μs(X, w) gδ (w | X) dw
+
+i
+
+, (17) which is the estimand targeted by our estimators. Our sensitivity analysis bounds the discrepancy ψs(δ) − ψ(δ) as a function of interpretable sensitivity parameters. 
+
+## E.2 Linear functional form and Riesz representers 
+
+For a fixed δ, define the functional on square-integrable functions h(v, w) ∈ L2(PV,W): 
+
+Tδ (h) := E 
+
+h Z
+
+> W
+
+h(V, w) gδ (w | X) dw
+
+i
+
+. (18) Then ψ(δ) = Tδ (μ) and ψs(δ) = Tδ (μs). 
+
+Proposition 6. The functional Tδ (h) is a linear functional. Proof. To establish linearity, we must verify that ψ satisfies both the property of additivity and homogeneity. Let h1, h 2 ∈ L2(PV,W) be arbitrary functions and let c ∈ R be a scalar constant. 53 1. Additivity. By the linearity of the Lebesgue integral and the linearity of the expectation operator, we have: 
+
+Tδ (h1 + h2) = E
+
+Z 
+
+> W
+
+(h1 + h2)( V , w) gδ (w | X) dw
+
+
+
+= E
+
+Z 
+
+> W
+
+(h1(V , w)gδ (w | X) + h2(V , w)gδ (w | X)) dw
+
+
+
+= E
+
+Z 
+
+> W
+
+h1(V , w)gδ (w | X) dw +
+
+Z
+
+> W
+
+h2(V , w)gδ (w | X) dw
+
+
+
+= E
+
+Z 
+
+> W
+
+h1(V , w)gδ (w | X) dw
+
+
+
++ E
+
+Z 
+
+> W
+
+h2(V , w)gδ (w | X) dw
+
+
+
+= Tδ (h1) + Tδ (h2).
+
+2. Homogeneity. 
+
+Tδ (c · h) = E
+
+Z 
+
+> W
+
+c · h(V , w) gδ (w | X) dw
+
+
+
+= E
+
+
+
+c
+
+Z
+
+> W
+
+h(V , w) gδ (w | X) dw
+
+
+
+= c E
+
+Z 
+
+> W
+
+h(V , w) gδ (w | X) dw
+
+
+
+= c · T δ (h).
+
+Since both conditions are satisfied, Tδ is a linear functional. 
+
+Weak overlap / continuity condition. Assume Tδ is continuous on L2(PV,W); a sufficient condition required here is the “weak overlap” requirement E
+
+" gδ (W | X)
+
+f (W | V)
+
+2#
+
+< ∞. (19) This condition is untestable without U , but it is the standard integrability requirement needed for the Riesz representation. 
+
+Riesz representation. Under (19), by the Riesz–Fr´ echet representation theorem there exists a unique (long) Riesz representer αδ (V, W) ∈ L2(PV,W) such that 
+
+Tδ (h) = E h(V, W) αδ (V, W), ∀h ∈ L2(PV,W).
+
+Moreover, the representer has the Radon–Nikodym form 
+
+αδ (V, W) = gδ (W | X)
+
+f (W | V) . (20) Likewise, the short Riesz representer for Tδ over L2(PX,W) is 
+
+αs, δ (X, W) = gδ (W | X)
+
+f (W | X) = E αδ (V, W) | X, W. (21) Under the exponential tilt (15), αs, δ simplifies to 
+
+αs, δ (X, W) = exp( δ⊤W)
+
+νδ (X) , νδ (x) := E  exp( δ⊤W) | X = x. (22) Thus our policy estimand is a continuous linear functional of the long regression μ with a well-defined RR. 54 E.3 Exact OVB identity and sharp bound 
+
+Define the outcome regression error and the RR error: ∆μ(V, W) := μ(V, W) − μs(X, W), ∆α(V, W) := αδ (V, W) − αs, δ (X, W).
+
+Then the omitted-variable bias satisfies the exact identity 
+
+ψs(δ) − ψ(δ) = E ∆μ(V, W) ∆ α(V, W). (23) By Cauchy–Schwarz, 
+
+ψs(δ) − ψ(δ) ≤ B(δ) := 
+
+q
+
+E[∆ 2
+
+> μ
+
+] pE[∆ 2
+
+> α
+
+]. (24) It is often useful to isolate the “degree of adversity” 
+
+ϱ(δ) := Corr  ∆μ(V, W), ∆α(V, W) ∈ [−1, 1] ,
+
+so that (23) yields |ψs − ψ|2 = ϱ(δ)2 B(δ)2 ≤ B(δ)2. In our primary analysis and reported bounds, we focus on the worst-case scenario by considering adversarial confounding, which implicitly sets |ϱ(δ)| = 1. This allows us to establish a conservative bound and subsequently omit the correlation term from our final operational formulas. 
+
+## E.4 Reparameterization by interpretable partial R2
+
+Following the general theory, the bound can be rewritten as a product of an identifiable scale and two sensitivity parameters with partial-R2 interpretations. 
+
+Identifiable scale. Let σ2 
+
+> s
+
+:= E (Y − μs(X, W)) 2 and ν2 
+
+> s
+
+(δ) := E αs, δ (X, W)2. Define 
+
+S(δ)2 := σ2 
+
+> s
+
+ν2 
+
+> s
+
+(δ), (25) which depends only on the observed-data law of ( Y, W, X) and is therefore estimable. 
+
+Outcome-side sensitivity (partial R2). Define 
+
+C2 
+
+> Y
+
+:= E[∆ μ(V, W)2]E[( Y − μs(X, W)) 2] = Var   E[ Y | X, W, U ] − Var   E[ Y | X, W]
+
+Var( Y ) − Var   E[ Y | X, W] ∈ [0 , 1] , (26) i.e. the nonparametric partial R2 of U with Y given ( X, W). 
+
+Exposure/RR-side sensitivity. Because αs, δ is the L2 projection of αδ onto ( X, W), we have E[∆ 2
+
+> α
+
+] = E[ α2 
+
+> δ
+
+] − E[ α2 
+
+> s, δ
+
+]. Define the (RR-space) R2:
+
+R2
+
+> α
+
+(δ) := Corr 2 αδ (V, W), α s, δ (X, W) = E[ α2 
+
+> s, δ
+
+]E[ α2 
+
+> δ
+
+] ∈ (0 , 1] ,
+
+and let 
+
+C2 
+
+> D
+
+(δ) := E[ α2 
+
+> δ
+
+] − E[ α2 
+
+> s, δ
+
+]E[ α2 
+
+> s, δ
+
+] = 1 − R2
+
+> α
+
+(δ)
+
+R2
+
+> α
+
+(δ) . (27) Thus 1 − R2
+
+> α
+
+(δ) is the fraction of RR variation generated by the latent confounder. 
+
+Final bound in R2 form. Combining (24)–(27) yields 
+
+B(δ)2 = S(δ)2 C2 
+
+> Y
+
+C2 
+
+> D
+
+(δ), ψs(δ) − ψ(δ) ≤ S(δ) CY CD (δ). (28) Therefore, for any posited ( C2 
+
+> Y
+
+, R 2
+
+> α
+
+(δ)), we obtain the sensitivity interval 
+
+ψ(δ) ∈
+
+h
+
+ψs(δ) − S(δ)CY CD (δ), ψ s(δ) + S(δ)CY CD (δ)
+
+i
+
+. (29) 55 E.5 Incremental effect 
+
+If the scientific target is the incremental effect contrast θ(δ) := ψ(δ)−ψ(0), then the difference of continuous linear functionals is again a continuous linear functional. The same analysis applies with the RR replaced by the RR contrast: 
+
+αθ, δ (V, W) := αδ (V, W) − α0(V, W), αs,θ, δ (X, W) := αs, δ (X, W) − αs, 0(X, W),
+
+and μ unchanged. One obtains an interval for θ(δ) by applying (29) to θ.
+
+## E.6 Implementation 
+
+For each fixed δ considered in the paper, the sensitivity analysis requires three estimated quantities: 1. bθ(δ): our EIF-based (cross-fitted) estimator of the incremental effect from Section 3. 2. bσ2 
+
+> s
+
+:= n−1 Pni=1 {Yi − bμs(Xi, Wi)}2 using the same cross-fitted bμs as in the main estimator. 3. bν2 
+
+> s,θ
+
+(δ) := n−1 Pni=1 bαs,θ, δ (Xi, Wi)2, where bαs,θ, δ = bαs, δ − bαs, 0 = bαs, δ − 1, and bαs, δ is obtained either as the estimated density ratio bgδ / bf or via the closed form (22) by estimating νδ (X) = E[exp( δ⊤W) | X]with regression. Then bS(δ) := 
+
+qbσ2 
+
+> s
+
+bν2 
+
+> s,θ
+
+(δ). Finally, for any posited sensitivity parameters 
+
+η2 
+
+> Y
+
+:= C2 
+
+> Y
+
+∈ [0 , 1] , η2
+
+> α
+
+(δ) := 1 − R2
+
+> α
+
+(δ) ∈ [0 , 1) ,
+
+the bias bound becomes 
+
+bB(δ; η2 
+
+> Y
+
+, η 2
+
+> α
+
+) = bS(δ)
+
+q
+
+η2
+
+> Y
+
+s
+
+η2
+
+> α
+
+(δ)1 − η2
+
+> α
+
+(δ) .
+
+Accordingly, the estimated point identified set for the incremental effect is 
+
+θ(δ) ∈
+
+h bθ(δ) − bB(δ; η2 
+
+> Y
+
+, η 2
+
+> α
+
+), bθ(δ) + bB(δ; η2 
+
+> Y
+
+, η 2
+
+> α
+
+)
+
+i
+
+.
+
+When bθ(δ)̸ = 0, the ratio 
+
+bB(δ; η2 
+
+> Y
+
+, η 2
+
+> α
+
+)
+
+|bθ(δ)|
+
+compares the benchmarked bias half-width with the magnitude of the estimated incremental effect. Table 2 reports this ratio for the main-text benchmark with kY = 1 and kD = 1 over the 10 positive Gelbrich targets on each of the 9 intervention paths. Values below one indicate that the benchmarked point bound is narrower than the estimated effect in magnitude, whereas values above one indicate that the benchmarked bias half-width exceeds the estimated effect itself. 
+
+Confidence bounds for the estimated endpoints. The empirical results in the main text report confi-dence bounds for the two estimated endpoints above. Let bφθ(δ)(Zi) denote the cross-fitted EIF contribution of bθ(δ). Define the centered plugin signals 
+
+bφσ,i := {Yi − bμs(Xi, Wi)}2 − bσ2 
+
+> s
+
+,
+
+bφν,i (δ) := bαs,θ, δ (Xi, Wi)2 − bν2 
+
+> s,θ
+
+(δ),
+
+and write 
+
+λ(δ) := 
+
+q
+
+η2
+
+> Y
+
+s
+
+η2
+
+> α
+
+(δ)1 − η2
+
+> α
+
+(δ) .
+
+56 The delta method gives 
+
+bφS,i (δ) := bν2 
+
+> s,θ
+
+(δ) bφσ,i + bσ2 
+
+> s
+
+bφν,i (δ)2 bS(δ) ,
+
+bφ−,i (δ) := bφθ(δ)(Zi) − λ(δ) bφS,i (δ),
+
+bφ+,i (δ) := bφθ(δ)(Zi) + λ(δ) bφS,i (δ).
+
+Writing 
+
+bθ−(δ) := bθ(δ) − bB(δ; η2 
+
+> Y
+
+, η 2
+
+> α
+
+),
+
+bθ+(δ) := bθ(δ) + bB(δ; η2 
+
+> Y
+
+, η 2
+
+> α
+
+),
+
+the corresponding standard errors are 
+
+bse −(δ) := 
+
+vuut 1
+
+n2
+
+> n
+
+X
+
+> i=1
+
+bφ−,i (δ)2,
+
+bse +(δ) := 
+
+vuut 1
+
+n2
+
+> n
+
+X
+
+> i=1
+
+bφ+,i (δ)2.
+
+The sensitivity-adjusted 95% interval is obtained by combining a lower confidence bound for bθ−(δ) and an upper confidence bound for bθ+(δ): 
+
+hbθ−(δ) − z0.95 bse −(δ), bθ+(δ) + z0.95 bse +(δ)
+
+i
+
+.
+
+Selection of sensitivity parameters. The parameters η2 
+
+> Y
+
+and η2
+
+> α
+
+(δ) have direct interpretations: η2 
+
+> Y
+
+is the maximal fraction of residual outcome variance explainable by U given ( X, W), and η2
+
+> α
+
+(δ) is the maximal fraction of RR variation explainable by U for the policy indexed by δ. These can be calibrated by subject-matter knowledge and by benchmarking against observed covariates, and then used in the bound and the endpoint confidence bounds above. 
+
+## E.7 Formal benchmarking and calibration 
+
+Following Chernozhukov et al. (2022), we calibrate the sensitivity parameters on the f 2 scale induced by nested linear projections. This construction translates the observed contribution of a single covariate Xj
+
+into a benchmark that is commensurate with the omitted-variable calibration in the bias bound. We carry out this comparison for each of the 22 observed covariates. 
+
+Outcome-side benchmark. For each observed covariate Xj , let 
+
+bσ2 
+
+> s
+
+:= min 
+
+> a, b,c
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+n
+
+Yi − a − b⊤Wi − c⊤Xi
+
+o2
+
+,
+
+bσ2 
+
+> s, −j
+
+:= min 
+
+> a, b,c
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+n
+
+Yi − a − b⊤Wi − c⊤Xi, −j
+
+o2
+
+,
+
+where Xi, −j denotes the observed covariate vector with Xij removed. The associated benchmark statistics are 
+
+bη2 
+
+> Y,j
+
+:= bσ2 
+
+> s, −j
+
+− bσ2
+
+> s
+
+bσ2
+
+> s, −j
+
+,
+
+bf 2 
+
+> Y,j
+
+:= bη2
+
+> Y,j
+
+1 − bη2
+
+> Y,j
+
+= bσ2 
+
+> s, −j
+
+− bσ2
+
+> s
+
+bσ2
+
+> s
+
+.
+
+57 Thus bη2 
+
+> Y,j
+
+is the observed partial R2 for Xj after adjusting for ( W , X−j ), and bf 2 
+
+> Y,j
+
+expresses the same gain relative to the residual variation in the full projection. Table 3 reports these quantities for all 22 covariates. The largest outcome-side benchmark is White , with bη2 
+
+> Y,j
+
+= 0 .0642 and bf 2 
+
+> Y,j
+
+= 0 .0686. 
+
+RR-side benchmark. For the RR-side, we first evaluate the fitted short RR bαs, δ (Xi, Wi) at every in-tervention target retained in the application analysis. For each Xj and each target δ, we then compute the nested linear projections 
+
+br2 
+
+> α, full ,j
+
+(δ) := min 
+
+> a, b
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+nbαs, δ (Xi, Wi) − a − b⊤Xi
+
+o2
+
+,
+
+br2 
+
+> α, red ,j
+
+(δ) := min 
+
+> a, b
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+nbαs, δ (Xi, Wi) − a − b⊤Xi, −j
+
+o2
+
+.
+
+The corresponding pointwise benchmark statistics are 
+
+bη2 
+
+> α,j
+
+(δ) := br2 
+
+> α, red ,j
+
+(δ) − br2 
+
+> α, full ,j
+
+(δ)
+
+br2 
+
+> α, red ,j
+
+(δ) ,
+
+bf 2 
+
+> α,j
+
+(δ) := bη2 
+
+> α,j
+
+(δ)1 − bη2 
+
+> α,j
+
+(δ) = br2 
+
+> α, red ,j
+
+(δ) − br2 
+
+> α, full ,j
+
+(δ)
+
+br2 
+
+> α, full ,j
+
+(δ) .
+
+This is the direct analogue of the outcome-side construction, with the fitted short RR taking the place of the observed outcome. The benchmark reported in the main text is attached to an intervention path rather than to a single target. For each scenario, we therefore rank the 22 covariates by the average of bf 2 
+
+> α,j
+
+(δ) over the positive Gelbrich targets on that path. This average is the RR-side score used in the formal benchmark. It summarizes how much adding Xj improves the linear approximation to the fitted short RR along the displayed path, and it keeps the benchmark tied to an intervention curve that is actually reported in the application. Table 4 reports these scenario-level mean bf 2 
+
+> α,j
+
+values for all 22 covariates. With this aggregation, the selected RR-side benchmark covariates are Housing More People Units 
+
+for BC, OM, and BC+OM; Cigarette Smoking for NO 3, NH 4, NO 3+SO 4+NH 4, and All; Households Smartphone for SO 4; and Housing Vacant for BFGS. 
+
+Benchmark calibration. For the selected outcome-side covariate, 
+
+η2 
+
+> Y
+
+= kY bf 2
+
+> Y,j
+
+1 + kY bf 2
+
+> Y,j
+
+.
+
+For the selected RR-side covariate in a given scenario, 
+
+η2
+
+> α
+
+(δ) = kD bf 2 
+
+> α,j
+
+(δ)1 + kD bf 2 
+
+> α,j
+
+(δ) .
+
+These calibrated values are inserted directly into the point bounds and the endpoint confidence bounds above. The main application figure uses kY = 1 and kD = 1, so the omitted confounder is calibrated to the observed benchmark strength on both the outcome side and the RR side. 58 Table 2: Ratio bB(δ)/|bθ(δ)| under the formal benchmark with kY = 1 and kD = 1. Columns correspond to the positive Gelbrich targets used in the application. 
+
+Scenario 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 BC 0.22 0.23 0.25 0.27 0.28 0.30 0.32 0.33 0.35 0.37 NO 3 0.42 0.62 0.60 0.53 0.47 0.41 0.36 0.32 0.29 0.26 OM 0.21 0.24 0.26 0.28 0.30 0.33 0.35 0.37 0.39 0.41 SO 4 0.10 0.10 0.09 0.08 0.07 0.07 0.06 0.06 0.05 0.05 NH 4 0.13 0.18 0.21 0.21 0.20 0.19 0.17 0.16 0.15 0.14 BC+OM 0.84 0.98 1.24 1.72 2.67 3.73 7.09 50.85 12.16 12.16 NO 3+SO 4+NH 4 0.17 0.19 0.22 0.27 0.32 0.35 0.36 0.35 0.32 0.32 All 0.07 0.08 0.10 0.12 0.14 0.17 0.22 0.24 0.25 0.25 BFGS 0.03 0.21 0.23 0.20 0.16 0.09 0.08 0.07 0.07 0.07 
+
+Table 3: Outcome-side benchmarking statistics for the 22 observed covariates. The table reports the observed partial R2 and its f 2 transform from the nested linear projections of Y on ( W , X) and ( W , X−j ). Covariate bη2 
+
+> Y,j
+
+bf 2
+
+> Y,j
+
+White 0.0642 0.0686 Poverty 0.0341 0.0353 Physical Activity 0.0322 0.0333 Housing More People Units 0.0151 0.0154 Binge Drinking 0.0132 0.0134 Households No Internet 0.0123 0.0124 Housing No Vehicle 0.0112 0.0113 Housing 10 Units 0.0087 0.0087 Median Income 0.0082 0.0083 Cigarette Smoking 0.0052 0.0052 Low Education Computer No Internet 0.0042 0.0042 Percentage No Insurance 0.0037 0.0037 Male 0.0032 0.0032 Households Smartphone 0.0023 0.0023 Housing Renter 0.0011 0.0011 Housing Vacant 0.0010 0.0010 HS Higher 0.0006 0.0006 Housing Mobile 0.0001 0.0001 Obesity 0.0001 0.0001 Unemployed 0.0001 0.0001 Households Low Income No Internet 0.0001 0.0001 Households Only Smartphone 0.0000 0.0000 59 Table 4: RR-side benchmarking statistics for the 22 observed covariates. Entries are the scenario-level means of bf 2
+
+α,j (δ) over the positive Gelbrich grid within each scenario, computed from nested linear projections of 
+
+bαs, δ (Xi, Wi) on X and X−j . The main-text benchmark with kD = 1 selects the largest entry within each scenario. 
+
+Covariate BC NO 3 OM SO 4 NH 4 BC+OM NO 3+SO 4+NH 4 All BFGS White 0.0003 0.0049 0.0029 0.0017 0.0005 0.0002 0.0012 0.0008 0.0024 Poverty 0.0011 0.0171 0.0005 0.0015 0.0081 0.0012 0.0023 0.0026 0.0089 Physical Activity 0.0014 0.0018 0.0011 0.0003 0.0007 0.0014 0.0014 0.0001 0.0002 Housing More People Units 0.0089 0.0017 0.0124 0.0026 0.0007 0.0043 0.0007 0.0003 0.0043 Binge Drinking 0.0003 0.0002 0.0027 0.0002 0.0005 0.0004 0.0017 0.0002 0.0021 Households No Internet 0.0003 0.0008 0.0003 0.0002 0.0009 0.0017 0.0003 0.0000 0.0004 Housing No Vehicle 0.0021 0.0006 0.0054 0.0001 0.0006 0.0027 0.0125 0.0022 0.0006 Housing 10 Units 0.0004 0.0004 0.0023 0.0002 0.0001 0.0003 0.0010 0.0003 0.0003 Median Income 0.0018 0.0210 0.0005 0.0016 0.0058 0.0020 0.0025 0.0028 0.0071 Cigarette Smoking 0.0005 0.0259 0.0015 0.0022 0.0167 0.0014 0.0174 0.0079 0.0036 Low Education Computer No Internet 0.0001 0.0001 0.0003 0.0004 0.0008 0.0005 0.0009 0.0009 0.0038 Percentage No Insurance 0.0001 0.0015 0.0004 0.0000 0.0016 0.0002 0.0003 0.0002 0.0015 Male 0.0000 0.0008 0.0020 0.0008 0.0007 0.0001 0.0002 0.0006 0.0017 Households Smartphone 0.0009 0.0042 0.0004 0.0037 0.0029 0.0004 0.0009 0.0015 0.0006 Housing Renter 0.0026 0.0004 0.0001 0.0001 0.0001 0.0013 0.0008 0.0000 0.0002 Housing Vacant 0.0007 0.0224 0.0006 0.0010 0.0035 0.0011 0.0157 0.0064 0.0138 HS Higher 0.0003 0.0005 0.0007 0.0006 0.0000 0.0004 0.0004 0.0005 0.0025 Housing Mobile 0.0008 0.0060 0.0000 0.0006 0.0002 0.0015 0.0145 0.0072 0.0031 Obesity 0.0003 0.0001 0.0012 0.0000 0.0011 0.0009 0.0001 0.0003 0.0006 Unemployed 0.0002 0.0026 0.0001 0.0005 0.0003 0.0000 0.0008 0.0006 0.0029 Households Low Income No Internet 0.0002 0.0010 0.0000 0.0013 0.0002 0.0000 0.0016 0.0009 0.0005 Households Only Smartphone 0.0002 0.0004 0.0003 0.0009 0.0003 0.0001 0.0003 0.0002 0.0016 
+
+60

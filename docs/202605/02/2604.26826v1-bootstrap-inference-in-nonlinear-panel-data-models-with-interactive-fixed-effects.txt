@@ -1,0 +1,4291 @@
+Title: Bootstrap Inference in Nonlinear Panel Data Models with Interactive Fixed Effects
+
+URL Source: https://arxiv.org/pdf/2604.26826v1
+
+Published Time: Thu, 30 Apr 2026 01:04:12 GMT
+
+Number of Pages: 63
+
+Markdown Content:
+# Bootstrap Inference in Nonlinear Panel Data Models with Interactive Fixed Effects *Haoyuan Xu †, Wei Miao ‡, Geert Dhaene †, Jad Beyhum ††Department of Economics, KU Leuven 
+
+‡ORSTAT, KU Leuven April 30, 2026 
+
+Abstract 
+
+The maximum likelihood estimator in nonlinear panel data models with interactive fixed ef-fects is biased. Several bias correction methods, such as analytical and jackknife approaches, have been proposed to enable valid inference. This paper shows that the parametric bootstrap also enables valid inference in such models. In particular, we show that the parametric boot-strap replicates the asymptotic distribution of the maximum likelihood estimator. Therefore, it yields asymptotically unbiased estimates and confidence sets with asymptotically correct coverage. We also propose a transformation-based bootstrap confidence interval that delivers improved finite-sample performance. Simulation results support the theoretical findings. Fi-nally, we apply the proposed method to examine technological and product market spillover effects on firms’ innovation behavior. 
+
+Keywords: Panel data, interactive fixed effects, incidental parameter bias, bootstrap inference, skewness correction. 
+
+> *
+
+We are grateful to participants at the KU Leuven Applied Micro PhD Workshop (2024), the Netherlands Economet-ric Study Group (2025), the International Association for Applied Econometrics Conference (2025), the International Panel Data Conference (2025), and the Asian Summer School in Econometrics and Statistics (2025). We thank Andrei Zeleneev and Weisheng Zhang for sharing the codes from Zeleneev and Zhang (2026). Haoyuan Xu acknowledges funding from the Research Foundation–Flanders (FWO) fellowship no. 1179925N. Wei Miao acknowledges financial support from the China Scholarship Council (grant no. 202306130036). Jad Beyhum acknowledges financial support from the Research Fund KU Leuven (grant STG/23/014). 
+
+1
+
+> arXiv:2604.26826v1 [econ.EM] 29 Apr 2026
+
+# 1 Introduction 
+
+The importance of unobserved heterogeneity for economic analysis and the design of effective public policies has long been recognized by economists and policymakers. Interactive fixed effects models provide a flexible and powerful framework for capturing such heterogeneity. Unlike clas-sical one-way fixed-effect models (Chamberlain, 1984), which rely on agent-specific scalar param-eters to absorb unobserved heterogeneity, interactive fixed-effect models allow for multidimen-sional latent components, thereby accommodating substantially richer forms of unobserved het-erogeneity. Moreover, these models naturally incorporate aggregate time-varying shocks through a factor structure, a feature that is particularly important in macroeconomic and financial applica-tions (Stock and Watson, 2002). Since the seminal contributions of Pesaran (2006) and Bai (2009), a large body of research has developed the theoretical foundations of linear panel data models with interactive fixed effects. These advances have, in turn, facilitated the widespread empirical adoption of such models. Nev-ertheless, linear specifications are often inadequate in applied work. In many empirical settings, the outcome variable is discrete, rendering linear models potentially misspecified. Recent work, such as Mao and Yan (2026), demonstrates that nonlinear factor models can provide a more ap-propriate framework in a wide range of empirical applications. In contrast to the extensive literature on linear factor models (Bai, 2009; Moon and Weidner, 2015, 2017), the theoretical foundations of nonlinear panel data models with interactive fixed ef-fects are less developed. A notable recent contribution is Chen et al. (2021), who study the max-imum likelihood estimator (MLE) in nonlinear panel models with interactive fixed effects. Their approach treats the individual-specific and time-specific effects as fixed parameters and jointly estimates these nuisance parameters together with the common parameters of interest. This fixed-effect framework is attractive because it imposes no restrictions on the joint distribution of the unobserved effects and the covariates, thereby reducing the risk of model misspecification. Chen et al. (2021) derive the asymptotic distribution of the MLE of the common parameters and show that it is asymptotically biased due to the incidental parameter problem. Importantly, this source of bias differs fundamentally from that encountered in linear factor models estimated by least squares, where bias in the slope parameters arises from cross-sectional and time-series 2dependence in the error terms (Bai, 2009). To address the incidental parameter bias, they propose analytical and jackknife corrections that eliminate the leading bias term and enable asymptotically valid inference. Relatedly, Gao et al. (2023) study the MLE in binary choice models with interactive fixed effects and heterogeneous slope parameters. Although analytical and jackknife bias corrections are asymptotically valid, their finite-sample performance may be limited in empirically relevant settings with moderate sample sizes and short time dimensions, as commonly encountered in microeconomic panel datasets. Analytical bias cor-rections rely on estimating the asymptotic bias and subtracting the estimated bias from the original estimator. However, as shown in Chen et al. (2021), the asymptotic bias is a highly intricate expres-sion involving up to third-order derivatives of the likelihood function, which may be numerically unstable. The split-panel jackknife method is comparatively straightforward to implement but can suffer from efficiency losses in finite samples (Hahn et al., 2024). Moreover, analytical and jackknife corrections rely on normal approximations to construct confidence intervals, which may be inaccurate. Recently, Higgins and Jochmans (2024) show that the parametric bootstrap delivers asymp-totically valid confidence intervals without explicit bias correction in one-way fixed-effect non-linear panel data models, and that bootstrap-based inference can exhibit superior finite-sample performance when the time dimension is short. In this paper, we extend the parametric boot-strap approach to nonlinear panel data models with interactive fixed effects. Unlike analytical bias-correction methods, the parametric bootstrap avoids the explicit calculation of the asymp-totic bias by approximating it through parametric bootstrap simulations. An important feature of the parametric bootstrap, emphasized by Higgins and Jochmans (2024), is that it yields asymp-totically valid inference even without preliminary bias correction. Confidence intervals are con-structed directly from the quantiles of the bootstrap distribution rather than relying on normal approximations, which can improve accuracy in finite samples. We show that these properties of the parametric bootstrap also hold in nonlinear panel data models with interactive fixed effects. Simulations corroborate our theoretical results. Furthermore, simulations indicate that bootstrap-based confidence intervals tend to be conservative in finite samples, with coverage probabilities often exceeding the nominal level and thus reflecting a systematic overestimation of uncertainty. This finding is in line with Higgins and Jochmans (2024), who document similar behavior in one-3way fixed-effect models. They also note that iterating the bootstrap procedure can improve cov-erage accuracy, but at a substantial computational cost. To mitigate this issue, we follow the bootstrap literature on skewness correction (Hall, 1992) and apply a monotone transformation to the estimator prior to constructing confidence intervals. The transformation reduces skewness in the bootstrap distribution, and intervals are then ob-tained from the transformed scale and mapped back. By the bootstrap delta method (Van der Vaart, 1998), this procedure preserves asymptotic validity while improving finite-sample perfor-mance. Simulations show that the resulting intervals are substantially shorter and achieve more accurate coverage. All bias correction methods considered in this literature rely on the MLE, i.e., the global max-imizer of the loglikelihood function, being obtainable. However, in practice, the loglikelihood function in nonlinear factor models is generally non-concave, implying that standard optimiza-tion algorithms may converge to a local instead of the global maximizer. Chen et al. (2021) pro-pose an EM-type algorithm, which guarantees convergence only to a local maximizer. They sug-gest using multiple starting values to increase the probability of reaching the global maximizer; nevertheless, this strategy does not ensure global maximization and can substantially increase the computational burden. More recently, Zeleneev and Zhang (2026) propose a computation-ally efficient two-step estimator based on nuclear-norm penalization, which is shown to attain the global maximizer with probability one and is asymptotically equivalent to the MLE. In this paper, we adopt their two-step estimator in conjunction with the bootstrap procedure, thereby ensuring global maximization at low computational cost and preserving asymptotically valid inference. 
+
+Related literature 
+
+This paper contributes to the literature on large-T bias correction in nonlinear panel data models with fixed effects. Since the seminal work of Hahn and Newey (2004), many studies have aimed to correct the first-order incidental parameter bias in a large-T framework. This includes research on one-way fixed effects panel models (Fern´ andez-Val, 2009; Hahn and Kuersteiner, 2011; Dhaene and Jochmans, 2015; Arellano and Hahn, 2016; Higgins and Jochmans, 2024), additive two-way fixed effects panel models (Fern´ andez-Val and Weidner, 2016), and network models (Graham, 2017; Dzemski, 2019; Yan et al., 2019; Hughes, 2026); see Fern´ andez-Val and Weidner (2018) for 4a review. More recently, some studies have begun to address second-order bias (Dhaene and Sun, 2021; Schumann, 2023) as well as higher-order bias correction (Dhaene and Weidner, 2023; Bonhomme et al., 2024). We also contribute to the literature on fixed-effect estimation in models with interactive fixed effects. Linear panel models with interactive fixed effects have been extensively studied, including the determination of the number of factors (Bai and Ng, 2002; Onatski, 2009; Ahn and Horenstein, 2013), the estimation of common parameters (Bai, 2009; Moon and Weidner, 2015, 2017; Beyhum and Gautier, 2019, 2022), inference in the presence of weak factors (Onatski, 2012; Bai and Ng, 2023; Choi and Yuan, 2025; Jiang et al., 2025; Armstrong et al., 2026), and extensions to network models (Sassi, 2024); see Bai and Wang (2016) for a comprehensive review. The theoretical development for nonlinear factor models remains comparatively limited. Notable contributions in this area include Wang (2022), who studies the fixed-effect MLE in nonlinear pure factor models; Gao et al. (2023), who analyze binary choice models with interactive fixed effects and heterogeneous slope parameters and propose an information criterion for selecting the number of factors; and Chen et al. (2021), who address bias correction in general nonlinear factor models and introduce an eigenvalue ratio test for factor number selection. More recently, Zeleneev and Zhang (2026) and Yao (2025) propose a nuclear-norm penalized estimator that provides computational guarantees, facilitating reliable estimation. Boneva and Linton (2017) and Chen and Zhang (2025) generalize the CCE estimator to nonlinear settings. Our work is also closely related to bootstrap-based bias correction and inference methods in the panel data literature. Gonc ¸alves and Kaffo (2015) study bootstrap inference for linear dy-namic panel models with individual fixed effects. Kim and Sun (2016) and Higgins and Jochmans (2024) adopt parametric bootstrap methods for nonlinear panel models with one-way fixed ef-fects. Gonc ¸alves (2011) and Higgins and Jochmans (2025) introduce moving-block bootstrap pro-cedures for dynamic panel data models. Li et al. (2024) employ bootstrap methods for inference for treatment effects in interactive fixed-effect panel models. Cavaliere et al. (2024) develop a gen-eral framework for bootstrap inference in the presence of bias, showing that even when the bias cannot be consistently estimated, appropriately designed bootstrap methods can provide valid in-ference. Finally, our work is also related to the literature that uses transformation-based methods to improve bootstrap confidence intervals (Efron, 1987; Konishi, 1991; Hall, 1992). 52 Methodology 
+
+2.1 Model setup 
+
+We consider nonlinear panel data models with interactive fixed effects. The model specification is 
+
+Yit |Xit , β0, α0, γ0 ∼ f  ·| X′ 
+
+> it
+
+β0 + α′
+
+> i0
+
+γ0t
+
+ (1) for i = 1, . . . , N and t = 1, . . . , T, where we observe {Y, X} = {Yit , Xit }i=1..., N;t=1,..., T, Yit is the scalar response variable, Xit is a dx-dimensional covariate vector, the function f is a known density with respect to some dominating measure, β0 is the common parameter vector, and αi0 and γ0t are unobserved d f -dimensional individual and time effects that appear in the model through a factor structure. We treat the number of factors d f as known. 1
+
+We aim to estimate β0, treating α0 = ( α1,0 , . . . , αN,0 ) and γ0 = ( γ1,0 , . . . , γT,0 ) as nuisance pa-rameter matrices. We make no assumptions on the joint distribution of (X, α0, γ0). This flexibility is important since it reduces the likelihood of model misspecification. Unlike the individual fixed-effect model (Hahn and Newey, 2004; Hahn and Kuersteiner, 2011), which only allows the indi-vidual effect to be a time-invariant scalar, the interactive fixed-effect model accommodates mul-tiplicative fixed effects. The additive two-way fixed-effect model (Fern´ andez-Val and Weidner, 2016), which includes time effects to capture aggregate shocks—a common feature in economic applications—can, in fact, be viewed as a special case of model (1). Interactive fixed effects allow for a much richer structure of unobserved heterogeneity (Freyberger, 2018). 
+
+2.2 Interactive fixed-effect estimator 
+
+Let B ⊂ Rdx , A ⊂ Rd f , and G ⊂ Rd f denote the parameter spaces of β0, αi0, and γt0, respectively, and let Θ = B × A N × G T denote the full parameter space of θ0 = ( β0, α0, γ0). The MLE of θ0 is ˆθ = ( ˆβ, ˆ α, ˆ γ) = arg max  
+
+> (β,α,γ)∈B×A N×G T
+
+L(β, α, γ; Y, X), (2)    
+
+> 1In practice, we can estimate dfconsistently; see Chen et al. (2021) and Gao et al. (2023).
+
+6where L(β, α, γ; Y, X) is the loglikelihood function, 
+
+L(β, α, γ; Y, X) = 
+
+> N
+
+# ∑
+
+> i=1
+> T
+
+# ∑
+
+> t=1
+
+log f  Yit | X′ 
+
+> it
+
+β + α′ 
+
+> i
+
+γt
+
+ . (3) Since the dimension of the nuisance parameter matrices α0 and γ0 increase with N and T, the estimation of β0 depends on a large number of nuisance parameter estimates, which can induce substantial bias in ˆ β. Even as N, T → ∞, this bias persists in the limiting distribution of ˆ β and thus affects inference. Our main contribution is to show that the parametric bootstrap eliminates the asymptotic bias and delivers asymptotically valid confidence intervals. As in the linear factor model (Bai, 2009), the unobserved effects αi0 and γt0 can only be iden-tified up to a rotational indeterminacy since, for any nonsingular d f × d f matrix A, we have 
+
+α′
+
+> i0
+
+γt0 = ( A′αi0)′(A−1γt0) for all i and t. Different normalizations do not affect the estimation of β0 nor the estimation of average partial effects (APEs). For further discussion on normalization in factor models, see Bai and Wang (2016). We are also interested in APEs. For a chosen function μit (β, αi, γt) that characterizes the causal effect of interest to the researcher, we define the APE as 
+
+∆(θ0) = 1
+
+NT 
+
+> N
+
+# ∑
+
+> i=1
+> T
+
+# ∑
+
+> t=1
+
+Eθ0 [μit (β0, αi0, γt0)] , (4) where Eθ0 denotes the conditional expectation, given the true values of the unobserved effects. 2
+
+For example, if Yit is binary and we consider the effect of a binary covariate Xit ,k on the probability that Yit = 1, we set μit (β, αi, γt) = f (1|Zit + βk) − f (1|Zit ), where Zit = X′ 
+
+> it ,−k
+
+β−k + α′ 
+
+> i
+
+γt, and 
+
+Xit ,−k and β−k denote Xit and β, respectively, with their k-th element removed. If Yit is binary and 
+
+Xit ,k is continuous, the average marginal effect of interest is obtained by setting μit (β, αi, γt) = 
+
+βk f (1|X′ 
+
+> it
+
+β + α′ 
+
+> i
+
+γt). A natural estimator of ∆(θ0) is the MLE, 
+
+∆( ˆθ) = 1
+
+NT 
+
+> N
+
+# ∑
+
+> i=1
+> T
+
+# ∑
+
+> t=1
+
+μit ( ˆβ, ˆ αi, ˆ γt), (5) which inherits the bias of ( ˆβ, ˆ α, ˆ γ).     
+
+> 2We focus on conditional APEs, given the realizations of the unobserved effects. Studying unconditional APEs requires additional assumptions on the distribution of {αi0}i=1,..., Nand {γt0}t=1,..., T, such as i.i.d. sampling or weak dependence. For further discussion, see Fern´ andez-Val and Weidner (2016).
+
+7Chen et al. (2021) study the MLE of model (1) and propose a PCA-based algorithm to compute the estimator. They also provide analytical and jackknife corrections for the incidental parameter bias of ˆ β and ∆( ˆθ), thereby restoring asymptotically valid inference. However, when T is small, the analytical and jackknife bias corrections may not always perform well; see our simulation re-sults in Section 5. Recently, Higgins and Jochmans (2024) showed that the parametric bootstrap corrects the first-order bias and provides asymptotically valid confidence intervals for β0 in non-linear panel models with individual effects. Their parametric bootstrap confidence intervals do not rely on normal approximations, and perform better compared to analytical corrections. In this paper, we extend this idea to interactive fixed-effect models and show in simulations that the parametric bootstrap delivers better small-T performance in nonlinear interactive fixed-effect panel models compared with existing bias-correction methods. We further propose an improved bootstrap confidence interval based on a monotone transformation of the estimator. 
+
+2.3 Bootstrap inference 
+
+In this section, we describe the parametric bootstrap and informally explain why it yields a bias-corrected estimate of β0 and asymptotically correct confidence intervals for β0. We begin with the data-generating process (DGP) used to generate B bootstrap samples, each denoted by Y∗ =
+
+{Y∗ 
+
+> it
+
+}i=1..., N;t=1,..., T. Under the assumption that the covariates X are strictly exogenous, the para-metric bootstrap DGP is obtained from model (1) by plugging in the MLE ˆ θ and keeping X fixed: 
+
+Y∗ 
+
+> it
+
+|Xit , ˆ β, ˆ α, ˆ γ ∼ f  ·| X′ 
+
+> it
+
+ˆβ + ˆαi′ ˆγt
+
+ . (6) The bootstrap DGP in (6) is the same as in Higgins and Jochmans (2024) except that we have interactive fixed effects instead of one-way individual effects. For each bootstrap dataset {Y∗, X}, with Y∗ independently drawn according to (6), we com-pute the MLE ˆθ∗ = ( ˆβ∗, ˆ α∗, ˆ γ∗) = arg max  
+
+> (β,α,γ)∈B×A N×G T
+
+L(β, α, γ; Y∗, X).Since ˆ θ is a consistent estimator—in the sense that, as N, T → ∞, all of ˆ β, ˆ αi, ˆ γt, for every i and 
+
+t, are consistent for β0, αi0, γt0— ˆ θ should be close to θ0 with high probability when N and T are 8sufficiently large. Hence, under certain smoothness conditions, the parametric bootstrap DGP in (6) will also be close to the true DGP, that is, to the DGP in (1), which has θ = θ0. Furthermore, the bootstrap datasets {Y∗, X} and the corresponding MLEs generated by these two very similar DGPs are expected to exhibit similar properties. Under suitable regularity conditions, ˆ β∗ admits an expansion analogous to that of ˆ β. More-over, the first-order term in the expansion of ˆ β∗ converges in probability to the corresponding term in the expansion of ˆ β. This implies that the bias Eθ0 ( ˆβ) − β0 can be accurately appoximated by E∗( ˆβ∗) − ˆβ, where E∗ denotes the expectation under the parametric bootstrap DGP (6). In turn, 
+
+E∗( ˆβ∗) − ˆβ can be approximated arbitrarily well by averaging over a large number, B, of paramet-ric bootstrap replications. This average can be used to eliminate the first-order bias of ˆ β, yielding the parametric bootstrap bias-corrected estimator ˆβboot = ˆβ − 1
+
+B
+
+> B
+
+# ∑
+
+> b=1
+
+ˆβ∗ 
+
+> b
+
+− ˆβ
+
+!
+
+= 2 ˆ β − 1
+
+B
+
+> B
+
+# ∑
+
+> b=1
+
+ˆβ∗ 
+
+> b
+
+,where ˆ β∗ 
+
+> b
+
+is ˆ β∗ computed from the b-th bootstrap dataset. Since the first-order bias is eliminated, 
+
+Eθ0( ˆβboot ) − β0 = o
+
+ 1
+
+N + 1
+
+T
+
+
+
+.Note that, like other bias correction methods, the parametric bootstrap bias correction only pro-vides asymptotic guarantees of bias reduction. With finite N and T, it may amplify higher-order bias terms and, therefore, amplify the bias. In Section 4, we examine the finite-sample performance of the parametric bootstrap through simulations. Another important observation is that the parametric bootstrap replicates the distribution of ˆ β
+
+with a vanishingly small error. For every a < b ∈ Rdx ,
+
+Pθ0 (a ≤ √NT ( ˆβ∗ − ˆβ) ≤ b) − Pθ0 (a ≤ √NT ( ˆβ − β0) ≤ b) → 0, where Pθ0 (·) denotes probabilities taken under the DGP (1). As shown in Higgins and Jochmans (2024), this yields asymptotically valid confidence intervals for β0 without the need for bias cor-rection. To illustrate, we consider the simple case where dx = 1. In case dx > 1, a valid confidence interval for any linear combination c′ β0 can be constructed similarly. Let F∗ denote the conditional 9distribution function of ˆ β∗ − ˆβ under DGP (6) given the original sample; F∗ can be estimated to arbitrary precision by the empirical distribution of the parametric bootstrap replicates ˆ β∗ 
+
+> b
+
+by set-ting B large enough. In the next section, we formally show that F∗ weakly converges to the limit distribution of ˆ β − β0. Similarly, the quantile function corresponding to F∗, defined as 
+
+Q∗(α) := inf {a : F∗(a) ≥ α}, α ∈ R,also converges to the quantile function of the limiting distribution of ˆ β − β0. Hence, we can simply use Q∗(α) as the estimator of the α-quantile of the distribution of ˆ β − β0, leading to an asymptoti-cally valid confidence interval: for every α ∈ (0, 1 ),
+
+Pθ0
+
+ β0 ∈  ˆβ − Q∗(1 − α/2 ), ˆ β − Q∗(α/2 ) → 1 − α, (7) where the interval in brackets is a (1 − α)-level confidence interval for a scalar β0. The interval can also be written as h
+
+2 ˆ β − Q∗ 
+
+> ˆβ∗
+
+(1 − α/2 ), 2 ˆ β − Q∗ 
+
+> ˆβ∗
+
+(α/2 )
+
+i
+
+,where Q∗ 
+
+> ˆβ∗
+
+is the conditional quantile function of ˆ β∗ given the original sample. Other methods to construct confidence intervals often rely on the asymptotic normality of ˆ β.They require a consistent estimator, ˆ V, of the asymptotic variance V of ˆ β, and an asymptotically unbiased estimator ˆ βbc with the same asymptotic variance V. This gives, for example, [ ˆβbc −
+
+1.96 √ ˆV, ˆ βbc + 1.96 √ ˆV] as a 95% confidence interval for a scalar β0. The parametric bootstrap does not require a bias-corrected estimator of β0 nor a consistent estimator of V. Instead, it simply uses the quantile function of ˆ β∗ − ˆβ and it does not rely on the Gaussian approximation to the distribution of ˆ β.While the parametric bootstrap delivers asymptotically valid inference, its finite-sample per-formance may be affected by skewness in the distribution of ˆ β, especially when the time dimen-sion is small. As discussed above, the bootstrap procedure reproduces and may even amplify this skewness, which can result in asymmetric confidence intervals with overly wide bounds and thus lead to conservative inference. To mitigate this issue, we propose to apply a monotone transformation to the bootstrap esti-10 mator prior to constructing confidence intervals. Let φ(·) be a strictly increasing transformation. We then construct the transformed bootstrap confidence interval as 
+
+h
+
+φ−1
+
+2φ( ˆβ) − Q∗  
+
+> φ(ˆβ∗)
+
+(1 − α/2 )
+
+
+
+, φ−1
+
+2φ( ˆβ) − Q∗  
+
+> φ(ˆβ∗)
+
+(α/2 )
+
+i 
+
+, (8) where Q∗   
+
+> φ(ˆβ∗)
+
+is the conditional quantile function of φ( ˆβ∗) given the original sample. Since φ(·) is strictly increasing, this transformation preserves the ordering of the estimator and thus maintains asymptotic validity. At the same time, by reducing skewness in the bootstrap distribution, it yields more symmetric and tighter confidence intervals, thereby improving finite-sample performance. An alternative approach to account for skewness is the bias-corrected and accelerated (BCa) bootstrap of Efron (1987). However, this method is not well suited to our setting. The BCa pro-cedure adjusts confidence intervals based on an estimate of bias and skewness inferred from the bootstrap distribution. When the estimator exhibits non-negligible asymptotic bias, as in our case, the bootstrap distribution inherits this bias and is effectively shifted relative to the true sampling distribution. As a result, the BCa correction may confound bias with skewness and mischaracterize the shape of the distribution. For example, if the asymptotic bias shifts the distribution to the right, the BCa method may interpret this shift as evidence of skewness and consequently adjust the con-fidence interval in the opposite direction, leading to an excessive leftward shift. This can distort coverage and produce misleading inference. In contrast, our transformation-based approach di-rectly addresses the asymmetry of the distribution while leaving its location unaffected, thereby providing a more reliable correction in the presence of skewness. By analogy to (7) and (8), we can also construct a parametric bootstrap confidence interval for 
+
+∆(θ0). By plugging ˆ θ∗ into the APE, we obtain 
+
+∆( ˆθ∗) = 1
+
+NT 
+
+> N
+
+# ∑
+
+> i=1
+> T
+
+# ∑
+
+> t=1
+
+μ(Xit , ˆ β∗, ˆ α∗ 
+
+> i
+
+, ˆ γ∗ 
+
+> t
+
+),which allows us to construct a bootstrap confidence interval for ∆(θ0), since the distribution of 
+
+√NT (∆( ˆθ∗) − ∆( ˆθ)) approximates that of √NT (∆( ˆθ) − ∆(θ0)) as N, T becomes large. 11 3 Asymptotic theory 
+
+In this section, we study the asymptotic properties of the parametric bootstrap in an asymptotic regime where N and T go to infinity with T/N → κ ∈ (0, ∞). For simplicity, we focus on the orig-inal bootstrap estimator. The results for the transformed bootstrap can be obtained by combining bootstrap consistency for the transformed estimator, established via the bootstrap delta method 3,with the fact that, under monotonicity, the coverage of the confidence interval for β0 is equivalent to that for φ(β0).Our proofs closely follow those of Kim and Sun (2016) and Higgins and Jochmans (2024). We first extend the asymptotic expansion for the general M-estimator established in Fern´ andez-Val and Weidner (2016) to ensure that it holds not only at the true parameter value but also uniformly in a neighborhood of the true value. Achieving this requires that the assumptions in Fern´ andez-Val and Weidner (2016) hold uniformly in a small neighbourhood of θ0. Similar uniformity as-sumptions are imposed in Higgins and Jochmans (2024) for the one-way fixed-effect model. Then we verify that nonlinear panel models with interactive fixed effects satisfy these high-level condi-tions, thereby establishing the validity of uniform expansions for the MLEs of β0 and ∆(θ0). These uniformity results, combined with the consistency of the MLE and a lemma from Andrews (2005), show the validity of the parametric bootstrap to approximate the distribution of the MLE. We treat the unobserved effects as fixed parameters. Alternatively, our analysis can be inter-preted as being conditional on the realization of the unobserved effects, as in Fern´ andez-Val and Weidner (2016) and Chen et al. (2021), provided that the assumptions are modified by condition-ing on (α0, γ0). See Remark 1 of Hahn and Kuersteiner (2011) for more discussion. Since we generate the bootstrap sample {Y∗, X} based on model (6), the covariates are kept fixed when constructing the bootstrap sample. Throughout the paper, we let Eθ and Pθ denote the expectation and probability operators under the bootstrap data-generating process. 4
+
+We make the following assumptions. They are similar to, but slightly stronger than, Assump-tion 1 in Chen et al. (2021), as some of our assumptions are required to hold uniformly over a                      
+
+> 3This requires that φbe continuously differentiable at the true parameter β0with φ′(β0)̸=0, so that the delta method and its bootstrap analogue apply; see, e.g., Chapter 23 of Van der Vaart (1998).
+> 4Strictly speaking, since the joint distribution of the covariates Xand the unobserved effects α0,γ0is unrestricted, the bootstrap data-generating process is indexed by (θ,α0,γ0). Accordingly, the corresponding expectation and proba-bility operators should be written as Eθ,α0,γ0and Pθ,α0,γ0. For notational simplicity, we suppress the dependence on α0
+> and γ0.
+
+12 neighborhood Θ0 of the true parameter value. 
+
+Assumption 1. The parameter space Θ is a compact set. Furthermore, there exists a constant ε > 0 and an open neighborhood Θ0 ⊂ Θ that contains θ0 and satisfies d (θ, θ0) < ε for every θ ∈ Θ0, where d(θ, θ0) =  β′, vec (α)′, vec (γ)′′ −  β′
+
+> 0
+
+, vec (α0)′, vec (γ0)′′ (9) 
+
+and ∥ · ∥ denotes the Euclidean norm. 
+
+The following assumption involves a mixing condition, which we use to bound the moments. Let Ait and Bit be the σ-algebras generated by {Xi1, Yi1. . . . , Xit , Yit } and {Xit , Yit , Xi,t+1, Yi,t+1, . . . },respectively, and define the α-mixing coefficients 
+
+αi(m, θ) := sup 
+
+> t
+
+sup  
+
+> A∈A it,B∈B it+m
+
+|Pθ (A ∩ B) − Pθ (A)Pθ (B)| .
+
+Assumption 2 (Mixing) . (i) Conditional on X, the data Y = {Yit }i=1..., N;t=1,..., T are generated from model (1) . (ii) For each t, the data {Xit , Yit }i=1,..., N is independent across i, and there exists a constant 
+
+μ > 0 such that, for each i, {Xit , Yit }t=1,..., T is α-mixing with mixing coefficients αi(m, θ) satisfying 
+
+sup θ∈Θ0 max i αi(m, θ) = O(m−μ) as m → ∞.
+
+We assume that the covariates are strictly exogenous. 5 The conditional independence in As-sumption 2(i) is commonly adopted in the fixed-effects panel data literature (Hahn and Newey, 2004; Bonhomme, 2012; Fern´ andez-Val and Weidner, 2016; Chen et al., 2021), as it implies that the conditional distribution of Yit does not depend on α, γ, or X beyond what is captured by the spec-ified model. 6 The mixing condition, also assumed in Fern´ andez-Val and Weidner (2016), is used to bound the moments and covariances, and to apply the WLLN and CLT. Moreover, we require the mixing coefficients to decay uniformly over θ ∈ Θ0 to uniformly bound the moments, which is necessary to establish uniform convergence of the bias term and uniform asymptotic normality. The uniform decay condition is also adopted in Higgins and Jochmans (2024).          
+
+> 5However, our approach could be extended to include lagged dependent variables affecting Yit .More general feedback mechanisms—such as cases where Yit affects Xis for s>t—are excluded. For further discussion, see Chen et al. (2021).
+> 6Recently, several papers studying average partial effects in nonlinear panel data models with individual fixed effects relax this assumption (Graham and Powell, 2012; Liu et al., 2025; Botosaru and Muris, 2025).
+
+13 Assumption 3 (Strong factors) . There exist positive definite matrices Σα and Σγ such that 1 
+
+> N
+
+∑Ni=1 αi0α′ 
+
+> i0
+
+→
+
+Σα and 1 
+
+> T
+
+∑Tt=1 γt0γ′ 
+
+> t0
+
+→ Σγ.
+
+Assumption 3, commonly referred to as the strong factors assumption, is widely used in panel interactive fixed effects models (Bai, 2009; Moon and Weidner, 2015, 2017; Chen et al., 2021; Gao et al., 2023). 7 In our setting, this assumption is required to establish a uniform convergence rate of the MLE, which is needed to apply the asymptotic expansion in Appendix C, a uniform ver-sion of the expansion in Fern´ andez-Val and Weidner (2016). A necessary step is to ensure that the matrices 1 
+
+> N
+
+∑Ni=1 αiα′ 
+
+> i
+
+and 1 
+
+> T
+
+∑Tt=1 γtγ′ 
+
+> t
+
+converge uniformly, over θ ∈ Θ0, to positive definite lim-its. Given the fact that Θ0 is an ϵ-neighborhood of θ0, the differences 1 
+
+> N
+
+∑Ni=1 αiα′ 
+
+> i
+
+− 1 
+
+> N
+
+∑Ni=1 αi0α′
+
+> i0
+
+and 1 
+
+> N
+
+∑Ni=1 γiγ′ 
+
+> i
+
+− 1 
+
+> N
+
+∑Ni=1 γi0γ′ 
+
+> i0
+
+converge to zero for every θ ∈ Θ0. Therefore, Assumption 3 is sufficient to establish the required uniform consistency result. For a formal proof, see Lemma A.1. Let Xk be the N × T matrix elements Xit ,k (i = 1, . . . , N; t = 1, . . . , T). For any matrix A, define the residual-maker matrix MA = I − A(A′ A)† A′ where † denotes the Moore-Penrose inverse and 
+
+I is the identity matrix of appropriate dimension. Let Tr (·) denote the trace of a matrix. 
+
+Assumption 4 (Generalized non-collinearity) . There exists a constant c > 0 such that, for every θ ∈ Θ0
+
+and every d x × T matrix eγ, the d x × dx matrix D (α, eγ) with elements Dk1k2 (α, eγ) = ( NT )−1 Tr  Mα′ Xk1 Meγ′ X′
+
+> k2
+
+ , k1, k2 ∈ { 1, . . . , dx },
+
+satisfies inf θ∈Θ0 λmin (D(α, eγ)) > c wpa1, where λmin (·) denotes the smallest eigenvalue. 
+
+Assumption 4 requires that the unobserved factors and factor loadings cannot fully capture the variation of any covariate, and that this condition holds not only for the true factors, but also for all α in a neighborhood of α0. It ensures that β0 is point-identified. Let Zit (θ) = X′ 
+
+> it
+
+β + α′ 
+
+> i
+
+γt and define ℓit (z) = log f(Yit |Zit (θ) = z). Let ∂zq ℓit (z) denote the q-th derivative of ℓit (z). When evaluating these functions at z = Zit (θ0), we omit the argument for simplicity. For instance, we write ∂zq ℓit instead of ∂zq ℓit (Zit (θ0)) .For z ∈ Rq and δ > 0, let B(δ, z) ⊂ Rq denote the open ball of radius δ centered at z, taken with respect to the topology induced by the Euclidean metric on Rq.
+
+> 7For discussion of weak factors, see Onatski (2012); Beyhum and Gautier (2019, 2022); Bai and Ng (2023); Choi and Yuan (2025); Jiang et al. (2025); Armstrong et al. (2026).
+
+14 Assumption 5 (Smoothness and moments) . There exists δ > 0 such that for every i , t and every θ ∈ Θ0,the following conditions hold almost surely: (i) The function ℓit (·) is four times continuously differentiable on B(δ, Zit (θ)) .(ii) The derivatives of ℓit (·) up to fourth order are uniformly bounded in absolute value on B(δ, Zit (θ)) 
+
+by a random envelope L it (Zit (θ), θ) > 0 satisfying 
+
+sup 
+
+> θ∈Θ0
+
+max  
+
+> i,t
+
+Eθ
+
+Lit (Zit (θ), θ) 8+ν < c,
+
+for some constants ν > 0 and c > 0, uniformly in N , T. (iii) The regressors X it are uniformly bounded in absolute value over i , t, N, T. 
+
+Assumption 6 (Concave loglikelihood) . The function ℓit (z) is strictly concave in z a.s. Furthermore, there exist constants b > 0, b > 0, and δ > 0 such that, for every θ ∈ Θ0,b ≤ min  
+
+> i,t
+
+{− ∂z2 ℓit (z)} ≤ max  
+
+> i,t
+
+{− ∂z2 ℓit (z)} ≤ b a.s. ,
+
+for all z ∈ B (δ, Zit (θ)) and all N , T. 
+
+In Assumption 5, the dominating function Lit (Zit , θ) may depend on θ. Unlike Fern´ andez-Val and Weidner (2016), who only require boundedness at the true value θ0, we impose the condi-tion uniformly over Θ0. The boundedness condition on Xit is also imposed in Chen et al. (2021) and Gao et al. (2023). 8 The uniform boundedness condition is necessary for establishing uniform asymptotic expansions and uniform asymptotic normality. Assumption 6 implies point identification for any θ ∈ Θ0 that might be the true value, as shown in Fern´ andez-Val and Weidner (2016). Additionally, we require that the Hessian is uni-formly bounded away from zero and infinity, which is necessary for uniform consistency and a uniform expansion of the MLE. Importantly, this assumption is satisfied for many popular non-linear models, e.g, logit and probit models. Given Assumptions 1–6, we show in Appendix B that the following expansion holds uniformly           
+
+> 8In Gao et al. (2023), it is required that Zit 0=X′
+> it β0+α′
+> i0γt0be uniformly bounded over i,twpa1.
+
+15 in θ ∈ Θ0:
+
+√NT ( ˆβ − β) = W−1 
+
+> NT
+
+(θ) UNT (θ) + BNT (θ) + rNT (θ). (10) Here, the leading term UNT (θ) has mean zero and variance WNT (θ). As N, T → ∞, and provided that the required limits exist, the term UNT (θ) determines the asymptotic variance, whereas the term BNT (θ) governs the asymptotic bias. The remainder term rNT (θ) is asymptotically negligi-ble uniformly in θ ∈ Θ0. For brevity, we omit the explicit expressions for UNT (θ), BNT (θ), and 
+
+WNT (θ), which are involved; detailed formulas are provided in Appendix B. To establish uniform asymptotic normality, we require that the first term in the above expan-sion converges in distribution to a normal distribution and that the bias term converges to a con-stant uniformly. However, these quantities depend on the realization of the unobserved effects α
+
+and γ. For instance, if the time effect γt is a nonstationary time series, the bias term BNT (θ) may not converge. Moreover, to ensure uniform asymptotic normality, the approximation error must decay uniformly for every θ ∈ Θ0. Formally, we state the following assumption: 
+
+Assumption 7. For every θ ∈ Θ0, the limits W ∞(θ) = lim N,T→∞ WNT (θ) and B ∞(θ) = lim N,T→∞ BNT (θ)
+
+exist, and W ∞(θ) is positive definite. Furthermore, the converge of W NT (θ) and B NT (θ) to their limits is uniform over Θ0.
+
+Fern´ andez-Val and Weidner (2016) assume that WNT (θ0) and BNT (θ0) converge in probability to nonrandom limits as N, T → ∞, which implies the asymptotic normality of ˆ β unconditionally w.r.t. the unobserved effects. Our assumption is stronger in that it requires the convergence to hold for any realization of unobserved effects (almost surely), and uniformly over Θ0. However, it also allows the limits to depend on θ. A similar assumption is implicitly imposed in Higgins and Jochmans (2024). Given Assumptions 1–7, we show that bootstrap consistency holds for any realization of the unobserved effects. This result provides the theoretical foundation for the parametric bootstrap. The corresponding result for one-way fixed-effect models is given in Higgins and Jochmans (2024). 
+
+Theorem 3.1 (Uniform asymptotic normality) . Suppose Assumptions 1–7 hold. Then, for every a ∈
+
+Rdx ,
+
+sup 
+
+> θ∈Θ0
+
+|Pθ (√NT ( ˆβ − β) ≤ a) − Gθ (a)| → 0, 16 where G θ is the distribution function corresponding to N  B∞(θ), W∞(θ)−1.
+
+The next result establishes that the parametric bootstrap approximates the distribution of the MLE, ensuring the asymptotic validity of confidence intervals constructed using the quantiles of the bootstrap distribution. 
+
+Theorem 3.2 (Bootstrap consistency for the MLE) . Suppose Assumptions 1–7 hold. Then 
+
+Pθ0
+
+"
+
+sup 
+
+> a∈Rdx
+
+P ˆθ (√NT ( ˆβ∗ − ˆβ) ≤ a) − Pθ0 (√NT ( ˆβ − β0) ≤ a) > ϵ
+
+#
+
+→ 0
+
+for all ϵ > 0.
+
+The following corollary establishes the asymptotic validity of the transformed bootstrap confi-dence interval. It follows from the bootstrap delta method (Van der Vaart, 1998) that the bootstrap consistency result extends to smooth transformations of the estimator. A more general result can be found in the proof of Theorem 2 in Higgins and Jochmans (2025). 
+
+Corollary 1 (Bootstrap consistency for transformed MLE) . Suppose Assumptions 1–7 hold. Let c ∈
+
+Rdx be a fixed vector and define ϕ = φ(c′ β), where φ : R → R is continuously differentiable at c ′ β0 with 
+
+φ′(c′ β0)̸ = 0. Then 
+
+Pθ0
+
+"
+
+sup 
+
+> a∈R
+
+P ˆθ
+
+ √NT (φ(c′ ˆβ∗) − φ(c′ ˆβ)) ≤ a − Pθ0
+
+ √NT (φ(c′ ˆβ) − φ(c′ β0)) ≤ a > ϵ
+
+#
+
+→ 0
+
+for all ϵ > 0.
+
+In our simulations, we further restrict φ(·) to be strictly increasing and continuously differen-tiable. We make the following assumptions to establish the validity of the parametric bootstrap for the APEs defined in (4). 
+
+Assumption 8. The unobserved effects enter through a factor structure: 
+
+μit (β, αi, γt) = μ fit (β, πit ), πit = α′ 
+
+> i
+
+γt,
+
+for some function μ fit .
+
+17 Assumption 9. There exists δ > 0 such that for every i , t, N, T and every θ ∈ Θ0, (i) μ fit (·, ·) is four times continuously differentiable over B(δ; β, πit ) a.s.; (ii) the partial derivatives of μ fit (·, ·), up to the fourth order, are uniformly bounded in absolute value over B(δ; β, πit ).
+
+Given Assumptions 1–9, the following uniform asymptotic expansion holds for APEs: 9
+
+√NT  ∆( ˆθ) − ∆(θ) = U∆ 
+
+> NT
+
+(θ) + B∆ 
+
+> NT
+
+(θ) + r∆ 
+
+> NT
+
+(θ).Assuming that limits exist, as N, T → ∞, the leading term U∆ 
+
+> NT
+
+(θ) contributes to the asymptotic variance, the second term B∆ 
+
+> NT
+
+(θ) captures the asymptotic bias, and the remainder term r∆ 
+
+> NT
+
+(θ) is asymptotically negligible uniformly over Θ0.To establish uniform asymptotic normality of the MLE of APEs and bootstrap consistency, we also require a uniform convergence condition. Let the conditional variance of the leading term be denoted by W∆ 
+
+> NT
+
+(θ).
+
+Assumption 10. For every θ ∈ Θ0, the limits W ∆
+
+> ∞
+
+(θ) = lim N,T→∞ W∆ 
+
+> NT
+
+(θ) and B ∆
+
+> ∞
+
+(θ) = lim N,T→∞ B∆ 
+
+> NT
+
+(θ)
+
+exist, and W ∆
+
+> ∞
+
+(θ) > 0. Furthermore, the convergence of W ∆ 
+
+> NT
+
+(θ) and B ∆ 
+
+> NT
+
+(θ) to their limits is uniform over Θ0.
+
+We can now show bootstrap consistency for APEs. 
+
+Theorem 3.3 (Uniform asymptotic normality for APEs) . Suppose Assumptions 1–10 hold. Then, for every a ∈ R,
+
+sup 
+
+> θ∈Θ0
+
+|Pθ (√NT (∆( ˆθ) − ∆(θ)) ≤ a) − G∆θ (a)| → 0, 
+
+where G ∆θ is the distribution function corresponding to N (B∆
+
+> ∞
+
+(θ), W∆
+
+> ∞
+
+(θ)−1).
+
+Theorem 3.4 (Bootstrap consistency for APEs) . Suppose Assumptions 1–10 hold. Then 
+
+Pθ0
+
+"
+
+sup 
+
+> a∈R
+
+P ˆθ (√NT (∆( ˆθ∗) − ∆( ˆθ)) ≤ a) − Pθ0 (√NT (∆( ˆθ) − ∆(θ0)) ≤ a) > ϵ
+
+#
+
+→ 0
+
+for all ϵ > 0.
+
+> 9See Theorem B.2 for expressions of the terms in the expansion.
+
+18 We focus on APEs of the form (4), which means that we consider the average partial effect evaluated at the realization of the unobserved effects, rather than averaged over the marginal distributions of the unobserved effects (i.e., the unconditional APEs). There are two reasons for this choice. First, studying the properties of unconditional APEs requires additional assumptions on the distributions of {αi}i=1,..., N and {γt}t=1,..., T, for example, that {αi} are i.i.d. across i and 
+
+{γt} form a stationary time series. Second, as discussed in Fern´ andez-Val and Weidner (2016), although the plug-in estimator ˆ ∆ is still consistent for the unconditional APEs, its convergence rate is slower than √NT .To see this, let E(∆) denote the unconditional APE, where the expectation is taken over the marginal distributions of the unobserved effects. The difference between the plug-in estimator and the unconditional APE can be decomposed as 
+
+∆( ˆθ) − E(∆) = ∆( ˆθ) − ∆(θ)
+
+| {z }
+
+> parameter estimation error
+
++ ∆(θ) − E(∆)
+
+| {z }
+
+> sample mean error
+
+, (11) where the first term arises from parameter estimation error and the second term reflects the dif-ference between the sample mean and the population mean. As discussed in Fern´ andez-Val and Weidner (2016), under mild weak-dependence assump-tions on {αi}i=1,..., N and {γt}t=1,..., T, the variance of the second term dominates that of the first term. Hence, in this case, there is no asymptotic bias, but the convergence rate becomes slower than √NT .10 Our bootstrap procedure focuses on addressing the asymptotic bias in the first term, although the resulting bias-corrected estimator may still provide improved finite-sample perfor-mance for the estimation of unconditional APEs. For further details, see Remark 4 in Fern´ andez-Val and Weidner (2016). 
+
+# 4 Implementation 
+
+Since the loglikelihood function in (3) is not strictly concave due to the presence of interactive fixed effects, it may be difficult to compute the MLE, i.e., the global maximizer of the loglikelihood.                
+
+> 10 Fern´ andez-Val and Weidner (2016) show that if {αi}i=1,..., Nand {γt}t=1,..., Tare both independent sequences and
+> αiand γtare independent for all i,t, then the convergence rate of the second term in (11) is pNT /(N+T−1), see Remark 4 in Fern´ andez-Val and Weidner (2016) for further details.
+
+19 Chen et al. (2021) suggest using multiple initial values to increase the probability of reaching the global maximizer. However, this strategy does not guarantee that the global maximizer is reached, and it may substantially increase the computational burden, particularly when combined with bootstrapping. To address the computational challenge, Zeleneev and Zhang (2026) extend the nuclear-norm penalized estimator proposed by Moon and Weidner (2026) to nonlinear factor models. Their approach replaces the non-convex rank constraint arising from the interactive fixed effects with a nuclear-norm penalty, thereby relaxing the original optimization problem to a strictly convex, computationally tractable problem. Zeleneev and Zhang (2026) establish the consistency of the resulting penalized estimator and further show that using this estimator as the initial value in a gradient descent algorithm leads to convergence to the global maximizer of the loglikelihood, making it asymptotically equivalent to the MLE. Given the computational efficiency and asymptotic equivalence of the two-step estimator pro-posed by Zeleneev and Zhang (2026), we adopt this estimator as a computationally convenient proxy for the MLE in the subsequent analysis. Formally, we first solve the following nuclear-norm penalized optimization problem: 
+
+( ˆβnuc , ˆ Σnuc ) = arg max 
+
+> (β,Σ)∈B× RN×T
+
+ 1
+
+NT L(β, Σ) + φ
+
+√NT ∥Σ∥nuc 
+
+
+
+, (12) where L(β, Σ) = ∑Ni=1 ∑Tt=1log f  Yit | X′ 
+
+> it
+
+β + Σit 
+
+ is the loglikelihood function without low-rank constraint on Σ, Σ is an N × T matrix collecting the unobserved effects for each (i, t), ∥·∥ nuc is the nuclear norm, and φ is a tuning parameter. Section 4.3 of Zeleneev and Zhang (2026) proposes a data-dependent procedure for selecting the tuning parameter φ. Specifically, they first compute a two-way fixed-effect estimator, obtaining ˜β and the scalar effects ˜ α1, . . . , ˜ αN , and ˜ γ1, . . . , ˜ γT, and form an initial guess ˜φ = 1.05 ∂ΣL  ˜β, ˜ Σ 
+
+> op
+
+, (13) where ˜ Σit = eαi + eγt and ∂ΣL(β, Σ) ∈ RN×T is the matrix of partial derivatives of the objective function with respect to Σ, and ∥ · ∥ op denotes the operator norm (i.e., the largest singular value). 20 Solving (12) with φ = ˜φ yields ˜ βnuc and an initial estimate ˜ Σinit nuc . The singular value decom-position of ˜ Σinit nuc is then computed, and the first d f left and right singular vectors are retained to construct initial estimated factor loadings ˜ αinit nuc ∈ Rd f ×N and factors ˜ γinit nuc ∈ Rd f ×T. The tuning parameter is subsequently updated as ˆφ = 1.05 ∂ΣL  ˜βnuc , ˜ Σnuc 
+
+ 
+
+> op
+
+, (14) where the entries of ˜ Σnuc are given by ( ˜Σnuc )it = ( ˜αinit nuc, i)′( ˜γinit nuc, t).In an unreported simulation, we found that the choice in (13) tends to induce excessive shrink-age in the singular values of the initial estimate ˜ Σinit nuc . To mitigate this issue, we instead scale down the initial choice and set ˜φ = 0.5 ∂ΣL  ˜β, ˜ Σ
+
+> op
+
+as the initial tuning parameter. We then update the tuning parameter as in Zeleneev and Zhang (2026), that is, using (14), thereby maintaining consistency with their theoretical framework. The final choice of the tuning parameter is then ϕ = ˆφ, to be used in (12) to obtain the nuclear-norm penalized estimator ( ˆβnuc , ˆ Σnuc ). Additional computational details can be found in Sections 4.1 and 4.3 of Zeleneev and Zhang (2026). Next, we apply a gradient descent algorithm initialized at the nuclear-norm penalized estima-tor. Specifically, we first recover the factor structure by computing the singular value decompo-sition of ˆ Σnuc , which yields the estimators ˆ αnuc and ˆ γnuc . The gradient descent iterations are then carried out starting from ( ˆβnuc , ˆ αnuc , ˆ γnuc ). The iterative updates are given by 
+
+β(k+1) = β(k) − Sβ ∂βL(β(k), α(k), γ(k)),
+
+α(k+1) = α(k) − Sα ∂αL(β(k), α(k), γ(k)), (15) 
+
+γ(k+1) = γ(k) − Sγ ∂γL(β(k), α(k), γ(k)),where Sβ, Sα, and Sγ denote the step sizes for the corresponding parameter blocks; see Zeleneev and Zhang (2026) for details about the step sizes. We repeat this algorithm until convergence of all three parameters. Since the resulting two-step estimator is asymptotically equivalent to the MLE, 21 we denote it simply by ˆ θ.11 
+
+In our theoretical and simulation results, we treat the number of factors, d f , as known and fixed. In applications, however, the number of factors can be estimated using the eigenvalue-ratio test (Ahn and Horenstein, 2013); see also Chen et al. (2021), Gao et al. (2023), and Zeleneev and Zhang (2026). The following algorithm summarizes our bootstrap inference procedure for β0.
+
+Algorithm 1 Bootstrap inference for β0 
+
+> 1:
+
+Compute the two-step MLE ˆ θ based on the original sample.  
+
+> 2:
+
+Substitute the estimated ˆ θ into model (3) to generate B parametric bootstrap samples.  
+
+> 3:
+
+for b = 1, . . . , B do  
+
+> 4:
+
+Compute the two-step MLE ˆ θ(b) based on the b-th parametric bootstrap sample.  
+
+> 5:
+
+end for  
+
+> 6:
+
+Compute the bias-corrected estimator ˆβBC-Mean = 2 ˆ β − mean { ˆβ(1), . . . , ˆ β(B)}, ˆβBC-Median = 2 ˆ β − median { ˆβ(1), . . . , ˆ β(B)}. 
+
+> 7:
+
+(Standard bootstrap CI) For a scalar β0, given a confidence level 1 − α, compute Q∗ 
+
+> ˆβ∗
+
+(α/2 ) and 
+
+Q∗ 
+
+> ˆβ∗
+
+(1 − α/2 ), the quantiles of { ˆβ(1), . . . , ˆ β(B)}. The confidence interval is 
+
+[2 ˆ β − Q∗ 
+
+> ˆβ∗
+
+(1 − α/2 ), 2 ˆ β − Q∗ 
+
+> ˆβ∗
+
+(α/2 )] . 
+
+> 8:
+
+(Transformed bootstrap CI) Let φ(·) be a strictly increasing and continuously differentiable transformation. Compute the transformed bootstrap estimates {φ( ˆβ(1)), . . . , φ( ˆβ(B))} and the corresponding empirical quantile function Q∗  
+
+> φ(ˆβ∗)
+
+. The transformed bootstrap confidence in-terval is h
+
+φ−1
+
+2φ( ˆβ) − Q∗  
+
+> φ(ˆβ∗)
+
+(1 − α/2 )
+
+
+
+, φ−1
+
+2φ( ˆβ) − Q∗  
+
+> φ(ˆβ∗)
+
+(α/2 )
+
+i 
+
+.   
+
+> 11 Theoretical guarantees for the convergence of this algorithm are provided in Theorem 5 of Zeleneev and Zhang (2026). We compute ˆ θusing the R package NNRPanel developed by Zeleneev and Zhang (2026). For more details, see
+> https://github.com/wszhang-econ/NNRPanel .
+
+22 5 Simulations 
+
+Following Chen et al. (2021), the two bias-corrected methods can also be applied to the two-step MLE estimator in Zeleneev and Zhang (2026). One is a plug-in analytical correction based on the explicit form of the first-order bias, and another one is known as the split-panel jackknife method based on the idea of Dhaene and Jochmans (2015). We compare the finite-sample performance of our bootstrap bias correction with the two methods. We focus on the following static model with interactive fixed effects: 
+
+Dit = 1X′ 
+
+> it
+
+β0 + α′
+
+> i0
+
+γt0 − εit > 0 , i = 1, . . . , N, t = 1, . . . , T, (16) where 1{·} is an indicator function and εit follows a standard logistic distribution or a standard normal distribution, corresponding to the logit and the probit model. We let N = 30, and consider 
+
+T ∈ { 20, 30, 40 }. There is only K = 1 covariate, and the number of factors d f = 2, and the true coefficient is β0 = 0.5. For all estimators, we fix d f = 2. The following scenarios are included: 
+
+Scenario 1 (Covariates independent of factors): For each i and t, draw factor loadings and fac-tors αi, γt ∼ N (0, Id f ) and independent regressor factors α(x) 
+
+> i
+
+, γ(x) 
+
+> t
+
+∼ N (0, Id f ) where Id f is the identity matrix of dimension d f , and generate covariates as Xitk = α(x)′ 
+
+> i
+
+γ(x) 
+
+> t
+
++ νitk with νitk ∼N (0, 1 ).
+
+Scenario 2 (Covariates correlated with factors): For each i and t, draw factor loadings and fac-tors αi, γt ∼ N (0, Id f ), and generate covariates as Xitk = 0.3 × α′ 
+
+> i
+
+γt + νitk with νitk ∼ N (0, 1 ).
+
+Scenario 3 (Outliers in factor loadings): For each i and t, draw factor loadings and factors 
+
+αi, γt ∼ N (0, Id f ), fix a random 10% of αi = 3 as outliers, draw independent regressor factors 
+
+α(x) 
+
+> i
+
+, γ(x) 
+
+> t
+
+∼ N (0, Id f ), and generate covariates as Xitk = α(x)′ 
+
+> i
+
+γ(x) 
+
+> t
+
++ νitk with νitk ∼ N (0, 1 ).
+
+Scenario 4 (Sparse spikes in factors): For each i and t, draw factor loadings and factors αi, γt ∼N (0, Id f ), multiply a random 5% of γt by 10 to create sparse spikes, draw independent regressor factors α(x) 
+
+> i
+
+, γ(x) 
+
+> t
+
+∼ N (0, Id f ), and generate covariates as Xitk = α(x)′ 
+
+> i
+
+γ(x) 
+
+> t
+
++ νitk with νitk ∼ N (0, 1 ).23 We repeat the simulation 1000 times and use 399 bootstrap samples in each for the bootstrap method. Tables 1 and 2 report the relative bias (defined as the bias divided by the true param-eter value), standard deviation, 95% coverage rate, and the rejection probabilities under the null hypotheses: H0 : β0 = 0.7 for all scenarios. The simulation results are for the logit and probit models, respectively. We compare the uncorrected maximum likelihood estimator, the split panel jackknife, the analytical bias correction, and the bootstrap method, where Boot-Mean uses the mean of bootstrap estimates as the corrected term, while Boot-Median uses the median. In most scenarios, the bootstrap-based methods deliver the most effective bias correction, ex-hibiting uniformly smaller biases than competing approaches. In Scenario 2 of both the logit and probit models, only the bootstrap methods achieve coverage probabilities close to the nominal 95% level, whereas both the split-panel jackknife and the analytical bias correction perform less well in terms of bias reduction and coverage accuracy. As the sample size increases, the gap between the analytical bias correction and the bootstrap methods gradually narrows. The split-panel jackknife also improves with sample size but continues to require relatively large samples to achieve comparable bias reduction. Overall, the results suggest that bootstrap-based bias correc-tion is particularly well suited to relatively small panel data settings, while remaining competitive with analytical bias correction in large samples. Moreover, the bootstrap approach performs well across a range of scenarios, especially when covariates are correlated with factors and loadings. As discussed above, we find that the bootstrap confidence intervals tend to be overly conser-vative in finite samples, leading to coverage rates exceeding the nominal confidence levels. This pattern is particularly pronounced when the time dimension is small (e.g., T = 20), as illustrated in Tables 1–2. In both models, the coverage rates of the parametric bootstrap confidence intervals are uniformly above 95% across all scenarios, often substantially so, providing clear evidence of systematic over-coverage. To address this issue, we consider three monotone transformations to reduce skewness in the bootstrap distribution: the log transformation, the Box–Cox transformation (Box and Cox, 1964), and the Yeo–Johnson transformation (Yeo and Johnson, 2000). The log transformation provides a simple adjustment for strictly positive parameters and is particularly effective in mitigating right skewness by compressing the upper tail of the distribution. The Box–Cox transformation intro-duces a tuning parameter that controls the strength and direction of the transformation; in our 24 implementation, we select this parameter in a data-driven manner by minimizing the skewness of the transformed bootstrap estimates. 12 The Yeo–Johnson transformation extends this approach to accommodate both positive and negative values, while retaining similar flexibility in adjusting skewness. The results in Tables 3–4 show that, relative to the parametric bootstrap, the transformation-based parametric bootstrap substantially reduces the confidence interval length while bringing the coverage rate closer to the nominal level, particularly in Scenarios 1, 3, and 4, reflecting more efficient inference. This improvement is driven by their ability to mitigate skewness, resulting in more balanced lower and upper miss rates. An exception is Scenario 2, where all methods perform relatively poorly. This is mainly due to the limited effectiveness of the bootstrap-based bias correction, which leads to a discrepancy be-tween the bootstrap and true finite-sample distributions of the estimator. As a result, the bootstrap fails to accurately approximate the sampling distribution, reducing the effectiveness of the skew-ness correction and leading to distortions in coverage. By contrast, the untransformed parametric bootstrap, which is typically conservative, exhibits relatively better coverage in this case. The log transformation often yields the shortest intervals, as it compresses right-skewed dis-tributions. Since the MLE is predominantly right-skewed in our simulations, this effect is particu-larly pronounced. However, its one-sided nature makes it less robust in more complex settings. By contrast, the Yeo-Johnson transformation provides the most reliable overall performance, offering a favorable balance between coverage accuracy and interval length, especially in more asymmetric scenarios. Overall, these results demonstrate that appropriate monotone transformations can substan-tially improve the finite-sample performance of bootstrap confidence intervals by reducing con-servativeness and yielding tighter, more informative inference.                          
+
+> 12 Specifically, we set λequal to ˆλ=arg min
+> λ∈[−2,2 ]
+> 1
+> B∑Bb=1
+> 
+> φλ(ˆβ∗(b))−¯φλ
+> 3
+> 
+> 1
+> B∑Bb=1
+> 
+> φλ(ˆβ∗(b))−¯φλ
+> 23/2 ,where ˆ β∗(b),b=1, . . . , B, are the bootstrap estimates, φλ(·)is the Box–Cox transformation, and ¯ φλ=1
+> B∑Bb=1φλ(ˆβ∗(b)).
+
+25 Table 1: Simulation results for the logit model, N = 30 
+
+Scenario 1: covariates independent of factors Scenario 2: covariates correlated with factors T Method Bias SD Coverage Rejection T Method Bias SD Coverage Rejection 20 MLE 0.326 0.122 0.615 0.148 20 MLE 0.668 0.189 0.371 0.208 SplitPJ −0.467 0.193 0.414 0.895 SplitPJ −0.522 0.339 0.494 0.732 Analytical 0.155 0.103 0.892 0.308 Analytical 0.499 0.168 0.589 0.094 Boot-Mean −0.081 0.083 0.985 0.483 Boot-Mean 0.171 0.141 0.995 0.056 Boot-Median −0.061 0.085 0.985 0.483 Boot-Median 0.193 0.143 0.995 0.056 30 MLE 0.218 0.085 0.675 0.309 30 MLE 0.481 0.135 0.421 0.132 SplitPJ −0.228 0.121 0.595 0.921 SplitPJ −0.264 0.214 0.575 0.724 Analytical 0.095 0.074 0.916 0.590 Analytical 0.361 0.123 0.595 0.099 Boot-Mean −0.040 0.066 0.979 0.756 Boot-Mean 0.177 0.111 0.966 0.136 Boot-Median −0.031 0.066 0.979 0.756 Boot-Median 0.186 0.111 0.966 0.136 40 MLE 0.177 0.066 0.679 0.472 40 MLE 0.355 0.107 0.486 0.114 SplitPJ −0.150 0.087 0.668 0.952 SplitPJ −0.229 0.164 0.594 0.822 Analytical 0.071 0.058 0.936 0.765 Analytical 0.259 0.100 0.670 0.164 Boot-Mean −0.024 0.053 0.977 0.882 Boot-Mean 0.128 0.092 0.952 0.265 Boot-Median −0.019 0.054 0.977 0.882 Boot-Median 0.134 0.092 0.952 0.265 
+
+Scenario 3: outliers in factor loadings Scenario 4: sparse spikes in factors T Method Bias SD Coverage Rejection T Method Bias SD Coverage Rejection 20 MLE 0.314 0.119 0.661 0.129 20 MLE 0.315 0.122 0.636 0.160 SplitPJ −0.458 0.197 0.432 0.881 SplitPJ −0.447 0.192 0.423 0.895 Analytical 0.141 0.100 0.921 0.289 Analytical 0.145 0.102 0.907 0.307 Boot-Mean −0.097 0.080 0.979 0.473 Boot-Mean −0.086 0.082 0.988 0.486 Boot-Median −0.077 0.081 0.979 0.473 Boot-Median −0.066 0.083 0.988 0.486 30 MLE 0.213 0.085 0.701 0.305 30 MLE 0.215 0.085 0.697 0.303 SplitPJ −0.242 0.116 0.567 0.921 SplitPJ −0.241 0.117 0.559 0.932 Analytical 0.085 0.074 0.926 0.576 Analytical 0.090 0.075 0.922 0.579 Boot-Mean −0.049 0.065 0.981 0.745 Boot-Mean −0.042 0.066 0.981 0.749 Boot-Median −0.040 0.066 0.981 0.745 Boot-Median −0.033 0.066 0.981 0.749 40 MLE 0.174 0.068 0.711 0.460 40 MLE 0.166 0.069 0.730 0.512 SplitPJ −0.152 0.083 0.696 0.965 SplitPJ −0.162 0.087 0.644 0.964 Analytical 0.063 0.060 0.929 0.788 Analytical 0.058 0.061 0.937 0.798 Boot-Mean −0.033 0.054 0.974 0.892 Boot-Mean −0.034 0.055 0.979 0.889 Boot-Median −0.027 0.055 0.974 0.892 Boot-Median −0.028 0.056 0.979 0.889 
+
+Notes: model given in (16) with one covariate and β0 = 0.5; 1000 Monte Carlo replications; 399 bootstrap replica-tions; coverage rates of nominal 95% confidence intervals; rejection probabilities of H0 : β0 = 0.7 at nominal 5% level. 
+
+26 Table 2: Simulation results for the probit model, N = 30 
+
+Scenario 1: covariates independent of factors Scenario 2: covariates correlated with factors T Method Bias SD Coverage Rejection T Method Bias SD Coverage Rejection 20 MLE 0.374 0.108 0.409 0.139 20 MLE 0.472 0.144 0.457 0.129 SplitPJ −0.617 0.242 0.249 0.959 SplitPJ −0.651 0.259 0.341 0.911 Analytical 0.152 0.082 0.911 0.384 Analytical 0.283 0.124 0.744 0.130 Boot-Mean −0.184 0.058 0.981 0.719 Boot-Mean −0.047 0.090 0.995 0.308 Boot-Median −0.148 0.058 0.981 0.719 Boot-Median −0.016 0.093 0.995 0.308 30 MLE 0.264 0.070 0.418 0.294 30 MLE 0.315 0.092 0.501 0.144 SplitPJ −0.264 0.100 0.436 0.989 SplitPJ −0.299 0.132 0.515 0.926 Analytical 0.100 0.057 0.902 0.704 Analytical 0.173 0.082 0.818 0.347 Boot-Mean −0.078 0.045 0.982 0.909 Boot-Mean 0.003 0.069 0.995 0.553 Boot-Median −0.064 0.046 0.982 0.909 Boot-Median 0.015 0.070 0.995 0.553 40 MLE 0.207 0.053 0.439 0.549 40 MLE 0.253 0.074 0.503 0.258 SplitPJ −0.169 0.071 0.553 0.998 SplitPJ −0.194 0.094 0.614 0.961 Analytical 0.069 0.045 0.927 0.910 Analytical 0.128 0.066 0.850 0.559 Boot-Mean −0.053 0.039 0.979 0.984 Boot-Mean 0.013 0.059 0.992 0.763 Boot-Median −0.046 0.039 0.979 0.984 Boot-Median 0.020 0.060 0.992 0.763 
+
+Scenario 3: outliers in factor loadings Scenario 4: sparse spikes in factors T Method Bias SD Coverage Rejection T Method Bias SD Coverage Rejection 20 MLE 0.381 0.109 0.439 0.110 20 MLE 0.354 0.103 0.479 0.124 SplitPJ −0.643 0.259 0.255 0.961 SplitPJ −0.598 0.220 0.276 0.966 Analytical 0.149 0.085 0.917 0.376 Analytical 0.134 0.081 0.938 0.419 Boot-Mean −0.207 0.061 0.984 0.698 Boot-Mean −0.197 0.057 0.983 0.735 Boot-Median −0.165 0.060 0.984 0.698 Boot-Median −0.159 0.057 0.983 0.735 30 MLE 0.266 0.075 0.458 0.276 30 MLE 0.249 0.072 0.465 0.323 SplitPJ −0.272 0.103 0.446 0.981 SplitPJ −0.269 0.101 0.440 0.985 Analytical 0.098 0.061 0.912 0.679 Analytical 0.087 0.058 0.929 0.726 Boot-Mean −0.089 0.048 0.980 0.889 Boot-Mean −0.088 0.047 0.967 0.903 Boot-Median −0.074 0.048 0.980 0.889 Boot-Median −0.074 0.048 0.967 0.903 40 MLE 0.215 0.057 0.431 0.480 40 MLE 0.213 0.057 0.445 0.499 SplitPJ −0.171 0.075 0.555 0.994 SplitPJ −0.158 0.067 0.611 0.997 Analytical 0.069 0.047 0.943 0.889 Analytical 0.070 0.048 0.930 0.891 Boot-Mean −0.058 0.040 0.975 0.978 Boot-Mean −0.053 0.041 0.981 0.971 Boot-Median −0.049 0.040 0.975 0.978 Boot-Median −0.045 0.041 0.981 0.971 
+
+Notes: model given in (16) with one covariate and β0 = 0.5; 1000 Monte Carlo replications; 399 bootstrap replica-tions; coverage rates of nominal 95% confidence intervals; rejection probabilities of H0 : β0 = 0.7 at nominal 5% level. 
+
+27 Table 3: Comparison of confidence intervals, logit model, N = 30 
+
+Scenario 1: covariates independent of factors Scenario 2: covariates correlated with factors T Method Coverage Length LMR UMR T Method Coverage Length LMR UMR 20 Boot 0.985 0.558 0.000 0.015 20 Boot 0.995 0.783 0.002 0.003 Log 0.941 0.342 0.048 0.011 Log 0.636 0.508 0.364 0.000 Box-Cox 0.933 0.369 0.054 0.013 Box-Cox 0.796 0.578 0.204 0.000 Yeo-Johnson 0.960 0.384 0.027 0.013 Yeo-Johnson 0.826 0.594 0.172 0.002 30 Boot 0.979 0.366 0.000 0.021 30 Boot 0.966 0.523 0.034 0.000 Log 0.929 0.257 0.054 0.017 Log 0.627 0.384 0.373 0.000 Box-Cox 0.934 0.281 0.045 0.021 Box-Cox 0.783 0.439 0.217 0.000 Yeo-Johnson 0.945 0.287 0.034 0.021 Yeo-Johnson 0.801 0.444 0.199 0.000 40 Boot 0.977 0.288 0.000 0.023 40 Boot 0.952 0.412 0.045 0.003 Log 0.952 0.215 0.031 0.017 Log 0.692 0.319 0.308 0.000 Box-Cox 0.949 0.235 0.031 0.020 Box-Cox 0.835 0.364 0.163 0.002 Yeo-Johnson 0.952 0.238 0.028 0.020 Yeo-Johnson 0.843 0.366 0.155 0.002 
+
+Scenario 3: outliers in factor loadings Scenario 4: sparse spikes in factors T Method Coverage Length LMR UMR T Method Coverage Length LMR UMR 20 Boot 0.979 0.578 0.000 0.021 20 Boot 0.988 0.566 0.000 0.012 Log 0.957 0.354 0.032 0.011 Log 0.950 0.349 0.043 0.007 Box-Cox 0.942 0.382 0.042 0.016 Box-Cox 0.950 0.375 0.038 0.012 Yeo-Johnson 0.956 0.399 0.028 0.016 Yeo-Johnson 0.967 0.391 0.021 0.012 30 Boot 0.981 0.378 0.000 0.019 30 Boot 0.981 0.369 0.000 0.019 Log 0.942 0.264 0.043 0.015 Log 0.938 0.260 0.049 0.013 Box-Cox 0.953 0.289 0.030 0.017 Box-Cox 0.943 0.283 0.039 0.018 Yeo-Johnson 0.959 0.296 0.023 0.018 Yeo-Johnson 0.948 0.289 0.033 0.019 40 Boot 0.974 0.297 0.000 0.026 40 Boot 0.979 0.292 0.001 0.020 Log 0.938 0.220 0.038 0.024 Log 0.945 0.218 0.040 0.015 Box-Cox 0.952 0.240 0.023 0.025 Box-Cox 0.957 0.238 0.025 0.018 Yeo-Johnson 0.955 0.243 0.020 0.025 Yeo-Johnson 0.960 0.241 0.021 0.019 
+
+Notes: model given in (16) with one covariate and β0 = 0.5; 1000 Monte Carlo replications; 399 bootstrap repli-cations; coverage rates of nominal 95% confidence intervals; Boot: parametric bootstrap; Log/Box-Cox/Yeo-Johnson: transformed parametric bootstrap; LMR: lower miss rate; UMR upper miss rate. 
+
+28 Table 4: Comparison of confidence intervals, probit model, N = 30 
+
+Scenario 1: covariates independent of factors Scenario 2: covariates correlated with factors T Method Coverage Length LMR UMR T Method Coverage Length LMR UMR 20 Boot 0.981 0.567 0.000 0.019 20 Boot 0.995 0.704 0.004 0.001 Log 0.929 0.349 0.060 0.011 Log 0.757 0.463 0.243 0.000 Box-Cox 0.904 0.375 0.080 0.016 Box-Cox 0.858 0.518 0.142 0.000 Yeo-Johnson 0.934 0.392 0.052 0.014 Yeo-Johnson 0.887 0.533 0.110 0.003 30 Boot 0.982 0.377 0.000 0.018 30 Boot 0.995 0.464 0.005 0.000 Log 0.930 0.261 0.057 0.013 Log 0.828 0.333 0.172 0.000 Box-Cox 0.912 0.283 0.071 0.017 Box-Cox 0.899 0.373 0.101 0.000 Yeo-Johnson 0.935 0.293 0.050 0.015 Yeo-Johnson 0.915 0.381 0.084 0.001 40 Boot 0.979 0.297 0.000 0.021 40 Boot 0.992 0.365 0.008 0.000 Log 0.934 0.217 0.047 0.019 Log 0.857 0.279 0.143 0.000 Box-Cox 0.920 0.234 0.060 0.020 Box-Cox 0.913 0.311 0.087 0.000 Yeo-Johnson 0.937 0.242 0.043 0.020 Yeo-Johnson 0.926 0.317 0.073 0.001 
+
+Scenario 3: outliers in factor loadings Scenario 4: sparse spikes in factors T Method Coverage Length LMR UMR T Method Coverage Length LMR UMR 20 Boot 0.984 0.573 0.000 0.016 20 Boot 0.983 0.548 0.000 0.017 Log 0.942 0.355 0.047 0.011 Log 0.944 0.338 0.044 0.012 Box-Cox 0.919 0.382 0.067 0.014 Box-Cox 0.918 0.364 0.070 0.012 Yeo-Johnson 0.944 0.397 0.040 0.016 Yeo-Johnson 0.944 0.378 0.043 0.013 30 Boot 0.980 0.378 0.000 0.020 30 Boot 0.967 0.357 0.001 0.032 Log 0.933 0.265 0.053 0.014 Log 0.934 0.252 0.051 0.015 Box-Cox 0.915 0.289 0.068 0.017 Box-Cox 0.916 0.273 0.066 0.018 Yeo-Johnson 0.937 0.296 0.046 0.017 Yeo-Johnson 0.936 0.279 0.045 0.019 40 Boot 0.975 0.297 0.000 0.025 40 Boot 0.981 0.292 0.000 0.019 Log 0.929 0.220 0.048 0.023 Log 0.932 0.218 0.050 0.018 Box-Cox 0.913 0.240 0.061 0.026 Box-Cox 0.918 0.238 0.058 0.024 Yeo-Johnson 0.932 0.243 0.043 0.025 Yeo-Johnson 0.936 0.241 0.040 0.024 
+
+Notes: model given in (16) with one covariate and β0 = 0.5; 1000 Monte Carlo replications; 399 bootstrap repli-cations; coverage rates of nominal 95% confidence intervals; Boot: parametric bootstrap; Log/Box-Cox/Yeo-Johnson: transformed parametric bootstrap; LMR: lower miss rate; UMR upper miss rate. 
+
+29 6 Empirical application: technology spillovers in the presence of latent heterogeneity 
+
+In this section, we revisit the dataset originally from Bloom et al. (2013) and studied by Burda and Harding (2013), who use a Bayesian panel probit model to estimate a patent equation us-ing firm-level data on research and development ( R&D). 13 Their study explores a long-standing question in the R&D literature concerning the relationship between innovation, proxied by firms’ patenting activity, and spillover effects arising from strategic interactions across firms. These inter-actions arise in two main spaces: technology space, defined by the similarity of firms’ underlying technologies and associated with beneficial knowledge spillovers, and product market space, de-fined by the degree of competition in overlapping product markets and associated with business-stealing effects. Furthermore, as emphasized by Burda and Harding (2013), the innovation and patenting behavior are also likely to be affected by unobserved heterogeneity at the firm and time level. In Burda and Harding (2013), they report results from different models considering unob-served heterogeneity, such as the Bayesian panel probit model with two latent effects, the fixed probit model with time dummies, and the random effects probit model with time dummies. How-ever, they do not consider an interactive fixed effect structure in the models. Hence, we employ our estimator to this empirical application. The original dataset consists of an unbalanced panel of 729 U.S. firms observed over the pe-riod 1981 − 2001. To construct a balanced panel, we restrict attention to firms with complete observations throughout the sample period. In addition, firms that do not register any patents over the entire time span are excluded. The resulting sample comprises 328 firms observed an-nually from 1981 to 2001. The dependent variable is a binary indicator equal to one if a firm files at least one patent in a given year. The key explanatory variables capture two types of spillover effects. Technological spillovers (SpillTech) are constructed using information on the distribu-tion of patents across technological classes. Specifically, technological proximity between firms is measured using the Jaffe distance (Jaffe, 1986), calculated as the uncentered correlation (cosine similarity) of their patent shares across different technology classes. The corresponding spillover  
+
+> 13 The dataset is publicly available at http://qed.econ.queensu.ca/jae/datasets/burda002/ .
+
+30 variable is defined as the weighted sum of other firms’ R&D stocks, where weights reflect techno-logical proximity; see details in Burda and Harding (2013). Product market spillovers (SpillSIC) are constructed analogously using the distribution of firm sales across industries. Product market proximity is measured as the uncentered correlation of firms’ sales shares across industry classi-fications, and the associated spillover variable is defined as the proximity-weighted sum of other firms’ R&D stocks. In addition, we include firm-level controls for the stock of R&D (R&D stock) and firm sales (Sales), both constructed from accounting data. All continuous independent vari-ables are expressed in logarithms, lagged by one period, and all regressions include a dummy where lagged R&D stock is zero. Prior to estimation, all continuous independent variables are standardized by subtracting their sample means and dividing by their respective standard deviations. We report the results of the following three estimators: the two-step maximum likelihood estimator proposed by Zele-neev and Zhang (2026) (IFE), a plug-in analytical bias correction (IFE-Analytical), and a median bootstrap-based bias correction (IFE-Bootstrap). We use the eigenvalue-ratio test (Ahn and Horen-stein, 2013), slightly modified as in Zeleneev and Zhang (2026), to determine the number of fac-tors, which is 1 in this empirical application. In the bootstrap procedure, we draw 399 bootstrap samples and treat the number of factors as known, which is 1. Economic theory provides clear predictions regarding the effects of R&D spillovers on patent-ing activity. In the absence of endogenous patenting behavior, product market spillovers, which captures market rivalry, are expected to have no effect on innovation outcomes, implying a coef-ficient close to zero. In contrast, technological spillovers are expected to have a positive effect, as knowledge diffusion enhances firms’ innovative capacity. These predictions serve as a theoretical benchmark for evaluating the empirical results presented in Table 5. 31 Table 5: Parameter Estimates and Standard Errors    
+
+> Covariate IFE IFE-Analytical IFE-Bootstrap log
+
+(SpillTech ) 0.139*** 0.222*** 0.132** (0.044) (0.044) (0.047) log (SpillSIC ) 0.065 0.060 0.045 (0.039) (0.039) (0.044) log (R&D Stock ) 0.269*** 0.255*** 0.287*** (0.074) (0.074) (0.082) log (Sales ) 0.440*** 0.420*** 0.378*** (0.044) (0.044) (0.049)   
+
+> Notes: Standard errors are reported in parentheses. Standard er-rors for the IFE-Bootstrap estimator are obtained as the standard deviation across 399 bootstrap replications. Statistical significance is denoted by ** and *** at the 5% and 1% levels, respectively. All explanatory variables are lagged by one period. All specifi-cations include a dummy variable indicating observations with zero lagged R&D stock. Additionally, we apply the Yeo-Johnson transformation to adjust the significance levels of the bootstrap es-timates, where the significance level of log
+
+(SpillTech ) changes to 1% while all other covariates remain unchanged. 
+
+Consistent with theory, technological spillovers (SpillTech) are positive and statistically signif-icant across all estimation methods, indicating that knowledge diffusion among technologically similar firms increases patenting activity. The estimated magnitude, however, varies with the es-timation method: the analytical bias correction yields a noticeably larger coefficient, whereas the bootstrap correction brings it back close to the baseline IFE estimate. This pattern suggests that the analytical correction may over-adjust upward, while the bootstrap provides a more conserva-tive estimate. In contrast, product market spillovers are small and statistically insignificant across all estimators, and this finding is unaffected by either bias-correction approach. This reinforces the interpretation that competitive pressures in product markets do not exert a direct effect on 32 firms’ patenting decisions in this setting. The coefficients on firm fundamentals ( R&D stock and sales) from all estimation methods are large and positive, where the bootstrap correction suggests a smaller estimate of sales. Finally, although Burda and Harding (2013) apply the proposed Bayesian panel probit model on the full unbalanced panel, their application results are broadly consistent with ours, estimated on a sub-balanced panel, in both sign and statistical significance. Overall, the bootstrap results confirm the robustness of the main conclusions: technological spillovers matter for innovation, product market spillovers do not, and the qualitative inference remains stable across different estimation methods. 
+
+# 7 Conclusion 
+
+In this paper, we propose a novel bias-correction method for nonlinear panel data models with interactive fixed effects, based on a parametric bootstrap approach. The presence of the incidental parameters problem renders the maximum likelihood estimator biased. We show that, under suitable regularity conditions, the parametric bootstrap replicates the asymptotic distribution of the maximum likelihood estimator. As a result, the bootstrap can be used to perform both bias correction and statistical inference in a unified framework. Compared with existing bias-correction methods, such as the split-panel jackknife and plug-in analytical approaches, the proposed method does not require an explicit derivation of the bias term and exhibits superior finite-sample performance in panels with relatively small dimensions, as evidenced by our simulation results. In addition, we apply three monotone transformations to reduce skewness in the bootstrap distribution, thereby improving the previously conservative coverage rates. Finally, we illustrate the empirical relevance of the proposed method through an application to firm-level innovation behavior. The results provide support for key theoretical predictions and highlight the practical usefulness of the method in applied research. 33 Supplementary material 
+
+Replication files: The replication code for both the simulations and the empirical application is available at https://github.com/Wei-M-Wei/Factor-Bootstrap-replication .
+
+# References 
+
+Ahn, S. C. and Horenstein, A. R. (2013). Eigenvalue ratio test for the number of factors. Economet-rica , 81(3):1203–1227. Andrews, D. W. (2005). Higher-order improvements of the parametric bootstrap for markov pro-cesses. In Andrews, D. W. and Stock, J. H., editors, Identification and Inference for Econometric Models: Essays in Honor of Thomas Rothenberg , pages 171–215. Cambridge University Press. Arellano, M. and Hahn, J. (2016). A likelihood-based approximate solution to the incidental pa-rameter problem in dynamic nonlinear models with multiple effects. Global Economic Review ,45(3):251–274. Armstrong, T., Weidner, M., and Zeleneev, A. (2026). Robust estimation and inference in panels with interactive fixed effects. Journal of Political Economy .Bai, J. (2009). Panel data models with interactive fixed effects. Econometrica , 77(4):1229–1279. Bai, J. and Ng, S. (2002). Determining the number of factors in approximate factor models. Econo-metrica , 70(1):191–221. Bai, J. and Ng, S. (2023). Approximate factor models with weaker loadings. Journal of Econometrics ,235(2):1893–1916. Bai, J. and Wang, P. (2016). Econometric analysis of large factor models. Annual Review of Economics ,8(1):53–80. Beyhum, J. and Gautier, E. (2019). Square-root nuclear norm penalized estimator for panel data models with approximately low-rank unobserved heterogeneity. arXiv preprint arXiv:1904.09192 .Beyhum, J. and Gautier, E. (2022). Factor and factor loading augmented estimators for panel regression with possibly nonstrong factors. Journal of Business & Economic Statistics , 41(1):270– 281. 34 Bloom, N., Schankerman, M., and Reenen, J. V. (2013). Identifying technology spillovers and product market rivalry. Econometrica , 81(4):1347–1393. Boneva, L. and Linton, O. (2017). A discrete-choice model for large heterogeneous panels with interactive fixed effects with an application to the determinants of corporate bond issuance. 
+
+Journal of Applied Econometrics , 32(7):1226–1243. Bonhomme, S. (2012). Functional differencing. Econometrica , 80(4):1337–1385. Bonhomme, S., Jochmans, K., and Weidner, M. (2024). A neyman-orthogonalization approach to the incidental parameter problem. arXiv preprint arXiv:2412.10304 .Botosaru, I. and Muris, C. (2025). Identification of time-varying counterfactual parameters in nonlinear panel models. Journal of Econometrics , 252:105639. Box, G. E. and Cox, D. R. (1964). An analysis of transformations. Journal of the Royal Statistical Society Series B: Statistical Methodology , 26(2):211–243. Burda, M. and Harding, M. (2013). Panel probit with flexible correlated effects: Quantifying technology spillovers in the presence of latent heterogeneity. Journal of Applied Econometrics ,28(6):956–981. Cavaliere, G., Gonc ¸alves, S., Nielsen, M. Ø., and Zanelli, E. (2024). Bootstrap inference in the presence of bias. Journal of the American Statistical Association , 119(548):2908–2918. Chamberlain, G. (1984). Panel data. Handbook of econometrics , 2:1247–1318. Chen, L. and Zhang, M. (2025). Common correlated effects estimation of nonlinear panel data models. The Econometrics Journal , 28(2):295–317. Chen, M., Fern´ andez-Val, I., and Weidner, M. (2021). Nonlinear factor models for network and panel data. Journal of Econometrics , 220(2):296–324. Choi, J. and Yuan, M. (2025). High dimensional factor analysis with weak factors. Journal of Econometrics , 252:106086. Davidson, J. (2021). Stochastic Limit Theory: An Introduction for Econometricians . Oxford University Press, 2 edition. Dhaene, G. and Jochmans, K. (2015). Split-panel jackknife estimation of fixed-effect models. Review of Economic Studies , 82(3):991–1030. Dhaene, G. and Sun, Y. (2021). Second-order corrected likelihood for nonlinear panel models with fixed effects. Journal of Econometrics , 220(2):227–252. 35 Dhaene, G. and Weidner, M. (2023). Approximate functional differencing. SERIEs , 14(3):379–416. Dzemski, A. (2019). An empirical model of dyadic link formation in a network with unobserved heterogeneity. Review of Economics and Statistics , 101(5):763–776. Efron, B. (1987). Better bootstrap confidence intervals. Journal of the American statistical Association ,82(397):171–185. Fern´ andez-Val, I. (2009). Fixed effects estimation of structural parameters and marginal effects in panel probit models. Journal of Econometrics , 150(1):71–85. Fern´ andez-Val, I. and Weidner, M. (2016). Individual and time effects in nonlinear panel models with large n, t. Journal of Econometrics , 192(1):291–312. Fern´ andez-Val, I. and Weidner, M. (2018). Fixed effects estimation of large-t panel data models. 
+
+Annual Review of Economics , 10(1):109–138. Freyberger, J. (2018). Non-parametric panel data models with interactive fixed effects. Review of Economic Studies , 85(3):1824–1851. Gao, J., Liu, F., Peng, B., and Yan, Y. (2023). Binary response models for heterogeneous panel data with interactive fixed effects. Journal of Econometrics , 235(2):1654–1679. Gonc ¸alves, S. (2011). The moving blocks bootstrap for panel linear regression models with indi-vidual fixed effects. Econometric Theory , 27(5):1048–1082. Gonc ¸alves, S. and Kaffo, M. (2015). Bootstrap inference for linear dynamic panel data models with individual fixed effects. Journal of Econometrics , 186(2):407–426. Graham, B. S. (2017). An econometric model of network formation with degree heterogeneity. 
+
+Econometrica , 85(4):1033–1063. Graham, B. S. and Powell, J. L. (2012). Identification and estimation of average partial effects in irregular correlated random coefficient panel data models. Econometrica , 80(5):2105–2152. Hahn, J., Hughes, D. W., Kuersteiner, G., and Newey, W. K. (2024). Efficient bias correction for cross-section and panel data. Quantitative Economics , 15(3):783–816. Hahn, J. and Kuersteiner, G. (2011). Bias reduction for dynamic nonlinear panel models with fixed effects. Econometric Theory , 27(6):1152–1191. Hahn, J. and Newey, W. K. (2004). Jackknife and analytical bias reduction for nonlinear panel models. Econometrica , 72(4):1295–1319. Hall, P. (1992). On the Removal of Skewness by Transformation. Journal of the Royal Statistical 
+
+36 Society Series B: Statistical Methodology , 54(1):221–228. Higgins, A. and Jochmans, K. (2024). Bootstrap inference for fixed-effect models. Econometrica ,92(2):411–427. Higgins, A. and Jochmans, K. (2025). Inference in dynamic models for panel data using the moving block bootstrap. arXiv preprint arXiv:2502.08311 .Hughes, D. W. (2026). A jackknife bias correction for nonlinear network data models with fixed effects. Journal of Econometrics , 253:106130. Jaffe, A. B. (1986). Technological opportunity and spillovers of r&d: Evidence from firms’ patents, profits, and market value. American Economic Review , 76(5):984–1001. Jiang, P., Uematsu, Y., and Yamagata, T. (2025). Bias correction in factor-augmented regression models with weak factors. Kim, M. S. and Sun, Y. (2016). Bootstrap and k-step bootstrap bias corrections for the fixed effects estimator in nonlinear panel data models. Econometric Theory , 32(6):1523–1568. Konishi, S. (1991). Normalizing Transformatins and Bootstrap Confidence Intervals. The Annals of Statistics , 19(4). Li, X., Shen, Y., and Zhou, Q. (2024). Confidence intervals of treatment effects in panel data models with interactive fixed effects. Journal of Econometrics , 240(1):105684. Liu, L., Poirier, A., and Shiu, J.-L. (2025). Identification and estimation of partial effects in nonlinear semiparametric panel models. Journal of Econometrics , 252:105860. Mao, Y. and Yan, Y. (2026). An adaptive residual-based test for factor structure. Journal of Business & Economic Statistics , 44(2):691–702. Moon, H. R. and Weidner, M. (2015). Linear regression for panel with unknown number of factors as interactive fixed effects. Econometrica , 83(4):1543–1579. Moon, H. R. and Weidner, M. (2017). Dynamic linear panel regression models with interactive fixed effects. Econometric Theory , 33(1):158–195. Moon, H. R. and Weidner, M. (2026). Nuclear norm regularized estimation of panel regression models. Journal of Econometrics , 255:106246. Onatski, A. (2009). Testing hypotheses about the number of factors in large factor models. Econo-metrica , 77(5):1447–1479. Onatski, A. (2012). Asymptotics of the principal components estimator of large factor models with 37 weakly influential factors. Journal of Econometrics , 168(2):244–258. Pesaran, M. H. (2006). Estimation and inference in large heterogeneous panels with a multifactor error structure. Econometrica , 74(4):967–1012. Sassi, Y. S. (2024). A linear regression model for non-oriented dyadic data with interactive indi-vidual effects. Schumann, M. (2023). Second-order bias reduction for nonlinear panel data models with fixed effects based on expected quantities. Econometric Theory , 39(4):693–736. Stock, J. H. and Watson, M. W. (2002). Forecasting using principal components from a large num-ber of predictors. Journal of the American statistical association , 97(460):1167–1179. Van der Vaart, A. W. (1998). Asymptotic statistics , volume 3. Cambridge university press. Wang, F. (2022). Maximum likelihood estimation and inference for high dimensional general-ized factor models with application to factor-augmented regressions. Journal of Econometrics ,229(1):180–200. Yan, T., Jiang, B., Fienberg, S. E., and Leng, C. (2019). Statistical inference in a directed network model with covariates. Journal of the American Statistical Association , 114(526):857–868. Yao, K. (2025). Low-rank estimation of nonlinear panel data models. arXiv preprint arXiv:2511.21948 .Yeo, I.-K. and Johnson, R. A. (2000). A new family of power transformations to improve normality or symmetry. Biometrika , 87(4):954–959. Zeleneev, A. and Zhang, W. (2026). Tractable estimation of nonlinear panels with interactive fixed effects. arXiv preprint arXiv:2511.15427 .
+
+# Appendix 
+
+This Appendix consists of two parts. In Appendix A, we provide rigorous proofs of the theorems presented in the main text, building on the uniform asymptotic expansion established in the online appendix. In the remaining online Appendices B, and C, we derive asymptotic expansions for 
+
+√NT ( ˆβ − β) and √NT  ∆( ˆθ) − ∆(θ) that hold uniformly over (β, ϕ) in a neighborhood of (β0, ϕ0).Appendix B introduces the notation and presents several auxiliary lemmas that are needed to apply the framework developed in Appendix C to the interactive fixed effects model. In Ap-38 pendix C, we generalize the expansion for M-estimators with high-dimensional incidental pa-rameters developed by Fern´ andez-Val and Weidner (2016) to a broader setting. A key technical requirement in our framework is that the moment conditions hold uniformly for all (β, ϕ) in a neighborhood of (β0, ϕ0). In Lemma C.2, focusing on panel data applications, we establish a set of sufficient conditions under which the uniform moment restrictions in Assumption 11 are satis-fied. In Appendix B, we specialize the general framework developed in Appendix C to panel data models. A central complication in this context is that the log-likelihood function is not globally strictly concave in the presence of interactive fixed effects, thereby precluding a direct application of standard arguments. To circumvent this issue, we adopt the strategy of Chen et al. (2021) and proceed via a sequence of intermediate results. Specifically, Lemma B.1 establishes a preliminary convergence rate for ˆ β, implying that the estimator is contained, with high probability, in a shrinking neighborhood of the true parame-ter. Conditional on this localization result, Lemma B.2 establishes the local strict concavity of the log-likelihood function within this neighborhood, thereby recovering the curvature conditions required for higher-order analysis. Lemma B.3 further verifies that the score function and its higher-order derivatives satisfy the uniform regularity conditions imposed in Appendix C. Taken together, these results justify the application of the general uniform expansion to the panel data setting considered here. Finally, Theorem B.1 and Theorem B.2 provide explicit expres-sions for all terms in the expansions of ˆ β and ∆( ˆθ), which form the basis for the asymptotic and bootstrap results established in Appendix A. 
+
+# A Proof of Bootstrap Consistency 
+
+Proof of Theorem 3.1. To apply the uniform expansion results in Appendix C, the objective function (3) needs to be strictly concave for θ. However, this property does not hold globally due to the presence of interactive fixed effects. Nevertheless, Lemma B.3 shows that the likelihood function (3) is strictly concave in a shrinking neighborhood of θ, uniformly for every θ ∈ Θ0. Given the initial uniform convergence result of ˆ θ in Lemma B.1, which ensures that the estimate ˆ θ lies in this local neighborhood with probability 1, we can therefore still apply the uniform expansion in Appendix C. 39 Unlike the one-way fixed effects model studied in Higgins and Jochmans (2024), where the Hessian matrix is diagonal, in models with interactive fixed effects, an additional difficulty arises because there is no closed-form expression for the inverse of the Hessian. Nevertheless, Lemma B.2 shows that the Hessian can be well-approximated by a diagonal matrix, and that the approxima-tion error is uniformly asymptotically negligible for all θ ∈ Θ0.Then, following the same argument as in Theorem 4 of Chen et al. (2021), we can apply the uniform expansion in Appendix C and obtain the following uniform asymptotic expansion for the MLE ˆ β:
+
+√NT ( ˆβ − β0) = W−1 
+
+> ∞
+
+∂βL∗ + B(1) + B(2)
+
+!
+
++ oup (1),where B(1) and B(2) are asymptotic bias terms, defined in (18), and the remainder term is uniformly asymptotically negligible. The matrix 
+
+W∞ := lim 
+
+> N,T→∞
+
+1
+
+NT 
+
+> N
+
+# ∑
+
+> i=1
+> T
+
+# ∑
+
+> t=1
+
+Eθ
+
+
+
+∂z2 ℓit eXit eX′
+
+> it
+
+
+
+is positive definite by Assumption 7. For the exact expressions of these terms, see Theorem B.1. Moreover, Theorem B.1 shows that B(1) − Eθ (B(1)) and B(2) − Eθ (B(2)) converge to zero in probability uniformly over every θ ∈ Θ0. Then, given Assumption 7, we have that B(1) + B(2)
+
+converges uniformly to lim N,T→∞ Eθ
+
+ B(1) + B(2).Finally, following the proof of Theorem 4.1 in Higgins and Jochmans (2024), we can apply the Berry–Esseen bound together with the uniform α-mixing condition in Assumption 2 and the uniform moment conditions in Assumption 5 to establish the uniform asymptotic normality of 
+
+W−1 
+
+> ∞
+
+∂βL∗, and hence also the uniform asymptotic normality of √NT ( ˆβ − β0).
+
+Proof of Theorem 3.2. We show that 
+
+Pθ0
+
+
+
+sup 
+
+> a
+
+P ˆθ
+
+√NT ( ˆβ∗ − ˆβ) ≤ a
+
+
+
+− Pθ0
+
+√NT ( ˆβ − β0) ≤ a
+
+
+
+> ϵ
+
+
+
+= op(1).40 First, observe that 
+
+Pθ0
+
+
+
+sup 
+
+> a
+
+P ˆθ
+
+√NT ( ˆβ∗ − ˆβ) ≤ a
+
+
+
+− Pθ0
+
+√NT ( ˆβ − β0) ≤ a
+
+
+
+> ϵ
+
+
+
+≤ Pθ0
+
+
+
+sup 
+
+> a
+
+Pθ0
+
+√NT ( ˆβ − β0) ≤ a
+
+
+
+− Pθ0 (Gθ0 ≤ a) > ϵ
+
+2
+
+
+
++ Pθ0
+
+
+
+sup 
+
+> a
+
+P ˆθ
+
+√NT ( ˆβ∗ − ˆβ) ≤ a
+
+
+
+− Pθ0 (Gθ0 ≤ a) > ϵ
+
+2
+
+
+
+≤ Pθ0
+
+
+
+sup 
+
+> a
+
+Pθ0
+
+√NT ( ˆβ − β0) ≤ a
+
+
+
+− Pθ0 (Gθ0 ≤ a) > ϵ
+
+2
+
+
+
++ Pθ0
+
+
+
+sup 
+
+> a
+
+P ˆθ
+
+√NT ( ˆβ∗ − ˆβ) ≤ a
+
+
+
+− P ˆθ (v ˆθ ≤ a) > ϵ
+
+4
+
+
+
++ Pθ0
+
+
+
+sup 
+
+> a
+
+P ˆθ (v ˆθ ≤ a) − Pθ0 (Gθ0 ≤ a) > ϵ
+
+4
+
+
+
+,where Gθ ∼ N (B∞(θ), W∞(θ)−1), with B∞(θ) and W∞(θ) defined in Assumption 7. Define 
+
+gNT (θ) = sup 
+
+> a∈Rdx
+
+Pθ
+
+√NT ( ˆβ − β) ≤ a
+
+
+
+− Pθ (Gθ ≤ a) .By Theorem B.1 in Appendix C, we have Pθ0
+
+  ˆθ /∈ Θ0
+
+ = op(1). If sup θ∈Θ0 gNT (θ) = o(1), then by Lemma A.1 in Andrews (2005) and Theorem 3.1, it follows that 
+
+Pθ0
+
+
+
+gNT (θ0) > ϵ
+
+2
+
+
+
+= Pθ0 sup 
+
+> a∈Rdx
+
+Pθ0
+
+√NT ( ˆβ − β0) ≤ a
+
+
+
+− Pθ0 (Gθ0 ≤ a) > ϵ
+
+2
+
+!
+
+= op(1).Thus, it suffices to show that sup θ∈Θ0 gNT (θ) = o(1). Without loss of generality, let dx = 1. Theorem 3.1 implies that sup 
+
+> a∈R
+
+sup 
+
+> θ∈Θ0
+
+Pθ
+
+√NT ( ˆβ − β) ≤ a
+
+
+
+− Pθ (Gθ ≤ a) = o(1).Since Θ0 ⊂ Θ and Θ is compact, and B∞(θ) as well as W∞(θ) are continuous in θ by Assump-tion 5, it is possible (for any k ≥ 1) to find a partition −∞ = a0 < a1 < · · · < aM = + ∞ such that sup 
+
+> θ∈Θ0
+
+(Pθ (Gθ ≤ ai) − Pθ (Gθ ≤ ai−1)) ≤ 1
+
+k , for i = 1, . . . , M.41 For each a ∈ R, there exists i such that ai < a ≤ ai+1, so for every θ ∈ Θ0:
+
+Pθ
+
+√NT ( ˆβ − β) ≤ a
+
+
+
+− Pθ (Gθ ≤ a) ≤ Pθ
+
+√NT ( ˆβ − β) ≤ ai+1
+
+
+
+− Pθ (Gθ ≤ ai)
+
+≤ Pθ
+
+√NT ( ˆβ − β) ≤ ai+1
+
+
+
+− Pθ (Gθ ≤ ai+1) + 1
+
+k ,and similarly (lower bound): 
+
+Pθ
+
+√NT ( ˆβ − β) ≤ a
+
+
+
+− Pθ (Gθ ≤ a) ≥ − Pθ
+
+√NT ( ˆβ − β) ≤ ai
+
+
+
+− Pθ (Gθ ≤ ai) − 1
+
+k .Hence, sup 
+
+> a
+
+Pθ
+
+√NT ( ˆβ − β) ≤ a
+
+
+
+− Pθ (Gθ ≤ a) ≤ max  
+
+> 1≤i≤M
+
+Pθ
+
+√NT ( ˆβ − β) ≤ ai
+
+
+
+− Pθ (Gθ ≤ ai) + 1
+
+k .Taking sup over θ ∈ Θ0, and since the first term is o(1) by Theorem 3.1, and 1/ k can be arbitrarily small, it follows that: sup 
+
+> θ∈Θ0
+
+gNT (θ) = o(1).Similarly, we have: sup 
+
+> θ∈Θ
+
+Pθ
+
+
+
+gNT ( ˆθ) > ϵ
+
+4
+
+
+
+= sup 
+
+> θ∈Θ
+
+Pθ
+
+
+
+sup 
+
+> a
+
+P ˆθ
+
+√NT ( ˆβ∗ − ˆβ) ≤ a
+
+
+
+− P ˆθ (v ˆθ ≤ a) > ϵ
+
+4
+
+
+
+= o(1),by Lemma A.1 in Andrews (2005) and following a similar argument as the first term. By continuity of B∞(θ) and W∞(θ)−1 in θ and the continuous mapping theorem, 
+
+Pθ0 sup 
+
+> a∈R
+
+P ˆθ (v ˆθ ≤ a) − Pθ0 (vθ0 ≤ a) > ϵ
+
+4
+
+!
+
+= o(1).This completes the proof. 
+
+Proof of Theorem 3.3. Under Assumptions 1–9, Theorem B.2 establishes the uniform asymptotic expansion for APEs. Given Assumption 10, the proof then follows a similar argument as in the proof of Theorem 3.1. 42 Proof of Theorem 3.4. Theorem 3.3 establishes the uniform asymptotic normality of APEs. The bootstrap consistency proof follows the same arguments as the proof of Theorem 3.2 We first review some notation for norms: ∥ · ∥ denotes the Euclidean norm for vectors, ∥ · ∥ F
+
+denotes the Frobenius norm for matrices. 
+
+Lemma A.1. Under Assumptions 1 and 3, we have 
+
+sup 
+
+> θ∈Θ0
+
+1
+
+N
+
+> N
+
+# ∑
+
+> i=1
+
+αiα′ 
+
+> i
+
+− Σα
+
+> F
+
+→ 0, sup 
+
+> θ∈Θ0
+
+1
+
+T
+
+> T
+
+# ∑
+
+> t=1
+
+γtγ′ 
+
+> t
+
+− Σγ
+
+> F
+
+→ 0. 
+
+Proof. It is sufficient to show that sup 
+
+> θ∈Θ0
+
+1
+
+N
+
+> N
+
+# ∑
+
+> i=1
+
+ αiα′ 
+
+> i
+
+− αi0α′
+
+> i0
+
+
+
+> F
+
+→ 0, sup 
+
+> θ∈Θ0
+
+1
+
+T
+
+> T
+
+# ∑
+
+> t=1
+
+ γtγ′ 
+
+> t
+
+− γt0γ′
+
+> t0
+
+
+
+> F
+
+→ 0. The stated result then follows from Assumption 3. We only prove the first claim, since the second follows analogously. For every θ ∈ Θ0,
+
+1
+
+N
+
+> N
+
+# ∑
+
+> i=1
+
+ αiα′ 
+
+> i
+
+− αi0α′
+
+> i0
+
+
+
+> F
+
+= 1
+
+N
+
+> N
+
+# ∑
+
+> i=1
+
+h
+
+αi(α′ 
+
+> i
+
+− α′
+
+> i0
+
+) + ( αi − αi0)α′
+
+> i0
+
+i
+
+> F
+
+≤ 1
+
+N
+
+> N
+
+# ∑
+
+> i=1
+
+αi(αi − αi0)′
+
+> F
+
++ 1
+
+N
+
+> N
+
+# ∑
+
+> i=1
+
+(αi − αi0)α′
+
+> i0
+> F
+
+≤ 1
+
+N
+
+> N
+
+# ∑
+
+> i=1
+
+∥αi∥2
+
+!1/2 
+
+1
+
+N
+
+> N
+
+# ∑
+
+> i=1
+
+∥αi − αi0∥2
+
+!1/2 
+
++ 1
+
+N
+
+> N
+
+# ∑
+
+> i=1
+
+∥αi0∥2
+
+!1/2 
+
+1
+
+N
+
+> N
+
+# ∑
+
+> i=1
+
+∥αi − αi0∥2
+
+!1/2 
+
+.And, 1
+
+N
+
+> N
+
+# ∑
+
+> i=1
+
+∥αi − αi0∥2 = 1
+
+N vec (α) − vec (α0) 2 ≤ 1
+
+N ∥θ − θ0∥2 ≤ ε2
+
+N ,uniformly over θ ∈ Θ0, and hence sup θ∈Θ0 
+
+> 1
+> N
+
+∑Ni=1 ∥αi − αi0∥2 → 0. Moreover, Assumption 3 implies 
+
+α0
+
+√N 
+
+> 2
+> F
+
+= 1
+
+N
+
+> N
+
+# ∑
+
+> i=1
+
+∥αi0∥2 = tr 1
+
+N
+
+> N
+
+# ∑
+
+> i=1
+
+αi0α′
+
+> i0
+
+!
+
+→ tr (Σα),43 so that α0√N F = O(1).Then, 
+
+α
+
+√N F ≤ α − α0
+
+√N F + α0
+
+√N F ≤ ε
+
+√N + α0
+
+√N F,and therefore sup 
+
+> θ∈Θ0
+
+α
+
+√N F = O(1).Combining the above bounds yields sup 
+
+> θ∈Θ0
+
+1
+
+N
+
+> N
+
+# ∑
+
+> i=1
+
+ αiα′ 
+
+> i
+
+− αi0α′
+
+> i0
+
+
+
+> F
+
+→ 0. This proves the first claim. 44 ONLINE SUPPLEMENTAL MATERIAL B Uniform Expansion for Panel Models 
+
+B.1 Notations 
+
+We define the vector of unobserved effects as 
+
+ϕ :=  vec (α)′, vec (γ)′′ .Following Chen et al. (2021), the factors αi and γt satisfy the normalization 
+
+Φ :=
+
+(
+
+ϕ ∈ Rdim (ϕ) :
+
+> N
+
+# ∑
+
+> i=1
+
+αi0α′ 
+
+> i
+
+=
+
+> T
+
+# ∑
+
+> t=1
+
+γtγ′
+
+> t0
+
+)
+
+,where αi0 and γt0 are the true parameter values. This normalization is convenient for theoretical analysis but infeasible in practice. The penalized likelihood function is 
+
+L(β, ϕ) = 1
+
+√NT ∑
+
+> i,t
+
+ℓit (zit ) − b
+
+2 ϕ′VV ′ϕ
+
+!
+
+, ℓit (zit ) = log f (X′ 
+
+> it
+
+β + α′ 
+
+> i
+
+γt),where b > 0 and V is a dim (ϕ) × d2 
+
+> f
+
+matrix satisfying 
+
+V′ϕ = vec ∑
+
+> i
+
+αi0α′ 
+
+> i
+
+− ∑
+
+> t
+
+γtγ′
+
+> t0
+
+!
+
+.In this section, we use E to denote the expectation conditional on ϕ. Let 
+
+H∗ = Eθ
+
+−∂ϕϕ L∗ =
+
+ H∗ 
+
+> αα
+
+H∗
+
+> αγ
+
+(H∗
+
+> αγ
+
+)′ H∗
+
+> γγ
+
+ ,where H∗ 
+
+> αα
+
+∈ RNd f ×Nd f , H∗ 
+
+> γγ
+
+∈ RTd f ×Td f , H∗ 
+
+> αγ
+
+∈ RNd f ×Td f . and 
+
+H = Eθ
+
+−∂ϕϕ L = H∗ + b
+
+√NT VV ′.45 The profiled estimators are ˆβ = arg max 
+
+> β∈Rdβ
+
+L β, ˆ ϕ(β) , ˆϕ(β) = arg max 
+
+> ϕ∈Rdϕ
+
+L(β, ϕ).We use the following notation for norms. For a matrix A, the spectral, Frobenius, and matrix sup norms are denoted by ∥A∥, ∥A∥F, and ∥A∥max , respectively. For a vector v ∈ Rn and q ∈
+
+[1, ∞], the ℓq norm is defined as ∥v∥q = ( ∑ni=1 |vi|q)1/ q. When v is viewed as an n × 1 matrix, its spectral norm coincides with its Euclidean norm, i.e., ∥v∥ = ∥v∥2 = √v′v. We define the associated orthogonal projection matrix as MA = I − A(A′ A)† A′, where † denotes the Moore– Penrose generalized inverse and I the identity matrix of the same dimension as AA ′. For r > 0, let B(r, β) = { ˜β ∈ Rd f : ∥ ˜β − β∥2 < r} denote the open ℓ2 ball of radius r centered at β, and more generally, for q ∈ [1, ∞], let Bq(r, ϕ) = { ˜ϕ ∈ R(N+T)d f : ∥ ˜ϕ − ϕ∥q < r} denote the open ℓq ball of radius r centered at ϕ.
+
+B.2 Auxiliary Lemmas 
+
+For a sequence of random processes AN (θ) whose distribution depends on θ ∈ Θ0, we write 
+
+AN (θ) = oup (1) if, for any ϵ > 0, it holds that sup θ∈Θ0 Pθ (|AN (θ)| > ϵ) → 0 as N → ∞; that is, 
+
+AN (θ) converges uniformly in θ ∈ Θ0 to zero in probability. Similarly, we write AN (θ) = Oup (1) if, for any ϵ > 0, there exists a constant k such that sup θ∈Θ0 Pθ (|AN (θ)| > k) < ϵ for all N, meaning that AN (θ) is uniformly bounded in probability. If AN is nonstochastic and satisfies AN (θ) = 
+
+Oup (1) or AN (θ) = oup (1), we simply write AN (θ) = Ou(1) or AN (θ) = ou(1). For two sequences of random processes AN (θ) and BN (θ), we write AN (θ) = Oup (BN (θ)) when AN (θ)/BN (θ) = 
+
+Oup (1), and we write AN (θ) = oup (BN (θ)) when AN (θ)/BN (θ) = oup (1). Lemma C.3 gives standard properties of Oup and oup.Fern´ andez-Val and Weidner (2016) established an asymptotic expansion for a general likeli-hood model with incidental parameters. In Appendix C, we extend their framework to the uni-form case, where the expansion holds uniformly under all parameter values within a small neigh-borhood of the true parameters. This uniform extension is useful in establishing the consistency of bootstrap confidence intervals. To apply the framework in Appendix C, we first establish several auxiliary lemmas. These 46 lemmas are adapted from Chen et al. (2021) and extended to the uniform setting. 
+
+Lemma B.1. Let Assumptions 1-6 hold. Then, it holds that 
+
+∥ ˆβ − β∥ = Oup
+
+√NT −3/8 
+
+,
+
+and there exists a constant σ > 0 such that 
+
+sup 
+
+> eβ∈B (β,σ)
+
+1
+
+√NT ˆα(eβ) ˆγ′(eβ) − αγ ′ 
+
+> F
+
+= Oup
+
+
+
+(NT )−3/8 + ∥eβ − β∥
+
+
+
+,sup 
+
+> eβ∈B (β,σ)
+
+1
+
+√N
+
+ˆϕ(eβ) − ϕ = Oup
+
+
+
+(NT )−3/8 + ∥eβ − β∥
+
+
+
+.
+
+Proof. The proof follows the same steps as the proof of Lemma 1 in Chen et al. (2021) with the modification that the bound holds uniformly on θ ∈ Θ0.To apply the results in Appendix C, we also need to show that the Hessian matrix of the penal-ized log-likelihood is asymptotically invertible. Chen et al. (2021) show that the Hessian matrix can be approximated by an invertible block-diagonal matrix. As discussed in Chen et al. (2021), the matrix H∗ has d2 
+
+> f
+
+zero eigenvalues, corresponding to transformations of the factors and fac-tor loadings that leave the likelihood function unchanged. However, since VV ′ has rank d2 
+
+> f
+
+, the penalized Hessian H is invertible. The following lemma extends this result to the uniform case. 
+
+Lemma B.2. Under Assumptions 1, 5 and 6, 
+
+H−1 − diag 
+
+
+
+H∗
+
+> αα
+
+, H∗
+
+> γγ
+
+−1
+
+> max
+
+= Ou
+
+(NT )−1/2 
+
+.
+
+Proof. The proof follows similarly to Lemma 2 in Chen et al. (2021). The uniform bound is obtained under the strong factor assumption (see Lemma A.1) and the uniform moment bound. Theorem C.2 requires the objective function to be strictly concave for every (β, ϕ). However, due to the structure of the interactive fixed effects, the Hessian of our (non-penalized) likelihood function is not positive definite for all (β, ϕ). Nevertheless, given Lemma B.1, it suffices to show that the Hessian is locally positive definite wpa1. 47 Lemma B.3. Let Assumptions 1-6 hold, and let r β = op(1) and r ϕ = op
+
+ (NT )) 1/4 . For all θ = ( β, ϕ) ∈
+
+Θ0, the Hessian H(eβ, eϕ) is positive definite for all eβ ∈ B (rβ, β) and eϕ ∈ B (rϕ, ϕ) wpa 1 (under Pθ )14 .Proof. See Lemma 3 in Chen et al. (2021). 
+
+B.3 Uniform Expansions 
+
+Before introducing the uniform expansion, we introduce additional notation to simplify the ex-pressions appearing in the asymptotic distribution. Let ℓit (β, αi, γt) denote the individual log-likelihood. Following Fern´ andez-Val and Weidner (2018); Chen et al. (2021), it is convenient to consider the following informationally orthogonal log-likelihood: 
+
+ℓ∗
+
+> it
+
+(β, αi, γt) := ℓit 
+
+ β, αi + α∗ 
+
+> i
+
+β, γt + γ∗ 
+
+> t
+
+β,where α∗ 
+
+> i,k
+
+and γ∗ 
+
+> t,k
+
+are R-dimensional vectors defined as 
+
+(α∗
+
+> i,k
+
+, γ∗
+
+> t,k
+
+) ∈ argmin  
+
+> eαi,k,eγt,k
+
+# ∑
+
+> i,t
+
+Eθ [−∂z2 ℓit ]
+
+ Eθ [∂z2 ℓit Xit ,k]
+
+Eθ [∂z2 ℓit ] − eα′
+
+> i,k
+
+γt − α′ 
+
+> i
+
+eγt,k
+
+2
+
+.This construction is useful because it ensures 
+
+∂2
+
+∂β∂αi
+
+# ∑
+
+> i,t
+
+Eθ
+
+ℓ∗
+
+> it
+
+(β, αi, γt) = 0, that is, informational orthogonality between β and αi.The derivative of ℓ∗ 
+
+> it
+
+with respect to β is given by 
+
+∂βℓ∗
+
+> it
+
+(β, αi, γt) = ∂zℓit 
+
+ X′ 
+
+> it
+
+β + α′ 
+
+> i
+
+γt
+
+ eXit ,where eXit = Xit − Ξit and 
+
+Ξit ,k = α∗′ 
+
+> i,k
+
+γt + α′ 
+
+> i
+
+γ∗
+
+> t,k
+
+.Analogous expressions hold for derivatives with respect to αi and γt, as well as for higher-order derivatives.  
+
+> 14 Here,
+
+B(rϕ, ϕ) := { eϕ ∈ R(N+T)d f : ∥ eϕ − ϕ∥2 ≤ rϕ} denotes the ℓ2-ball of radius rϕ centered at ϕ.
+
+48 Finally, define 
+
+L∗(β, ϕ) := 1
+
+√NT 
+
+> N
+
+# ∑
+
+> i=1
+> T
+
+# ∑
+
+> t=1
+
+ℓ∗
+
+> it
+
+(β, αi, γt). (17) Given the above lemmas and Theorem C.1, we have the following uniform asymptotic expan-sion. 
+
+Theorem B.1. Let Assumptions 1–6 hold. Suppose that q = 8 and v > 0, and define ϵ = 12q+v , r β =
+
+log (NT )( NT )− 1 
+
+> q
+
+, and r ϕ = ( NT )− 12q . Then, for every θ ∈ Θ0, if W ∞ is invertible, √NT ( ˆβ − β) = 
+
+W−1
+
+> ∞
+
+ U(0) + U(1) + oup (1). where W∞ := lim 
+
+> N,T→∞
+
+1
+
+NT 
+
+> N
+
+# ∑
+
+> i=1
+> T
+
+# ∑
+
+> t=1
+
+Eθ
+
+
+
+∂z2 ℓit eXit eX′
+
+> it
+
+
+
+U(0) := 1
+
+√NT 
+
+> N
+
+# ∑
+
+> i=1
+> T
+
+# ∑
+
+> t=1
+
+∂zℓit eXit 
+
+U(1) := − 1
+
+√NT 
+
+> N
+
+# ∑
+
+> i=1
+> T
+
+# ∑
+
+> t=1
+
+(
+
+Eθ
+
+γ′t
+
+> T
+
+# ∑
+
+> h=1
+
+γhγ′hEθ [∂αi αi ℓih ]
+
+!−1
+
+γt0
+
+
+
+∂z2 ℓit ∂zℓit eXit 
+
+
+
++ Eθ
+
+α′i
+
+> N
+
+# ∑
+
+> h=1
+
+αhα′hEθ [∂γt γt ℓht ]
+
+!−1
+
+αi
+
+
+
+∂z2 ℓit ∂zℓit eXit 
+
+)
+
+− 121
+
+√NT 
+
+> N
+
+# ∑
+
+> i=1
+> T
+
+# ∑
+
+> t=1
+
+Eθ
+
+γ′t
+
+> T
+
+# ∑
+
+> h=1
+
+γhγ′hEθ [∂αi αi ℓih ]
+
+!−1
+
+γt
+
+
+
+∂z3 ℓit eXit 
+
+
+
++Eθ
+
+α′i
+
+> N
+
+# ∑
+
+> h=1
+
+αhα′hEθ [∂γt γt ℓht ]
+
+!−1
+
+αi
+
+
+
+∂z3 ℓit eXit 
+
+ .
+
+Proof. To establish the uniform asymptotic expansion for √NT ( ˆβ − β0) via Theorem C.1, it suffices to verify that Assumption 11 holds. Part (i) of Assumption 11 follows from the asymptotic regime 
+
+T/N → κ ∈ (0, ∞), while part (ii) follows from Assumption 5. Part (iv) follows from Lemma B.2 and 
+
+diag 
+
+
+
+H∗
+
+> αα
+
+, H∗
+
+> γγ
+
+−1
+
+> ∞
+
+= Oup (1).Following the same argument as in the proof of Theorem C.1 in Fern´ andez-Val and Weidner (2016), Assumptions 1–6, together with a suitable choice of q, ϵ, rβ, and rϕ, imply that the condi-tions of Lemma C.2 are satisfied. Hence, parts (v) and (vi) follow from Lemma C.2. 49 Finally, combining the initial convergence rates in Lemma B.1 with the local strict concavity established in Lemma B.3, Theorem C.2 applies, and thus part (iii) holds. Then, by applying Theorem C.1, and given the definition of L∗(β, ϕ), we obtain 
+
+√NT ( ˆβ − β0) = W−1
+
+> ∞
+
+
+
+∂βL∗ + B(1) + B(2)
+
++ oup (1),where 
+
+B(1) =
+
+h
+
+∂βϕ ′ eL
+
+i
+
+H−1S − ∂βϕ ′ L H−1 eHH −1S,
+
+B(2) = 12 
+
+> dim ϕ
+
+# ∑
+
+> a=1
+
+
+
+∂βϕ ′ ϕg L + ∂βϕ ′ L H−1 h
+
+∂ϕϕ ′ ϕg L
+
+i h 
+
+H−1S
+
+i 
+
+> g
+
+H−1S.(18) Where ∂βL∗ contribute to the asymptotic variance which equal to U(0) by construction. The left terms B(1), B(2) contribute to the asymptotic bias. And we need to verify they converge uniformly in probability to U(1). We first show the uniform convergence of B(1).Hence, following the same argument in Fern´ andez-Val and Weidner (2016), we obtain 
+
+B(1) = − 1
+
+√NT 
+
+> N
+
+# ∑
+
+> i=1
+> T
+
+# ∑
+
+> t=1
+
+γ′
+
+> t
+
+∂zℓit 
+
+! T
+
+# ∑
+
+> h=1
+
+γhEθ [∂z2 ℓih ]γ′
+
+> h
+
+!−1 T
+
+# ∑
+
+> τ=1
+
+γτ
+
+
+
+∂z2 ℓiτ eXiτ − Eθ
+
+
+
+∂z2 ℓiτ eXiτ
+
+ !| {z }
+
+> B(1,1 )
+> i
+
+− 1
+
+√NT 
+
+> T
+
+# ∑
+
+> t=1
+> N
+
+# ∑
+
+> i=1
+
+α′ 
+
+> i
+
+∂zℓit 
+
+! N
+
+# ∑
+
+> h=1
+
+αhEθ [∂z2 ℓht ]α′
+
+> h
+
+!−1 N
+
+# ∑
+
+> j=1
+
+αj
+
+
+
+∂z2 ℓjt eXjt − E
+
+
+
+∂z2 ℓjt eXjt 
+
+ !| {z }
+
+> B(1,2 )
+> i
+
++oup (1).To show the difference of 1√NT ∑Ni=1 B(1,1 ) 
+
+> i
+
+and its expectation which is the first term in U(1) con-verge to zero in probability uniformly, we need to show the variance of Bi is uniformly bounded over θ ∈ Θ0 for all i and given the fact that Bi is independent, then uniform convergence of  
+
+> 1√NT
+
+∑Ni=1 Bi is implied by the WLLN and N/T → κ ∈ (0, ∞).By Assumptions 3 and 6, and Lemma A.1 we have sup 
+
+> θ∈Θ0
+
+γ′
+
+> t
+> T
+
+# ∑
+
+> h=1
+
+γh Eθ [∂z2 ℓih ] γ′
+
+> h
+
+!−1
+
+γt = Op(T).50 uniformly for every t, τ. Then we only need to check the boundedness of sup 
+
+θ∈Θ0
+
+Eθ
+
+1
+
+T
+
+T
+
+# ∑
+
+t=1
+
+T
+
+# ∑
+
+τ=1
+
+∂zℓit 
+
+
+
+∂z2 ℓiτ eXiτ − Eθ
+
+
+
+∂z2 ℓiτ eXiτ
+
+ !2
+
+.Denote Dz2 ℓit = ∂z2 ℓit eXit − Eθ
+
+
+
+∂z2 ℓit eXit 
+
+
+
+, then sup 
+
+θ∈Θ0
+
+Eθ
+
+1
+
+T
+
+T
+
+# ∑
+
+t=1
+
+T
+
+# ∑
+
+τ=1
+
+∂zℓit Dz2 ℓiτ
+
+!2
+
+= sup 
+
+θ∈Θ0
+
+Eθ
+
+"
+
+1
+
+T2
+
+T
+
+# ∑
+
+t1=1
+
+T
+
+# ∑
+
+τ1=1
+
+T
+
+# ∑
+
+t2=1
+
+T
+
+# ∑
+
+τ2=1
+
+∂zℓit 1 ∂zℓit 2 Dz2 ℓiτ1 Dz2 ℓiτ2
+
+!# 
+
+.We decompose it as sup 
+
+θ∈Θ0
+
+(
+
+Eθ
+
+"
+
+1
+
+T
+
+T
+
+# ∑
+
+t1=1
+
+T
+
+# ∑
+
+t2=1
+
+∂zℓit 1 ∂zℓit 2
+
+#
+
+Eθ
+
+"
+
+1
+
+T
+
+T
+
+# ∑
+
+τ1=1
+
+T
+
+# ∑
+
+τ2=1
+
+Dz2 ℓiτ1 Dz2 ℓiτ2
+
+#
+
++ 1
+
+T2
+
+T
+
+# ∑
+
+t1=1
+
+T
+
+# ∑
+
+τ1=1
+
+T
+
+# ∑
+
+t2=1
+
+T
+
+# ∑
+
+τ2=1
+
+Cov θ (∂zℓit 1 ∂zℓit 2 , Dz2 ℓiτ1 Dz2 ℓiτ2 )
+
+)
+
+.By Assumptions 2 and 5 and Corollary 15.3 of Davidson (2021), we have sup 
+
+θ∈Θ0
+
+Eθ
+
+"
+
+1
+
+T
+
+T
+
+# ∑
+
+t1=1
+
+T
+
+# ∑
+
+t2=1
+
+∂zℓit 1 ∂zℓit 2
+
+#
+
+= sup 
+
+θ∈Θ0
+
+1
+
+T
+
+T
+
+# ∑
+
+t1=1
+
+T
+
+# ∑
+
+t2=1
+
+Cov θ (∂zℓit 1 , ∂zℓit 2 ) = Op(1),and similarly, sup 
+
+θ∈Θ0
+
+Eθ
+
+"
+
+1
+
+T
+
+T
+
+# ∑
+
+τ1=1
+
+T
+
+# ∑
+
+τ2=1
+
+Dz2 ℓiτ1 Dz2 ℓiτ2
+
+#
+
+= Op(1).For the covariance term, note that sup 
+
+θ∈Θ0
+
+1
+
+T2
+
+T
+
+# ∑
+
+t1,τ1,t2,τ2=1
+
+Cov θ (∂zℓit 1 ∂zℓit 2 , Dz2 ℓiτ1 Dz2 ℓiτ2 )= 1
+
+T2 sup 
+
+θ∈Θ0
+
+Cov θ
+
+T
+
+# ∑
+
+t1,t2=1
+
+∂zℓit 1 ∂zℓit 2 ,
+
+T
+
+# ∑
+
+τ1,τ2=1
+
+Dz2 ℓiτ1 Dz2 ℓiτ2
+
+!
+
+≤ 1
+
+T2 sup 
+
+θ∈Θ0
+
+vuutVar θ
+
+T
+
+# ∑
+
+t1,t2=1
+
+∂zℓit 1 ∂zℓit 2
+
+!
+
+Var θ
+
+T
+
+# ∑
+
+τ1,τ2=1
+
+Dz2 ℓiτ1 Dz2 ℓiτ2
+
+!
+
+.51 Since Var θ
+
+> T
+
+# ∑
+
+> t1,t2=1
+
+∂zℓit 1 ∂zℓit 2
+
+!
+
+= Eθ
+
+ T
+
+# ∑
+
+> t=1
+
+∂zℓit 
+
+!4 −
+
+Eθ
+
+ T
+
+# ∑
+
+> t=1
+
+∂zℓit 
+
+!2
+
+> 2
+
+,and the second term is O(T2) by the previous result. Then it follows from a Rosenthal-type mo-ment inequality for α-mixing sequences (Lemma S.2 in Fern´ andez-Val and Weidner (2016)) that sup 
+
+> θ∈Θ0
+
+Eθ
+
+ T
+
+# ∑
+
+> t=1
+
+∂zℓit 
+
+!4 = O(T2).Hence, sup 
+
+> θ∈Θ0
+
+Eθ
+
+"
+
+1
+
+T2
+
+> T
+
+# ∑
+
+> t1,τ1,t2,τ2=1
+
+∂zℓit 1 ∂zℓit 2 Dz2 ℓiτ1 Dz2 ℓiτ2
+
+#
+
+= O(1).which is uniformly bounded for every i by Assumption 2 and 5. Hence, we obtain sup 
+
+> θ∈Θ0
+
+Var ( 1
+
+N
+
+> N
+
+# ∑
+
+> i
+
+B(1,1 ) 
+
+> i
+
+) = Op(1).Since Yi and Xi are independent across i, it follows from Chebyshev’s inequality that, for any 
+
+ϵ > 0, sup 
+
+> θ∈Θ0
+
+Pθ
+
+1
+
+N
+
+> N
+
+# ∑
+
+> i=1
+
+(B(1,1 ) 
+
+> i
+
+− Eθ (B(1,1 ) 
+
+> i
+
+)) > ϵ
+
+!
+
+= o(1),And similarly, we have sup 
+
+> θ∈Θ0
+
+Pθ
+
+1
+
+T
+
+> T
+
+# ∑
+
+> i=1
+
+(B(1,2 ) 
+
+> i
+
+− Eθ (B(1,2 ) 
+
+> i
+
+)) > ϵ
+
+!
+
+= o(1).Following a similar argument, the B(2) also converges uniformly in probability to its expectation, which is the last two terms in U(1).The next theorem focuses on the APEs defined in (4), which is an extension of Theorem 4.2 in Chen et al. (2021). Define πit = α′ 
+
+> i
+
+γt, and let ∂πq μit = ∂qμit (β, πit )/∂π qit , since by Assumption 8, the function μ(·)
+
+depends on the unobserved effects only through the interaction term α′ 
+
+> i
+
+γt.52 To simplify the expression, it is convenient to introduce some new notations. Let α∗ 
+
+> i
+
+and γ∗ 
+
+> t
+
+are both R-dimensional vectors defined by 
+
+(αμ 
+
+> i
+
+, γμ 
+
+> t
+
+) ∈ argmin   
+
+> αi,γt
+
+# ∑
+
+> i,t
+
+Eθ [−∂z2 ℓit ]
+
+ Eθ [∂π μit ]
+
+Eθ [∂z2 ℓit ] − α′ 
+
+> i
+
+γt0 − α′
+
+> i0
+
+γt
+
+2
+
+.and Ψit = αμ′ 
+
+> i
+
+γt0 + α′
+
+> i0
+
+γμ 
+
+> t
+
+. Define dx μit = ∂βμit − ∂π μit Ξit , Dπq μit = ∂πq μit − ∂zq+1 ℓit Ψit .
+
+Theorem B.2. Suppose Assumptions 1-6,8-9 hold and for every θ ∈ Θ0, W ∞ exist and is invertible. Then, for the APEs defined in (4), the following asymptotic expansion holds uniformly: 
+
+√NT (∆( ˆθ) − ∆(θ)) = U(0) 
+
+> ∆
+
++ U(1) 
+
+> ∆
+
++ oup (1),
+
+where U(0) 
+
+> ∆
+
+= 1
+
+√NT 
+
+> N,T
+
+# ∑
+
+> i,t=1
+
+"
+
+1
+
+NT 
+
+> N,T
+
+# ∑
+
+> i,t=1
+
+Eθ
+
+ Dβμit 
+
+#′
+
+W−1 
+
+> ∞
+
+∂zℓit eXit − Ψit ∂zℓit 
+
+!
+
+and U(1) 
+
+> ∆
+
+=
+
+"
+
+1
+
+NT 
+
+> N,T
+
+# ∑
+
+> i,t=1
+
+Eθ
+
+ Dβμit 
+
+#′
+
+W−1 
+
+> ∞
+
+U(1)
+
+− 1
+
+√NT 
+
+> N
+
+# ∑
+
+> i=1
+> T
+
+# ∑
+
+> t=1
+
+(
+
+Eθ
+
+γ′t
+
+> T
+
+# ∑
+
+> h=1
+
+γhγ′hEθ
+
+∂z2 ℓih 
+
+!−1
+
+γt
+
+
+
+∂zℓit Dπ∆it + 12 Dπ2 ∆it 
+
+
+
++ Eθ
+
+α′
+
+> i
+> N
+
+# ∑
+
+> h=1
+
+αhα′
+
+> h
+
+Eθ
+
+∂z2 ℓhj 
+
+!−1
+
+αh
+
+
+
+∂zℓit Dπ∆it + 12 Dπ2 ∆it 
+
+)
+
+.
+
+Proof. U (1), W∞ are defined in B.1. See the proof of Theorem 2 in Chen et al. (2021), with the modification that the bias term converges to its expectation uniformly. This can be established by applying a similar argument as in the proof of Theorem B.1. 53 C Uniform results for general likelihood models with nuisance param-eters 
+
+C.1 Uniform version of regularity conditions 
+
+This appendix presents a uniform version of Assumption B.1 in Fern´ andez-Val and Weidner (2016), which we use to derive a uniform asymptotic expansion for the MLE. As in Fern´ andez-Val and Weidner (2016), who do not employ the panel data structure of the model nor the par-ticular form of the likelihood, we do not employ the network structure of the model nor the form of the likelihood. Therefore, our notation will be standard panel data notation, with N
+
+and T denoting the cross-sectional and time-series dimensions (accommodating panel and net-work models), and L(β, ϕ) denoting a general objective function where dim β is fixed and dim ϕ
+
+grows with N or T, or both. The following assumption imposes high-level regularity conditions on L(β, ϕ), its derivatives, maximizers, etc., which we denote as before, e.g., S(β, ϕ) = ∂ϕL(β, ϕ),
+
+H(β, ϕ) = −∂ϕϕ ′ L(β, ϕ), and so on. Recall that we also denote θ = ( β, ϕ). We use a bar to denote expectations conditional on ϕ, e.g., ∂βL = Eϕ[∂βL], and a tilde to denote deviations from these expectations, e.g., ∂β eL = ∂βL − ∂βL.We adopt the same notation as in Fern´ andez-Val and Weidner (2016). For a vector x ∈ Rm,define ∥x∥q = ( ∑mj=1 |xj|q)1/ q. For a matrix A = ( aij ) ∈ Rm×n, let ∥A∥q := sup x∈Rn, x̸ =0 
+
+> ∥Ax ∥q
+> ∥x∥q
+
+., 
+
+∥A∥ = ∥A∥2, ∥A∥max = max i,j |aij |, and ∥A∥∞ = max 1≤i≤m ∑nj=1 |aij |. For higher-order deriva-tives, we use the analogous induced operator norm. For example, 
+
+∥∂ϕϕϕ L(β, ϕ)∥q = sup  
+
+> ∥u∥q,∥v∥q,∥w∥q≤1
+
+∂ϕϕϕ L(β, ϕ)[ u, v, w] ,and similarly for ∂βϕϕ L(β, ϕ).
+
+∥∂βϕϕ L(β, ϕ)∥q = sup   
+
+> ∥u∥≤ 1, ∥v∥q≤1, ∥w∥q≤1
+
+∂βϕϕ L(β, ϕ)[ u, v, w] .For further discussion of the relations among these norms and their use in asymptotic expansions with incidental parameters, see Fern´ andez-Val and Weidner (2016). The proofs in this section largely overlap with the theory in Fern´ andez-Val and Weidner (2016), 54 but we include them here for convenience. 
+
+Assumption 11 (Uniform version of regularity conditions) . Fix some q > 4 and 0 ≤ ϵ <1/8 −
+
+1/ (2q). Fix some r β = rβ,N > 0 and r ϕ = rϕ,N > 0, with r β = o(( NT )−1/ (2q)−ϵ) and r ϕ = o(( NT )−ϵ).For every θ = ( β, ϕ) ∈ Θ0, the following conditions hold for the chosen values of q , ϵ, rβ, and r ϕ.(i) dim ϕ 
+
+> √NT
+
+→ a, where 0 < a < ∞.(ii) L(eβ, eϕ) is four times continuously differentiable on B(rβ, β) × B q(rϕ, ϕ) wpa1. (iii) sup eβ∈B (rβ,β) ∥ bϕ(eβ) − ϕ∥q = oup (rϕ).(iv) inf θ∈Θ0 H > 0 and ∥H −1∥q = Oup (1).(v) For the q-norm, 
+
+∥S∥ q = Oup (( NT )−1/4 +1/ (2q)), ∥∂βL∥ = Oup (1), ∥ eH∥ q = oup (1),
+
+∥∂βϕ ′ L∥ q = Oup (( NT )1/ (2q)), ∥∂ββ ′ L∥ = Oup (√NT ),
+
+∥∂βϕϕ L∥ q = Oup (( NT )ϵ), ∥∂ϕϕϕ L∥ q = Oup (( NT )ϵ),
+
+and 
+
+sup 
+
+> eβ∈B (rβ,β)
+
+sup  
+
+> eϕ∈B q(rϕ,ϕ)
+
+∥∂βββ L(eβ, eϕ)∥ = Oup (√NT ),sup 
+
+> eβ∈B (rβ,β)
+
+sup  
+
+> eϕ∈B q(rϕ,ϕ)
+
+∥∂ββϕ L(eβ, eϕ)∥q = Oup (( NT )1/ (2q)),sup 
+
+> eβ∈B (rβ,β)
+
+sup  
+
+> eϕ∈B q(rϕ,ϕ)
+
+∥∂ββϕϕ L(eβ, eϕ)∥q = Oup (( NT )ϵ),sup 
+
+> eβ∈B (rβ,β)
+
+sup  
+
+> eϕ∈B q(rϕ,ϕ)
+
+∥∂βϕϕϕ L(eβ, eϕ)∥q = Oup (( NT )ϵ),sup 
+
+> eβ∈B (rβ,β)
+
+sup  
+
+> eϕ∈B q(rϕ,ϕ)
+
+∥∂ϕϕϕϕ L(eβ, eϕ)∥q = Oup (( NT )ϵ).
+
+(vi) For the spectral norm ∥ · ∥ ,
+
+∥ eH∥ = oup (( NT )−1/8 ), ∥∂ββ ′ eL∥ = oup (√NT ), ∥∂βϕϕ eL∥ = oup (( NT )−1/8 ),
+
+∥∂βϕ eL∥ = Oup (1), 
+
+> dim ϕ
+
+# ∑
+
+> g,h=1
+
+∂ϕϕ g ϕh eL
+
+
+
+H−1S
+
+
+
+> g
+
+
+
+H−1S
+
+ 
+
+> h
+
+= oup (( NT )−1/4 ).55 Lemma C.1 (Uniform bounds) . Suppose Assumption 11 holds. Then, for all θ ∈ Θ0, we have (i) H(eβ, eϕ) > 0 for all β ∈ B (rβ, β) and ϕ ∈ B q(rϕ, ϕ) wpa1 uniformly, and 
+
+sup 
+
+> eβ∈B (rβ,β)
+
+sup  
+
+> eϕ∈B q(rϕ,ϕ)
+
+∥∂ββ ′ L(eβ, eϕ)∥ = Oup (√NT ),sup 
+
+> eβ∈B (rβ,β)
+
+sup  
+
+> eϕ∈B q(rϕ,ϕ)
+
+∥∂βϕ ′ L(eβ, eϕ)∥q = Oup (( NT )1/ (2q)),sup 
+
+> eβ∈B (rβ,β)
+
+sup  
+
+> eϕ∈B q(rϕ,ϕ)
+
+∥∂ϕϕϕ L(eβ, eϕ)∥q = Oup (( NT )ϵ),sup 
+
+> eβ∈B (rβ,β)
+
+sup  
+
+> eϕ∈B q(rϕ,ϕ)
+
+∥∂βϕϕ L(eβ, eϕ)∥q = Oup (( NT )ϵ),sup 
+
+> eβ∈B (rβ,β)
+
+sup  
+
+> eϕ∈B q(rϕ,ϕ)
+
+∥H −1(eβ, eϕ)∥q = Oup (1).
+
+(ii) Furthermore, 
+
+∥S∥ = Oup (1), ∥H −1∥ = Oup (1), ∥H −1∥ = Oup (1)
+
+∥H −1 − H −1∥ = oup (( NT )−1/8 ), ∥H −1 − (H−1 − H −1 eHH −1)∥ = oup (( NT )−1/4 ),
+
+∥∂βϕ ′ L∥ = Oup (( NT )1/4 ), ∥∂βϕϕ L∥ = Oup (( NT )ϵ),
+
+# ∑
+
+> g
+
+∂ϕϕ ′ ϕg L
+
+
+
+H−1S
+
+ 
+
+> g
+
+= Oup (( NT )−1/4 +1/ (2q)+ ϵ),
+
+# ∑
+
+> g
+
+∂ϕϕ ′ ϕg L
+
+
+
+H−1S
+
+ 
+
+> g
+
+= Oup (( NT )−1/4 +1/ (2q)+ ϵ).
+
+Proof. See the proof of Lemma S.1 on page 7 of the supplementary material of Fern´ andez-Val and Weidner (2016), with slight modifications to extend the argument to a uniform bound. 
+
+Theorem C.1 (Uniform asymptotic expansion) . Suppose Assumption 11 holds with q , ϵ, rβ, and r ϕ
+
+satisfying the conditions of Assumption 11. Then, for every θ ∈ Θ and eβ ∈ B (rβ, β), it holds that 
+
+ˆϕ(eβ) − ϕ = H−1S + H−1[∂ϕβ ′ L]( eβ − β) + 12 H−1dim ϕ
+
+# ∑
+
+> g=1
+
+[∂ϕϕϕ g L]H−1S[H−1S]g + Rϕ(eβ),
+
+∂βL(eβ, ˆ ϕ(eβ)) = U − W√NT (eβ − β) + R(eβ),56 where U = U(0) + U(1) and W := − 1
+
+√NT 
+
+
+
+∂ββ ′ L + ∂βϕ ′ L H−1 ∂ϕβ ′ L
+
+,
+
+U(0) := ∂βL + ∂βϕ ′ L H−1S,
+
+U(1) :=
+
+h
+
+∂βϕ ′ eL
+
+i
+
+H−1S − ∂βϕ ′ L H−1 eHH −1S
+
++ 12 
+
+> dim ϕ
+
+# ∑
+
+> a=1
+
+
+
+∂βϕ ′ ϕg L + ∂βϕ ′ L H−1 h
+
+∂ϕϕ ′ ϕg L
+
+i h 
+
+H−1S
+
+i 
+
+> g
+
+H−1S.sup 
+
+> eβ∈B (rβ,β)
+
+∥R(eβ)∥ = oup (1), sup 
+
+> eβ∈B (rβ,β)
+
+∥Rϕ(eβ)∥q = oup (1).
+
+Proof. This theorem is a uniform version of Theorem B.1 in Fern´ andez-Val and Weidner (2016). Given Assumption 11, the uniform asymptotic expansion holds by the same arguments as in their proof. The next theorem extends Theorem B.3 in Fern´ andez-Val and Weidner (2016) to the uniform case. This extension is useful because it shows that, if the objective function is strictly concave, no additional proof is required to establish uniform consistency, as is the case for logit models with additive fixed effects. 
+
+Theorem C.2 (Uniform consistency) . Suppose Assumptions 11(i)–(ii) and 11(iv)–(vi) hold. Suppose 
+
+L(β, ϕ) is strictly concave over (β, ϕ) with probability 1. Let q > 4 and let r ϕ and r β satisfy N −1/2 +1/ q =
+
+op(rϕ) and N 1/ qrβ = op(rϕ). Then, (i) 
+
+sup 
+
+> eβ∈B (rβ,β)
+
+∥ ˆϕ(eβ) − ϕ∥q = oup (rϕ)
+
+and (ii) if sup θ∈Θ0 ∥U(θ)∥ = OP(1) and the limit W ∞(θ) := lim N,T→∞ WN,T (θ) exists with inf θ∈Θ0 λmin (W∞(θ)) >
+
+0, then 
+
+∥ ˆβ − β∥ = Oup (( NT )−1/4 ).
+
+Proof. The proof of part (i) is identical to the proof of Theorem B.3 in Fern´ andez-Val and Weidner (2016) except that the modification accounts for uniform convergence. 15  
+
+> 15 Note: Part (iii) of Assumption 11 is not required for the expansion and order of every term in the proof of part
+
+(i).Other regularity conditions can be directly checked by Assumptions 1-6. 
+
+57 Part (ii ): Since part (i) already show that sup eβ∈B (rβ,β) ∥ bϕ(eβ) − ϕ∥q = oup (η) which is the (iii )
+
+of the regularity conditions and hence the uniform asymptotic expansion in Theorem C.1 holds. For simplicity, we first consider the case dim β = 1; the case dim β > 1 follows by an analogous argument in the proof of Theorem B.3 in Fern´ andez-Val and Weidner (2016). Let η = 2NT − 12 W−1|U|, and it can be shown that 
+
+∂βL(β + η, bϕ(β + η)) = U − W√NT η + R(β + η).by Theorem C.1. Given the definition of η, we have U − W√NT η = U − 2|U| ≤ −| U| and |R(β0 + η)| =
+
+oup (1) + oup (√NT η). Since |η| = Oup (NT − 12 ),
+
+∂βL(β + η, bϕ(β0 + η)) ≤ oup (1) + ( oup (1) − 1)|U|
+
+we have inf  
+
+> θ∈Θ
+
+Pθ (∂βL(β + η, bϕ (β + η)) ≤ 0) → 1Similarly, we have 
+
+∂βL  β − η, bϕ(β − η) ≥ oup (1) + ( oup (1) + 1)|U|
+
+And inf  
+
+> θ∈Θ0
+
+Pθ
+
+ ∂βL  β − η, bϕ (β − η) ≥ 0 → 1holds for sufficient large N, T.Define E1 = ∂βL  β + η, bϕ (β + η) ≤ 0 and E2 = ∂βL  β − η, bϕ (β − η) ≥ 0 , then we have inf 
+
+> θ∈Θ0
+
+Pθ (E1 ∩ E2) ≤ inf 
+
+> θ∈Θ0
+
+(1 − Pθ (Ec
+
+> 1
+
+) − Pθ (Ec
+
+> 2
+
+)) = 1 − sup 
+
+> θ∈Θ0
+
+Pθ (Ec
+
+> 1
+
+) − sup 
+
+> θ∈Θ0
+
+Pθ (Ec
+
+> 2
+
+)
+
+→ 158 Since L is strictly concave and differentiable, it means inf 
+
+> θ∈Θ0
+
+Pθ
+
+
+
+β − η ≤ bβ ≤ β0 + η
+
+
+
+= inf 
+
+> θ∈Θ0
+
+Pθ
+
+ bβ − β ≤ η
+
+
+
+→ 1. 
+
+C.2 Uniform results for APEs 
+
+The next assumption is from assumption B.2 in Fern´ andez-Val and Weidner (2016) but extends to the uniform case. 
+
+Assumption 12 (Regularity conditions for asymptotic expansion of b∆). Let q , ϵ, rβ, and r ϕ be defined as in Assumption 11. We assume that: 1. (eβ, eϕ) 7 → ∆(eβ, eϕ) is three times continuously differentiable in B  rβ, β × B q
+
+ rϕ, ϕ, wpa1. 2. The partial derivatives satisfy 
+
+∥∂βμ∥ = Oup (1), ∥∂ϕμ∥q = Oup
+
+ (NT )1/ (2q)−1/2 , ∥∂ϕϕ μ∥q = Oup
+
+ (NT )ϵ−1/2 ,
+
+and 
+
+sup 
+
+> eβ∈B (rβ,β)
+
+sup  
+
+> eϕ∈B q(rϕ,ϕ)
+
+∥∂ββ μ(eβ, eϕ)∥ = Oup (1),sup 
+
+> eβ∈B (rβ,β)
+
+sup  
+
+> eϕ∈B q(rϕ,ϕ)
+
+∥∂βϕ ′ μ(eβ, eϕ)∥q = Oup
+
+ (NT )1/ (2q)−1/2 ,sup 
+
+> eβ∈B (rβ,β)
+
+sup  
+
+> eϕ∈B q(rϕ,ϕ)
+
+∥∂ϕϕϕ μ(eβ, eϕ)∥q = Oup
+
+ (NT )ϵ−1/2 .
+
+3. The partial derivatives of eμ satisfy 
+
+∥∂β eμ∥ = ouP(1), ∥∂ϕ eμ∥ = Oup
+
+ (NT )−1/2 , ∥∂ϕϕ eμ∥ = ouP
+
+ (NT )−5/8 .The next theorem is a uniform extension of Theorem B.4 in Fern´ andez-Val and Weidner (2016). 
+
+Theorem C.3. Suppose Assumption 11 and 12 holds and ˆβ − β = Oup
+
+
+
+(NT )− 12
+
+
+
+. Then, 
+
+√NT (∆( ˆθ) − ∆(θ)) = 
+
+
+
+∂βμ + ∂ϕμ′ H−1∂ϕβ ′ L
+
+
+
+( ˆβ − β) + U(0) 
+
+> μ
+
++ U(1) 
+
+> μ
+
++ oup (( NT )− 12 ),59 where U(0) 
+
+> μ
+
+= ∂ϕμ′ H−1S,
+
+U(1) 
+
+> μ
+
+= ∂ϕ eμ′ H−1S − ∂ϕμ′ H−1 eHH −1S
+
++ 12 S′H−1
+
+"
+
+∂ϕϕ ′ μ + 
+
+> dim ϕ
+
+# ∑
+
+> g=1
+
+∂ϕϕϕ g L
+
+h
+
+H−1∂ϕμ
+
+i
+
+> g
+
+#
+
+H−1S.
+
+Proof. See the proof of Theorem B.4 in Fern´ andez-Val and Weidner (2016), with the slight modifi-cation that the bound for each term holds uniformly over every θ ∈ Θ0.
+
+C.3 Sufficient conditions for regularity conditions 
+
+The following lemma is a uniform version of Lemma S.7 in Fern´ andez-Val and Weidner (2016). It provides sufficient conditions for parts (v)–(vi ) of Assumption 11 to hold in the panel data context. 
+
+Lemma C.2. Let L(θ) = L(β, ϕ) = L(β, α, γ) = 1√NT [∑Ni=1 ∑Tt=1 ℓit (β, πit ) − b 
+
+> 2
+
+(v′ϕ)2], where πit =
+
+αi + γt, α = ( α1, . . . , αN )′, γ = ( γ1, . . . , γT ), and v = ( 1′ 
+
+> N
+
+, 1 ′ 
+
+> T
+
+)′. Assume that ℓit (., . ) is four times continuously differentiable on Θ0. Consider limits as N , T → ∞ with N /T → κ > 0. Let 4 < q ≤ 8
+
+and 0 ≤ ϵ < 1/8 − 1/ (2q). Let r β = rβ,NT > 0 and r ϕ = rϕ,NT > 0, with r β = o(( NT )−1/ (2q)−ϵ) and rϕ = o(( NT )−ϵ). Assume the following conditions hold. (i) For k , l, m ∈ { 1, 2, . . . , dim β},
+
+1
+
+√NT 
+
+> N
+
+# ∑
+
+> i=1
+> T
+
+# ∑
+
+> t=1
+
+∂βk ℓit = Oup (1),1
+
+NT 
+
+> N
+
+# ∑
+
+> i=1
+> T
+
+# ∑
+
+> t=1
+
+∂βk βl ℓit = Oup (1),1
+
+NT 
+
+> N
+
+# ∑
+
+> i=1
+> T
+
+# ∑
+
+> t=1
+
+∂βk βl ℓit − Eϕ
+
+∂βk βl ℓit 
+
+ = oup (1),sup 
+
+> eβ∈B (rβ,β)
+
+sup  
+
+> eϕ∈B q(rϕ,ϕ)
+
+1
+
+NT 
+
+> N
+
+# ∑
+
+> i=1
+> T
+
+# ∑
+
+> t=1
+
+∂βk βl βm ℓit 
+
+eβ, eπit 
+
+
+
+= Oup (1).60 (ii) Let k , l ∈ { 1, 2, . . . , dim β}. For ξit (eβ, eϕ) = ∂βk π ℓit 
+
+eβ, eπit 
+
+
+
+or ξit (eβ, eϕ) = ∂βk βl π ℓit 
+
+eβ, eπit 
+
+
+
+,
+
+sup 
+
+> eβ∈B (rβ,β)
+
+sup  
+
+> eϕ∈B q(rϕ,ϕ)
+
+1
+
+T
+
+> T
+
+# ∑
+
+> t=1
+
+1
+
+N ∑
+
+> i
+
+ξit (eβ, eϕ)
+
+> q
+
+= Oup (1),sup 
+
+> eβ∈B (rβ,β)
+
+sup  
+
+> eϕ∈B q(rϕ,ϕ)
+
+1
+
+N
+
+> N
+
+# ∑
+
+> i=1
+
+1
+
+T ∑
+
+> t
+
+ξit (eβ, eϕ)
+
+> q
+
+= Oup (1).
+
+(iii) Let k , l ∈ { 1, 2, . . . , dim β}. For ξit (β, ϕ) = ∂πr ℓit 
+
+eβ, eπit 
+
+
+
+, with r ∈ { 3, 4 }, or ξit (eβ, eϕ) = 
+
+∂βk πr ℓit 
+
+eβ, eπit 
+
+
+
+, with r ∈ { 2, 3 }, or ξit (β, ϕ) = ∂βk βl π2 ℓit (β, πit ),
+
+sup 
+
+> eβ∈B (rβ,β)
+
+sup  
+
+> eϕ∈B q(rϕ,ϕ)
+
+max 
+
+> i
+
+1
+
+T
+
+> T
+
+# ∑
+
+> t=1
+
+ξit (eβ, eϕ) = Oup (N2ϵ),sup 
+
+> eβ∈B (rβ,β)
+
+sup  
+
+> eϕ∈B q(rϕ,ϕ)
+
+max 
+
+> t
+
+1
+
+N
+
+> N
+
+# ∑
+
+> i=1
+
+ξit (eβ, eϕ) = Oup (N2ϵ).
+
+(iv) Moreover, 
+
+1
+
+T
+
+> T
+
+# ∑
+
+> t=1
+
+1
+
+√N
+
+> N
+
+# ∑
+
+> i=1
+
+∂π ℓit 
+
+> q
+
+= Oup (1),1
+
+N
+
+> N
+
+# ∑
+
+> i=1
+
+1
+
+√T
+
+> T
+
+# ∑
+
+> t=1
+
+∂π ℓit 
+
+> q
+
+= Oup (1),1
+
+T
+
+> T
+
+# ∑
+
+> t=1
+
+1
+
+√N
+
+> N
+
+# ∑
+
+> i=1
+
+∂βk π ℓit − Eθ
+
+∂βk π ℓit 
+
+ 2
+
+= Oup (1),1
+
+N
+
+> N
+
+# ∑
+
+> i=1
+
+1
+
+√T
+
+> T
+
+# ∑
+
+> t=1
+
+∂βk π ℓit − Eθ
+
+∂βk π ℓit 
+
+ 2
+
+= Oup (1).
+
+(v) The sequences (ℓi1, . . . , ℓiT ) are conditionally independent across i, given ϕ.(vi) Let k ∈ { 1, 2, . . . , dim β}. For ξit = ∂πr ℓit − Eϕ(∂πr ℓit ), with r ∈ { 2, 3 }, or ξit = ∂βk π2 ℓit −
+
+61 Eθ0 (∂βk π2 ℓit ), we have, for some ˜ν > 0 and some C > 0,
+
+sup 
+
+> θ∈Θ0
+
+max  
+
+> i
+
+Eθ
+
+ξ8+ ˜ν
+
+> it
+
+ ≤ C, sup 
+
+> θ∈Θ0
+
+max  
+
+> i,t
+
+# ∑
+
+> s
+
+Eθ [ξit ξis ] ≤ C,sup 
+
+> θ∈Θ0
+
+max  
+
+> i
+
+Eθ
+
+"
+
+1
+
+√T
+
+> T
+
+# ∑
+
+> t=1
+
+ξit 
+
+#8 ≤ C, sup 
+
+> θ∈Θ0
+
+max  
+
+> t
+
+Eθ
+
+"
+
+1
+
+√N
+
+> N
+
+# ∑
+
+> i=1
+
+ξit 
+
+#8 ≤ C,sup 
+
+> θ∈Θ0
+
+max  
+
+> i,j
+
+Eθ
+
+"
+
+1
+
+√T
+
+> T
+
+# ∑
+
+> t=1
+
+ξit ξjt − Eϕ
+
+ ξit ξjt 
+
+ #4 ≤ C,
+
+uniformly in N , T. (vii) sup θ∈Θ0 ∥H −1∥q = Op(1).Then, parts (v)–(vi ) of Assumption 11 are satisfied with the same q , ϵ, rβ, rϕ as used here. Proof. The proof follows the same steps as that of Lemma S.7 in Fern´ andez-Val and Weidner (2016), except that Op is replaced by Oup . Moreover, Lemma S.6 in Fern´ andez-Val and Weidner (2016) holds uniformly for every θ ∈ Θ0.
+
+C.4 Lemmas 
+
+Lemma C.3. Generally, Oup (1) and o up (1) satisfy 
+
+Oup (1) + Oup (1) = Oup (1), (19) 
+
+Oup (1) + oup (1) = Oup (1), (20) 
+
+oup (1) + oup (1) = oup (1), (21) 
+
+Oup (1)oup (1) = oup (1). (22) 
+
+Proof. Let Xn and Yn be Oup (1). Then, for any ϵ > 0, there exist 0 < kX, kY < ∞ and such that sup 
+
+> θ∈Θ0
+
+Pθ (|Xn| > kX ) < ϵ
+
+2 ,sup 
+
+> θ∈Θ0
+
+Pθ (|Yn| > kY ) < ϵ
+
+262 for all n. Hence sup 
+
+> θ∈Θ0
+
+Pθ (|Xn + Yn| > kX + kY ) ≤ sup 
+
+> θ∈Θ0
+
+(Pθ (|Xn| > kX ) + Pθ (|Yn| > kY )) 
+
+≤ sup 
+
+> θ∈Θ0
+
+Pθ (|Xn| > kX ) + sup 
+
+> θ∈Θ0
+
+Pθ (|Yn| > kY )
+
+≤ ϵ
+
+for all n. This proves (19), from which (20) follows trivially. Now, let Xn and Yn be oup (1). Then, for any ϵ > 0 and δ > 0, we have sup 
+
+> θ∈Θ0
+
+Pθ
+
+
+
+|Xn| > δ
+
+2
+
+
+
+< ϵ
+
+2 ,sup 
+
+> θ∈Θ0
+
+Pθ
+
+
+
+|Yn| > δ
+
+2
+
+
+
+< ϵ
+
+2for all n. Hence sup 
+
+> θ∈Θ0
+
+Pθ (|Xn + Yn| > δ) ≤ sup 
+
+> θ∈Θ0
+
+Pθ
+
+
+
+|Xn| > δ
+
+2
+
+
+
++ sup 
+
+> θ∈Θ0
+
+Pθ
+
+
+
+|Yn| > δ
+
+2
+
+
+
+≤ ϵ
+
+for all n. This proves (19). Finally, let Xn be Oup (1) and let Yn be oup (1). Then, for any δ > 0, sup 
+
+> θ∈Θ0
+
+Pθ (|XnYn| > δ) ≤ sup 
+
+> θ∈Θ0
+
+Pθ
+
+
+
+|Xn| > k or |Yn| > δ
+
+k
+
+
+
+≤ sup 
+
+> θ∈Θ0
+
+Pθ (|Xn| > k) + sup 
+
+> θ∈Θ0
+
+Pθ
+
+
+
+|Yn| > δ
+
+k
+
+
+
+for any 0 < k < ∞. For any ϵ > 0, each term on the right-hand side can be made less than ϵ/2 by choosing k and n large enough. This proves (22). 63
