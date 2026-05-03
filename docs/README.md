@@ -6,61 +6,58 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-05-02
-- 运行时间：2026-05-02 20:16:33 UTC
+- 最新运行日期：2026-05-03
+- 运行时间：2026-05-03 20:23:06 UTC
 - 运行状态：成功
-- 本次总论文数：13
-- 精读区：2
+- 本次总论文数：12
+- 精读区：1
 - 速读区：11
 
 ### 今日简报（AI）
-今日聚焦因果推断前沿，深度拆解了堆叠三重差分（Stacked DDD）与含中介变量的 DiD 识别方法。
-核心结论指出堆叠法能有效提升复杂政策评估的稳健性，并为中介效应下的因果推断提供了新框架。
-建议优先精读两篇 8.5 分的 DiD 进阶论文，以掌握处理机制分析与多维异质性的最新计量利器。
-- 详情：[/202605/02/README](/202605/02/README)
+今日深挖 12 篇计量前沿，聚焦双重差分（DiD）在复杂动态场景下的方法论革新。
+重点推荐“双重稳健局部投影 DiD”及中介效应分析，为处理异质性政策影响提供了更精准的估计框架。
+建议实证研究者优先研读高分精读篇目，掌握应对交互固定效应与长短期效应评估的新策略。
+- 详情：[/202605/03/README](/202605/03/README)
 
 ### 精读区论文标签
-1. [Stacked Triple Differences](/202605/02/2604.22982v1-stacked-triple-differences)  
-   标签：评分：8.5/10、query:profile-1
-   evidence：应用经济学中因果识别的堆叠三重差分法
-2. [Difference-in-differences with a mediator](/202605/02/2604.24049v1-difference-in-differences-with-a-mediator)  
-   标签：评分：8.5/10、query:q9
-   evidence：用于因果中介分析的双重差分框架
+1. [Doubly robust local projections difference-in-differences](/202605/03/2604.27035v1-doubly-robust-local-projections-difference-in-differences)  
+   标签：评分：8.0/10、query:profile-1
+   evidence：用于因果识别的双重稳健双重差分法
 
 ### 速读区论文标签
-1. [Causal Identification under Interference: The Role of Treatment Assignment Independence](/202605/02/2604.22532v1-causal-identification-under-interference-the-role-of-treatment-assignment-independence)  
+1. [Difference-in-differences with a mediator](/202605/03/2604.24049v1-difference-in-differences-with-a-mediator)  
+   标签：评分：7.5/10、query:q9
+   evidence：用于因果中介分析的双重差分框架
+2. [The Short- and Long-Term Impacts of Expanding Public Education for Disabled Students](/202605/03/2604.25767v1-the-short--and-long-term-impacts-of-expanding-public-education-for-disabled-students)  
+   标签：评分：7.5/10、query:q9
+   evidence：教育改革影响的双重差分设计
+3. [Treatment-effect heterogeneity and interactive fixed effects: Can we control for too much?](/202605/03/2604.27187v1-treatment-effect-heterogeneity-and-interactive-fixed-effects-can-we-control-for-too-much)  
    标签：评分：7.5/10、query:profile-1
-   evidence：讨论了包括双重差分法在内的观察性研究因果识别公式。
-2. [Neyman Jackknife: Design-Based Variance Estimation for Causal Inference under Interference](/202605/02/2604.24017v1-neyman-jackknife-design-based-variance-estimation-for-causal-inference-under-interference)  
-   标签：评分：7.5/10、query:profile-1
-   evidence：干扰下因果推断的设计基方差估计
-3. [Bootstrap Inference in Nonlinear Panel Data Models with Interactive Fixed Effects](/202605/02/2604.26826v1-bootstrap-inference-in-nonlinear-panel-data-models-with-interactive-fixed-effects)  
-   标签：评分：7.5/10、query:profile-1
-   evidence：具有交互固定效应的非线性面板数据模型中的自助法推断
-4. [Treatment-effect heterogeneity and interactive fixed effects: Can we control for too much?](/202605/02/2604.27187v1-treatment-effect-heterogeneity-and-interactive-fixed-effects-can-we-control-for-too-much)  
-   标签：评分：7.5/10、query:profile-1
-   evidence：面板数据中交互固定效应的计量方法分析
-5. [MOCA: A Transformer-based Modular Causal Inference Framework with One-way Cross-attention and Cutting Feedback](/202605/02/2604.23107v1-moca-a-transformer-based-modular-causal-inference-framework-with-one-way-cross-attention-and-cutting-feedback)  
+   evidence：具有交互固定效应和处理异质性的因果识别
+4. [Flexible semiparametric modeling with application to Causal Inference](/202605/03/2604.26729v1-flexible-semiparametric-modeling-with-application-to-causal-inference)  
    标签：评分：7.0/10、query:profile-1
-   evidence：基于Transformer的因果推断框架，用于调整观测数据中的混杂因素
-6. [Multivariate incremental effects for continuous treatments: Studying the health effects of environmental mixtures](/202605/02/2604.23534v1-multivariate-incremental-effects-for-continuous-treatments-studying-the-health-effects-of-environmental-mixtures)  
+   evidence：具有二元工具变量的半参数模型的因果推断框架
+5. [Neyman Jackknife: Design-Based Variance Estimation for Causal Inference under Interference](/202605/03/2604.24017v1-neyman-jackknife-design-based-variance-estimation-for-causal-inference-under-interference)  
+   标签：评分：6.8/10、query:profile-1
+   evidence：因果推断中基于设计的方差估计
+6. [Estimation of Time-Varying Treatment Effects in a Joint Model for Longitudinal and Recurrent Event Outcomes in Mobile Health Data](/202605/03/2604.23006v1-estimation-of-time-varying-treatment-effects-in-a-joint-model-for-longitudinal-and-recurrent-event-outcomes-in-mobile-health-data)  
+   标签：评分：6.5/10、query:profile-1
+   evidence：估计纵向和重复事件结果的随时间变化的治疗效应
+7. [MOCA: A Transformer-based Modular Causal Inference Framework with One-way Cross-attention and Cutting Feedback](/202605/03/2604.23107v1-moca-a-transformer-based-modular-causal-inference-framework-with-one-way-cross-attention-and-cutting-feedback)  
+   标签：评分：6.5/10、query:profile-1
+   evidence：基于Transformer的观测数据因果推断框架
+8. [Generative Synthetic Data for Causal Inference: Pitfalls, Remedies, and Opportunities](/202605/03/2604.23904v1-generative-synthetic-data-for-causal-inference-pitfalls-remedies-and-opportunities)  
+   标签：评分：6.5/10、query:profile-1
+   evidence：用于平均处理效应(ATE)估计的因果推断框架
+9. [Linear estimations of dynamic fixed effects logit models only with time effects](/202605/03/2604.24150v1-linear-estimations-of-dynamic-fixed-effects-logit-models-only-with-time-effects)  
+   标签：评分：6.5/10、query:profile-1
+   evidence：具有时间效应的动态固定效应模型估计
+10. [Network-aware IV Regression for Causal Node Discovery and Estimation](/202605/03/2604.24969v1-network-aware-iv-regression-for-causal-node-discovery-and-estimation)  
    标签：评分：6.5/10、query:q7
-   evidence：多元连续处理的因果推断框架
-7. [Generative Synthetic Data for Causal Inference: Pitfalls, Remedies, and Opportunities](/202605/02/2604.23904v1-generative-synthetic-data-for-causal-inference-pitfalls-remedies-and-opportunities)  
+   evidence：金融领域因果发现的工具变量回归
+11. [A Novel Computational Framework for Causal Inference: Tree-Based Discretization with ILP-Based Matching](/202605/03/2604.27307v1-a-novel-computational-framework-for-causal-inference-tree-based-discretization-with-ilp-based-matching)  
    标签：评分：6.5/10、query:profile-1
-   evidence：合成数据中的因果推断和平均处理效应保留
-8. [Sources of Inequality at Birth: The Interplay Between Genes and Parental Socioeconomic Status](/202605/02/2604.25522v1-sources-of-inequality-at-birth-the-interplay-between-genes-and-parental-socioeconomic-status)  
-   标签：评分：6.5/10、query:profile-1
-   evidence：分析了出生（天性）与父母社会经济地位（教养）对生活结果的相互作用。
-9. [The Short- and Long-Term Impacts of Expanding Public Education for Disabled Students](/202605/02/2604.25767v1-the-short--and-long-term-impacts-of-expanding-public-education-for-disabled-students)  
-   标签：评分：6.5/10、query:q9
-   evidence：使用双重差分法研究教育政策对劳动力和教育成果的长期影响。
-10. [A Novel Computational Framework for Causal Inference: Tree-Based Discretization with ILP-Based Matching](/202605/02/2604.27307v1-a-novel-computational-framework-for-causal-inference-tree-based-discretization-with-ilp-based-matching)  
-   标签：评分：6.5/10、query:profile-1
-   evidence：用于数据驱动决策的因果推断框架，采用匹配算法
-11. [Price Cap vs. Per-Unit Subsidies: Selection, Pricing, and Cross Subsidization](/202605/02/2604.22895v1-price-cap-vs-per-unit-subsidies-selection-pricing-and-cross-subsidization)  
-   标签：评分：6.0/10、query:profile-1
-   evidence：用于处理效应的双向固定效应框架
+   evidence：观测数据的因果推断框架
 
 
 <div class="dpr-home-promo-card">

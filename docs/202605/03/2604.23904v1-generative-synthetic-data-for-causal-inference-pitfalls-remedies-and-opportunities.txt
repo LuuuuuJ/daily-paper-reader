@@ -1,0 +1,516 @@
+Title: Generative Synthetic Data for Causal Inference: Pitfalls, Remedies, and Opportunities
+
+URL Source: https://arxiv.org/pdf/2604.23904v1
+
+Published Time: Tue, 28 Apr 2026 01:18:43 GMT
+
+Number of Pages: 17
+
+Markdown Content:
+# Generative Synthetic Data for Causal Inference: Pitfalls, Remedies, and Opportunities 
+
+## Yichen Xu ∗
+
+## University of California, Berkeley 
+
+Abstract 
+
+Synthetic data offers a promising tool for privacy-preserving data release, augmentation, and simu-lation, but its use in causal inference requires preserving more than predictive fidelity. We show that fully generative tabular synthesizers, including GAN- and LLM-based models, can achieve strong train-on-synthetic-test-on-real performance while substantially distorting causal estimands such as the average treatment effect (ATE). We formalize this failure through sensitivity and tradeoff results showing that ATE preservation requires control of both the generated covariate law and the treatment-effect contrast in the outcome regression. Motivated by this observation, we propose a hybrid synthetic-data frame-work that generates covariates separately from the treatment and outcome mechanisms, using distance-to-closest-record diagnostics to monitor covariate synthesis and separately learned nuisance models to construct ( W, A, Y ) triplets. We further study targeted synthetic augmentation for practical positivity problems and characterize when added overlap support helps by improving conditional-effect estimation more than it shifts the covariate distribution. Finally, we develop a synthetic simulation engine for pre-analysis estimator evaluation, enabling finite-sample comparison of OR, IPW, AIPW, and TMLE under realistic covariate structure. Across experiments, hybrid synthetic data substantially improve ATE preservation relative to fully generative baselines and provide a practical diagnostic tool for robust causal analysis. 
+
+# 1 Introduction 
+
+Synthetic data is increasingly used for data sharing, privacy protection, augmentation, and simulation, but its role in causal inference remains underdeveloped. This gap is important because causal analysis requires more than reproducing the observed data distribution. For the average treatment effect (ATE), the key object is the conditional contrast 
+
+Q(1 , W ) − Q(0 , W ), Q(a, W ) = E[Y | A = a, W ],
+
+together with the covariate law of W . A synthetic dataset can therefore look realistic, achieve strong train-on-synthetic-test-on-real (TSTR) performance, or remain close to the original data under privacy-distance diagnostics, while still distorting the causal estimand. We identify and formalize this pitfall through sensitivity and tradeoff results showing that predictive or reconstruction fidelity does not imply preservation of causal estimands. Large language models (LLMs) create new opportunities for causal synthetic-data pipelines because tabular rows can be serialized and modeled flexibly. However, a fully joint generator of ( W, A, Y ) is not automatically aligned with causal estimation. In high-dimensional tabular rows, a row-level reconstruction or next-token objective can be dominated by reconstruction of the covariates, while the outcome mechanism receives comparatively little weight. Motivated by this observation, we propose a hybrid generation strategy: instead of generating the full triplet ( W, A, Y ) from one model, we use a generative model for covariates W ,
+
+> ∗yichen xu@berkeley.edu
+
+1
+
+> arXiv:2604.23904v1 [stat.ME] 26 Apr 2026
+
+monitor the synthetic covariates using distance-to-closest-record diagnostics, and fit the treatment and out-come mechanisms separately. This separation allows flexible covariate synthesis while giving direct modeling attention to the nuisance components that determine the ATE. Empirically, hybrid generation substantially improves causal fidelity for both LLM- and GAN-based generators, often reducing ATE MSE by an order of magnitude while keeping privacy-distance diagnostics comparable. Synthetic data can also support causal estimation under limited overlap or practical positivity problems. In rare treatment-covariate regimes, outcome regression Q(A, W ) can be unstable and weighting estimators can suffer from extreme propensities. We introduce a targeted synthetic augmentation strategy that pairs extreme-propensity observations with nearby synthetic covariates to improve balance in sparse but plausible regions of the covariate space. This use should not be interpreted as solving structural positivity violations; synthetic augmentation remains extrapolative when the treatment truly has no support in a region. Instead, we characterize the tradeoff between improved conditional-effect estimation and covariate distribution shift, and show empirically that targeted synthetic pairing can reduce error when the gain in estimating the conditional effect outweighs the shift introduced by augmentation. Finally, synthetic data can provide a realistic simulation engine for estimator evaluation. Real datasets rarely offer repeated experiments with known ground truth, while hand-crafted simulations often miss the complexity of real covariate distributions. We develop a hybrid synthetic simulation engine that generates repeated finite-sample datasets from a learned data-generating environment, enabling practical comparison of estimator bias, variance, RMSE, and MSE before the final real-data analysis. We use this engine to benchmark OR, IPW, AIPW, and TMLE, showing that well-aligned hybrid synthetic data can reproduce realistic finite-sample estimator behavior more faithfully than simpler or poorly aligned generative baselines. Taken together, these results position synthetic data not as a purely generative artifact, but as a structured component of the causal inference workflow whose value depends on causal validity, estimation stability, and diagnostic usefulness. 
+
+# 2 Related works 
+
+Few studies have investigated the intersection of synthetic data generation and causal inference. Our work builds on advances in synthetic data generation, causal effect estimation, and simulation-based estimator evaluation. Nakada et al. (2025) study LLM-based synthetic oversampling and augmentation for imbalanced classification and spurious correlation. They develop theoretical guarantees showing how synthetic samples reduce group-specific risk under imbalance, derive scaling laws for adding synthetic data across groups, and analyze transformer-based generators as sources of high-quality synthetic samples. Their work is closest to ours in using LLM-generated tabular data to address imbalance, but their focus is prediction under class imbalance and spurious correlation, whereas we study preservation of causal estimands and synthetic-data-based causal estimator evaluation. Lyu et al. (2026) study synthetic data augmentation for imbalanced learning and show that naively treating synthetic minority samples as real data can introduce systematic bias when the synthetic distribution differs from the true minority distribution. They propose a bias-corrected augmentation procedure that estimates synthetic-data bias using majority-class information and adjusts the empirical loss accordingly, with theoretical guarantees for imbalanced classification, multi-task learning, and ATE estimation. Recent work has also studied LLMs as synthetic data generators. Long et al. (2024) survey LLM-driven synthetic data generation for NLP, organizing the literature around generation, curation, and evaluation, and emphasizing the need to balance faithfulness and diversity. Li et al. (2023) study synthetic data generation for text classification, finding that few-shot generation guided by real examples improves over zero-shot generation, but models trained on LLM-generated data generally still underperform models trained on real data. They also show that synthetic data is more effective for low-subjectivity tasks such as news topic classification and spam detection, while performance degrades more for subjective tasks such as humor, sarcasm, and emotion classification. For tabular data, CTGAN (Xu et al., 2019) pioneered conditional GANs with mode-specific normalization and training-by-sampling, and GReaT (Borisov et al., 2023) showed that language models can generate realistic tabular data by serializing tables as text. These methods focus 2primarily on distributional or predictive fidelity; in contrast, we ask whether synthetic tabular data preserve causal structure, especially the treatment-effect contrast that determines the ATE. Several studies have begun exploring synthetic data and foundation models for causal inference. De Bar-tolomeis et al. (2024) use foundation models for randomized experiments, focusing on experimental efficiency rather than positivity violations or causal-parameter preservation. Liu et al. (2025) survey LLM applications in causal inference, but do not address whether synthetic data preserve causal estimands. Our work fills this gap by showing that predictive fidelity can coexist with poor ATE preservation and by proposing a hybrid generation strategy that explicitly models the causal nuisance components. For positivity violations, traditional approaches such as trimming extreme propensity scores can reduce variance but may also change the target population or introduce bias (Gruber et al., 2022; Xu et al., 2026a). Many works diagnose or miti-gate practical positivity problems in IPW-based estimators by truncating extreme fitted propensity scores or filtering samples with extreme scores (Zhou et al., 2020; Kang and Schafer, 2007; Freedman and Berk, 2008; Cole and Hern´ an, 2008). Other methods use overlap weights to emphasize units with stronger treatment overlap (Cheng et al., 2022; Matsouaka and Zhou, 2024). Our approach is complementary: we use synthetic covariate support and paired augmentation to stabilize learning in rare but plausible ( A, W ) regimes, while explicitly acknowledging the distribution-shift tradeoff introduced by augmentation. A large literature studies estimators for the average treatment effect from observational data. Outcome regression (OR), or G-computation, estimates the conditional outcome model Q(a, W ) = E[Y | A = a, W ]and plugs fitted counterfactual means into the ATE functional (Robins, 1986); flexible regressors such as BART are often used for this step (Chipman et al., 2010). Inverse probability weighting (IPW), closely related to the Horvitz–Thompson estimator, uses the propensity score to reweight observations and emulate a randomized experiment (Horvitz and Thompson, 1952). Augmented inverse probability weighting (AIPW) combines outcome regression and propensity score models, yielding a doubly robust estimator that can remain consistent if either nuisance component is correctly specified (Robins et al., 1994). Targeted maximum likelihood estimation (TMLE) updates an initial outcome regression along a targeted fluctuation submodel so that the estimator solves the efficient influence-function equation, yielding a doubly robust and locally efficient substitution estimator (van der Laan and Rubin, 2006; van der Laan and Rose, 2011, 2018). Because these estimators have different finite-sample and limited-overlap failure modes, we use OR, IPW, AIPW, and TMLE as benchmark estimators throughout our synthetic-data evaluation. Evaluating causal estimators typically relies on simplified simulations that fail to capture real-world complexity. The closest related idea is the generative modeling-based bootstrap of Tran et al. (2026), which uses a learned generative model to resample synthetic datasets for statistical inference. Their goal is inferential: to approximate the sampling distribution of a fixed estimator and construct valid confidence intervals, including in settings where the classical bootstrap can fail. Our use of synthetic data serves a different function. We use hybrid synthetic data as a pre-analysis simulation engine: before applying an estimator to the real dataset, the analyst can repeatedly sample from a learned, realistic data-generating environment and diagnose how competing causal estimators behave. Thus, our synthetic engine is not a bootstrap for one fixed estimator, but a diagnostic benchmark for estimator selection. By preserving both covariate complexity and learned causal mechanisms, it provides a testbed for comparing the bias, variance, RMSE, and MSE of OR, IPW, AIPW, and TMLE under realistic finite-sample regimes before the final real-data analysis is performed. 
+
+# 3 Failure of Generative Models to Preserve Causal Parameters and a Hybrid Generation Approach 
+
+Generative model-based data encryption using synthetic data generation has gained increasing attention, with approaches based on GANs Xu et al. (2019) and LLMs Borisov et al. (2023). While metrics such as train-on-synthetic-test-on-real (TSTR) are commonly used to evaluate predictive quality, there is limited focus on whether synthetic data preserve causal parameters. This distinction is important because strong predictive fidelity does not necessarily imply causal fidelity. In particular, the average treatment effect 3(ATE), 
+
+E[Y 1 − Y 0],
+
+depends on how the outcome changes with treatment conditional on covariates, rather than only on how well a synthetic dataset reproduces marginal or predictive patterns. We focus on the tuple ( W, A, Y ), where W denotes covariates, A ∈ { 0, 1} is a binary treatment, and Y
+
+is an outcome. Under standard causal assumptions, including consistency, ignorability, and positivity, the ATE is identified as Ψ( P ) = EPW [QP (1 , W ) − QP (0 , W )] , QP (a, w ) := EP [Y | A = a, W = w].
+
+Thus causal preservation requires preserving both the covariate law PW and the treatment-effect contrast ∆Q(w) := Q(1 , w ) − Q(0 , w ).
+
+The following sensitivity bound makes this point explicit. 
+
+Proposition 3.1 (L2 sensitivity bound for synthetic ATE) . Let W ∈ [0 , 1] d, and suppose PW and P ⋆W admit densities pW and p⋆W with respect to Lebesgue measure. Let Y ∈ [0 , 1] , and define 
+
+∆Q(w) := Q(1 , w ) − Q(0 , w ), ∆⋆(w) := Q⋆(1 , w ) − Q⋆(0 , w ).
+
+Then 
+
+|Ψ( PW , Q ) − Ψ( P ⋆W , Q ⋆)| ≤ ∥ pW − p⋆W ∥L2 + ∥∆Q − ∆⋆∥L2(P ⋆W ).
+
+Proposition 3.1 separates synthetic ATE error into two pieces: an error in the generated covariate law and an error in the outcome contrast. The first term, 
+
+∥pW − p⋆W ∥L2 ,
+
+measures whether the synthetic covariates resemble the target covariate distribution. The second term, 
+
+∥∆Q − ∆⋆∥L2(P ⋆W ),
+
+measures whether the synthetic outcome mechanism preserves the treatment-effect contrast. This second term is directly relevant for causal estimation, but it is not necessarily prioritized by standard row-level generative objectives. The next result formalizes this misalignment. A joint generative model often optimizes a row-level reconstruction or next-token loss over all entries in the row. When there are d covariate coordinates but only one outcome component, the outcome loss receives only a 1 /(d + 1) share of the objective. Hence small joint reconstruction loss need not imply small error in Y | A, W .
+
+Theorem 3.1 (Joint reconstruction induces an ATE-relevant tradeoff) . Let W = ( W1, . . . , W d) denote the 
+
+d covariate coordinates in a tabular row and let Y ∈ { 0, 1}. For a model f , define 
+
+Qf (a, w ) := Pf (Y = 1 | A = a, W = w), ∆f (w) := Qf (1 , w ) − Qf (0 , w ),
+
+and let Q⋆, ∆⋆ denote the corresponding truth. Suppose the row-level reconstruction loss gives equal weight to the d covariate coordinates and one outcome component, so that 
+
+Ljoint (f ) = LW (f ) + 1
+
+d + 1 LY (f ),
+
+where LW is the averaged covariate-reconstruction loss and LY is the balanced conditional outcome loss for 
+
+Y | A, W .Then, for any reference model g,
+
+LY (f ) − LY (g) = ( d + 1) 
+
+h
+
+Ljoint (f ) − Ljoint (g) + LW (g) − LW (f )
+
+i
+
+.
+
+4Thus, outcome-loss improvement inside a joint reconstruction objective is traded against covariate-reconstruction loss with a factor d + 1 .Assume further that LY is the balanced Bernoulli KL loss and inf h LY (h) = 0 . Then 
+
+∥∆f − ∆⋆∥L2(P ⋆W ) ≤ 2pLY (f ).
+
+Consequently, if Ljoint (f ) ≤ ε and LW (f ) ≥ 0, then 
+
+∥∆f − ∆⋆∥L2(P ⋆W ) ≤ 2p(d + 1) ε. 
+
+By contrast, if a hybrid outcome model fhyb is fit directly to LY and satisfies 
+
+LY (fhyb ) ≤ εY ,
+
+then 
+
+∥∆fhyb − ∆⋆∥L2(P ⋆W ) ≤ 2√εY .
+
+Theorem 3.1 explains why high reconstruction fidelity can be misleading for causal inference. A joint generator may achieve small row-level loss primarily by reconstructing the many covariate coordinates well, while the outcome mechanism receives only a diluted share of the objective. However, Proposition 3.1 shows that the ATE remains first-order sensitive to the contrast error 
+
+∥∆Q − ∆⋆∥L2(P ⋆W ).
+
+This creates a tradeoff: a fully generative model fixes the relative weight between covariate reconstruction and outcome modeling, whereas a hybrid construction can tune these components separately. In particular, the hybrid approach can keep the covariate-generation term comparable while allocating additional modeling effort to Q(Y | A, W ), thereby improving the ATE-relevant contrast. Motivated by this observation, we propose a hybrid data generation approach. As shown in Algorithm 1, we first train a generative model on the seed dataset Dseed to synthesize covariates ˜W , while monitoring privacy and distributional similarity using distance to closest records (DCR) Borisov et al. (2023). We then fit a propensity model ˆ g(A | W ) and an outcome model ˆQ(A, W ) directly on Dseed . Finally, for each synthetic covariate ˜Wi, we sample treatment ˜Ai from ˆ g(· | ˜Wi) and generate outcome ˜Yi from ˆQ( ˜Ai, ˜Wi). The separation between the outcome model and the covariate generator also enables safe transfer methods, such as REFINE Xu et al. (2026b), to incorporate external information when learning the outcome mechanism. 
+
+Algorithm 1 Hybrid synthetic data generation  
+
+> 1:
+
+Input: Seed data Dseed = {(Wi, A i, Y i)}mi=1 and target size n 
+
+> 2:
+
+Construct ˆPW from {Wi}mi=1 ▷ e.g. a generative model, monitored by DCR  
+
+> 3:
+
+Construct ˆ g(a | w) and ˆQ(a, w ) ▷ trained on Dseed  
+
+> 4:
+
+for i = 1 , . . . , n do  
+
+> 5:
+
+Sample ˜Wi ∼ ˆPW 
+
+> 6:
+
+Sample ˜Ai ∼ ˆg(· | ˜Wi) 
+
+> 7:
+
+Set ˜Yi ← ˆQ( ˜Ai, ˜Wi) 
+
+> 8:
+
+end for  
+
+> 9:
+
+Return: eD = {( ˜Wi, ˜Ai, ˜Yi)}ni=1 
+
+We benchmark synthetic data generated by large language models (LLMs), generative adversarial net-works (GANs), and their corresponding hybrid variants. In the fully synthetic setting, denoted as “Syn Full,” both treatment ˜A and outcome ˜Y are generated directly from the generative model pθ . In the hybrid setting, only ˜W is generated by the synthetic covariate model, while ˜A and ˜Y are produced using separately fitted nuisance models. 5Figure 1: Privacy and causal-fidelity diagnostics for synthetic data. Left: predictive utility (TSTR AUC) and privacy distance (mean DCR) across synthetic datasets. Right: ATE MSE across estimators, with the vertical axis zoomed to emphasize the comparison among the better-performing methods. Hybrid constructions improve causal fidelity substantially relative to fully generative synthetic data, while DCR and TSTR alone do not fully determine causal usefulness. Our findings show that current generative AI methods for tabular data synthesis can fail to preserve key causal parameters. As shown in Figure 1, LLM-generated data can achieve strong TSTR performance, indicating useful predictive fidelity, while still producing substantially biased ATE estimates. This confirms the theoretical point above: predictive or reconstruction quality alone does not guarantee preservation of the treatment-effect contrast. At the same time, the hybrid constructions substantially improve causal fidelity. In Figure 1, hybrid synthetic data achieve much lower ATE MSE than fully generative synthetic data. For instance, with true ATE 0 .4183, the LLM IPW estimate improves from 0 .4751 to 0 .4172 and its MSE drops from 0 .0047 to 0.0004; for TMLE, MSE drops from 0 .0108 to 0 .0005. For GAN, IPW MSE drops from 0 .1854 to 0 .0114, and TMLE MSE drops from 0 .2027 to 0 .0087. The DCR values remain comparable to those of the corresponding full generators, and in some cases become slightly smaller, indicating that the hybrid procedure does not simply improve ATE estimation by moving far away from the original data distribution. Rather, it improves the estimand-relevant component of the synthetic data: the conditional outcome mechanism. These results support the tradeoff suggested by Proposition 3.1 and Theorem 3.1: the covariate-generation term can remain well controlled, while direct modeling of Y | A, W substantially improves preservation of the ATE. 
+
+# 4 A potential way to address positivity violation with LLM syn-thetic data 
+
+Positivity violations make causal estimation unstable because some treatment values are rarely observed in parts of the covariate space. In these rare ( A, W ) regimes, the outcome regression Q(A, W ) can be poorly learned, and weighting-based estimators can become unstable due to extreme propensity scores. Synthetic data may help by providing plausible covariate scaffolds in sparse regions and by assigning treatments to improve balance over ( W, A ). This does not solve structural positivity violations, but it can help when the observed data are imbalanced while the target population still contains plausible underrepresented regimes. The following proposition formalizes the tradeoff. Synthetic augmentation can reduce error by improving the conditional treatment-effect estimate, but it may also introduce error by shifting the covariate distribu-tion. 
+
+Proposition 4.1 (When synthetic overlap support helps) . Let 
+
+ψ0 =
+
+Z
+
+τ0(w) dμ 0(w), τ0(w) = Q0(1 , w ) − Q0(0 , w ),
+
+be the target ATE under the target covariate law μ0. Let 
+
+τorig (w) = Qorig (1 , w ) − Qorig (0 , w ), τaug (w) = Qaug (1 , w ) − Qaug (0 , w ),
+
+6Scenario IPW AIPW OR TMLE Original 0.0082 0.0232 0.0259 0.0104 Pair Hybrid GAN 0.0017 0.0052 0.0072 0.0040 Pair Hybrid LLM 0.0013 0.0022 0.0033 0.0043 Pair Self-Supervised GAN 0.0153 0.0276 0.0330 0.0093 Pair Self-Supervised LLM 0.0218 0.0364 0.0409 0.0193 Pair Hybrid Flip 5% GAN 0.0038 0.0082 0.0103 0.0047 Pair Hybrid Flip 10% GAN 0.0058 0.0106 0.0131 0.0053 Pair Hybrid Flip 20% GAN 0.0130 0.0255 0.0297 0.0100 Pair Hybrid Flip 5% LLM 0.0031 0.0071 0.0088 0.0056 Pair Hybrid Flip 10% LLM 0.0033 0.0059 0.0079 0.0062 Pair Hybrid Flip 20% LLM 0.0196 0.0327 0.0364 0.0159 Table 1: MSE across positivity experiments. Lower is better. 
+
+and define 
+
+ψorig =
+
+Z
+
+τorig (w) dμ 0(w), ψaug =
+
+Z
+
+τaug (w) dμ aug (w),
+
+where μaug is the covariate law induced by synthetic augmentation. Then 
+
+ψorig − ψ0 =
+
+Z
+
+(τorig − τ0) dμ 0,
+
+and 
+
+ψaug − ψ0 =
+
+Z
+
+(τaug − τ0) dμ aug +
+
+Z
+
+τ0 d(μaug − μ0).
+
+Therefore, synthetic overlap support improves absolute error, 
+
+|ψaug − ψ0| < |ψorig − ψ0|,
+
+if and only if Z
+
+(τaug − τ0) dμ aug +
+
+Z
+
+τ0 d(μaug − μ0) <
+
+Z
+
+(τorig − τ0) dμ 0 .
+
+In particular, the key comparison is between two terms: augmentation can reduce error by improving the conditional effect estimate τ , but it can also introduce a distribution-shift term through μaug − μ0.
+
+Motivated by Proposition 4.1, we use synthetic data to support the poorly represented parts of the covariate-treatment space. We define samples with propensity scores 
+
+pi < 1
+
+√n log n
+
+as extreme-propensity samples. For these samples, we search for synthetic counterparts that are close in covariate space, using Euclidean distance, and pair them to improve treatment balance. The goal is to stabilize estimation of Q(A, W ) in rare regimes while keeping the induced covariate shift limited. The results in Table 1 support this tradeoff. Pair Hybrid LLM reduces IPW MSE from 0 .0082 to 0 .0013, AIPW MSE from 0 .0232 to 0 .0022, and OR MSE from 0 .0259 to 0 .0033. Pair Hybrid GAN also improves over the original data, reducing IPW MSE to 0 .0017 and TMLE MSE to 0 .0040. In contrast, self-supervised pairing, i.e., training Q only on the current seed data and then predicting outcomes over synthetic covariates 
+
+W , is less reliable and can perform worse than the original data. This suggests that synthetic covariates alone do not resolve the positivity problem: without additional outcome information or improved transfer for learning Q(A, W ) in rare regimes, augmentation can fail to improve causal estimation. 7Source Estimator Sign correct Real bias Syn. bias Real var Syn. var Real RMSE Syn. RMSE Real MSE Syn. MSE LLM IPW Yes -0.0012 -0.0029 0.000279 0.000660 0.0163 0.0252 0.000267 0.000635 LLM TMLE Yes 0.0243 0.0202 0.000379 0.000762 0.0308 0.0337 0.000948 0.001133 LLM AIPW Yes -0.0263 -0.0302 0.000314 0.000621 0.0315 0.0388 0.000989 0.001504 LLM OR Yes -0.0343 -0.0375 0.000315 0.000630 0.0384 0.0447 0.001478 0.002002 GAN IPW Yes -0.0012 -0.1025 0.000279 0.000530 0.0163 0.1050 0.000267 0.011015 GAN TMLE No 0.0243 -0.0808 0.000379 0.000892 0.0308 0.0859 0.000948 0.007380 GAN AIPW Yes -0.0263 -0.1275 0.000314 0.000589 0.0315 0.1297 0.000989 0.016822 GAN OR Yes -0.0343 -0.1343 0.000315 0.000578 0.0384 0.1363 0.001478 0.018582 
+
+Table 2: Real-data fidelity diagnostic summary. Synthetic performance is evaluated by how closely synthetic-data finite-sample behavior matches the real-data benchmark, using synthetic-versus-real bias, variance, RMSE, and MSE. The flip experiments show that the benefit does not require a perfect synthetic outcome model. With 10% flips, Pair Hybrid LLM still improves over the original data for IPW, AIPW, and OR, with MSEs 0.0033, 0 .0059, and 0 .0079, respectively. When the flip rate reaches 20%, the advantage weakens, consistent with Proposition 4.1: augmentation helps only when the improvement in τ outweighs the covariate shift or outcome noise introduced by the synthetic samples. 
+
+# 5 Synthetic data engine for estimator evaluation 
+
+Another use of hybrid synthetic data is estimator evaluation. In practice, analysts often need guidance before committing to a final causal analysis: which estimator is likely to be stable, whether bias or variance will dominate the error, whether a sample size such as 1000 is adequate, and whether OR, IPW, AIPW, or TMLE is safer in the observed regime. Real datasets rarely provide repeated experiments with known ground truth, while hand-crafted simulations often miss the complexity of real covariate distributions. Asynthetic simulation engine offers a middle ground: it turns one observed dataset into a realistic finite-sample forecasting environment. We build this engine by learning a realistic covariate generator and separately learning treatment and outcome mechanisms. Once a large synthetic population is generated, we estimate a high-precision reference effect using a large synthetic sample and then repeatedly subsample smaller datasets to evaluate finite-sample bias, variance, RMSE, and MSE. In our experiment, the large synthetic reference sample has size 50,000, and each finite-sample replication uses 1,000 observations. Table 2 compares the finite-sample behavior induced by synthetic data against the corresponding real-data benchmark. The LLM-based hybrid simulator tracks the real benchmark closely: the signs of bias are correct for all estimators, and the synthetic biases remain close to the real biases. For example, IPW has real bias −0.0012 and synthetic bias −0.0029, while TMLE has real bias 0 .0243 and synthetic bias 0 .0202. AIPW and OR also show close agreement, with synthetic biases −0.0302 and −0.0375 compared with real biases −0.0263 and −0.0343. The GAN-based simulator is less faithful: GAN synthetic IPW has bias −0.1025 compared with real bias −0.0012, GAN synthetic AIPW has bias −0.1275 compared with real bias −0.0263, and TMLE even has the wrong bias sign. These discrepancies are also reflected in RMSE and MSE, where GAN synthetic errors are much larger than the real-data benchmarks for several estimators. Overall, the results suggest that hybrid synthetic data can serve as a practical diagnostic tool for esti-mator selection, but the quality of the covariate generator matters. The LLM-based simulator more closely reproduces the real finite-sample ranking and error decomposition, making it more useful for anticipating estimator behavior before the final analysis. The goal is not to replace real-data analysis, but to provide a realistic stress test that helps analysts identify likely estimator failure modes in advance. 8Dataset TSTR AUC Mean DCR IPW ATE AIPW ATE TMLE ATE LLM Full 0.7422 1.0479 -3.1670 -10.0869 -2.9390 LLM Hybrid 0.8102 1.0461 -20.4772 -14.6497 -23.9624 CTGAN Full 0.4444 2.0900 -2.4600 -18.7035 -1.4010 CTGAN Hybrid 0.8124 1.9969 -13.5488 -27.0269 -17.5316 Table 3: ACTG synthetic-data diagnostics and effect estimates. TSTR reports predictive utility on the real ACTG benchmark, DCR summarizes privacy distance, and ATE columns report mean estimated treatment effects over repeated subsamples of size 1000. 
+
+# 6 Real-World Applications and Limitations 
+
+We next evaluate our framework on the ACTG175 dataset, a real-world HIV randomized trial with a con-tinuous outcome. Unlike the earlier privacy experiment, where the target effect is known by construction, the ACTG setting is intended to assess whether synthetic data can support two realistic goals simultane-ously: preserving useful predictive and causal structure, and serving as a credible simulation environment for benchmarking estimators under complex covariates. We construct four synthetic ACTG datasets: LLM Full, LLM Hybrid, CTGAN Full, and CTGAN Hybrid. For each synthetic dataset, we report three diagnostics: train-on-synthetic-test-on-real (TSTR) AUC, mean distance to the closest record (DCR), and repeated treatment-effect estimates based on subsamples of size 1000. The resulting summary is shown in Table 3. On predictive fidelity, both hybrid constructions improve substantially over their fully generative counterparts: TSTR AUC increases from 0 .7422 to 0 .8102 for the LLM generator and from 0 .4444 to 0 .8124 for CTGAN. The DCR summaries remain similar within each generator family, with mean DCR near 1 .05 for LLM Full and LLM Hybrid and around 2 .09 and 2 .00 for CTGAN Full and CTGAN Hybrid. The treatment-effect estimates also change after hybridization: for both LLM and CTGAN, the hybrid datasets produce more consistently negative ATE estimates across IPW, AIPW, and TMLE. Together with the improved TSTR AUC, this pattern suggests that hybridization may reduce distortion in the outcome-relevant structure. Beyond point estimates, the main value of the ACTG experiment is to assess whether hybrid synthetic data can function as a realistic simulation engine for finite-sample benchmarking. To do so, we generate large hybrid pools and repeatedly subsample from them at sample sizes ranging from 100 to 1000. For each sample size, we evaluate IPW, AIPW, outcome regression, and TMLE relative to a large-sample synthetic TMLE reference within the same hybrid environment. The resulting bias, variance, MSE, and RMSE curves are shown in Figures A.1 and 2. Several consistent patterns emerge. First, IPW has relatively small bias but the largest variance, reflecting the instability of weight-based estimators under estimated propensities. Second, as sample size grows, the biases of all estimators decrease relative to the large-sample TMLE reference, consistent with the expectation that regular asymptotically linear estimators such as AIPW and TMLE become increasingly close in large samples. Third, AIPW generally improves upon outcome regression in both MSE and bias, highlighting the benefit of doubly robust correction over a purely outcome-model-based plug-in estimator. The CTGAN-based simulator shows broadly similar qualitative trends, but with more irregular bias and MSE behavior than the LLM-based simulator. Together with the earlier diagnostics, this suggests that CTGAN may provide a less ideal simulation environment than the LLM-based hybrid generator in this setting. Overall, these results indicate that hybrid synthetic data can be used not only to generate plausible real-world datasets, but also to forecast estimator behavior in realistic regimes where practitioners need guidance about finite sample bias-variance tradeoffs before conducting a final analysis. These ACTG results illustrate both the promise and the limitation of our framework. The promise is that hybrid synthetic data can convert a single real dataset into a realistic benchmarking environment that reveals estimator-specific failure modes before a final analysis is committed. The limitation is that the usefulness of this benchmark still depends critically on the quality of the learned synthetic covariate generator. In our experiments, the LLM-based hybrid simulator appears substantially more faithful than the CTGAN-based 9Figure 2: Finite-sample benchmarking results under the LLM-based hybrid ACTG simulator. Panels report bias, variance, MSE, and RMSE as functions of sample size for IPW, AIPW, outcome regression, and TMLE. one, suggesting that not all synthetic generators are equally suitable as foundations for causal simulation. Thus, while hybrid synthetic data can support estimator evaluation in complex real-world settings, careful validation of the synthetic data generator remains essential. 
+
+# 7 Conclusion 
+
+We have shown that synthetic data for causal inference must be evaluated by more than predictive or distributional fidelity: fully generative tabular synthesizers can reproduce useful observational patterns while substantially distorting causal estimands such as the ATE. Motivated by this failure mode, we proposed a hybrid synthetic-data framework that separates covariate generation from treatment and outcome modeling, improving preservation of the treatment-effect contrast, supporting targeted augmentation for practical positivity problems, and enabling a synthetic simulation engine for pre-analysis estimator evaluation. Several directions remain important for future work. First, the outcome-model component of the hybrid pipeline can be strengthened further, for example by studying plug-in outcome models enhanced by safe transfer methods such as REFINE and quantifying when externally augmented outcome modeling improves synthetic-data quality. Second, the framework should be extended beyond static tabular data to more complex formats, including longitudinal data, time-varying treatments, and multimodal settings where images, text, or other modalities are paired with tabular covariates. Third, future work should investigate synthetic-data validity for causal estimands beyond the ATE, such as conditional average treatment effects, heterogeneous treatment effects, policy values, mediation effects, and longitudinal causal parameters. Fourth, better auditing tools are needed: while we use DCR to monitor covariate similarity and privacy distance, causal usefulness also depends on the learned outcome contrast, especially in rare ( A, W ) regimes under limited overlap. Developing 10 diagnostics that audit synthetic-data quality for causal validity, overlap support, and rare-regime outcome reliability is therefore a key step toward certifying synthetic data pipelines for high-stakes causal analysis. 
+
+# References 
+
+Borisov, V., Sessler, K., Leemann, T., Pawelczyk, M., and Kasneci, G. (2023). Language models are realistic tabular data generators. In The Eleventh International Conference on Learning Representations .Cheng, C., Li, F., Thomas, L. E., and Li, F. F. (2022). Addressing extreme propensity scores in estimating counterfactual survival functions via the overlap weights. American Journal of Epidemiology , 191(6):1140– 1151. Chipman, H., George, E., and McCulloch, R. (2010). Bart: Bayesian additive regression trees. The Annals of Applied Statistics , 4. Cole, S. R. and Hern´ an, M. A. (2008). Constructing inverse probability weights for marginal structural models. American Journal of Epidemiology , 168(6):656–664. Epub 2008 Aug 5. De Bartolomeis, P., Abad, J., Wang, G., Donhauser, K., Duch, R. M., Yang, F., and Dahabreh, I. J. (2024). Efficient randomized experiments using foundation models. arXiv preprint arXiv:2502.04262 .Freedman, D. A. and Berk, R. A. (2008). Weighting regressions by propensity scores. Evaluation Review ,32(4):392–409. Gruber, S., Phillips, R. V., Lee, H., and van der Laan, M. J. (2022). Data-adaptive selection of the propensity score truncation level for inverse-probability–weighted and targeted maximum likelihood estimators of marginal point treatment effects. American Journal of Epidemiology , 191(9):1640–1651. Horvitz, D. G. and Thompson, D. J. (1952). A generalization of sampling without replacement from a finite universe. Journal of the American Statistical Association , 47(260):663–685. Kang, J. D. Y. and Schafer, J. L. (2007). Demystifying Double Robustness: A Comparison of Alternative Strategies for Estimating a Population Mean from Incomplete Data. Statistical Science , 22(4):523 – 539. Li, Z., Zhu, H., Lu, Z., and Yin, M. (2023). Synthetic data generation with large language models for text classification: Potential and limitations. In Bouamor, H., Pino, J., and Bali, K., editors, Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing , pages 10443–10461, Singapore. Association for Computational Linguistics. Liu, X., Xu, P., Wu, J., Yuan, J., Yang, Y., Zhou, Y., Liu, F., Guan, T., Wang, H., Yu, T., McAuley, J., Ai, W., and Huang, F. (2025). Large language models and causal inference in collaboration: A survey. arXiv preprint arXiv:2403.09606 .Long, L., Wang, R., Xiao, R., Zhao, J., Ding, X., Chen, G., and Wang, H. (2024). On LLMs-driven synthetic data generation, curation, and evaluation: A survey. In Ku, L.-W., Martins, A., and Srikumar, V., editors, Findings of the Association for Computational Linguistics: ACL 2024 , pages 11065–11082, Bangkok, Thailand. Association for Computational Linguistics. Lyu, P., Ma, Z., Zhang, L., and Zhang, A. R. (2026). Bias-corrected data synthesis for imbalanced learning. Matsouaka, R. A. and Zhou, Y. (2024). Causal inference in the absence of positivity: The role of overlap weights. Biometrical Journal , 66(4):e2300156. Nakada, R., Xu, Y., Li, L., and Zhang, L. (2025). Synthetic oversampling: Theory and a practical approach using llms to address data imbalance. arXiv preprint arXiv:2406.03628 .11 Robins, J. (1986). A new approach to causal inference in mortality studies with a sustained exposure period—application to control of the healthy worker survivor effect. Mathematical Modelling , 7(9):1393– 1512. Robins, J. M., Rotnitzky, A., and Zhao, L. P. (1994). Estimation of regression coefficients when some regressors are not always observed. Journal of the American Statistical Association , 89(427):846–866. Tran, L., Ye, T., Ding, P., and Han, F. (2026). Generative modeling for the bootstrap. van der Laan, M. J. and Rose, S. (2011). Targeted Learning: Causal Inference for Observational and Experimental Data . Springer Series in Statistics. Springer New York, NY, New York, NY, 1 edition. van der Laan, M. J. and Rose, S. (2018). Targeted Learning in Data Science: Causal Inference for Complex Longitudinal Studies . Springer Series in Statistics. Springer Cham. van der Laan, M. J. and Rubin, D. (2006). Targeted maximum likelihood learning. The International Journal of Biostatistics , 2(1). Xu, L., Skoularidou, M., Cuesta-Infante, A., and Veeramachaneni, K. (2019). Modeling tabular data using conditional gan. In Wallach, H., Larochelle, H., Beygelzimer, A., d 'Alch´ e-Buc, F., Fox, E., and Garnett, R., editors, Advances in Neural Information Processing Systems , volume 32. Curran Associates, Inc. Xu, Y., Gruber, S., and van der Laan, M. J. (2026a). Investigating targeting strategies and truncation in tmle for the average treatment effect under practical positivity violations. Xu, Y., Nakada, R., Zhang, L., and Li, L. (2026b). Residual feature integration is sufficient to prevent negative transfer. In The Fourteenth International Conference on Learning Representations .Zhou, Y., Matsouaka, R. A., and Thomas, L. (2020). Propensity score weighting under limited overlap and model misspecification. Statistical Methods in Medical Research , 29(12):3721–3756. Epub 2020 Jul 21. 12 Figure A.1: Finite-sample benchmarking results under the CTGAN-based hybrid ACTG simulator. Panels report bias, variance, MSE, and RMSE as functions of sample size for IPW, AIPW, outcome regression, and TMLE. 
+
+# Appendix Additional experiments and reproducibility details 
+
+Figure A.1 reports the corresponding simulation-engine results when CTGAN is used as the synthetic co-variate generator. Several qualitative patterns remain consistent with the earlier benchmark. First, IPW again exhibits the largest variance across sample sizes, reflecting the instability of purely weight-based es-timators under estimated propensities. Second, AIPW consistently improves upon outcome regression in both MSE and RMSE, indicating that doubly robust correction remains beneficial in this setting. Third, TMLE remains the estimator that is most closely aligned with the large-sample synthetic reference, with the most pronounced bias reduction as sample size increases. At the same time, the CTGAN-based simulator also shows some distinct differences in finite-sample behavior. Although IPW often has smaller bias than AIPW and outcome regression, its substantially larger variance can lead to less favorable overall error at some sample sizes, so that AIPW may achieve smaller MSE despite having higher bias. More generally, the bias, MSE, and RMSE curves display more irregular finite-sample fluctuations across estimators, illustrating that the synthetic benchmark can preserve broad qualitative rankings while still inducing estimator-specific differences in error decomposition. To support reproducibility, we describe the simulation design and the LLM-based synthetic tabular generation pipeline in implementation terms. In the main synthetic-data experiments, the data-generating 13 process contains six covariates, one binary treatment, and one binary outcome: 
+
+W1, W 2 ∼ Bernoulli(0 .5) , P(W3 = 1 | W1, W 2) = 0 .3 + 0 .35( W1 + W2)/2,W4, W 5 ∼ N (0 , 1) , W6 = 0 .5W4 + 0 .5W5 + ϵ, ϵ ∼ N (0 , 1) ,
+
+P(A = 1 | W ) = expit {− 30 + 16 W1 − 24 W2 + 12 W3 + 6 W4 − 10 W5 + 16 W6},τ (W ) = 2 .0 + 0 .5 sin( W1) + 0 .3 log( |W2| + 1) − 0.2W 23 + 0 .1 exp( W4) − 0.3 tanh( W5) + 0 .2 cos( W6),
+
+P(Y = 1 | A, W ) = expit {− 0.5 + τ (W )A + 0 .5W1 + W2 − W3 + 0 .2W4 − 0.3W5 + 0 .1W6}.
+
+In the randomized setting, we replace the observational treatment rule by A ∼ Bernoulli(0 .5). The theoretical ATE is computed from a large randomized population by averaging the difference between the treated and control outcome probabilities. For the privacy and causal-fidelity experiments, we use a randomized seed dataset of size 1000 and a randomized test dataset of size 1000. For the positivity experiments, we additionally generate an observational dataset of size 200, where treatment assignment follows the propensity model above. For LLM-based tabular synthesis, we used the GReaT framework Borisov et al. (2023) with GPT-2 as the underlying language model. Each row of the training table was serialized into a textual template that explicitly encoded covariates, treatment, and outcome, for example W1=1, W2=0, W3=1, W4=0, W5=1, W6=0 => A=1, Y=0 . Following the GReaT methodology, we randomized the order of features during serialization to reduce positional artifacts and improve robustness to different conditioning orders. This representation allowed the model to treat each tabular row as a sequence while preserving the dependence structure among 
+
+W , A, and Y .We fine-tuned GPT-2 using the GReaT Python package. In the main experiments, the model was trained for 50 epochs with batch size 32, and checkpoints were saved every 400,000 training steps to allow checkpoint recovery and exact reruns. After training, we reloaded the saved checkpoint and generated 50,000 synthetic samples using autoregressive sampling. Sampling was performed with randomized feature order and a maximum generation length between 1024 and 2000 tokens. The resulting outputs were then converted back into structured tabular format for downstream causal analyses. The GReaT framework is especially useful in this setting because it avoids lossy one-hot preprocessing and supports conditioning on arbitrary subsets of variables through textual prompts. This flexibility is valuable for causal inference tasks, where preserving conditional structure is often more important than merely matching marginal distributions. To evaluate whether the synthetic data remained close to the original data manifold without collapsing into memorization, we monitored distance to the closest record (DCR). In our experiments, DCR diagnostics showed that the generated samples remained close to the observed distribution while still preserving enough variability to avoid trivial duplication of training rows. The full pipeline is reproducible through fixed data-generating seeds, fixed training configurations, saved checkpoints, deterministic sampling settings, and systematic file naming for all intermediate and final out-puts. Across repeated runs, fine-tuning and sampling typically required between 15 and 20 minutes depending on hardware and system load. We provide the full implementation details and code in the supplementary repository so that all synthetic-data generation and downstream evaluation steps can be rerun directly. 
+
+# Theoretical analysis 
+
+Proof for Proposition 3.1. Write Ψ( PW , Q ) = EPW [∆ Q(W )] , Ψ( P ⋆W , Q ⋆) = EP ⋆W [∆ ⋆(W )] .
+
+Add and subtract EP ⋆W [∆ Q(W )]: Ψ( PW , Q ) − Ψ( P ⋆W , Q ⋆) = EPW [∆ Q(W )] − EP ⋆W [∆ Q(W )] 
+
++ EP ⋆W [∆ Q(W ) − ∆⋆(W )] .
+
+14 Taking absolute values and applying the triangle inequality gives 
+
+|Ψ( PW , Q ) − Ψ( P ⋆W , Q ⋆)| ≤ 
+
+Z
+
+∆Q(w){pW (w) − p⋆W (w)} dw 
+
++ EP ⋆W [∆ Q(W ) − ∆⋆(W )] .
+
+Since Y ∈ [0 , 1], we have |∆Q(w)| ≤ 1. Hence 
+
+Z
+
+∆Q(w){pW (w) − p⋆W (w)} dw ≤
+
+Z
+
+|pW (w) − p⋆W (w)| dw. 
+
+Because [0 , 1] d has Lebesgue measure one, 
+
+Z
+
+|pW (w) − p⋆W (w)| dw ≤ ∥ pW − p⋆W ∥L2 .
+
+For the second term, by Cauchy–Schwarz, 
+
+EP ⋆W [∆ Q(W ) − ∆⋆(W )] ≤ ∥ ∆Q − ∆⋆∥L2(P ⋆W ).
+
+Combining the two displays gives 
+
+|Ψ( PW , Q ) − Ψ( P ⋆W , Q ⋆)| ≤ ∥ pW − p⋆W ∥L2 + ∥∆Q − ∆⋆∥L2(P ⋆W ).
+
+Proof for Theorem 3.1. First, the equal-weight reconstruction assumption gives 
+
+Ljoint (f ) = LW (f ) + 1
+
+d + 1 LY (f ).
+
+Therefore, for any two models f and g,
+
+Ljoint (f ) − Ljoint (g) = {LW (f ) − LW (g)} + 1
+
+d + 1 {LY (f ) − LY (g)}.
+
+Rearranging, 1
+
+d + 1 {LY (f ) − LY (g)} = Ljoint (f ) − Ljoint (g) − { LW (f ) − LW (g)}.
+
+Multiplying both sides by d + 1 yields 
+
+LY (f ) − LY (g) = ( d + 1) 
+
+h
+
+Ljoint (f ) − Ljoint (g) + LW (g) − LW (f )
+
+i
+
+.
+
+This is the exact tradeoff identity. It shows that a decrease in covariate-reconstruction loss can compensate for an increase in outcome loss inside the joint objective, and the conversion from joint-loss control to outcome-loss control costs a factor d + 1. As a special case, if LW (f ) ≥ 0 and 
+
+Ljoint (f ) ≤ ε, 
+
+then 1
+
+d + 1 LY (f ) ≤ Ljoint (f ) ≤ ε. 
+
+Hence 
+
+LY (f ) ≤ (d + 1) ε. 
+
+15 Now assume LY is the balanced Bernoulli KL loss: 
+
+LY (f ) = EP ⋆W
+
+X
+
+> a∈{ 0,1}
+
+KL(Bern( Q⋆(a, W )) ∥ Bern( Qf (a, W ))) .
+
+By Pinsker’s inequality, for each a ∈ { 0, 1},
+
+|Qf (a, w ) − Q⋆(a, w )|2 ≤ 12 KL(Bern( Q⋆(a, w )) ∥ Bern( Qf (a, w ))) .
+
+Integrating over P ⋆W gives 
+
+∥Qf (a, ·) − Q⋆(a, ·)∥L2(P ⋆W ) ≤
+
+r LY (f )2 .
+
+Because ∆f − ∆⋆ = {Qf (1 , ·) − Q⋆(1 , ·)} − { Qf (0 , ·) − Q⋆(0 , ·)},
+
+the triangle inequality gives 
+
+∥∆f − ∆⋆∥L2(P ⋆W ) ≤ ∥ Qf (1 , ·) − Q⋆(1 , ·)∥L2(P ⋆W ) + ∥Qf (0 , ·) − Q⋆(0 , ·)∥L2(P ⋆W ).
+
+Therefore, 
+
+∥∆f − ∆⋆∥L2(P ⋆W ) ≤ 2pLY (f ).
+
+The constant is loose but sufficient. Combining this with 
+
+LY (f ) ≤ (d + 1) ε
+
+gives 
+
+∥∆f − ∆⋆∥L2(P ⋆W ) ≤ 2p(d + 1) ε. 
+
+For the hybrid outcome model, the assumption 
+
+LY (fhyb ) ≤ εY
+
+is a direct conditional-outcome loss certificate. Applying the same Pinsker and triangle-inequality argument gives 
+
+∥∆fhyb − ∆⋆∥L2(P ⋆W ) ≤ 2√εY .
+
+Thus the tradeoff is explicit: joint reconstruction controls the ATE-relevant outcome contrast only through a ( d+1)-inflated certificate, while direct hybrid outcome fitting controls it without that dilution. 
+
+Proof for Proposition 4.1. Start from the definitions of the augmented estimator and the target: 
+
+ψaug − ψ0 =
+
+Z
+
+τaug (w) dμ aug (w) −
+
+Z
+
+τ0(w) dμ 0(w).
+
+Insert and subtract the same intermediate quantity R τ0 dμ aug :
+
+ψaug − ψ0 =
+
+Z 
+
+τaug dμ aug −
+
+Z
+
+τ0 dμ aug 
+
+
+
++
+
+Z 
+
+τ0 dμ aug −
+
+Z
+
+τ0 dμ 0
+
+
+
+.
+
+By linearity of integration, 
+
+Z
+
+τaug dμ aug −
+
+Z
+
+τ0 dμ aug =
+
+Z
+
+(τaug − τ0) dμ aug ,
+
+16 and, by the definition of integration against a signed measure, 
+
+Z
+
+τ0 dμ aug −
+
+Z
+
+τ0 dμ 0 =
+
+Z
+
+τ0 d(μaug − μ0).
+
+Therefore, 
+
+ψaug − ψ0 =
+
+Z
+
+(τaug − τ0) dμ aug +
+
+Z
+
+τ0 d(μaug − μ0).
+
+For the original estimator, 
+
+ψorig − ψ0 =
+
+Z
+
+τorig dμ 0 −
+
+Z
+
+τ0 dμ 0
+
+=
+
+Z
+
+(τorig − τ0) dμ 0.
+
+Now synthetic overlap support is beneficial exactly when 
+
+|ψaug − ψ0| < |ψorig − ψ0|.
+
+Substituting the two exact identities above yields 
+
+Z
+
+(τaug − τ0) dμ aug +
+
+Z
+
+τ0 d(μaug − μ0) <
+
+Z
+
+(τorig − τ0) dμ 0 .
+
+This is precisely the claimed equivalence. The proof is complete. 17
