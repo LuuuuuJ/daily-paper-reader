@@ -1,0 +1,1277 @@
+Title: Doubly robust local projections difference-in-differences
+
+URL Source: https://arxiv.org/pdf/2604.27035v1
+
+Published Time: Fri, 01 May 2026 00:03:31 GMT
+
+Number of Pages: 31
+
+Markdown Content:
+# Doubly Robust Local Projections Difference-in-Differences 
+
+Daniel de Abreu Pereira Uhr a, ∗, Guilherme Valle Moura b
+
+> a
+
+Department of Economics, Universidade Federal de Pelotas 
+
+> b
+
+Department of Economics and International Relations, Universidade Federal de Santa Catarina 
+
+Abstract 
+
+This paper develops a doubly robust extension of local-projections difference-in-differences (LP-DiD) for staggered absorbing treatments. The resulting estima-tor, DRLPDID, preserves the LP-DiD local-stack ATT target and is consistent when either the local untreated-outcome regression or the local treatment-probability model is correctly specified. It also delivers influence-function-based inference for post-treatment summaries and multiplier-bootstrap bands for dynamic paths. In Monte Carlo designs with covariate-driven selection, DRLPDID matches regression-adjusted LP-DiD under outcome-model align-ment and clearly outperforms the IPT-only variant under propensity-score misspecification. In the no-fault-divorce application, DRLPDID tracks robust staggered-adoption estimators and is less negative than unadjusted LP-DiD. 
+
+Keywords: Doubly robust estimation, local projections, difference-in-differences, staggered adoption, influence function 
+
+JEL codes: C14, C21, C23, C12 
+
+1. Introduction 
+
+Event-study designs are standard tools for tracing policy dynamics. In staggered-adoption settings with heterogeneous treatment effects, however, 
+
+> ∗
+
+Corresponding author. Address: Rua Gomes Carneiro, 1, Department of Economics, Campus Anglo, Universidade Federal de Pelotas, Centro, CEP 96010-610, Pelotas, RS, Brazil. Phone +55 (53) 3284-3865. 
+
+Email addresses: daniel.uhr@gmail.com (Daniel de Abreu Pereira Uhr), 
+
+gvallemoura@gmail.com (Guilherme Valle Moura) 
+
+> arXiv:2604.27035v1 [econ.EM] 29 Apr 2026
+
+the usual two-way fixed-effects event-study regression need not recover a causal path because it can mix already-treated comparisons and non-transparent weights [3, 8, 2, 15, 1, 7, 4, 12]. LP-DiD estimates horizon-specific effects [ 11 ] on clean-control stacks that exclude unclean comparisons, thereby avoiding contamination from already-treated controls [ 6]. But each horizon-specific stack remains an observational comparison. When untreated outcome dynamics or treatment timing depend on covariates, the horizon-specific LP-DiD problem can be cast as a semiparametric Average Treatment Effect on the Treated (ATT) problem under conditional parallel trends [ 6]. Although doubly robust estimators for staggered adoption already exist [ 2, 13 ], they operate on the full panel rather than on horizon-specific clean-control stacks; a researcher committed to the LP-DiD framework, therefore, needs nuisance adjustment derived within that framework, with local propensity scores and outcome regressions that are stack- and horizon-specific by construction. This article extends the LP-DiD framework by incorporating robustness to misspecification through a doubly robust approach in staggered adoption settings. It shows that the existing LP-DiD horizon problem can be enriched with Regression-Adjusted (RA), Inverse-Probability-Tilting (IPT), and Dou-bly Robust (DR) structures that admit influence-function-based inference and multiplier-bootstrap bands [ 10 , 9, 13 , 2]. The Monte Carlo compares DRLPDID with LP-DiD benchmarks and its RA and IPT counterparts across nuisance-specification scenarios designed to diagnose the value of double robustness. The application then shows how the resulting dynamic path com-pares with leading staggered-adoption estimators in practice. The appendix provides the general base-period formulation, proofs, and supplementary results. 
+
+2. Local DRLPDID 
+
+LP-DiD compares post-entry outcomes with a pre-treatment benchmark constructed using a specific base-period rule, indexed by b. For a given entry date t, let B(t; b) ⊂ { 1, . . . , t − 1} denote the set of active pre-treatment periods and let ω(b) 
+
+> tl
+
+be weights summing to one. The generic benchmark operator is defined as: 
+
+B(b) 
+
+> it
+
+= ∑
+
+> l∈B (t;b)
+
+ω(b) 
+
+> tl
+
+Yil , (2.1) 2This paper focuses on the standard last-pre-treatment benchmark (denoted by b = −1), which assigns a weight of one to period t − 1 and zero otherwise, yielding B(−1)  
+
+> it
+
+= Yi,t −1. The horizon-h long difference is therefore: 
+
+∆it (h) = Yi,t +h − Yi,t −1. (2.2) Write the local treatment-entry indicator as 
+
+Dit = 1{Gi = t}. (2.3) Here Dit denotes local treatment entry, not calendar-time treatment status. For h ≥ 0, the clean-control stack compares treated entries at t with observa-tions untreated at t + h. For h < 0, it reuses the clean-control stack at h = 0 
+
+and changes only the outcome transformation. The horizon-specific local target is 
+
+θh = E[∆ it (h; 1) − ∆it (h; 0) | Dit = 1 , (i, t ) ∈ S h] . (2.4) Let Xit be predetermined covariates. For each h, assume no anticipation or overlap: 
+
+0 < P(Dit = 1 | Xit , t, (i, t ) ∈ S h) < 1, (2.5) and local conditional parallel trends, 
+
+E[∆ it (h; 0) | Dit = 1 , X it , t, (i, t ) ∈ S h] = E[∆ it (h; 0) | Dit = 0 , X it , t, (i, t ) ∈ S h] .
+
+(2.6) Then each horizon is an ATT problem on its own LP-DiD stack. Define the local nuisance functions 
+
+πh(Xit , t ) = P (Dit = 1 | Xit , t, (i, t ) ∈ S h) , (2.7) 
+
+m0h(Xit , t ) = E [∆ it (h) | Dit = 0 , X it , t, (i, t ) ∈ S h] . (2.8) In the implemented estimators, both nuisance steps use the same horizon-specific linear basis Qit,h , built from the same predetermined covariates and calendar-time controls; the difference is the fitting criterion, with inverse-probability tilting for the treatment-probability working model and least squares or weighted least squares for the untreated-outcome regression. The local regression-adjusted and inverse-probability-weighting represen-tations are 
+
+θRA h = E [Dit {∆it (h) − m0h(Xit , t )}]
+
+E[Dit ] , (2.9) 3θIP W h = E [Dit ∆it (h)] 
+
+E[Dit ] − E [(1 − Dit )ωh(Xit , t )∆ it (h)] 
+
+E [(1 − Dit )ωh(Xit , t )] , (2.10) where ωh(Xit , t ) = πh(Xit , t )/(1 − πh(Xit , t )) . Combining them yields 
+
+θDR h = E [Dit {∆it (h) − m0h(Xit , t )}]
+
+E[Dit ] −E [(1 − Dit )ωh(Xit , t ){∆it (h) − m0h(Xit , t )}]
+
+E [(1 − Dit )ωh(Xit , t )] .
+
+(2.11) Under (2.6) , (2.11) identifies θh if either m0h or πh is correctly specified. Here, IPW refers to the population weighting identity in (2.11) , whereas the implemented weighted estimator obtains πh by inverse-probability tilting (IPT). DRLPDID estimates (2.11) horizon by horizon using inverse-probability tilting for the local propensity score [ 9] and weighted least squares for the untreated-outcome regression, following the improved doubly robust logic of Sant’Anna and Zhao [13] in an LP-DiD environment. 
+
+2.1. Influence-function inference 
+
+Let ˆΘ = ( ˆθh)h∈H collect the horizon-specific estimates. For each h, the improved estimator solves stacked local moments for the outcome-regression coefficients, the tilting parameters, and the treated and weighted-control means. Standard M-estimation then gives 
+
+> √
+
+NC (ˆθh − θh) = 1
+
+√NCNC∑
+
+> c=1
+
+IF c,h + op(1) , (2.12) where NC is the number of clusters. Equation (2.12) yields cluster-robust standard errors for each horizon and for any linear contrast built from the horizon-specific effects. For dynamic paths, the paper uses a multiplier bootstrap based on the stacked influence array. If ˆΦc = ( ˆIF c,h )h∈H and ξc are i.i.d. multipliers with mean zero and variance one, bootstrap draws are 
+
+ˆΘ∗ = ˆΘ + N −1/2
+
+> CNC∑
+> c=1
+
+ξc ˆΦc. (2.13) The main text reports pointwise cluster-robust intervals in the Monte Carlo and multiplier-bootstrap bands in the empirical event-study figures. The appendix provides the full moment system and proofs. 43. Monte Carlo 
+
+The Monte Carlo uses a staggered-adoption panel with covariate-driven treatment timing, heterogeneous dynamic treatment effects, and a never-treated group. The complete data-generating process is reported in the appendix. We compare five ATT-oriented estimators that share the same treated-entry-weighted target: LPDID-RW, LPDID-RW + X, LPDID-RA, DRLPDID-IPT, and DRLPDID. The designs vary regarding which nuisance component is aligned with the DGP: both nuisance components aligned, outcome-regression misspecified, propensity-score misspecified, and both nui-sance components misspecified. Table 1 reports bias, RMSE, and pointwise 95% coverage for the average post-treatment effect over 500 replications at 
+
+N = 500 ; the corresponding N = 250 results are reported in Appendix Table ?? .Three patterns stand out. First, LPDID-RW is consistently unstable across scenarios once local selection and untreated trends depend on covariates. Second, when the outcome-regression component is aligned with the DGP, LPDID-RA remains highly competitive, and DRLPDID stays very close to it, rather than uniformly dominating it. Third, propensity-score misspecification is the setting in which the doubly robust construction is most informative: DRLPDID stays close to LPDID-RA, whereas DRLPDID-IPT deteriorates markedly. The low coverage of DRLPDID-IPT even in the aligned design appears to reflect bias rather than underestimated uncertainty: supplementary diagnostics show that its cluster-robust standard errors track the empirical dispersion closely, but the pure IPT step remains centered below the treated-entry-weighted target. This is consistent with the fact that covariate-balancing odds weights do not by themselves recover the cohort-size treated-entry weighting embedded in θh, whereas the regression adjustment in DRLPDID corrects that discrepancy. Under joint misspecification, DRLPDID remains among the best scalar estimators, especially at N = 500 , but the Monte Carlo does not support a claim of uniform dominance in every design. 
+
+4. Empirical application 
+
+The application uses the no-fault-divorce panel from Stevenson and Wolfers [14] , as revisited by Goodman-Bacon [8] . The outcome, asmrs , is the state-level female suicide rate; treatment is the enactment of a no-fault divorce law. The sample covers the 48 continental states plus Washington, D.C., from 1964 5Table 1: Monte Carlo: average post-treatment effect ( N = 500 )Scenario Estimator Bias RMSE Coverage Both nuisances aligned LPDID-RW -2.505 2.735 0.430 LPDID-RW + X 0.064 0.104 0.866 LPDID-RA 0.004 0.079 0.944 DRLPDID-IPT -0.208 0.229 0.502 DRLPDID 0.004 0.083 0.942 OR misspecified LPDID-RW -3.561 3.747 0.100 LPDID-RW + X -0.073 0.587 0.948 LPDID-RA -0.108 0.577 0.958 DRLPDID-IPT -0.308 0.634 0.904 DRLPDID 0.011 0.634 0.924 PS misspecified LPDID-RW -1.786 2.104 0.634 LPDID-RW + X 0.061 0.102 0.872 LPDID-RA -0.004 0.078 0.960 DRLPDID-IPT -0.157 0.188 0.690 DRLPDID -0.003 0.082 0.964 Both nuisances misspecified LPDID-RW -3.543 3.712 0.098 LPDID-RW + X -0.159 0.606 0.944 LPDID-RA -0.214 0.614 0.938 DRLPDID-IPT -0.382 0.682 0.896 DRLPDID -0.068 0.663 0.916 Notes: All entries refer to the average post-treatment effect. Results are based on 500 Monte Carlo replications, with pointwise cluster-robust confidence intervals. The corresponding N = 250 panel is reported in Appendix Table ?? .
+
+to 1996. The baseline adjusted specification includes asmrh , the homicide mortality rate. 1
+
+Table 2 reports average post-treatment effects under the parsimonious specification. DRLPDID yields −5.69 , very close to Borusyak–Jaravel–Spiess and Gardner (both −5.83 ), less negative than Callaway–Sant’Anna ( −6.81 ), and materially less negative than the two local LP-DiD comparators LPDID-RA ( −6.31 ) and especially LPDID-RW + X ( −9.30 ). Sun–Abraham remains clearly more negative at −8.03 . The application therefore mirrors the Monte 
+
+> 1
+
+The original application also considers pcinc and cases . We omit them from the main specification because they may respond to the legal environment. The appendix reports a richer specification. 
+
+6Table 2: Average post-treatment effects Estimator ATT Std. Err. 95% CI DRLPDID -5.692 3.659 [-12.864, 1.479] LPDID-RW + X -9.304 3.612 [-16.382, -2.225] LPDID-RA -6.307 3.476 [-13.120, 0.505] Callaway–Sant’Anna -6.810 3.372 [-13.003, -0.093] Borusyak–Jaravel–Spiess -5.830 2.809 [-11.322, -0.497] Sun–Abraham -8.029 3.326 [-14.482, -1.354] Gardner -5.830 3.025 [-12.231, -0.287] Notes: LPDID-RW + X reports the covariate-adjusted local LP-DiD comparator from the Dube-family implementation. LPDID-RA reports the regression-adjusted local estimator from the semiparametric implementation. External staggered-adoption comparators are estimated with the Python diff-diff package [5]. 
+
+Carlo: covariate adjustment moves local LP-DiD toward the robust staggered-adoption comparators, and the doubly robust version aligns most closely with the imputation-based estimators Borusyak–Jaravel–Spiess and Gardner. Figure 1 shows the dynamic paths. DRLPDID remains close to LPDID-RA and also tracks Borusyak–Jaravel–Spiess and Gardner more closely than the more negative LPDID-RW + X and Sun–Abraham paths over most post-treatment horizons. Callaway–Sant’Anna is also broadly in the same range, though somewhat more negative in the scalar summary. 
+
+5. Conclusion 
+
+DRLPDID extends LP-DiD with horizon-specific regression adjustment, inverse-probability tilting, and doubly robust moments without changing the local-stack target. Under the last pre-treatment benchmark used here, that target has the usual horizon-specific ATT interpretation. In the Monte Carlo, DRLPDID is consistently competitive and is especially well behaved under propensity-score misspecification, while LPDID-RA remains highly competitive when the outcome-regression component is well aligned with the DGP. In the no-fault-divorce application, DRLPDID delivers dynamic effects close to LPDID-RA and to the main robust staggered-adoption estimators, while remaining materially less negative than the IPW-only local path and the unadjusted LPDID-RW benchmark. The practical implication is simple. When covariates plausibly shape local selection and untreated dynamics, unadjusted LP-DiD should not be 720                
+
+> 15
+> 10
+> 5
+> 0
+> 5
+> Estimate
+> A. DRLPDID vs LPDID-RW + X B. DRLPDID vs LPDID-RA
+> 20
+> 15
+> 10
+> 5
+> 0
+> 5
+> Estimate
+> C. DRLPDID vs Callaway-Sant'Anna D. DRLPDID vs Borusyak-Jaravel-Spiess
+> 10 50510 15 20
+> Event time
+> 20
+> 15
+> 10
+> 5
+> 0
+> 5
+> Estimate
+> E. DRLPDID vs Sun-Abraham
+> 10 50510 15 20
+> Event time
+> F. DRLPDID vs Gardner
+> DRLPDID Comparison
+
+Figure 1: Dynamic event-study comparisons in the no-fault-divorce application Notes: The five panels compare DRLPDID with LPDID-RW + X, Callaway– Sant’Anna, Borusyak–Jaravel–Spiess, Sun–Abraham, and Gardner under the same empirical specification. Shaded areas denote the reported confidence intervals from each estimator. 
+
+8the default specification. Extensions to continuous treatments, alternative base-period constructions, and stabilized treated controls are left for future work. 
+
+Funding 
+
+This work was supported by the Conselho Nacional de Desenvolvimento Científico e Tecnológico (CNPq), grants 301475/2025-3 and 310327/2022-9. 
+
+Declaration of competing interests 
+
+The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper. 
+
+Data availability 
+
+The data and simulation materials underlying this article are avail-able from the corresponding author upon reasonable request by email at daniel.uhr@gmail.com. 
+
+Declaration of generative AI and AI-assisted technologies in the manuscript preparation process 
+
+During the preparation of this work, the authors used ChatGPT and Claude Code for English-language editing and structural consistency checks. After using these tools, the authors reviewed and edited the manuscript as needed and take full responsibility for the content of the published article. 
+
+References 
+
+[1] Borusyak, K., X. Jaravel, J. Spiess, 2024. Revisiting event-study designs: Robust and efficient estimation. Review of Economic Studies 91, 3253– 3285. [2] Callaway, B., P. H. C. Sant’Anna, 2021. Difference-in-differences with multiple time periods. Journal of Econometrics 225, 200–230. 9[3] de Chaisemartin, C., X. D’Haultfœuille, 2020. Two-way fixed effects estimators with heterogeneous treatment effects. American Economic Review 110, 2964–2996. [4] de Chaisemartin, C., X. D’Haultfœuille, 2023. Two-way fixed effects and difference-in-differences with heterogeneous treatment effects: A survey. The Econometrics Journal 26, C1–C30. [5] diff-diff contributors, 2026. diff-diff: Difference-in-differences in Python. Python package documentation. https://diff-diff.readthedocs. io/ .[6] Dube, A., D. Girardi, Ò. Jordà, A. M. Taylor, 2025. A local projections approach to difference-in-differences. Journal of Applied Econometrics 40, 741–758. [7] Gardner, J., 2022. Two-stage differences in differences. arXiv preprint arXiv:2207.05943. [8] Goodman-Bacon, A., 2021. Difference-in-differences with variation in treatment timing. Journal of Econometrics 225, 254–277. [9] Graham, B. S., C. C. Pinto, D. Egel, 2012. Inverse probability tilting for moment condition models with missing data. Review of Economic Studies 79, 1053–1079. [10] Hájek, J., 1971. Discussion of “An Essay on the Logical Foundations of Survey Sampling, Part I”, by D. Basu. In: Godambe, V.P., Sprott, D.A. (Eds.), Foundations of Statistical Inference. Holt, Rinehart and Winston, Toronto, p. 326. [11] Jordá, Ò., 2005. Estimation and inference of impulse responses by local projections. American Economic Review 95, 161–182. [12] Roth, J., M. Sant’Anna, A. Bilinski, J. Poe, 2023. What’s trending in difference-in-differences? A synthesis of the recent econometrics literature. Journal of Econometrics 235, 2218–2244. [13] Sant’Anna, P. H. C., J. Zhao, 2020. Doubly robust difference-in-differences estimators. Journal of Econometrics 219, 101–122. 10 [14] Stevenson, B., J. Wolfers, 2006. Bargaining in the shadow of the law: Divorce laws and family distress. Quarterly Journal of Economics 121, 267–288. [15] Sun, L., S. Abraham, 2021. Estimating dynamic treatment effects in event studies with heterogeneous treatment effects. Journal of Econometrics 225, 175–199. 11 Online Appendix for Doubly Robust Local Projections Difference-in-Differences 
+
+Daniel de Abreu Pereira Uhr a, Guilherme Valle Moura b
+
+> aDepartment of Economics, Universidade Federal de Pelotas
+> bDepartment of Economics and International Relations, Universidade Federal de Santa Catarina
+
+This online appendix provides the theoretical and empirical details omitted from the main text. It is organized into seven sections. The first three sections introduce the general LP-DiD notation and clean-control stack construction, the mapping from the local target to cohort-time treatment effects, and the two aggregation rules used in the paper: the benchmark variance-weighted LP-DiD aggregation and the treated-entry-weighted target underlying the RW, RA, IPT, and DR estimators. The next two sections present the regression-adjustment, inverse-probability-weighting representation with an inverse-probability-tilting first step, and doubly robust representations, together with the asymptotic linear representation used for cluster-robust inference and multiplier-bootstrap bands. The final two sections report the Monte Carlo design and additional results, including the data-generating process actually used in the final simulations, a supplementary sensitivity exercise to violations of local conditional parallel trends, and the richer-covariate specification used in the no-fault-divorce application. 
+
+Appendix A. General LP-DiD notation and clean-control stacks 
+
+Let i = 1 , . . . , N index units and t = 1 , . . . , T periods. Treatment is binary and absorbing, with the first treatment date Gi ∈ { 1, . . . , T, ∞} and Gi = ∞
+
+for never-treated units. Define the treatment-entry indicator 
+
+Dit = 1{Gi = t}. (A.1)    
+
+> Email addresses: daniel.uhr@gmail.com (Daniel de Abreu Pereira Uhr),
+> gvallemoura@gmail.com (Guilherme Valle Moura)
+
+Definition A.1 (Base-period operator) . For a generic rule b, let B(t; b) ⊂{1, . . . , t − 1} denote the set of pre-treatment periods used to construct the comparison base for entry date t, and let {ω(b) 
+
+> tℓ
+
+: ℓ ∈ B (t; b)} be weights satisfying ∑
+
+> ℓ∈B (t;b)
+
+ω(b) 
+
+> tℓ
+
+= 1 . (A.2) 
+
+The associated base-period operator is 
+
+B(b) 
+
+> it
+
+= ∑
+
+> ℓ∈B (t;b)
+
+ω(b) 
+
+> tℓ
+
+Yiℓ . (A.3) 
+
+The corresponding long difference at horizon h ∈ H is 
+
+∆(b) 
+
+> it
+
+(h) = Yi,t +h − B(b) 
+
+> it
+
+. (A.4) The main text uses the last-pre-treatment rule b = −1, for which B(t; −1) = 
+
+{t − 1}, ω(−1)  
+
+> t,t −1
+
+= 1 , and 
+
+B(−1)  
+
+> it
+
+= Yi,t −1, ∆(−1)  
+
+> it
+
+(h) = Yi,t +h − Yi,t −1. (A.5) Other admissible LP-DiD implementations may use a different pre-treatment operator, such as an average over several pre-treatment periods, provided that the comparison base remains supported by untreated periods relative to the entry date. For a given entry date t and horizon h, define the comparison window 
+
+Wh(t; b) = {t + h} ∪ B (t; b). (A.6) Because treatment is absorbing, a control unit is clean for (t, h, b ) if it is untreated throughout the comparison window. Hence, the clean-control set is 
+
+Ch(t; b) = {i : Tis = 0 for all s ∈ W h(t; b)}, (A.7) where Tis = 1{s ≥ Gi, G i < ∞} denotes calendar-time treatment status. The local LP-DiD stack is 
+
+Sh(t; b) = {i : Dit = 1 } ∪ C h(t; b). (A.8) Pooling over admissible entry dates gives 
+
+S(b) 
+
+> h
+
+= ⋃  
+
+> t:t+h∈{ 1,...,T }
+
+{(i, t ) : i ∈ S h(t; b)}. (A.9) 2Throughout the appendix, Dit denotes local treatment entry, while Tis denotes calendar-time treatment status. For h ≥ 0 and b = −1, clean controls are exactly the units untreated at t + h. For h < 0, the clean-control condition collapses to being untreated at the entry date t, because every period in the comparison window is weakly before t.
+
+Definition A.2 (Horizon-specific local target) . For a given base rule b, the LP-DiD horizon-h target is 
+
+θ(b) 
+
+> h
+
+= E [
+
+∆(b) 
+
+> it
+
+(h; 1) − ∆(b) 
+
+> it
+
+(h; 0) | Dit = 1 , (i, t ) ∈ S (b)
+
+> h
+> ]
+
+, (A.10) 
+
+where ∆(b) 
+
+> it
+
+(h; d) denotes the long difference constructed from the potential-outcome path under treatment state d ∈ { 0, 1}.
+
+Appendix B. From LP-DiD stacks to cohort-time treatment effects 
+
+To make the cohort structure explicit, fix a cohort g < ∞ and write 
+
+θ(b) 
+
+> g,h
+
+= E [
+
+∆(b) 
+
+> ig
+
+(h; 1) − ∆(b) 
+
+> ig
+
+(h; 0) | Gi = g]
+
+, h ≥ 0. (B.1) Also, define the usual cohort-time ATT 
+
+ATT( g, g + h) = E [Yi,g +h(1) − Yi,g +h(0) | Gi = g] . (B.2) 
+
+Assumption B.1 (No anticipation relative to the base operator) . For every treated cohort g and every pre-treatment period ℓ < g , treatment does not affect outcomes before entry: 
+
+Yiℓ (1) = Yiℓ (0) a.s. conditional on Gi = g. (B.3) 
+
+Proposition B.2 (Mapping from the local target to ATT (g, g + h)). Suppose the base-period operator uses only pre-treatment periods and the weights sum to one. Then, for every g < ∞ and every post-treatment horizon h ≥ 0,
+
+θ(b) 
+
+> g,h
+
+= ATT( g, g + h). (B.4) 
+
+Hence any LP-DiD target of the form (A.10) can be written as a weighted average of cohort-time treatment effects. In particular, under the last-pre-treatment rule b = −1 used in the paper, the horizon-specific local target coincides with the usual horizon-specific ATT target. 
+
+3Proof. By definition, 
+
+θ(b) 
+
+> g,h
+
+= E
+
+> 
+
+Yi,g +h(1) − ∑
+
+> ℓ∈B (g;b)
+
+ω(b) 
+
+> gℓ
+
+Yiℓ (1) − Yi,g +h(0) + ∑
+
+> ℓ∈B (g;b)
+
+ω(b) 
+
+> gℓ
+
+Yiℓ (0) | Gi = g 
+
+> 
+
+.
+
+(B.5) Under no anticipation, Yiℓ (1) = Yiℓ (0) for every ℓ < g . Since B(g; b) ⊂{1, . . . , g − 1}, the baseline terms cancel exactly. Therefore 
+
+θ(b) 
+
+> g,h
+
+= E [Yi,g +h(1) − Yi,g +h(0) | Gi = g] = ATT( g, g + h). (B.6) The final statement follows by specializing to b = −1.
+
+Remark B.3. What changes with the choice of b is not the post-treatment cohort-time estimand itself, but the normalization of the long-difference out-come and the finite-sample implementation of the local stack. The paper uses the last-pre-treatment benchmark because it is the empirical default in the LP-DiD implementation studied here and keeps the notation concise. 
+
+Appendix C. Benchmark LP-DiD aggregation and the ATT-oriented target 
+
+This section complements the main text by making the aggregation step explicit. Fix a post-treatment horizon h ≥ 0 and specialize to b = −1. For each cohort g < ∞, define the cohort-specific clean-control cell 
+
+Cg,h = {i : Gi = g} ∪ { i : Gi > g + h or Gi = ∞} . (C.1) Let Ng denote the number of treated entrants in cohort g, let N 0 
+
+> g,h
+
+denote the number of clean controls in that cell, and write Ng,h = Ng + N 0 
+
+> g,h
+
+and 
+
+ng,h = Ng/N g,h .Within cell (g, h ), the clean DID contrast is 
+
+δg,h = E[
+
+Yi,g +h −Yi,g −1 | Gi = g]
+
+−E[
+
+Yi,g +h −Yi,g −1 | i ∈ C g,h , D ig = 0 ]
+
+. (C.2) Under no anticipation and clean-control parallel trends, δg,h = ATT (g, g + h).Consider the pooled LP-DiD regression with cohort-horizon intercepts, 
+
+Yi,g +h − Yi,g −1 = αhDig + λgh + uigh , (C.3) on the union of the cohort-horizon clean cells. 4Proposition C.1 (Benchmark LP-DiD weighting formula) . The population coefficient on Dig in (C.3) is 
+
+αV W h = ∑ 
+
+> g:Gg<∞
+
+ωV W g,h ATT( g, g + h), (C.4) 
+
+with weights 
+
+ωV W g,h = Ng,h ng,h (1 − ng,h )
+
+∑  
+
+> g′:Gg′<∞
+
+Ng′,h ng′,h (1 − ng′,h ). (C.5) 
+
+Proof. By Frisch–Waugh–Lovell, the coefficient on Dig is obtained by residu-alizing Dig with respect to the cohort-horizon intercepts. Inside cell (g, h ),the residualized treatment indicator is 
+
+˜Dig = Dig − ¯Dg,h = Dig − ng,h . (C.6) Hence, the cell-specific denominator contribution is 
+
+∑
+
+> i∈C g,h
+
+˜D2 
+
+> ig
+
+= Ng,h ng,h (1 − ng,h ), (C.7) while the numerator contribution is the same variance term multiplied by the cell DID contrast δg,h . Summing across cohorts yields 
+
+αV W h =
+
+∑ 
+
+> g
+
+Ng,h ng,h (1 − ng,h )δg,h 
+
+∑ 
+
+> g
+
+Ng,h ng,h (1 − ng,h ) . (C.8) Substituting δg,h = ATT( g, g + h) proves the result. 
+
+Proposition C.2 (RW re-weighting recovers the treated-entry-weighted ATT) . Suppose (C.3) is estimated by weighted least squares, assigning a com-mon positive weight λg,h to all observations in cell Cg,h . Then the population coefficient on Dig is 
+
+αh(λ) = ∑ 
+
+> g:Gg<∞
+
+ωg,h (λ) ATT( g, g + h), (C.9) 
+
+with 
+
+ωg,h (λ) = λg,h Ng,h ng,h (1 − ng,h )
+
+∑  
+
+> g′:G′
+> g<∞
+
+λg′,h Ng′,h ng′,h (1 − ng′,h ). (C.10) 5In particular, if the cell weights satisfy 
+
+λRW g,h ∝
+
+( ωV W g,h 
+
+Ng
+
+)−1
+
+, (C.11) 
+
+equivalently, 
+
+λRW g,h ∝
+
+( Ng,h ng,h (1 − ng,h )
+
+Ng
+
+)−1
+
+= 11 − ng,h 
+
+= Ng,h 
+
+Ng,h − Ng
+
+, (C.12) 
+
+then 
+
+ωRW g,h = Ng
+
+∑  
+
+> g′:Gg′<∞
+
+Ng′
+
+(C.13) 
+
+and therefore 
+
+αRW h =
+
+∑  
+
+> g:Gg<∞
+
+Ng ATT( g, g + h)
+
+∑  
+
+> g:Gg<∞
+
+Ng
+
+= θh. (C.14) 
+
+Proof. If a constant weight λg,h is assigned to all observations in cell Cg,h ,Frisch–Waugh–Lovell implies that the residualized treatment indicator remains 
+
+˜Dig = Dig − ng,h for i ∈ C g,h , (C.15) because the weight does not vary within the cell. Hence, the weighted cell-specific denominator contribution is 
+
+∑
+
+> i∈C g,h
+
+λg,h ˜D2 
+
+> ig
+
+= λg,h Ng,h ng,h (1 − ng,h ), (C.16) and the weighted numerator contribution is the same term multiplied by the cell DID contrast δg,h . Therefore 
+
+αh(λ) = 
+
+∑ 
+
+> g
+
+λg,h Ng,h ng,h (1 − ng,h )δg,h 
+
+∑ 
+
+> g
+
+λg,h Ng,h ng,h (1 − ng,h ) . (C.17) Substituting δg,h = ATT( g, g + h) yields the first result. Now, choose λg,h = λRW g,h as in (C.11). Since 
+
+ωV W g,h ∝ Ng,h ng,h (1 − ng,h ), (C.18) we obtain 
+
+λRW g,h Ng,h ng,h (1 − ng,h ) ∝
+
+( Ng,h ng,h (1 − ng,h )
+
+Ng
+
+)−1
+
+Ng,h ng,h (1 − ng,h ) = Ng.
+
+(C.19) 6Thus, each cell contributes proportionally to Ng, so the normalized aggregation weights become 
+
+ωRW g,h = Ng  
+
+> ∑
+> g′:Gg′<∞
+
+Ng′
+
+. (C.20) Substituting into the aggregation formula gives 
+
+αRW h =  
+
+> ∑
+> g:Gg<∞
+
+Ng ATT( g, g + h)  
+
+> ∑
+> g:Gg<∞
+
+Ng
+
+= θh, (C.21) which proves the claim. The benchmark LP-DiD coefficient is therefore a clean-comparison object, but it is not yet treated-entry weighted. Proposition C.2 shows that the RW re-weighting of [ 1] removes the extra factor (1 − ng,h ) embedded in the benchmark variance weights and converts the aggregation into direct weighting by cohort size. The resulting target is 
+
+θh =  
+
+> ∑
+> g:Gg<∞
+
+NgATT( g, g + h)  
+
+> ∑
+> g:Gg<∞
+
+Ng
+
+. (C.22) This is the same aggregation target pursued by the local RA, IPT, and DR estimators studied in the main text. 
+
+Appendix D. Local semiparametric identification 
+
+For the remainder of the appendix, let Xit denote predetermined covari-ates and specialize in the clean-control stack actually used in the paper. Identification is horizon specific. 
+
+Assumption D.1 (Local conditional parallel trends) . For every reported horizon h,
+
+E [
+
+∆it (h; 0) |Dit = 1 , X it , t, (i, t ) ∈ S (−1) 
+
+> h
+> ]
+
+= E [
+
+∆it (h; 0) |Dit = 0 , X it , t, (i, t ) ∈ S (−1) 
+
+> h
+> ]
+
+.
+
+(D.1) 
+
+Assumption D.2 (Overlap) . For every reported horizon h,
+
+0 < π h(Xit , t ) < 1 a.s. on S(−1)  
+
+> h
+
+, (D.2) 
+
+where 
+
+πh(Xit , t ) = P (
+
+Dit = 1 | Xit , t, (i, t ) ∈ S (−1) 
+
+> h
+> )
+
+. (D.3) Define also the untreated long-difference regression 
+
+m0h(Xit , t ) = E [
+
+∆it (h) | Dit = 0 , X it , t, (i, t ) ∈ S (−1) 
+
+> h
+> ]
+
+. (D.4) 7D.1. Regression adjustment 
+
+Proposition D.3 (Local RA representation) . Under Assumptions D.1 and D.2, 
+
+θh = E [Dit {∆it (h) − m0h(Xit , t )}]
+
+E[Dit ] . (D.5) 
+
+Proof. By Assumption D.1, 
+
+E [
+
+∆it (h; 0) | Dit = 1 , X it , t, (i, t ) ∈ S (−1) 
+
+> h
+> ]
+
+= m0h(Xit , t ). (D.6) Therefore, 
+
+E [
+
+∆it (h)−m0h(Xit , t ) |Dit = 1 , (i, t ) ∈ S (−1) 
+
+> h
+> ]
+
+= E [
+
+∆it (h; 1) −∆it (h; 0) |Dit = 1 , (i, t ) ∈ S (−1) 
+
+> h
+> ]
+
+(D.7) 
+
+= θh. (D.8) Multiplying by P(Dit = 1) = E[Dit ] yields (D.5). 
+
+D.2. Inverse-probability weighting and inverse-probability tilting 
+
+Define the local odds weight 
+
+ωh(Xit , t ) = πh(Xit , t )1 − πh(Xit , t ). (D.9) The population IPW representation uses this weight, while the estimator in the paper obtains πh through inverse-probability tilting [ 4]. The distinction is between the weighting identity and the first-stage fitting criterion; the target moment is the same. 
+
+Proposition D.4 (Local IPW representation) . Under Assumptions D.1 and D.2, 
+
+θh = E [Dit ∆it (h)] 
+
+E[Dit ] − E [(1 − Dit )ωh(Xit , t )∆ it (h)] 
+
+E [(1 − Dit )ωh(Xit , t )] . (D.10) 
+
+Proof. For any integrable random variable Zit measurable with respect to 
+
+(Xit , t ) on the local stack, 
+
+E [(1 − Dit )ωh(Xit , t )Zit | Xit , t ] = ωh(Xit , t ){1 − πh(Xit , t )}Zit (D.11) 
+
+= πh(Xit , t )Zit (D.12) 
+
+= E [Dit Zit | Xit , t ] . (D.13) 8Applying this identity to Zit = 1 gives 
+
+E [(1 − Dit )ωh(Xit , t )] = E[Dit ]. (D.14) Applying it to Zit = ∆ it (h; 0) yields 
+
+E [(1 − Dit )ωh(Xit , t )∆ it (h; 0)] = E [Dit ∆it (h; 0)] . (D.15) Subtract the latter equality from E[Dit ∆it (h)] and use the fact that, on treated entries, ∆it (h) = ∆ it (h; 1) to obtain 
+
+E[Dit ]θh = E [Dit ∆it (h)] − E [(1 − Dit )ωh(Xit , t )∆ it (h)] . (D.16) Dividing both sides by the common denominator gives (D.10). 
+
+D.3. Local inverse-probability-tilting first step 
+
+To make the first-stage fitting step explicit, let Qit,h denote the common horizon-h linear basis used in both nuisance models. In the implementation used in the paper, Qit,h contains the same predetermined covariates and the same calendar-time controls in both first stages. The local propensity-score working model is 
+
+πh(Xit , t ; γh) = Λ (
+
+Q′
+
+> it,h
+
+γh
+
+> )
+
+, ω h(Xit , t ; γh) = πh(Xit , t ; γh)1 − πh(Xit , t ; γh) = exp (
+
+Q′
+
+> it,h
+
+γh
+
+> )
+
+,
+
+(D.17) and the untreated-outcome regression working model is 
+
+m0h(Xit , t ; βh) = Q′
+
+> it,h
+
+βh. (D.18) The IPT estimator chooses ˆγh to satisfy the tilting first-order condition 
+
+> ∑
+> (i,t )∈S (−1)
+> h
+
+Qit,h 
+
+> {
+
+Dit − (1 − Dit ) exp (
+
+Q′ 
+
+> it,h
+
+ˆγh
+
+> )}
+
+= 0 . (D.19) Equivalently, ˆγh solves the sample tilting problem 
+
+ˆγh ∈ arg max 
+
+> γ
+> ∑
+> (i,t )∈S (−1)
+> h
+> [
+
+Dit Q′
+
+> it,h
+
+γ − (1 − Dit ) exp (
+
+Q′
+
+> it,h
+
+γ)] 
+
+. (D.20) Given ˆγh, the improved untreated-outcome regression is fitted on the local controls by weighted least squares with the same linear basis and odds weights, 
+
+ˆβh ∈ arg min 
+
+> β
+> ∑
+> (i,t )∈S (−1)
+> h
+
+(1 − Dit )ˆ ωh(Xit , t ) [
+
+∆it (h) − Q′
+
+> it,h
+
+β]2
+
+, (D.21) where ˆωh(Xit , t ) = exp (Q′ 
+
+> it,h
+
+ˆγh). Thus, the improved local LP-DiD estimator uses the same covariate-time basis in the IPT and OR steps, differing only in the fitting criterion. 9D.4. Doubly robust representation 
+
+Proposition D.5 (Local DR representation and double robustness) . Define 
+
+θDR h = E [Dit {∆it (h) − m0h(Xit , t )}]
+
+E[Dit ] −E [(1 − Dit )ωh(Xit , t ){∆it (h) − m0h(Xit , t )}]
+
+E [(1 − Dit )ωh(Xit , t )] .
+
+(D.22) 
+
+Then (D.22) identifies θh if either the untreated-outcome regression m0h is correctly specified or the local propensity score πh is correctly specified. Proof. If m0h is correctly specified, then by Assumption D.1, 
+
+E [
+
+∆it (h) − m0h(Xit , t ) | Dit = 0 , X it , t, (i, t ) ∈ S (−1) 
+
+> h
+> ]
+
+= 0 . (D.23) Consequently, the weighted control residual in (D.22) has mean zero for any measurable weighting function with finite expectation, including a misspecified odds weight. The first term therefore reduces to the RA representation and identifies θh.If instead πh is correctly specified while m0h may be misspecified, write 
+
+mh(Xit , t ) for the possibly misspecified regression entering (D.22) . Since πh
+
+is correctly specified, the odds weight satisfies ωh(Xit , t ){1 − πh(Xit , t )} =
+
+πh(Xit , t ) exactly. By the same weighting identity used in the proof of Proposition D.4, 
+
+E [(1 − Dit )ωh(Xit , t )mh(Xit , t )] = E [Dit mh(Xit , t )] . (D.24) Using also (D.14), the DR moment can be written as 
+
+θDR h = E[Dit ∆it (h)] − E[Dit mh(Xit , t )] 
+
+E[Dit ] − E[(1 − Dit )ωh(Xit , t )∆ it (h)] − E[(1 − Dit )ωh(Xit , t )mh(Xit , t )] 
+
+E[Dit ]
+
+(D.25) 
+
+= E[Dit ∆it (h)] − E[(1 − Dit )ωh(Xit , t )∆ it (h)] 
+
+E[Dit ] , (D.26) where the second line follows from (D.24) . Thus, the regression term cancels exactly between the treated and weighted-control components, leaving the correctly weighted IPW representation. Therefore, the DR moment continues to identify θh.
+
+Remark D.6 (The improved DR estimator) . The improved estimator used in the paper does not alter the target moment. It alters only the nuisance-estimation equations. Specifically, the local propensity score is estimated by 
+
+10 inverse-probability tilting rather than by logit maximum likelihood, and the untreated-outcome regression is fit by weighted least squares with odds weights as in (D.21) , mirroring the improved doubly robust construction of Sant’Anna and Zhao [5] in a horizon-specific LP-DiD environment. The estimand remains 
+
+(D.22) ; the gain concerns first-order robustness of inference. 
+
+Appendix E. Influence-function-based inference 
+
+For each horizon h, let ηh collect the nuisance and target parameters entering the local improved-DR estimation problem. In the implementation used in the paper, 
+
+ηh = ( β′
+
+> h
+
+, γ ′
+
+> h
+
+, μ 1h, μ 0h)′, (E.1) where m0h(Xit , t ) = Q′
+
+> it,h
+
+βh, πh(Xit , t ) = Λ( Q′
+
+> it,h
+
+γh), and θh = μ1h − μ0h. Let the cluster-level moment vector be Ψc,h (ηh), where c indexes the sampling clusters. In the implementation studied here, Ψc,h (ηh) stacks the weighted-least-squares normal equation for βh, the IPT score equation in (D.19) for γh,and the moment conditions defining the treated and weighted-control means 
+
+μ1h and μ0h.
+
+Proposition E.1 (Cluster-level asymptotic linear representation) . Suppose the estimator solves 
+
+1
+
+NCNC∑
+
+> c=1
+
+Ψc,h (ˆ ηh) = 0 , (E.2) 
+
+and assume standard smoothness, identification, and finite-moment conditions for cluster-level M-estimation, with a nonsingular Jacobian 
+
+Ah = E 
+
+> [
+
+∂Ψc,h (ηh)
+
+∂η ′
+
+> h
+> ] ∣∣∣∣∣∣ηh=η0
+> h
+
+. (E.3) 
+
+Then √
+
+NC (ˆθh − θh) = 1
+
+√NCNC∑
+
+> c=1
+
+IF c,h + op(1) , (E.4) 
+
+where 
+
+IF c,h = −∇ ηg(η0
+
+> h
+
+)′A−1 
+
+> h
+
+Ψc,h (η0
+
+> h
+
+), g(ηh) = μ1h − μ0h. (E.5) 
+
+A cluster-robust variance estimator is therefore ̂
+
+Vh = 1
+
+NCNC∑
+
+> c=1
+
+ˆIF 2
+
+> c,h
+
+. (E.6) 11 Proof. A first-order mean-value expansion of the moment equations around 
+
+η0 
+
+> h
+
+gives 
+
+0 = 1
+
+NCNC∑
+
+> c=1
+
+Ψc,h (η0
+
+> h
+
+) + Ah(ˆ ηh − η0
+
+> h
+
+) + op(N −1/2 
+
+> C
+
+). (E.7) Rearranging yields 
+
+> √
+
+NC (ˆ ηh − η0
+
+> h
+
+) = −A−1
+
+> h
+
+1
+
+√NCNC∑
+
+> c=1
+
+Ψc,h (η0
+
+> h
+
+) + op(1) . (E.8) Applying the delta method to g(ηh) = μ1h − μ0h gives (E.4). Any fixed linear summary of the event-study path inherits an influence function by linearity. For example, if H+ = {h ∈ H : h ≥ 0}, then the average post-treatment effect 
+
+¯θpost = 1
+
+|H +|
+
+> ∑
+> h∈H +
+
+θh (E.9) has influence function 
+
+IF c,post = 1
+
+|H +|
+
+> ∑
+> h∈H +
+
+IF c,h . (E.10) This is the formula used for the pointwise confidence intervals reported in the Monte Carlo table in the main text. For simultaneous inference on the full event-study vector, the paper uses a multiplier bootstrap based on the stacked estimated influence functions 
+
+ˆΨc = ( ˆIF c,h )h∈H . Conditional on the sample, draw i.i.d. multipliers ξc with mean zero and variance one, and compute 
+
+ˆΘ∗ = ˆΘ + N −1/2
+
+> CNC∑
+> c=1
+
+ξc ˆΨc, ˆΘ = ( ˆθh)h∈H . (E.11) The simultaneous critical value is the conditional (1 − α) quantile of the sup-t
+
+statistic 
+
+T ∗ = max 
+
+> h∈H
+> ∣∣∣∣∣∣
+
+ˆθ∗ 
+
+> h
+
+− ˆθh
+
+ˆσh 
+
+> ∣∣∣∣∣∣
+
+. (E.12) The resulting band is 
+
+> [
+
+ˆθh − c∗ 
+
+> 1−α
+
+ˆσh, ˆθh + c∗ 
+
+> 1−α
+
+ˆσh
+
+> ]
+
+, h ∈ H . (E.13) 12 In practice, the multiplier distribution may be implemented with Rademacher, Mammen, or Webb-type weights. The results in the paper use the multiplier bootstrap for dynamic event-study paths and cluster-robust pointwise analytic inference for the scalar Monte Carlo summaries so as to remain directly comparable with the traditional LP-DiD estimators. 
+
+Appendix F. Monte Carlo design 
+
+The Monte Carlo in the main text follows a staggered-adoption panel design with heterogeneous dynamic treatment effects and covariate-driven treatment timing. Its goal is not to compare every possible LP-DiD aggregation rule but to isolate the role of nuisance adjustment in the local ATT problem. That is why the comparison focuses on the unadjusted LP-DiD benchmark, its covariate-adjusted variants, and the proposed DR estimator. The panel contains T = 17 periods. Treated units adopt in cohorts 
+
+g ∈ { 9, 10 , 11 , 12 , 13 , 14 }, and the remaining units are never treated. The main nuisance-misspecification exercise is run at N ∈ { 500 , 250 } with 500 replications for each sample size. Let X = ( X1, X 2, X 3, X 4)′ ∼ N (0 , Σ) , with 
+
+Σkj = c|k−j| and c = 0 in the baseline design. Define nonlinear transforms 
+
+Z = ( Z1, Z 2, Z 3, Z 4)′ from X by 
+
+˜Z1 = exp(0 .5X1), ˜Z2 = 10 + X2
+
+1 + exp( X1), (F.1) 
+
+˜Z3 =
+
+> (
+
+0.6 + X1X3
+
+25 
+
+> )3
+
+, ˜Z4 = (20 + X2 + X4)2, (F.2) and standardize componentwise, 
+
+Zj = ˜Zj − E[ ˜Zj ]
+
+> √
+
+Var( ˜Zj ) , j = 1 , . . . , 4. (F.3) Treatment timing is assigned by a multinomial logit over the six treated cohorts plus the never-treated state. For a generic feature vector W =(W1, W 2, W 3, W 4)′, the cohort-gj logit index is 
+
+ℓj (W ) = ξ
+
+> (
+
+1 − jG
+
+> )
+
+(−W1 + 0 .5W2 − 0.25 W3 − 0.2W4) , j = 1 , . . . , G, 
+
+(F.4) with G = 6 and ξ = 0 .9, while the never-treated state has an index normalized to zero. Drawing from the implied multinomial probabilities determines Gi.13 For the untreated-outcome process, define the baseline linear index 
+
+f base reg,t (W ) = 210 + tT (27 .4W1 + 13 .7W2 + 13 .7W3 + 13 .7W4) . (F.5) In scenarios A and C, the untreated potential outcome uses this baseline index with W = Z. In scenarios B and D, the untreated outcome is intentionally made harder through 
+
+˜H1 = exp(0 .5X1), ˜H2 = X22 , (F.6) 
+
+˜H3 = X2X3, ˜H4 = sin( X1 + X4), (F.7) followed by componentwise standardization Hj = ( ˜Hj − E[ ˜Hj ]) /
+
+> √
+
+Var( ˜Hj ),and 
+
+f hard reg,t (X) = 210 + tT (27 .4H1 + 13 .7H2 + 13 .7H3 + 13 .7H4) . (F.8) Potential outcomes are then generated as 
+
+Yit (0) = freg,t + t + αi + δ 1{Gi < ∞} tT (1 + 0 .2Xi1) + εi0t, (F.9) 
+
+Yit (1) = Yit (0) + τit , (F.10) where αi ∼ N (μi, 1) with μi = Gi for treated units and μi = T + 1 for never-treated units, εi0t ∼ N (0 , 1) , and 
+
+τit = max {t − Gi + 1 , 0}(1 + 0 .1Xi1). (F.11) Observed outcomes equal Yit (1) once treatment is on and Yit (0) otherwise. The main nuisance-misspecification family sets δ = 0 and differs only in the features used to generate the untreated-outcome and treatment-timing components: A: Both nuisances aligned (freg,t , W ps ) = ( f base reg,t (Z), Z ), (F.12) B: OR misspecified (freg,t , W ps ) = ( f hard reg,t (X), Z ), (F.13) C: PS misspecified (freg,t , W ps ) = ( f base reg,t (Z), X ), (F.14) D: Both nuisances misspecified (freg,t , W ps ) = ( f hard reg,t (X), X ). (F.15) The estimating equations always use the observed covariate vector Z in both nuisance steps, so the Monte Carlo isolates misspecification by changing the DGP and not the implementation. 14 Table F.1: Monte Carlo: average post-treatment effect ( N = 250 )Scenario Estimator Bias RMSE Coverage Both nuisances aligned LPDID-RW -2.352 2.817 0.702 LPDID-RW + X 0.067 0.130 0.914 LPDID-RA 0.006 0.109 0.964 DRLPDID-IPT -0.207 0.251 0.746 DRLPDID 0.008 0.118 0.956 OR misspecified LPDID-RW -3.632 3.950 0.384 LPDID-RW + X -0.016 0.842 0.922 LPDID-RA -0.084 0.830 0.930 DRLPDID-IPT -0.211 0.825 0.892 DRLPDID 0.124 0.924 0.870 PS misspecified LPDID-RW -1.701 2.307 0.830 LPDID-RW + X 0.066 0.130 0.908 LPDID-RA -0.003 0.107 0.956 DRLPDID-IPT -0.160 0.215 0.844 DRLPDID -0.003 0.122 0.934 Both nuisances misspecified LPDID-RW -3.649 3.947 0.374 LPDID-RW + X -0.124 0.852 0.920 LPDID-RA -0.180 0.845 0.928 DRLPDID-IPT -0.324 0.840 0.880 DRLPDID 0.017 0.889 0.894 Notes: All entries refer to the average post-treatment effect. Results are based on 500 Monte Carlo replications, with pointwise cluster-robust confidence intervals. 
+
+Two implementation details are worth stating explicitly. First, the bench-mark LP-DiD coefficient uses the variance-weighted aggregation in Proposition C.1, whereas LPDID-RA, DRLPDID-IPT, and DRLPDID target the treated-entry-weighted object in (C.22) . Second, the pointwise confidence intervals in the main-text table are based on the cluster-robust influence-function standard errors from Proposition E.1. This keeps the simulation directly comparable to the usual LP-DiD reporting convention. Appendix Table F.1 reports the same Monte Carlo summary for the smaller sample size. The qualitative ranking is similar, although the differences among the adjusted estimators narrow, and finite-sample dispersion increases. 
+
+F.1. Sensitivity to violations of local conditional parallel trends 
+
+The appendix also reports a supplementary stress test that perturbs the untreated outcome of ever-treated units through the drift term indexed by δ.15 We consider δ ∈ { 0, 0.5, 1.0} while keeping the nuisance-aligned specification 
+
+(f base reg,t (Z), Z ). Table F.2 summarizes the average post-treatment effect for this exercise. The sensitivity exercise now confirms, with a full 500-replication design, the expected limit of the method: once local conditional parallel trends is deliberately perturbed, all estimators except the unadjusted RW benchmark move away from the target in the positive direction, and coverage declines sharply as δ rises. At δ = 0 , DRLPDID and LPDID-RA are essentially unbiased with near-nominal coverage, whereas DRLPDID-IPT exhibits a negative bias and substantial undercoverage even though the stress parameter is absent. This pattern points to an estimand gap rather than an inference failure in the pure IPT version: supplementary diagnostics show that its cluster-robust standard errors track the empirical dispersion closely, but the pure odds reweighting does not by itself recover the treated-entry-weighted cohort-size target that defines θh. As δ increases, the apparent improvement of DRLPDID-IPT should therefore not be read as robustness to violations of local parallel trends; it reflects offsetting biases of opposite sign. The practical implication is the same as in the main Monte Carlo: use DRLPDID rather than its IPT-only counterpart when covariates matter for local selection and untreated dynamics. 
+
+Appendix G. Additional empirical output: richer covariate specifi-cation 
+
+The main text reports the parsimonious adjusted application with asmrh 
+
+only. This appendix reports the same exercise under the richer covariate set 
+
+pcinc +asmrh +cases , using the canonical no-fault-divorce state-year panel studied by Stevenson and Wolfers [6] and later reanalyzed by Goodman-Bacon [3]. The data form an annual panel for the 48 continental U.S. states plus Washington, D.C., from 1964 to 1996. The outcome is asmrs , the female suicide mortality rate. Treatment is post , an indicator equal to one once a state’s no-fault-divorce reform is in force and zero beforehand. The richer control set follows the original empirical application: pcinc denotes per-capita income, asmrh is the homicide mortality rate, and cases is the divorce-case filing measure. We treat this richer specification as a supplementary robustness exercise rather than as the preferred adjusted design because some of these 16 Table F.2: Sensitivity to violations of local conditional parallel trends Scenario Estimator Bias RMSE Coverage 
+
+Panel A. N = 500 
+
+δ = 0 
+
+LPDID-RW -2.436 2.680 0.440 LPDID-RW + X 0.052 0.093 0.900 LPDID-RA -0.008 0.077 0.964 DRLPDID-IPT -0.215 0.238 0.470 DRLPDID -0.010 0.079 0.966 
+
+δ = 0 .5
+
+LPDID-RW -2.373 2.601 0.464 LPDID-RW + X 0.170 0.189 0.454 LPDID-RA 0.107 0.134 0.736 DRLPDID-IPT -0.121 0.156 0.820 DRLPDID 0.107 0.137 0.754 
+
+δ = 1 .0
+
+LPDID-RW -2.241 2.492 0.504 LPDID-RW + X 0.257 0.269 0.118 LPDID-RA 0.198 0.213 0.332 DRLPDID-IPT -0.042 0.107 0.954 DRLPDID 0.192 0.209 0.366 
+
+Panel B. N = 250 
+
+δ = 0 
+
+LPDID-RW -2.489 3.005 0.684 LPDID-RW + X 0.060 0.130 0.926 LPDID-RA 0.002 0.113 0.952 DRLPDID-IPT -0.218 0.269 0.728 DRLPDID 0.002 0.118 0.948 
+
+δ = 0 .5
+
+LPDID-RW -2.344 2.840 0.706 LPDID-RW + X 0.167 0.206 0.688 LPDID-RA 0.106 0.158 0.850 DRLPDID-IPT -0.126 0.201 0.890 DRLPDID 0.097 0.161 0.856 
+
+δ = 1 .0
+
+LPDID-RW -2.376 2.822 0.714 LPDID-RW + X 0.259 0.283 0.412 LPDID-RA 0.194 0.223 0.618 DRLPDID-IPT -0.054 0.157 0.950 DRLPDID 0.189 0.224 0.634 Notes: Supplementary sensitivity exercise based on 500 Monte Carlo replications per design, with pointwise cluster-robust confidence intervals. The DGP keeps the nuisance-aligned specification (f base reg,t (Z), Z ) and perturbs the untreated outcome of ever-treated units through the drift parameter δ.
+
+17 variables may be more closely connected to institutional or behavioral margins affected by the reform itself.   
+
+> Table G.1: Average post-treatment effects in the no-fault-divorce application: richer specification
+
+Estimator ATT SE CI lower CI upper DRLPDID -5.625 3.966 -13.397 2.148 LPDID-RW + X -8.931 3.380 -15.555 -2.307 LPDID-RA -6.137 3.445 -12.889 0.615 Callaway–Sant’Anna -3.416 3.240 -10.239 2.744 Borusyak–Jaravel–Spiess -5.364 2.612 -10.714 -0.623 Sun–Abraham -7.732 3.308 -13.905 -1.283 Gardner -5.364 2.852 -10.931 0.059    
+
+> Note. Estimates are taken directly from the richer-specification application output. LPDID-RW + X reports the covariate-adjusted local LP-DiD comparator from the Dube-family implementation. LPDID-RA reports the regression-adjusted local estimator from the semiparametric implementation. External staggered-adoption comparators are computed in Python using the diff-diff package [2]. Table G.2: DRLPDID-IPT in the no-fault-divorce application: richer specification
+
+Estimator ATT SE CI lower CI upper DRLPDID-IPT -7.262 3.050 -13.241 -1.283  
+
+> Note. This table is reported separately only as an additional comparison for the semiparametric family. It is not part of the main cross-estimator application table used in the article.
+
+For completeness, the IPT-only version of the semiparametric local estima-tor is more negative in the richer specification, with an average post-treatment effect of −7.26 . This places it closer to Sun–Abraham than to DRLPDID, LPDID-RW + X, or LPDID-RA, reinforcing the broader Monte Carlo message that the IPT-only version is the most sensitive member of the semiparametric family. Table G.1 and Figure G.1 show that the richer specification does not overturn the main empirical ranking. DRLPDID yields −5.62 , again close to Borusyak–Jaravel–Spiess and Gardner (both −5.36 ). LPDID-RA is somewhat more negative at −6.14 , whereas LPDID-RW + X remains substantially more negative at −8.93 . Callaway–Sant’Anna becomes noticeably less negative 18 20 
+
+15 
+
+10 
+
+5
+
+0
+
+5
+
+> Estimate
+
+A. DRLPDID vs LPDID-RW + X B. DRLPDID vs LPDID-RA 
+
+20 
+
+15 
+
+10 
+
+5
+
+0
+
+5
+
+> Estimate
+
+C. DRLPDID vs Callaway-Sant'Anna D. DRLPDID vs Borusyak-Jaravel-Spiess 
+
+10 5 0 5 10 15 20 
+
+Event time 
+
+20 
+
+15 
+
+10 
+
+5
+
+0
+
+5
+
+> Estimate
+
+E. DRLPDID vs Sun-Abraham 
+
+10 5 0 5 10 15 20 
+
+Event time 
+
+F. DRLPDID vs Gardner 
+
+DRLPDID Comparison Figure G.1: Event-study comparison in the no-fault-divorce application: richer specification 
+
+19 at −3.42 , while Sun–Abraham remains more negative at −7.73 . The richer specification, therefore, serves as a robustness diagnostic rather than as the headline empirical result. 
+
+References 
+
+[1] Dube, A., D. Girardi, Ò. Jordà, A. M. Taylor, 2025. A local projections approach to difference-in-differences. Journal of Applied Econometrics 40, 741–758. [2] diff-diff contributors, 2026. diff-diff: Difference-in-differences in Python. Python package documentation. https://diff-diff.readthedocs. io/ .[3] Goodman-Bacon, A., 2021. Difference-in-differences with variation in treatment timing. Journal of Econometrics 225, 254–277. [4] Graham, B. S., C. C. Pinto, D. Egel, 2012. Inverse probability tilting for moment condition models with missing data. Review of Economic Studies 79, 1053–1079. [5] Sant’Anna, P. H. C., J. Zhao, 2020. Doubly robust difference-in-differences estimators. Journal of Econometrics 219, 101–122. [6] Stevenson, B., J. Wolfers, 2006. Bargaining in the shadow of the law: Divorce laws and family distress. Quarterly Journal of Economics 121, 267–288. 20

@@ -1,0 +1,4448 @@
+Title: Bootstrapping with AI/ML-generated labels
+
+URL Source: https://arxiv.org/pdf/2604.23770v1
+
+Published Time: Tue, 28 Apr 2026 01:08:28 GMT
+
+Number of Pages: 40
+
+Markdown Content:
+# Bootstrapping with AI/ML-generated labels ∗
+
+## Timothy Christensen † S´ ılvia Gon¸ calves ‡ Benoit Perron §
+
+## April 23, 2026 
+
+Abstract 
+
+AI/ML methods are increasingly used in economics to generate binary variables (or labels) via classification algorithms. When these generated variables are included as covariates in regressions, even small misclassification errors can induce large biases in OLS estimators and invalidate standard inference. We study whether the bootstrap can correct this bias and deliver valid inference. We first show that a seemingly natural fixed-label bootstrap , which generates data using estimated labels but relies on a corrupted version in estimation, is generally invalid unless a strong independence condition between the latent true labels and other covariates holds. We then propose a coupled-label bootstrap that jointly resamples the true and imputed labels, and show it is valid without this condition. Two finite-sample adjustments further improve coverage: a variance correction for uncertainty in estimated misclassification rates and a Hessian rotation for near-singular designs. We illustrate the methods in simulations and apply them to investigate the relationship between wages and remote work status. 
+
+Keywords : bootstrap, bias correction, binary labels, misclassification, AI/ML-generated data, inference. 
+
+> ∗
+
+We thank Jaap Abbring, Stephen Hansen, Christoph Rothe, and participants of the 2025 Royal Economic Society meetings in Birmingham. This material is based upon work supported by the National Science Foundation under Award No. 2521471 (Christensen). Gon¸ calves acknowledges support from the Social Sciences and Humanities Research Council of Canada grant RGPIN-435-2023-0352. 
+
+> †
+
+Department of Economics, Yale University. 
+
+> ‡
+
+Department of Economics, McGill University. 
+
+> §
+
+Department of Economics, Universit´ e de Montr´ eal, CIREQ, CIRANO. 
+
+> arXiv:2604.23770v1 [econ.EM] 26 Apr 2026
+
+# 1 Introduction 
+
+It is now standard practice in economics and across the social sciences to generate new variables and measurements using artificial intelligence (AI) and machine learn-ing (ML) methods. A leading use case is the generation of binary variables, or labels ,which are imputed using classification algorithms. To give just a few examples within economics, Goldsmith-Pinkham and Shue (2023) impute the gender of borrowers from borrower names, Bursztyn, Chaney, Hassan, and Rao (2024) impute the race of char-itable donors from donor names, Adams-Prassl, Waters, Balgova, and Qian (2023) and Hansen, Lambert, Bloom, Davis, Sadun, and Taska (2026) classify the flexibility of work arrangements from job postings metadata, and Dupas, Handlan, Modestino, et al. (2026) impute speaker gender and tone-of-voice from audio recordings of eco-nomics seminars. These imputed variables are rarely of interest themselves. Rather, they are used as inputs to econometric models for downstream inference tasks. While the easy generation of labels has opened the door for new research, it is not without significant methodological challenges. Battaglia, Christensen, Hansen, and Sacher (2025, BCHS hereafter) show theoretically and empirically that even high performance classifiers with error rates below 1% can generate substantial biases in parameter estimates due to misclassification error in the generated labels. Moreover, failure to correct for these biases leads to invalid inference on regression parameters. There is therefore a need for methods that correct bias and restore valid inference. A central challenge in developing such methods is data constraints. A widely discussed approach for correcting bias requires large validation samples, in which both the imputed variables and ground-truth labels are observed alongside other variables in the model. 1 In many economic applications, however, such data are unavailable. Instead, researchers may only observe an external sample from which the accuracy of the classifier can be measured. For instance, Bursztyn et al. (2024) estimate the accuracy of their classifier using an external sample of North Carolina  
+
+> 1In economics, this approach goes back to Bound and Krueger (1991), Carroll and Wand (1991), Sepanski and Carroll (1993), Bound, Brown, Duncan, and Rodgers (1994), and Lee and Sepanski (1995), among others, and has connections with the literature on auxiliary data (Chen, Hong, and Tamer, 2005; Chen, Hong, and Tarozzi, 2008). Recent papers proposing these methods within the context of AI/ML-generated data in economics include Ludwig, Mullainathan, and Rambachan (2025) and Carlson and Dell (2026). Similar approaches are taken in the recent statistics literature on “prediction-powered inference” (Angelopoulos et al., 2023a,b). See also Fong and Tyler (2021) and Egami, Hinck, Stewart, and Wei (2024), among others, for related work in political science.
+
+1voter registration data which contains self-reported ethnicity, but is missing data on charitable donations. Moreover, because collecting ground-truth labels is typically much more costly than generating labels with a classifier, the size m of this external sample is usually much smaller than the sample size n used for model estimation (m ≪ n). BCHS propose analytic bias corrections that account for both these data constraints. In this paper, we study whether the bootstrap can correct bias and deliver valid inference. There is a long tradition of using the bootstrap to reduce bias and improve the coverage of confidence intervals (Efron, 1981; Hall, 1992). In our setting, however, the problem is deceptively difficult. With binary labels, measurement error is nec-essarily “nonclassical” (Aigner, 1973): a misclassified 1 must be a 0, and vice versa. Consequently, common intuitions and methods developed in settings with “classical” measurement error do not easily carry over. More formally, consider the regression model 
+
+Yi = X′ 
+
+> i
+
+β + ui,Xi = g(θi, Z i),
+
+where θi is a latent binary variable, Yi and Zi are observed, and the functional form of g is known. For example, g(θi, Z i) = ( θi, Z ′
+
+> i
+
+)′ when θi enters the regression ad-ditively, or g(θi, Z i) = ( θiZ′
+
+> i
+
+, Z ′
+
+> i
+
+)′ when it enters through interactions. In practice, researchers replace θi with an estimate ˆθi, regress Yi on ˆXi ≡ g(ˆθi, Z i), and report confidence intervals and standard errors for β treating ˆXi as though it is the truth. Misclassification ( ˆθi̸ = θi for some observations) induces measurement error in the ˆXi, so regression estimators can be biased and standard inference can be invalid. As in BCHS, we assume the researcher observes a large sample ( Yi, Z i, ˆθi)ni=1 and a much smaller external sample ( θi, ˆθi)mi=1 used to estimate classifier accuracy. 2 The question we address is: how should one bootstrap in this scenario? Naively resampling ( Yi, ˆXi), or using equivalent residual-based approaches such as the wild bootstrap, does not work. These methods do not introduce any measurement error in the covariates in the bootstrap world, because the same covariates are used in data generation and parameter estimation. As a result, they fail to reproduce the bias of the OLS estimator and yield invalid inference.     
+
+> 2In fact, neither we nor BCHS need the full external sample, just estimates ˆF+and ˆF−of the false positive and negative rates of the classifier, and the sample size mused to estimate those rates.
+
+2A seemingly natural approach is a fixed-label bootstrap , a variant of the wild boot-strap that builds in measurement error. Outcomes are generated as Y ∗ 
+
+> i
+
+= ˆX′ 
+
+> i
+
+ˆβ + u∗ 
+
+> i
+
+,where ˆβ is the OLS estimator from regression of Yi on ˆXi, and u∗ 
+
+> i
+
+is a bootstrap version of the OLS residual. Then, Y ∗ 
+
+> i
+
+is regressed on ˆX∗ 
+
+> i
+
+≡ g(ˆθ∗ 
+
+> i
+
+, Z i), where ˆθ∗ 
+
+> i
+
+is a corrupted version of ˆθi constructed so that the false positive and negative rates for predicting ˆθi with ˆθ∗ 
+
+> i
+
+match those observed in the external sample. Analogues of this bootstrap have been used to correct bias in other settings with generated covariates, including factor-augmented regressions (Gon¸ calves and Perron, 2014; Gon¸ calves, Koh, and Perron, 2025) and panel data models (Gon¸ calves and Kaffo, 2015; Higgins and Jochmans, 2024; Li, Shen, and Zhou, 2024). However, we show that this bootstrap is generally inconsistent: it has the correct asymptotic variance but fails to replicate the asymptotic bias of the OLS estimator unless certain independence conditions hold between θi and Zi.To address this problem, we introduce a novel coupled-label bootstrap . Outcomes are generated as Y ∗ 
+
+> i
+
+= X∗′  
+
+> i
+
+ˆβ + u∗ 
+
+> i
+
+, where X∗ 
+
+> i
+
+= g(θ∗ 
+
+> i
+
+, Z i), θ∗ 
+
+> i
+
+is a bootstrap version of the true latent θi, and ˆβ and u∗ 
+
+> i
+
+are defined above. Estimation then proceeds by regressing Y ∗ 
+
+> i
+
+on ˆX∗ 
+
+> i
+
+as before. The key innovation is to generate the pairs ( θ∗ 
+
+> i
+
+, ˆθ∗ 
+
+> i
+
+)jointly so that the misclassification rates for predicting θ∗ 
+
+> i
+
+with ˆθ∗ 
+
+> i
+
+match those in the external sample. We show that this bootstrap reproduces the correct asymptotic bias and variance of the OLS estimator, which justifies the use of confidence sets and hypothesis tests constructed via this bootstrap. While our results establish asymptotic validity of the coupled-label bootstrap, two further modifications improve its finite-sample performance. The first is a variance correction that accounts for additional sampling error from estimating the misclas-sification rates. While BCHS develop analytic corrections, we show that a similar adjustment can be implemented via a simple modification of the bootstrap. The sec-ond is a rotation of the inverse Hessian, which is useful in near-singular designs where only a small fraction of θi are 0 (or 1). In these settings, misclassification can in-troduce discrepancies between the bootstrap and estimated inverse Hessian that are asymptotically negligible but material in finite samples. Simulations calibrated to our empirical application show that these modifications substantially improve finite-sample performance. We therefore recommend the coupled-label bootstrap with both modifications. The remainder of the paper is organized as follows. Section 2 provides high-level 3conditions for bootstrap validity with generated covariates. Section 3 develops theory for the binary labels case, analyzing a general wild bootstrap and providing results for the fixed-label and coupled-label bootstraps. Section 4 introduces two modifications that improve finite-sample performance. Section 5 presents simulation evidence in a design calibrated to the application, and Section 6 revisits Hansen et al. (2026), who study the relationship between wages and remote work status. All proofs are presented in the appendix. 
+
+Notation Let P∗ denote the bootstrap probability measure conditional on the data, and E∗ the corresponding expectation. For bootstrap random vectors Y ∗ 
+
+> n
+
+, we write 
+
+Y ∗ 
+
+> n
+
+→p∗ 0 or Y ∗ 
+
+> n
+
+= op∗ (1) if P∗(∥Y ∗ 
+
+> n
+
+∥ > ϵ ) →p 0 for all ϵ > 0. Similarly, Y ∗ 
+
+> n
+
+= Op∗ (1) if lim sup n→∞ P∗(∥Y ∗ 
+
+> n
+
+∥ > M ) →p 0 as M → ∞ . Finally, we write Z∗ 
+
+> n
+
+→d∗ Z to denote that P∗(Z∗ 
+
+> n
+
+≤ z) − F (z) →p 0 for all continuity points z of the CDF F of Z.
+
+# 2 General Case 
+
+In this section, we consider the general case in which Y is regressed on a vector of generated covariates ˆX. We first recap results from BCHS, who show that regressing 
+
+Y on ˆX induces a bias in the asymptotic distribution of the OLS estimator that invalidates standard inference. We then provide high-level conditions under which the bootstrap can match the asymptotic bias and variance of the OLS estimator, justifying the use of bootstrap percentile intervals to perform valid inference. The central question is then whether one can design a bootstrap satisfying these conditions in settings of interest. Section 3 addresses this question for the binary labels case. 
+
+## 2.1 Asymptotic Distribution of the OLS Estimator 
+
+We wish to perform inference on the parameter vector β in the regression model 
+
+Yi = β′Xi + ui,
+
+4where the true covariates Xi are latent and generated covariates ˆXi are used in their place. We are interested in the large-sample properties of the OLS estimator ˆβ =
+
+
+
+n−1
+
+> n
+
+X
+
+> i=1
+
+ˆXi ˆX′
+
+> i
+
+−1
+
+n−1
+
+> n
+
+X
+
+> i=1
+
+ˆXiYi
+
+from a regression of Yi on a vector of generated covariates ˆXi.The following regularity conditions are similar to those in BCHS: 
+
+Assumption 1. (i) 1
+
+> n
+
+Pni=1 ∥ ˆXi − Xi∥2 →p 0; (ii) 1√n
+
+Pni=1 ˆXi( ˆXi − Xi)′ →p B;(iii) 1√n
+
+Pni=1 ( ˆXi − Xi)ui →p 0. 
+
+Assumption 2. (i) 1
+
+> n
+
+Pni=1 XiX′ 
+
+> i
+
+→p Q ≡ E[XiX′ 
+
+> i
+
+] > 0, for E[∥Xi∥2] < ∞;(ii) 1√n
+
+Pni=1 Xiui →d N (0 , Σ), for Σ = E[XiX′ 
+
+> i
+
+u2 
+
+> i
+
+]. Assumption 1 imposes conditions on the generated variable ˆXi while Assumption 2 is standard and only concerns the latent variable Xi. Assumption 1 allows for both classical and nonclassical error in ˆXi. The key condition is Assumption 1(ii). In the classical case, this condition requires the measurement error variance to be O(n−1/2), similar to the small measurement error asymptotic frameworks of Chesher (1991) and Evdokimov and Zeleneev (2023). This scaling ensures that measurement error persists but does not dominate sampling error in the asymptotic distribution of ˆβ. As a result, asymptotics deliver tractable and useful approximations to the finite-sample distribution of ˆβ, where both sources of error play a role. Section 3 provides sufficient conditions for Assumption 1 for the binary labels case. The next result follows by similar arguments to BCHS and so a proof is omitted: 
+
+Theorem 1. Suppose that Assumptions 1 and 2 hold. Then as n → ∞ ,
+
+√n  ˆβ − β →d N (b, V ),
+
+where b = −Q−1Bβ , and V = Q−1ΣQ−1.
+
+As noted in BCHS, Theorem 1 shows that if b̸ = 0, then ˆβ has a first-order asymptotic bias and the usual approach to inference is invalid. 52.2 Consistency of the Bootstrap 
+
+Suppose that we generate the bootstrap data as 
+
+Y ∗ 
+
+> i
+
+= ˆβ′X∗ 
+
+> i
+
++ u∗
+
+> i
+
+where u∗ 
+
+> i
+
+is a bootstrap version of ˆ ui = Yi − ˆβ′ ˆXi. For now, we do not specify a particular bootstrap method used in generating u∗ 
+
+> i
+
+. Later we will consider a wild bootstrap for i.i.d. data. Similarly, X∗ 
+
+> i
+
+is a bootstrap analogue of the true latent Xi.A natural choice for X∗ 
+
+> i
+
+is ˆXi, as in a standard fixed-regressor bootstrap. As we will see below, allowing for X∗ 
+
+> i
+
+to differ from ˆXi turns out to be important for the binary labels application, so we allow for this possibility here. Let ˆX∗ 
+
+> i
+
+denote a bootstrap analogue of ˆXi which will be context-specific. The bootstrap analogue of ˆβ is ˆβ∗ =
+
+
+
+n−1
+
+> n
+
+X
+
+> i=1
+
+ˆX∗ 
+
+> i
+
+ˆX∗′
+
+> i
+
+−1
+
+n−1
+
+> n
+
+X
+
+> i=1
+
+ˆX∗ 
+
+> i
+
+Y ∗ 
+
+> i
+
+.
+
+The following set of high-level conditions on ( u∗ 
+
+> i
+
+, X ∗ 
+
+> i
+
+, ˆX∗ 
+
+> i
+
+) ensure the bootstrap distri-bution of √n( ˆβ∗ − ˆβ) is consistent for the distribution of √n( ˆβ−β) given in Theorem 1 as n → ∞ .
+
+Assumption B.1. (i) 1
+
+> n
+
+Pni=1 ∥ ˆX∗ 
+
+> i
+
+− X∗ 
+
+> i
+
+∥2 →p∗ 0 and 1
+
+> n
+
+Pni=1 ∥X∗ 
+
+> i
+
+− ˆXi∥2 →p∗ 0. (ii) 1√n
+
+Pni=1 ˆX∗ 
+
+> i
+
+( ˆX∗ 
+
+> i
+
+− X∗ 
+
+> i
+
+)′ →p∗ B.(iii) 1√n
+
+Pni=1 ( ˆX∗ 
+
+> i
+
+− X∗ 
+
+> i
+
+)u∗ 
+
+> i
+
+→p∗ 0 and 1√n
+
+Pni=1 (X∗ 
+
+> i
+
+− ˆXi)u∗ 
+
+> i
+
+→p∗ 0. 
+
+Assumption B.2. 1√n
+
+Pni=1 ˆXiu∗ 
+
+> i
+
+→d∗ N (0 , Σ). Assumption B.1 is the bootstrap analogue of Assumption 1. Part (i) is used to show that n−1 Pni=1 ˆX∗ 
+
+> i
+
+ˆX∗′  
+
+> i
+
+→p∗ Q, given n−1 Pni=1 ˆXi ˆX′ 
+
+> i
+
+→p Q under Assumptions 1 and 2. Part (iii) and Assumption B.2 imply that n−1/2 Pni=1 ˆX∗ 
+
+> i
+
+u∗ 
+
+> i
+
+→d∗ N (0 , Σ). In particular, Assumption B.2 is the bootstrap analogue of Assumption 2(ii) and follows by the application of a bootstrap CLT. Assumption B.1 (ii) is the crucial assumption that ensures that the bootstrap mimics the bias term B in Assumption 1(ii). 6Theorem 2. Suppose that Assumptions 1 and 2 hold. If (u∗ 
+
+> i
+
+, X ∗ 
+
+> i
+
+, ˆX∗ 
+
+> i
+
+) satisfy As-sumptions B.1 and B.2, then as n → ∞ ,
+
+√n  ˆβ∗ − ˆβ →d∗ N (b, V ),
+
+where b = −Q−1Bβ , and V = Q−1ΣQ−1.
+
+Theorem 2 shows that the bootstrap correctly replicates the limiting distribution of ˆβ, including its bias and variance, thereby justifying the construction of bootstrap percentile confidence intervals for the elements of β. Specifically, a 100(1 − α)% percentile interval for the j-th element βj of β is given by [ ˆβj − ˆq1−α/ 2,j , ˆβj − ˆqα/ 2,j ],
+
+where ˆ qα,j denotes the α-quantile of the bootstrap distribution of ˆβ∗ 
+
+> j
+
+− ˆβj . Unlike asymptotic theory-based intervals, this interval requires neither an explicit bias cor-rection nor a variance estimator. 
+
+# 3 Binary Labels Case 
+
+We now turn to the binary-label case. We begin by describing the setup and special-izing Theorem 1 to this setting. We then consider two bootstrap methods, both of which are instances of the wild bootstrap. The first is a seemingly natural fixed-label bootstrap , analogous to the standard fixed-regressor bootstrap, which is generally in-consistent unless strong independence conditions hold between θi and Zi. We next present a coupled-label bootstrap and show that it is consistent in settings where the fixed-label bootstrap fails. We therefore recommend the coupled-label bootstrap, together with the finite-sample modifications described in the next section. 
+
+## 3.1 Setup 
+
+In this setting, 
+
+Xi = g(θi, Z i),
+
+where g : {0, 1} × Rdz → Rk is known, θi is a latent binary random variable, and 
+
+Zi ∈ Rdz is an observed random vector. Since θi is latent, it is common practice 7to generate an estimate ˆθi of θi using a classification algorithm, then regress Yi on ˆXi = g(ˆθi, Z i). For ease of exposition we will focus on the case of scalar θi, though it is straightforward to extend our analysis to the vector case. 
+
+Example 1. This framework includes models where θi is interacted with a subset of the Zi variables, such as 
+
+Yi = β′
+
+> 1
+
+θiZ1i + β′
+
+> 2
+
+Z2i + ui, (1) 
+
+to capture, e.g., effects that vary by membership of a race or gender group. In this case, g(θi, Z i) = ( θiZ′
+
+> 1i
+
+, Z ′
+
+> 2i
+
+)′ ∈ Rk.
+
+Example 2. Example 1 includes as a special case the model studied in BCHS, in which 
+
+Yi = β1θi + β′
+
+> 2
+
+Z2i + ui, (2) 
+
+where Z1i = 1 and Z2i = Zi. For this model, g(θi, Z i) = ( θi, Z ′
+
+> i
+
+)′ ∈ Rk.
+
+To maintain flexibility, we will not take a stand on the algorithm with which ˆθi
+
+is generated. Instead, we shall assume that ( Yi, Z i, ˆθi, θ i)ni=1 are drawn i.i.d. from a distribution Pn. Here we use the notation Pn because our asymptotic framework introduced below allows the distribution of the data to vary with n, so that both misclassification and sampling error feature in the asymptotic distribution of the OLS estimator. The econometrician observes ( Yi, Z i, ˆθi)ni=1 and, for the purposes of bias correction, has access to an external sample ( θi, ˆθi)mi=1 , which can be used to assess the accuracy of the classifier. As in BCHS, we allow the external sample size m to be of much smaller magnitude than n. This reflects common empirical settings with large amounts of generated data and small amounts of ground-truth observations. 
+
+## 3.2 Asymptotic Bias of the OLS Estimator 
+
+We now provide primitive conditions for Assumption 1 for the binary labels case. To this end we impose some structure on ˆθi and θi. We follow BCHS and adopt an asymptotic framework where the (unconditional) false-positive rate E[ˆθi(1 − θi)] and (unconditional) false-negative rate E[θi(1 − ˆθi)] both tend to zero as n → ∞ , so that both sampling error in the regression and measurement error in the ˆθi remain relevant in large samples. This ensures the asymptotic distribution mimics the finite-sample setting where both play roles. 8To introduce the assumptions, note that we can write ˆXi − Xi = ˆθi(1 − θi)( g(1 , Z i) − g(0 , Z i)) + θi(1 − ˆθi)( g(0 , Z i) − g(1 , Z i)) ,
+
+from which it follows that ˆXi( ˆXi − Xi)′ = ˆθi(1 − θi)D+i + θi(1 − ˆθi)D−i,
+
+where 
+
+D+i = g(1 , Z i)( g(1 , Z i) − g(0 , Z i)) ′,D−i = g(0 , Z i)( g(0 , Z i) − g(1 , Z i)) ′.
+
+Let Gi = max {∥ g(0 , Z i)∥, ∥g(1 , Z i)∥} and let δ > 0. 
+
+Assumption 3. (i) E[Xiui] = 0 and E[|ui|4+ δ] < ∞;(ii) E[XiX′ 
+
+> i
+
+] > 0 and E[G4+ δi ] < ∞;(iii) E[( ˆXi − Xi)ui] = o(n−1/2) as n → ∞ ;(iv) √nE[ˆθi(1 −θi)] → κ+ and √nE[θi(1 − ˆθi)] → κ− as n → ∞ , for 0 ≤ κ+, κ − < ∞;(v) √n(E[ˆθi(1 −θi)D+i +θi(1 − ˆθi)D−i]−E[ˆθi(1 −θi)] E[D+i]−E[θi(1 − ˆθi)] E[D−i]) → 0as n → ∞ .Assumption 3(i)–(ii) are standard regularity conditions. Assumption 3(iii) allows for some correlation between the measurement error in ˆXi and ui, provided it vanishes at a sufficiently fast rate. For instance, suppose θi and ˆθi are functions of Zi and some auxiliary information Ui. Then by iterated expectations, 
+
+E[( ˆXi − Xi)ui] = Eˆθi(1 − θi)( g(1 , Z i) − g(0 , Z i)) E[ui|Zi, Ui]
+
++ Eθi(1 − ˆθi)( g(0 , Z i) − g(1 , Z i)) E[ui|Zi, Ui],
+
+so it suffices that E[ui|Zi, Ui] = 0 for Assumption (iii) to be satisfied. Assumption 3(iv) formalizes the asymptotic framework described above. This condition requires the false positive and false negative rates to vanish at the same order as sampling uncertainty in the regression (i.e., O(n−1/2)). It provides a more robust starting point for empirical work than the standard approach of simply regressing Yi
+
+on ˆXi and performing OLS inference, which implicitly assumes κ+ and κ− are zero. 9Finally, Assumption 3(v) limits the dependence between g(0 , Z i) and g(1 , Z i) and the classification errors in ˆθi (but not the dependence between Zi and θi). This con-dition relates both to the functional form of g and the statistical nature of the classi-fication errors. This condition allows the conditional probabilities of misclassification 
+
+E[ˆθi(1 − θi)|Zi] and E[θi(1 − ˆθi)|Zi] to depend on Zi, provided the misclassification errors are asymptotically uncorrelated with D+i and D−i. As this assumption is important, before proceeding we discuss some sufficient conditions for it. 
+
+Example 2 (continued). Consider (2) as in BCHS. Then 
+
+D+i = 1 0
+
+Zi 0
+
+!
+
+, D−i = 0 0
+
+−Zi 0
+
+!
+
+,
+
+so a sufficient condition for Assumption 3(v) is 
+
+√nE[θi − ˆθi] → 0,
+
+√nE[( θi − ˆθi)Zi] → 0. (3) 
+
+Suppose that ˆθi is generated by a logistic classifier with (potentially many) variables 
+
+Wi,n , including Zi and a constant. That is, 
+
+P(ˆθi = 1 |Wi,n ) = eW ′
+
+> i,n γn
+
+1 + eW ′ 
+
+> i,n γn
+
+. (4) 
+
+It is important to note that we are not assuming the logistic model is the DGP for θi,just that it generates ˆθi. Suppose the classifier has been pre-trained on a large external data set of (θi, W i,n ). The parameters γn of the classifier maximize the population likelihood 
+
+L(γ) = E[θiW ′
+
+> i,n
+
+γ − log(1 + eW ′ 
+
+> i,n γ
+
+)] ,
+
+and therefore satisfy the first-order condition 
+
+0 = E
+
+"
+
+θi − eW ′
+
+> i,n γn
+
+1 + eW ′
+
+> i,n γn
+
+!
+
+Wi,n 
+
+#
+
+.
+
+Hence, by (4) and iterated expectations, we have 
+
+E[( θi − ˆθi)Wi,n ] = E[( θi − E[ˆθi|Wi,n ]) Wi,n ] = 0 ,
+
+10 from which it follows that (3) holds. Note that the first condition in (3) together with 
+
+√nE[ˆθi(1 −θi)] → κ+ implies that √nE[θi(1 − ˆθi)] → κ+ also holds, and thus κ+ = κ−.
+
+Lemma 1. Suppose that Assumption 3 holds. Then Assumptions 1 and 2 hold with 
+
+B = κ+E[D+i] + κ−E[D−i].
+
+Before proceeding, we characterize the bias term B in the context of the two running examples. 
+
+Example 1 (continued). Consider the interactions model (1). Then 
+
+B = κ+E[Z1iZ′
+
+> 1i
+
+] 0(κ+ − κ−)E[Z2iZ′
+
+> 1i
+
+] 0
+
+!
+
+.
+
+Example 2 (continued). Consider the additive model (2). Then 
+
+B = κ+ 0(κ+ − κ−)E[Zi] 0
+
+!
+
+.
+
+If κ+ = κ−, then 
+
+B = κ+ 00 0
+
+!
+
+,
+
+as in BCHS. 
+
+## 3.3 Wild Bootstrap with Binary Labels 
+
+Both the fixed-label and coupled-label bootstraps are versions of the following wild bootstrap with binary labels, but differ in how ( θ∗ 
+
+> i
+
+, ˆθ∗ 
+
+> i
+
+) are drawn: 
+
+Y ∗ 
+
+> i
+
+= ˆβ′X∗ 
+
+> i
+
++ u∗ 
+
+> i
+
+,X∗ 
+
+> i
+
+= g(θ∗ 
+
+> i
+
+, Z i),
+
+ˆX∗ 
+
+> i
+
+= g(ˆθ∗ 
+
+> i
+
+, Z i),u∗ 
+
+> i
+
+= ˆ uiηi,
+
+(5) where ηi are i.i.d. (0 , 1) and generated independently of the bootstrap labels ( θ∗ 
+
+> i
+
+, ˆθ∗ 
+
+> i
+
+), conditional on the original sample. To understand when these methods are valid, we 11 use the following set of conditions on ( θ∗ 
+
+> i
+
+, ˆθ∗ 
+
+> i
+
+). 
+
+Assumption L. (i) 1
+
+> n
+
+Pni=1 E∗[I[θ∗
+
+> i
+
+̸ = ˆθi]] →p 0. (ii) 1√n
+
+Pni=1 E∗[ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+)] →p κ+, 1√n
+
+Pni=1 E∗[θ∗ 
+
+> i
+
+(1 − ˆθ∗ 
+
+> i
+
+)] →p κ−.(iii) Var ∗  1√n
+
+Pni=1 ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+) →p 0 and Var ∗  1√n
+
+Pni=1 θ∗ 
+
+> i
+
+(1 − ˆθ∗ 
+
+> i
+
+) →p 0. (iv) 1√n
+
+Pni=1 ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+) D+i − E[D+i] + θ∗ 
+
+> i
+
+(1 − ˆθ∗ 
+
+> i
+
+) D−i − E[D−i] →p∗ 0. Assumption L(i) requires the bootstrap “true” labels θ∗ 
+
+> i
+
+to match the estimated la-bels ˆθi on average with probability converging to one. This condition is automatically satisfied if θ∗ 
+
+> i
+
+= ˆθi. Assumption L(ii) is the bootstrap analogue of Assumption 3(iv). It requires the average bootstrap false positive and negative rates, when scaled by 
+
+√n, to converge in probability to κ+ and κ−. Together with Assumptions L(iii) and L(iv), this condition ensures that the bootstrap reproduces the asymptotic bias in the OLS estimator. Assumption L(iv) can be viewed as the bootstrap analogue of Assumption 3(v). The following lemma shows that the high-level Assumptions B.1 and B.2 hold for the wild bootstrap with binary labels provided the method for generating ( θ∗ 
+
+> i
+
+, ˆθ∗ 
+
+> i
+
+)satisfies Assumption L. 
+
+Lemma 2. Suppose Assumption 3 holds. Let u∗ 
+
+> i
+
+= ˆ uiηi where ηi are i.i.d. (0 , 1) 
+
+independently of (θ∗ 
+
+> i
+
+, ˆθ∗ 
+
+> i
+
+) such that E∗[|ηi|2+ δ] < ∞ for δ > 0. If, in addition, (θ∗ 
+
+> i
+
+, ˆθ∗ 
+
+> i
+
+)
+
+satisfy Assumption L, then Assumptions B.1 and B.2 hold. 
+
+## 3.4 Specific Bootstrap Methods 
+
+Here we study two methods for generating ( θ∗ 
+
+> i
+
+, ˆθ∗ 
+
+> i
+
+). The first is a standard fixed-regressor bootstrap which sets θ∗ 
+
+> i
+
+= ˆθi. Its validity requires E[D+i|θi = 0] = E[D+i]and E[D−i|θi = 1] = E[D−i], which holds if D+i and D−i are mean independent of θi,but not necessarily otherwise. We therefore introduce a coupled-label bootstrap that jointly resamples ( θ∗ 
+
+> i
+
+, ˆθ∗ 
+
+> i
+
+) independently of the original sample to mimic the bias B
+
+without this strong independence assumption. 
+
+3.4.1 Fixed-Label Bootstrap 
+
+This method sets θ∗ 
+
+> i
+
+= ˆθi in the bootstrap DGP for Y ∗ 
+
+> i
+
+, treating the bootstrap latent labels as fixed. The bootstrap estimated labels ˆθ∗ 
+
+> i
+
+are generated as i.i.d. Bernoulli 12 random variables, conditional on ˆθi:
+
+P∗(ˆθ∗ 
+
+> i
+
+= θ|ˆθi = 1) = 
+
+
+
+ˆF−/ˆπ if θ = 0 ,
+
+1 − ˆF−/ˆπ if θ = 1 ,
+
+and 
+
+P∗(ˆθ∗ 
+
+> i
+
+= θ|ˆθi = 0) = 
+
+
+
+ˆF+/(1 − ˆπ) if θ = 1 ,
+
+1 − ˆF+/(1 − ˆπ) if θ = 0 .
+
+Here, ˆF+ and ˆF− are such that √n ˆF+ →p κ+ and √n ˆF− →p κ−, respectively, and ˆπ = n−1 Pni=1 ˆθi. To this end, we follow BCHS and rely on an external sample (θi, ˆθi)mi=1 used to assess the accuracy of the classifier. BCHS show that ˆκ+ = √n ˆF+, with ˆF+ = 1
+
+m
+
+> m
+
+X
+
+> i=1
+
+ˆθi(1 − θi)is consistent as n, m → ∞ with n/m 2 → 0 under Assumption 3(iv). An analogous result holds for ˆκ− = √n ˆF−, with ˆF− = 1
+
+m
+
+> m
+
+X
+
+> i=1
+
+θi(1 − ˆθi).
+
+Importantly, these results allow for the external sample size m to be much smaller than the original sample size n used in the regression. For this method, Assumption L(i) is automatically satisfied since θ∗ 
+
+> i
+
+= ˆθi. One can also show that Assumptions L(ii)-(iii) are satisfied provided √n ˆF+ →p κ+ and 
+
+√n ˆF− →p κ−. However, Assumption L(iv) fails whenever ( D+i, D −i) are not mean independent of ˆθi. This implies that the fixed-label bootstrap only replicates B if we assume that this strong independence condition holds. To see this, note that the bootstrap bias is determined by (the probability limit of) the bootstrap expectation of ˆB∗ ≡ 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+(ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+)D+i + θ∗ 
+
+> i
+
+(1 − ˆθ∗ 
+
+> i
+
+)D−i), where θ∗ 
+
+> i
+
+= ˆθi.
+
+Fixing the “latent” bootstrap labels θ∗ 
+
+> i
+
+at ˆθi implies that the bootstrap expectation 13 of ˆB∗ is equal to ˆB ≡ E∗[ ˆB∗] = ˆ κ+
+
+11 − ˆπ
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+(1 − ˆθi)D+i + ˆ κ−
+
+1ˆπ
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ˆθiD−i
+
+→p κ+E[D+i|θi = 0] + κ−E[D−i|θi = 1] ,
+
+whereas 
+
+B = κ+E[D+i] + κ−E[D−i].
+
+Hence, ˆB does not consistently estimate the bias B in general, unless ( D+i, D −i) are mean independent of θi. We summarize this result next. 
+
+Corollary 1. Under Assumption 3, the fixed-label bootstrap satisfies the conditions of Theorem 2 if √n ˆF+ →p κ+ and √n ˆF− →p κ−, and (D+i, D −i) are mean independent of θi.
+
+Example 2 (continued). One instance in which this bootstrap is valid is the special case of model (2) where Zi contains just a constant for the intercept. Then, D+i and 
+
+D−i are non-stochastic, and so ˆB →p B.
+
+3.4.2 Coupled-Label Bootstrap 
+
+The coupled-label bootstrap generates the pair ( θ∗ 
+
+> i
+
+, ˆθ∗ 
+
+> i
+
+) jointly for each observation 
+
+i = 1 , . . . , n , independently across i and independently of u∗ 
+
+> i
+
+= ˆ uiηi, according to the following categorical distributions: 
+
+P∗(θ∗ 
+
+> i
+
+= θ1, ˆθ∗ 
+
+> i
+
+= θ2 | ˆθi = 1) = 
+
+
+
+1 − ˆF+ − ˆF− 
+
+> ˆπ
+
+if θ1 = 1 , θ 2 = 1 ,
+
+ˆF− if θ1 = 1 , θ 2 = 0 ,
+
+ˆF+ if θ1 = 0 , θ 2 = 1 ,
+
+ˆF− 1−ˆπ 
+
+> ˆπ
+
+if θ1 = 0 , θ 2 = 0 ,
+
+and 
+
+P∗(θ∗ 
+
+> i
+
+= θ1, ˆθ∗ 
+
+> i
+
+= θ2 | ˆθi = 0) = 
+
+
+
+ˆF+ ˆπ 
+
+> 1−ˆπ
+
+if θ1 = 1 , θ 2 = 1 ,
+
+ˆF− if θ1 = 1 , θ 2 = 0 ,
+
+ˆF+ if θ1 = 0 , θ 2 = 1 ,
+
+1 − ˆF+ 11−ˆπ − ˆF− if θ1 = 0 , θ 2 = 0 .
+
+14 The key feature of this method is that the probability of discordant pairs ( θ∗ 
+
+> i
+
+, ˆθ∗ 
+
+> i
+
+) = (1 , 0) and (0 , 1) equals ˆF− and ˆF+, respectively, for every observation i, regardless of ˆθi. As a result, the bootstrap false positive and negative rates E∗[ˆθ∗ 
+
+> i
+
+(1 −θ∗ 
+
+> i
+
+)] = ˆF+ and 
+
+E∗[θ∗ 
+
+> i
+
+(1 − ˆθ∗ 
+
+> i
+
+)] = ˆF− are constant across i. This ensures that the bootstrap correctly replicates the asymptotic bias B without requiring independence between θi and Zi,since the bootstrap misclassification indicators are decoupled from ( D+i, D −i). The conditional probabilities assigned to the concordant pairs ( θ∗ 
+
+> i
+
+, ˆθ∗ 
+
+> i
+
+) = (1 , 1) and (0 , 0) ensure that the bootstrap Hessian ˆQ∗ converges to the empirical Hessian ˆQ
+
+conditional on the data. Since ˆQ∗ depends only on ˆθ∗ 
+
+> i
+
+interacted with g(1 , Z i)g(1 , Z i)′
+
+and g(0 , Z i)g(0 , Z i)′, its bootstrap expectation is determined by E∗[ˆθ∗ 
+
+> i
+
+]. As the dis-cordant pair probabilities are set equal to ˆF+ and ˆF−, the key requirement is that 
+
+P∗(θ∗ 
+
+> i
+
+= 1 , ˆθ∗ 
+
+> i
+
+= 1 |ˆθi = 1) →p 1 and P∗(θ∗ 
+
+> i
+
+= 1 , ˆθ∗ 
+
+> i
+
+= 1 |ˆθi = 0) →p 0, both of which are satisfied by the proposed construction. Under this distribution, E∗[ˆθ∗ 
+
+> i
+
+] = ˆθi(1 − ˆF−/ˆπ) + (1 − ˆθi) ˆF+/(1 − ˆπ), which ensures that the coupled-label bootstrap Hessian matches the fixed-label bootstrap Hessian in expectation. Other choices are nevertheless possible. The following result formally establishes the validity of this bootstrap: 
+
+Theorem 3. Suppose that Assumption 3 holds. Let u∗ 
+
+> i
+
+= ˆ uiηi where ηi are i.i.d. (0 , 1) 
+
+independently of (θ∗ 
+
+> i
+
+, ˆθ∗ 
+
+> i
+
+) such that E∗[|ηi|2+ δ] < ∞ for δ > 0. If, in addition, 
+
+√n ˆF+ →p κ+ and √n ˆF− →p κ−, then the coupled-label bootstrap satisfies the condi-tions of Theorem 2 and, consequently, 
+
+√n  ˆβ∗ − ˆβ →d∗ N (b, V ),
+
+as n → ∞ , with b = −Q−1Bβ and V = Q−1ΣQ−1.
+
+Theorem 3 shows that the coupled-label bootstrap correctly replicates the bias and variance of the asymptotic distribution of the OLS estimator in Theorem 1, thus justifying the use of percentile intervals for valid inference. However, as our simulations show, finite-sample coverage can deviate from the nominal level. We therefore recommend using the coupled-label bootstrap with the two finite-sample modifications described in the next section. 15 4 Finite-Sample Modifications 
+
+The asymptotic validity of the bootstrap percentile interval requires the bootstrap to correctly mimic the asymptotic distribution of √n( ˆβ − β), including its mean and variance. From the proofs of Lemma A.3 and Theorem 2, 
+
+√n( ˆβ∗ − ˆβ) = Z∗ + ˆb∗, (6) where Z∗ →d∗ N (0 , V ) and ˆb∗ = − ˆQ∗− 1
+
+ 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+)D+i + θ∗ 
+
+> i
+
+(1 − ˆθ∗ 
+
+> i
+
+)D−i
+
+
+
+ˆβ ≡ − ˆQ∗− 1 ˆB∗ ˆβ, 
+
+where ˆQ∗ = n−1 Pni=1 ˆX∗ 
+
+> i
+
+ˆX∗′  
+
+> i
+
+is the bootstrap Hessian matrix. To show that ˆb∗ →p∗ b,we add and subtract appropriately to obtain ˆb∗ = − 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+)Γ +β + θ∗ 
+
+> i
+
+(1 − ˆθ∗ 
+
+> i
+
+)Γ −β + op∗ (1) ≡ b∗ + op∗ (1) , (7) where Γ + = Q−1E[D+i] and Γ − = Q−1E[D−i]. While the coupled-label bootstrap bias 
+
+b∗ is consistent for b, finite-sample distortions may arise. In particular, as noted in BCHS, estimating F+ and F− introduces additional noise that can inflate the variance of b∗, requiring a variance correction to improve coverage of bias-corrected confidence intervals when m/n is small. The same issue arises here, but a similar correction can easily be incorporated into the coupled-label bootstrap. A second source of distortion arises from the op∗ (1) term representing the difference between ˆb∗ and b∗. This term depends on the difference between ˆQ∗− 1 and ˆQ−1, which can be non-negligible in finite samples, especially when the proportion of ˆθi equal to 1 or 0 is small. In such cases, the bootstrap mean of ˆb∗ is different from that of b∗, introducing a location bias in the bootstrap. This motivates rotating ˆβ∗ − ˆβ by ˆR∗ = ˆQ−1 ˆQ∗.We discuss these two modifications next. We first describe the variance correction for the coupled-label bootstrap, establish its validity, and show it is able to replicate the two leading higher-order variance terms. We then describe the rotation that resolves the mismatch between the bootstrap Hessian and its sample analogue. 16 4.1 Coupled-Label Bootstrap with Variance Correction 
+
+To generate each bootstrap sample, first draw V ∗ 
+
+> +
+
+∼ Binomial( m, ˆF+) and V ∗− ∼
+
+Binomial( m, ˆF−) and set ˆF ∗ 
+
+> +
+
+= V ∗
+
+> +
+
+/m and ˆF ∗− = V ∗−/m . Conditional on ˆF ∗ 
+
+> +
+
+and ˆF ∗−,the pairs ( θ∗ 
+
+> i
+
+, ˆθ∗ 
+
+> i
+
+) are generated jointly for each observation i = 1 , . . . , n , independently across i and independently of u∗ 
+
+> i
+
+= ˆ uiηi, according to the following distributions: 
+
+P∗(θ∗ 
+
+> i
+
+= θ1, ˆθ∗ 
+
+> i
+
+= θ2 | ˆθi = 1 , ˆF ∗
+
+> +
+
+, ˆF ∗−) = 
+
+
+
+1 − ˆF ∗ 
+
+> +
+
+− ˆF ∗− 
+
+> ˆπ
+
+if θ1 = 1 , θ 2 = 1 ,
+
+ˆF ∗− if θ1 = 1 , θ 2 = 0 ,
+
+ˆF ∗ 
+
+> +
+
+if θ1 = 0 , θ 2 = 1 ,
+
+ˆF ∗− 1−ˆπ 
+
+> ˆπ
+
+if θ1 = 0 , θ 2 = 0 ,
+
+(8) and 
+
+P∗(θ∗ 
+
+> i
+
+= θ1, ˆθ∗ 
+
+> i
+
+= θ2 | ˆθi = 0 , ˆF ∗
+
+> +
+
+, ˆF ∗−) = 
+
+
+
+ˆF ∗  
+
+> +ˆπ
+> 1−ˆπ
+
+if θ1 = 1 , θ 2 = 1 ,
+
+ˆF ∗− if θ1 = 1 , θ 2 = 0 ,
+
+ˆF ∗ 
+
+> +
+
+if θ1 = 0 , θ 2 = 1 ,
+
+1 − ˆF ∗  
+
+> +11−ˆπ
+
+− ˆF ∗− if θ1 = 0 , θ 2 = 0 .
+
+(9) Note that the ˆF ∗ 
+
+> +
+
+and ˆF ∗− are generated only once per bootstrap sample and are held fixed when generating the n pairs ( θ∗ 
+
+> i
+
+, ˆθ∗ 
+
+> i
+
+) for i = 1 , . . . , n .The following result formally establishes validity of this bootstrap: 
+
+Theorem 4. Suppose that Assumption 3 holds. Let u∗ 
+
+> i
+
+= ˆ uiηi where ηi are i.i.d. (0 , 1) 
+
+independently of (θ∗ 
+
+> i
+
+, ˆθ∗ 
+
+> i
+
+) such that E∗[|ηi|2+ δ] < ∞ for δ > 0. If, in addition, 
+
+√n ˆF+ →p κ+ and √n ˆF− →p κ− and n/m 2 → 0, then the coupled-label bootstrap with variance correction satisfies the conditions of Theorem 2 and, consequently, 
+
+√n  ˆβ∗ − ˆβ →d∗ N (b, V ),
+
+as n → ∞ , with b = −Q−1Bβ and V = Q−1ΣQ−1.
+
+Theorem 4 shows that this bootstrap is able to reproduce the asymptotic bias and variance of the OLS estimator. We now show it is able to match key higher-order variance terms as well. 17 4.2 Variance Analysis 
+
+4.2.1 Finite-Sample Correction from BCHS 
+
+We first consider the bias-corrected estimator proposed in BCHS. That estimator can be written as ˆβbc = ( I + ˆΓ+ ˆF+ + ˆΓ− ˆF−) ˆβ, 
+
+with ˆQ = 1
+
+> n
+
+Pni=1 ˆXi ˆX′ 
+
+> i
+
+, ˆΓ+ = ˆQ−1   1
+
+> n
+
+Pni=1 D+i
+
+, and ˆΓ− defined analogously. We may analyze the effect of ˆF+ and ˆF− on the variance of ˆβbc as follows. First, as Var( √n( ˆβ − β)) ≈ V , we have 
+
+E[Var( ˆβbc | ˆF+, ˆF−)] ≈ 1
+
+nE[( I + Γ + ˆF+ + Γ − ˆF−)V (I + Γ + ˆF+ + Γ − ˆF−)′]= 1
+
+n
+
+ V + O(n−1/2) ,
+
+because F+ = E[ ˆF+], F− = E[ ˆF−] and √nF +, √nF − = O(1). Moreover, Var( E[ ˆβbc | ˆF+, ˆF−]) ≈ Var(( I + Γ + ˆF+ + Γ − ˆF−)β)= F+(1 − F+)
+
+m Γ+ββ ′Γ′ 
+
+> +
+
++ F−(1 − F−)
+
+m Γ−ββ ′Γ′−
+
+− F+F−
+
+m (Γ +ββ ′Γ′− + Γ −ββ ′Γ′
+
+> +
+
+),
+
+with F+ = E[ ˆF+] and F− = E[ ˆF−]. The law of total variance implies that the variance of ˆβbc is approximately equal to the sum of these two terms. As √nF +, √nF − = O(1) and √n/m = o(1), we have Var( √n( ˆβbc − β)) 
+
+≈ V + nF +(1 − F+)
+
+m Γ+ββ ′Γ′ 
+
+> +
+
++ nF −(1 − F−)
+
+m Γ−ββ ′Γ′− + O(n−1/2). (10) Under the framework adopted in BCHS where m/n → 0 with n/m 2 → 0, the second and third terms are O(√n/m ) and therefore dominate the remaining O(n−1/2) term. Thus, it is these two terms that are most critical to match for the purposes of finite-sample variance correction. 18 4.2.2 The Bootstrap Matches the Finite-Sample Variance Correction 
+
+We now show that the coupled-label bootstrap with variance correction is able to match the above two O(√n/m ) terms. Recalling the bootstrap expansion (7), the bootstrap expectation of the bias term b∗ is 
+
+E∗[b∗] = −
+
+√n ˆF+Γ+β + √n ˆF−Γ−β
+
+
+
+→p b. 
+
+Therefore, drawing ˆF ∗ 
+
+> +
+
+and ˆF ∗− from a distribution centered at ˆF+ and ˆF− does not affect the bootstrap’s ability to reproduce the leading bias term. To analyze the bootstrap variance of the bias term, first note that conditional on the data and ˆF ∗
+
+> +
+
+, ˆF ∗−, the ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+) and θ∗ 
+
+> i
+
+(1 − ˆθ∗ 
+
+> i
+
+) are i.i.d. Bernoulli and satisfy 
+
+E∗[ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+)| ˆF ∗
+
+> +
+
+, ˆF ∗−] = ˆF ∗
+
+> +
+
+, E∗[θ∗ 
+
+> i
+
+(1 − ˆθ∗ 
+
+> i
+
+)| ˆF ∗
+
+> +
+
+, ˆF ∗−] = ˆF ∗−,
+
+Var ∗(ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+)| ˆF ∗
+
+> +
+
+, ˆF ∗−) = ˆF ∗
+
+> +
+
+(1 − ˆF ∗
+
+> +
+
+), Var ∗(θ∗ 
+
+> i
+
+(1 − ˆθ∗ 
+
+> i
+
+)| ˆF ∗
+
+> +
+
+, ˆF ∗−) = ˆF ∗−(1 − ˆF ∗−),
+
+and Cov ∗(ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+), θ ∗ 
+
+> i
+
+(1 − ˆθ∗ 
+
+> i
+
+)| ˆF ∗
+
+> +
+
+, ˆF ∗−) = − ˆF ∗ 
+
+> +
+
+ˆF ∗−.
+
+Using these expressions and the fact that m ˆF ∗ 
+
+> +
+
+and m ˆF ∗− are independent Binomial( m, ˆF+)and Binomial( m, ˆF−) random variables conditional on the data, we have Var ∗
+
+
+
+E∗[b∗| ˆF ∗
+
+> +
+
+, ˆF ∗−]
+
+
+
+= Var ∗
+
+√n ˆF ∗
+
+> +
+
+Γ+β + √n ˆF ∗−Γ−β
+
+
+
+= n ˆF+(1 − ˆF+)
+
+m Γ+ββ ′Γ′ 
+
+> +
+
++ n ˆF−(1 − ˆF−)
+
+m Γ−ββ ′Γ′−.
+
+Moreover, Var ∗(b∗| ˆF ∗
+
+> +
+
+, ˆF ∗−) = ˆF ∗
+
+> +
+
+(1 − ˆF ∗
+
+> +
+
+)Γ +ββ ′Γ′ 
+
+> +
+
++ ˆF ∗−(1 − ˆF ∗−)Γ −ββ ′Γ′−
+
+− ˆF ∗ 
+
+> +
+
+ˆF ∗−(Γ +ββ ′Γ′− + Γ −ββ ′Γ′
+
+> +
+
+),
+
+from which we see that 
+
+E∗
+
+h
+
+Var ∗(b∗| ˆF ∗
+
+> +
+
+, ˆF ∗−)
+
+i
+
+=
+
+
+
+1 − 1
+
+m
+
+  ˆF+(1 − ˆF+)Γ +ββ ′Γ′ 
+
+> +
+
++ ˆF−(1 − ˆF−)Γ −ββ ′Γ′−
+
+
+
+− ˆF+ ˆF−(Γ +ββ ′Γ′− + Γ −ββ ′Γ′
+
+> +
+
+)= Op(n−1/2).
+
+19 Hence, by the law of total variance, we have, Var ∗(b∗) = n ˆF+(1 − ˆF+)
+
+m Γ+ββ ′Γ′ 
+
+> +
+
++ n ˆF−(1 − ˆF−)
+
+m Γ−ββ ′Γ′− + Op(n−1/2).
+
+And since √n ˆF+ →p κ+ and √n ˆF− →p κ−, we have Var ∗(b∗) = nF +(1 − F+)
+
+m Γ+ββ ′Γ′ 
+
+> +
+
++ nF −(1 − F−)
+
+m Γ−ββ ′Γ′− + op(√n/m ).
+
+These leading terms match O(√n/m ) terms in (10), as required. 
+
+## 4.3 Rotation 
+
+As discussed previously, an additional source of finite-sample distortions associated with the coupled-label bootstrap (and its variance-corrected variant) is the discrep-ancy between the inverse bootstrap Hessian matrix ˆQ∗− 1 and its sample analogue ˆQ−1. If this difference is large, the remainder term in the bootstrap expansion (7) is not negligible, introducing a bias in the bootstrap distribution. One way to solve this problem is to bootstrap the distribution of √n ˆR∗( ˆβ∗ − ˆβ), where ˆR∗ = ˆQ−1 ˆQ∗. This is equivalent to bootstrapping the distribution of 
+
+√n( ˜β∗ − ˆR∗ ˆβ), ˜β∗ = ( ˆX′ ˆX)−1 ˆX∗′ Y ∗,
+
+where ˆX∗ and Y ∗ are obtained by the variance-corrected coupled-label bootstrap. With this rotation, the bias term of the bootstrap expansion in (6) becomes ˆR∗ˆb∗ = − ˆQ−1 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+)D+i ˆβ + θ∗ 
+
+> i
+
+(1 − ˆθ∗ 
+
+> i
+
+)D−i ˆβ, 
+
+thus no longer depending on ˆQ∗− 1. Since ˆR∗ →p∗ Ik, the rotated coupled-label boot-strap with variance correction is asymptotically valid under the same conditions as those stated in Theorem 4. 20 5 Simulations 
+
+We analyze the finite-sample properties of the bootstrap methods by extending the simulation design of BCHS in two directions. First, we consider an interactions model in which a standard normal covariate Zi is interacted with the binary label θi so that the effect of Zi on Yi differs between θi = 1 and θi = 0. Second, we allow pi = P(θi = 1) to vary across observations to introduce correlation between θi and the matrices D+i
+
+and D−i, which, as shown above, invalidates the fixed-label bootstrap. The model is: 
+
+Yi = 10 + θiZi + Zi + (0 .3 + 0 .2 θi) ui,Zi ∼ N (0 , 1) , ui ∼ i.i.d. N (0 , 1) ,pi = F (Z2 
+
+> i
+
+),
+
+where F (·) is the cumulative distribution function of a χ2 (1) random variable, which implies that pi ∼ U [0 , 1] . The joint distribution of the label pair ( θi, ˆθi)′ is given by 
+
+P(θi = 1 , ˆθi = 1) = ˜ pi − F−, P(θi = 1 , ˆθi = 0) = F−,
+
+P(θi = 0 , ˆθi = 1) = F+, P(θi = 0 , ˆθi = 0) = 1 − ˜pi − F+.
+
+We set κ+ = κ− = κ and F+ = F− = κ/ √n. To ensure all probabilities remain non-negative, we map pi into ˜pi = pi · 2(¯ p − F+) + F+,
+
+so that ˜ pi is uniformly distributed between F+, and 2¯ p − F+, where ¯ p is the average probability that θi = 1. We consider two values of ¯ p ∈ { 0.05 , 0.5}, matching the constant probabilities used by BCHS. The correlation between θi and Z2 
+
+> i
+
+depends strongly on ¯ p: it is approximately 0 .02 when ¯ p = 0 .05 but rises to approximately 0 .31 when ¯ p = 0 .5. As theory predicts, this has important consequences for the performance of the fixed-label bootstrap, which requires mean independence between θi and ( D+i, D−i). 21 The bootstrap DGP takes the form 
+
+Y ∗ 
+
+> i
+
+= ˆβ′X∗ 
+
+> i
+
++ u∗ 
+
+> i
+
+, u∗ 
+
+> i
+
+= ˆ uiηi, ηi ∼ i.i.d. N (0 , 1) ,X∗ 
+
+> i
+
+= (1 , θ ∗ 
+
+> i
+
+Zi, Z i)′,
+
+where ˆβ is the sample OLS estimator and ˆ ui are the OLS residuals. In all experi-ments, we use the wild bootstrap with standard normal weights to generate u∗ 
+
+> i
+
+. Four methods for generating ( θ∗ 
+
+> i
+
+, ˆθ∗ 
+
+> i
+
+) are considered. One is a naive bootstrap that sets 
+
+θ∗ 
+
+> i
+
+= ˆθ∗ 
+
+> i
+
+= ˆθi. This bootstrap method is denoted as “no-label resampling” in the ta-bles. By not introducing any measurement error in the bootstrap world, it implicitly sets the bootstrap bias to zero. This method is only included as a benchmark to demonstrate the need to resample labels in the bootstrap world. We then consider the fixed-label and coupled-label methods from Section 3. Finally, we also include the variant of the coupled-label bootstrap with the finite-sample modifications discussed in Section 4. We use B = 499 bootstrap replications and 10 ,000 Monte Carlo repli-cations throughout. The sample sizes we consider are n ∈ { 8,000; 16 ,000; 32 ,000 },and the misclassification rates are κ ∈ { 0.5, 1, 1.5}. We vary the size of the external sample m to keep the ratio √n/m constant at 0.1265, corresponding to m = 707 for 
+
+n = 8 ,000 , m = 1 ,000 for n = 16 ,000, and m = 1 ,414 for n = 32 ,000 .
+
+We focus on inference for the slope coefficient on the interaction term θiZi. For each configuration we report three statistics: the median bias, the empirical coverage rate of a nominal 95% confidence interval, and the median interval length. For boot-strap methods, we report equal-tailed percentile intervals, which dominate symmetric intervals in this setting. Table 1 presents results for ¯ p = 0 .5. Each panel contains six estimators: OLS using the imputed regressor ˆθiZi, the bias-corrected estimator of BCHS using their finite-sample variance adjustment, and the four bootstrap methods. The use of an imputed label biases OLS downward, with the bias increasing in κ.The resulting undercoverage is severe: even in the mildest configuration ( n = 8 ,000, 
+
+κ = 0 .5), OLS coverage is only 15 .0%. The BCHS method removes virtually all the bias and delivers reliable inference across configurations, though coverage deteriorates modestly as κ rises, and the intervals are substantially wider than those based on OLS. The no-label-resampling bootstrap simply mimics the OLS estimator, inheriting its bias and producing similarly poor coverage (at best 15.5%). 22 Table 1: Interactions model, ¯ p = 0 .5
+
+Median bias Coverage (%) Interval length 
+
+κ+ = κ− = 0.5 1 1.5 0.5 1 1.5 0.5 1 1.5
+
+n = 8 ,000 OLS −0.04 −0.07 −0.11 15.5 0.0 0.0 0.05 0.06 0.06 BCHS bias-corrected & var. adj. −0.00 −0.01 −0.01 93.8 93.8 92.3 0.08 0.10 0.12 No-label resampling −0.04 −0.07 −0.11 15.5 0.0 0.0 0.05 0.06 0.06 Fixed-label bootstrap 0.01 0.01 0.01 73.2 69.5 70.8 0.06 0.07 0.08 Coupled-label bootstrap −0.00 −0.01 −0.02 85.1 80.6 72.6 0.06 0.07 0.07 Coupled-label, rotation & var. adj. −0.00 −0.01 −0.01 94.5 94.6 92.7 0.08 0.11 0.12 
+
+n = 16 ,000 OLS −0.03 −0.05 −0.08 11.5 0.0 0.0 0.03 0.04 0.04 BCHS bias-corrected & var. adj. −0.00 −0.00 −0.01 94.2 93.8 92.8 0.05 0.07 0.08 No-label resampling −0.03 −0.05 −0.08 11.5 0.0 0.0 0.03 0.04 0.04 Fixed-label bootstrap 0.01 0.01 0.01 69.5 62.2 61.1 0.04 0.05 0.05 Coupled-label bootstrap −0.00 −0.01 −0.01 83.6 78.4 72.4 0.04 0.04 0.05 Coupled-label, rotation & var. adj. −0.00 −0.00 −0.01 94.7 94.7 93.3 0.06 0.07 0.08 
+
+n = 32 ,000 OLS −0.02 −0.04 −0.06 9.6 0.0 0.0 0.02 0.02 0.03 BCHS bias-corrected & var. adj. −0.00 −0.00 −0.00 93.7 93.8 93.1 0.04 0.05 0.06 No-label resampling −0.02 −0.04 −0.06 9.7 0.0 0.0 0.02 0.02 0.03 Fixed-label bootstrap 0.01 0.01 0.01 64.9 56.7 52.8 0.03 0.03 0.03 Coupled-label bootstrap −0.00 −0.00 −0.01 80.6 75.5 71.0 0.02 0.03 0.03 Coupled-label, rotation & var. adj. −0.00 −0.00 −0.00 94.2 94.5 93.8 0.04 0.05 0.06 
+
+Note: 10,000 Monte Carlo replications; B = 499 bootstrap replications. 
+
+The fixed-label bootstrap overcorrects: it introduces bias in the opposite direction. Coverage remains well below nominal and far below the BCHS benchmark. The coupled-label bootstrap, by contrast, correctly replicates the bias of the bias-corrected estimator. Coverage remains below nominal level, however, because the basic coupled-label bootstrap does not account for the additional sampling uncer-tainty from estimating F+ and F−: interval lengths are close to those of OLS, and the improvement in coverage relative to no-label resampling comes entirely from correctly centering the bootstrap distribution. The coupled-label bootstrap with rotation and variance correction achieves coverage closest to the nominal 95% among all meth-ods, slightly edging the BCHS analytic correction, while maintaining similar interval lengths. Table 2 presents results for ¯ p = 0 .05. This near-singular design is very challenging: the sample contains very few observations with θi = 1, and the majority of these are 23 Table 2: Interactions model, ¯ p = 0 .05 
+
+Median bias Coverage (%) Interval length 
+
+κ+ = κ− = 0.5 1 1.5 0.5 1 1.5 0.5 1 1.5
+
+n = 8 ,000 OLS −0.08 −0.16 −0.25 15.0 0.0 0.0 0.10 0.13 0.14 BCHS bias-corrected & var. adj. −0.01 −0.03 −0.07 93.6 91.4 84.6 0.18 0.25 0.31 No-label resampling −0.08 −0.16 −0.25 15.4 0.0 0.0 0.10 0.12 0.14 Fixed-label bootstrap −0.00 −0.02 −0.05 83.2 78.3 66.6 0.12 0.15 0.16 Coupled-label bootstrap −0.00 −0.02 −0.05 82.6 77.5 65.9 0.12 0.15 0.16 Coupled-label, rotation & var. adj. −0.01 −0.03 −0.07 93.2 90.4 79.4 0.17 0.22 0.25 
+
+n = 16 ,000 OLS −0.05 −0.11 −0.17 12.2 0.0 0.0 0.07 0.08 0.09 BCHS bias-corrected & var. adj. −0.00 −0.01 −0.03 93.5 92.7 89.6 0.12 0.17 0.20 No-label resampling −0.05 −0.11 −0.17 12.0 0.0 0.0 0.07 0.08 0.09 Fixed-label bootstrap −0.00 −0.01 −0.02 81.5 76.9 71.7 0.08 0.10 0.11 Coupled-label bootstrap −0.00 −0.01 −0.02 80.8 76.2 71.0 0.08 0.10 0.11 Coupled-label, rotation & var. adj. −0.00 −0.01 −0.03 93.6 92.5 87.8 0.12 0.16 0.18 
+
+n = 32 ,000 OLS −0.04 −0.08 −0.12 9.4 0.0 0.0 0.05 0.05 0.06 BCHS bias-corrected & var. adj. −0.00 −0.01 −0.02 92.6 92.5 90.9 0.08 0.11 0.14 No-label resampling −0.04 −0.08 −0.12 9.5 0.0 0.0 0.05 0.05 0.06 Fixed-label bootstrap −0.00 −0.00 −0.01 78.7 73.5 69.5 0.05 0.06 0.07 Coupled-label bootstrap −0.00 −0.00 −0.01 78.0 72.6 68.6 0.05 0.06 0.07 Coupled-label, rotation & var. adj. −0.00 −0.01 −0.02 93.0 92.5 90.3 0.08 0.11 0.13 
+
+Note: See notes to Table 1. With ¯ p = 0 .05, the correlation between θi and ( D+i, D −i) is low ( ≈ 0.02), so the fixed-label bootstrap performs relatively well. 
+
+misclassified when κ ≥ 1. As a consequence, the OLS bias is roughly twice as large as in the ¯ p = 0 .5 case. Because the correlation between θi and ( D+i, D −i) is low, the fixed-label bootstrap performs well and even slightly better than the coupled-label bootstrap. However, both maintain coverage below the BCHS benchmark. The variance correction and Hessian rotation improve coverage, and the gap with the analytic correction from BCHS decreases with sample size. We conclude that the coupled-label bootstrap with finite-sample modifications is the preferred bootstrap method in all situations as it delivers coverage close to nominal coverage while producing confidence intervals of competitive length. 24 Table 3: Estimated Coefficient of Remote Work Status and 95% CIs                                 
+
+> No FE With FE Method Estimate 95% CI Estimate 95% CI OLS 0.649 [0.600, 0.697] 0.364 [0.322, 0.406] BCHS bias-corrected & var. adj. 0.897 [0.668, 1.126] 0.521 [0.366, 0.677] No-label resampling 0.648 [0.599, 0.695] 0.363 [0.322, 0.408] Fixed-label bootstrap 0.898 [0.849, 0.944] 0.522 [0.482, 0.563] Coupled-label bootstrap 0.896 [0.846, 0.944] 0.510 [0.473, 0.549] Coupled-label, rotation & var. adj. 0.899 [0.752, 1.062] 0.520 [0.413, 0.643]
+> Note: Point estimates and 95% confidence intervals for the slope coefficient in a regres-sion of log wages on remote work status, with and without occupation (SOC2) and full-time/part-time fixed effects (FE). Results are presented with ˆF+= ˆF−= 0 .009.
+
+# 6 Application 
+
+As an illustration, we revisit BCHS’ regressions investigating the wage premium for remote work. The data are from Hansen et al. (2026), who construct a dataset that imputes remote work status for a corpus of online job postings provided by Lightcast. 3
+
+For each job posting i, they impute a binary variable ˆθi representing whether or not the job offers remote work. The variable is generated using DistilBERT, a LLM, applied to metadata on occupation, firm location, job title, posted wage, and a textual job description. As in BCHS, we regress log posted wage on ˆθi, with and without occupation (SOC2) and full-time/part-time fixed effects (FEs). We focus on a sample of n = 16 ,315 job postings from 2022-2023 for the accommodation and food services sector in San Diego, CA. This is a near-singular design: very few jobs in this industry offer remote work (ˆ π = 0 .024), making bias correction more challenging. We take ˆF+ = 0 .009, as estimated by BCHS using m = 1 ,000 postings. Since there is no reason to expect the classifier to systematically over- or under-predict, we set ˆF− = 0 .009. As a robustness check, we present a second set of results with ˆF− = 0 .018. The first set of results with ˆF+ = ˆF− = 0 .009 is reported in Table 3. We present OLS estimates and 95% confidence intervals for the coefficient of θi, alongside re-sults based on the analytical correction in BCHS, and bias-corrected estimates and confidence intervals using the naive no-label resampling bootstrap, the fixed-label bootstrap, and the coupled-label bootstrap with and without modifications. OLS estimates are around 30% smaller than those using the analytical correction. As ex- 
+
+> 3See https://wfhmap.com/ .
+
+25 Table 4: Estimated Coefficient of Remote Work Status and 95% CIs                                 
+
+> No FE With FE Method Estimate 95% CI Estimate 95% CI OLS 0.649 [0.600, 0.697] 0.364 [0.322, 0.406] BCHS bias-corrected & var. adj. 0.903 [0.673, 1.134] 0.525 [0.368, 0.682] No-label resampling 0.648 [0.599, 0.695] 0.364 [0.321, 0.410] Fixed-label bootstrap 1.048 [0.986, 1.108] 0.603 [0.556, 0.647] Coupled-label bootstrap 1.047 [0.984, 1.107] 0.591 [0.546, 0.638] Coupled-label, rotation & var. adj. 0.905 [0.762, 1.068] 0.519 [0.418, 0.640]
+> Note: See notes to Table 3. Results are presented with ˆF+= 0 .009, ˆF−= 0 .018.
+
+pected, the naive no-label resampling method produces estimates and CIs that are near identical to those produced by OLS. In the baseline specification without fixed effects, both the fixed-label and coupled-label bootstrap are valid. The estimates and CIs they produce are very similar, as predicted. Our preferred coupled-label boot-strap with variance correction and rotation produces estimates and CIs that are close to those produced by the analytical correction. Similar findings are obtained when FEs are included. As a robustness check, Table 4 presents results with ˆF− doubled. The estimates and CIs are largely similar to those presented in Table 3, except for the fixed-label and coupled-label bootstrap (without rotation). For those methods, estimates and CIs are shifted to the right, well above those obtained using analytical methods. This illustrates the importance of using the rotation in near-singular designs. 
+
+# 7 Conclusion 
+
+In this paper, we study whether the bootstrap can correct bias and deliver valid inference in regressions with binary labels that have been generated by AI or ML methods. We show that a seemingly natural fixed-label bootstrap , which generates data using the estimated labels while relying on a corrupted version in estimation, is generally invalid unless a strong independence condition between the latent true labels and other covariates holds. We propose a coupled-label bootstrap that jointly resamples the pair of true and imputed labels and show it is valid without such inde-pendence restrictions. We also introduce two further finite-sample modifications: a variance correction and a Hessian rotation for near-singular designs. Our recommen-26 dation for empirical practice is to use the coupled-label bootstrap with both of these modifications. 
+
+# References 
+
+Adams-Prassl, A., T. Waters, M. Balgova, and M. Qian (2023): “Firm Concentration & Job Design: The Case of Schedule Flexible Work Arrangements,” Tech. rep., Institute for Fiscal Studies. 
+
+Aigner, D. J. (1973): “Regression with a Binary Independent Variable Subject to Errors of Observation,” Journal of Econometrics , 1, 49–59. 
+
+Angelopoulos, A. N., S. Bates, C. Fannjiang, M. I. Jordan, and T. Zrnic 
+
+(2023a): “Prediction-Powered Inference,” Science , 382, 669–674. 
+
+Angelopoulos, A. N., J. C. Duchi, and T. Zrnic (2023b): “PPI++: Efficient Prediction-Powered Inference,” arXiv:2311.01453 [stat.ML] .
+
+Battaglia, L., T. Christensen, S. Hansen, and S. Sacher (2025): “In-ference for Regression with Variables Generated by AI or Machine Learning,” 
+
+arXiv:2402.15585 .
+
+Bound, J., C. Brown, G. J. Duncan, and W. L. Rodgers (1994): “Evidence on the Validity of Cross-Sectional and Longitudinal Labor Market Data,” Journal of Labor Economics , 12, 345–368. 
+
+Bound, J. and A. B. Krueger (1991): “The Extent of Measurement Error in Longitudinal Earnings Data: Do Two Wrongs Make a Right?” Journal of Labor Economics , 9, 1–24. 
+
+Bursztyn, L., T. Chaney, T. A. Hassan, and A. Rao (2024): “The Immigrant Next Door,” American Economic Review , 114, 348–384. 
+
+Carlson, J. and M. Dell (2026): “A Unifying Framework for Robust and Efficient Inference with Unstructured Data,” arXiv:2505.00282 .
+
+Carroll, R. J. and M. P. Wand (1991): “Semiparametric Estimation in Logistic Measurement Error Models,” Journal of the Royal Statistical Society Series B: Statistical Methodology , 53, 573–585. 
+
+Chen, X., H. Hong, and E. Tamer (2005): “Measurement Error Models with Auxiliary Data,” Review of Economic Studies , 72, 343–366. 
+
+Chen, X., H. Hong, and A. Tarozzi (2008): “Semiparametric Efficiency in GMM Models with Auxiliary Data,” The Annals of Statistics , 36, 808–843. 27 Chesher, A. (1991): “The Effect of Measurement Error,” Biometrika , 78, 451–462. 
+
+Dupas, P., A. Handlan, A. S. Modestino, M. Niederle, M. Ser´ e, H. Sheng, J. Wolfers, and the Seminar Dynamics Collective (2026): “Gender Differences in Economics Seminars,” American Economic Review , 116, 749–789. 
+
+Efron, B. (1981): “Nonparametric Standard Errors and Confidence Intervals,” 
+
+Canadian Journal of Statistics , 9, 139–158. 
+
+Egami, N., M. Hinck, B. M. Stewart, and H. Wei (2024): “Using Large Language Model Annotations for the Social Sciences: A General Framework of Using Predicted Variables in Downstream Analyses,” Working Paper, Columbia University. 
+
+Evdokimov, K. S. and A. Zeleneev (2023): “Simple Estimation of Semipara-metric Models with Measurement Errors,” arXiv:2306.14311 [econ.EM] .
+
+Fong, C. and M. Tyler (2021): “Machine Learning Predictions as Regression Covariates,” Political Analysis , 29, 467–484. 
+
+Goldsmith-Pinkham, P. and K. Shue (2023): “The Gender Gap in Housing Returns,” The Journal of Finance , 78, 1097–1145. 
+
+Gonc ¸alves, S. and M. Kaffo (2015): “Bootstrap Inference for Linear Dynamic Panel Data Models with Individual Fixed Effects,” Journal of Econometrics , 186, 407–426. 
+
+Gonc ¸alves, S., J. Koh, and B. Perron (2025): “Bootstrap Inference for Group Factor Models,” Journal of Financial Econometrics , 23, nbae020. 
+
+Gonc ¸alves, S. and B. Perron (2014): “Bootstrapping Factor-Augmented Re-gression Models,” Journal of Econometrics , 182, 156–173. 
+
+Hall, P. (1992): The Bootstrap and Edgeworth Expansion , Springer Series in Statis-tics, New York, NY: Springer New York. 
+
+Hansen, S., P. J. Lambert, N. Bloom, S. J. Davis, R. Sadun, and B. Taska 
+
+(2026): “Remote Work across Jobs, Companies, and Space,” Working Paper 31007, NBER. 
+
+Higgins, A. and K. Jochmans (2024): “Bootstrap Inference for Fixed-Effect Mod-els,” Econometrica , 92, 411–427. 
+
+Lee, L.-F. and J. H. Sepanski (1995): “Estimation of Linear and Nonlinear Errors-in-Variables Models Using Validation Data,” Journal of the American Sta-tistical Association , 90, 130–140. 28 Li, X., Y. Shen, and Q. Zhou (2024): “Confidence Intervals of Treatment Effects in Panel Data Models with Interactive Fixed Effects,” Journal of Econometrics ,240, 105684. 
+
+Ludwig, J., S. Mullainathan, and A. Rambachan (2025): “Large Language Models: An Applied Econometric Framework,” arXiv:2412.07031 [econ] .
+
+Sepanski, J. and R. Carroll (1993): “Semiparametric Quasilikelihood and Vari-ance Function Estimation in Measurement Error Models,” Journal of Econometrics ,58, 223–256. 
+
+# A Appendix 
+
+## A.1 Proofs for Section 2 
+
+Proof of Theorem 2. We can write 
+
+Y ∗ 
+
+> i
+
+= ˆβ′X∗ 
+
+> i
+
++ u∗ 
+
+> i
+
+= ˆβ′ ˆX∗ 
+
+> i
+
+− ˆβ′( ˆX∗ 
+
+> i
+
+− X∗ 
+
+> i
+
+) + u∗ 
+
+> i
+
+,
+
+from which we obtain √n( ˆβ∗ − ˆβ) = I∗ 
+
+> 1n
+
++ I∗
+
+> 2n
+
+, where 
+
+I∗ 
+
+> 1n
+
+=
+
+
+
+n−1
+
+> n
+
+X
+
+> i=1
+
+ˆX∗ 
+
+> i
+
+ˆX∗′ 
+
+> i
+
+−1
+
+n−1/2
+
+> n
+
+X
+
+> i=1
+
+ˆX∗ 
+
+> i
+
+u∗ 
+
+> i
+
+,
+
+I∗ 
+
+> 2n
+
+= −
+
+
+
+n−1
+
+> n
+
+X
+
+> i=1
+
+ˆX∗ 
+
+> i
+
+ˆX∗′ 
+
+> i
+
+−1
+
+n−1/2
+
+> n
+
+X
+
+> i=1
+
+ˆX∗ 
+
+> i
+
+( ˆX∗ 
+
+> i
+
+− X∗ 
+
+> i
+
+)′ ˆβ. 
+
+To study the first term, let ˆX∗ 
+
+> i
+
+= ˆXi + ( X∗ 
+
+> i
+
+− ˆXi) + ( ˆX∗ 
+
+> i
+
+− X∗ 
+
+> i
+
+), and write 
+
+n−1
+
+> n
+
+X
+
+> i=1
+
+ˆX∗ 
+
+> i
+
+ˆX∗′  
+
+> i
+
+= n−1
+
+> n
+
+X
+
+> i=1
+
+ˆXi ˆX′ 
+
+> i
+
++ A∗ 
+
+> 1n
+
++ B∗ 
+
+> 1n
+
++ C∗ 
+
+> 1n
+
++ A∗ 
+
+> 2n
+
++ B∗ 
+
+> 2n
+
++ C∗ 
+
+> 2n
+
++ A∗ 
+
+> 3n
+
++ B∗
+
+> 3n
+
+,
+
+where 
+
+A∗ 
+
+> 1n
+
+= 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ˆXi(X∗ 
+
+> i
+
+− ˆXi)′, B∗ 
+
+> 1n
+
+= ( A∗
+
+> 1n
+
+)′, C∗ 
+
+> 1n
+
+= 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+(X∗ 
+
+> i
+
+− ˆXi)( X∗ 
+
+> i
+
+− ˆXi)′,
+
+A∗ 
+
+> 2n
+
+= 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ˆXi( ˆX∗ 
+
+> i
+
+− X∗ 
+
+> i
+
+)′, B∗ 
+
+> 2n
+
+= ( A∗
+
+> 2n
+
+)′, C∗ 
+
+> 2n
+
+= 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+( ˆX∗ 
+
+> i
+
+− X∗ 
+
+> i
+
+)( ˆX∗ 
+
+> i
+
+− X∗ 
+
+> i
+
+)′,
+
+29 and 
+
+A∗ 
+
+> 3n
+
+= 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+(X∗ 
+
+> i
+
+− ˆXi)( ˆX∗ 
+
+> i
+
+− X∗ 
+
+> i
+
+)′, B∗ 
+
+> 3n
+
+= ( A∗
+
+> 3n
+
+)′.
+
+We can show that n−1 Pni=1 ˆXi ˆX′ 
+
+> i
+
+converges in probability to Q by Assumptions 1(i) and 2(i), whereas the remainder terms converge to 0 by applying Cauchy–Schwarz inequality and Assumption B.1(i). Hence, n−1 Pni=1 ˆX∗ 
+
+> i
+
+ˆX∗′  
+
+> i
+
+→p∗ Q. Since 
+
+n−1/2
+
+> n
+
+X
+
+> i=1
+
+ˆX∗ 
+
+> i
+
+u∗ 
+
+> i
+
+= n−1/2
+
+> n
+
+X
+
+> i=1
+
+ˆXiu∗ 
+
+> i
+
++ n−1/2
+
+> n
+
+X
+
+> i=1
+
+  ˆX∗ 
+
+> i
+
+− X∗
+
+> i
+
+u∗ 
+
+> i
+
++ n−1/2
+
+> n
+
+X
+
+> i=1
+
+ X∗ 
+
+> i
+
+− ˆXi
+
+u∗ 
+
+> i
+
+,
+
+where the last two terms converge to zero by Assumption B.1(iii), we can then use Assumption B.2 to obtain I∗ 
+
+> 1n
+
+→d∗ N (0 , V ), with V = Q−1ΣQ−1.For the second term, we can use Assumption B.1(ii) to obtain I∗ 
+
+> 2n
+
+→p∗ b with 
+
+b = −Q−1Bβ .
+
+## A.2 Proofs for Section 3 
+
+Proof of Lemma 1. First, Assumption 2 holds under Assumptions 3(i)–(ii). To verify Assumption 1(i), we first note by Assumption 3(iv) that 
+
+E[I[ˆθi̸ = θi]] = E[ˆθi(1 − θi)] + E[θi(1 − ˆθi)] → 0. (11) We now use Markov’s inequality, noting that 
+
+E[∥ ˆXi − Xi∥2] = E[∥g(1 , Z i) − g(0 , Z i)∥2I[ˆθi̸ = θi]] 
+
+≤ 4E[G2 
+
+> i
+
+I[ˆθi̸ = θi]] 
+
+≤ 4E[G4 
+
+> i
+
+]12 E[I[ˆθi̸ = θi]] 12
+
+→ 0,
+
+where the first equality is by definition, the second and third lines are by the triangle and Cauchy–Schwarz inequalities, and the final line is by Assumption 3(ii) and (11). For Assumption 1(iii), first note by Assumption 3(iii) that √nE[( ˆXi − Xi)ui] → 0. 30 Then 
+
+E
+
+ 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+
+
+( ˆXi − Xi)ui − E[( ˆXi − Xi)ui]
+
+ 2
+
+≤ E
+
+h
+
+∥( ˆXi − Xi)ui∥2
+
+i
+
+= E
+
+h
+
+∥g(1 , Z i) − g(0 , Z i)∥2u2 
+
+> i
+
+I[ˆθi̸ = θi]
+
+i
+
+≤ 4E[G2 
+
+> i
+
+u2 
+
+> i
+
+I[ˆθi̸ = θi]] 
+
+≤ 4E[G4+ δi ] 24+ δ E[|ui|4+ δ] 24+ δ E[I[ˆθi̸ = θi]] δ 
+
+> 4+ δ
+
+→ 0,
+
+again by Assumption 3(i)–(ii) and (11). It remains to verify Assumption 1(ii). To this end, we first write 
+
+In = 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ˆXi( ˆXi − Xi)′ = 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ˆθi(1 − θi)D+i + θi(1 − ˆθi)D−i
+
+
+
+.
+
+Taking expectations, we have by Assumption 3(iv)–(v) that 
+
+E[In] = √nE[ˆθi(1 − θi)D+i + θi(1 − ˆθi)D−i]
+
+→ κ+E[D+i] + κ−E[D−i].
+
+Finally, with ∥ · ∥ F denoting the Frobenius norm, we have 
+
+E ∥I n − E[In]∥2
+
+> F
+
+ ≤ E
+
+h
+
+∥D+i∥2 
+
+> F
+
+I[ˆθi = 1 , θ i = 0] + ∥D−i∥2 
+
+> F
+
+I[θi = 1 , ˆθi = 0] 
+
+i
+
+≤ E[G4 
+
+> i
+
+I[ˆθi̸ = θi]] 
+
+≤ E[G4+ δi ] 44+ δ E[I[ˆθi̸ = θi]] δ 
+
+> 4+ δ
+
+→ 0,
+
+by Assumption 3(i)–(ii) and (iv). Hence, In →p κ+E[D+i] + κ−E[D−i]. To prove Lemma 2 we rely on Lemmas A.1–A.3 below. Lemma A.1 verifies As-sumption B.2 for the wild bootstrap. Lemma A.2 verifies Assumptions B.1(i) and (iii), and Lemma A.3 verifies Assumption B.1(ii). For Lemma A.1, Assumption 3 and standard conditions on the wild bootstrap suffice. No assumptions on ˆθ∗ 
+
+> i
+
+are required. 
+
+Lemma A.1. Suppose that Assumption 3 holds. Let u∗ 
+
+> i
+
+= ˆ uiηi where ηi are i.i.d. (0 , 1) 
+
+such that E∗[|ηi|2+ δ] < C < ∞ for δ > 0. Then Assumption B.2 holds. 
+
+31 Proof of Lemma A.1. We can write 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ˆXiu∗ 
+
+> i
+
+= 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+Xiu∗ 
+
+> i
+
++ 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+( ˆXi − Xi)u∗ 
+
+> i
+
+= Z∗ 
+
+> 1n
+
++ Z∗
+
+> 2n
+
+. (12) We will show (i) Z∗ 
+
+> 1n
+
+→d∗ N (0 , Σ), and (ii) Z∗ 
+
+> 2n
+
+→p∗ 0. Then Assumption B.2 follows from (i) and (ii). We start with (i). Write 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+Xiu∗ 
+
+> i
+
+= 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+Xiuiηi + 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+Xi(ˆ ui − ui)ηi. (13) Next we show that the first term in (13) follows a bootstrap CLT. Note that E∗[Xiuiηi] = 0 and Var ∗(n−1/2 Pni=1 Xiuiηi) = n−1 Pni=1 XiX′ 
+
+> i
+
+u2 
+
+> i
+
+→p Σ ≡ E[XiX′ 
+
+> i
+
+u2 
+
+> i
+
+] under As-sumption 3(i)–(ii). Since, conditional on the original sample, the draws Xiuiηi are independent but non-identically distributed, we verify Lyapunov’s condition using the Cramer–Wold device. Let α ∈ Rk such that α′α = 1. We show that 
+
+n−(1+ δ/ 2) 
+
+> n
+
+X
+
+> i=1
+
+E∗[|α′Xiuiηi|2+ δ] →p 0 (14) for δ > 0. Since E∗[|α′Xiuiηi|2+ δ] ≤ ∥ Xi∥2+ δ|ui|2+ δE∗[|ηi|2+ δ], where E∗[|ηi|2+ δ] < C 
+
+by assumption, an application of the Cauchy–Schwarz inequality yields 1
+
+n1+ δ/ 2
+
+> n
+
+X
+
+> i=1
+
+E∗[|α′Xiuiηi|2+ δ] ≤ Cnδ/ 2
+
+ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∥Xi∥2(2+ δ)
+
+1/2 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+|ui|2(2+ δ)
+
+1/2
+
+= Op(n−δ/ 2),
+
+provided E[∥Xi∥2(2+ δ)] < ∞ and E[|ui|2(2+ δ)] < ∞, which is implied by Assump-tion 3(i)–(ii) with a suitable redefinition of δ above. This proves (14). Next, we show that the second term in (13) is asymptotically negligible, i.e., 
+
+n−1/2 Pni=1 Xi(ˆ ui − ui)ηi →p∗ 0. Since E∗[ηi] = 0, this term is centered at zero, and it suffices to prove that its bootstrap variance converges to zero in probability. Since 32 E∗[η2 
+
+> i
+
+] = 1, we have that Var ∗
+
+
+
+n−1/2
+
+> n
+
+X
+
+> i=1
+
+Xi(ˆ ui − ui)ηi
+
+
+
+= 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+XiX′ 
+
+> i
+
+(ˆ ui − ui)2
+
+≤ 3
+
+n
+
+> n
+
+X
+
+> i=1
+
+XiX′ 
+
+> i
+
+[X′ 
+
+> i
+
+( ˆβ − β)] 2 + 3
+
+n
+
+> n
+
+X
+
+> i=1
+
+XiX′ 
+
+> i
+
+[( ˆXi − Xi)′β]2
+
++ 3
+
+n
+
+> n
+
+X
+
+> i=1
+
+XiX′ 
+
+> i
+
+[( ˆXi − Xi)′( ˆβ − β)] 2 = 3( A1n + A2n + A3n). (15) We can bound the Frobenius norm of A1n as 
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+XiX′ 
+
+> i
+
+[X′ 
+
+> i
+
+( ˆβ−β)] 2 ≤ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∥XiX′ 
+
+> i
+
+∥| X′ 
+
+> i
+
+( ˆβ−β)|2 ≤ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∥Xi∥4∥ ˆβ−β∥2 = op(1) ,
+
+since E[∥Xi∥4] < ∞ and ∥ ˆβ − β∥2 = Op(n−1) = op(1) under Assumption 3. To prove that A2n = op(1), we can use Cauchy–Schwarz inequality to bound its Frobenius norm as 
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+XiX′ 
+
+> i
+
+[( ˆXi − Xi)′β]2 ≤ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∥Xi∥2∥ ˆXi − Xi∥2∥β∥2
+
+≤
+
+ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∥Xi∥4
+
+1/2 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∥ ˆXi − Xi∥4
+
+1/2
+
+∥β∥2,
+
+where the first factor is Op(1) if E[∥Xi∥4] < ∞ and the second term is op(1) under Assumption 3. To see this, note that ˆXi − Xi = ( ˆθi − θi)( g(1 , Z i) − g(0 , Z i)). By H¨ older’s inequality with p, q > 1 such that p−1 + q−1 = 1, 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∥ ˆXi − Xi∥4 ≤ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+I[ˆθi̸ = θi]∥g(1 , Z i) − g(0 , Z i)∥4
+
+≤
+
+ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+I[ˆθi̸ = θi]
+
+1/p  1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∥g(1 , Z i) − g(0 , Z i)∥4q
+
+1/q 
+
+≤
+
+ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+I[ˆθi̸ = θi]
+
+δ/ (4+ δ) 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∥g(1 , Z i) − g(0 , Z i)∥4+ δ
+
+4/(4+ δ)
+
+,
+
+setting q = 1 + δ/ 4 and p = (4 + δ)/δ . Under Assumption 3(ii), E[G4+ δi ] < ∞,33 which implies that the second factor is Op(1), whereas the first factor is op(1) by Assumption 3(iv). The proof that A3n = op(1) follows similarly. We end the proof of the lemma by showing that Z∗ 
+
+> 2n
+
+→p∗ 0. Since E∗[u∗ 
+
+> i
+
+] = 0, we have E∗[Z∗
+
+> 2n
+
+] = 0 and the result follows by showing that Var ∗(Z∗
+
+> 2n
+
+) →p 0. Using the fact that u∗ 
+
+> i
+
+= ˆ uiηi with ηi i.i.d. (0 , 1) yields Var ∗(Z∗
+
+> 2n
+
+) = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+( ˆXi − Xi)( ˆXi − Xi)′ ˆu2 
+
+> i
+
+,
+
+whose Frobenius norm is bounded by 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∥ ˆXi − Xi∥2|ˆui|2 ≤
+
+ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∥ ˆXi − Xi∥4
+
+1/2 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+|ˆui|4
+
+1/2
+
+.
+
+We have shown above that the first factor is op(1) under Assumption 3. For the second, note |ˆui|4 ≤ 8|ui|4 + 8 |ui − ˆui|4, where 1
+
+> n
+
+Pni=1 |ui|4 = Op(1) by Assumption 3(i), and 
+
+> 1
+> n
+
+Pni=1 |ˆui −ui|4 = op(1) can be shown by similar arguments to those used in (15). Lemma A.2 requires additional conditions. In particular, we assume that u∗ 
+
+> i
+
+is obtained by the wild bootstrap independently of ( θ∗ 
+
+> i
+
+, ˆθ∗ 
+
+> i
+
+), conditional on the data, and impose the following high-level condition on the bootstrap labels ( θ∗ 
+
+> i
+
+, ˆθ∗ 
+
+> i
+
+). 
+
+Assumption L.1. (i) 1
+
+> n
+
+Pni=1 E∗[I[ˆθ∗
+
+> i
+
+̸ = θ∗ 
+
+> i
+
+]] →p 0. (ii) 1
+
+> n
+
+Pni=1 E∗[I[θ∗
+
+> i
+
+̸ = ˆθi]] →p 0. Assumption L.1(i) requires the overall misclassification rate of the bootstrap labels to converge to zero in probability. This condition is implied by Assumption L(ii). Assumption L.1(ii) reproduces Assumption L(i). 
+
+Lemma A.2. Suppose that Assumption 3 holds. Let u∗ 
+
+> i
+
+= ˆ uiηi where ηi are i.i.d. (0 , 1) 
+
+independently of (θ∗ 
+
+> i
+
+, ˆθ∗ 
+
+> i
+
+) and assume that θ∗ 
+
+> i
+
+and ˆθ∗ 
+
+> i
+
+satisfy Assumption L.1. Then Assumptions B.1(i) and B.1(iii) hold. 
+
+34 Proof of Lemma A.2. The first part of Assumption B.1(i) follows by noting that 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∥ ˆX∗ 
+
+> i
+
+− X∗ 
+
+> i
+
+∥2 = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+I[ˆθ∗
+
+> i
+
+̸ = θ∗ 
+
+> i
+
+]∥g(1 , Z i) − g(0 , Z i)∥2
+
+≤
+
+ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+I[ˆθ∗
+
+> i
+
+̸ = θ∗ 
+
+> i
+
+]
+
+1/2 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∥g(1 , Z i) − g(0 , Z i)∥4
+
+1/2
+
+,
+
+which is op∗ (1) provided the first factor is op∗ (1) (since the second factor is Op(1) under Assumption 3(ii)). Assumption L.1(i) suffices for this given Markov’s inequality, noting that I(ˆθ∗
+
+> i
+
+̸ = θ∗ 
+
+> i
+
+) is non-negative. An analogous argument, in conjunction with Assumption L.1(ii), verifies the second part of Assumption B.1(i). Next, we verify Assumption B.1(iii). We focus on showing the first part, since the second part follows by an analogous argument. Note that E∗[( ˆX∗ 
+
+> i
+
+−X∗ 
+
+> i
+
+)u∗ 
+
+> i
+
+] = E∗[( ˆX∗ 
+
+> i
+
+−
+
+X∗ 
+
+> i
+
+)] E∗[u∗ 
+
+> i
+
+] = 0 since u∗ 
+
+> i
+
+= ˆ uiηi, where ηi is independent of ˆ ui and ˆX∗ 
+
+> i
+
+−X∗ 
+
+> i
+
+, conditional on the sample, and E∗[ηi] = 0. Hence, it suffices to show that Var ∗(n−1/2 Pni=1 ( ˆX∗ 
+
+> i
+
+−
+
+X∗ 
+
+> i
+
+)u∗ 
+
+> i
+
+) →p 0. To verify this condition, we can use the independence between ηi and ˆX∗ 
+
+> j
+
+− X∗ 
+
+> j
+
+for all i, j and the fact that u∗ 
+
+> i
+
+is independent across i (by the wild bootstrap property). These assumptions imply that Var ∗
+
+ 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+( ˆX∗ 
+
+> i
+
+− X∗ 
+
+> i
+
+)u∗
+
+> i
+
+
+
+= 1
+
+n
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+E∗[( ˆX∗ 
+
+> i
+
+− X∗ 
+
+> i
+
+)u∗ 
+
+> i
+
+( ˆX∗ 
+
+> j
+
+− X∗ 
+
+> j
+
+)′u∗ 
+
+> j
+
+]= 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+E∗[( ˆX∗ 
+
+> i
+
+− X∗ 
+
+> i
+
+)( ˆX∗ 
+
+> i
+
+− X∗ 
+
+> i
+
+)′]E∗[u∗2 
+
+> i
+
+]= 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+E∗[( ˆθ∗ 
+
+> i
+
+− θ∗ 
+
+> i
+
+)2]( g(1 , Z i) − g(0 , Z i))( g(1 , Z i) − g(0 , Z i)) ′ ˆu2
+
+> i
+
+where the last equality follows because ˆX∗ 
+
+> i
+
+− X∗ 
+
+> i
+
+= ( ˆθ∗ 
+
+> i
+
+− θ∗ 
+
+> i
+
+)( g(1 , Z i) − g(0 , Z i)). Noting that E∗[( ˆθ∗ 
+
+> i
+
+− θ∗ 
+
+> i
+
+)2] = E∗[I[ˆθ∗
+
+> i
+
+̸ = θ∗ 
+
+> i
+
+]], we can bound the Frobenius norm of the 35 bootstrap variance above by 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+E∗[I[ˆθ∗
+
+> i
+
+̸ = θ∗ 
+
+> i
+
+]] ∥g(1 , Z i) − g(0 , Z i)∥2|ˆu2 
+
+> i
+
+|≤
+
+ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ E∗[I[ˆθ∗
+
+> i
+
+̸ = θ∗ 
+
+> i
+
+]] p1/p  1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ ∥g(1 , Z i) − g(0 , Z i)∥2q|ˆui|2q1/q 
+
+for any p, q > 1 such that p−1 + q−1 = 1. Note  E∗[I[ˆθ∗
+
+> i
+
+̸ = θ∗ 
+
+> i
+
+]] p ≤ E∗[I[ˆθ∗
+
+> i
+
+̸ = θ∗ 
+
+> i
+
+]] by Jensen’s inequality. Taking q = 1 + δ/ 4 for δ > 0 as in Assumption 1 implies 
+
+p−1 = δ/ (4 + δ), yielding the following bound: 
+
+ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+E∗[I[ˆθ∗
+
+> i
+
+̸ = θ∗ 
+
+> i
+
+]] 
+
+δ/ (4+ δ) 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∥g(1 , Z i) − g(0 , Z i)∥2+ δ/ 2|ˆui|2+ δ/ 2
+
+4/(4+ δ)
+
+.
+
+Assumption L.1(i) implies that the first factor is op∗ (1). It remains to show the second factor is Op(1). By the Cauchy–Schwarz inequality, 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∥g(1 , Z i) − g(0 , Z i)∥2+ δ/ 2|ˆui|2+ δ/ 2
+
+≤
+
+ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∥g(1 , Z i) − g(0 , Z i)∥4+ δ
+
+1/2 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+|ˆui|4+ δ
+
+1/2
+
+,
+
+where the first factor on the right-hand side is Op(1) by Assumption 3(ii). The second factor can be shown to be Op(1), noting |ˆui|4+ δ ≤ 23+ δ(|ui|4+ δ + |ˆui − ui|4+ δ), where 
+
+> 1
+> n
+
+Pni=1 |ui|4+ δ = Op(1) follows by Assumption 3(i), and 1
+
+> n
+
+Pni=1 |ˆui − ui|4+ δ = Op(1) follows by similar arguments to those used in (15). Finally, Lemma A.3 verifies Assumption B.1(ii) under Assumption L(ii)–(iv). 
+
+Lemma A.3. Suppose that Assumption 3 holds. If θ∗ 
+
+> i
+
+and ˆθ∗ 
+
+> i
+
+satisfy Assumption L(ii)– (iv), then Assumption B.1(ii) holds. Proof of Lemma A.3. Since ˆX∗ 
+
+> i
+
+− X∗ 
+
+> i
+
+= ( ˆθ∗ 
+
+> i
+
+− θ∗ 
+
+> i
+
+)[ g(1 , Z i) − g(0 , Z i)], we can write ˆX∗ 
+
+> i
+
+( ˆX∗ 
+
+> i
+
+− X∗ 
+
+> i
+
+)′ = ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+)D+i + θ∗ 
+
+> i
+
+(1 − ˆθ∗ 
+
+> i
+
+)D−i.
+
+36 Assumption B.1(ii) can be rewritten as 
+
+B∗ 
+
+> n
+
+≡ 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+(ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+)D+i + θ∗ 
+
+> i
+
+(1 − ˆθ∗ 
+
+> i
+
+)D−i) →p∗ κ+E[D+i] + κ−E[D−i] ≡ B, 
+
+with B given in Lemma 1. Adding and subtracting yields B∗ 
+
+> n
+
+= B∗ 
+
+> 1n
+
++ B∗
+
+> 2n
+
+, where 
+
+B∗ 
+
+> 1n
+
+= 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+)E[D+i] + θ∗ 
+
+> i
+
+(1 − ˆθ∗ 
+
+> i
+
+)E[D−i],B∗ 
+
+> 2n
+
+= 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+) D+i − E[D+i] + θ∗ 
+
+> i
+
+(1 − ˆθ∗ 
+
+> i
+
+) D−i − E[D−i].
+
+Assumption L(iv) implies that B∗ 
+
+> 2n
+
+→p∗ 0. Next, we show that B∗ 
+
+> 1n
+
+→p∗ B. Since 
+
+E[D+i] and E[D−i] are independent of i, the result follows by noting that Assump-tions L(ii)–(iii) imply that 1√n
+
+Pni=1 ˆθ∗ 
+
+> i
+
+(1 −θ∗ 
+
+> i
+
+) →p∗ κ+ and 1√n
+
+Pni=1 θ∗ 
+
+> i
+
+(1 − ˆθ∗ 
+
+> i
+
+) →p∗ κ−,by Chebyshev’s inequality. 
+
+Proof of Lemma 2. This follows from Lemmas A.1–A.3 given our assumptions on u∗
+
+> i
+
+and Assumption L, and noting that Assumption L(ii) implies Assumption L.1(i). 
+
+Proof of Theorem 3. This is a special case of the proof of Theorem 4 below, setting ˆF ∗ 
+
+> +
+
+= ˆF+ and ˆF ∗− = ˆF−.
+
+Proof of Theorem 4. In view of Theorem 2 and Lemma 2, it is enough to show that Assumption L holds. Assumption L(i) requires 1
+
+> n
+
+Pni=1 E∗[I[θ∗
+
+> i
+
+̸ = ˆθi]] →p 0. From the DGP for ( θ∗ 
+
+> i
+
+, ˆθ∗ 
+
+> i
+
+)in (8) and (9), we see that if ˆθi = 1 then θ∗ 
+
+> i
+
+= 0 with probability ˆF+ + ˆF− 1−ˆπ 
+
+> ˆπ
+
+because 
+
+E∗[ ˆF ∗
+
+> +
+
+] = ˆF+ and E∗[ ˆF ∗−] = ˆF−. Similarly, if ˆθi = 0 then θ∗ 
+
+> i
+
+= 1 with probability ˆF− + ˆF+ ˆπ 
+
+> 1−ˆπ
+
+. Therefore, 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+E∗[I[θ∗
+
+> i
+
+̸ = ˆθi]] = 2ˆ π ˆF+ + 2(1 − ˆπ) ˆF− = Op(n−1/2) →p 0,
+
+where we used √n ˆF+ →p κ+ and √n ˆF− →p κ−. Hence, Assumption L(i) holds. For part (ii), consider 1√n
+
+Pni=1 E∗[ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+)]. As ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+) are independent Bernoulli random variables with common success probability ˆF ∗ 
+
+> +
+
+conditional on the 37 data and ˆF ∗
+
+> +
+
+, and E∗[ ˆF ∗
+
+> +
+
+] = ˆF+, we have 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+E∗[ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+)] = √nE∗[ ˆF ∗
+
+> +
+
+] = √n ˆF+ →p κ+,
+
+again by √n ˆF+ →p κ+. The result 1√n
+
+Pni=1 E∗[θ∗ 
+
+> i
+
+(1 − ˆθ∗ 
+
+> i
+
+)] →p κ− follows similarly. For part (iii), consider Var ∗  1√n
+
+Pni=1 ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+). Using the fact that ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+)are independent Bernoulli random variables conditional on the data and ˆF ∗
+
+> +
+
+, we have Var ∗ 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+) ˆF ∗
+
+> +
+
+!
+
+= Var ∗(ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+)| ˆF ∗
+
+> +
+
+) = ˆF ∗
+
+> +
+
+(1 − ˆF ∗
+
+> +
+
+).
+
+It follows by the fact that m ˆF ∗ 
+
+> +
+
+∼ Binomial( m, ˆF+), that 
+
+E∗
+
+"
+
+Var ∗ 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+) ˆF ∗
+
+> +
+
+!# 
+
+= ˆF+(1 − ˆF+)
+
+
+
+1 − 1
+
+m
+
+
+
+,
+
+which is Op(n−1/2) because √n ˆF+ →p κ+. Similarly, 
+
+E∗
+
+"
+
+1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+) ˆF ∗
+
+> +
+
+#
+
+= √n ˆF ∗
+
+> +
+
+,
+
+and so Var ∗ E∗
+
+"
+
+1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+) ˆF ∗
+
+> +
+
+#! 
+
+= n ˆF+(1 − ˆF+)
+
+m →p 0,
+
+because √n ˆF+ →p κ+ and n/m 2 → 0. It follows by the law of total variance that Var ∗  1√n
+
+Pni=1 ˆθ∗ 
+
+> i
+
+(1 −θ∗ 
+
+> i
+
+) →p 0, as required. The result Var ∗  1√n
+
+Pni=1 θ∗ 
+
+> i
+
+(1 −ˆθ∗ 
+
+> i
+
+) →p 0follows similarly. For part (iv), consider 1√n
+
+Pni=1 ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+) D+i − E[D+i]. By similar arguments to part (iii), we have 
+
+E∗
+
+"
+
+1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+) D+i − E[D+i]#
+
+= ˆF+ × 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ D+i − E[D+i]
+
+= Op(n−1/2) × Op(1) →p 0,
+
+where the first factor is because √n ˆF+ →p κ+ and the second is by the CLT and 38 Assumption 3(ii). We now calculate the bootstrap variance of this term. Again using the fact that conditional on ˆF ∗ 
+
+> +
+
+and the data, the ˆθ∗ 
+
+> i
+
+(1 −θ∗ 
+
+> i
+
+) are independent Bernoulli random variables, we have 
+
+E∗
+
+"
+
+1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+) D+i − E[D+i] ˆF ∗
+
+> +
+
+#
+
+= ˆF ∗ 
+
+> +
+
+× 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ D+i − E[D+i],
+
+and, for notational simplicity, assuming D+i is scalar (otherwise, the argument applies element-wise): Var ∗ 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+) D+i − E[D+i] ˆF ∗
+
+> +
+
+!
+
+= ˆF ∗
+
+> +
+
+(1 − ˆF ∗
+
+> +
+
+) × 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ D+i − E[D+i]2.
+
+Now using the fact that m ˆF ∗ 
+
+> +
+
+is Binomial( m, ˆF+) conditional on the data, we have Var ∗ E∗
+
+"
+
+1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+) D+i − E[D+i] ˆF ∗
+
+> +
+
+#! 
+
+= ˆF+(1 − ˆF+)
+
+m × 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ D+i − E[D+i]!2
+
+= Op(1 /(m√n)) × Op(1) →p 0,
+
+where the first factor is because √n ˆF+ →p κ+ and the second is by the CLT and Assumption 3(ii). Similarly, 
+
+E∗
+
+"
+
+Var ∗ 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+) D+i − E[D+i] ˆF ∗
+
+> +
+
+!# 
+
+= ˆF+(1 − ˆF+)
+
+
+
+1 − 1
+
+m
+
+
+
+× 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ D+i − E[D+i]2 = Op(n−1/2) × Op(1) →p 0,
+
+where the first factor is because √n ˆF+ →p κ+ and the second is by the LLN and Assumption 3(ii). Therefore, we have shown that both the bootstrap expectation and bootstrap variance of 1√n
+
+Pni=1 ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+) D+i − E[D+i] converge in probability to zero. It follows that 1√n
+
+Pni=1 ˆθ∗ 
+
+> i
+
+(1 − θ∗ 
+
+> i
+
+) D+i − E[D+i] →p∗ 0, as required. The proof that 1√n
+
+Pni=1 θ∗ 
+
+> i
+
+(1 − ˆθ∗ 
+
+> i
+
+) D−i − E[D−i] →p∗ 0 is analogous. 39
