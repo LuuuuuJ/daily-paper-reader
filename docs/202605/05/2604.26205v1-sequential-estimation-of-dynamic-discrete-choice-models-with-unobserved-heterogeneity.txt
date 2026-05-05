@@ -1,0 +1,3091 @@
+Title: Sequential Estimation of Dynamic Discrete Choice Models with Unobserved Heterogeneity
+
+URL Source: https://arxiv.org/pdf/2604.26205v1
+
+Published Time: Thu, 30 Apr 2026 00:21:45 GMT
+
+Number of Pages: 53
+
+Markdown Content:
+# Sequential Estimation of Dynamic Discrete Choice Models with Unobserved Heterogeneity ∗
+
+## Ertian Chen † Hiroyuki Kasahara ‡ Katsumi Shimotsu §
+
+## April 30, 2026 
+
+Abstract 
+
+Estimating dynamic discrete choice models with unobserved heterogeneity is computa-tionally costly because it requires repeatedly solving fixed-point equations for all unob-served types. We develop the EM-NPL( q) framework that combines the Expectation-Maximization (EM) algorithm with an inner fixed-point solver truncated to q iterations. For the workhorse class of linear-in-parameters models, we establish a truncation-invariance result: for any q ≥ 1, EM-NPL( q) is numerically identical to the EM-NPL estimator that solves the inner fixed-point problem to convergence. Therefore, the choice of q affects computation but not statistical properties. We also establish consis-tency, asymptotic normality of our estimator, and local convergence of the EM-NPL( q)algorithm. In Monte Carlo simulations, EM-NPL( q) reduces runtime by at least 20% and can be 3–5 times faster. In an application to cola demand, we show that ignor-ing unobserved heterogeneity understates long-run own-price elasticities by up to 60%, short-run elasticities by up to 85%, and compensating variation from a soda tax by up to 90%. 
+
+Keywords: dynamic discrete choice, unobserved heterogeneity, finite mixtures, se-quential estimation. 
+
+JEL Codes: C13, C57, C63, D12 
+
+> ∗
+
+The use of Worldpanel by Numerator data does not imply the endorsement of Worldpanel by Numerator in relation to the interpretation or analysis of the data. All errors are our own. 
+
+> †
+
+Department of Economics, University College London and IFS. Email: ertian.chen.19@ucl.ac.uk. 
+
+> ‡
+
+Vancouver School of Economics, University of British Columbia. Email: hkasahar@mail.ubc.ca. 
+
+> §
+
+Faculty of Economics, University of Tokyo. Email: shimotsu@e.u-tokyo.ac.jp. 
+
+> arXiv:2604.26205v1 [econ.EM] 29 Apr 2026
+
+# 1 Introduction 
+
+Dynamic discrete choice (DDC) models are widely used to study forward-looking behav-ior. In many of these applications, unobserved heterogeneity is empirically central (Keane and Wolpin, 1997; Francesconi, 2002; Gowrisankaran and Rysman, 2012; Wang, 2015). At the same time, incorporating unobserved heterogeneity is computationally costly because it requires repeatedly solving fixed-point equations for all unobserved types. This burden is substantial in single-agent models with large state spaces, and it is magnified further in dynamic games (Aguirregabiria and Mira, 2010; Arcidiacono and Ellickson, 2011). A nat-ural question is whether one can reduce the cost of these inner fixed-point solves without sacrificing statistical efficiency. Existing approaches reduce this burden in different ways. Full-solution methods solve the Bellman equation at each parameter evaluation (Rust, 1987), while Conditional Choice Probability (CCP)-based estimators replace the dynamic programming problem with fixed-point problems in CCP spaces (Hotz and Miller, 1993; Aguirregabiria and Mira, 2002, 2007; Arcidiacono and Miller, 2011). Mathematical Programming with Equilibrium Constraints approach (Su and Judd, 2012; Dub´ e et al., 2012) treats the fixed-point problem as a constraint in a joint optimization problem. Other approaches exploit special structure of the model, such as finite dependence (Arcidiacono and Miller, 2011; Aguirregabiria and Magesan, 2023), and index invertibility (Bunting and Ura, 2025). Bugni and Bunting (2021) study truncation of outer iterations. Adusumilli and Eckardt (2025) develop Temporal Difference Estimation, which uses a sieve to approximate the value function. Dearing and Blevins (2025) develop Efficient Pseudo-Likelihood (EPL), which is efficient and improves the convergence properties of the sequential estimator in dynamic games. These methods substantially expand the range of feasible applications, but incorporating unobserved heterogeneity remains computationally demanding. In particular, it is unclear how truncating the inner fixed-point solver affects the statistical and computational properties of the resulting estimator. This paper develops a unified framework for sequential estimation of DDC models with unobserved heterogeneity. We propose the EM-NPL( q) estimator, which combines the se-quential pseudo-likelihood framework of Aguirregabiria and Mira (2002, 2007) with the finite-mixture Expectation-Maximization (EM) approach of Arcidiacono and Miller (2011). At each outer iteration, the estimator applies only q steps of a chosen inner algorithm to ap-proximate the fixed-point object required in the M-step, and then updates the structural parameters and mixture weights. The framework is modular: it accommodates different fixed-point equations including Bellman equation (Rust, 1987), policy valuation (Hotz and 1Miller, 1993; Aguirregabiria and Mira, 2007), Euler equation (Aguirregabiria and Magesan, 2023), and EPL (Dearing and Blevins, 2025). It can be paired with different numerical algorithms such as successive approximation, Generalized Minimal Residual (GMRES), or Newton-type methods. For the workhorse class of linear-in-parameters DDC models, we show EM-NPL( q) is numerically identical to the EM-NPL estimator that solves the inner fixed-point problem to convergence, for any q ≥ 1. Therefore, the number of inner iterations and the choice of inner solver only affect computation, but not statistical properties. This result is practically important because it decouples numerical implementation from asymptotic properties in the models most often used in empirical work. We also establish consistency and asymptotic normality of the estimator, characterize local convergence of the EM-NPL( q) algorithm, and derive an iteration-count bound that links the number of outer iterations to the approximation error of the truncated inner solver. In particular, we show that if the EM-NPL algorithm converges locally, then EM-NPL( q)also converges locally for sufficiently large q. Together, these results clarify when inner truncation changes only runtime and when it may also affect convergence behavior. We provide practical implementation guidance, which is organized around three stages. First, benchmark candidate inner solvers on the initial fixed-point problem and discard domi-nated algorithms. Second, select the fixed-point equation and inner algorithm based on three model features: the functional form of the utility function (linear-in-parameters models and linear systems are suited to GMRES), whether finite dependence holds (which makes the Eu-ler equation method (Aguirregabiria and Magesan, 2023) available), and the discount factor (which governs how quickly successive approximation converges). Third, choose q to balance inner accuracy against the number of outer iterations: for superlinear/quadratic solvers such as GMRES/Newton, q = 4 to 6 typically suffices, whereas successive approximation may require q = 8 or more when β is large. In linear-in-parameters models, the choice of q is computational, not statistical, and can be guided by runtime considerations alone. We apply EM-NPL( q) to two Monte Carlo simulations: a single-agent entry–exit model with unobserved heterogeneity and a dynamic game. In the single-agent model, truncated implementations reduce runtime by about 20–40% relative to exact inner convergence and are often several times faster than standard alternatives. In dynamic games, policy-valuation GMRES is the fastest method. The EPL estimator is about 10 times slower than the policy-valuation approach, while it has the smaller mean squared error as it is efficient. However, our method speeds up EPL estimator by about 40%. The simulations therefore provide concrete guidance on how to choose the fixed-point equation, inner solver, and truncation 2level. We then apply EM-NPL( q) to household demand for cola using Worldpanel by Numera-tor Take Home data. The model has a state space of 546,875 points, and we estimate up to ten latent types separately for three income groups, making the application a demanding test of computational feasibility. The computational time is approximately linear in the number of types, and it takes about 20 minutes to estimate a model with ten types. The results show that ignoring unobserved heterogeneity can understate long-run own-price elasticities by up to about 60%, short-run own-price elasticities by up to about 85%, and compensating vari-ation from a soda tax by about 90%. The application shows that accounting for unobserved heterogeneity is not only substantively important but also computationally feasible. 
+
+Notation. All limits below are taken as N → ∞ , unless stated otherwise. Let := denote “equals by definition.” Let 1{A} denote an indicator function that takes the value of one when A is true and zero otherwise. 
+
+Outline. Section 2 describes the finite-mixture dynamic discrete choice model. Section 3 describes the EM-NPL( q) estimator. Section 4 presents the theoretical properties. Section 5 provides implementation guidance. Section 6 provides Monte Carlo simulations. Section 7 presents the cola-demand application. Section 8 concludes. All proofs are in Appendix A. 
+
+# 2 Model 
+
+We consider a stationary dynamic discrete choice (DDC) model with unobserved heterogene-ity, following Kasahara and Shimotsu (2009) and Arcidiacono and Miller (2011). Hetero-geneity is modeled as a finite mixture with M unobserved types. A panel of N markets is observed, each with J firms indexed by j = 1 , . . . , J and observed for T periods. The unobserved heterogeneity operates at the market level: market i’s type 
+
+mi ∈ { 1, . . . , M } is drawn once at the start and remains fixed throughout the sample. Let 
+
+πm = Pr( mi = m) denote the mixing weight, with πm > 0 for all m and PMm=1 πm = 1. In what follows, we suppress the market index i.Time is discrete and infinite, indexed by t = 0 , 1, 2, . . . . Denote the action space by 
+
+a ∈ A = {0, 1, . . . , |A| − 1} where action 0 denotes the outside option. In each period 
+
+t, given a vector of state variables xt ∈ X observable to all firms, and firm j’s private information εjt := ( εjt (a)) a∈A ∈ R|A| , firm j chooses an action ajt ∈ A simultaneously with other firms. The transition of the state variables is controlled by a first-order Markov process with transition probability f (xt+1 , ε t+1 |xt, a t, ε t; θf ), common across types, where 3at = ( a1t, . . . , a Jt ) is the vector of actions taken by all firms in period t, εt = ( ε1t, . . . , ε Jt )and θf ∈ Θf is a vector of finite-dimensional parameters. Each firm has type-specific flow utility Uj (xt, a t, ε jt ; θm) where θm ∈ Θ ⊆ Rd is a vector of structural parameters, and chooses its action to maximize the expected discounted utility, 
+
+E
+
+" ∞X
+
+> t=0
+
+βtUj (xt, a t, ε jt ; θm) | x0, ε j0
+
+#
+
+where β ∈ (0 , 1) is the discount factor. When M = 1, this reduces to the standard single-type DDC model. We impose the following standard assumptions. 
+
+Assumption 1. (i) (Additive separability) Uj (xt, a t, ε jt ; θm) = Uj (xt, a t; θm) + εjt (ajt ).(ii) (Conditional independence) f (xt+1 , ε t+1 |xt, a t, ε t; θf ) = fx(xt+1 |xt, a t; θf )fε(εt+1 ).(iii) (Independent Private Values) Private values are i.i.d. across firms, time, markets, and actions. Moreover, they follow a Type I extreme value distribution. (iv) (Finite state space) The observable state space X is finite. 
+
+The transition density is common across types, and θf can be estimated separately from 
+
+θm. Thus, we focus on the estimation of θm and suppress the dependence on θf .We consider Markov Perfect Equilibrium where each firm’s strategy depends only on the current state variables. We only consider stationary equilibria and suppress the time subscript t. For each type m, let σm := ( σm 
+
+> 1
+
+, . . . , σ mJ ) be a strategy profile where σmj :
+
+X × R|A| → A maps the current state variables and private information to an action. The Conditional Choice Probability (CCP) for firm j in market of type m is 
+
+P σm 
+
+> j
+
+(a|x) = 
+
+Z
+
+1{σmj (x, ε ) = a}fε(ε)dε 
+
+For a market of type m and firm j, let σm 
+
+> −j
+
+be the strategy profile of other firms, and P σm
+
+> −j
+
+be the corresponding CCP profile. The expected utility and transition density for firm j are 
+
+Uj (x, a j ; θm, P σm 
+
+> −j
+
+) = X 
+
+> a−j∈A J−1
+
+Uj (x, a j , a −j ; θm) Y 
+
+> k̸=j
+
+P σm 
+
+> k
+
+(ak|x),fx(x′|x, a j ; P σm 
+
+> −j
+
+) = X 
+
+> a−j∈A J−1
+
+fx(x′|x, a j , a −j ) Y 
+
+> k̸=j
+
+P σm 
+
+> k
+
+(ak|x).
+
+4Under the extreme value assumption on private values, the integrated value function for firm j given σm 
+
+> −j
+
+is the solution to the Bellman equation: 
+
+Vj (x; θm, P σm 
+
+> −j
+
+) = log X
+
+> a∈A
+
+exp Uj (x, a ; θm, P σm 
+
+> −j
+
+) + β X
+
+> x′∈X
+
+fx(x′|x, a j , P σm 
+
+> −j
+
+)Vj (x′; θm, P σm 
+
+> −j
+
+)
+
+!! 
+
++βκ 
+
+where κ is the Euler constant. The conditional value function for firm j is 
+
+vj (x, a ; θm, P σm 
+
+> −j
+
+) = Uj (x, a ; θm, P σm 
+
+> −j
+
+) + β X
+
+> x′∈X
+
+fx(x′|x, a ; P σm 
+
+> −j
+
+)Vj (x′; θm, P σm 
+
+> −j
+
+).
+
+Definition 1 (Markov Perfect Equilibrium) . A strategy profile σm∗ = ( σm∗ 
+
+> 1
+
+, . . . , σ m∗ 
+
+> J
+
+) is a Markov Perfect Equilibrium for type m if for each firm j and for all (x, ε ) ∈ X × R|A| ,
+
+σm∗ 
+
+> j
+
+(x, ε ) ∈ argmax 
+
+> a∈A
+
+vj (x, a ; θm, P σm∗ 
+
+> −j
+
+) + ε(a) .
+
+Then, CCPs take the logit form: 
+
+P σm∗ 
+
+> j
+
+(a|x) = exp  vj (x, a ; θm, P σm∗ 
+
+> −j
+
+)P 
+
+> a′∈A
+
+exp  vj (x, a ′; θm, P σm∗ 
+
+> −j
+
+). (1) 
+
+# 3 Framework 
+
+Following the sequential estimation approach of Aguirregabiria and Mira (2002, 2007) and the Expectation–Maximization (EM) framework of Arcidiacono and Miller (2011), we define the EM-NPL( q) estimator as a fixed point of a system of maximum pseudo-likelihood and fixed-point equations. The conventional approach solves the fixed-point equations exactly; our estimator replaces the exact solver with q iterations of an inner algorithm. We first introduce the fixed-point equations that arise in estimation, then define the EM-NPL( q)estimator and the algorithm used to compute it. 
+
+## 3.1 Fixed-Point Equations for Estimation 
+
+In this section, we suppress the type index m for notational simplicity. Let P := ( P1, . . . , P J )stack the CCPs across firms. At each maximization step, given ( ˜θ, P ) from the previous iteration, we need to solve for the nuisance parameter Y (e.g., the value function) that 5satisfies the fixed-point equation: 
+
+Y = G(θ, ˜θ, Y, P ). (2) Throughout the paper, we assume (2) has a unique fixed point for any given ( θ, ˜θ, P ). The mapping G can only depend on the current candidate θ as in the NPL estimator of Aguir-regabiria and Mira (2007), or it may also depend on the previous ˜θ as in the Efficient Pseudo-Likelihood (EPL) estimator of Dearing and Blevins (2025). Different choices of G
+
+and Y give rise to different estimators; we present examples below. 
+
+Example 1 (Policy Valuation and Value Function) . As shown in Aguirregabiria and Mira (2002, 2007), the value function for firm j satisfies: 
+
+Vj (x) = X
+
+> a∈A
+
+Pj (a|x)
+
+h
+
+Uj (x, a ; θ, P −j ) − log Pj (a|x) + β X
+
+> x′∈X
+
+fx(x′|x, a ; P−j )Vj (x′)
+
+i
+
+.
+
+Let Y = ( V1, . . . , V J ) and P = ( P1, . . . , P J ). Then, the above can be written as 
+
+Y = G(θ, Y, P )where G stacks the right-hand side across firms and states. This is the fixed-point equation used in the original NPL estimator of Aguirregabiria and Mira (2007). If the utility function is linear in parameters, i.e., Uj (x, a ; θ) = ϕj (x, a )′θ, we can introduce the following linear system of fixed point equations for Wj,ℓ , ℓ = 1 , . . . , d θ, and Wj,P :
+
+Wj,ℓ = ¯ϕj,ℓ,P −j + βF P−j Wj,ℓ ℓ = 1 , . . . , d θ,Wj,P = ¯ϕj,P,P −j + βF P−j Wj,P ,
+
+where dθ is the dimension of θ, ¯ϕj,ℓ,P −j stacks P 
+
+> a∈A
+
+P−j (a|x)ϕj,ℓ (x, a ) for all x ∈ X , ¯ϕj,P,P −j
+
+stacks P 
+
+> a∈A
+
+−P−j (a|x) log P−j (a|x) for all x ∈ X , and FP−j is the transition matrix induced by P−j . Then, Vj = Pdθ 
+
+> ℓ=1
+
+θℓWj,ℓ + Wj,P , and we can write the fixed-point equation as 
+
+Y = G(Y, P ) (3) where Y stacks ( Wj,ℓ , W j,P ) across components and firms. In this case, the mapping G does not depend on θ. Therefore, we only need to solve (3) once during the estimation. At each maximization step, we need to solve M J (dθ + 1) linear systems of equations of size |X | × |X | .6Example 2 (Efficient Pseudo-Likelihood) . Dearing and Blevins (2025) propose the EPL estimator for dynamic discrete games. The key insight is to use a quasi-Newton step to ob-tain the zero-Jacobian property that guarantees efficiency and convergence of the sequential estimator. The EPL estimator can work on the CCPs space or the conditional value function space. As shown in Dearing and Blevins (2025) Section 3.3, working on the conditional value function space leads to the tremendous computational simplicity because we can exploit the linearity of the utility function. We also focus on the conditional value function space in this example. For firm j, define the mapping Φ j as Φj (x, a ; θ, v ) = Uj (x, a ; θ, P −j ) + β X
+
+> x′∈X
+
+fx(x′ | x, a ; P−j ) S(vj (x′)) where P−j is obtained from v via the logit formula (1), and S(vj (x′)) = log  P  
+
+> a′∈A
+
+exp( vj (x′, a ′)) 
+
+is the social surplus function. Stacking across all ( j, x, a ), define Φ : Θ × RJ|X ||A| → RJ|X ||A| ,so that equilibrium conditional value functions satisfy v = Φ( θ, v ). Given the previous iterates ( ˜θ, ˜v), and current candidate θ, EPL updates the conditional value function via a quasi-Newton step: 
+
+v = ˜ v − îI − ∇ vΦ( ˜θ, ˜v)ó−1
+
+(˜ v − Φ( θ, ˜v)) .
+
+Instead of inverting the Jacobian matrix, we can solve the linear system for Y :
+
+îI − ∇ vΦ( ˜θ, ˜v)ó Y = (˜ v − Φ( θ, ˜v)) .
+
+Then, Y is the solution to the fixed-point equation: 
+
+Y = (˜ v − Φ( θ, ˜v)) + ∇vΦ( ˜θ, ˜v)Y, 
+
+which can be rewritten as: 
+
+Y = G(θ, ˜θ, Y ).
+
+The conditional value function v is then updated via v = ˜ v − Y .If the utility function is linear in parameters, the mapping Φ j becomes linear in θ similar to Example 1. Then, we can similarly define the fixed point equation that does not depend on θ as in Example 1. At each maximization step, we need to solve M linear systems of equations of size 
+
+J|X ||A| × J|X ||A| , which is larger than the linear systems in Example 1. 7Example 3 (Bellman Equation and Value Function) . For the single-agent ( J = 1) DDC model, the Bellman equation gives: 
+
+V (x) = log 
+
+ÅX
+
+> a∈A
+
+exp 
+
+
+
+U (x, a ; θ) + β X
+
+> x′∈X
+
+fx(x′|x, a ) V (x′)
+
+ã
+
++ βκ (4) which can be written as a fixed-point equation Y = G(θ, Y ) where Y stacks V (x) across all 
+
+x ∈ X . For dynamic games, given the CCP profile P−j of other firms, the Bellman equation can also be used to solve for firm j’s value function, giving Y = G(θ, Y, P ). 
+
+Example 4 (Euler Equation and Conditional Value Function Difference) . For single-agent DDC, Aguirregabiria and Magesan (2023) proposes the Euler fixed-point mapping based on the finite-dependence property, whose Lipschitz constant is strictly less than the discount factor β. Let the state variable be xt = ( at−1, z t) where at−1 is the action taken in the previous period and zt ∈ Z is an exogenous state variable. As the only endogenous state variable is the lagged action, the model has two-period finite-dependence property. That is, conditional on any pair of choice paths ( at, a t+1 ) and ( a′
+
+> t
+
+, a ′
+
+> t+1
+
+), the distribution of xt+2 is the same as long as at+1 = a′
+
+> t+1
+
+. Aguirregabiria and Magesan (2023) shows that the conditional value function difference, ˜ v(x, a ) := v(x, a ) − v(x, 0) is the solution to the Euler equation: ˜v(x, a ) = c(x, a ; θ) + β X
+
+> z′∈Z
+
+ S(˜ v(a, z ′)) − S(˜ v(0 , z ′))  fz (z′|z), (5) where ˜ v(x) is the vector of ˜ v(x, a ) for all a ∈ A , S(˜ v(x)) = log  P  
+
+> a∈A
+
+exp(˜ v(x, a ))  is the social surplus function, and 
+
+c(x, a ; θ) := U (x, a ; θ) − U (x, 0; θ) + β X
+
+> z′∈Z
+
+ U (a, z ′, 0; θ) − U (0 , z ′, 0; θ) fz (z′|z).
+
+Let Y stack ˜ v(x, a ) across all ( x, a ), then the Euler equation (5) can be written as: 
+
+Y = G(θ, Y ).
+
+## 3.2 The EM-NPL( q) Estimator 
+
+Following Aguirregabiria and Mira (2007) and Arcidiacono and Miller (2011), we define the EM-NPL( q) estimator as a fixed point of a system of equations that maximizes the pseudo-likelihood. For each firm j, the CCP mapping Λ j : Θ ×Y ×P → ∆( A)|X | maps structural parameters, 8the nuisance parameter, and the CCP profile to CCPs for firm j using the logit formula. We write Λ = (Λ 1, . . . , ΛJ ) for the stacked mapping across all firms. Let Γ q(θ, ˜θ, P ; Y )denote a generic inner algorithm that applies q steps to approximate the solution of (2), starting from the initial guess Y m while holding ( θ, ˜θ, P ) fixed. Let θ = ( θ1, . . . , θ M ), 
+
+Y = ( Y 1, . . . , Y M ), P = ( P 1, . . . , P M ), and π = ( π1, . . . , π M ). With a slight abuse of no-tation, we write Γ q(θ, ˜θ, P; Y) and Λ( θ, Y, P) for the type-by-type stacked mappings, i.e., Γq(θ, ˜θ, P; Y) :=  Γq(θ1, ˜θ1, P 1; Y 1), . . . , Γq(θM , ˜θM , P M ; Y M ) and analogously for Λ. Let 
+
+QqN (θ, π; ˜θ, Y, P) denote the pseudo-likelihood function with ( ˜θ, Y, P) from the previous iteration and Γ q in place of the exact solution to the fixed-point equation: 
+
+QqN (θ, π; ˜θ, Y, P) := 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+log 
+
+> M
+
+X
+
+> m=1
+
+πmTY
+
+> t=1
+> J
+
+Y
+
+> j=1
+
+Λj
+
+ θm, Γq(θm, ˜θm, P m; Y m), P m(ajit |xit )
+
+!
+
+.
+
+The EM-NPL( q) estimator is defined as the element of the fixed-point set EN that max-imizes the pseudo-likelihood. 
+
+Definition 2 (EM-NPL( q) Estimator) . The EM-NPL( q) fixed points are defined as: 
+
+EN := 
+
+(θ, π, Y, P)
+
+(θ, π) = argmax 
+
+> ϑ,ϖ
+
+QqN (ϑ, ϖ ; θ, Y, P),
+
+Y = Γ q(θ, θ, P; Y), P = Λ( θ, Y, P)
+
+ . (6) 
+
+The EM-NPL( q) estimator is the element of EN that maximizes the pseudo-likelihood. 
+
+The fixed-point conditions in (6) require: (i) ( θ, π) maximize the pseudo-likelihood given (θ, Y, P) where θ is the previous iterate of the structural parameters; (ii) Y is a fixed point of the inner algorithm Γ q; and (iii) P is also a fixed point of the mapping Λ. To compute the EM-NPL( q) estimator, we define the EM-NPL( q) algorithm following Aguirregabiria and Mira (2007) and Arcidiacono and Miller (2011). 1
+
+Algorithm 1 (EM-NPL( q) Algorithm) . Given inner algorithm Γ q, convergence tolerance ε > 
+
+0, and initial values ( π(0) , θ(0) , Y(0) , P(0) ), the EM-NPL( q) algorithm iterates the following steps for k = 1 , 2, . . . :
+
+E-Step. Compute the posterior type probability for each market i and type m:
+
+w(k) 
+
+> im
+
+= π(k−1) 
+
+> m
+
+QTt=1 
+
+QJj=1 P m, (k−1)  
+
+> j
+
+(ajit |xit )
+
+PMm′=1 π(k−1) 
+
+> m′
+
+QTt=1 
+
+QJj=1 P m′,(k−1)  
+
+> j
+
+(ajit |xit ),   
+
+> 1Algorithm 1 requires initial values ( π(0) ,θ(0) ,Y(0) ,P(0) ). See Section A.3.
+
+9and update the mixing weights: 
+
+π(k) 
+
+> m
+
+= 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+w(k) 
+
+> im
+
+.
+
+M-Step. For each type m = 1 , . . . , M , update the structural parameters: 
+
+θm, (k) = argmax 
+
+> θm∈Θ
+> N
+
+X
+
+> i=1
+
+w(k)
+
+> im T
+
+X
+
+> t=1
+> J
+
+X
+
+> j=1
+
+log Λ j
+
+ θm, Γq(θm, θ m, (k−1) , P m, (k−1) ; Y m, (k−1) ), P m, (k−1) (ajit |xit ),
+
+and update the nuisance parameter and CCPs: 
+
+Y m, (k) = Γ q θm, (k), θ m, (k−1) , P m, (k−1) ; Y m, (k−1) , P m, (k) = Λ  θm, (k), Y m, (k), P m, (k−1) .
+
+Stop if max ∥θ(k) − θ(k−1) ∥, ∥P(k) − P(k−1) ∥, ∥π(k) − π(k−1) ∥ ≤ ε
+
+Upon convergence, the output belongs to the fixed-point set EN in Definition 2. Sec-tion 4.3 establishes local convergence of the algorithm to the EM-NPL( q) estimator given a consistent initial estimator. 
+
+Remark 1 (Reduction to single-type case) . When M = 1, the E-step is vacuous ( w(k) 
+
+> i1
+
+= 1 for all i) and the EM-NPL( q) estimator reduces to the NPL( q) estimator of Aguirregabiria and Mira (2007) with inner algorithm Γ q.
+
+Remark 2 (Alternative CCP updates) . The CCP updating can also be replaced by any alternative mapping that improves the convergence properties of the outer iterations. For example, the relaxation method (Kasahara and Shimotsu, 2012) or spectral methods (Aguir-regabiria and Marcoux, 2021) can be applied. 
+
+## 3.3 Inner Algorithms 
+
+Any iterative method for solving the fixed-point equation (2) can serve as the inner algorithm Γ. We present three examples; for a comprehensive textbook, see Judd (1998). 
+
+Example 5 (Successive Approximation) . The Successive Approximation (SA) is univer-sally applicable to all fixed-point equations in Section 3.1 and only requires matrix-vector multiplications per iteration. It iterates the mapping G starting from an initial guess Y0:ΓqSA (θ, ˜θ, P ; Y0) = G(θ, ˜θ, G (θ, ˜θ, · · · G(θ, ˜θ, Y 0, P ) · · · , P ), P )
+
+| {z } 
+
+> qtimes
+
+.
+
+10 However, its convergence depends on the contraction modulus of G. When β is close to 1, SA may require a large q for the outer EM-NPL( q) loop to converge. 
+
+Example 6 (Generalized Minimal Residual Method (GMRES)) . In Examples 1 and 2, the fixed-point equation reduces to a linear system AY = b, where A = ( I − βF P ) and b = UP
+
+for policy valuation, or A = ( I − ∇ vΦ) and b = (˜ v − Φ) for the EPL mapping. Various iterative solvers can be applied; see Saad (2003) for a comprehensive review. The Generalized Minimal Residual (GMRES) method is a Krylov subspace method for large linear systems and the convergence is generally superlinear, which is much faster than SA. The cost per iteration is comparable to SA, as it only requires one matrix–vector product with A and a few vector operations. The full algorithm is given in Section A.4. Given an initial guess Y0 and residual 
+
+r0 = b − AY 0, GMRES builds an orthonormal basis for the Krylov subspace Kq(A, r 0) = span {r0, Ar 0, . . . , A q−1r0} via the Arnoldi process and returns the iterate Yq that minimizes 
+
+∥b − AY q∥2 over the affine subspace Y0 + Kq.
+
+Example 7 (Newton-Kantorovich Method) . For nonlinear fixed-point problems, such as the Bellman equation and Euler equation (Examples 3 and 4), Newton’s method provides local quadratic convergence. Let ∇Y G(θ, ˜θ, Y, P ) denote the Jacobian of G with respect to Y .The one-step Newton update is: 
+
+Y1 = Y0 − îI − ∇ Y G(θ, ˜θ, Y 0, P )ó−1
+
+(Y0 − G(θ, ˜θ, Y 0, P )) ,
+
+provided that the inverse exists. For q iterations, we apply the above update q times starting from Y0.Due to local quadratic convergence, a much smaller q suffices compared to SA. However, each iteration requires inverting the Jacobian, which can be expensive for large state spaces. To mitigate this, a quasi-Newton method can approximate the inverse Jacobian (see Nocedal (2006)), or the linear system for [ I −∇ Y G(θ, ˜θ, Y 0, P )] d = −(Y0 −G(θ, ˜θ, Y 0, P )) can be solved for d using GMRES or other linear solvers, and then update Y1 = Y0 + d.
+
+# 4 Theoretical Properties 
+
+This section develops the theoretical properties of the EM-NPL( q) estimator. We first estab-lish the truncation invariance property, present consistency and asymptotic normality, and finally characterize local convergence of the EM-NPL( q) algorithm. 11 4.1 Truncation Invariance 
+
+Recall that q is the number of inner iterations per outer step. A natural concern is whether truncating the inner solver at q < ∞ distorts the estimator. We show that for the workhorse class of DDC models with linear-in-parameters utility, it does not. That is, the EM-NPL( q)estimator is numerically identical to the EM-NPL estimator for any q ≥ 1. The key observa-tion is that when the utility function is linear in parameters, the policy valuation (Example 1) and EPL (Example 2) fixed-point equations can be written in a form that does not depend on current θ. We call this θ-separability. 
+
+Assumption 2 (θ-separability) . The mapping G in (2) does not depend on θ.
+
+Under θ-separability, Y can be solved once for given ( ˜θ, P ) from the previous iteration, rather than re-solved for each candidate θ during the M-step. It implies that an EM-NPL( q)fixed-point is also an EM-NPL( ∞) fixed point. Therefore, the EM-NPL( q) estimator is numerically identical to the EM-NPL estimator. We further impose the following condition on the inner algorithm and the fixed-point mapping: 
+
+Assumption 3. (i) For any (θ, ˜θ, P ), Y = G(θ, ˜θ, Y, P ) has a unique fixed point. (ii) For any q, Γq has the same fixed point as G for any (θ, ˜θ, P ).(iii) For any initial guess Y0, Γ∞(θ, ˜θ, Y 0, P ) solves the fixed point equation Y = G(θ, ˜θ, Y, P )
+
+exactly. 2
+
+Assumption 3(i) is mild and ensures that the nuisance parameter is pinned down once the structural parameters and CCPs are known. For Examples 1, 3, and 4, the operator G is a contraction, so the fixed point is unique. Assumption 3(ii)(iii) is mild and can be verified for common algorithms. For example, when G is a contraction, SA satisfies the condition. For linear systems, GMRES also satisfies the condition (see Saad (2003)). The EM-NPL estimator solves the fixed point exactly, i.e., q = ∞. The following theorem shows that the EM-NPL( q) estimator is numerically identical to the EM-NPL estimator for any q ≥ 1. 
+
+Theorem 1 (Truncation Invariance) . Suppose Assumptions 2 and 3 hold, then the EM-NPL( q) estimator is numerically identical to the EM-NPL estimator for any q ≥ 1.
+
+Theorem 1 has two important consequences for inference. First, there is no efficiency loss from inner truncation. Standard NPL standard errors are valid without any adjustment              
+
+> 2Some algorithms, e.g., GMRES, are guaranteed to converge after at most |X | iterations in exact arith-metic. In that case, we replace q=∞with q=|X | in Assumption 3(ii) and restrict q < |X | in Assump-tion 3(i).
+
+12 for the inner truncation. Second, the choice of q and the inner algorithm Γ become purely computational decisions: they affect the speed of convergence of the EM-NPL( q) algorithm, but not the statistical properties of the estimator. This decoupling between computation and inference is what makes the EM-NPL( q) framework practical: the researcher can set q
+
+to minimize the overall runtime without worrying about the statistical consequences. 
+
+## 4.2 Large-Sample Properties 
+
+We establish consistency and asymptotic normality of the EM-NPL( q) estimator by adapting Aguirregabiria and Mira (2007) Proposition 2 and Arcidiacono and Miller (2011) Theorem 2. Define the population pseudo-likelihood: 
+
+Qq(θ, π; ˜θ, Y, P) := E
+
+ï
+
+log 
+
+> M
+
+X
+
+> m=1
+
+πmTY
+
+> t=1
+> J
+
+Y
+
+> j=1
+
+Λj
+
+ θm, Γq(θm, ˜θm, P m; Y m), P m(ajt |xt)
+
+ò
+
+.
+
+The population EM-NPL( q) fixed point satisfies the following system of equations: 
+
+E := 
+
+(θ, π, Y, P)
+
+(θ, π) = argmax 
+
+> ϑ,ϖ
+
+Qq(ϑ, ϖ ; θ, Y, P),
+
+Y = Γ q(θ, θ, P; Y), P = Λ( θ, Y, P)
+
+ .
+
+We impose the following identification conditions. 
+
+Assumption 4. (i) Among all (θ, π, Y, P) ∈ E , (θ∗, π∗, Y∗, P∗) uniquely maximizes 
+
+Qq(θ, π; θ, Y, P) up to label permutation. (ii) (θ∗, π∗, Y∗, P∗) is an isolated population EM-NPL( q) fixed point, i.e., it is unique or there exists an open ball around it that does not contain any other population EM-NPL( q) fixed point. 
+
+Assumption 4(i) is the identification assumption, which can be established by Kasa-hara and Shimotsu (2009). Throughout the paper, we assume that the number of types 
+
+M is known. In practice, one may apply the sequential testing procedure of Kasahara and Shimotsu (2014). Assumption 4(ii) is similar to the isolated fixed point condition in Aguir-regabiria and Mira (2007) Proposition 2. 
+
+Remark 3 (Relationship to standard identification) . Under Assumptions 2 and 3, G and hence Γ q do not depend on θ, so the EM-NPL( q) fixed-point system reduces to the standard 13 NPL fixed-point system. In that case, the population pseudo-likelihood simplifies to 
+
+Qq(θ, π; ˜θ, Y, P) := E
+
+ï
+
+log 
+
+> M
+
+X
+
+> m=1
+
+πmTY
+
+> t=1
+> J
+
+Y
+
+> j=1
+
+Λj
+
+ θm, Γq(˜θm, P m; Y m), P m(ajt |xt)
+
+ò
+
+.
+
+At the EM-NPL( q) fixed point, Γ q(˜θm, P m; Y m) = Γ ∞(˜θm, P m; Y m). That is, the EM-NPL( q) fixed points coincide with the NPL fixed points. Therefore, Assumption 4 reduces to the standard identification condition for NPL estimators. Next, we impose regularity conditions to establish consistency and asymptotic normality. These conditions are similar to those in Aguirregabiria and Mira (2007). 
+
+Assumption 5. (i) The observations {(xit , (ajit )Jj=1 )Tt=1 }Ni=1 are i.i.d. across i with com-mon panel length T . Conditional on type mi = m, the process {(xit , (ajit )Jj=1 )}Tt=1 is stationary Markov. Types are drawn i.i.d. from (π∗ 
+
+> 1
+
+, . . . , π ∗ 
+
+> M
+
+). Moreover, P r (xit =
+
+x) > 0 for all m and x ∈ X .(ii) Θ is compact, θm∗ ∈ int(Θ) for all m, and π∗ ∈ int(∆ M −1).(iii) Λj (θ, Γq(θ, ˜θ, P ; Y ), P )( a|x) > 0 for all (θ, ˜θ, Y, P ) ∈ Θ × Θ × Y × P and all (x, a, j ).(iv) The mappings G, Λ, and Γq are twice continuously differentiable in all arguments. (v) The Hessian ∇2(θ,π)( θ,π)Qq(θ∗, π∗; θ∗, Y∗, P∗) is negative definite. (vi) There exists a neighborhood of (θ∗, Y∗, P∗) such that the global maximizer α( ˜θ, Y, P)
+
+is unique up to label permutation for all ( ˜θ, Y, P) in that neighborhood. (vii) Let ϕq( ˜θ, Y, P) :=  Γq(θ, ˜θ, P; Y), Λ( θ, Y′, P), where θ is the θ-component of 
+
+α(θ, Y, P) and Y′ = Γ q(θ, ˜θ, P; Y). The operator ϕq( ˜θ, Y, P) − ( ˜θ, Y, P) has a non-singular Jacobian matrix at (θ∗, Y∗, P∗).(viii) For each type m = 1 , . . . , M , the matrix I − ΓqY −ΓqP
+
+−ΛY I − ΛP
+
+!
+
+, evaluated at (θm∗, Y m∗, P m∗),is invertible. 
+
+Assumption 5 is similar to the assumptions in Aguirregabiria and Mira (2007) Proposition 2. Let α = ( θ, π) ∈ Rdα where dα = M · dθ + M − 1 collect all structural parameters and mixing probabilities. Write the per-observation log-likelihood contribution as 
+
+ℓqi (α; ˜θ, Y, P) := log 
+
+> M
+
+X
+
+> m=1
+
+πmTY
+
+> t=1
+> J
+
+Y
+
+> j=1
+
+Λj
+
+ θm, Γq(θm, ˜θm, P m; Y m), P m(ajit |xit ),
+
+14 and the score sqi (α; ˜θ, Y, P) := ∇αℓqi (α; ˜θ, Y, P). Define the information matrix Ω q 
+
+> αα
+
+=
+
+−∇ 2
+
+> αα
+
+Qq(α∗; θ∗, Y∗, P∗). Under Assumptions 5(iv) and 5(viii), the implicit function theorem applies. Let Y(α)and P(α) denote the solutions to Y m = Γ q(θm, θ m, P m; Y m) and P m = Λ( θm, Y m, P m) for all m in a neighborhood of α∗ = ( θ∗, π∗), and let Yα and Pα denote the total derivatives of Y(α) and P(α) with respect to α. Since π does not enter these constraints, Yπ = 0 and Pπ = 0. Define the correction term Sq := Ω q  
+
+> α˜θ
+
+(IM d θ , 0) + Ω q 
+
+> αY
+
+Yα + Ω q 
+
+> αP
+
+Pα where Ωq  
+
+> α˜θ
+
+:= −∇ 2 
+
+> α˜θ
+
+Qq, Ω q 
+
+> αY
+
+:= −∇ 2
+
+> αY
+
+Qq, and Ω q 
+
+> αP
+
+:= −∇ 2
+
+> αP
+
+Qq, ( IM d θ , 0) is the M d θ ×dα selector extracting the θ-block from α, and Yα, Pα are the stacked total-derivative matrices with 
+
+Yα = Yθ (IM d θ , 0) and Pα = Pθ (IM d θ , 0). 
+
+Theorem 2 (Consistency and Asymptotic Normality) . Under Assumptions 1, 3, 4, and 5, the EM-NPL( q) estimator is consistent and asymptotically normal: 
+
+√N ˆθNPL( q) − θ∗
+
+ˆπNPL( q) − π∗
+
+!
+
+> d
+
+−→ N (0 , Σq)
+
+where Σq =  Ωq 
+
+> αα
+
++ Sq−1 Ωq
+
+> αα
+
+  Ωq 
+
+> αα
+
++ Sq−1 ′.
+
+The term Ω q  
+
+> α˜θ
+
+arises because the fixed-point mapping G may depend on the previous-iteration parameter ˜θ, as in the EPL estimator (Example 2). When G depends only on the current θ, these terms vanish and the correction simplifies to Sq = Ω q 
+
+> αY
+
+Yα + Ω q 
+
+> αP
+
+Pα.Theorem 2 has two regimes for inference. Under Assumption 2, Theorem 1 implies that the EM-NPL( q) estimator is numerically identical to the EM-NPL estimator for any q ≥ 1, so Σ q reduces to the standard NPL asymptotic variance and standard errors can be computed using the usual NPL formulas. When Assumption 2 does not hold, Σ q depends on the cross-derivative matrices Ω q 
+
+> α˜θ
+
+, Ω q
+
+> αY
+
+, and Ω q 
+
+> αP
+
+together, which can be cumbersome to compute in practice. In that case, nonparametric bootstrap may be applied. To compare the asymptotic variance of EM-NPL( q) with that of EM-NPL, we impose two additional conditions on the approximation error of the inner algorithm. 
+
+Assumption 6 (Monotonic Convergence) . For a given algorithm Γ, there exists a function 
+
+f (q) with f (q) → 0 as q → ∞ such that ∥Y (θ, ˜θ, P )−Γq(θ, ˜θ, P ; Y )∥2 ≤ ∥ Y (θ, ˜θ, P )−Y ∥2 f (q)
+
+for any (θ, ˜θ, P, Y ) in a neighborhood of (θm∗, θ m∗, P m∗, ) for all m.
+
+Assumption 6 requires that the approximation error is upper bounded by a function f (q), and the quality of the initial guess Y . For example, if SA is used for the inner algorithm, then f (q) = ρq where ρ is the Lipschitz constant of the operator G.15 Assumption 7 (Gradient Bound) . (i) The exact solution Y (θ, ˜θ, P ) is continuously differen-tiable in (θ, ˜θ, P ); (ii) There exists a finite constant C such that ∥∇ θΓq(θ0, ˜θ0, P 0; Y0)∥F ≤ C
+
+uniformly over q ≤ ∞ .
+
+Proposition 1 (Asymptotic Variance Approximation) . Under Assumptions 1, 3, 4, 5, 6, and 7: 
+
+∥Σq − Σ∞∥F = O(f (q)) .
+
+Proposition 1 shows that the asymptotic variance of the EM-NPL( q) estimator converges to the asymptotic variance of the EM-NPL estimator at the same rate f (q) that governs the inner-algorithm approximation error. For example, if SA is used for the inner algorithm, then f (q) = ρq where ρ is the Lipschitz constant of the operator G. For superlinear algo-rithms like GMRES, f (q) can decay much faster than SA. Therefore, we can achieve a good approximation to the EM-NPL asymptotic variance with a small q when using superlinear algorithms. 
+
+## 4.3 Local Convergence 
+
+We now characterize the local convergence properties of the EM-NPL( q) algorithm. 
+
+Assumption 8. (i) the initial values (π(0) , θ(0) , Y(0) , P(0) )−(π∗, θ∗, Y∗, P∗) = op(1) ; (ii) Γq
+
+and Λ are thrice continuously differentiable; (iii) the M-step Hessian ∇2
+
+> θθ
+
+ℓqE is nonsingular, where 
+
+ℓqE (θ; ˜θ, Y, P, π) := 
+
+> M
+
+X
+
+> m=1
+
+E
+
+"
+
+wim (P, π)
+
+> T
+
+X
+
+> t=1
+> J
+
+X
+
+> j=1
+
+log Λ j
+
+ θm, Γq(θm, ˜θm, P m; Y m), P m(ajt |xt)
+
+#
+
+,
+
+and wim (P, π) := πm        
+
+> QTt=1
+> QJj=1 Pmj(ajit |xit )
+> PMm′=1 πm′
+> QTt=1
+> QJj=1 Pm′
+> j(ajit |xit )
+
+.
+
+Proposition 2 (Local Convergence of EM-NPL( q)) . Let Λq(θ, ˜θ, Y, P ) := Λ( θ, Γq(θ, ˜θ, P ; Y ), P )
+
+denote the composition of Γq and Λ. Let E denote the population E-step mapping, i.e., 
+
+E(π, P) = E[wi1(P, π), . . . , w iM (P, π)] ′. Let δ(k) := (∆ π(k), ∆θ(k), ∆Y(k), ∆P(k))′ where 
+
+∆π(k) = π(k) − ˆπ, ∆θ(k) = θ(k) − ˆθ, ∆Y(k) = Y(k) − ˆY, ∆P(k) = P(k) − ˆP, with ( ˆ π, ˆθ, ˆY, ˆP)
+
+the EM-NPL( q) estimator. Under Assumptions 3, 5, 4, and 8, the EM-NPL( q) algorithm satisfies: 
+
+δ(k) = Rq δ(k−1) + Op(N −1/2∥δ(k−1) ∥ + ∥δ(k−1) ∥2)16 where 
+
+Rq =
+
+â Eπ 0 0 EP
+
+Hq 
+
+> π
+
+Hq 
+
+> ˜θ
+
+Hq 
+
+> Y
+
+Hq
+
+> P
+
+Γq
+
+> θ
+
+Hq 
+
+> π
+
+Γq
+
+> θ
+
+Hq 
+
+> ˜θ
+
++ Γ q 
+
+> ˜θ
+
+Γq
+
+> θ
+
+Hq 
+
+> Y
+
++ Γ q 
+
+> Y
+
+Γq
+
+> θ
+
+Hq 
+
+> P
+
++ Γ q
+
+> P
+
+Λq
+
+> θ
+
+Hq 
+
+> π
+
+Λq
+
+> θ
+
+Hq 
+
+> ˜θ
+
++ Λ q 
+
+> ˜θ
+
+Λq
+
+> θ
+
+Hq 
+
+> Y
+
++ Λ q 
+
+> Y
+
+Λq
+
+> θ
+
+Hq 
+
+> P
+
++ Λ q
+
+> P
+
+ì
+
+.
+
+Here Eπ and EP are the E-step sensitivities; Γq
+
+> θ
+
+, Γq
+
+> ˜θ
+
+, Γq 
+
+> Y
+
+, Γq 
+
+> P
+
+and Λq
+
+> θ
+
+, Λq
+
+> ˜θ
+
+, Λq 
+
+> Y
+
+, Λq 
+
+> P
+
+are block-diagonal across types and evaluated at the fixed point; and the M-step sensitivities are Hq 
+
+> ˜θ
+
+:= −(∇2
+
+> θθ
+
+ℓqE )−1∇2 
+
+> θ˜θ
+
+ℓqE , Hq 
+
+> Y
+
+:= −(∇2
+
+> θθ
+
+ℓqE )−1∇2
+
+> θY
+
+ℓqE , Hq 
+
+> P
+
+:= −(∇2
+
+> θθ
+
+ℓqE )−1∇2
+
+> θP
+
+ℓqE , and 
+
+Hq 
+
+> π
+
+:= −(∇2
+
+> θθ
+
+ℓqE )−1∇2
+
+> θπ
+
+ℓqE .
+
+The rate matrix Rq has a block-triangular structure that reflects the sequential nature of the EM-NPL( q) algorithm. The first row corresponds to the E-step: the mixing weights 
+
+π depend on the previous CCPs and themselves (through EP and Eπ). The second row corresponds to the M-step: the sensitivity of θ to the previous iterates ( ˜θ, Y, P, π), governed by the implicit function H blocks. The third and fourth rows compose the M-step output with the inner algorithm Γ q and the CCP mapping Λ. The inner truncation level q enters the rate matrix through Γ q
+
+> Y
+
+, Γq
+
+> θ
+
+, Γq 
+
+> ˜θ
+
+and Γ q
+
+> P
+
+. When (q = ∞), Γ ∞ 
+
+> Y
+
+= 0 because the fixed point equation is solved exactly. For finite q, the magnitude ∥Γq
+
+> Y
+
+∥, ∥Γq 
+
+> θ
+
+− Γ∞ 
+
+> θ
+
+∥, ∥Γq 
+
+> ˜θ
+
+− Γ∞ 
+
+> ˜θ
+
+∥, ∥Γq 
+
+> P
+
+− Γ∞ 
+
+> P
+
+∥ is controlled by the approximation error of the inner algorithm. This is the mechanism through which inner truncation affects the convergence speed of the outer loop. Under Assumption 2, Γ q 
+
+> θ
+
+= 0 because the fixed-point mapping does not depend on the current structural parameter. When, in addition, G does not depend on ˜θ (as in the policy valuation mapping of Example 1), Γ q 
+
+> ˜θ
+
+= 0 as well. The EM-NPL( q) algorithm converges locally whenever ρ(Rq) < 1. When the EM-NPL( ∞) algorithm converges locally, i.e., ρ(R∞) < 1, the approximation error of the inner algorithm induces a perturbation to the rate matrix Rq. If the perturbation is small enough, then ρ(Rq) remains less than 1 and the EM-NPL( q) algorithm also converges locally. As-sumptions 6 and 7, stated above, formalize this perturbation argument. 
+
+Theorem 3 (Local Convergence for Sufficient q). Suppose Assumptions 6 and 7 hold and 
+
+ρ(R∞) < 1, i.e., the EM-NPL algorithm converges locally. Then, for all sufficiently large q,the EM-NPL( q) algorithm also converges locally. 
+
+Theorem 3 shows that if the EM-NPL algorithm converges locally, then the EM-NPL( q)algorithm also converges locally for all sufficiently large q. The key observation is that the approximation error of the inner algorithm induces a perturbation to the matrix Rq of the 17 EM-NPL( q) algorithm. Next we characterize how the spectral radius ρ(Rq) converges to 
+
+ρ(R∞) as q → ∞ , and how the number of iterations ¯Kq to achieve ε-accuracy scales with q.To translate the perturbation bound on ρ(Rq) into an iteration-count comparison, we specialize to the θ-separable case (Assumption 2), in which Theorem 1 guarantees that the EM-NPL( q) and EM-NPL algorithms share a common fixed point x∗ := xq 
+
+> ∗
+
+= x∞∗ . Starting from a common initial guess x0, let {xqk} and {x∞ 
+
+> k
+
+} denote the sequences generated by EM-NPL( q) and EM-NPL, respectively; both converge to x∗. Under the local convergence results, 
+
+∥xqk − x∗∥2 ≤ ρ(Rq)k ∥x0 − x∗∥2, ∥x∞ 
+
+> k
+
+− x∗∥2 ≤ ρ(R∞)k ∥x0 − x∗∥2.
+
+For any ε < ∥x0 − x∗∥2, define the linear upper bounds on the number of outer iterations needed to achieve ε-accuracy: ¯Kq := log ε − log ∥x0 − x∗∥2
+
+log ρ(Rq) , ¯K∞ := log ε − log ∥x0 − x∗∥2
+
+log ρ(R∞) ,
+
+where we assume ρ(Rq), ρ (R∞) ∈ (0 , 1). 
+
+Theorem 4 (Iteration Count Bound) . Suppose Assumption 2 holds and the assumptions of Proposition 2 hold. Let ν := max λ∈spec( R∞) νλ be the size of the largest Jordan block of R∞.Then for sufficiently large q, |ρ(Rq) − ρ(R∞)| = O(f (q)1/ν ) =: g(q), and the number of outer iterations ¯Kq to achieve ε-accuracy satisfies 
+
+¯Kq ∈
+
+ï
+
+¯K∞ · log ρ(R∞)log( ρ(R∞) − g(q)) , ¯K∞ · log ρ(R∞)log( ρ(R∞) + g(q)) 
+
+ò
+
+.
+
+When g(q) is small, a first-order Taylor expansion around g = 0 gives log( ρ(R∞) ± g(q)) = log ρ(R∞) ± g(q)/ρ (R∞) + O(g(q)2), so log ρ(R∞)log( ρ(R∞) ± g(q)) = 1 ± g(q)
+
+ρ(R∞) | log ρ(R∞)| + O(g(q)2).
+
+Theorem 4 therefore implies the leading-order expansion ¯Kq = ¯K∞ ·
+
+ñ
+
+1 + O
+
+Ç f (q)1/ν 
+
+1 − ρ(R∞)
+
+åô 
+
+,
+
+where the last step uses | log ρ(R∞)| ≥ 1 − ρ(R∞) for ρ(R∞) ∈ (0 , 1). Two practical im-plications follow. First, the iteration-count gap ¯Kq − ¯K∞ shrinks at rate f (q)1/ν , inherited 18 from the inner-solver approximation error. For superlinear inner solvers (GMRES, New-ton’s method) this rate is exponential in q, whereas for successive approximation it closes at rate ρq/ν G where ρG < 1 is the Lipschitz constant of G. Second, the gap is amplified by 1 /(1 − ρ(R∞)): when the exact EM-NPL converges slowly, a larger q is required before EM-NPL( q) matches its outer iteration count. 
+
+# 5 Practical Guidance 
+
+This section provides practical guidance. We organize the practical discussion around the three stages of a typical implementation: benchmarking inner solvers, selecting the algorithm–equation pair, and choosing q.
+
+## 5.1 Algorithm and Fixed-Point Equation Selection 
+
+The choice of fixed-point equation G, inner algorithm Γ, and truncation level q jointly determines both the statistical and computational performance of the EM-NPL( q) estimator. 
+
+Stage 1: Benchmark Inner Solvers and Eliminate Dominated Algorithms 
+
+Every EM-NPL( q) implementation begins by computing an initial CCP estimate ˆP0.Given ˆP0, the first outer iteration requires solving the fixed-point equation for the initial consistent estimator, Y0. This step is common to all EM-NPL( q) variants and provides a natural opportunity to benchmark candidate inner solvers at negligible additional cost. The practitioner should solve this initial system using each candidate algorithm, e.g., successive approximation (SA), GMRES, etc., and record the wall-clock time. Algorithms that are slower on the practitioner’s specific problem can be immediately discarded as dom-inated. This benchmark is informative because the numerical structure of the initial solver. For example, for the policy valuation equation, the condition number of ( I − βF P ), its spar-sity pattern, etc., which govern the relative performance of different algorithms, are often preserved across subsequent EM-NPL iterations. 
+
+Stage 2: Select the Fixed-Point Equation and Algorithm 
+
+Among the non-dominated algorithms from Stage 1, the practitioner next selects the combination of fixed-point equation G and inner algorithm Γ best suited to the model. This 19 choice depends on three model features: the functional form of the utility function, the finite-dependence structure, and the discount factor β.
+
+Functional form. When the utility function is linear in parameters, U (x, a ) = ϕ(x, a )′θ,the policy valuation problem (Example 1) and the EPL problem (Example 2) both reduce to a set of linear systems that do not depend on θ. This has two advantages. First, the system needs to be solved only once per outer iteration rather than at every parameter evaluation. Second, Theorem 1 guarantees that the EM-NPL( q) estimator is equivalent to the EM-NPL estimator for any q ≥ 1. This means that for single-agent DDCs with linear utility, EM-NPL( q) is also efficient (Aguirregabiria and Mira (2002)). For dynamic games, if we solve the EPL problem (Example 2) and the utility is linear, then our EM-NPL( q)estimator is also efficient. In this case, the choice of algorithm and q can be guided solely by computational considerations, without concern for statistical efficiency. Table 1 summarizes the recommended algorithm–equation pairs based on these model features. When the utility function is nonlinear in parameters (Example 3), the inner problem is nonlinear and must be solved at every parameter evaluation. In this case, we recommend using Newton’s method, as it typically converges much faster than SA. The choice between Bellman and Euler depends on the model structure and ease of implementation. 
+
+Finite dependence. If the model exhibits finite dependence (Example 4), the Euler equa-tion representation is available. The Euler fixed-point mapping has a contraction modulus strictly less than β (Aguirregabiria and Magesan, 2023), which makes even SA converge relatively quickly. 
+
+Discount factor. The discount factor governs the difficulty of the inner fixed-point prob-lem. When β is small (e.g., β = 0 .8), the choice of algorithm matters little. When β is close to unity (e.g., β = 0 .9999), SA becomes extremely slow. Table 1: Algorithm selection based on model features           
+
+> Model features Recommended (Γ , G )Rationale Linear utility GMRES, PV/EPL Superlinear convergence; no efficiency loss (Theorem 1) Finite dependence SA, Euler Lipschitz constant < β
+> Nonlinear, NFD, moderate βNewton, Bellman Quadratic inner convergence
+
+20 Stage 3: Choose q
+
+The final choice is the number of inner iterations q. Our recommendation is to start small and increase if necessary. For algorithms with superlinear convergence (GMRES, Newton), 
+
+q = 4 to 6 is typically sufficient for the outer EM-NPL( q) loop to converge. For EPL, we recommend q = 12 to 16 as the matrix ∇vΦ( ˜θ, ˜v) in Example 2 is not a contraction. For SA, larger values ( q = 8 to 10 or more) may be needed, particularly when β is large. In the linear-utility case, the choice of q has no effect on asymptotic efficiency (Theorem 1), so the only consideration is whether the outer loop converges and how long it takes. 
+
+Convergence check. If the EM-NPL( q) algorithm fails to converge at the initial q, in-crease q and re-run. The convergence results in Section 4 guarantee that convergence is eventually achieved for sufficiently large q whenever the standard EM-NPL algorithm con-verges. 
+
+Computational cost considerations. The total computational cost is CT( q) ≈ h(q)× ¯Kq
+
+where h(q) is the cost of q inner iterations and ¯Kq is the number of outer iterations to converge. It is generally U-shaped in q: too small a q requires many outer iterations (large ¯Kq), while too large a q wastes computation on unnecessary inner precision (large h(q)). 
+
+# 6 Monte Carlo Simulations 
+
+In this section, we present two Monte Carlo simulations to evaluate the performance of the proposed EM-NPL( q) estimator. The first simulation considers a single-firm entry and exit with unobserved heterogeneity based on Aguirregabiria and Magesan (2023). The second applies the estimator to a dynamic game as described in Aguirregabiria and Mira (2007). 
+
+## 6.1 Single-Agent Entry and Exit with Unobserved Heterogeneity 
+
+6.1.1 Design of Simulation 
+
+We consider a single-firm entry and exit problem with unobserved heterogeneity, extending the DGP of Aguirregabiria and Magesan (2023) to a three-type mixture model ( M = 3). At each period t, a firm decides whether to exit ( at = 0) or enter ( at = 1) the market. An active firm ( at = 1) earns a flow payoff determined by variable profits ( V P t), fixed operating 21 costs ( F C t), and entry cost ( EC t); an inactive firm receives a normalized payoff of zero: 
+
+U (at, x t, ε t) = 
+
+
+
+V P t − F C t − (1 − at−1) EC t + εt(1) if at = 1 
+
+εt(0) if at = 0 where V P t = ( θV P  
+
+> 0
+
++ θV P  
+
+> 1
+
+z1t + θV P  
+
+> 2
+
+z2t) exp( wt), F C t = θF C  
+
+> 0
+
++ θF C  
+
+> 1
+
+z3t, and EC t = θEC  
+
+> 0
+
++ θEC  
+
+> 1
+
+z4t.The state vector is xt = ( wt, z 1t, z 2t, z 3t, z 4t, a t−1), where zjt follows an AR(1) process zjt =0.6zjt −1 +ηjt for j = 1 , . . . , 4 with independent standard normal innovations. We consider two scenarios for the productivity process wt: (i) finite dependence (FD): wt = 0 .2 + 0 .6wt−1 + ηt;(ii) non-finite dependence (NFD): wt = 0 .2 + 0 .3at−1 + 0 .6wt−1 + ηt. The state space is discretized using Tauchen’s method (Tauchen, 1986) with 6 grid points per variable, giving 
+
+|X | = 2 × 65 = 15 ,552. 3
+
+Firms are drawn from one of three unobserved types with type-specific parameter vectors 
+
+θ∗ 
+
+> 1
+
+= (1 .5, 1.5, −0.3, −0.3, −0.2, −0.3, −1), θ∗ 
+
+> 2
+
+= (0 .2, 0.2, −0.2, −3.5, −2.0, −0.5, −3), and 
+
+θ∗ 
+
+> 3
+
+= (0 .8, 0.8, −1.0, −1.5, −0.8, −3.0, −1), with mixing weights π∗ = (0 .5, 0.3, 0.2). Type 1 has high variable profits and low costs, Type 2 has low profits and high entry costs, and Type 3 is intermediate. We simulate N = 5 ,000 firms, each observed for T = 20 periods, with discount factor β = {0.8, 0.95 , 0.9999 }. We perform 500 Monte Carlo replications. We compare six fixed-point–algorithm combinations: (i) PV GMRES solves the policy valuation linear system using GMRES; (ii) PV SA uses successive approximation on the same system; (iii) BM SA applies successive approximation to the Bellman equation; (iv) BM AD uses Anderson acceleration on the Bellman equation; (v) BM NT applies Newton’s method to the Bellman equation; and (vi) EE SA uses successive approximation on the Euler equation (available in the FD case only). For each method, we consider q ∈ { 4, 6, 8, 10 } and report full-convergence baselines for PV GMRES, BM NT, and EE SA. Convergence is declared when max {∥ ˆP (t) − ˆP (t−1) ∥∞, ∥ˆθ(t) − ˆθ(t−1) ∥∞, ∥ ˆV (t) − ˆV (t−1) ∥∞/(1 + ∥ ˆV (t−1) ∥∞)} < 10 −3.The inner solver tolerance is 10 −8.
+
+6.1.2 Results 
+
+Tables 2–4 report results across three discount factors ( β = 0 .80 , 0.95 , 0.9999), each with finite dependence (FD) and non-finite dependence (NFD) specifications. The results confirm several key patterns. First, the MSE of all policy-valuation-based estimators (PV GMRES and PV SA) is invariant to q: across all discount factors and both FD and NFD cases,                  
+
+> 3For the NFD case, the grid for wspans [min( μd=0 , μ d=1 )−nσσLR ,max( μd=0 , μ d=1 ) + nσσLR ], where
+> μdis the long-run mean under action dand σLR =σw/p1−γ22.
+
+22 MSE remains unchanged regardless of whether q = 4 or full convergence is used, confirming Theorem 1. The Euler equation estimator (EE SA) yields slightly higher MSE (e.g., 0.026 vs. 0.024 at β = 0 .95 in FD). Second, the EM-NPL( q) algorithm converges in virtually all 500 replications for every method and q value tested, demonstrating the robustness of the algorithm in the mixture setting. Third, PV GMRES achieves substantial computational savings over all alternatives. At β = 0 .95, PV GMRES( q = 4) takes 2.88s in the FD case, compared to 9.18s for PV SA, 8.11s for BM SA, and 15.16s for BM NT at the same q,roughly 3 × faster than SA-based methods and 5 × faster than Newton. Truncating the inner iterations also helps: PV GMRES( q = 4) is approximately 26% faster than the full-convergence GMRES baseline (2.88s vs. 3.88s in FD) and 17% faster in NFD (2.63s vs. 3.15s). Fourth, the speed advantage of GMRES over Newton grows with the discount factor: at β = 0 .9999, the full-convergence GMRES takes 4.36s (FD) versus 38.45s for Newton. 
+
+## 6.2 Dynamic Games 
+
+This section considers a dynamic game as in Aguirregabiria and Mira (2007). A similar data generating process is also used by Aguirregabiria and Marcoux (2021). 
+
+6.2.1 Design of Simulation 
+
+There are J = 7 firms competing across independent markets. In each period t, firm j
+
+simultaneously chooses whether to be active ( ajt = 1) or inactive ( ajt = 0). The flow payoff for firm j is given by: 
+
+Uj (ajt , x t, ε jt ) = 
+
+
+
+θRS st − θRC log  1 + P  
+
+> j′̸=j
+
+aj′t
+
+ − θEC (1 − aj,t −1) − θFC ,j + εjt (1) if ajt = 1 
+
+εjt (0) if ajt = 0 where st ∈ { 1, 2, 3, 4, 5} is the market size 4, and aj,t −1 is firm j’s action in the previous period. The state vector is xt = ( st, a 1,t −1, . . . , a J,t −1), giving a state space of cardinality 
+
+|X | = 5 × 27 = 640. θRS governs the effect of market size on revenue, θRC captures the strategic interaction, θEC is the entry cost parameter, and θFC ,j are firm-specific fixed costs. The true parameter values are set to θFC = (1 .9, 1.8, 1.7, 1.6, 1.5, 1.4, 1.3), θEC = 1, and                     
+
+> 4It follows a Markov chain with transition matrix
+> à0.80.20000.20.60.20000.20.60.20000.20.60.20000.20.8
+> í
+
+23 Table 2: Mixture Model Results ( M = 3, N = 5000, β = 0 .80) 
+
+Finite Dependence Non-Finite Dependence Method q CT (s) MSE Avg Iter Conv (%) CT (s) MSE Avg Iter Conv (%) PV GMRES 4 2.56 (0.43) 0.024 8.9 100.0 2.79 (0.24) 0.034 6.0 100.0 PV GMRES 6 2.77 (0.46) 0.024 9.0 100.0 2.87 (0.40) 0.034 6.2 100.0 PV GMRES 8 2.96 (0.52) 0.024 9.0 100.0 2.99 (0.44) 0.034 6.2 100.0 PV GMRES 10 3.16 (0.58) 0.024 8.9 100.0 3.13 (0.49) 0.034 6.2 100.0 PV SA 4 4.28 (0.68) 0.024 9.0 100.0 4.25 (0.44) 0.034 6.2 100.0 PV SA 6 4.50 (0.75) 0.024 8.9 100.0 4.40 (0.58) 0.034 6.2 100.0 PV SA 8 4.72 (0.81) 0.024 8.9 100.0 4.55 (0.64) 0.034 6.2 100.0 PV SA 10 4.94 (0.88) 0.024 8.9 100.0 4.71 (0.69) 0.034 6.2 100.0 BM SA 4 6.93 (1.35) 0.024 7.5 100.0 8.53 (2.38) 0.034 6.0 100.0 BM SA 6 8.10 (1.61) 0.024 7.5 100.0 9.94 (3.42) 0.034 6.1 99.8 BM SA 8 9.28 (1.87) 0.024 7.5 100.0 11.18 (1.33) 0.034 5.9 100.0 BM SA 10 10.45 (2.20) 0.024 7.4 100.0 12.52 (1.50) 0.034 5.8 100.0 BM AD 4 5.44 (1.11) 0.024 8.1 100.0 6.56 (0.65) 0.034 5.6 100.0 BM AD 6 7.09 (1.29) 0.024 7.5 100.0 8.34 (0.92) 0.034 5.8 100.0 BM AD 8 9.35 (1.72) 0.024 7.5 100.0 10.62 (1.01) 0.034 5.7 100.0 BM AD 10 12.08 (2.18) 0.024 6.9 100.0 13.32 (1.49) 0.034 5.6 100.0 BM NT 4 11.63 (2.07) 0.024 7.5 100.0 16.22 (3.65) 0.034 6.2 99.8 BM NT 6 11.63 (2.07) 0.024 7.5 100.0 16.23 (3.65) 0.034 6.2 99.8 BM NT 8 11.63 (2.07) 0.024 7.5 100.0 16.23 (3.65) 0.034 6.2 99.8 BM NT 10 11.63 (2.09) 0.024 7.5 100.0 16.21 (3.62) 0.034 6.2 99.8 EE SA 4 2.60 (0.33) 0.025 9.5 100.0 — — — —EE SA 6 2.68 (0.34) 0.025 9.7 100.0 — — — —EE SA 8 2.74 (0.35) 0.025 9.7 100.0 — — — —EE SA 10 2.81 (0.37) 0.025 9.7 100.0 — — — —PV GMRES ∞ 3.49 (0.65) 0.024 8.9 100.0 3.47 (0.60) 0.034 6.3 100.0 BM NT ∞ 22.24 (4.07) 0.024 7.3 100.0 35.88 (3.93) 0.034 5.8 100.0 EE SA ∞ 11.38 (2.16) 0.024 7.3 100.0 — — — —
+
+Notes: Results are averaged across 500 simulations ( M = 3 types, N = 5000, β = 0 .80). q denotes the number of inner iterations. CT reports the average computational time in seconds with standard devia-tion in parentheses. MSE is PMm=1 ∥ˆθm − θ∗
+
+> m
+
+∥2 + ∥ˆπ − π∗∥2 averaged across simulations. EM convergence is declared when max {∥ ˆP (t) − ˆP (t−1) ∥∞, ∥ˆθ(t) − ˆθ(t−1) ∥∞, ∥ ˆV (t) − ˆV (t−1) ∥∞/(1 + ∥ ˆV (t−1) ∥∞)} < 10 −3.Methods below the last divider solve the fixed-point equation to full convergence and thus do not depend on q.
+
+24 Table 3: Mixture Model Results ( M = 3, N = 5000, β = 0 .95) 
+
+Finite Dependence Non-Finite Dependence Method q CT (s) MSE Avg Iter Conv (%) CT (s) MSE Avg Iter Conv (%) PV GMRES 4 2.88 (0.32) 0.024 8.6 100.0 2.63 (0.17) 0.050 5.8 100.0 PV GMRES 6 2.99 (0.38) 0.024 8.6 100.0 2.59 (0.15) 0.050 5.6 100.0 PV GMRES 8 3.18 (0.41) 0.024 8.5 100.0 2.62 (0.17) 0.050 5.6 100.0 PV GMRES 10 3.39 (0.47) 0.024 8.5 100.0 2.74 (0.21) 0.050 5.6 100.0 PV SA 4 9.18 (0.49) 0.024 8.8 100.0 6.97 (0.24) 0.050 5.6 100.0 PV SA 6 9.41 (0.56) 0.024 8.7 100.0 7.04 (0.26) 0.050 5.6 100.0 PV SA 8 9.63 (0.62) 0.024 8.6 100.0 7.19 (0.34) 0.050 5.7 100.0 PV SA 10 9.85 (0.70) 0.024 8.6 100.0 7.26 (0.31) 0.050 5.6 100.0 BM SA 4 8.11 (0.71) 0.024 7.7 100.0 7.24 (0.50) 0.050 6.1 100.0 BM SA 6 9.40 (0.90) 0.024 7.5 100.0 8.21 (0.56) 0.050 5.8 100.0 BM SA 8 10.74 (1.02) 0.024 7.4 100.0 9.27 (0.64) 0.050 5.7 100.0 BM SA 10 12.06 (1.19) 0.024 7.3 100.0 10.33 (0.75) 0.050 5.5 100.0 BM AD 4 9.24 (2.31) 0.024 11.6 100.0 7.98 (1.67) 0.050 9.0 100.0 BM AD 6 9.15 (1.16) 0.024 8.2 100.0 8.17 (1.00) 0.050 6.8 100.0 BM AD 8 10.78 (1.17) 0.024 7.5 100.0 9.34 (0.73) 0.050 5.7 100.0 BM AD 10 13.24 (1.32) 0.024 7.4 100.0 11.24 (0.80) 0.050 5.5 100.0 BM NT 4 15.16 (1.46) 0.024 7.3 100.0 16.13 (1.25) 0.050 5.5 100.0 BM NT 6 15.17 (1.46) 0.024 7.3 100.0 16.15 (1.28) 0.050 5.5 100.0 BM NT 8 15.18 (1.49) 0.024 7.3 100.0 16.16 (1.31) 0.050 5.5 100.0 BM NT 10 15.18 (1.52) 0.024 7.3 100.0 16.16 (1.29) 0.050 5.5 100.0 EE SA 4 3.24 (0.17) 0.026 11.3 100.0 — — — —EE SA 6 3.36 (0.18) 0.026 11.3 100.0 — — — —EE SA 8 3.46 (0.18) 0.026 11.3 100.0 — — — —EE SA 10 3.55 (0.20) 0.026 11.3 100.0 — — — —PV GMRES ∞ 3.88 (0.53) 0.024 8.5 100.0 3.15 (0.24) 0.050 5.6 100.0 BM NT ∞ 30.67 (3.17) 0.024 7.2 100.0 36.31 (2.72) 0.050 5.5 100.0 EE SA ∞ 15.15 (1.23) 0.024 7.2 100.0 — — — —
+
+Notes: Results are averaged across 500 simulations ( M = 3 types, N = 5000, β = 0 .95). q denotes the number of inner iterations. CT reports the average computational time in seconds with standard devia-tion in parentheses. MSE is PMm=1 ∥ˆθm − θ∗
+
+> m
+
+∥2 + ∥ˆπ − π∗∥2 averaged across simulations. EM convergence is declared when max {∥ ˆP (t) − ˆP (t−1) ∥∞, ∥ˆθ(t) − ˆθ(t−1) ∥∞, ∥ ˆV (t) − ˆV (t−1) ∥∞/(1 + ∥ ˆV (t−1) ∥∞)} < 10 −3.Methods below the last divider solve the fixed-point equation to full convergence and thus do not depend on q.
+
+25 Table 4: Mixture Model Results ( M = 3, N = 5000, β = 0 .9999) 
+
+Finite Dependence Non-Finite Dependence Method q CT (s) MSE Avg Iter Conv (%) CT (s) MSE Avg Iter Conv (%) PV GMRES 4 3.14 (0.49) 0.024 8.0 100.0 10.08 (12.83) 0.061 6.3 100.0 PV GMRES 6 4.43 (0.75) 0.024 14.6 100.0 11.40 (13.04) 0.061 12.4 100.0 PV GMRES 8 3.39 (0.58) 0.024 7.7 100.0 10.66 (12.92) 0.061 7.7 100.0 PV GMRES 10 3.55 (0.62) 0.024 7.6 100.0 10.14 (12.94) 0.061 5.4 100.0 BM NT 4 18.85 (1.99) 0.024 7.4 100.0 31.67 (13.50) 0.061 5.3 100.0 BM NT 6 18.84 (1.99) 0.024 7.4 100.0 31.60 (13.54) 0.061 5.3 100.0 BM NT 8 18.84 (2.00) 0.024 7.4 100.0 31.60 (13.48) 0.061 5.3 100.0 BM NT 10 18.85 (2.00) 0.024 7.4 100.0 31.61 (13.46) 0.061 5.3 100.0 EE SA 4 3.77 (0.40) 0.026 11.9 100.0 — — — —EE SA 6 3.91 (0.42) 0.026 12.0 100.0 — — — —EE SA 8 4.02 (0.41) 0.026 12.1 100.0 — — — —EE SA 10 4.11 (0.42) 0.026 12.1 100.0 — — — —PV GMRES ∞ 4.36 (0.75) 0.024 7.6 100.0 10.83 (12.98) 0.061 5.4 100.0 BM NT ∞ 38.45 (4.34) 0.024 7.3 100.0 59.92 (10.30) 0.061 5.4 100.0 EE SA ∞ 15.94 (1.48) 0.024 7.4 100.0 — — — —
+
+Notes: Results are averaged across 500 simulations ( M = 3 types, N = 5000, β = 0 .9999). q denotes the number of inner iterations. CT reports the average computational time in seconds with standard deviation in parentheses. MSE is PMm=1 ∥ˆθm − θ∗
+
+> m
+
+∥2 + ∥ˆπ − π∗∥2 averaged across simulations. EM convergence is declared when max {∥ ˆP (t) − ˆP (t−1) ∥∞, ∥ˆθ(t) − ˆθ(t−1) ∥∞, ∥ ˆV (t) − ˆV (t−1) ∥∞/(1 + ∥ ˆV (t−1) ∥∞)} < 10 −3.Methods below the last divider solve the fixed-point equation to full convergence and thus do not depend on q.
+
+the discount factor β = 0 .95. We consider two values of θRC ∈ { 2.4, 4}, referred to as the mildly unstable and very unstable cases following the terminology of Aguirregabiria and Marcoux (2021). 
+
+6.2.2 Results 
+
+We compare five estimator–algorithm combinations. All methods initialize CCPs via the fre-quency estimator. (i) PV GMRES solves the policy valuation linear system ( I −βF P )V = UP
+
+for each firm j using GMRES, where FP is the 640 × 640 transition matrix induced by all firms’ CCPs and the exogenous Markov chain. (ii) PV SA replaces GMRES with succes-sive approximation on the same linear system. (iii) BM SA replaces the policy valuation step with the Bellman equation fixing other firms’ CCPs, and iterates SA on the Bellman operator for q steps. (iv) EPL GMRES uses the EPL mapping (Example 2) and solves the resulting linear system using GMRES. Note that the EPL solves a larger linear system of dimension J|A||X | = 8 ,960. (v) PV EPL GMRES first iterates NPL( ∞) until convergence, then switches to EPL GMRES( q). For each method, we consider q ∈ { 4, 8, 12 , 16 } inner it-26 erations. Full-convergence baselines are reported for PV GMRES, PV Exact (direct matrix solver), EPL Exact, EPL GMRES, and PV EPL GMRES. Following the spectral algorithm of Aguirregabiria and Marcoux (2021), we update the CCPs using a Barzilai–Borwein update: P (k+1) = P (k) − αk
+
+ P (k) − Λ( ˆθ(k), ˆY (k), P (k)) where the step size αk is computed as αk = ∥∆P (k)∥2   
+
+> ⟨∆P(k),∆Φ (k)⟩
+
+, ∆P (k) = P (k) − P (k−1) , ∆Φ (k) = Φ (k) −
+
+Φ(k−1) with Φ (k) = P (k) − Λ( ˆθ(k), ˆY (k), P (k)) denoting the fixed-point residual. For k = 0, we set α0 = min(1 , 1/∥Φ(0) ∥). Convergence is declared when max {∥ P (k)−P (k−1) ∥∞, ∥ˆθ(k)−ˆθ(k−1) ∥∞, ∥Y (k)−Y (k−1) ∥∞/(1+ 
+
+∥Y (k−1) ∥∞)} < 10 −3. The inner solver tolerance is 10 −8. All results are averaged over 500 Monte Carlo simulations with N = 1 ,600 independent markets. Table 5 reports the results. Three patterns emerge. First, PV GMRES is the fastest method by a wide margin: at θRC = 2 .4, PV GMRES( q = 4) takes 2.49s, compared to 3.61s for PV SA, 5.17s for BM SA, and 32.71s for EPL GMRES. The gap widens under stronger strategic interaction: at θRC = 4, PV GMRES( q = 4) takes 5.09s versus 16.48s for BM SA and 75.61s for EPL GMRES( q = 4). PV GMRES achieves 100% convergence at every configuration. BM SA, by contrast, sees convergence drop to 93.8% at θRC = 4 with 
+
+q = 4, along with inflated MSE (0.493 vs. 0.415). Second, the EPL-based estimators achieve substantially lower MSE than the NPL-based estimators, reflecting its statistical efficiency. At θRC = 4, EPL GMRES attains MSE of 0.299 compared to 0.415 for PV GMRES, a 28% reduction. PV EPL GMRES, which switches from NPL to EPL after the first iteration, achieves a comparable MSE of 0.300. At θRC = 2 .4, the efficiency gain is more modest: EPL GMRES yields MSE of 0.583 versus 0.617 for PV GMRES. However, the EPL estimators are an order of magnitude slower than PV GMRES because the EPL fixed-point mapping ∇vΦ( ˜θ, ˜v) is not a contraction, requir-ing substantially more inner GMRES iterations than the policy valuation system used by PV GMRES. For instance, EPL GMRES needs q ≥ 12 to stabilize computation time and convergence at θRC = 4 (31.58s at q = 12 versus 75.61s at q = 4), whereas PV GMRES performs well with q = 4. Third, the choice between PV GMRES and EPL GMRES reflects a speed–efficiency tradeoff. When computational speed is the priority (for example, when the state space is large), PV GMRES with a small q (e.g., q = 4) is the recommended default. When statis-tical efficiency matters, EPL GMRES with a moderate q (e.g., q = 12) delivers meaningful efficiency gains at the cost of longer computation time. 27 Table 5: Dynamic Game Simulation Results ( β = 0 .95, N = 1600) 
+
+Mildly Unstable: θRC = 2 .4 Very Unstable: θRC = 4 .0Method q CT MSE Avg Iter Conv CT MSE Avg Iter Conv PV GMRES 4 2.49 ( 0.71) 0.617 6.7 100.0 5.09 ( 1.37) 0.415 11.5 100.0 PV GMRES 8 2.59 ( 0.76) 0.614 6.7 100.0 5.28 ( 1.43) 0.416 11.5 100.0 PV GMRES 12 2.69 ( 0.81) 0.617 6.7 100.0 5.47 ( 1.46) 0.415 11.5 100.0 PV GMRES 16 2.73 ( 0.83) 0.615 6.7 100.0 5.59 ( 1.54) 0.416 11.5 100.0 PV SA 4 3.61 ( 0.82) 0.616 6.7 100.0 6.93 ( 1.33) 0.415 14.5 100.0 PV SA 8 3.69 ( 0.84) 0.616 6.7 100.0 6.52 ( 1.48) 0.415 12.4 100.0 PV SA 12 3.78 ( 0.87) 0.616 6.7 100.0 6.45 ( 1.53) 0.416 11.7 100.0 PV SA 16 3.84 ( 0.90) 0.617 6.7 100.0 6.56 ( 1.58) 0.416 11.5 100.0 BM SA 4 5.17 ( 2.27) 0.643 13.7 100.0 16.48 ( 9.72) 0.493 38.7 93.8 BM SA 8 6.38 ( 3.00) 0.645 11.2 100.0 16.55 ( 8.20) 0.476 25.5 99.2 BM SA 12 7.15 ( 2.83) 0.644 9.1 100.0 17.03 ( 6.29) 0.479 16.5 100.0 BM SA 16 8.05 ( 3.05) 0.646 8.1 100.0 20.41 ( 7.49) 0.475 15.6 100.0 EPL GMRES 4 32.71 (11.23) 0.589 12.8 100.0 75.61 (25.93) 0.299 30.9 99.6 EPL GMRES 8 20.17 ( 4.86) 0.583 5.7 100.0 43.47 (14.40) 0.299 12.9 100.0 EPL GMRES 12 18.52 ( 4.63) 0.583 4.4 100.0 31.58 ( 7.61) 0.300 7.3 100.0 EPL GMRES 16 19.94 ( 5.14) 0.583 4.2 100.0 28.96 ( 6.01) 0.300 5.6 100.0 PV EPL GMRES 4 29.11 (12.26) 0.592 16.8 100.0 59.79 (20.69) 0.299 32.8 99.8 PV EPL GMRES 8 20.00 ( 5.45) 0.585 11.6 100.0 37.19 (10.77) 0.300 20.4 100.0 PV EPL GMRES 12 19.21 ( 5.31) 0.583 10.6 100.0 31.38 ( 6.41) 0.300 17.3 100.0 PV EPL GMRES 16 20.62 ( 5.80) 0.581 10.5 100.0 29.95 ( 5.74) 0.300 16.2 100.0 PV GMRES ∞ 2.76 ( 0.84) 0.615 6.7 100.0 5.64 ( 1.54) 0.416 11.6 100.0 PV Exact ∞ 2.60 ( 0.78) 0.615 6.7 100.0 5.34 ( 1.45) 0.416 11.6 100.0 EPL Exact ∞ 35.78 (10.59) 0.583 4.2 100.0 42.77 ( 8.91) 0.300 5.0 100.0 EPL GMRES ∞ 25.45 ( 8.92) 0.583 4.2 100.0 44.64 (10.49) 0.300 5.0 100.0 PV EPL GMRES ∞ 25.47 ( 9.53) 0.583 10.5 100.0 42.61 ( 9.02) 0.300 15.8 100.0 
+
+Notes: J = 7 firms, |X | = 640. Results averaged across 500 simulations. q denotes the number of inner iterations. CT reports average computational time in seconds (std. dev. in parentheses). Conv is the convergence rate (%). The inner solver tolerance is 10 −8. NPL convergence is declared when max {∥ ˆP (t) −
+
+ˆP (t−1) ∥∞, ∥ˆθ(t) − ˆθ(t−1) ∥∞, ∥ ˆV (t) − ˆV (t−1) ∥∞/(1 + ∥ ˆV (t−1) ∥∞)} < 10 −3. Methods below the last divider solve the inner linear system to full convergence. 
+
+28 Summary. Across both Monte Carlo designs, PV GMRES with a small truncation level (q = 4) is the fastest method, achieving full convergence and MSE comparable to exact solvers. Truncation invariance holds empirically for all policy-valuation-based estimators, consistent with Theorem 1. EPL-based estimators offer lower MSE at substantially higher computational cost, and EM-NPL( q) reduces that cost by about 40%. These findings validate the practical recommendations in Section 5: start with PV GMRES at small q for speed, and switch to EPL GMRES at moderate q when efficiency is the priority. 
+
+# 7 Empirical Application 
+
+We illustrate the EM-NPL( q) estimator with an application to household demand for cola in London. We show that ignoring unobserved heterogeneity substantially biases estimates of price elasticities and counterfactual policy effects. 
+
+## 7.1 Data 
+
+We construct household-level purchase histories from the Worldpanel by Numerator Take Home data for London, covering the period 2015–2019. The panel records every grocery purchase made by a representative sample of households, including price, quantity, date, and product characteristics. The Cola category combines bottled and canned colas. We classify each product by its holding company (Coca-Cola vs. Pepsi vs. Other) crossed with its diet type (Regular, Diet, or Zero/Max), yielding seven choice alternatives: Coca-Cola Regular, Coca-Cola Diet, Coca-Cola Zero, Pepsi Regular, Pepsi Diet, Pepsi Max, and Other. The six named groups jointly account for 87.1% of category trips. We aggregate multiple purchases by the same household on the same date to the trip level: when a household makes multiple cola purchases on a single day, we retain only the brand–type combination with the highest expenditure on that trip. We restrict the sample to London households and to those with more than 10 and fewer than 500 category trips over the five-year window. After these filters, the sample contains 75,559 trips. The overall repeat rate is 70.9%, and the median inter-purchase spell is 9 days, reflecting the high purchase frequency of soft drinks. Table 6 reports the choice shares and repeat-purchase rates. 29 Table 6: Cola: Brand × Diet Type Choice Groups 
+
+Brand × Attribute Share (%) Cumul. (%) Repeat (%) Coca-Cola | Regular 24.1 24.1 75.6 Coca-Cola | Diet 20.3 44.4 74.1 Pepsi | Max 20.1 64.4 70.4 Coca-Cola | Zero 10.2 74.6 61.7 Pepsi | Regular 6.7 81.3 61.4 Pepsi | Diet 5.7 87.1 55.8 Other 12.9 100.0 76.5  
+
+> Note: Trip-level choice shares and repeat-purchase rates for London households. Data from Worldpanel by Numerator, GB Take Home panel, 2015-2019. Repeat (%) is the fraction of purchases where the household chose the same category as the previous trip.
+
+## 7.2 Model 
+
+We assume that each household expects to make a purchase per median inter-purchase spell of 9 days. At each purchase occasion t, household i of type m chooses action ait ∈A = {0, . . . , 6} to maximize the expected discounted utility, where the seven alternatives correspond to the Cola choice groups defined in Table 6: Coca-Cola Regular, Coca-Cola Diet, Coca-Cola Zero, Pepsi Regular, Pepsi Diet, Pepsi Max, and Other. The per-period payoff for type m is 
+
+u(a, a −1, p ; θm) = γma + αmpa + η 1{a = a−1} + ε(a)where p denotes the vector of current prices, a−1 is the previous purchase, pa is the unit price of product a, γma captures type-specific product fixed effects, αm is the type-specific price coefficient, and η measures state dependence, common to all types. The error ε(a) is i.i.d. Type-I extreme value. The type-specific parameter vector is θm = ( γm 
+
+> 1
+
+, . . . , γ m 
+
+> 6
+
+, α m, η ) ∈ R8.We set the discount factor to β = 0 .99. Prices follow a first-order vector autoregression. We discretize the estimated VAR(1) with 5 grid points per product, yielding 5 7 = 78 ,125 price states. Combined with seven previous-action states, the augmented state space has 7 × 78 ,125 = 546 ,875 elements. We estimate a finite mixture with M latent types using the EM-NPL( q) algorithm (Algo-rithm 1) with q = 10 GMRES iterations to solve the policy valuation problem. We randomly initialize the CCPs using a second-degree polynomial sieve logit. We choose 150 random starting values, and choose the one that maximizes the likelihood. For EM-NPL( q), the cri-terion is max {∥ θ(k) − θ(k−1) ∥, ∥P(k) − P(k−1) ∥, ∥π(k) − π(k−1) ∥} ≤ 10 −4. We set the maximum 30 number of EM-NPL( q) iterations to 100. We estimate models for M ∈ { 1, 2, . . . , 10 }.As our utility function is linear in parameters and we solve the policy valuation problem, our estimator is numerically identical to the EM-NPL estimator that solves the inner fixed-point problem to convergence. Due to the Zero-Jacobian property (Aguirregabiria and Mira, 2002), the asymptotic variance of the estimator simplifies to the inverse of the Hessian of the pseudo-likelihood with respect to the structural parameters. That is, the asymptotic variance does not depend on the nuisance parameters. To obtain standard errors for the counterfactual analysis, we draw 100 times from the asymptotic distribution of the estimated parameters and report the standard deviation across draws. 
+
+## 7.3 Estimation Results and Counterfactual Analysis 
+
+We estimate the model separately for three income groups defined by: low (under £30,000), middle ( £30,000– £49,999), and high ( £50,000 and above). Estimating separately by income group allows the distribution of latent types, and hence the pattern of brand preferences and price sensitivity, to differ across income segments. Figure 1 reports the computational time of the EM-NPL( q) algorithm for each M . We report the average time across the three income groups and 150 random initializations. 5 The figure shows that computation time scales approximately linearly in M . For M = 10, the average runtime is about 20 minutes, which is feasible for empirical applications. 
+
+7.3.1 Short-Run and Long-Run Price Elasticities 
+
+We compute short-run and long-run price elasticities. The short-run elasticity measures the contemporaneous response to an unanticipated, temporary 1% price increase, holding continuation values fixed. The long-run elasticity permanently shifts product j’s price by 1% and re-solves the dynamic programming problem. Figures 2a–2f plot both elasticities as a function of M for each income group, and Table 7 reports the full long-run cross-price elasticity matrices at the benchmark specification. In general, own-price elasticities become more negative across all three income groups as additional latent types are introduced, indicating stronger substitution once the model absorbs persistent taste heterogeneity. The elasticity paths generally stabilize around M = 5,   
+
+> 5We also implemented the sieve-MLE initialization discussed in Section A.3. However, it takes around 10 hours to compute the sieve-MLE estimates for M= 10, which is prohibitively long for our application. Also, the sieve-MLE initialization does not yield higher likelihood values than the random initialization. Therefore, we use the random initialization.
+
+31 1 2 3 4 5 6 7 8 9 10 
+
+> Number of Latent Types ( M)
+> 5
+> 10
+> 15
+> 20
+> 25
+> 30
+> Computation Time (minutes)
+> Mean
+
+Figure 1: Computational time by number of latent types so we use M = 5 as the benchmark specification. For the low-income group (Panel A of Table 7), the long-run own-price elasticity for Coca-Cola Regular shifts from about −0.91 under homogeneity ( M = 1) to −1.78 (s.e. 0.21) at the benchmark M = 5, while the short-run elasticity shifts from about −0.10 to −0.39. The largest movement is for Pepsi Regular, whose long-run own-price elasticity goes from about −0.70 to −3.15 (s.e. 0.29) and whose short-run elasticity goes from about −0.10 to 
+
+−0.72. Coca-Cola Diet, in contrast, moves only modestly to −0.35 (s.e. 0.15). Substitution is strongest between products of the same holding company: a 1% increase in the price of Coca-Cola Regular raises the long-run share of Coca-Cola Zero by 0.38 and of Coca-Cola Diet by 0.18. The Other category remains nearly price-inelastic throughout. The middle-income group (Panel B) displays a qualitatively similar pattern. The long-run own-price elasticity for Coca-Cola Regular is −1.78 (s.e. 0.28) and for Coca-Cola Diet is −0.99 (s.e. 0.16). Cross-price effects are somewhat larger than for the low-income group: Coca-Cola Zero exhibits a long-run own-price elasticity of −1.87 (s.e. 0.40) and Pepsi Regular reaches −3.01 (s.e. 0.44), reflecting stronger substitution among diet, zero-sugar, and Pepsi varieties in this segment. The high-income group (Panel C) exhibits the largest Coca-Cola elasticity magnitudes. The long-run own-price elasticity for Coca-Cola Regular is −2.14 (s.e. 0.20), and Pepsi Max reaches −1.47 (s.e. 0.24). Pepsi Regular displays the largest long-run own-price elasticity of −3.07 (s.e. 0.29), reflecting its small market share among high-income households. The short-run elasticities are especially sensitive to M in all three groups: under homogeneity, consumers appear locked into their habitual brand, suppressing the immediate price response, 32 but as heterogeneity is introduced this spurious persistence is reduced and the short-run response becomes substantially larger. Table 7: Long-run cross-price elasticities ( M = 5) 
+
+CC Reg CC Diet CC Zero Pep Reg Pep Diet Pep Max Other 
+
+Panel A: Low income 
+
+CC Reg −1.78 (0 .21) 0.10 (0 .05) 0.11 (0 .04) 0.85 (0 .09) 0.02 (0 .00) 0.23 (0 .03) 0.03 (0 .01) CC Diet 0.18 (0 .09) −0.35 (0 .15) 0.01 (0 .03) 0.01 (0 .00) 0.01 (0 .01) 0.15 (0 .05) 0.00 (0 .00) CC Zero 0.38 (0 .12) 0.02 (0 .05) −0.63 (0 .29) 0.01 (0 .01) 0.01 (0 .00) 0.22 (0 .11) 0.01 (0 .01) Pep Reg 3.66 (0 .36) 0.02 (0 .01) 0.02 (0 .01) −3.15 (0 .29) 0.00 (0 .00) 0.09 (0 .01) 0.01 (0 .01) Pep Diet 0.15 (0 .02) 0.06 (0 .05) 0.03 (0 .01) 0.00 (0 .00) −2.19 (0 .36) 1.97 (0 .34) 0.00 (0 .00) Pep Max 0.45 (0 .06) 0.16 (0 .05) 0.13 (0 .07) 0.04 (0 .01) 0.48 (0 .09) −1.15 (0 .19) 0.02 (0 .01) Other 0.20 (0 .05) 0.00 (0 .01) 0.02 (0 .03) 0.01 (0 .01) 0.00 (0 .00) 0.08 (0 .04) −0.09 (0 .04) 
+
+Panel B: Middle income 
+
+CC Reg −1.78 (0 .28) 0.35 (0 .06) 0.11 (0 .03) 0.69 (0 .12) 0.03 (0 .01) 0.20 (0 .04) 0.02 (0 .01) CC Diet 0.41 (0 .06) −0.99 (0 .16) 0.13 (0 .03) 0.03 (0 .01) 0.32 (0 .09) 0.13 (0 .03) −0.01 (0 .01) CC Zero 0.37 (0 .09) 0.34 (0 .08) −1.87 (0 .40) 0.01 (0 .01) 0.03 (0 .01) 1.05 (0 .30) −0.01 (0 .01) Pep Reg 3.25 (0 .56) 0.11 (0 .03) 0.02 (0 .01) −3.01 (0 .44) 0.15 (0 .04) 0.09 (0 .02) −0.00 (0 .00) Pep Diet 0.19 (0 .04) 1.43 (0 .37) 0.06 (0 .02) 0.18 (0 .03) −1.96 (0 .42) 0.28 (0 .05) −0.01 (0 .01) Pep Max 0.35 (0 .07) 0.18 (0 .05) 0.58 (0 .17) 0.03 (0 .01) 0.09 (0 .02) −0.91 (0 .26) −0.04 (0 .04) Other 0.20 (0 .09) −0.09 (0 .09) −0.02 (0 .02) −0.01 (0 .00) −0.01 (0 .02) −0.25 (0 .20) 0.08 (0 .12) 
+
+Panel C: High income 
+
+CC Reg −2.14 (0 .20) 0.38 (0 .06) 0.21 (0 .04) 0.56 (0 .06) 0.01 (0 .00) 0.42 (0 .05) 0.01 (0 .01) CC Diet 0.47 (0 .08) −0.99 (0 .17) 0.13 (0 .06) 0.02 (0 .01) 0.10 (0 .06) 0.30 (0 .07) 0.01 (0 .01) CC Zero 0.45 (0 .09) 0.22 (0 .10) −1.18 (0 .25) 0.01 (0 .01) −0.00 (0 .00) 0.50 (0 .13) 0.01 (0 .00) Pep Reg 3.45 (0 .35) 0.08 (0 .02) 0.03 (0 .02) −3.07 (0 .29) −0.01 (0 .00) 0.12 (0 .03) 0.01 (0 .01) Pep Diet 0.09 (0 .04) 0.65 (0 .40) −0.00 (0 .01) −0.01 (0 .00) −1.13 (0 .33) 0.45 (0 .12) 0.02 (0 .02) Pep Max 0.68 (0 .11) 0.41 (0 .08) 0.38 (0 .09) 0.04 (0 .01) 0.10 (0 .02) −1.47 (0 .24) 0.06 (0 .02) Other 0.11 (0 .04) 0.07 (0 .04) 0.02 (0 .01) 0.01 (0 .01) 0.02 (0 .02) 0.29 (0 .10) −0.17 (0 .05) 
+
+Note: Entry ( k, j ) reports the point estimate with standard error in parentheses for the percentage change in product k’s ergodic market share per 1% permanent increase in product j’s price. Standard errors are computed as the standard deviation across 100 draws from the asymptotic distribution of the estimated parameters. 
+
+Figures 3a–3c decompose the long-run own-price elasticity of Coca-Cola Regular across latent types for each income group, where types are ranked from the least to the most price-elastic and the mixture probabilities πm are reported below each bar. The figures reveal substantial heterogeneity in price sensitivity across types. In the low-income group, the most prevalent type (Type 4, π4 = 0 .310) has an elasticity of about −2.1, while the least elastic types (Types 1 and 2, jointly accounting for π1 + π2 = 0 .377 of households) have elasticities that are essentially zero with confidence intervals that include zero, and the most elastic type (Type 5) reaches about −2.7. In the middle-income group, Type 1 ( π1 = 0 .148) has a slightly positive point estimate with a wide confidence interval that includes zero, and 33 1 2 3 4 5 6 7 8 9 10 
+
+Number of latent types ( M)
+
+3
+
+2
+
+1
+
+0
+
+> Long-run own-price elasticity
+
+CC_Reg 
+
+CC_Diet 
+
+CC_Zero 
+
+Pep_Reg 
+
+Pep_Diet 
+
+Pep_Max 
+
+Other (a) Long-run — Low income 1 2 3 4 5 6 7 8 9 10 
+
+Number of latent types ( M)
+
+1.25 
+
+1.00 
+
+0.75 
+
+0.50 
+
+0.25 
+
+0.00 
+
+> Short-run own-price elasticity
+
+CC_Reg 
+
+CC_Diet 
+
+CC_Zero 
+
+Pep_Reg 
+
+Pep_Diet 
+
+Pep_Max 
+
+Other (b) Short-run — Low income 1 2 3 4 5 6 7 8 9 10 
+
+Number of latent types ( M)
+
+3
+
+2
+
+1
+
+0
+
+> Long-run own-price elasticity
+
+CC_Reg 
+
+CC_Diet 
+
+CC_Zero 
+
+Pep_Reg 
+
+Pep_Diet 
+
+Pep_Max 
+
+Other 
+
+(c) Long-run — Middle income 1 2 3 4 5 6 7 8 9 10 
+
+Number of latent types ( M)
+
+1.25 
+
+1.00 
+
+0.75 
+
+0.50 
+
+0.25 
+
+0.00 
+
+> Short-run own-price elasticity
+
+CC_Reg 
+
+CC_Diet 
+
+CC_Zero 
+
+Pep_Reg 
+
+Pep_Diet 
+
+Pep_Max 
+
+Other (d) Short-run — Middle income 1 2 3 4 5 6 7 8 9 10 
+
+Number of latent types ( M)
+
+3
+
+2
+
+1
+
+0
+
+> Long-run own-price elasticity
+
+CC_Reg 
+
+CC_Diet 
+
+CC_Zero 
+
+Pep_Reg 
+
+Pep_Diet 
+
+Pep_Max 
+
+Other 
+
+(e) Long-run — High income 1 2 3 4 5 6 7 8 9 10 
+
+Number of latent types ( M)
+
+1.25 
+
+1.00 
+
+0.75 
+
+0.50 
+
+0.25 
+
+0.00 
+
+> Short-run own-price elasticity
+
+CC_Reg 
+
+CC_Diet 
+
+CC_Zero 
+
+Pep_Reg 
+
+Pep_Diet 
+
+Pep_Max 
+
+Other (f) Short-run — High income 
+
+Figure 2: Own-price elasticities by number of latent types M
+
+34 the more elastic types range from about −1.7 to −2.8. The high-income group displays a more uniform downward shift: the most prevalent type (Type 5, π5 = 0 .303) is also the most elastic at about −2.3, while the least elastic type (Type 1, π1 = 0 .127) is at about −0.5. Types with elasticities near zero likely represent brand-loyal consumers whose Coca-Cola Regular purchases are relatively insensitive to price changes. 1 2 3 4 5         
+
+> Type Rank
+> 4
+> 3
+> 2
+> 1
+> 0
+> 1
+> 2
+> Own-price elasticity
+> 1= 0.191 2= 0.186 3= 0.125 4= 0.310 5= 0.187
+
+(a) Low income 1 2 3 4 5          
+
+> Type Rank
+> 4
+> 3
+> 2
+> 1
+> 0
+> 1
+> 2
+> Own-price elasticity
+> 1= 0.148 2= 0.280 3= 0.264 4= 0.106 5= 0.202
+
+(b) Middle income 1 2 3 4 5         
+
+> Type Rank
+> 4
+> 3
+> 2
+> 1
+> 0
+> 1
+> 2
+> Own-price elasticity
+> 1= 0.127 2= 0.220 3= 0.116 4= 0.235 5= 0.303
+
+(c) High income 
+
+Figure 3: Long-run Coca-Cola Regular own-price elasticity by latent type, for each income group. Types are ranked by long-run Coca-Cola Regular own-price elasticity from least to most elastic, and the mixture probabilities πm are reported below each bar. 
+
+7.3.2 Soda Tax Policy Analysis 
+
+We consider a sugar-sweetened beverage tax of £0.25 per litre applied to the two regular (full-sugar) products, Coca-Cola Regular and Pepsi Regular. This policy experiment is broadly comparable to the UK Soft Drinks Industry Levy introduced in 2018. We use compensating variation (CV) to measure the consumers’ welfare loss, defined as the amount of money needed to leave households indifferent between the baseline and taxed environments. The left column of Figure 4 plots the average CV as a function of M for each income group. In all three groups, CV rises sharply between M = 2 and M = 3, jumping from 35 less than £2 to roughly £3– £4, and then levels off. Beyond M = 3, successive values of M
+
+yield CV estimates that are not statistically distinguishable. At the benchmark M = 5, the average CV is about £5.70 for the low-income group, £4.80 for the middle-income group, and 
+
+£5.10 for the high-income group—between six and thirteen times the homogeneous ( M = 1) baseline of below £1 in each group. Dubois et al. (2020) reports the average CV of the UK Soft Drinks Industry Levy to be about £4.94, which is close to our estimates for M ≥ 3across all three income groups. The right column of Figure 4 decomposes CV by latent type at the benchmark M = 5, with types ranked by long-run Coca-Cola Regular own-price elasticity as in Figure 3. In each income group, a single type accounts for almost the entire aggregate welfare loss, while all other types have CV close to zero. In the low-income group, Type 4 ( π4 = 0 .310) has a CV of about £17.4, while the CV of every other type is below £1.3. In the middle-income group, Type 2 ( π2 = 0 .280) has a CV of about £14.8, versus no more than £1.9 for the other types. In the high-income group, Type 5 ( π5 = 0 .303) has a CV of about £15.9, versus £0.7 or less for the remaining types. In each case, the type bearing the welfare cost is the most prevalent type in that income group, and its mass-weighted contribution alone accounts for roughly 85– 95% of the aggregate CV. The remaining types bear small welfare loss. In summary, Figure 4 shows that ignoring unobserved heterogeneity leads to a substantial underestimation of the welfare cost of the tax, and that the welfare burden is highly concentrated among a single latent type in each income group, which is also the most prevalent type in that group. Figures 5a–5c decompose the welfare cost by household size, grouping households into four categories by the number of children (0, 1, 2, and ≥ 3). In the low-income group, CV rises from about £4.9 for childless households to £6.1 for one-child households, peaks at £9.1 for two-child households, and is £7.3 for households with three or more children. The middle-income group is relatively flat across households with zero to two children (CV between £4.6 and £5.7) and falls to about £3.4 for households with three or more. The high-income group is essentially flat across all categories, with CV between £4.9 and £5.7. In the middle- and high-income groups, the 95% confidence intervals overlap substantially across categories, so apparent differences by household size should be interpreted cautiously. In the low-income group, the peak at two children is statistically distinguishable from childless households and is the clearest pattern in the figure. 36 1 2 3 4 5 6 7 8 9 10 
+
+Number of latent types ( M)
+
+0
+
+2
+
+4
+
+6
+
+8
+
+10 
+
+12 
+
+> Compensating Variation (£)
+
+(a) Low income — CV vs. M1 2 3 4 5          
+
+> Type Rank
+> 0
+> 5
+> 10
+> 15
+> 20
+> Compensating Variation (£)
+> 1= 0.191 2= 0.186 3= 0.125 4= 0.310 5= 0.187
+
+(b) Low income — CV by type ( M = 5) 1 2 3 4 5 6 7 8 9 10 
+
+Number of latent types ( M)
+
+0
+
+2
+
+4
+
+6
+
+8
+
+10 
+
+12 
+
+> Compensating Variation (£)
+
+(c) Middle income — CV vs. M1 2 3 4 5          
+
+> Type Rank
+> 0
+> 5
+> 10
+> 15
+> 20
+> Compensating Variation (£)
+> 1= 0.148 2= 0.280 3= 0.264 4= 0.106 5= 0.202
+
+(d) Middle income — CV by type ( M = 5) 1 2 3 4 5 6 7 8 9 10 
+
+Number of latent types ( M)
+
+0
+
+2
+
+4
+
+6
+
+8
+
+10 
+
+12 
+
+> Compensating Variation (£)
+
+(e) High income — CV vs. M1 2 3 4 5          
+
+> Type Rank
+> 0
+> 5
+> 10
+> 15
+> 20
+> Compensating Variation (£)
+> 1= 0.127 2= 0.220 3= 0.116 4= 0.235 5= 0.303
+
+(f) High income — CV by type ( M = 5) 
+
+Figure 4: Compensating variation: by number of latent types M (left column) and by latent type at M = 5 (right column), for each income group. In the right column, types are ranked by long-run Coca-Cola Regular own-price elasticity from least to most elastic (same ordering as Figure 3); mixture probabilities πm are reported below each bar. 37 0 1 2 3
+
+Number of Children 
+
+0
+
+2
+
+4
+
+6
+
+8
+
+10 
+
+> Compensating Variation (£)
+
+(a) Low income 0 1 2 3
+
+Number of Children 
+
+0
+
+2
+
+4
+
+6
+
+8
+
+10  
+
+> Compensating Variation (£)
+
+(b) Middle income 0 1 2 3
+
+Number of Children 
+
+0
+
+2
+
+4
+
+6
+
+8
+
+10 
+
+> Compensating Variation (£)
+
+(c) High income 
+
+Figure 5: Compensating variation by number of children 38 8 Conclusion 
+
+This paper develops EM-NPL( q) for dynamic discrete choice models with finite-mixture unobserved heterogeneity. The method embeds a truncated inner solver inside EM; for linear-in-parameters models, EM-NPL( q) is numerically identical to EM-NPL for any q ≥ 1, and we also establish consistency, asymptotic normality, and local convergence. Simulations show that GMRES delivers large speed gains, while EPL can improve accuracy in dynamic games at higher cost. In a cola-demand application estimated separately by income group, ignoring unobserved heterogeneity substantially understates price elasticities and the welfare cost of a soda tax, with the burden falling disproportionately on low-income households. 
+
+# References 
+
+Adusumilli, K. and Eckardt, D. (2025). Temporal-difference estimation of dynamic discrete choice models. Review of Economic Studies . Forthcoming. Aguirregabiria, V. and Magesan, A. (2023). Solving discrete choice dynamic programming models using euler equations. Working Paper .Aguirregabiria, V. and Marcoux, M. (2021). Imposing equilibrium restrictions in the esti-mation of dynamic discrete games. Quantitative Economics , 12(4):1223–1271. Aguirregabiria, V. and Mira, P. (2002). Swapping the nested fixed point algorithm: A class of estimators for discrete markov decision models. Econometrica , 70(4):1519–1543. Aguirregabiria, V. and Mira, P. (2007). Sequential estimation of dynamic discrete games. 
+
+Econometrica , 75(1):1–53. Aguirregabiria, V. and Mira, P. (2010). Dynamic discrete choice structural models: A survey. 
+
+Journal of Econometrics , 156(1):38–67. Arcidiacono, P. and Ellickson, P. B. (2011). Practical methods for estimation of dynamic discrete choice models. Annu. Rev. Econ. , 3(1):363–394. Arcidiacono, P. and Miller, R. A. (2011). Conditional choice probability estimation of dy-namic discrete choice models with unobserved heterogeneity. Econometrica , 79(6):1823– 1867. Bugni, F. A. and Bunting, J. (2021). On the iterated estimation of dynamic discrete choice games. The Review of Economic Studies , 88(3):1031–1073. Bunting, J. and Ura, T. (2025). Faster estimation of dynamic discrete choice models using index invertibility. Journal of Econometrics , 250:106004. Chu, K.-w. E. (1986). Generalization of the bauer-fike theorem. Numerische Mathematik ,49(6):685–691. 39 Dearing, A. and Blevins, J. R. (2025). Efficient and convergent sequential pseudo-likelihood estimation of dynamic discrete games. Review of Economic Studies , 92(2):981–1021. Dub´ e, J.-P., Fox, J. T., and Su, C.-L. (2012). Improving the numerical performance of static and dynamic aggregate discrete choice random coefficients demand estimation. Economet-rica , 80(5):2231–2267. Dubois, P., Griffith, R., and O’Connell, M. (2020). How well targeted are soda taxes? 
+
+American Economic Review , 110(11):3661–3704. Francesconi, M. (2002). A joint dynamic model of fertility and work of married women. 
+
+Journal of labor Economics , 20(2):336–380. Gowrisankaran, G. and Rysman, M. (2012). Dynamics of consumer demand for new durable goods. Journal of political Economy , 120(6):1173–1219. Hotz, V. J. and Miller, R. A. (1993). Conditional choice probabilities and the estimation of dynamic models. The Review of Economic Studies , 60(3):497–529. Judd, K. L. (1998). Numerical methods in economics . MIT press. Kasahara, H. and Shimotsu, K. (2009). Nonparametric identification of finite mixture models of dynamic discrete choices. Econometrica , 77(1):135–175. Kasahara, H. and Shimotsu, K. (2012). Sequential estimation of structural models with a fixed point constraint. Econometrica , 80(5):2303–2319. Kasahara, H. and Shimotsu, K. (2014). Non-parametric identification and estimation of the number of components in multivariate mixtures. Journal of the Royal Statistical Society: Series B , 76(1):97–111. Keane, M. P. and Wolpin, K. I. (1997). The career decisions of young men. Journal of political Economy , 105(3):473–522. Kress, R. (2014). Linear Integral Equations , volume 82 of Applied Mathematical Sciences .Springer, New York, NY. Nocedal, J. (2006). Numerical optimization. Rust, J. (1987). Optimal replacement of gmc bus engines: An empirical model of harold zurcher. Econometrica: Journal of the Econometric Society , pages 999–1033. Saad, Y. (2003). Iterative methods for sparse linear systems . SIAM. Su, C.-L. and Judd, K. L. (2012). Constrained optimization approaches to estimation of structural models. Econometrica , 80(5):2213–2230. Tauchen, G. (1986). Finite state markov-chain approximations to univariate and vector autoregressions. Economics letters , 20(2):177–181. Wang, E. Y. (2015). The impact of soda taxes on consumer welfare: implications of storability and taste heterogeneity. The RAND Journal of Economics , 46(2):409–441. 40 A Proofs 
+
+## A.1 Supporting Lemmas 
+
+Since ∇2
+
+> θθ
+
+ℓqE , Hqx, Γ qx, and Λ qx are all block-diagonal across types, each block involves only the type-m weighted pseudo-likelihood. In this section, we suppress the type index m
+
+and work at the per-type level. Furthermore, we use ( θ0, ˜θ0, P 0) to denote the true pa-rameters. Define Q(θ, Y, P )( a|x) := log Λ( θ, Y, P )( a|x) for notational simplicity, and let 
+
+w∗ := wm({xt, a t}Tt=1 ; P∗, π∗) denote the population posterior weight for the suppressed type. The per-type posterior weighted information matrix and the cross-derivative matrices are given by: Ωqθθ := E
+
+"
+
+w∗
+
+> T
+
+X
+
+> t=1
+> J
+
+X
+
+> j=1
+
+∇θQ(θ0, Γq, P 0)( ajt |xt) ∇θQ(θ0, Γq, P 0)( ajt |xt)′
+
+#
+
+,
+
+Ωqθx := E
+
+"
+
+w∗
+
+> T
+
+X
+
+> t=1
+> J
+
+X
+
+> j=1
+
+∇θQ(θ0, Γq, P 0)( ajt |xt) ∇xQ(θ0, Γq, P 0)( ajt |xt)′
+
+#
+
+, x ∈ { Y, P, ˜θ}.
+
+Let Y (θ, ˜θ, P ) denote the exact solution to the fixed-point equation Y = G(θ, ˜θ, Y, P ), and let Y0 := Y (θ0, θ 0, P 0) denote its value at the true parameters. All derivatives of Γ q are evaluated at ( θ0, θ 0, P 0; Y0) unless otherwise noted. Crucially, w∗ depends on ( P∗, π∗) but 
+
+not on Γ q. Therefore, when comparing Ω qθx and Ω ∞
+
+> θx
+
+, the weight w∗ is identical in both terms and factors out of the difference: Ωqθx − Ω∞ 
+
+> θx
+
+= E
+
+"
+
+w∗ X
+
+> t,j
+
+(∇θQq · (∇xQq)′ − ∇ θQ∞ · (∇xQ∞)′)
+
+#
+
+.
+
+Lemma 1. Let x1, x 2, y 1, y 2 be four functions of the same random variable, then we have: 
+
+∥E[x1xT 
+
+> 2
+
+− y1yT 
+
+> 2
+
+]∥F ≤
+
+»
+
+E[∥x1∥22]
+
+»
+
+E[∥x2 − y2∥22] + 
+
+»
+
+E[∥y2∥22]
+
+»
+
+E[∥x1 − y1∥22]
+
+Proof. Since F -norm is convex, by Jensen’s inequality, we have: 
+
+∥E[x1xT 
+
+> 2
+
+− y1yT 
+
+> 2
+
+]∥F ≤ E[∥x1xT 
+
+> 2
+
+− y1yT 
+
+> 2
+
+∥F ]= E[∥x1xT 
+
+> 2
+
+− x1yT 
+
+> 2
+
++ x1yT 
+
+> 2
+
+− y1yT 
+
+> 2
+
+∥F ]
+
+≤ E[∥x1xT 
+
+> 2
+
+− x1yT 
+
+> 2
+
+∥F + ∥x1yT 
+
+> 2
+
+− y1yT 
+
+> 2
+
+∥F ]= E[∥x1(x2 − y2)T ∥F ] + E[∥(x1 − y1)yT 
+
+> 2
+
+∥F ]= E[∥x1∥2∥x2 − y2∥2] + E[∥x1 − y1∥2∥y2∥2]41 ≤
+
+»
+
+E[∥x1∥22]
+
+»
+
+E[∥x2 − y2∥22] + 
+
+»
+
+E[∥y2∥22]
+
+»
+
+E[∥x1 − y1∥22]
+
+Lemma 2. Suppose assumptions for Lemma 8 hold. Then, there exists a finite constant C
+
+such that: (i) sup x,a ∥∇ θQ(θ0, Γq(θ0, ˜θ0, P 0; Y0), P 0)( a|x)∥2 ≤ C uniformly over q ≤ ∞ .(ii) sup x,a ∥∇ θQ(θ0, Y (θ0, ˜θ0, P 0), P 0)( a|x)∥2 ≤ C.(iii) sup x,a ∥∇ Y Q(θ0, Y 0, P 0)( a|x)∥2 ≤ C.(iv) ∇θY (θ0, ˜θ0, P 0) F
+
+≤ C.(v) ∇P Y (θ0, ˜θ0, P 0) F
+
+≤ C.(vi) ∇˜θY (θ0, ˜θ0, P 0) F
+
+≤ C.(vii) ∇˜θΓq(θ0, ˜θ0, P 0; Y0) F
+
+≤ C uniformly over q ≤ ∞ .Proof. As Λ( θ, V, P )( a|x), Γ q(θ, ˜θ, V, P ), and Y (θ, ˜θ, P ) are continuously differentiable in their arguments, Θ, Y, and P are compact, and by Assumption 7(ii), and the chain rule, the results follow. 
+
+Lemma 3. Let A, B, C be matrices of compatible dimensions such that B is invertible. Let 
+
+A(q), B(q), and C(q) be matrix-valued functions of a parameter q that satisfy the following bounds for non-negative functions f1(q), f 2(q), f 3(q): ∥A(q) − A∥F ≤ f1(q), ∥B(q) − B∥F ≤
+
+f2(q), and ∥C(q) − C∥F ≤ f3(q). Assume that B(q) is invertible and ∥C(q)∥F , ∥B(q)−1∥F ≤
+
+M . Furthermore, assume that ∥A∥F , ∥B−1∥F ≤ M . Then, we have: 
+
+∥A(q)B(q)−1C(q) − AB −1C∥F = O(f1(q) + f2(q) + f3(q)) 
+
+Proof. Note that: 
+
+A(q)B(q)−1C(q) − AB −1C
+
+= ( A(q) − A)B(q)−1C(q) + A(B(q)−1 − B−1)C(q) + AB −1(C(q) − C)42 By the triangle inequality, we have: 
+
+∥A(q)B(q)−1C(q) − AB −1C∥F
+
+≤ ∥ (A(q) − A)B(q)−1C(q)∥F
+
+| {z }
+
+> Term 1
+
++ ∥A(B(q)−1 − B−1)C(q)∥F
+
+| {z }
+
+> Term 2
+
++ ∥AB −1(C(q) − C)∥F
+
+| {z }
+
+> Term 3
+
+First, we bound the term ∥B(q)−1 − B−1∥F :
+
+∥B(q)−1 − B−1∥F = ∥B(q)−1(B − B(q)) B−1∥F ≤ ∥ B(q)−1∥F ∥B(q) − B∥F ∥B−1∥F = O(f2(q)) By the sub-multiplicative property of the Frobenius norm ( ∥XY ∥F ≤ ∥ X∥F ∥Y ∥F ), we have: 
+
+∥(A(q) − A)B−1(q)C(q)∥F ≤ ∥ A(q) − A∥F ∥B(q)−1∥F ∥C(q)∥F = O(f1(q)) 
+
+∥A(B(q)−1 − B−1)C(q)∥F ≤ ∥ A∥F ∥B(q)−1 − B−1∥F ∥C(q)∥F = O(f2(q)) 
+
+∥AB −1(C(q) − C)∥F ≤ ∥ A∥F ∥B−1∥F ∥C(q) − C∥F = O(f3(q)) 
+
+Lemma 4. Suppose assumptions for Lemma 8 hold. Then: (i) ∥Ωqθθ − Ω∞ 
+
+> θθ
+
+∥F ≤ 2p|X | C3f (q).(ii) ∥Γqθ(θ0, ˜θ0, P 0; Y0) − Yθ(θ0, ˜θ0, P 0)∥F ≤ Cf (q).(iii) ∥Γq
+
+> ˜θ
+
+(θ0, ˜θ0, P 0; Y0) − Y˜θ(θ0, ˜θ0, P 0)∥F ≤ Cf (q).(iv) ∥ΓqP (θ0, ˜θ0, P 0; Y0) − YP (θ0, ˜θ0, P 0)∥F ≤ Cf (q).Proof. Note that by the chain rule: 
+
+∇θQ(θ0, Γq(θ0, ˜θ0, P 0; Y0), P 0)( a|x) = Qθ(θ0, Y 0, P 0)( a|x) + QY (θ0, Y 0, P 0)( a|x) Γ qθ(θ0, ˜θ0, P 0; Y0),
+
+∇θQ(θ0, Y (θ0, ˜θ0, P 0), P 0)( a|x) = Qθ(θ0, Y 0, P 0)( a|x) + QY (θ0, Y 0, P 0)( a|x) Yθ(θ0, ˜θ0, P 0).
+
+By Lemma 1 and Lemma 2, we have: 
+
+∥Ωqθθ − Ω∞ 
+
+> θθ
+
+∥F ≤ 2C sup 
+
+> x,a
+
+∥QY (θ0, Y 0, P 0)( a|x) (Γ qθ − Yθ)∥2 ≤ 2
+
+»
+
+|X | C2 ∥Γqθ − Yθ∥F ≤ 2
+
+»
+
+|X | C3f (q),
+
+where we used: by Assumption 6 and Y0 = Y (θ0, ˜θ0, P 0) = Γ q(θ0, ˜θ0, P 0; Y0), for any argument 
+
+z ∈ { θ, ˜θ, P } and element z1,43 ∂Γq 
+
+> ∂z 1
+
+− ∂Y ∂z 1 2
+
+= lim h→0 Γq (...,z 0+he 1,... ;Y0)−Y (...,z 0+he 1,... ) 
+
+> h2
+
+≤ f (q) ∂Y ∂z 1 2
+
+,since Γ q(. . . ; Y0) = Y0 = Y (. . . ) at the fixed point. This establishes Lemmas 4(ii) to 4(iv). 
+
+Lemma 5. Suppose assumptions for Lemma 8 hold. Then: 
+
+∥ΩqθY ∥F ≤ C2»
+
+|X | f (q), ∥ΓqY (θ0, ˜θ0, P 0; Y0)∥F ≤
+
+»
+
+|X | f (q).
+
+Proof. By Lemma 2: 
+
+∥ΩqθY ∥F ≤ C sup 
+
+> x,a
+
+∥QY (θ0, Y 0, P 0)( a|x)∥2 ∥ΓqY ∥F ≤ C2 ∥ΓqY ∥F ≤
+
+»
+
+|X | C2 f (q),
+
+where ∥ΓqY ∥F ≤ p|X | f (q) follows from Assumption 6: at the fixed point Y0 = Y (θ0, ˜θ0, P 0), perturbing the initial guess Y by he 1 gives ∥∂Γq/∂Y 1∥2 ≤ f (q) (since the exact solution 
+
+Y (θ0, θ 0, P 0) does not depend on the initial guess). 
+
+Lemma 6. Suppose assumptions for Lemma 8 hold. Then, for x ∈ { P, ˜θ}:
+
+∥Ωqθx − Ω∞
+
+> θx
+
+∥F = O(f (q)) .
+
+Proof. By the chain rule, ∇xQ(θ0, Γq, P 0) − ∇ xQ(θ0, Y 0, P 0) = QY · (Γ qx − Yx) plus any direct 
+
+x-dependence of Q (which cancels in the difference for x = ˜θ, and contributes a bounded term for x = P ). By Lemma 4, ∥Γqx − Yx∥F = O(f (q)). Applying Lemma 1 to Ω qθx =
+
+E[∇θQ · (∇xQ)′] with the θ-score difference bounded in Lemma 4 and the x-score difference bounded above gives ∥Ωqθx − Ω∞
+
+> θx
+
+∥F = O(f (q)). 
+
+Lemma 7 (M-step sensitivity differences) . Suppose assumptions for Lemma 8 hold. Then, for x ∈ { ˜θ, Y, P, π }:
+
+∥Hqx − H∞ 
+
+> x
+
+∥F = O(f (q)) .
+
+Proof. Recall Hqx = −(∇2
+
+> θθ
+
+ℓqE )−1∇2
+
+> θx
+
+ℓqE . The function ℓqE depends on q only through Γ q. By the chain rule, ∇2
+
+> θθ
+
+ℓqE involves Γ qθ, and ∇2
+
+> θx
+
+ℓqE involves Γ qx. By Lemma 4, ∥∇ 2
+
+> θθ
+
+ℓqE −∇ 2
+
+> θθ
+
+ℓ∞ 
+
+> E
+
+∥F =
+
+O(f (q)). Similarly, ∥∇ 2
+
+> θx
+
+ℓqE − ∇ 2
+
+> θx
+
+ℓ∞ 
+
+> E
+
+∥F = O(f (q)) for each x: the cases x = Y and x = P
+
+follow from Lemmas 5 and 6; the case x = ˜θ follows from the same argument as Lemma 6 with P replaced by ˜θ; the case x = π follows because the π-derivative acts on the weights 
+
+wm(P, π ) (which do not depend on q) while the θ-derivative acts through Γ q.The result then follows from Lemma 3 applied to Hqx = A(q)B(q)−1C(q) with A(q) = 
+
+−I, B(q) = ∇2
+
+> θθ
+
+ℓqE , and C(q) = ∇2
+
+> θx
+
+ℓqE , noting that ∇2
+
+> θθ
+
+ℓqE is uniformly nonsingular by Assumption 8(iii). 44 Lemma 8 (Mixture convergence matrix difference) . Suppose Assumptions 3, 5, 8, 6, and 7 hold. Then: 
+
+∥Rq − R∞∥F = O(f (q)) 
+
+Proof. The π-row of Rq is ( Eπ, 0, 0, E P), which does not depend on q, so it contributes zero to Rq − R∞. For the remaining rows, each entry is a sum of products of the form Γ qx, Λ qx,
+
+Hqx, and Eπ, EP. Since Eπ and EP do not depend on q, it suffices to bound the differences of the q-dependent factors. By Lemma 4, ∥Γqx − Γ∞ 
+
+> x
+
+∥F = O(f (q)) for x ∈ { θ, ˜θ, P }. By Lemma 5, ∥ΓqY ∥F = O(f (q)) (and Γ ∞ 
+
+> Y
+
+= 0). Since Λ q = Λ ◦ Γq, the chain rule gives Λ qx = Λ Y Γqx + Λ x (for the direct x-dependence), so ∥Λqx −Λ∞ 
+
+> x
+
+∥F ≤ ∥ ΛY ∥F ∥Γqx − Γ∞ 
+
+> x
+
+∥F = O(f (q)). By Lemma 7, ∥Hqx − H∞ 
+
+> x
+
+∥F =
+
+O(f (q)) for all x.For a typical entry, e.g., Γ qθHq 
+
+> ˜θ
+
++ Γ q
+
+> ˜θ
+
+:
+
+∥(Γ qθHq 
+
+> ˜θ
+
++ Γ q
+
+> ˜θ
+
+) − (Γ ∞ 
+
+> θ
+
+H∞ 
+
+> ˜θ
+
++ Γ ∞ 
+
+> ˜θ
+
+)∥F
+
+≤ ∥ Γqθ∥F ∥Hq 
+
+> ˜θ
+
+− H∞ 
+
+> ˜θ
+
+∥F + ∥Γqθ − Γ∞ 
+
+> θ
+
+∥F ∥H∞ 
+
+> ˜θ
+
+∥F + ∥Γq 
+
+> ˜θ
+
+− Γ∞ 
+
+> ˜θ
+
+∥F = O(f (q)) ,
+
+using the uniform boundedness of Γ qθ and H∞ 
+
+> ˜θ
+
+. The same decomposition applies to every entry in rows 2–4. Taking the Frobenius norm of the full matrix difference gives ∥Rq − R∞∥F =
+
+O(f (q)). 
+
+Lemma 9 (Population-level information matrix and correction-term differences) . Suppose Assumptions 3, 5, 8, 6, and 7 hold. Then: (i) ∥Ωq 
+
+> αα
+
+− Ω∞
+
+> αα
+
+∥F = O(f (q)) .(ii) ∥Sq − S∞∥F = O(f (q)) .Proof. Part (i). The population-level information matrix is Ω q 
+
+> αα
+
+= −∇ 2
+
+> αα
+
+Qq(α∗; θ∗, Y∗, P∗). The score sqi = ∇αℓqi depends on q only through Γ q. The score sqi = ∇αℓqi depends on Γ q
+
+through the chain rule: ∇αℓqi − ∇ αℓ∞ 
+
+> i
+
+involves terms of the form, e.g., (Γ q 
+
+> θ
+
+− Yθ), which is 
+
+O(f (q)) by Lemma 4 and Lemma 2. The proof then follows similarly to Lemma 4: applying Lemma 1 to Ω q 
+
+> αα
+
+− Ω∞ 
+
+> αα
+
+= E[sqi (sqi )′ − s∞ 
+
+> i
+
+(s∞ 
+
+> i
+
+)′] yields O(f (q)). 
+
+Part (ii). Recall Sq = Ω q  
+
+> α˜θ
+
+(IM d θ , 0) + Ω q 
+
+> αY
+
+Yα + Ω q 
+
+> αP
+
+Pα.
+
+Sq − S∞ = (Ω q  
+
+> α˜θ
+
+− Ω∞ 
+
+> α˜θ
+
+)( IM d θ , 0) + (Ω q 
+
+> αY
+
+− Ω∞
+
+> αY
+
+)Yα + (Ω q 
+
+> αP
+
+− Ω∞
+
+> αP
+
+)Pα.
+
+45 By the similar argument as in Part (i), ∥Ωq  
+
+> α˜θ
+
+− Ω∞ 
+
+> α˜θ
+
+∥F = O(f (q)), ∥Ωq 
+
+> αY
+
+− Ω∞
+
+> αY
+
+∥F = O(f (q)), and ∥Ωq 
+
+> αP
+
+− Ω∞
+
+> αP
+
+∥F = O(f (q)). 
+
+## A.2 Proof in Section 4 
+
+Proof of Theorem 1 . As G does not depend on θ, the inner algorithm Γ q also does not depend on θ. The EM-NPL( q) fixed-point satisfies the system of equations: (θ, π) = argmax 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+log 
+
+> M
+
+X
+
+> m=1
+
+πmTY
+
+> t=1
+> J
+
+Y
+
+> j=1
+
+Λj
+
+ θm, Γq(˜θm, P m; Y m), P m(ajit |xit )
+
+!
+
+Y = Γ q( ˜θ, P; Y), P = Λ( θ, Y, P)Under Assumption 3(i), Γ q and G have the same unique fixed point for any q. Therefore, the above system holds for any q ≥ 1. In particular, it holds for q = ∞, so the EM-NPL( q)fixed point is also an EM-NPL fixed point. By the same argument, any EM-NPL fixed point is also an EM-NPL( q) fixed point. Therefore, the two estimators are numerically identical. 
+
+Proof of Theorem 2 . We prove consistency and asymptotic normality in sequence. 
+
+Part I: Consistency. Under Assumption 5(vi) and by the Berge’s maximum theorem, the mapping α( ˜θ, Y, P) is continuous in a neighborhood of ( θ∗, Y∗, P∗). Then the consistency follows from Aguirregabiria and Mira (2007) (Proposition 2). 
+
+Part II: Asymptotic normality. Under Assumption 5(viii), totally differentiating Y =Γq(θ, ˜θ, P; Y) and P = Λ( θ, Y, P) with respect to θ at the true fixed point and rearranging yields: 
+
+Yθ
+
+Pθ
+
+!
+
+= I − Γq 
+
+> Y
+
+−Γq
+
+> P
+
+−ΛY I − ΛP
+
+!−1
+
+Γq 
+
+> θ
+
++ Γ q
+
+> ˜θ
+
+Λθ
+
+!
+
+(7) where the Jacobian matrices are block-diagonal with the m-th diagonal block given by the corresponding Jacobian matrix evaluated at ( θm∗, Y m∗, P m∗). The first-order condition (FOC) takes the form: 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+∇αℓqi ( ˆ α; ˆθ, ˆY, ˆP) = 0 .
+
+Write δα := √N ( ˆ α − α∗), δθ := √N ( ˆθ − θ∗), δY := √N ( ˆY − Y∗), and δP := √N ( ˆP − P∗). 46 Since π does not enter the constraints, δθ = ( Idθ M , 0) δα.By the consistency of ˆ α, ˆθ, ˆY, and ˆP, a Taylor expansion of FOC around ( α∗, θ∗, Y∗, P∗)gives: 1
+
+√N
+
+> N
+
+X
+
+> i=1
+
+sqi = Ω q 
+
+> αα
+
+δα + Ω q  
+
+> α˜θ
+
+δθ + Ω q 
+
+> αY
+
+δY + Ω q 
+
+> αP
+
+δP + op(1) , (8) where sqi := ∇αℓqi (α∗; θ∗, Y∗, P∗) is the score at the truth. Similarly, for each m, Taylor-expanding ˆY = Γ q( ˆθ, ˆθ, ˆP; ˆY) and ˆP = Λ( ˆθ, ˆY, ˆP) around ( θ, Y, P) and rearranging yields: 
+
+I − Γq 
+
+> Y
+
+−Γq
+
+> P
+
+−ΛY I − ΛP
+
+!
+
+δY
+
+δP
+
+!
+
+= Γq 
+
+> θ
+
++ Γ q
+
+> ˜θ
+
+Λθ
+
+!
+
+δθ + op(1) .
+
+By (7), we have: 
+
+δY
+
+δP
+
+!
+
+= I − Γq 
+
+> Y
+
+−Γq
+
+> P
+
+−ΛY I − ΛP
+
+!−1
+
+Γq 
+
+> θ
+
++ Γ q
+
+> ˜θ
+
+Λθ
+
+!
+
+δθ + op(1) =: Yθ
+
+Pθ
+
+!
+
+δθ + op(1) .
+
+Substituting δθ = ( Idθ M , 0) δα, δY = Yθ (Idθ M , 0) δα, and δP = Pθ (Idθ M , 0) δα into (8): 1
+
+√N
+
+> N
+
+X
+
+> i=1
+
+sqi =
+
+h
+
+Ωq 
+
+> αα
+
++  Ωq  
+
+> α˜θ
+
++ Ω q 
+
+> αY
+
+Yθ + Ω q 
+
+> αP
+
+Pθ
+
+(Idθ M , 0) 
+
+i
+
+δα + op(1) =  Ωq 
+
+> αα
+
++ Sq δα + op(1) ,
+
+where Yα := Yθ · (Idθ M , 0), and Pα := Pθ · (Idθ M , 0). Rearranging gives: 
+
+√N ( ˆ α − α∗) = (Ω q 
+
+> αα
+
++ Sq)−1 1
+
+√N
+
+> N
+
+X
+
+> i=1
+
+sqi + op(1) .
+
+By the generalized information matrix equality, E[sqi ] = 0 and Var( sqi ) = Ω q
+
+> αα
+
+, so the central limit theorem applies and yields 1√N
+
+PNi=1 sqid
+
+−→ N (0 , Ωq
+
+> αα
+
+). By the continuous mapping theorem: 
+
+√N ( ˆ α − α∗) d
+
+−→ N  0, (Ω q 
+
+> αα
+
++ Sq)−1 Ωq 
+
+> αα
+
+{(Ω q 
+
+> αα
+
++ Sq)−1}′
+
+47 Proof of Proposition 1 . Write Σ q = A(q) B(q) A(q)′ where A(q) := (Ω q 
+
+> αα
+
++ Sq)−1 and 
+
+B(q) := Ω q
+
+> αα
+
+. We verify the conditions of Lemma 3. 
+
+Step 1: ∥B(q) − B(∞)∥F = O(f (q)) . This is Lemma 9(i). 
+
+Step 2: ∥A(q) − A(∞)∥F = O(f (q)) . By Lemma 9, ∥(Ω q 
+
+> αα
+
++ Sq) − (Ω ∞ 
+
+> αα
+
++ S∞)∥F =
+
+O(f (q)). Since Ω ∞ 
+
+> αα
+
++ S∞ is invertible by Assumption 5(v), the matrix inverse perturbation bound gives: 
+
+∥A(q) − A(∞)∥F = ∥A(q)∥F ∥(Ω q 
+
+> αα
+
++ Sq) − (Ω ∞ 
+
+> αα
+
++ S∞)∥F ∥A(∞)∥F = O(f (q)) ,
+
+where ∥A(q)∥F is uniformly bounded for sufficiently large q.
+
+Step 3: Conclusion. Since ∥A(q)′∥F = ∥A(q)∥F and the boundedness conditions of Lemma 3 hold (uniform boundedness of A(q) and B(q) follows from Assumption 5), applying Lemma 3 with A(q) = (Ω q 
+
+> αα
+
++ Sq)−1, B(q) = Ω q
+
+> αα
+
+, and C(q) = A(q)′ yields ∥Σq − Σ∞∥F =
+
+O(f (q)). 
+
+Proof of Proposition 2 . We linearize the EM-NPL( q) update around the sample fixed point ( ˆ π, ˆθ, ˆY, ˆP). The state at iteration k − 1 is ( π(k−1) , θ(k−1) , Y(k−1) , P(k−1) ). Write 
+
+δk := (∆ π(k), ∆θ(k), ∆Y(k), ∆P(k))′ for the stacked deviation from the fixed point. 
+
+Step 1: E-step linearization. The E-step computes posterior weights w(k) 
+
+> im
+
+from (P(k−1) , π(k−1) ), and updates π(k) 
+
+> m
+
+= N −1 P 
+
+> i
+
+w(k) 
+
+> im
+
+. Linearizing around the fixed point and using the √N -consistency of the sample fixed point, smoothness, and sample-to-population derivative convergence, we obtain ∆π(k) = Eπ ∆π(k−1) + EP ∆P(k−1) + Op(N −1/2∥δ(k−1) ∥ + ∥δ(k−1) ∥2).
+
+Step 2: M-step linearization. The M-step for each type m solves: 
+
+θm, (k) = argmax 
+
+> θm
+> N
+
+X
+
+> i=1
+
+w(k)
+
+> im T
+
+X
+
+> t=1
+> J
+
+X
+
+> j=1
+
+log Λ j
+
+ θm, Γq(θm, θ m, (k−1) , P m, (k−1) ; Y m, (k−1) ), P m, (k−1) (ajit |xit ).
+
+The weights w(k) 
+
+> im
+
+depend on ( π(k−1) , P(k−1) ) (from the E-step), so the M-step score is a func-tion of the previous-step arguments ( π(k−1) , θ(k−1) , Y(k−1) , P(k−1) ). By the √N -consistency of the sample fixed point plus smoothness and sample-to-population derivative convergence, stacking and expanding the first-order conditions around the fixed point therefore gives: ∆θ(k) = Hq 
+
+> π
+
+∆π(k−1) +Hq 
+
+> ˜θ
+
+∆θ(k−1) +Hq 
+
+> Y
+
+∆Y(k−1) +Hq 
+
+> P
+
+∆P(k−1) +Op(N −1/2∥δ(k−1) ∥+∥δ(k−1) ∥2).
+
+48 Step 3: Stacked (Y, P )-update linearization. For each type m, the updates are Y m, (k) =Γq(θm, (k), θ m, (k−1) , P m, (k−1) ; Y m, (k−1) ) and P m, (k) = Λq(θm, (k), θ m, (k−1) , Y m, (k−1) , P m, (k−1) ). Expanding around the fixed point twice and using the √N -consistency of the sample fixed point, smoothness, and sample-to-population derivative convergence, we obtain 
+
+∆Y(k)
+
+∆P(k)
+
+!
+
+= Γq
+
+> θ
+
+Λq
+
+> θ
+
+!
+
+∆θ(k)+ Γq
+
+> ˜θ
+
+Λq
+
+> ˜θ
+
+!
+
+∆θ(k−1) + Γq 
+
+> Y
+
+Γq
+
+> P
+
+Λq 
+
+> Y
+
+Λq
+
+> P
+
+!
+
+∆Y(k−1) 
+
+∆P(k−1) 
+
+!
+
++Op(N −1/2∥δ(k−1) ∥+∥δ(k−1) ∥2).
+
+Step 4: Composition. Substituting ∆ θ(k) from Step 2 into Step 3, and collecting terms in (∆ π(k−1) , ∆θ(k−1) , ∆Y(k−1) , ∆P(k−1) ), yields the convergence matrix Rq.
+
+Proof of Theorem 3 . By Lemma 8, ∥Rq − R∞∥F = O(f (q)) → 0. Since ρ(R∞) < 1 by assumption, Kress (2014) Theorem 10.18 implies the successive approximations will converge for all sufficiently large q.
+
+Proof of Theorem 4 . Since Rq and R∞ are finite-dimensional matrices, the eigenvalues of Rq are continuous functions of its entries. By Lemma 8, ∥Rq − R∞∥F = O(f (q)) → 0, so the eigenvalues of Rq converge to those of R∞.Let λ(R∞) denote the dominant eigenvalue of R∞, and let δ > 0 be the spectral gap, i.e., 
+
+|λ′| ≤ | λ(R∞)| − δ for all non-dominant eigenvalues λ′ of R∞. Let ε ∈ (0 , δ ), and define σq
+
+to be the set of eigenvalues of Rq within distance ε of λ(R∞). By continuity of eigenvalues, for all sufficiently large q, the set σq is non-empty and the sum of the algebraic multiplicities of the eigenvalues in σq equals m, the algebraic multiplicity of λ(R∞). By Lemma 8 and the Generalized Bauer–Fike theorem (Chu (1986), Theorems 3 and 3A), every eigenvalue μ of Rq satisfies min λ∈spec( R∞) |μ − λ| = O(∥Rq − R∞∥1/ν F ). In particular, sup 
+
+> μ∈σq
+
+|μ − λ(R∞)| = O(f (q)1/ν ) := g(q).
+
+We now show that λ(Rq) ∈ σq for sufficiently large q. Suppose, for contradiction, that 
+
+λ(Rq) /∈ σq. Choose q large enough that g(q) < δ/ 2. 
+
+Lower bound. Since σq is non-empty, there exists μ∗ ∈ σq with |μ∗ −λ(R∞)| ≤ g(q) < δ/ 2, so |μ∗| > |λ(R∞)| − δ/ 2. Since λ(Rq) is the dominant eigenvalue of Rq, we have |λ(Rq)| ≥ |μ∗| > |λ(R∞)| − δ/ 2. 
+
+Upper bound. Since λ(Rq) /∈ σq, by the Bauer–Fike bound there exists a non-dominant eigenvalue λ′ of R∞ with |λ(Rq) − λ′| ≤ g(q). By the spectral gap, |λ′| ≤ | λ(R∞)| − δ, so 49 |λ(Rq)| ≤ | λ′| + g(q) ≤ | λ(R∞)| − δ + g(q) < |λ(R∞)| − δ/ 2. The lower and upper bounds contradict each other. Therefore λ(Rq) ∈ σq for all suffi-ciently large q, and by the reverse triangle inequality: 
+
+|ρ(Rq) − ρ(R∞)| ≤ | λ(Rq) − λ(R∞)| = O(f (q)1/ν ) = g(q).
+
+Under Assumption 2, Theorem 1 implies xq 
+
+> ∗
+
+= x∞∗ =: x∗, so both ¯Kq and ¯K∞ share the common numerator L := log ε − log ∥x0 − x∗∥2:¯Kq = L
+
+log ρ(Rq), ¯K∞ = L
+
+log ρ(R∞).
+
+Choose q sufficiently large that ρ(R∞) + g(q) < 1 and ρ(R∞) − g(q) > 0. Since |ρ(Rq) −
+
+ρ(R∞)| ≤ g(q) and log is monotone, log( ρ(R∞) − g(q)) ≤ log ρ(Rq) ≤ log( ρ(R∞) + g(q)); all three quantities are negative, so 
+
+L
+
+log( ρ(R∞) − g(q)) ≤ ¯Kq ≤ L
+
+log( ρ(R∞) + g(q)) .
+
+Dividing by ¯K∞ = L/ log ρ(R∞) gives ¯K∞ · log ρ(R∞)log( ρ(R∞) − g(q)) ≤ ¯Kq ≤ ¯K∞ · log ρ(R∞)log( ρ(R∞) + g(q)) .
+
+## A.3 Initializing the EM-NPL( q) Algorithm 
+
+As with any EM algorithm, the quality of the initialization can affect convergence speed and the risk of converging to a local optimum. We consider the sieve maximum likelihood. For a sieve basis BK (x) = ( b1(x), . . . , b K (x)) ′ with K terms, define the type-specific sieve CCP: 
+
+P m
+
+> sieve
+
+(a|x) = exp  BK (x)′αma
+
+P 
+
+> a′∈A
+
+exp  BK (x)′αma′
+
+.
+
+To initialize αma , one can estimate CCPs for each market separately and then cluster them into M groups using k-means. Then, for each cluster m, αma is initialized by multinomial logit using the data from firms in cluster m. One can also randomly initialize αma . Then, one runs the EM algorithm until convergence to obtain the initial ( P(0) , π(0) ). If the estimator depends on the previous iterate ˜θ, we can initialize ˜θ(0) by pooling all markets and estimating 50 a single-type model via maximum likelihood, we run one-step CCP estimation ( q = ∞ and 
+
+G is the policy valuation mapping) for each type m using P m 
+
+> sieve
+
+and the posterior type probabilities from the sieve-MLE. If the estimator does not depend on ˜θ, we can simply set 
+
+q = ∞ for the initial iteration to initialize Y(0) . Then, we run the EM-NPL( q) algorithm with a fixed q for the inner loop. SEE Section 5 for practical guidance on choosing q and the inner algorithm Γ q.
+
+## A.4 Inner Algorithm Examples 
+
+A.4.1 GMRES Algorithm 
+
+The following algorithm solves a generic linear system AY = b, starting from an initial guess Y0 and running q Arnoldi iterations. In practice, A and b depend on the fixed-point equation: for policy valuation (Example 1), A = ( I −βF P ) and b = UP ; for the EPL mapping (Example 2), A = I − ∇ vΦ( ˜θ, ˜v) and b = ˜ v − Φ( θ, ˜v). 
+
+Algorithm 2 (GMRES) .
+
+• Input: A ∈ Rn×n, b ∈ Rn, initial guess Y0 ∈ Rn, inner iteration count q.
+
+• Step 0: Compute the initial residual r0 = b − AY 0. Set ρ0 = ∥r0∥2 and v1 = r0/ρ 0.
+
+• Step 1 (Arnoldi process): For j = 1 , 2, . . . , q :(a) Compute w = Av j .(b) For i = 1 , . . . , j : compute hij = v′
+
+> i
+
+w and update w ← w − hij vi.(c) Set hj+1 ,j = ∥w∥2. If hj+1 ,j = 0, set q ← j and go to Step 2. Otherwise, set 
+
+vj+1 = w/h j+1 ,j .
+
+• Step 2 (Least-squares solver): Let ¯Hq ∈ R(q+1) ×q be the upper Hessenberg matrix with entries hij . Let e1 = (1 , 0, . . . , 0) ′ ∈ Rq+1 . Solve the least-squares problem: 
+
+yq = argmin 
+
+> y∈Rq
+
+∥ρ0e1 − ¯Hqy∥2
+
+• Step 3 (Solution update): Set Yq = Y0 + Vqyq, where Vq = [ v1, . . . , v q] ∈ Rn×q.
+
+• Output: ΓqGM RES (θ, ˜θ, P ; Y0) := Yq.51 A.4.2 Kronecker Structure 
+
+When the state vector xt includes multiple components whose transitions are mutually inde-pendent, the joint transition matrix admits a Kronecker factorization that can be exploited for large computational savings. Suppose the state vector decomposes as xt = ( x1t, . . . , x Kt )where each component xkt takes values on a finite grid of L points, so that the joint state space has cardinality |X | = LK . If each component evolves according to an independent Markov chain with transition matrix Fk ∈ RL×L, the joint transition matrix factors as 
+
+F = F1 ⊗ F2 ⊗ · · · ⊗ FK .
+
+This factorization is exploited throughout the inner solvers. All matrix-vector products F v 
+
+required by GMRES, successive approximation, and other iterative methods are computed without forming the full LK × LK matrix. Instead, the product is evaluated sequentially along each mode of the tensor mat( v) ∈ RL×···× L:(F1 ⊗ · · · ⊗ FK ) v = vec( F ′ 
+
+> K
+
+· · · F ′ 
+
+> 1
+
+mat( v)) where each factor Fk is applied as a matrix multiplication along the k-th mode, i.e., the mode-k product V × k Fk contracts the k-th index of the tensor V = mat( v) with Fk, and these products are applied sequentially for k = 1 , . . . , K . The savings grow exponentially with the number of state dimensions: the cost per matrix-vector product falls from O(L2K )to O(KL K+1 ), and memory from O(L2K ) to O(KL 2). 52

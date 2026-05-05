@@ -1,0 +1,1063 @@
+Title: Estimating Treatment and Spillover Effects with the Ego-Cluster Experimental Design
+
+URL Source: https://arxiv.org/pdf/2605.00534v1
+
+Published Time: Mon, 04 May 2026 00:40:56 GMT
+
+Number of Pages: 35
+
+Markdown Content:
+# Estimating Treatment and Spillover Effects with the Ego-Cluster Experimental Design 
+
+## Xiao Liu 1, Feifang Hu 2, and Jingfei Zhang 1 
+
+> 1
+
+Goizueta Business School, Emory University, Atlanta, GA, USA.  
+
+> 2
+
+Department of Statistics, George Washington University, DC, USA. 
+
+Abstract 
+
+Network interference occurs when a unit’s outcome depends not only on its own treatment but also on the treatments received by connected units in the network. Ex-perimental designs and analysis methods that ignore such interference can yield biased estimators of causal effects. In this paper, we develop a new experimental design for the estimation and inference of global treatment effect and spillover effect under a model-based framework and ego-cluster randomization. Under this design, the net-work is partitioned into a collection of ego-clusters, each consisting of a focal unit (the ego) and its network neighbors (the alters), with randomization conducted at the cluster level. We propose model-based estimators for the global treatment effect and spillover effect and establish their consistency and asymptotic normality, with asymp-totic variances determined by the ego-cluster structure. Building on these theoretical results, we introduce an ego-clustering algorithm that sequentially selects egos and as-signs alters to minimize asymptotic variances. Simulation studies and two empirical applications demonstrate that the proposed procedure yields accurate inference and efficiency improvements over existing network experimental designs. Keywords: ego-cluster randomization, experimental design, network interference, spillover effect, treatment effect. 
+
+Address for correspondence: Jingfei Zhang, Goizueta Business School, Emory University, Atlanta, GA, USA. emma.zhang@emory.edu .
+
+1
+
+> arXiv:2605.00534v1 [stat.ME] 1 May 2026
+
+# 1 Introduction 
+
+Randomized controlled experiments provide a foundational tool for studying causal effects. A key assumption in classical experimental designs and analysis methods is the Stable Unit Treatment Value Assumption (SUTVA) (Imbens and Rubin, 2015), which states that each unit’s outcome depends only on its own treatment and is unaffected by treatments assigned to others. However, in experiments where subjects are connected through a network, the SUTVA assumption is often violated, as a unit’s outcome depends not only on its own treatment but also on the treatments received by connected units in the network (Manski, 2000). Such network interference is common in experiments in social networks, education, finance, and economics (Banerjee et al., 2013; Phan and Airoldi, 2015; Paluck et al., 2016). The violation of SUTVA poses challenges for the design and analysis of network experiments, as classical methods are no longer valid under network interference (Manski, 2013). A growing methodological literature studies causal inference under network interference, focusing on identification and estimation under a prespecified treatment assignment scheme (Hudgens and Halloran, 2008; Manski, 2013; Liu et al., 2016; Aronow and Samii, 2017; Basse and Feller, 2018; Athey et al., 2018; Leung, 2020; Forastiere et al., 2021; S¨ avje et al., 2021; Li and Wager, 2022; Leung, 2022a; Hu et al., 2022; Ogburn et al., 2024; Belloni et al., 2025). However, this line of work does not directly address the problem of network experimental design, that is, how to construct a randomization mechanism appropriate for the causal estimand of interest, such as the global treatment effect, spillover effect or direct effect. Studying the design problem is important because given a network of connected units, the experimental design determines the joint treatment assignments across the network and directly affects the bias and variance of estimators for causal estimands. 2Recent research has investigated experimental design under network interference for dif-ferent causal estimands. For estimating the global treatment effect, a common strategy is the cluster randomization design, in which the network is partitioned into clusters with min-imal interference and treatment is randomly assigned at the cluster level (Ugander et al., 2013; Eckles et al., 2017; Leung, 2022b, 2023; Ugander and Yin, 2023; Liu et al., 2022, 2024; Viviano et al., 2025). Under such designs, the separation between clusters usually make it difficult to estimate the spillover effect. Moreover, when units within the same cluster share unobserved characteristics that also affect outcomes, cluster-level randomization may fail to balance these characteristics between treatment groups, thereby obscuring the true treat-ment effect (Shalizi and Thomas, 2011; Ugander and Yin, 2023). For estimating direct effects and spillover effects, Cai et al. (2024) proposed an experimental design based on maximal independent sets, and Jagadeesan et al. (2020) considered a quasi-coloring design. Viviano (2020) and Kandiros et al. (2025) proposed designs that can be tailored to different causal estimands. However, the two-wave design in Viviano (2020) requires information from a pilot study, which may not be feasible in real applications. Kandiros et al. (2025) proposed a novel conflict graph design but the proposed Horvitz-Thompson estimator may have a large variance when exposure probabilities are small. In this work, we study the ego-cluster randomization design, originally proposed in Saint-Jacques et al. (2019) for large-scale experiments at Linkedin. In this design, the network is partitioned into a collection of ego-clusters, each consisting of a focal unit (the ego ) and a subset of its immediate neighbors in the network (the alters ), with treatment randomly assigned at the cluster level; see Figure 1 for an example. This design enables the simultane-ous estimation of global treatment effect and spillover effect. In particular, by grouping each 3ego with its neighbors, the design reduces interference for the egos, facilitating estimation of the global treatment effect. Meanwhile, unlike clustering designs that seek to form well-separated larger clusters that reduce interference, the ego-cluster design produces only small clusters, each with an ego and its alters, thereby retaining many cross-cluster connections for egos and alters that are crucial for estimating the spillover effect. Despite the successful empirical application of the ego-cluster design (Saint-Jacques et al., 2019; Su and Duan, 2024), there is a lack of a statistical framework for studying its theoretical properties and principles for constructing ego-clusters that yield efficient estimation of causal estimands. To fill this gap, we study the ego-cluster randomization design and analyze its statisti-cal properties for estimating the global treatment effect and spillover effect under a linear outcome model. Our contributions are threefold. First, we establish the consistency and asymptotic normality of regression estimators for the global treatment effect and spillover effect under general dependency-graph conditions. In contrast to existing ego-cluster designs, which conduct inference only on egos, our analysis uses all sampled units (egos and alters) and is more statistically efficient. To our knowledge, this is the first theoretical analysis of the ego-cluster design. Second, we show that the asymptotic variances of the regression esti-mators are explicit functions of the ego-cluster structure. In particular, the variances depend critically on the fraction of an ego’s neighbors that are not assigned to its own ego-cluster, and also on how these external neighbors are distributed across other ego-clusters. Based on this characterization, we develop a two-step greedy algorithm that sequentially selects egos and assigns alters to minimize the asymptotic variance of interest, thereby offering the first principled strategy for constructing ego-clusters. One useful feature of our procedure is that the experimental design depends only on the network structure and does not require 4pre-specifying or tuning the number of clusters. Through extensive simulations and two empirical applications, we demonstrate that our proposed experimental design achieves un-biased and efficient estimation for both the global treatment effect and the spillover effect, relative to complete randomization and several existing network experimental designs, and is robust to model misspecification. Most of the existing work on network experimental design considers a finite-population framework, where the potential outcomes are treated as fixed but unknown quantities and treatment assignment is the only source of randomness in the analysis. This avoids making assumptions on the outcome model or the super-population. However, when the network is only partially observed, as is common in social and online experiments, the estimands from a finite-population framework do not directly generalize to the broader network and may offer limited guidance for implementation. Complementing this line of work, we consider a super-population framework, similar to Leung (2020), in which the network data are viewed as a sample from an underlying population and can be obtained through, for example, the standard snowball sampling scheme (Goodman, 1961). We assume a linear outcome model (Basse and Airoldi, 2018; Toulis and Kao, 2013; Parker et al., 2017) and estimate the global treatment effect and spillover effect using regression estimators. Regression estimators are commonly used in practice (Leung, 2020). Nonparametric estimators, such as the Horvitz-Thompson estimator (Ugander et al., 2013; Aronow and Samii, 2017; Eckles et al., 2017; Leung, 2020, 2022a,b; Liu et al., 2022; Li and Wager, 2022; Jiang et al., 2022; Ugander and Yin, 2023), are more flexible because they avoid model assumptions, but they may suffer from a small effective sample size after conditioning, leading to high variances. The remainder of this paper is organized as follows. Section 2 introduces our model 5framework and the ego-cluster design. Section 3 develops the theoretical properties of the causal effect estimators. Section 4 presents an ego-cluster optimization algorithm. Section 5 reports numerical results, and Section 6 presents two empirical applications. The paper is concluded with a brief discussion 
+
+# 2 Model and Experimental Design 
+
+## 2.1 Notation, Setup, and Model 
+
+Consider n experimental units indexed by i ∈ [n] = {1, . . . , n }. Each unit receives a binary treatment Ti ∈ { 0, 1}, where Ti = 1 denotes treatment and Ti = 0 denotes control. Let 
+
+T = ( T1, . . . , T n)T ∈ T = {0, 1}n, and let n1 = Pni=1 Ti and n0 = Pni=1 (1 − Ti) denote the numbers of treated and control units, respectively. Suppose we observe a network among the n units, denoted as G = ( V, L ), where V = [ n] is the set of units and L ⊆ { (i, j ) : i, j ∈
+
+V, i ̸ = j} is the set of edges between the units. Let A ∈ { 0, 1}n×n be the symmetric adjacency matrix of G. For each unit i, define its neighboring set Ni = {j : j ∈ V, A ij = 1 } and degree 
+
+Di = |N i|. For d ≥ 1, let N (i; d) denote the set of units whose shortest-path distance from i
+
+is at most d; in particular, N (i; 1) = Ni ∪ { i}. Let ρi(T, A ) = Pnj=1 Aij Tj /D i be the fraction of treated neighbors of unit i. When there is no ambiguity, we write ρi instead of ρi(T, A )for brevity. Let ρ = ( ρ1, . . . , ρ n)T.For each unit i, we observe an outcome Yi ∈ R. We assume that Yi follows 
+
+Yi = α + βT i + γρ i + ϵi, (1) where ϵi is the error term satisfying E(ϵi|A, T ) = 0. Similar linear-in-means models have been considered in Toulis and Kao (2013), Cai et al. (2015), Parker et al. (2017) and Leung (2020). In model (1), the coefficient β captures the contribution of a unit’s own treatment to 6the outcome, while γ captures the contribution of its neighbors’ treatments as summarized by ρi. We define τ = β + γ as the global treatment parameter, which captures the combined contribution of a unit’s own treatment and its neighbors, and define γ as the spillover pa-rameter. These two quantities serve as the primary targets of inference for the remainder of the paper. Next, we discuss how τ and γ map to causal estimands. We adopt the potential outcome framework (Imbens and Rubin, 2015) and treat the n
+
+units as a random sample from a super population. For each unit i, let Yi(T ) denote the potential outcome of unit i under the treatment assignment vector T ∈ T . The observed outcome is Yi = Yi(T ) for the realized assignment vector T . Model (1) can be interpreted as a specification for the potential outcomes (Hu et al., 2022), 
+
+Yi(T ) = α + βT i + γρ i(T, A ) + ϵi, for T ∈ T , (2) where E( ϵi|A, T ) = 0. Under model (2), Yi(T ) depends on T only through the pair ( Ti, ρ i). Equivalently, if two assignment vectors T, T ′ ∈ T satisfy ( Ti, ρ i) = ( T ′ 
+
+> i
+
+, ρ ′
+
+> i
+
+), then E( Yi(T )) = E( Yi(T ′)). With a slight abuse of notation, we may write Yi(T ) = Yi(Ti, ρ i). This corresponds to anonymous interference , in which a unit’s potential outcome depends on its neighbors’ treatments only through the fraction of treated neighbors, an assumption that has been widely adopted in the literature (Hudgens and Halloran, 2008; Manski, 2013; Leung, 2020; Forastiere et al., 2021; Li and Wager, 2022). Correspondingly, we can define the global treatment effect (Hudgens and Halloran, 2008; Kandiros et al., 2025) 
+
+τGT E = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+E{Yi(1 , 1) − Yi(0 , 0) },
+
+which captures the expected change in potential outcomes when all units are treated versus 7when none are, and the spillover effect (Hudgens and Halloran, 2008; Forastiere et al., 2021) 
+
+τSE = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+E{Yi(t, 1) − Yi(t, 0) }, t ∈ { 0, 1},
+
+which captures the expected change in a unit’s outcome when all of its neighbors are treated versus when none of its neighbors are, while keeping the unit’s own treatment fixed. Under model (2), it can be shown that τ = τGT E and γ = τSE . That is, the parameters τ = β+γ and 
+
+γ map to causal estimands as the global treatment effect and the spillover effect regardless of the experiment design. 
+
+## 2.2 Ego-Cluster Randomization Design 
+
+Next, we discuss the ego-cluster randomization design, which divides the n units into a collection of ego-clusters. An ego-cluster consists of a focal unit (the ego ) and a subset of its neighbors (the alters ). Correspondingly, within each cluster, the graph distance between any two units is at most two. We partition the n units into Kn disjoint ego-clusters, 
+
+E =
+
+(
+
+{E1, . . . , E Kn } : [
+
+> k
+
+Ek = [ n], E k
+
+\ Ek′ = ∅ for k̸ = k′
+
+)
+
+.
+
+The resulting design has Kn egos and n − Kn alters, and Kn may increase with n. Define 
+
+e : [ n] → [Kn] such that e(i) gives the ego-cluster index of unit i. Figure 1 gives an example network with four ego-clusters. For example, e(1) = e(2) = e(3) = 1 and e(4) = e(5) = 
+
+e(6) = e(7) = 2. Complete randomization can be seen as a special case of the ego-cluster design with Kn = n, that is, each unit forms its own ego-cluster. 
+
+Assumption 1. The sizes of ego-clusters satisfy max 1⩽k⩽Kn |Ek| = o(n). Conditional on 
+
+(A, E), the treatment assignments of egos, denoted as (T E 
+
+> 1
+
+, . . . T E 
+
+> Kn
+
+), are i.i.d. Bernoulli (1 /2) ,and Ti = T E 
+
+> e(i)
+
+for all i ∈ [n].
+
+83
+
+> 1
+> 2
+> 4
+> 5
+> 6
+> 7
+> 8
+> 10
+> 9
+> 12
+> 15
+> 13
+> 11
+
+## 𝑬 𝟏  𝑬 𝟐 
+
+## 𝑬 𝟑 
+
+## 𝑬 𝟒  14 Figure 1: Illustration of ego-clusters in a toy network with 15 units. The network is parti-tioned into four ego-clusters, E1, E 2, E 3, E 4, represented by four different colors. The ego set consists of units {1, 5, 8, 10 }.Assuming |Ek| = o(n) controls the size of ego-clusters, which is needed for a balanced treatment allocation (see Lemma S1). Under Assumption 1, randomization is conducted at the ego level, and all alters within a cluster receive the same treatment as their ego. Under model (1) and Assumption 1, the outcome Yi depends on T through Ti = T E
+
+> e(i)
+
+and ρi = Pnj=1 Aij T E
+
+> e(j)
+
+/D i. Therefore, given ( A, E), the outcome of unit i depends on the treatments of (i) its own ego, and (ii) egos of clusters that contain its neighbors. Formally, we write this set as Ki = {k ∈ [Kn] : N (i; 1) ∩ Ek̸ = ∅} . In Figure 1, K7 = {2, 4}, that is, the outcome of unit 7 depends on the treatments of egos in ego-cluster 2 and 4. Under the special case of complete randomization, Ki = N (i; 1). Next, we introduce several useful quantities that characterize the network and the ego-cluster structure. (i) Membership matrix C. Let C ∈ Rn×Kn denote a binary cluster membership matrix, where Ci,j = 1 if and only if e(i) = j. Since each unit belongs to exactly one ego-cluster, every row of C contains only one nonzero entry. (ii) Interference matrix R. Let R ∈ Rn×Kn be the interference matrix, where Rik = |N i ∩ Ek|/D i gives 9the proportion of unit i’s neighbors that are in ego-cluster Ek. It follows directly that 
+
+R = diag( D1, . . . , D n)−1AC , where diag( ·) denotes a diagonal matrix. (iii) Loss rate ri.
+
+For a unit i, we define its loss rate as ri = 1 − Rie (i), which is the fraction of its neighbors that belong to a different ego-cluster than e(i). Let ¯ rn = Pni=1 ri/n be the average loss rate. Under the special case of complete randomization, we have C = In×n and ri = 1. In Supplement S1, we provide calculations of C, R and ri’s under the example in Figure 1. With the above definitions, we can express ρi, the fraction of treated neighbors for unit i,as ρi = PKn 
+
+> k=1
+
+Rik T E 
+
+> k
+
+. From this view, Rik quantifies the extent to which ρi depends on the treatment assignment of ego-cluster Ek.
+
+## 2.3 Estimation 
+
+Following the experiment, we estimate the coefficients in model (1) via regression estimators. Let X = [1 n; T ; ρ] denote the design matrix, where 1 n is an n-dimensional vector of ones. The estimator can be calculated as (ˆ α, ˆβ, ˆγ)T = ( XTX)−1XTY. (3) Correspondingly, the estimators for the global treatment effect and spillover effect are given by ˆ τ = ˆβ + ˆ γ and ˆ γ, respectively. To estimate the global treatment effect reliably, it is desirable for the clusters to be well separated, or equivalently, the loss rates ri to be small, to reduce cross-cluster interference. On the other hand, well-separated clusters are not suited for estimating the spillover effect. For example, if ri = 0 for all units, that is, every neighbor of unit i lies in cluster e(i), we have ρi = Ti. This is true because ρi = (1 − ri)T E 
+
+> e(i)
+
++ PKn  
+
+> k̸=e(i)
+
+Rik T E 
+
+> k
+
+and Rik = 0 for k̸ = e(i)in this case. Estimating both the global treatment effect and spillover effect within a single 10 experiment naturally involves a trade-off: reducing interference improves the estimation of the global treatment effect, whereas too little interference eliminates the variation needed to estimate the spillover parameter γ. The ego-cluster design is well-suited for this purpose. With appropriately constructed clusters, this design can simultaneously estimate both effects with a single experiment. We discuss how to construct ego-clusters in Section 4. 
+
+# 3 Theoretical Results 
+
+We investigate the theoretical properties of ˆ τ and ˆ γ given ( A, E). With network interference, elements of {(Yi, T i, ρ i)}ni=1 are no longer independent across i ∈ [n]. Both Yi and ρi are functions of the treatment assignments of unit i and its neighbors. In our analysis, we exclude the trivial case where ri = 0 for all i.
+
+## 3.1 Consistency and Asymptotic Normality 
+
+We first assume error terms ϵ1, . . . , ϵ n are i.i.d. as in Assumption 2, and then extend our theoretical results to correlated errors in Section 3.3. 
+
+Assumption 2. Given A and E, the error terms ϵ1, . . . , ϵ n are i.i.d. with mean 0 and variance σ2 
+
+> ϵ
+
+, and are independent of T .
+
+Under Assumption 2, dependence among elements of {(Yi, T i, ρ i)}ni=1 is induced by T and 
+
+ρ. Specifically, for unit i, ( Yi, T i, ρ i) depends on the treatments of egos in Ki = {k ∈ [Kn] : 
+
+N (i; 1) ∩ Ek̸ = ∅} . We define the dependency graph GΛ = ( V, L Λ), where ( i, j ) ∈ LΛ if and only if |K i ∩ K j | > 0, that is, ∃k ∈ [Kn] s.t. N (j; 1) ∩ Ek̸ = ∅ and N (i; 1) ∩ Ek̸ = ∅. Let Λ ∈ Rn×n be the adjacency matrix of GΛ = ( V, L Λ). Consequently, ( Yi, T i, ρ i) and ( Yj , T j , ρ j )are dependent if and only if Λ ij = 1, which occurs when (i) units i, j belong to the same 11 ego-cluster; (ii) unit i has neighbors in ego-cluster e(j); (iii) unit j has neighbors in ego-cluster e(i); or (iv) units i, j have neighbors in a common third ego-cluster. By definition, the matrix Λ is symmetric and Λ ii = 1. We define the dependence set as Ni = {j ∈ V : Λ ij = 1 }, such that ( Yi, T i, ρ i) is independent of {(Yj , T j , ρ j )}j / ∈Ni . For example, in Figure 1, the dependence set for unit 1 is 
+
+N1 = {2, 3, 4, 5, 6, 7, 8, 10 }. Note that the original graph G specifies neighborhoods Ni’s while the dependency graph GΛ specifies neighborhoods Ni’s. Similar constructions of dependency graphs can be found in Ugander et al. (2013), Leung (2020), Leung (2022b), Liu et al. (2024) and Viviano et al. (2025). Under the special case of complete randomization, it holds that 
+
+Kn = n and Λ ij = I(Aij + max k Aik Akj ) for i̸ = j. This experimental design was considered in Leung (2020). 
+
+Assumption 3. Pni=1 |Ni|/n = o(n).
+
+Assumption 3 controls the amount of interference across ego-clusters, and is satisfied, for example, when each Ni overlaps with a finite number of ego-clusters. By construction, the maximum graph distance between unit i and any j ∈ Ni is 4, which occurs when units 
+
+i and j are connected to two different alters in a common third ego-cluster. As such, |Ni|
+
+can be upper bounded by |N (i; 4) |, and Assumption 3 holds in networks where the average size of N (i; 4) grows at an order of o(n). For example, this holds with high probability for Erd˝ os-R´ enyi networks (Erd¨ os and R´ enyi, 1959) with an edge probability of o(n−3/4). 
+
+Assumption 4. Assume there exists a positive constant c0, such that 
+
+max 
+
+n 1
+
+n
+
+> n
+
+X
+
+> i=1
+> Kn
+
+X 
+
+> k̸=e(i)
+
+R2 
+
+> ik
+
+, 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+(ri − ¯rn)2
+
+o
+
+> c 0.
+
+Assumption 4 includes two terms: the first term reflects how a unit’s lost neighbors are distributed across other ego-clusters and the second term is the variability of loss rates. By 12 ri = PKn  
+
+> k̸=e(i)
+
+Rik and the Cauchy–Schwarz inequality, it holds that n−1 Pni=1 
+
+PKn  
+
+> k̸=e(i)
+
+R2 
+
+> ik
+
+⩾
+
+n−1 Pni=1 r2 
+
+> i
+
+/(|K i| − 1). Hence, Assumption 4 holds if (i) ri = Θ(1) and |K i| = Θ(1) for a non-vanishing fraction of units; or (ii) the variance of ri’s is bounded below by a positive constant. Under complete randomization, each unit has a loss rate of 1 and Rik = 1 /D i for 
+
+k ∈ N i. Consequently, the first term reduces to Pni=1 (1 /D i)/n , while the second term equals 0. Hence, a sufficient condition for Assumption 4 under complete randomization is that a non-vanishing fraction of units have a bounded degree (by a constant). Finally, the term in Assumption 4 admits a natural upper bound that is max {Pni=1 r2 
+
+> i
+
+/n, Pni=1 (ri − ¯rn)2/n },which is uniformly upper bounded as 0 ⩽ ri ⩽ 1 for all i ∈ [n]. 
+
+Theorem 1. Suppose Assumptions 1- 4 hold, then ˆτ P
+
+→ τ and ˆγ P
+
+→ γ.
+
+Theorem 1 establishes the estimation consistency of ˆ τ and ˆ γ. To derive their asymptotic normality, we employ Stein’s method (Ross, 2011; Leung, 2020), which requires further assumptions. Let (Λ 3)ij denote the ( i, j )-th entry of matrix Λ 3.
+
+Assumption 5. Pni=1 |Ni|2/n = o(√n), Pni=1 |Ni|3/n = o(n), Pni,j =1 (Λ 3)ij /n = o(n).
+
+Assumption 5 imposes higher-order moment conditions on the dependence set compared to Assumption 3. It is easy to verify that Pni=1 |Ni|2/n ⩽ (max i |Ni|)2, Pni=1 |Ni|3/n ⩽
+
+(max i |Ni|)3 and Pni,j =1 (Λ 3)ij /n ⩽ (max i |Ni|)3. Therefore, a sufficient condition for Assump-tion 5 is that the maximum degree of the dependency graph satisfies max i |Ni| = o(n1/4). 
+
+Theorem 2. Suppose Assumptions 1, 2, 4 and 5 hold. Write bn = Pni=1 
+
+PKn  
+
+> k̸=e(i)
+
+R2
+
+> ik
+
+/n +
+
+Pni=1 (ri − ¯rn)2/n . If max i E( ϵ4 
+
+> i
+
+|A, E) < ∞ then 
+
+σ−1
+
+> τ,n
+
+√n(ˆ τ − τ ) d
+
+→ N (0 , 1) , σ−1
+
+> γ,n
+
+√n(ˆ γ − γ) d
+
+→ N (0 , 1) ,
+
+where σ2 
+
+> τ,n
+
+= 4 σ2 
+
+> ϵ
+
+(¯ r2
+
+> n
+
+/b n + 1) , σ2 
+
+> γ,n
+
+= 4 σ2 
+
+> ϵ
+
+/b n.
+
+13 Theorem 2 establishes the asymptotic normality of ˆ τ and ˆ γ, whose variances depend on the underlying ego-cluster structure. As the average loss rate ¯ rn reflects the overall level of interference, it is seen that low-interference ego-clusters are preferable for estimating the global treatment effect. One interesting observation is that, for any fixed average loss rate ¯ rn > 0, both variances decrease with bn. This may appear counter-intuitive, as we discussed earlier that there is a trade-off between estimating the global treatment effect and the spillover effect within a single experiment. However, the average loss rate ¯ rn and bn
+
+cannot be optimized in the ego-cluster design separately. Recall that bn ⩽ Pni=1 r2 
+
+> i
+
+/n +
+
+Pni=1 (ri − ¯rn)2/n . Since 0 ≤ ri ≤ 1 implies r2 
+
+> i
+
+≤ ri, we have 1
+
+> n
+
+Pni=1 r2 
+
+> i
+
+≤ 1
+
+> n
+
+Pni=1 ri = ¯ rn.Given 1
+
+> n
+
+Pni=1 (ri − ¯rn)2 = 1
+
+> n
+
+Pni=1 r2 
+
+> i
+
+− ¯r2
+
+> n
+
+, it holds that bn ≤ 2¯ rn − ¯r2 
+
+> n
+
+= ¯ rn(2 − ¯rn) ≤ 2¯ rn.Hence, if the average loss rate ¯ rn is small, then bn must also be small. In this case, σ2
+
+> γ,n
+
+becomes large whereas σ2 
+
+> τ,n
+
+may be large or small, depending on the ratio of ¯ r2
+
+> n
+
+/b n.Theorem 2 enables improving the statistical efficiency of ˆ τ and ˆ γ by appropriately design-ing the ego-clustering algorithm. The two variances suggest different optimization objectives for different causal estimands. If the focus is on estimating the global treatment effect τ , one can aim to minimize ¯ r2
+
+> n
+
+/b n; if the focus is on the spillover effect γ, one may instead minimize 1/b n, thereby placing emphasis on maximizing bn. When both τ and γ are of interest, a weighted objective such as λ¯r2
+
+> n
+
+/b n + (1 − λ)/b n, for some 0 < λ < 1, can be employed to balance the trade-off between the two estimands. 
+
+Remark 3.1 . We note that the ego-clustering algorithm in Section 4 depends only on the network structure A and not on the observed outcomes Y or treatment T . Consequently, the partition E is fixed before any outcomes are realized, and the asymptotic results in Theorems 1 and 2 apply directly without requiring sample splitting between design and inference. 14 3.2 Confidence Intervals and Hypothesis Testing 
+
+To enable valid inference, we provide a consistent estimator for σ2 
+
+> ϵ
+
+. Let (ˆ ϵ1, . . . , ˆϵn) be the residuals from the regression under Model (1), that is ˆ ϵi = Yi − ˆα − ˆβT i − ˆγρ i. We estimate 
+
+σ2 
+
+> ϵ
+
+by ˆ σ2 
+
+> ϵ
+
+= Pni=1 ˆϵ2 
+
+> i
+
+/(n − 3) and establish the consistency of ˆ σ2 
+
+> ϵ
+
+in the following theorem. 
+
+Theorem 3. Suppose assumptions in Theorem 2 hold. Then ˆσ2
+
+> ϵP
+
+→ σ2 
+
+> ϵ
+
+.
+
+Under Theorems 2-3, 100(1 − α)% confidence intervals of ˆ τ and ˆ γ can be constructed as ˆτ ± zα/ 2
+
+2ˆ σϵ
+
+p¯r2
+
+> n
+
+/b n + 1 
+
+√n , ˆγ ± zα/ 2
+
+2ˆ σϵ
+
+p1/b n
+
+√n ,
+
+respectively, where zα/ 2 denotes the upper α/ 2 quantile of N (0 , 1). To test 
+
+H0,τ : τ = 0 v.s. H1,τ : τ̸ = 0 or H0,γ : γ = 0 v.s. H1,γ : γ̸ = 0 ,
+
+we consider test statistics 
+
+Tτ =
+
+√nˆτ
+
+2ˆ σϵ
+
+p¯r2
+
+> n
+
+/b n + 1 , or Tγ =
+
+√nˆγ
+
+2ˆ σϵ
+
+p1/b n
+
+,
+
+respectively. By Theorems 2 and 3, both Tτ and Tγ are asymptotically N (0 , 1) under the null. At significance level α, we reject H0,τ if |Tτ | > z α/ 2 and reject H0,γ if |Tγ | > z α/ 2. The corresponding two-sided p-values are given by pτ = 2 {1 − Φ( |Tτ |)} and pγ = 2 {1 − Φ( |Tγ |)},respectively, where Φ( ·) is the cumulative distribution function of N (0 , 1). 
+
+## 3.3 Extension to Correlated Errors 
+
+In this section, we extend the theoretical results to settings with correlated random errors. Denote ν2 
+
+> i
+
+= Var( ϵi) and νij = Cov( ϵi, ϵ j ). 
+
+Assumption 6. For any given A and E, consider the following assumptions: (a) ϵi ⊥ ϵj if Aij = max k Aik Akj = 0 for i̸ = j;
+
+15 (b) ϵ ⊥ T , E( ϵ) = 0 , max 1⩽i⩽n ν2 
+
+> i
+
+< ∞;(c1) Pni=1 
+
+P  
+
+> j∈N (i;2) /{i}
+
+νij /n = o(n);(c2) Pni=1 
+
+P  
+
+> j∈N (i;2) /{i}
+
+νij /n = O(1) .
+
+Assumption 6(a) specifies the correlation structure of the error terms, allowing ϵi and ϵj
+
+to be correlated when they are directly connected ( Aij = 1) or share a common neighbor (max k Aik Akj = 1). If the distance between i and j exceeds two, their errors are assumed independent. This local dependence structure is commonly used in the literature (Leung, 2020; Liu et al., 2024; Ogburn et al., 2024). Assumption 6(b) requires that, given the network and ego-clusters, the error terms are independent of treatment assignment T , and have mean zero and finite variances. Assumption 6(c1) is introduced to derive the consistency of causal estimators, while establishing asymptotic normality requires the tighter order imposed by Assumption 6(c2). Assumptions 6(c1)-(c2) are similar to the conditions used in Leung (2020). Under homogeneous covariance where νij = ν, Assumptions 6(c1)-(c2) simplify to order conditions on the average number of neighbors within a graph distance of two, as 
+
+Pni=1 |N (i; 2) /{i}| /n = Pni=1 |N (i; 2) |/n − 1. Compared with Assumption 2, Assumption 6 introduces an additional source of depen-dence among the observed data {(Yi, T i, ρ i)}ni=1 . However, the dependency graph Λ defined in Section 3 remain unchanged, as Λ ij = 1 whenever Aij = 1 or max k Aik Akj = 1. 
+
+Theorem 4. Suppose Assumptions 1, 3, 4, 6(a)-(c1) hold, then ˆτ P
+
+→ τ and ˆγ P
+
+→ γ.
+
+Theorem 5. Suppose Assumptions 1, 4, 5 and 6 hold. If max i E( ϵ4 
+
+> i
+
+|A, E) < ∞, then 
+
+σ−1
+
+> τ,n
+
+√n(ˆ τ − τ ) d
+
+→ N (0 , 1) , σ−1
+
+> γ,n
+
+√n(ˆ γ − γ) d
+
+→ N (0 , 1) ,
+
+where the explicit forms of σ2 
+
+> τ,n
+
+and σ2 
+
+> γ,n
+
+are provided in Supplement 2.3. 
+
+16 Theorems 4 and 5 establish the consistency and asymptotic normality of ˆ τ and ˆ γ when the error terms are correlated. As shown in Supplement 2.3, the variances have complex expressions of the form σ2 
+
+> τ,n
+
+= 1
+
+> n
+
+Pni=1 E( W 2 
+
+> i
+
+)ν2 
+
+> i
+
++ 1
+
+> n
+
+Pni=1 
+
+P  
+
+> j∈N (i;2) /{i}
+
+E( WiWj )νij and σ2 
+
+> γ,n
+
+=
+
+> 1
+> n
+
+Pni=1 E( W ′2 
+
+> i
+
+)ν2 
+
+> i
+
++ 1
+
+> n
+
+Pni=1 
+
+P  
+
+> j∈N (i;2) /{i}
+
+E( W ′ 
+
+> i
+
+W ′ 
+
+> j
+
+)νij , where ( W1, . . . , W n) and ( W ′
+
+> 1
+
+, . . . , W ′
+
+> n
+
+)are random variables determined by A, E and T . When the errors are i.i.d. as specified in Assumption 2, that is νij = 0 and ν2 
+
+> i
+
+= σ2 
+
+> ϵ
+
+, the cross-covariance terms vanish, and Theorem 5 reduces to the i.i.d. case in Theorem 2. In the presence of correlated errors, variance estimation can be performed using the generalized robust standard errors as proposed by Leung (2020). Further details are discussed in Supplement S2.4. 
+
+# 4 Ego-Clustering Algorithm 
+
+In this section, we focus on the global treatment effect τ and adopt ¯ r2
+
+> n
+
+/b n as the minimization target in our algorithm, which guides the construction of ego-clusters with a small value of ¯rn and a large value of bn. Our numerical studies demonstrate that our design also performs well in estimating the spillover effect. Other targets such as 1 /b n or λ¯r2
+
+> n
+
+/b n + (1 − λ)/b n, for 0 < λ < 1 can be adopted as well. While a joint optimization of ego selection and alter assignment is conceptually possible, it leads to a combinatorial problem with an exponentially large search space and is computa-tionally infeasible for networks of practical sizes. This motivates a greedy two-step procedure that first selects egos and then reassigns alters, with the goal to minimize ¯ r2
+
+> n
+
+/b n. Different from existing methods (Saint-Jacques et al., 2019; Su and Duan, 2024; Deng et al., 2024), which typically select egos at random and assign alters based on edge weights, our procedure is guided directly by the estimator variance ¯ r2
+
+> n
+
+/b n derived in our theoretical results. The proposed ego-clustering algorithm also differs conceptually from graph-theoretic clustering 17 Step1: Ego Selection  Step2: Alter Reassignment Figure 2: Illustration of the two-step ego-clustering algorithm. (Left) A small-world network. (Middle) Step 1: Ego units (stars) are selected to form temporary ego-clusters. (Right) Step 2: Four alters (with red border) are reassigned. methods such as 3-net (Ugander et al., 2013). While 3-net constructs clusters based on metric separation in the network, our approach is explicitly guided by a variance objective derived from the causal estimand. 
+
+## 4.1 Ego Selection 
+
+We consider a backward-selection algorithm for choosing egos, starting from the case where every unit is an ego. Correspondingly, the initial configuration has Kn = n, C = In, and 
+
+R = diag( D1, . . . , D n)−1A. The algorithm then proceeds by iteratively forming ego-clusters in a way that decreases the objective value. At each iteration, we randomly select a candidate ego from the units not yet assigned to any ego-cluster and form a candidate ego-cluster with its currently unassigned neighbors; already-assigned alters are not reassigned. If this candidate ego-cluster decreases the objec-tive, it is accepted; otherwise, it is discarded and another ego is drawn. The process repeats until no further reduction is possible, with any unselected unit retaining its initial singleton ego-cluster. Algorithm 1 summarizes the procedure, and Figure 2 gives an illustration. The number of columns in C reflects the current number of ego-clusters. As the algorithm 18 Algorithm 1: Ego Selection Algorithm 
+
+Input: Adjacency matrix A, membership matrix C = In, interference matrix R,initial objective value obj .
+
+Output: Updated membership matrix C. 
+
+> 1
+
+Initialize ego set ← ∅ , candidates ← [n], stop ← False ; 
+
+> 2
+
+repeat  
+
+> 3
+
+node pool ← candidates , selected ← False ; 
+
+> 4
+
+while selected = False do  
+
+> 5
+
+if node pool is ∅ then  
+
+> 6
+
+stop ← True ; break ; 
+
+> 7
+
+end  
+
+> 8
+
+Randomly select an ego from node pool and group it with its unassigned neighbors to form a candidate ego-cluster;  
+
+> 9
+
+Compute current objective value obj new ; 
+
+> 10
+
+if obj new < obj then  
+
+> 11
+
+Accept this candidate ego-cluster, selected ← True ; 
+
+> 12
+
+Update C, R, obj = obj new , and delete this ego-cluster from candidates ; 
+
+> 13
+
+else  
+
+> 14
+
+Discard the candidate ego-cluster and delete this ego from node pool ; 
+
+> 15
+
+end  
+
+> 16
+
+end  
+
+> 17
+
+until stop = True ;proceeds and new ego-clusters are formed, the number of columns decreases from its initial value of n to the final value Kn. Consequently, the algorithm automatically determines the appropriate number of clusters Kn in a data-driven manner. This eliminates the need to specify the number of clusters prior to the experiment. In some cases, certain units may be predetermined to serve as egos. In such cases, we can set these units as initial egos and then choose other egos following our algorithm. Since C and R are sufficient for evaluating the objective, we update only their affected entries at each step. Rows and columns are initially indexed by [ n]; when ego m is grouped with its unassigned alters alters m, the columns labeled by alters m are summed row-wise into column m and then removed. Each selection step requires O(N D m) operations. 19 4.2 Alter Reassignment 
+
+Given the ego-clusters from the previous step, we keep the egos fixed and reassign the alters to further reduce the objective. Consider an alter unit m that is connected to multiple egos, including k1 and k2, and is currently assigned to ego-cluster Ek1 . To evaluate whether 
+
+m should be reassigned to Ek2 , we examine the resulting change in the objective value. As discussed earlier, it is sufficient to analyze changes in the membership matrix C and interference matrix R. Let C∗ and R∗ denote the updated matrices after reassignment. In the membership matrix C, this reassignment corresponds to setting C∗ 
+
+> m,k 1
+
+= 0 and C∗ 
+
+> m,k 2
+
+= 1. For the interference matrix R, the updates are given by 
+
+R∗ 
+
+> hk 1
+
+= Rhk 1 − 1
+
+Dh
+
+, R∗ 
+
+> hk 2
+
+= Rhk 2 + 1
+
+Dh
+
+, for h ∈ N m.
+
+These adjustments to R lead to corresponding updates in the loss rates: r∗ 
+
+> h
+
+= rh + 1 
+
+> Dh
+
+for 
+
+h ∈ Ek1 ∩ N m; r∗ 
+
+> h
+
+= rh − 1 
+
+> Dh
+
+for h ∈ Ek2 ∩ N m; and r∗ 
+
+> m
+
+= rm + |N m∩Ek1 | 
+
+> Dm
+
+− |N m∩Ek2 | 
+
+> Dm
+
+.The objective depends on two key quantities: ¯ rn and bn. Their values after reassignment are directly given by: ¯r∗ 
+
+> n
+
+=¯ rn + 1
+
+n
+
+ X 
+
+> h∈Ek1∩N m
+
+1
+
+Dh
+
+− X 
+
+> h∈Ek2∩N m
+
+1
+
+Dh
+
++ |N m ∩ Ek1 | − |N m ∩ Ek2 |
+
+Dm
+
+ ,b∗ 
+
+> n
+
+=bn + 2
+
+n
+
+X
+
+> h∈N m
+
+ 1
+
+D2
+
+> h
+
+− Rhk 1 − Rhk 2
+
+Dh
+
+
+
++ (1 − ¯rn)2 − (1 − ¯r∗
+
+> n
+
+)2,
+
+which is fast to evaluate. Using these updates, we accept the reassignment if the resulting objective value decreases. The computational complexity of the alter reassignment step for node m is O(Dm). This check is repeated for all alters connected to multiple egos. Algorithm 2 summarizes the alter reassignment step, and Figure 2 gives an illustration. 20 Algorithm 2: Alter reassignment 
+
+Input: Adjacency matrix A, membership matrix C, interference matrix R,objective value obj 
+
+Output: Updated membership matrix C 
+
+> 1
+
+Alter considered ← { alters connected to two or more egos }; 
+
+> 2
+
+Randomly permute Alter considered ; 
+
+> 3
+
+repeat  
+
+> 4
+
+foreach alter m ∈ Alter considered do  
+
+> 5
+
+Find connected egos’ indices Egos m and the current ego-cluster index e(m);  
+
+> 6
+
+foreach j ∈ Egos m do  
+
+> 7
+
+Calculate updated objective value obj new if m is reassigned to Ej ; 
+
+> 8
+
+if obj new < obj then  
+
+> 9
+
+Reassign alter m from Ee(m) to Ej ; 
+
+> 10
+
+update C, R, e(m) = j and obj = obj new ; 
+
+> 11
+
+end  
+
+> 12
+
+end  
+
+> 13
+
+end  
+
+> 14
+
+until no alter is reassigned ;
+
+# 5 Numerical Studies 
+
+In this section, we examine the finite sample performance of our proposed method, referred to as EgoCR , in estimating the global treatment effect and the spillover effect under several network settings. We begin with two random network models: Erd˝ os–R´ enyi model (Erd¨ os and R´ enyi, 1959), denoted as ER( n, p ), where p is the connecting probability between any two units; and Barab´ asi–Albert network (Barab´ asi and Albert, 1999), denoted as BA( n, m ), where m represents the number of edges that each new unit forms when entering the network. The outcome model is Y = α + βT + γρ + ϵ. The parameters are set as α = 2, β = 2 .5, 
+
+γ = 5, with the error terms ϵi’s independently drawn from a standard normal distribution. To better capture features commonly observed in real social networks, we also consider a network composed of four communities, each generated using the Small-World model (Watts and Strogatz, 1998). To introduce cross-community connectivity, sparse inter-community 21 edges are added randomly such that the average probability of forming a within-community edge is eight times that of forming a cross-community edge. We refer to this design as the community network, CN( n). Since individuals within the same community tend to share similar characteristics, we further introduce an unobserved confounder Z = ( Z1, . . . , Z n), which varies across different communities and incorporate it into the outcome model as 
+
+Y = α + βT + γρ + ηZ + ϵ. We set η = 0 .8 in our experiments. For comparison, we implement several alternative designs: complete randomization ( CR ); the Conflict Graph Design of Kandiros et al. (2025) ( CGD ); the causal clustering method of Viviano et al. (2025) ( CausalC ); the 3-net clustering of Ugander et al. (2013) (3 -net ); the ego-cluster design of Saint-Jacques et al. (2019) ( LinkedIn ); Louvain clustering (Blondel et al., 2008) using the default settings in the igraph package ( Louvain ); and the 1-hop-max clustering of Ugander and Yin (2023) ( RGCR1hm ). For the ER network, we set the connection probability to p = 15 /n ; for the BA network, we set m = 6; and for the CN network, we target an average degree of approximately 11. For each scenario, we generate 2000 networks and conduct 2000 experimental replications. Figure 3 reports the root mean squared errors (RMSEs) of ˆ τ and ˆ γ for sample sizes ranging from n = 200 to 1000; comparison of biases with standard errors are included in Supplement S3.1. Table S1 in Supplement S3.1 provides additional comparisons under alternative network configurations for n = 500 and n = 1000 (with average connection probabilities around 0 .05). To facilitate a consistent comparison with our approach, we report regression-based estimators for CGD , CausalC , and LinkedIn in the main text, while the results for their original estimators are included in the Supplement. For CausalC , we only include the results for n = 500 in Table S1 because of its high computational demand. 22 0.2 0.4 0.6     
+
+> 200 400 600 800 1000
+> RMSE of  τ^
+
+Erdos−Renyi     
+
+> 0.2 0.3 0.4 0.5 0.6
+> 200 400 600 800 1000
+
+Barabasi−Albert     
+
+> 0.3 0.6 0.9 1.2 1.5
+> 200 400 600 800 1000
+
+Community network             
+
+> 0.2 0.4 0.6 0.8
+> 200 400 600 800 1000
+> n
+> RMSE of  γ^
+> 0.2 0.3 0.4 0.5 0.6
+> 200 400 600 800 1000
+> n
+> 0.3 0.6 0.9 1.2 1.5
+> 200 400 600 800 1000
+> n
+> CR
+> CGD
+> 3−net
+> LinkedIn
+> Louvain
+> RGCR1hm
+> EgoCR
+
+Figure 3: RMSEs of ˆ τ (top) and ˆ γ (bottom) under different sample sizes and clustering methods over 2000 replications for each network setting. As shown in Table S1 and Figure S1 (Supplement S3.1), EgoCR has very small biases for both ˆ τ and ˆ γ across all settings considered. For estimating the global treatment effect, Figure 3 shows that EgoCR achieves the lowest RMSEs as the sample size increases. In Figure 3 (top), the cluster-based approaches generally outperform CR , as clustering helps to reduce interference. CGD performs less favorably in these settings, likely because the maximum eigenvalue of the conflict graph ( A2 in Kandiros et al. (2025)) is large for these networks, which in turn leads to a very limited number of treated assignments. LinkedIn 
+
+design yields higher RMSEs than EgoCR , because it forms ego-clusters almost randomly, whereas our method targets to minimize estimator variance. Moreover, CausalC is not designed for regression estimators, and as a result, it yields larger RMSEs compared with 
+
+EgoCR as shown in Table S1. Regarding the spillover effect, Figure 3 shows that EgoCR achieves smaller RMSEs than 23 1234                        
+
+> 200 400 600 800 1000
+> RMSE of  τ^
+> Erdos−Renyi
+> 1.0 1.5 2.0 2.5 3.0
+> 200 400 600 800 1000
+> Barabasi−Albert
+> 123
+> 200 400 600 800 1000
+> Community network
+> 1234
+> 200 400 600 800 1000
+> n
+> RMSE of  γ^
+> 1.0 1.5 2.0 2.5 3.0 3.5
+> 200 400 600 800 1000
+> n
+> 123
+> 200 400 600 800 1000
+> n
+> CR
+> CGD
+> 3−net
+> LinkedIn
+> Louvain
+> RGCR1hm
+> EgoCR
+
+Figure 4: RMSEs of ˆ τ (top) and ˆ γ (bottom) under different sample sizes and clustering methods over 2000 replications for each network setting under correlated errors. alternative methods except RGCR1hm . RGCR1hm , proposed by Ugander and Yin (2023), demon-strates comparable performance of ˆ γ to EgoCR in Figure 3. However, in Table S1, which reports results for denser network settings, EgoCR gives a higher accuracy than RGCR1hm .
+
+Louvain produces larger RMSEs of ˆ γ than CR , suggesting that clusters constructed by tightly connected communities are not suited for estimating spillover effects. In the community network settings, we introduce an underlying confounder Z that varies across communities. Since community detection algorithms tend to form clusters within these communities, randomization at the cluster level may induce an imbalance in the confounder between treatment arms, thereby increasing the variability of estimators. In contrast, our proposed method forms a large number of ego-clusters based on local neighborhoods rather than the community structure. This reduces the influence of this confounder and results in smaller RMSEs than most alternative methods. 24 Table 1: Rejection probabilities (%) for testing H0,τ and H0,γ under different sample sizes and clustering methods over 2000 replications for each network setting. Barab´ asi–Albert Community Network Method n τ = 0 τ = 0 .3 τ = 0 .6 γ = 0 γ = 0 .3 γ = 0 .6 τ = 0 τ = 0 .3 τ = 0 .6 γ = 0 γ = 0 .3 γ = 0 .6CR 500 6.30 20.90 63.40 6.30 23.40 68.00 6.30 17.20 50.00 6.40 18.75 52.50 1000 5.70 36.95 89.75 5.10 41.10 93.70 5.30 29.15 79.45 5.30 31.70 84.25 3-net 500 9.25 38.50 86.60 8.40 31.40 78.10 9.55 42.00 89.60 6.80 30.55 74.05 1000 7.90 59.20 98.10 7.95 48.30 94.15 7.20 62.70 99.00 6.35 47.40 95.40 LinkedIn 500 6.20 27.95 76.35 5.95 23.35 67.90 5.65 26.55 73.85 5.40 21.60 63.05 1000 5.45 46.60 95.90 5.95 40.15 91.65 5.25 44.70 96.00 4.95 36.40 90.00 Louvain 500 13.95 44.75 88.30 11.70 27.60 62.30 9.75 46.85 94.80 8.00 17.10 40.75 1000 13.60 66.85 99.05 12.15 41.85 86.65 7.40 72.75 99.90 7.05 25.15 66.50 RGCR1hm 500 8.40 30.80 77.95 8.10 29.80 77.95 5.90 33.15 85.50 5.60 27.75 75.20 1000 6.15 50.85 97.25 6.35 49.90 96.85 5.45 55.35 98.40 4.95 46.30 95.35 EgoCR 500 6.30 34.30 84.05 6.20 29.80 77.60 4.70 39.10 89.95 4.65 25.70 71.70 1000 5.90 56.25 98.35 5.10 47.20 96.75 5.05 64.70 99.45 5.10 45.20 94.65 Under the same settings as in Figure 3, we replace the i.i.d. error terms with correlated errors, where ϵ = Aϵ ′ and ϵ′ follows an i.i.d. standard normal distribution. The resulting RM-SEs of ˆ τ and ˆ γ, reported in Figure 4, indicate that our proposed method, EgoCR , continues to provide satisfactory estimation of both τ and γ. We have also considered other misspec-ified settings where the outcome does not follow Model (1). These results are included in Supplement S3.2 and lead to similar conclusions. We then evaluate the performance of the inferential methods proposed in Section 3.2. We consider the community network setting in Figure 3 and the Barab´ asi–Albert network with parameter m = 5, for sample sizes n = 500 and 1000. The nominal significance level is α = 5%. The rejection probabilities for testing H0,τ and H0,γ are reported in Table 1. When τ = 0 ( γ = 0), the simulated Type I errors under EgoCR approach the nominal level of 5%, whereas those under Louvain and 3-net are inflated. Under the alternative hypotheses, 
+
+EgoCR demonstrates favorable rejection probabilities compared to other methods. 25 6 Empirical Applications 
+
+In this section, we evaluate the performance of our proposed method in two empirical ap-plications. For comparison, we also include the results of alternative clustering methods CR ,
+
+CGD , 3 -net , LinkedIn , Louvain , and RGCR1hm considered in Section 5. 
+
+## 6.1 Application to the Sinanet Dataset 
+
+The Sinanet dataset, collected by Jia et al. (2017), is a microblog user relationship network extracted from the sina-microblog platform. The data were constructed by first selecting 100 VIP users, who purchase the platform’s VIP service and are typically more active, from ten major forums, including finance and economics, literature and arts, fashion and vogue, current events and politics, sports, science and technology, entertainment, parenting and education, public welfare, and normal life. The followees of these VIP users, together with their published microblogs, were then extracted. Since we focus on undirected graphs in this paper, we treat the ties between users as undirected. The resulting network contains 
+
+n = 3467 users with an average degree of 17. This dataset is available at https://github. com/smileyan448/Sinanet . We also consider the setting with unobserved confounders Z,which is not available at either the experiment design or analysis. We let Z be the interest distributions of each user in the ten forums, which was obtained by the Latent Dirichlet Allocation (LDA) topic model. To apply our experimental procedure on the Sinanet network, we first construct ego-clusters using our proposed ego-clustering algorithm. Given the network structure and re-sulting clusters, treatments are randomly assigned at the cluster level. The outcomes are 26 generated according to the following model, 
+
+Yi = α + βT i + γρ i + ηTZ + ϵi,
+
+where α = 2, β = 2 .5, γ = 5, η = (0 .6, 1.1, 3.5, 2, 1.6, 1.5, 0.8, 2.5, 3, 1.5), and the error terms are independently drawn from a standard normal distribution. We use model (1) as the working model to estimate τ and γ. Based on 2000 replications, the biases, standard deviations, and root mean squared errors of estimators ˆ τ and ˆ γ are summarized in Table 2. The column Kn reports the number of clusters generated by each method. Table 2: Biases (Bias), standard deviations (SD), and root mean squared errors (RMSE) of ˆ τ and ˆ γ under different clustering methods for the Sinanet dataset. Lowest RMSEs are marked in boldface. ˆτ ˆγ                                                        
+
+> Method KnBias SD RMSE Bias SD RMSE CR 3467 0.000 0.115 0.115 0.001 0.107 0.107 CGD -0.067 0.462 0.466 -0.017 0.295 0.295 3-net 59 0.001 0.104 0.104 0.002 0.105 0.105 LinkedIn 1661 -0.001 0.100 0.100 0.000 0.102 0.102 Louvain 10 -0.001 0.143 0.143 0.004 0.368 0.368 RGCR1hm 775 -0.002 0.099 0.099 -0.001 0.089 0.089 EgoCR 2005 0.005 0.094 0.094 0.005 0.087 0.088
+
+Both LinkedIn and EgoCR formulate a large number of ego-clusters and show improved efficiency compared with Louvain and 3 -net , suggesting the local ego-cluster structure is well-suited to this network. As reported in Table 2, the biases of the two estimators remain close to zero under all methods and our proposed method EgoCR gives the smallest standard deviations and RMSEs of ˆ τ and ˆ γ.
+
+## 6.2 Application to a Social Network Field Experiment 
+
+We consider a social network field experiment, which was conducted in 56 middle schools in New Jersey, USA (Paluck et al., 2016). The experiment examined the impact of an anti-27 conflict intervention on students’ attitudes toward conflict-related behaviors, and how these effects propagated through their social networks. At the beginning of the 2012-2013 school year, students’ social network was recorded by asking them to list up to ten peers they spent time with in the last few weeks. In the study, half of 56 schools were randomly selected to host the anti-conflict program. Within each selected school, a subset of students was identified as eligible for treatment, and then half of these eligible students were block-randomized into treatment based on student characteristics. The treated students attended the anti-conflict program bi-weekly during the school year. The outcome variable is the self-reported behavior on wearing a wristband, which was a reward for engaging in anti-conflict behaviors. Further details of the experiment are provided in Paluck et al. (2016), and the dataset is available at https://www.icpsr.umich.edu/web/civicleads/studies/37070/versions/V2 .We use the observed network, covariates, and fitted parameters from the original exper-iment to construct a simulation study with different experimental designs. Our simulation focuses on data from 5 treated schools randomly selected from the original experiment, com-prising n = 1214 students. To ensure the adjacency matrix is symmetric, any two students are connected if either one reports the other as a friend. The average degree of the network is 11. Figure 5 plots the network with grades distinguished by four colors. It is seen that there are no edges between different schools, and the friendships are more prevalent among students in the same grade within the same school. Using data from these schools, we first fit the following additive outcome model, 
+
+Yi = α + βT i + γρ i + η1GENDER i + η2ETHW i + ηT3 (SCHOOL i × GRADE i) + ϵi,
+
+where GENDER denotes student gender, ETHW is an indicator for white ethnicity, and SCHOOL and GRADE are indicator variables representing the school and grade of students, 28 Figure 5: The network of selected 5 schools with grades distinguished by four colors. respectively. To implement our experimental procedure, we first construct ego-clusters using our algorithm and then perform ego-level randomization to assign treatments. After assign-ments, outcomes are generated according to the fitted model. Specifically, the true values of the global treatment effect and the spillover effect are τ = 0 .27 and γ = 0 .21, respectively. Based on 2000 replications, the biases, standard deviations and root mean squared errors of estimators ˆ τ and ˆ γ are provided in Table 3. The column Kn reports the number of clusters generated by each method. In Table 3, the biases of ˆ τ and ˆ γ are negligible under all methods. Cluster-based ap-proaches yield smaller standard deviations for ˆ τ compared to CR , showing the benefit of cluster randomization when estimating the global treatment effect in the school network. 
+
+CausalC and Louvain both construct a small number of clusters with relatively low inter-ference, which is unfavorable for estimating γ. Consequently, their standard deviations for ˆγ are larger, even exceeding those under CR , as shown in Table 3. 29 Table 3: Biases, standard deviations (SD), and root mean squared errors (RMSE) of ˆ τ and ˆγ under different clustering methods for school network data. Lowest RMSEs are marked in boldface. ˆτ ˆγ                                                               
+
+> Method KnBias SD RMSE Bias SD RMSE CR 1214 -0.003 0.100 0.100 -0.004 0.094 0.094 CGD -0.001 0.178 0.178 0.000 0.206 0.206 CausalC 11 -0.003 0.080 0.080 -0.007 0.210 0.211 3-net 63 0.003 0.075 0.075 0.004 0.090 0.090 LinkedIn 292 0.001 0.086 0.086 0.000 0.091 0.091 Louvain 12 0.001 0.078 0.078 -0.009 0.216 0.217 RGCR1hm 298 0.001 0.074 0.074 0.002 0.079 0.079
+> EgoCR 239 -0.001 0.070 0.070 -0.001 0.080 0.080
+
+# 7 Conclusion 
+
+This paper develops a statistical framework for estimating the global treatment effect and spillover effect in network experiments by employing the ego-cluster design and a theory guided ego-clustering algorithm. We consider a super-population framework, where the network data are viewed as a sample from an underlying population and can be obtained through the common snowball sampling scheme. Our procedure can be used to estimate both the global treatment effect and the spillover effect within a single experiment. To our knowledge, this is the first theoretical analysis of the ego-cluster design. Building on the results of this paper, several directions for future research are worth exploring. First, the framework could be extended to handle directed networks, where units have distinct in- and out-neighbors. In such settings, the ego-cluster framework and related assumptions need to be reformulated to accommodate the asymmetric relationships. Second, given that more balanced allocation over covariates often improves statistical efficiency (Hu and Hu, 2012; Bugni et al., 2018; Ma et al., 2024), it can be useful to incorporate adaptive randomization into the ego-cluster design to improve covariate balance (Zhou et al., 2024; 30 Liu et al., 2024). Finally, models involving more general types of interference could be considered (Aronow and Samii, 2017; Leung, 2022a; Gao and Ding, 2025). We leave these to future research. 
+
+# References 
+
+Aronow, P. M. and Samii, C. (2017). Estimating average causal effects under general inter-ference, with application to a social network experiment. The Annals of Applied Statistics ,11(4):1912–1947. Athey, S., Eckles, D., and Imbens, G. W. (2018). Exact p-values for network interference. 
+
+Journal of the American Statistical Association , 113(521):230–240. Banerjee, A., Chandrasekhar, A. G., Duflo, E., and Jackson, M. O. (2013). The diffusion of microfinance. Science , 341(6144):1236498. Barab´ asi, A.-L. and Albert, R. (1999). Emergence of scaling in random networks. Science ,286(5439):509–512. Basse, G. and Feller, A. (2018). Analyzing two-stage experiments in the presence of inter-ference. Journal of the American Statistical Association , 113(521):41–55. Basse, G. W. and Airoldi, E. M. (2018). Model-assisted design of experiments in the presence of network-correlated outcomes. Biometrika , 105(4):849–858. Belloni, A., Fang, F., and Volfovsky, A. (2025). Neighborhood adaptive estimators for causal inference under network interference. arXiv preprint arXiv:2212.03683v2 .Blondel, V. D., Guillaume, J.-L., Lambiotte, R., and Lefebvre, E. (2008). Fast unfolding of communities in large networks. Journal of Statistical Mechanics: Theory and Experiment ,2008(10):P10008. Bugni, F. A., Canay, I. A., and Shaikh, A. M. (2018). Inference under covariate-adaptive ran-domization. Journal of the American Statistical Association , 113(524):1784–1796. PMID: 30906087. Cai, C., Zhang, X., and Airoldi, E. (2024). Independent-set design of experiments for estimat-ing treatment and spillover effects under network interference. In The Twelfth International Conference on Learning Representations .31 Cai, J., De Janvry, A., and Sadoulet, E. (2015). Social networks and the decision to insure. 
+
+American Economic Journal: Applied Economics , 7(2):81–108. Deng, L., Zhang, J., Wang, Y., and Chen, C. (2024). Ego group partition: a novel framework for improving ego experiments in social networks. arXiv preprint arXiv:2402.12655 .Eckles, D., Karrer, B., and Ugander, J. (2017). Design and analysis of experiments in networks: Reducing bias from interference. Journal of Causal Inference , 5(1):1–23. Erd¨ os, P. and R´ enyi, A. (1959). On random graphs i. Publicationes Mathematicae Debrecen ,6:290–297. Forastiere, L., Airoldi, E. M., and Mealli, F. (2021). Identification and estimation of treat-ment and interference effects in observational studies on networks. Journal of the American Statistical Association , 116(534):901–918. Gao, M. and Ding, P. (2025). Causal inference in network experiments: regression-based analysis and design-based properties. Journal of Econometrics , 252:106119. Goodman, L. A. (1961). Snowball sampling. The Annals of Mathematical Statistics ,32(1):148–170. Hu, Y. and Hu, F. (2012). Asymptotic properties of covariate-adaptive randomization. The Annals of Statistics , 40(3):1794–1815. Hu, Y., Li, S., and Wager, S. (2022). Average direct and indirect causal effects under interference. Biometrika , 109(4):1165–1172. Hudgens, M. G. and Halloran, M. E. (2008). Toward causal inference with interference. 
+
+Journal of the American Statistical Association , 103(482):832–842. PMID: 19081744. Imbens, G. W. and Rubin, D. B. (2015). Causal Inference for Statistics, Social, and Biomed-ical Sciences: An Introduction . Cambridge University Press. Jagadeesan, R., Pillai, N. S., and Volfovsky, A. (2020). Designs for estimating the treatment effect in networks with interference. The Annals of Statistics , 48(2):679–712. Jia, C., Li, Y., Carson, M. B., Wang, X., and Yu, J. (2017). Node attribute-enhanced community detection in complex networks. Scientific Reports , 7(1):2626. Jiang, Z., Imai, K., and Malani, A. (2022). Statistical inference and power analysis for direct and spillover effects in two-stage randomized experiments. Biometrics , 79(3):2370–2381. 32 Kandiros, V., Pipis, C., Daskalakis, C., and Harshaw, C. (2025). The conflict graph de-sign: estimating causal effects under arbitrary neighborhood interference. arXiv preprint arXiv:2411.10908 .Leung, M. P. (2020). Treatment and spillover effects under network interference. The Review of Economics and Statistics , 102(2):368–380. Leung, M. P. (2022a). Causal inference under approximate neighborhood interference. Econo-metrica , 90(1):267–293. Leung, M. P. (2022b). Rate-optimal cluster-randomized designs for spatial interference. The Annals of Statistics , 50(5):3064–3087. Leung, M. P. (2023). Network cluster-robust inference. Econometrica , 91(2):641–667. Li, S. and Wager, S. (2022). Random graph asymptotics for treatment effect estimation under network interference. The Annals of Statistics , 50(4):2334–2358. Liu, L., Hudgens, M. G., and Becker-Dreps, S. (2016). On inverse probability-weighted estimators in the presence of interference. Biometrika , 103(4):829–842. Liu, Y., Zhou, Y., Li, P., and Hu, F. (2022). Adaptive a/b test on networks with cluster structures. In Proceedings of The 25th International Conference on Artificial Intelligence and Statistics , volume 151, pages 10836–10851. PMLR. Liu, Y., Zhou, Y., Li, P., and Hu, F. (2024). Cluster-adaptive network a/b testing: from randomization to estimation. Journal of Machine Learning Research , 25(170):1–48. Ma, W., Li, P., Zhang, L.-X., and Hu, F. (2024). A new and unified family of covariate adap-tive randomization procedures and their properties. Journal of the American Statistical Association , 119(545):151–162. Manski, C. F. (2000). Economic analysis of social interactions. Journal of Economic Per-spectives , 14(3):115–136. Manski, C. F. (2013). Identification of treatment response with social interactions. The Econometrics Journal , 16(1):S1–S23. Ogburn, E. L., Sofrygin, O., Diaz, I., and Van der Laan, M. J. (2024). Causal inference for social network data. Journal of the American Statistical Association , 119(545):597–611. 33 Paluck, E. L., Shepherd, H., and Aronow, P. M. (2016). Changing climates of conflict: a social network experiment in 56 schools. Proceedings of the National Academy of Sciences ,113(3):566–571. Parker, B. M., Gilmour, S. G., and Schormans, J. (2017). Optimal design of experiments on connected units with application to social networks. Journal of the Royal Statistical Society Series C: Applied Statistics , 66(3):455–480. Phan, T. Q. and Airoldi, E. M. (2015). A natural experiment of social network formation and dynamics. Proceedings of the National Academy of Sciences , 112(21):6595–6600. Ross, N. (2011). Fundamentals of stein’s method. Probability Surveys , 8:210–293. Saint-Jacques, G., Varshney, M., Simpson, J., and Xu, Y. (2019). Using ego-clusters to measure network effects at linkedin. arXiv preprint arXiv:1903.08755 .S¨ avje, F., Aronow, P., and Hudgens, M. (2021). Average treatment effects in the presence of unknown interference. The Annals of Statistics , 49(2):673–701. Shalizi, C. R. and Thomas, A. C. (2011). Homophily and contagion are generically confounded in observational social network studies. Sociological Methods & Research ,40(2):211–239. PMID: 22523436. Su, W. and Duan, W. (2024). Improving ego-cluster for network effect measurement. In 
+
+Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining , pages 5713–5722. Association for Computing Machinery. Toulis, P. and Kao, E. (2013). Estimation of causal peer influence effects. In Proceedings of the 30th International Conference on Machine Learning , volume 28, pages 1489–1497. PMLR. Ugander, J., Karrer, B., Backstrom, L., and Kleinberg, J. (2013). Graph cluster randomiza-tion: network exposure to multiple universes. In Proceedings of the 19th ACM SIGKDD international conference on Knowledge discovery and data mining , pages 329–337. Asso-ciation for Computing Machinery. Ugander, J. and Yin, H. (2023). Randomized graph cluster randomization. Journal of Causal Inference , 11(1). Viviano, D. (2020). Experimental design under network interference. arXiv preprint arXiv:2003.08421 .34 Viviano, D., Lei, L., Imbens, G., Karrer, B., Schrijvers, O., and Shi, L. (2025). Causal clustering: design of cluster experiments under network interference. arXiv preprint arXiv:2310.14983v3 .Watts, D. J. and Strogatz, S. H. (1998). Collective dynamics of ‘small-world’ networks. 
+
+Nature , 393(6684):440–442. Zhou, Z., Li, P., and Hu, F. (2024). Adaptive randomization in network data. Electronic Journal of Statistics , 18(1):47–76. 35
