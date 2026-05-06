@@ -1,0 +1,1255 @@
+Title: A formal approach to variable selection in difference-in-differences
+
+URL Source: https://arxiv.org/pdf/2605.01114v1
+
+Published Time: Tue, 05 May 2026 00:15:11 GMT
+
+Number of Pages: 44
+
+Markdown Content:
+# A formal approach to variable selection in difference-in-differences ∗
+
+## Daniela Rodrigues 1 and Laura A. Hatfield 21Department of Health Care Policy, Harvard Medical School, Boston, MA, USA 
+
+2Statistics and Data Science Department, NORC at the University of Chicago, Chicago, IL, USA May 5, 2026 
+
+# Abstract 
+
+Difference-in-differences (DiD) identification relies mainly on a parallel trends assumption about untreated potential outcomes. Researchers often relax this assumption by assuming conditional parallel trends within units with the same covariate values. However, the process of selecting which covariates to include in this assumption is often ad hoc . We propose a formal approach to select the variables that support conditional parallel trends based on graphical criteria. We show that the parallel trends assumption is rarely justified without conditioning on covariates, and that unconditional and conditional parallel trends can conflict with one another. We also demonstrate that a time-invariant covariate with a time-invariant effect on the outcome, which might not ordinarily be considered a confounder in DiD, may be a useful conditioning variable. We clarify that adjustment for a post-treatment covariate depends on what causes that covariate to change. Extending our framework to multiple time periods, we distinguish between treatment type and rollout strategy and examine the problem of treatment-confounder feedback. On the estimation side, we argue that the difficulty of incorporating covariates in DiD, often framed as an estimator problem, is more accurately understood as a misalignment between the adjustment set used by the estimator and the adjustment set required for identification. This misalignment affects several popular estimation procedures, and resolving it requires not a change of estimator, but a change in how covariates enter the estimation procedure. We show how to achieve this alignment for all estimators we evaluate. 
+
+> ∗
+
+We thank Katherine Ianni, Alyssa Chen, Chi Zhang, Karim Chalak, Carlos Cinelli, Elias Bareinboim, Nima Hejazi and participants of the 2025 Society of Epidemiology Research (SER) conference, the 2025 International Conference on Health Policy Statistics (ICHPS) and the Health Economics seminar at Harvard’s Department of Health Care Policy for helpful discussions. This project was funded under grant number R01HS028985 from the Agency for Healthcare Research and Quality (AHRQ), U.S. Department of Health and Human Services (HHS). The authors are solely responsible for this document’s contents, findings, and conclusions, which do not necessarily represent the views of AHRQ. 
+
+1
+
+> arXiv:2605.01114v1 [stat.ME] 1 May 2026
+
+# 1 Introduction 
+
+Difference-in-Differences (DiD) is a popular identification strategy that relies mainly on an assumption that the outcome evolution of the untreated group can stand in for the counterfactual outcome evolution of the treated group had it not been treated. This assumption is commonly described as “parallel trends” in untreated potential outcomes. Although other assumptions are needed for DiD identification, including no interference, consistency, and no anticipation [1, 2], the parallel trends assumption receives particular scrutiny. For instance, researchers frequently assess its plausibility by testing whether outcome trends are parallel across treated and control groups prior to treatment [3]. Alternatively, we may assume parallel trends holds only for units with the same covariate values, i.e., 
+
+conditional parallel trends. A natural question then arises: how should one select the variables on which to condition? In practice, variables are reported with little justification and the selection often includes every measured variable, i.e, a “kitchen sink” approach. In studies that give more attention to variable selection, variables may be assessed in isolation, considering whether each evolves differently across groups or has a time-varying relationship to the outcome [4, 5]. These approaches resemble historical practice in cross-sectional studies that assume conditional exchange-ability (also known as no unmeasured confounding). In this context, each variable was evaluated as a potential confounder by asking whether it was related to both treatment assignment and the outcome. More recent work has refined the process, for instance, using Directed Acyclic Graphs (DAGs) and Pearl’s backdoor criterion [6, 7] to select a minimally sufficient set of variables that blocks all backdoor (non-causal) paths between the treatment and outcome [8–10]. Such a set avoids the pitfalls of too many control variables, such as limited positivity [11], collider bias [10] and M-bias [12]. In this work, we extend these ideas to DiD by proposing a graphical approach to selecting variables that support conditional parallel trends. We examine the relationship between unconditional and conditional parallel trends, consider the role of time-invariant and time-varying covariates in identification, including post-treatment covariate values, and extend the framework to settings with multiple time periods. We also evaluate how several popular DiD estimators handle adjustment variables and propose ways to better align estimation with identification. The remainder of this article is organized as follows. Section 2 reviews the related literature and situates our specific contributions within it. Section 3 establishes the equivalence between parallel trends and equi-confounding, which enables us to represent this key identifying assumption in a causal diagram in Section 4, where we show DiD identification using graphical criteria. In Section 5, we extend the framework to scenarios with covariates and multiple time periods. Section 6 compares popular estimation methods and examines how they handle covariates, including the modifications needed to achieve alignment with identification requirements. Section 7 presents the results of a simulation study, and Section 8 concludes with a discussion. 22 Related literature 
+
+We build on recent work that uses causal diagrams for DiD identification. Chalak introduced the concept of “equi-confounding”, in which the same unobserved confounder affects equally (e.g., proportionally) one or more observed variables, including covariates and outcome variables [13]. Zhang et al. later noted that DiD is a special case of equi-confounding where two outcome variables (i.e., the pre- and post-treatment) are equally affected by the unobserved confounder [14]. Using the same assumption of equi-confounding, Sofer et al. showed that DiD can be viewed as a negative outcome control strategy in which the pre-treatment outcome is the negative control affected by the same confounding as the post-treatment outcome [15]. Those authors distinguished between additive equi-confounding and two alternatives, quantile-quantile and distributional equi-confounding, which are useful when pre- and post-treatment outcomes are measured on different scales. Since this situation is not typical in DiD, we assume additivity and omit this qualifier from the term equi-confounding hereafter. Without using the term equi-confounding, other authors have independently noted the need for the same unobserved confounding to affect pre- and post-treatment outcome variables in DiD [16–18]. Weber et al. highlighted this requirement while discussing the trade-offs between parallel trends and exchangeability [16]. Kim and Steiner showed that DiD identification relies on “offsetting rather than blocking” backdoor paths, such that equality of the confounding in the pre- and post-treatment periods allows the bias to cancel [17]. Renson et al. formalized the structural conditions for unconditional parallel trends using Single World Intervention Graph (SWIGs), further clarifying the graphical basis of DiD identification [18]. A related strand of work has considered conditioning on covariates in DiD. One of the earliest estimation procedures designed to handle time-varying confounding in DiD was proposed by Stuart et al., who combined propensity score weighting with a subsequent Two-Way Fixed Effects (TWFE) weighted regression. More recently, Ghanem et al. explored mechanisms of selection into treatment under which unconditional or condi-tional parallel trends would hold and noted that “incorporating time-varying covariates makes the restrictions on the selection mechanism more plausible” [19]. Caetano and Callaway demonstrated the limitations of the standard TWFE model for incorporating covariates in DiD when both time-invariant and time-varying co-variates need to be adjusted for, and proposed alternative estimators paired with adjustment sets containing baseline covariates plus either the post-treatment value or the change in the covariate [20]. Myint examined the relationship between identification under sequential exchangeability and parallel trends, and proposed hybrid estimators that use sequential Inverse Probability Weighting (IPW) within a DiD framework [21]. Renson et al. further formalized the connection between g-methods and DiD by deriving an identification solution and appropriate estimators for sustained treatments under parallel trends [22]. In related work, Shahn et al. extended structural nested models to DiD under the parallel trends assumption [23]. In this work, we aim to provide actionable guidance for variable selection in DiD and align estimation with identification. Thus, our first contribution is to provide a formal variable selection framework that makes conditional parallel trends plausible. We extend the graph-based DiD literature to more complex settings 3than previously considered, including multiple covariates and time periods. Doing so allows us to derive several new insights. First, we show how strong unconditional parallel trends is and highlight a potential conflict between unconditional and conditional parallel trends. Second, we demonstrate that a time-invariant covariate with a time-invariant effect on the outcome can serve as a valid adjustment variable for time-varying confounding in DiD. Third, we clarify that the appropriateness of adjusting for post-treatment covariate values, often excluded by default in most DiD studies, depends on the causes of the covariate change. Fourth, when extending our models to multiple time periods, we distinguish between treatment type and rollout strategy, and examine the problem of treatment-confounder feedback, as well as strategies for avoiding it. Our second key contribution concerns estimation and its alignment with identification. A recurring pat-tern in the DiD literature attributes the difficulty of accommodating covariates to limitations of particular estimators. This concern arises most often with time-varying covariates, though for certain estimators it also extends to time-invariant covariates. We show that the underlying problem is more accurately understood as a misalignment between the adjustment set used by the estimator and the adjustment set required for identification. This misalignment affects several popular estimation procedures, including but not limited to the standard TWFE specification. The implication is that handling covariates in DiD is less a matter of estimator choice than of ensuring that each estimator operates on the adjustment set required for identifica-tion. For every estimator we consider, we demonstrate how this alignment can be achieved, recovering valid estimates without modifying the estimator’s underlying structure. 
+
+# 3 Parallel trends and equi-confounding 
+
+First, we introduce notation. Let i ∈ { 1, . . . , N } index units (e.g., individuals or regions), and t ∈ { 0, 1} index time, where t = 0 is before treatment and t = 1 is after. Each unit is observed at both time points (or, if we have cross-sectional data, each cluster or unit of treatment assignment is observed at both time points). Let 
+
+Ai1 ∈ { 0, 1} represent a static treatment first introduced at t = 1, where Ai1 = 1 if unit i receives treatment at t = 1 and Ai1 = 0 if it does not (i.e., is a “control” unit). We use Yit to denote the observed outcome for unit i at time t and Yit (0) , Y it (1), the potential outcomes under control and treatment, respectively. We assume that treatment occurs before the outcome observed at t = 1. The causal estimand of interest is the Average Treatment effect on the Treated (ATT), 
+
+E[Yi1(1) − Yi1(0) |Ai1 = 1] . (1) To identify this quantity, we first make three preliminary assumptions [1, 2]. First, we assume that future treatments do not affect past outcomes (no anticipation), so that the observed pre-treatment outcomes are 4untreated potential outcomes for all units, 
+
+Yi0 = Yi0(0) ∀ i. (2) Second, we assume the treatment assignment of one unit does not affect the potential outcomes of any other unit (no interference). Third, we assume that there are no hidden levels of treatment. This assumption allows us to substitute observed outcomes for the potential outcomes given the corresponding observed treatment levels (consistency), 
+
+Yit = Ait Yit (1) + (1 − Ait )Yit (0) . (3) Hereafter, we will omit the unit subscript i to simplify notation, writing Yt(a) and At in place of Yit (a)and Ait , respectively. Next, we assume parallel trends in untreated potential outcomes between the treated and control groups, 
+
+E[Y1(0) − Y0(0) |A1 = 1] = E[Y1(0) − Y0(0) |A1 = 0] . (4) A useful reframing of the parallel trends assumption is in terms of equi-confounding, i.e., assuming that the difference in untreated potential outcomes between treated and control groups is equal at t = 1 and t = 0, 
+
+E[Y1(0) |A1 = 1] − E[Y1(0) |A1 = 0] = E[Y0(0) |A1 = 1] − E[Y0(0) |A1 = 0] . (5) Using either Eq. (4) or (5) plus the additional assumptions above, we solve for the counterfactual, 
+
+E[Y1(0) |A1 = 1] = E[Y0(0) |A1 = 1] + E[Y1(0) − Y0(0) |A1 = 0] = E[Y0(1) |A1 = 1] + E[Y1(0) − Y0(0) |A1 = 0] = E(Y0|A1 = 1) + E(Y1 − Y0|A1 = 0) ,
+
+and plug it into the causal estimand in Eq. (1) to obtain the statistical estimand, 
+
+E(Y1 − Y0|A1 = 1) − E(Y1 − Y0|A1 = 0) . (6) 
+
+# 4 Graph-based DiD identification 
+
+This identification process, solving for the counterfactual using a scale-dependent assumption about evo-lution of potential outcomes, is standard in the DiD literature. Next, we consider an alternative route to identification that uses graphical criteria. Figure 1 shows a simple DAG relevant for a DiD study. To the observable variables noted above, we add two unobservable variables. The first unobservable, V0, affects the treatment and outcomes at both times. We represent the equi-confounding assumption by the equal magni-5tude ∗ on the edges from V0 to Y0 and Y1. The second unobservable, S0 affects only outcomes at both times, inducing correlation between them. We also include the change in the outcome over time, ∆ Y = Y1 − Y0,and deterministic coefficients on the edges from Y0 and Y1 to ∆ Y . The unmeasured error terms are excluded for simplicity.  
+
+> A1Y0Y1
+> V0
+> S0
+> ∆Y
+> ∗
+> ∗
+> 1
+> −1
+
+Figure 1: Causal diagram in which equi-confounding by the unobserved V0 is denoted by the equal magnitude 
+
+∗ on the edges to the outcome at both time periods. To identify the average affect of A1 on Y1, we must block the backdoor path, A1 ← V0
+
+> ∗
+
+−→ Y1. However, this path cannot be blocked because V0 is not measured. This challenge motivates a DiD identification strategy, in which we leverage pre-treatment outcome measurements at t = 0 and assume that the confounding bias transmitted through A1 ← V0
+
+> ∗
+
+−→ Y0 is of equal magnitude to that operating at t = 1. Under this equi-confounding assumption, differencing the na¨ ıve estimates across the two time periods cancels the bias, yielding an unbiased estimate of the treatment effect. Notice that the identification result in Eq. (6) is equivalent to [E(Y1|A1 = 1) − E(Y1|A1 = 0)] 
+
+> (treatment effect + confounding)
+
+− [E(Y0|A1 = 1) − E(Y0|A1 = 0)] 
+
+> (confounding)
+
+. (7) 
+
+## 4.1 Equivalence of estimands 
+
+While we have thus far focused on the effect of A1 on Y1, we can equivalently work with the estimand defined as the effect of A1 on ∆ Y . We now establish this equivalence, 
+
+AT T ∆Y = E[∆ Y (1) − ∆Y (0) |A1 = 1] = E[Y1(1) − Y0(1) − [Y1(0) − Y0(0)] |A1 = 1] = E[Y1(1) − Y1(0) |A1 = 1] − E[Y0(1) − Y0(0) |A1 = 1] = E[Y1(1) − Y1(0) |A1 = 1] ( AT T Y1 ),
+
+where E[Y0(1) − Y0(0)] = 0 under the assumption of no treatment anticipation. In this context, there are two backdoor paths from treatment to the outcome change, 
+
+A1 ← V0
+
+> ∗
+
+−→ Y11
+
+−→ ∆Y, (8) 
+
+A1 ← V0
+
+> ∗
+
+−→ Y0
+
+> −1
+
+−−→ ∆Y. (9) 6Under equi-confounding, these two paths are of equal strength and opposite in sign, making the net con-founding zero. We can also observe that the statistical estimand in Eq. (6) is equivalent to, 
+
+E(∆ Y |A1 = 1) − E(∆ Y |A1 = 0) . (10) This graph-based approach to DiD identification allows us to see a relatively new point from the DiD literature: if the pre-treatment outcome directly affect treatment assignment, parallel trends will not hold [16–18, 24]. To understand this point, note that if Y0 → A1 were present in the graph of Figure 1, we would need to condition on Y0 to block the backdoor path A1 ← Y0 → ∆Y . However, by conditioning on Y0, the path in (9) would also be blocked. Yet, the path in (8) would remain open and no longer offset. Thus, DiD requires that we assume no direct effect of Y0 on A1. This observation helps clarify the controversy over matching on the pre-treatment outcome [25–28]. 
+
+## 4.2 The compact representation of the causal diagram 
+
+We can also construct a compact representation of the natural causal diagram from Figure 1 by omitting Y0
+
+and Y1 and connecting the remaining nodes directly to ∆ Y , as shown in Figure 2.   
+
+> A1∆Y
+> V0S0
+
+Figure 2: Causal diagram in which equi-confounding is represented by the absence of an arrow from the unmeasured confounder, V0, to the change in the outcome over time, ∆ Y .In this representation, equi-confounding is encoded as a single missing edge from V0 to ∆ Y , rather than an equality constraint across two backdoor paths. By inspection, there are no backdoor paths from A1 to ∆ Y .As we will show in Section 5, this compact representation becomes particularly valuable under conditional parallel trends, where the backdoor criterion guides the selection of a sufficient adjustment set. 
+
+## 4.3 Algebraic verification using a linear Structural Causal Model (SCM) 
+
+Thus far, we have not imposed any functional form restrictions. We now consider a linear SCM to express the identification result algebraically in terms of structural coefficients. Under a linear SCM, we can assign a structural coefficient to each edge of the graph and apply Wright’s path tracing rules to express the covariance between any two variables as the sum of products of structural coefficients traced across paths connecting them [10, 29, 30]. In a linear model with a single regressor, the regression coefficient is β = σ(Y1, A 1)/Var( A1). For expositional clarity, we assume unit variances throughout, so that covariances correspond directly to regression coefficients. Figure 3 revisits the causal diagrams from Figures 1 and 2, now with structural coefficients assigned to each edge under a linear SCM. The magnitude of the structural coefficients in the compact representation (Panel 7b) follow from the covariances implied by the natural causal diagram (Panel a). Under equi-confounding, 
+
+σ(∆ Y, V 0) = c · (1) + c · (−1) = 0, confirming the absence of the edge from V0 to ∆ Y . The remaining edges carry magnitudes σ(A1, V 0) = b and σ(∆ Y, S 0) = e − d.     
+
+> A1Y0Y1
+> V0
+> S0
+> ∆Y
+> e
+> c
+> c
+> a
+> d
+> b
+> 1
+> −1
+> (a)
+> A1∆Y
+> V0S0
+> a
+> e−db
+> (b)
+
+Figure 3: Same model as Figure 1 but now assuming a linear structural causal model, indicated by coeffi-cients on each edge. (a) Natural representation. (b) Compact representation. Applying Wright’s rules to the natural diagram in Panel (a), we first consider the effect of A1 on Y1. The covariance σ(Y1, A 1) = a+bc includes the treatment effect a and the confounding bias bc , while σ(Y0, A 1) = bc 
+
+captures confounding alone. Their difference recovers the treatment effect a. We can equivalently consider the effect of A1 on ∆ Y directly, σ(∆ Y, A 1) = a+bc −bc = a, which simplifies to the treatment effect. Turning to the compact representation in Panel (b), Wright’s rules yield the same result: σ(∆ Y, A 1) = a, since there are no backdoor paths between A1 and ∆ Y , the treatment effect is immediately identified. 
+
+## 4.4 Summary 
+
+To summarize, we have described DiD identification through several complementary lenses. First, using potential outcomes, we proceeded from the parallel trends assumption to obtain the statistical estimand. Second, we established the equivalence between parallel trends and equi-confounding, allowing us to encode this assumption in a causal diagram and derive the identification result graphically. In the natural represen-tation of the causal diagram, the effect of A1 on Y1 captures both treatment effect and confounding, while the effect of A1 on Y0 captures confounding alone, so that their difference recovers the treatment effect. Focusing on the equivalent estimand, the effect of A1 on ∆ Y , reveals two backdoor paths of equal strength and opposite sign that cancel under equi-confounding. This observation motivated the compact representation, in which 
+
+Y0 an Y1 are omitted and equi-confounding is encoded by the absence of an edge from V0 to ∆ Y , leaving no open backdoor paths from A1 to ∆ Y . Third, we introduced a linear SCM and Wright’s rules to retrace these same steps algebraically, assigning structural coefficients to each edge and obtaining the identification result through covariance calculations on both representations. The linear SCM serves a purely expositional role. It allows us to decompose complex settings and inspect underlying mechanisms in later sections, but the identification result itself does not depend on functional form assumptions. Having established that the effect of A1 on ∆ Y is equivalent to the effect of A1 on Y1, we henceforth work with ∆ Y as the outcome. 85 Conditional parallel trends or conditional equi-confounding 
+
+The parallel trends assumption in Eq. (4) can be relaxed by assuming it holds within strata defined by X,
+
+E[Y1(0) − Y0(0) |A1 = 1 , X ] = E[Y1(0) − Y0(0) |A1 = 0 , X ], (11) where X is a vector that may include both time-invariant and time-varying covariates. Equivalently, equi-confounding in Eq. (5) can be relaxed by conditioning on covariates, 
+
+E[Y1(0) |A1 = 1 , X ] − E[Y1(0) |A1 = 0 , X ] = E[Y0(0) |A1 = 1 , X ] − E[Y0(0) |A1 = 0 , X ]. (12) Using these conditional assumptions for causal identification requires us to also assume positivity (also known as overlap or common support), so that for each value of X there is a positive probability of receiv-ing each treatment level. With the other assumptions introduced earlier (no anticipation, no interference, and consistency) and the same algebraic steps, we can identify the counterfactual outcome and obtain the statistical estimand, 
+
+EX[E(Y1 − Y0|A1 = 1 , X ) − E(Y1 − Y0|A1 = 0 , X )] . (13) The question is then how to select the set of covariates X that makes this conditional parallel trends (or equi-confounding) assumption plausible. The compact representation of the causal diagram is particularly well suited to this task. Since it encodes equi-confounding directly through the absence of an edge, rather than equality constraints, the standard backdoor criterion can be applied to determine sufficient adjustment sets. Importantly, this graphical approach to variable selection is fully general, i.e., it does not require parametric restrictions on the structural equations. The structural coefficients displayed on the edges of our causal diagrams throughout the manuscript are intended solely to make the underlying mechanics transparent. To illustrate, consider a baseline covariate W0 that has a time-varying effect on the outcome, as shown in Figure 4. Panel (a) includes the natural causal diagram and Panel (b) shows its compact representation.        
+
+> A1Y0Y1
+> V0
+> S0
+> ∆Y
+> W0
+> e
+> c
+> c
+> a
+> d
+> b
+> 1−1
+> f
+> h
+> g
+> (a)
+> A1∆Y
+> V0S0
+> W0
+> a
+> e−db
+> g
+> h−f
+> (b)
+
+Figure 4: Scenario with a baseline covariate W0 having a time-varying relationship to outcomes. (a) 
+
+Natural representation. (b) Compact representation. Illustrative linear model coefficients are shown as lowercase letters on each edge. 9The arrow from W0 to ∆ Y is retained in the compact representation in Panel (b) because the effect of W0
+
+on the outcome is not constant across time periods. In the linear case, the edge has magnitude h−f , ensuring that the covariance σ(∆ Y, W 0) = ga + h − f is preserved across both representations. The presence of this edge creates a backdoor path between A1 and ∆ Y through W0, meaning unconditional parallel trends does not hold. Of note, in the more general (potential nonlinear) case without assumptions about the constancy of effects over time, all edges to ∆ Y in the compact representation would be retained by default. To restore identification, we turn to conditional parallel trends. Examining the compact representation in Panel (b), we observed that conditioning on W0 blocks all backdoor paths from A1 to ∆ Y , and W0 is not a descendant of the treatment. Thus, by the backdoor criterion, {W0} is a sufficient adjustment set for identifying the effect of A1 on ∆ Y .As an algebraic complement under linearity, the same result can be obtained by deriving the relevant covariances using Wright’s rules and applying Cram´ er’s covariance formula to compute the partial regression coefficient for the effect of A1 on ∆ Y , conditional on W0,
+
+β(∆ Y, A 1|W0) = σ(∆ Y, A 1) − σ(∆ Y, W 0)σ(A1, W 0)1 − σ(A1, W 0)2
+
+= a + gh − gf − (ga + h − f )( g)1 − g2
+
+= a + gh − gf − ag 2 − gh + gf 
+
+1 − g2
+
+= a(1 − g2)1 − g2
+
+= a , 
+
+which recovers the true treatment effect. In the remainder of this section, we apply both approaches to variable selection across a series of scenarios. Section 5.1 examines the plausibility of unconditional parallel trends and its potential conflict with condi-tional parallel trends. Section 5.2 focuses on the role of time-invariant covariates in addressing time-varying confounding (Section 5.2) whereas Section 5.3 addresses the conditions under which post-treatment covariate values may be adjusted for in a DiD study. Finally, Section 5.4 considers the problem of treatment-confounder feedback in the context of multiple time periods. Of note, we present identification results primarily using graphical criteria applied to the compact representation, particularly from Section 5.2 onward. Alternative proofs for each scenario using Wright’s rules and Cram´ er’s covariance formula are provided in the Appendix. 
+
+## 5.1 Unconditional vs. conditional parallel trends 
+
+Figure 5 illustrates a setting with two time-invariant covariates, W0 and Q0, and a time-varying covariate, 
+
+Zt. In Panel (a), the evolution of Zt is driven by Q0; absent this exogenous shock, Zt would remain constant, as reflected by the unit coefficient from Z0 to Z1. Both W0 and Zt have time-invariant direct effects, f
+
+and h, respectively, on the outcome over time. Panel (b) shows the corresponding compact representation. 10 Given that σ(∆ Y, W 0) = 0, the edge from W0 to ∆ Y is removed. In contrast, σ(∆ Y, Z 0) = iga ̸ = 0. Since the indirect paths Z0 → W0 → A1 → ∆Y with magnitude iga and Z0 → Z1 → ∆Y with magnitude h
+
+are retained in the compact representation, a direct edge from Z0 to ∆ Y with magnitude −h is included to preserve the covariance structure.       
+
+> A1Y0Y1
+> V0
+> S0
+> ∆Y
+> W0
+> e
+> c
+> c
+> a
+> d
+> b
+> 1−1
+> f
+> g
+> f
+> i
+> 1
+> h
+> h
+> Z0
+> j
+> Z1
+> Q0
+> (a)
+> A1∆Y
+> V0S0
+> W0
+> Z0Z1
+> a
+> e−db
+> g
+> i
+> h
+> 1
+> −h
+> Q0
+> j
+> (b)
+
+Figure 5: Scenario with a time-invariant covariate, W0, and a time-varying covariate, Zt, that evolves due to a shock, Q0. (a) Natural representation. (b) Compact representation. Illustrative linear model coefficients are shown as lowercase letters on each edge. Although there are backdoor paths from A1 to ∆ Y in the compact representation, the time symmetry of the confounding ensures perfect offsetting in DiD such that σ(∆ Y, A 1) = a + gih − gih = a. Thus, unconditional parallel trends (or equi-confounding) holds. This example is intentionally simple, but illustrates that parallel trends requires all confounding to cancel out exactly. As the number of covariates increases, we may find a causal model with such perfect offsetting implausible. A more plausible model may include backdoor paths that break the time symmetry of confounding, in which case conditioning on covariates become necessary. That said, DiD always assumes perfect symmetry of unmeasured confounding, an assumption that may also be hard to justify, though it can still be preferable when the anticipated bias is smaller than that under alternative identification strategies. The important takeaway is that it is not necessary to assume that all confounding is perfectly offset. Adjusting for covariates under conditional parallel trends relaxes the reliance on perfect offsetting of all confounding. However, conditioning on covariates can also break the symmetry and paradoxically introduce bias. In Figure 5, adjusting for Z1 alone would break parallel trends because the backdoor path through Z0 would remain open and the confounding along that path would no longer be offset by the confounding through Z1. While adjusting for W0 and both values of Zt under conditional parallel trends yields the same result as an unconditional analysis in this context, indiscriminate covariate adjustment can introduce problems such as collider bias or limited positivity in other contexts. In practice, it is difficult to justify assumptions about the stability of all covariate effects over time, and 11 thus we generally cannot be certain that all confounding operating through observed covariates is perfectly offset. Therefore, the choice between unconditional or conditional parallel trends should be guided by the relationships encoded in the causal model. As noted above, the structural coefficients retained in the causal diagrams that follow are included only to clarify the mechanics of each scenario, not as a linearity requirement. 
+
+## 5.2 Time-invariant covariates for time-varying confounding 
+
+Next, we show how even a variable that would not be considered a “DiD confounder” can be useful as a conditioning variable. Figure 6 depicts a setting with one time-invariant covariate, W0, with a time-invariant effect f on the outcome, and a time-varying covariate, Zt with a time-varying effect ( h̸ = k). Panel (a) shows the natural representation and Panel (b) the compact representation, in which the edge from W0 to ∆ Y is again absent since its effects cancel, while the edges from Z0 and Z1 to ∆ Y are retained.        
+
+> A1Y0Y1
+> V0
+> S0
+> ∆Y
+> W0
+> e
+> c
+> c
+> a
+> d
+> b
+> 1−1
+> f
+> g
+> f
+> i
+> j
+> k
+> h
+> Z0Z1
+> (a)
+> A1∆Y
+> V0S0
+> W0
+> Z0Z1
+> a
+> e−db
+> g
+> i
+> k
+> j
+> −h
+> (b)
+
+Figure 6: Scenario with a time-invariant covariate W0 and a time-varying covariate Zt. (a) Natural representation. (b) Compact representation. Illustrative linear model coefficients are shown as lowercase letters on each edge. In this case, unconditional parallel trends no longer holds, σ(∆ Y, A 1) = a + gijk − gih ̸ = a, which means we should resort to conditional parallel trends. By applying the backdoor criterion to the compact graph in Panel (b) implies that either {Z0} or {W0} is minimally sufficient, since neither is a descendant of treatment, and each is sufficient to block all backdoor paths from A1 to ∆ Y .Although W0 is time-invariant and has a time-invariant effect on the outcome, and thus would not traditionally be considered a DiD confounder, conditioning on it nonetheless enables DiD identification via conditional parallel trends. This example highlights that selecting adjustment sets by reasoning separately about whether variables change over time or have time-varying effects on the outcome may overlook useful conditioning variables. In particular, a variable like W0 can be leveraged when Z0 is unmeasured or measured with error. 12 5.3 Adjustment for post-treatment covariates 
+
+Conventional guidance cautions against adjusting for post-treatment covariates in DiD studies because of concern that these variables might be mediators or colliders [31]. In this section, we present four scenarios that share a common feature: a time-varying covariate with a time-varying effect on the outcome, so that unconditional parallel trends does not hold in any of them. The scenarios differ in the mechanism driving the covariate’s evolution: an auto-regressive process (Figure 7), an endogenous shock (Figure 8), an unmeasured confounder (Figure 9) or the treatment itself (Figure 10). Through these examples, we illustrate how features of the causal model guide whether post-treatment covariates should be conditioned on. 
+
+5.3.1 Auto-regressive process 
+
+In Figure 7, the only cause of the covariate’s evolution is the previous value of the covariate, W0 → W1.From the compact representation in Panel (b), we can see that {W0} is minimally sufficient to block backdoor paths from A1 to ∆ Y . We could also adjust for both W0 and W1 without adverse consequences, since W1 is not a descendant of treatment. However, W1 alone is not sufficient as it cannot block all backdoor paths.        
+
+> A1Y0Y1
+> V0
+> S0
+> ∆Y
+> W0W1
+> e
+> c
+> c
+> a
+> d
+> b
+> 1−1
+> h
+> g
+> f
+> i
+> (a)
+> A1∆Y
+> V0S0
+> W0W1
+> a
+> e−db
+> g
+> −f
+> h
+> i
+> (b)
+
+Figure 7: Scenario in which the time-varying covariate Wt’s evolution is governed by an auto-regressive process. (a) Natural diagram. (b) Compact representation. Illustrative linear model coefficients are shown as lowercase letters on each edge. This scenario illustrates a case in which adjustment for the post-treatment covariate is not required for identification, but can be included without adverse consequences. 
+
+5.3.2 Endogenous shock 
+
+In Figure 8, the evolution of Wt is driven by both an endogenous shock, Z0, and an auto-regressive process. Applying the backdoor criterion to the compact representation in Panel (b), we find that either {W0, Z 0} or 
+
+{W0, W 1} are minimally sufficient to block all backdoor paths from A1 to ∆ Y . This is the first scenario in which adjusting for both values of a time-varying covariate might be required for identification. This scenario illustrates a case in which adjustment for the post-treatment covariate, alongside the pre-treatment value, is one route to identification, but not the only one. 13 A1Y0 Y1 
+
+> V0
+> S0
+> ∆Y
+> W0W1
+> Z0
+> e
+> c
+> c
+> a
+> d
+> b
+> 1−1
+> h
+> g
+> f
+> i
+> k
+> j
+
+(a)     
+
+> A1∆Y
+> V0S0
+> W0
+> W1
+> a
+> e−db
+> g
+> −f
+> i
+> h
+> k
+> j
+> Z0
+
+(b) 
+
+Figure 8: Scenario in which the time-varying covariate Wt’s evolution is governed by observed confounder 
+
+Z0 and an auto-regressive process. (a) Natural diagram. (b) Compact representation. Illustrative linear model coefficients are shown as lowercase letters on each edge. 
+
+5.3.3 Unmeasured confounder 
+
+In Figure 9, the covariate’s evolution is determined by the same unmeasured, time-invariant confounder V0
+
+that motivates the use of DiD plus an auto-regressive dependence on W0. From the compact representation in Panel (b), we can see that {W0, W 1} is minimally sufficient to block all backdoor paths. Given that the unmeasured confounder V0 cannot be adjusted for directly, in contrast to the observed shock Z0 in the previous scenario, adjustment for both values of the observed time-varying covariate Wt is required for identification.   
+
+> A1Y0Y1
+> V0
+> S0
+> ∆Y
+> W0W1
+> e
+> c
+> c
+> a
+> d
+> b
+> 1
+> −1
+> h
+> g
+> f
+> j
+> i
+
+(a)      
+
+> A1∆Y
+> V0S0
+> W0W1
+> a
+> e−db
+> g
+> −f
+> i
+> h
+> j
+
+(b) 
+
+Figure 9: Scenario in which the time-varying covariate Wt’s evolution is governed by the unobserved confounder V0 and an auto-regressive process. (a) Natural diagram. (b) Compact representation. Illustrative linear model coefficients are shown as lowercase letters on each edge. This scenario demonstrates that adjustment for the post-treatment covariate can be the only available route to identification when unobserved confounders drive the covariate’s evolution. 
+
+5.3.4 Treatment 
+
+Figure 10 illustrates the situation in which treatment itself changes the covariate. From the compact repre-sentation in Panel (b), we confirm that conditioning on {W0} is minimally sufficient to block all backdoor 14 paths.          
+
+> A1Y0Y1
+> V0
+> S0
+> ∆Y
+> W0W1
+> e
+> c
+> c
+> a
+> d
+> b
+> 1−1
+> h
+> g
+> f
+> j
+> i
+> (a)
+> A1∆Y
+> V0S0
+> W0W1
+> a
+> e−db
+> gi
+> −fh
+> j
+> (b)
+
+Figure 10: Scenario in which the time-varying covariate Wt’s evolution depends on treatment and an auto-regressive process. (a) Natural diagram. (b) Compact representation. Illustrative linear model coefficients are shown as lowercase letters on each edge. This scenario illustrates the case in which the post-treatment covariate must not be included in the adjustment set, as doing so would block a causal path from treatment to the outcome. In this particular scenario, adjusting for W1 would recover only the direct effect rather than total effect, which is generally the estimand of interest. In other cases, post-treatment covariates may act as colliders, and adjusting for them can open backdoor paths and introduce additional bias. In conclusion, there is no universal rule governing adjustment for post-treatment covariates in DiD. Across the four scenarios presented in this section, we have shown that such adjustment may be unnecessary but harmless, may serve as one among alternative sufficient strategies, may be the only option or may need to be avoided entirely. In each case, the appropriate decision follows from the structure of the causal model. 
+
+## 5.4 Extensions to multiple time periods: time-varying treatment vs. staggered rollout 
+
+The scenarios considered so far involve a single post-treatment period. Extending to multiple post-treatment periods requires distinguishing between two concepts: the treatment type and the rollout strategy. The treatment may be static, i.e., fixed (either one-time or sustained) or dynamic, i.e., it may change in response to evolving conditions. The rollout strategy may be simultaneous across all units or staggered, with differ-ent units starting treatment at different times. This distinction matters because these two concepts raise fundamentally different challenges for identification. Static treatments are common in health policy and economics, where large units like hospitals, states or countries implement one-time interventions whose effects persist over months or years. Dynamic treatments are more common in medicine and epidemiology, where individuals receive treatments that may change over days or weeks. Altering treatment in response to outcomes or patient factors may cause treatment-confounder feedback, in which a time-varying covariate mediates a prior treatment effect and confounds subsequent ones 15 [32, 33]. Crucially, treatment-confounder feedback is a property of the type of treatment, not of the rollout strategy. It does not arise under static treatment regimes, even when implementation is staggered across units, because the treatment does not change with evolving conditions. In such cases, different cohorts simply begin the same static treatment at different times. We illustrate these points with two scenarios. Figure 11 illustrates a setting with two post-treatment periods ( t = 2) and a static treatment, A1, representing a one-time intervention with potentially persistent effects on subsequent outcomes.                   
+
+> A1Y0Y1Y2
+> V0
+> S0
+> ∆Y1∆Y2
+> W0W1W2
+> e
+> c
+> c
+> c
+> a
+> d
+> b
+> 1
+> −1
+> 1
+> −1
+> i
+> h
+> g
+> f
+> a
+> l
+> j
+> k
+> (a)
+> A1∆Y1∆Y2
+> V0S0
+> W0W1W2
+> a
+> ae−dl−d
+> b
+> g
+> −f
+> −f
+> hk
+> ij
+> (b)
+
+Figure 11: Scenario in which a static treatment may have time-varying effects. (a) Natural diagram. (b) 
+
+Compact representation. Illustrative linear model coefficients are shown as lowercase letters on each edge. From the compact representation in Panel (b), we see that {W0} is a minimally sufficient adjustment set to identify the effect of treatment on both ∆ Y1 and ∆ Y2. Of note, across all scenarios in this section, we hold the treatment effect constant across post-treatment periods. This design choice isolates each estimator’s handling of confounding through adjustment set specification as the sole source of potential bias, thereby enabling a fair comparison using identical estimator implementations. These principles extend naturally to more complex multi-period settings, including staggered rollout. In such cases, we recommend constructing a separate causal diagram for each treatment implementation time, as this allows treatment assignment mechanisms to differ across cohorts. For example, early-implementing states of paid family leave policies such as California (2002) and New Jersey (2008) were influenced by strong labor coalitions and pre-existing disability insurance systems [34]. Later-implementing states without such infras-tructure faced fundamentally different institutional and political conditions [35]. Thus, constructing distinct causal diagrams for each cohort encourages careful consideration of how treatment assignment mechanisms evolve over time. Figure 12 illustrates a dynamic treatment regime with two treatment times ( A1 and A2) in which W1
+
+is both a mediator of the effect of A1 on Y1 and a confounder of the effect of A2 on Y2. Of note, we evaluate treatment effect estimates at each time period separately, rather than examining the entire treatment trajectory. Examining Panel (b) shows that {W0} is a minimally sufficient adjustment set for identifying the effect of A1 on ∆ Y1, whereas {W0, W 1} is minimally sufficient for the effect of A2 on ∆ Y2.16 A1                
+
+> A2
+> Y0Y1Y2
+> V0
+> S0
+> ∆Y1∆Y2
+> W0W1W2
+> e
+> c
+> c
+> c
+> a
+> d
+> b
+> 1
+> −1
+> 1
+> −1
+> j
+> i
+> g
+> h
+> f
+> a
+> q
+> k
+> l
+> nm
+> pb
+> (a)
+> A1∆Y1
+> A2
+> ∆Y2
+> V0
+> S0
+> W0W1W2
+> a
+> p
+> a
+> e−dq−d
+> b
+> b
+> g
+> −f
+> −f
+> hm
+> n
+> jk
+> l
+> i
+> (b)
+
+Figure 12: Scenario with a dynamic treatment regime and treatment-confounder feedback via W1. (a) 
+
+Natural diagram. (b) Compact representation. Illustrative linear model coefficients are shown as lowercase letters on each edge. The key takeaway from these two scenarios is that the distinction between the type of treatment and the rollout strategy has direct consequences for covariate adjustment: treatment-confounder feedback, which re-quires adjusting for covariates that are simultaneously mediators and confounders, arises only under dynamic treatments, not from staggered implementation alone. 
+
+# 6 Estimation 
+
+We have shown that causal diagrams coupled with graphical criteria can guide the selection of adjustment sets for DiD identification. We now turn to the question of how popular estimation procedures implement the required covariate adjustment. For each estimator, we introduce a compact label that highlights how covariates enter the procedure, which can be through outcome modeling, weighting, or both. These labels are intended to make transparent the way each estimator incorporates covariates, since, as we will show, different estimation procedures may default to different adjustment sets even when targeting the same sufficient adjustment set. Below and in Table 1, we briefly describe each estimator (see Appendix for more details). We begin with estimators that implement covariate adjustment through outcome modeling. The ∆ Y
+
+method, denoted ∆ Y (X), regresses outcome changes on covariates and a treatment group indicator, taking the coefficient on the treatment indicator as the estimate. The standard TWFE model, denoted Y (X), regresses the outcome on covariates, treatment and time indicators, and a treatment-time interaction. The coefficient on this interaction term is taken as the treatment effect estimate. De Chaisemartin and D’Haultfœuille’s estimator [36], denoted ϵ(∆ Y (∆ X)), regresses outcome changes on covariate changes among control units; computes residuals, ϵ, between observed and predicted outcome changes for all units; then re-gresses those residuals on the treatment indicator to obtain the treatment effect estimate. Unique among the estimators we consider, this estimator adjusts for covariate changes . Heckman’s outcome regression [37, 38], denoted ϵ(∆ Y (X)), also fits an outcome model on control units, but regresses outcome changes on covariates levels rather than covariate changes. The fitted model is then used to predict counterfactual outcomes for 17 treated units, and the treatment effect estimate is the average difference between observed and predicted outcomes among treated units. 
+
+Table 1: Summary of the estimators Name Propensity scores Weights Outcome predictions Estimator ∆Y (X) θ from ∆Y ∼ θA + β′X
+
+Y (X) θ from TWFE Yt ∼ . . . + θAP + β′
+
+> t
+
+X
+
+ϵ(∆ Y (∆ X)) d∆Y from Etrt 
+
+h
+
+∆Y − d∆Y
+
+i
+
+−
+
+de C-D’H ∆Y ∼ β′∆X|A = 0 Ectrl 
+
+h
+
+∆Y − d∆Y
+
+i
+
+ϵ(∆ Y (X)) d∆Y from Etrt 
+
+h
+
+∆Y − d∆Y
+
+i
+
+Heckman ∆Y ∼ β′X|A = 0 
+
+w(X)∆ Y e(X) from 1† A = 1 Etrt [w∆Y ] −
+
+Abadie IPW A ∼ π′X e(X)1 − e(X)
+
+> †
+
+A = 0 Ectrl [w∆Y ]
+
+w(X)ϵ(∆ Y (X)) e(X) from 1† A = 1 d∆Y from Etrt 
+
+h
+
+w
+
+
+
+∆Y − d∆Y
+
+i 
+
+−
+
+S’A-Z DR A ∼ π′X e(X)1 − e(X)
+
+> †
+
+A = 0 ∆Y ∼ β′X|A = 0 Ectrl 
+
+h
+
+w
+
+
+
+∆Y − d∆Y
+
+i 
+
+wg (X)Y eg (X) from e1
+
+eG(X) A = 1 θ from ‡
+
+Stuart g-PS G ∼ πg X e1
+
+eG(X) A = 0 Yt ∼ . . . + θAP wt(X)Y et(X) from 1
+
+et(X) A = 1 θ from ‡
+
+Stuart t-PS A ∼ π′
+
+> t
+
+X 11 − et(X) A = 0 Yt ∼ . . . + θAP wAT T t (X)∆ Y et(X) from 1 At = 1 Etrt [wt∆Y ] −
+
+Myint ATT At ∼ π′
+
+> t
+
+X et(X)1 − et(X) At = 0 Ectrl [wt∆Y ]
+
+wAT E t (X)∆ Y et(X) from ptrt 
+
+et(X) At = 1 Etrt [wt∆Y ] −
+
+Myint ATE At ∼ π′
+
+> t
+
+X 1 − ptrt 
+
+1 − et(X) At = 0 Ectrl [wt∆Y ]
+
+> †
+
+Normalized to sum to one within each group. 
+
+> ‡
+
+Weighted regression. The omitted regression terms indicated by . . . are η0 + ηAA + ηP P , where P = I{t = 1 }
+
+Next, we consider an estimator based on weighting. Abadie’s IPW estimator [4], denoted w(X)∆ Y ,estimates a propensity score for treatment assignment given covariates from both treated and control units and uses inverse probability weights to weight the comparison group toward the distribution of the treated group. The treatment effect contrasts outcome changes in the treated group with those in the reweighted comparison group. Sant’Anna and Zhao’s doubly robust estimator [39], denoted w(X)ϵ(∆ Y (X)), combines outcome modeling with inverse probability weighting, thus protecting against misspecification of either the outcome or propensity score model. A brief note about data structure. If we have panel data, the ∆ Y in the Heckman’s outcome regression, Abadie’s IPW and Sant’Anna and Zhao’s doubly robust estimators can be computed directly for each unit. 18 With repeated cross-sections, these estimators operate on outcomes at each time point separately. Finally, we consider estimators that combine weighting with an outcome procedure in a two-step fashion. Unlike the doubly robust approach, these estimators apply weighting and outcome modeling sequentially rather than jointly, and do not offer protection against misspecification of either model alone. Stuart et al. [31] first estimate propensity score weights and then apply them to a TWFE regression. In our implementation, we omit covariates from the TWFE regression, implementing covariate adjustment entirely through the weights, though Stuart et al. also consider specifications that include covariates in both steps. The authors propose two variants: a multinomial version that fits a single propensity score model across all four treatment-by-period groups, weighting each toward a reference group, denoted wg (X)Y , and a time-specific version that fits separate binary propensity score models at each time period, denoted wt(X)Y . Myint [21] develops sequential IPW estimators for settings with potential time-invariant and time-varying confounding. The original method constructs cumulative weights as the product of propensity scores across time points, targeting the treatment effect over an entire treatment regime. Since our goal is to estimate the treatment effect at each time point separately, we do not use cumulative weights. Instead, we fit propensity score models at each time point, where the adjustment set may include covariates from current and prior periods. These weights are then applied in two ways. In the first version, denoted wAT T t (X)∆ Y , ATT weights are constructed and the weighted outcome changes are regressed on the treatment indicator, with no additional covariates. In the second version, denoted wAT E t (X)∆ Y , Average Treatment Effect (ATE) weights are constructed and combined with the Callaway and Sant’Anna DiD framework [40]. Since we do not include covariates at this stage, this second step reduces to a difference in weighted mean outcome changes between treated and control groups. 
+
+## 6.1 Changing default covariate handling 
+
+Each estimator handles covariates differently by default, depending on the data format it requires (wide, long, or differenced) and on how it incorporates the supplied covariates into the estimation procedure. As a result, different estimators may default to different adjustment sets even when the goal is to adjust for the same confounders. Some estimators handle this naturally, while others require additional strategies to capture a sufficient adjustment set, as we describe below. The ∆ Y method (∆ Y (X)) and the first step of both Myint procedures ( wAT T t (X)∆ Y and wAT E t (X)∆ Y )operate on wide-format data, where each covariate at each time point appears as a separate column. Thus, all supplied covariates (time-invariant or time-varying) contribute to the effective adjustment set directly, and no modification to the default covariate handling is needed. For the remaining estimators, which operate on long-format or differenced data, the default covariate handling may not match a sufficient adjustment set. The standard TWFE model ( Y (X)) assigns a single coefficient to each covariate, pooled across time periods. For time-invariant covariates, their contribution appears identically at both time periods and cancels from the implied difference, leaving the treatment 19 effect estimate unchanged, even when the covariate is part of a sufficient adjustment set. For time-varying covariates, the values differ across periods, so the contribution does not cancel entirely. However, with a single pooled coefficient, it is ambiguous whether the estimator effectively adjusts for X0, X1 or some combination of both. To address the first limitation, we specify an augmented TWFE model with covariate-by-time interactions, which assigns time-specific coefficients, thus preventing time-invariant covariates from canceling out. However, when it comes to time-varying covariates, this augmented specification produces a perhaps unexpected effective adjustment set: the model adjusts for X0 at t = 0 and X1 at t = 1 separately, rather than for both covariates at each time period, which may or may not constitute a sufficient adjustment set. To address this second potential limitation, we create time-constant copies of time-varying covariates, i.e., separate variables that fix the covariate at its value from a specific period and hold it constant across all periods in the long-data format (e.g., Xdup  
+
+> 0
+
+takes the value of X0 at both t = 0 and t = 1). De Chaisemartin and D’Haultfœuille’s estimator ( ϵ(∆ Y (∆ X))) operates on covariate changes, which produces a similar problem to the standard TWFE model: time-invariant covariates difference out to zero and therefore do not contribute to the treatment effect estimate, while time-varying covariates give rise to an ambiguous effective adjustment set. To address this, we interact time-invariant covariates and time-constant copies of time-varying covariates with time directly in the dataset prior to estimation. Differencing these interaction terms recovers the original covariate levels, e.g., ∆( X0 × t) = X0 and ∆( Xdup  
+
+> 0
+
+× t) = Xdup  
+
+> 0
+
+and ∆( Xdup  
+
+> 1
+
+× t) = Xdup  
+
+> 1
+
+, thus preserving these covariates in the estimation procedure. We implement this estimator via the did multipleft function from the DIDmultiplegt package [41]. Heckman’s outcome regression ( ϵ(∆ Y (X))), Abadie’s IPW ( w(X)∆ Y ), and Sant’Anna and Zhao’s doubly robust ( w(X)ϵ(∆ Y (X))) estimators share the same default covariate handling because we implement all three via the att gt function in the did package [40]. The package’s default handling of time-varying covariates is to use only the baseline value; for instance, when time-varying Xt is given, only X0 enters the model. To include both baseline and post-treatment covariate values in the effective adjustment set, we replace the time-varying covariates with their time-constant copies (e.g., Xdup  
+
+> 0
+
+and Xdup  
+
+> 1
+
+to adjust for both X0 and X1). We also consider an alternative (but equivalent) adjustment set consisting of the baseline covariate and the covariate change between time periods, as proposed by Caetano and Callaway [20, 42]. Since {X0, X 1 − X0}
+
+is a linear transformation of {X0, X 1}, the two sets span the same information. In scenarios where {X0, X 1}
+
+constitutes a sufficient adjustment set, {X0, X 1 − X0} is equally sufficient. Finally, Stuart et al.’s procedures each handle covariates differently in the weighting step. In the group-specific version ( wg (X)Y ), the propensity score model is fitted on data pooled across treatment-by-time groups, making the effective adjustment set difficult to characterize. In the time-specific version ( wt(X)Y ), separate propensity score models are fitted at each time period, so each model adjusts only for the covariate values observed at that time. To override these defaults, we again supply time-constant copies of time-varying covariates, ensuring that each propensity score model can condition on covariate values from any time period. These strategies ensure that, for each estimator, we can construct effective adjustment sets that align 20 with the sufficient adjustment sets for identification. 
+
+# 7 Simulation results 
+
+We simulated each scenario described in Sections 5.1-5.4 and applied all estimators introduced above, with one exception: in Scenario 5.4 (2), which features treatment-confounder feedback, we only considered the ∆Y method. Specifically, we estimate the time-specific effects of A1 and A2 via separate models, one for each time point. We selected this procedure because of its simplicity and the fact that it operates on covariates in wide format, which allows us to specify the adjustment set transparently at each time period. While more recent methods [22, 23] offer stronger theoretical guarantees and improved efficiency in this context, our objective is to illustrate how bias depends on the adjustment set, for which a simple approach suffices. We used a sample size of 5000 and 500 repetitions throughout. The code to reproduce all results is available at https://github.com/DS-Rodrigues/Variable_Selection_DID .Figure 13 shows the absolute bias of each estimator across all scenarios, stratified by adjustment set cate-gory: sufficient, insufficient or unclear. We classify an adjustment set as sufficient if it satisfies the backdoor criterion, insufficient if it does not, and unclear if the effective adjustment set cannot be determined a priori from the mechanics of the estimator. The simulation results confirm our theoretical findings. Across all sce-narios, sufficient adjustment sets consistently yield low bias, with outcome regression approaches performing best and IPW-based approaches showing slightly larger but still negligible bias. Insufficient adjustment sets produce substantial bias across all estimators, the magnitude of which reflects the strength of confounding in the underlying data-generating process. For unclear adjustment sets, the bias ranges from near zero to the largest value observed in the study. This finding highlights a practical concern: when the effective adjustment set cannot be clearly characterized, the identification conditions cannot be verified. To illustrate these patterns concretely, we highlight aspects of selected scenarios that best demonstrate the role of the adjustment set. Full results are provided in the Supplementary Material. In Scenario 5.1, unconditional parallel trends hold, and conditioning on Z1 violates this assumption. Consequently, as expected, estimators that adjust for Z1 yield biased estimates. Although adjusting for Z1
+
+in isolation may appear unlikely in practice, several estimators do so implicitly. For instance, the augmented TWFE model with Z interacted with time adjusts for Z0 at t = 0 and Z1 at t = 1 separately, producing bias of approximately 0 .3. Stuart et al.’s time-specific propensity score approach induces the same adjustment set, with comparable bias ( ≈ 0.3). Interacting Z with time prior to applying de Chaisemartin and D’Haultfœuille’s estimator is equivalent to adjusting for Z1 alone, which yields a larger bias ( ≈ 1.1). In Scenario 5.2, we focus on W0, a time-invariant covariate with a time-invariant effect on the outcome. Such a variable is typically not regarded as a confounder in DiD, but as shown above it can constitute a sufficient adjustment set, and it does so here. We confirm that all estimators that effectively adjust for W0
+
+recover an unbiased estimate of the treatment effect (absolute bias ≈ 0.1). 21 In Scenario 5.3.3, identification requires both the pre- and post-treatment covariate values, {W0, W 1}.Most estimators cannot produce unbiased estimates without modification of the default adjustment set. The TWFE model, de Chaisemartin and D’Haultfœuille’s estimator and Stuart et al. time-specific propensity score procedure each suffer from the issues just discussed, and the four-group variant has an unclear effective adjustment set. Heckman’s outcome regression, Abadie’s IPW and Sant’Anna and Zhao’s doubly robust estimators, all implemented within the Callaway and Sant’Anna package, exclude the post-treatment covariate value by default, yielding a bias of approximately 8 .4. By including the two time-constant copies carrying the pre- and post-treatment values, the correct adjustment is achieved and most estimators recover unbiased estimates (absolute bias ≈ 0), although IPW-based approaches exhibit somewhat larger bias, reaching up to 
+
+≈ 0.3. As expected, including the pre-treatment value and covariate change yields comparable results. Finally, in Scenario 5.4 (2), W1 acts as a mediator at the first time period and as a confounder at the second. Therefore, including W1 in the adjustment set biases the effect estimate at the first time period (absolute bias ≈ 4.5), whereas the same variable is required to recover a valid estimate at the second time period, substantially reducing bias to ≈ 0.3. In summary, across all scenarios, whenever the effective adjustment set matches a sufficient adjustment set, bias is substantially eliminated across all estimation procedures. 22 Myint ATEwts SeqIPW + CS DID Myint ATTwts SeqIPW +  ∆YStuart et al. Time−specific PS + TWFE Stuart et al. 4−group PS + TWFE Sant'Anna & Zhao DR (CS DID) Abadie IPW (CS DID) Heckman (CS DID) dCDH DIDMultiplegt TWFE (X × time) TWFE 
+
+> ∆Y
+> 0 3 6 9
+> Absolute Bias
+> Adjustment Set  Insufficient  Sufficient  Unclear
+> Scenario  5.1  5.2  5.3.1  5.3.2  5.3.3  5.3.4  5.4  5.4 (2) Figure 13:  Mean absolute bias for each estimator, averaged across adjustment set categories (i.e., sufficient, insufficient and unclear) and replications in each scenario.
+
+23 8 Discussion 
+
+In this paper, we propose a graphical framework for variable selection in DiD studies. The framework builds on the equivalence between the parallel trends and equi-confounding, a characterization that lends itself naturally to representation in a causal diagram. We show how this diagram can be simplified so that equi-confounding of unmeasured variables is represented by the absence of an edge, enabling direct application of standard graphical criteria like the backdoor criterion to select a minimally sufficient adjustment set that justifies conditional parallel trends. Through a series of illustrative scenarios, we derived several insights that challenge conventional practice. We showed that unconditional parallel trends is a strong assumption requiring all confounding to cancel exactly, and that it can conflict with conditional parallel trends. This finding is particularly relevant in practice, where researchers often justify parallel trends on the basis of a pre-trends test using an unconditional model and then adjust for covariates as if doing so could only improve the estimate. Our analysis shows that if confounding is indeed perfectly offset unconditionally, conditioning on certain covariates can disrupt this balance and paradoxically introduce bias. Moreover, we demonstrated that a time-invariant covariate with a time-invariant effect on the outcome over time, which would not traditionally be considered a confounder in a DiD study, can nonetheless be an important conditioning variable. This widens the pool of candidate adjustment variables, offering additional options when other covariates in sufficient adjustment sets are unavailable or poorly measured. We also clarified that post-treatment covariates, often excluded from adjustment by default, can play an essential role in identification in DiD studies. The decision to adjust for post-treatment covariate values depends on the causal structure and, specifically, on what drives covariate changes over time. When extending to multiple time periods, we distinguished between treatment type (static or dynamic) and rollout strategy (simultaneous or staggered), a distinction that has important implications for identi-fication. For example, treatment-confounder feedback, which complicates covariate adjustment, arises only under dynamic treatment regimes and not merely because implementation is staggered. Finally, we showed that several popular DiD estimators handle covariates in ways such that the variables actually adjusted for can differ from those intended by the researcher. This divergence has not been explicitly recognized in the literature, where discussions of covariate handling in DiD have instead focused on the choice of estimator. Our work suggests that this issue lies not in the estimator itself, but in a gap between what the estimator effectively conditions on and what identification requires. This gap arises in a range of widely used procedures. Closing the gap does not require switching estimators. Instead, modifying the covariate specification is sufficient to bring each estimator’s effective adjustment set in line with the requirements of the causal model, recovering valid estimates without altering the estimation mechanics. Our simulation results reinforced this point by showing that sufficient adjustment sets consistently yielded low bias regardless of the estimation procedure, while insufficient sets produced substantial bias across all estimators. These results highlight that the choice of adjustment set deserves at least as much attention as the choice of estimator. 24 References 
+
+[1] Lechner M. The Estimation of Causal Effects by Difference-in-Difference Methods. Foundations and Trends in Econometrics. 2011;4(3):165-224. [2] Roth J, Sant’Anna PHC, Bilinski A, Poe J. What’s Trending in Difference-in-Differences? A Synthesis of the Recent Econometrics Literature. Journal of Econometrics. 2023;235(2):2218-44. [3] Bilinski A, Hatfield LA. Nothing to See Here? A non-inferiority approach to evaluation of parallel trends in difference-in-differences. Statistics in Medicine. 2026 Feb;45(3-5). [4] Abadie A. Semiparametric Difference-in-Differences Estimators. Review of Economic Studies. 2005;72:1-19. [5] Zeldow B, Hatfield LA. Confounding and Regression Adjustment in Difference-in-Differences Studies. Health Services Research. 2021;56:932-41. [6] Pearl J. Causality: Models, Reasoning, and Inference. 2nd ed. New York: Cambridge University Press; 2000. [7] Pearl J, Glymour M, Jewell NP. Causal Inference in Statistics: A Primer. Chichester, West Sussex: Wiley; 2016. [8] Hern´ an MA, Hern´ andez-D´ ıaz S, Werler MM, Mitchell AA. Causal Knowledge as a Prerequisite for Con-founding Evaluation: An Application to Birth Defects Epidemiology. American Journal of Epidemiology. 2002;155(2):176-84. [9] Tennant PWG, Murray EJ, Arnold KF, Berrie L, Fox MP, Gadd SC, et al. Use of Directed Acyclic Graphs (DAGs) to Identify Confounders in Applied Health Research: Review and Recommendations. International Journal of Epidemiology. 2021;50(2):620-32. [10] Cinelli C, Forney A, Pearl J. A Crash Course in Good and Bad Controls. Sociological Methods & Research. 2024;53(3):1071-104. [11] D’Amour A, Ding P, Feller A, Lei L, Sekhon J. Overlap in Observational Studies with High-Dimensional Covariates. Journal of Econometrics. 2021;221(2):644-54. [12] Ding P, Miratrix LW. To Adjust or Not to Adjust? Sensitivity Analysis of M-Bias and Butterfly-Bias. Journal of Causal Inference. 2015;3(1):41-57. [13] Chalak K. Identification Without Exogeneity Under Equiconfounding in Linear Recursive Structural Systems. In: Chen X, Swanson NR, editors. Recent Advances and Future Directions in Causality, Prediction, and Specification Analysis. New York, NY: Springer New York; 2013. p. 27-55. 25 [14] Zhang C, Cinelli C, Chen B, Pearl J. Exploiting Equality Constraints in Causal Inference. In: Proceed-ings of the 24th International Conference on Artificial Intelligence and Statistics (AISTATS). vol. 130. San Diego, California, USA; 2021. . [15] Sofer T, Richardson DB, Colicino E, Schwartz J, Tchetgen Tchetgen EJ. On Negative Outcome Con-trol of Unobserved Confounding as a Generalization of Difference-in-Differences. Statistical Science. 2016;31(3). [16] Weber AM, van der Laan MJ, Petersen ML. Assumption Trade-Offs When Choosing Identification Strategies for Pre-Post Treatment Effect Estimation: An Illustration of a Community-Based Intervention in Madagascar. Journal of Causal Inference. 2015;3(1):109-30. [17] Kim Y, Steiner PM. Gain Scores Revisited: A Graphical Models Perspective. Sociological Methods & Research. 2021;50(3):1353-75. [18] Renson A, Dukes O, Shahn Z. Using Causal Diagrams to Assess Parallel Trends in Difference-in-Differences Studies. arXiv; 2025. ArXiv:2505.03526 [stat]. [19] Ghanem D, Sant’Anna PHC, W¨ uthrich K. Selection and Parallel Trends. arXiv; 2025. [20] Caetano C, Callaway B. Difference-in-Differences When Parallel Trends Holds Conditional on Covariates. arXiv; 2024. [21] Myint L. Controlling Time-Varying Confounding in Difference-in-Differences Studies Using the Time-Varying Treatments Framework. Health Services and Outcomes Research Methodology. 2023. [22] Renson A, Hudgens M, Keil A, Zivich P, Aiello A. Identifying and Estimating Effects of Sustained Interventions under Parallel Trends Assumptions. Biometrics. 2023;79(4):2998-3009. [23] Shahn Z, Dukes O, Richardson D, Tchetgen ET, Robins J. Structural Nested Mean Models Under Parallel Trends Assumptions. arXiv; 2022. Available from: http://arxiv.org/abs/2204.10291 .[24] Imai K, Kim IS. When Should We Use Unit Fixed Effects Regression Models for Causal Inference with Longitudinal Data? American Journal of Political Science. 2019;63(2):467-90. [25] Chab´ e-Ferret S. Should We Combine Difference in Differences with Con-ditioning on Pre-Treatment Outcomes? Toulouse School of Economics; 2017. 17-824. Available from: https://www.tse-fr.eu/publications/ should-we-combine-difference-differences-conditioning-pre-treatment-outcomes .[26] Daw JR, Hatfield LA. Matching and Regression to the Mean in Difference-in-Differences Analysis. Health Services Research. 2018;53(6):4138-56. 26 [27] Ryan AM. Well-Balanced or Too Matchy–Matchy? The Controversy over Matching in Difference-in-Differences. Health Services Research. 2018;53(6):4106-10. [28] Ham DW, Miratrix L. Benefits and Costs of Matching Prior to a Difference in Differences Analysis When Parallel Trends Does Not Hold. arXiv; 2024. Available from: http://arxiv.org/abs/2205.08644 .[29] Wright S. Correlation and Causation. Journal of Agricultural Research. 1921;20(7):557-85. [30] Chen B, Pearl J, Kline R. Graphical Tools for Linear Path Models; 2018. 469. [31] Stuart EA, Huskamp HA, Duckworth K, Simmons J, Song Z, Chernew ME, et al. Using Propensity Scores in Difference-in-Differences Models to Estimate the Effects of a Policy Change. Health Services and Outcomes Research Methodology. 2014;14(4):166-82. [32] Robins JM. A New Approach to Causal Inference in Mortality Studies with a Sustained Exposure Period—Application to Control of the Healthy Worker Survivor Effect. Mathematical Modelling. 1986;7(9-12):1393-512. [33] Robins JM, Hern´ an MA, Brumback B. Marginal Structural Models and Causal Inference in Epidemiol-ogy. Epidemiology (Cambridge, Mass). 2000;11(5):550-60. [34] Milkman R, Appelbaum E. Unfinished Business: Paid Family Leave in California and the Future of U.S. Work-Family Policy. Ithaca: ILR Press, an imprint of Cornell University Press; 2013. [35] Glynn SJ, Bradley AL, Veghte BW. Paid Family and Medical Leave Programs: State Pathways and Design Options. Washington, DC: National Academy of Social Insurance; 2017. [36] De Chaisemartin C, D’Haultfœuille X. Two-Way Fixed Effects Estimators with Heterogeneous Treat-ment Effects. American Economic Review. 2020;110(9):2964-96. [37] Heckman J, Ichimura H, Todd P. Matching As An Econometric Evaluation Estimator: Evidence from Evaluating a Job Training Programme. The Review of Economic Studies. 1997;64(4):605-54. [38] Heckman J, Ichimura H, Smith J, Todd P. Characterizing Selection Bias Using Experimental Data. Econometrica. 1998;66(5):1017-98. [39] Sant’Anna PHC, Zhao J. Doubly Robust Difference-in-Differences Estimators. Journal of Econometrics. 2020;219(1):101-22. [40] Callaway B, Sant’Anna PHC. Did: Treatment Effects with Multiple Periods and Groups; 2022. Available from: https://cloud.r-project.org/web/packages/did/index.html .[41] Quispe A, Ciccia D, Knau F, M´ elitine M, Sow D, Zhang S, et al.. Estimators DID with Multiple Groups and Periods [Package]; 2026. Available from: https://github.com/Credible-Answers/did_ multiplegt .27 [42] Caetano C, Callaway B, Payne S, Rodrigues HS. Difference in Differences with Time-Varying Covariates. arXiv; 2024. Available from: http://arxiv.org/abs/2202.02903 .[43] Venables WN, Ripley BD. Modern Applied Statistics with S. 4th ed. New York: Springer; 2002. 28 A Identification via Wright’s rules and Cram´ er’s covariance for-mula in the context of linear SCMs 
+
+Scenario 5.2 (Figure 6) Pairwise covariances via Wright’s rules: σ(∆ Y, A 1) = a + gijk − gih σ(∆ Y, W 0) = ga − ih + ijk σ(∆ Y, Z 0) = iga − h + jk σ(A1, W 0) = gσ(A1, Z 0) = gi 
+
+Substituting into Cram´ er’s covariance formula for the partial regression coefficient: 
+
+β(∆ Y, A 1|W0) = σ(∆ Y, A 1) − σ(∆ Y, W 0)σ(A1, W 0)1 − σ(A1, W 0)2
+
+= a + gijk − gih − (ga − ih + ijk )( g)1 − g2
+
+= a + gijk − gih − ag 2 + gih − gijk 
+
+1 − g2
+
+= a − ag 2
+
+1 − g2
+
+= a(1 − g2)1 − g2
+
+= aβ(∆ Y, A 1|Z0) = σ(∆ Y, A 1) − σ(∆ Y, Z 0)σ(A1, Z 0)1 − σ(A1, Z 0)2
+
+= a + gijk − gih − (iga − h + jk )( gi )1 − (gi )2
+
+= a + gijk − gih − a(gi )2 + gih − gijk 
+
+1 − (gi )2
+
+= a − a(gi )2
+
+1 − (gi )2
+
+= a(1 − (gi )2)1 − (gi )2
+
+= a
+
+29 Scenario 5.3.1 (Figure 7) Pairwise covariances via Wright’s rules: σ(∆ Y, A 1) = a + gih − gf σ(∆ Y, W 0) = ga + ih − fσ(A1, W 0) = g
+
+Substituting into Cram´ er’s covariance formula for the partial regression coefficient: 
+
+β(∆ Y, A 1|W0) = σ(∆ Y, A 1) − σ(∆ Y, W 0)σ(A1, W 0)1 − σ(A1, W 0)2
+
+= a + gih − gf − (ga + ih − f )( g)1 − g2
+
+= a + gih − gf − ag 2 − gih + gf 
+
+1 − g2
+
+= a − ag 2
+
+1 − g2
+
+= a(1 − g2)1 − g2
+
+= a
+
+30 Scenario 5.3.2 (Figure 8) Pairwise covariances via Wright’s rules: σ(∆ Y, A 1) = a − gf + gkh + ijh σ(∆ Y, W 0) = −f + ga + kh σ(∆ Y, W 1) = h − kf + kga + jia σ(∆ Y, Z 0) = ia + jh σ(A1, W 0) = gσ(A1, W 1) = gk + ij σ(A1, Z 0) = iσ(W0, W 1) = kσ(W0, Z 0) = 0 Conditional standard deviations given W0: σ(∆ Y |W0) = 1 − σ(∆ Y, W 0)21/2 = 1 − (−f + ga + kh )21/2
+
+σ(A1|W0) = 1 − σ(A1, W 0)21/2 = 1 − g21/2
+
+Partial correlations given W0: ρ(∆ Y, A 1|W0) = σ(∆ Y, A 1) − σ(∆ Y, W 0)σ(A1, W 0)[1 − σ(∆ Y, W 0)2]1/2 [1 − σ(A1, W 0)2]1/2
+
+= (a − gf + gkh + ijh ) − (−f + ga + kh )( g)[1 − (−f + ga + kh )2]1/2 [1 − g2]1/2
+
+= a(1 − g2) + ijh 
+
+[1 − (−f + ga + kh )2]1/2 [1 − g2]1/2
+
+ρ(∆ Y, W 1|W0) = σ(∆ Y, W 1) − σ(∆ Y, W 0)σ(W1, W 0)[1 − σ(∆ Y, W 0)2]1/2 [1 − σ(W1, W 0)2]1/2
+
+= (h − kf + kga + jia ) − (−f + ga + kh )( k)[1 − (−f + ga + kh )2]1/2 [1 − k2]1/2
+
+= h(1 − k2) + jia 
+
+[1 − (−f + ga + kh )2]1/2 [1 − k2]1/2
+
+ρ(A1, W 1|W0) = σ(A1, W 1) − σ(A1, W 0)σ(W1, W 0)[1 − σ(A1, W 0)2]1/2 [1 − σ(W1, W 0)2]1/2
+
+= (gk + ij ) − (g)( k)[1 − g2]1/2 [1 − k2]1/2
+
+= ij 
+
+[1 − g2]1/2 [1 − k2]1/2
+
+31 ρ(∆ Y, Z 0|W0) = σ(∆ Y, Z 0) − σ(∆ Y, W 0)σ(Z0, W 0)[1 − σ(∆ Y, W 0)2]1/2 [1 − σ(Z0, W 0)2]1/2
+
+= (ia + jh ) − (−f + ga + kh )(0) [1 − (−f + ga + kh )2]1/2 [1 − 0] 1/2
+
+= ia + jh 
+
+[1 − (−f + ga + kh )2]1/2
+
+ρ(A1, Z 0|W0) = σ(A1, Z 0) − σ(A1, W 0)σ(Z0, W 0)[1 − σ(A1, W 0)2]1/2 [1 − σ(Z0, W 0)2]1/2
+
+= (i) − (g)(0) [1 − g2]1/2 [1 − 0] 1/2
+
+= i
+
+[1 − g2]1/2
+
+Substituting into Cram´ er’s covariance formula for the partial regression coefficient: 
+
+β(∆ Y, A 1|Z0, W 0) = σ(∆ Y |W0)
+
+σ(A1|W0) · ρ(∆ Y, A 1|W0) − ρ(∆ Y, Z 0|W0) ρ(A1, Z 0|W0)1 − ρ(A1, Z 0|W0)2
+
+=
+
+1 − (−f + ga + kh )21/2
+
+[1 − g2]1/2 ·
+
+a(1 − g2) + ijh 
+
+[1 − (−f + ga + kh )2]1/2 [1 − g2]1/2 − ia + jh 
+
+[1 − (−f + ga + kh )2]1/2 · i
+
+[1 − g2]1/2
+
+1 − i2
+
+1 − g2
+
+=
+
+1 − (−f + ga + kh )21/2
+
+[1 − g2]1/2 ·
+
+a(1 − g2) + ijh − i2a − ijh 
+
+[1 − (−f + ga + kh )2]1/2 [1 − g2]1/2
+
+1 − g2 − i2
+
+1 − g2
+
+=
+
+1 − (−f + ga + kh )21/2
+
+[1 − g2]1/2 · a(1 − g2) − i2a
+
+[1 − (−f + ga + kh )2]1/2 [1 − g2]1/2 · 1 − g2
+
+1 − g2 − i2
+
+= 11 − g2 · a(1 − g2 − i2)1 · 1 − g2
+
+1 − g2 − i2
+
+= 1(1 − g2) · a(1 − g2)= a
+
+32 β(∆ Y, A 1|W1, W 0) =  σ(∆ Y |W0)
+
+> σ(A1|W0) · ρ(∆ Y, A 1|W0) − ρ(∆ Y, W 1|W0) ρ(A1, W 1|W0)1 − ρ(A1, W 1|W0)2
+> =
+> 1 − (−f + ga  + kh )21/2
+> [1  − g2]1/2 ·
+> a(1  − g2) +  ijh
+> [1  − (−f + ga  + kh )2]1/2 [1  − g2]1/2 − h(1  − k2) +  jia
+> [1  − (−f + ga  + kh )2]1/2 [1  − k2]1/2 · ij
+> [1  − g2]1/2 [1  − k2]1/2
+> 1 − i2j2
+> (1  − g2)(1  − k2)=
+> 1 − (−f + ga  + kh )21/2
+> [1  − g2]1/2 ·
+> a(1  − g2) +  ijh  (1  − k2) − h(1  − k2) +  jia  · ij
+> [1  − (−f + ga  + kh )2]1/2 [1  − g2]1/2 (1  − k2)(1  − g2)(1  − k2) − i2j2
+> (1  − g2)(1  − k2)=
+> 1 − (−f + ga  + kh )21/2
+> [1  − g2]1/2 ·
+> a(1  − g2)(1  − k2) +  ijh (1  − k2) − ijh (1  − k2) − ai 2j2
+> [1  − (−f + ga  + kh )2]1/2 [1  − g2]1/2 (1  − k2)(1  − g2)(1  − k2) − i2j2
+> (1  − g2)(1  − k2)=
+> 1 − (−f + ga  + kh )21/2
+> [1  − g2]1/2 ·
+> a (1  − g2)(1  − k2) − i2j2
+> [1  − (−f + ga  + kh )2]1/2 [1  − g2]1/2 (1  − k2)(1  − g2)(1  − k2) − i2j2
+> (1  − g2)(1  − k2)=
+> 1 − (−f + ga  + kh )21/2
+> [1  − g2]1/2 · a (1  − g2)(1  − k2) − i2j2
+> [1  − (−f + ga  + kh )2]1/2 [1  − g2]1/2 (1  − k2) · (1  − g2)(1  − k2)(1  − g2)(1  − k2) − i2j2
+> = 11 − g2 · a(1  − g2)= a
+
+33 Scenario 5.3.3 (Figure 9) Pairwise covariances via Wright’s rules: σ(∆ Y, A 1) = a − gf + gjh + bih σ(∆ Y, W 0) = −f + ga + jh σ(∆ Y, W 1) = h − jf + jga + iba σ(A1, W 0) = gσ(A1, W 1) = gj + bi σ(W0, W 1) = j
+
+Conditional standard deviations given W0: σ(∆ Y |W0) = 1 − σ(∆ Y, W 0)21/2 = 1 − (−f + ga + jh )21/2
+
+σ(A1|W0) = 1 − σ(A1, W 0)21/2 = 1 − g21/2
+
+Partial correlations given W0: ρ(∆ Y, A 1|W0) = σ(∆ Y, A 1) − σ(∆ Y, W 0)σ(A1, W 0)[1 − σ(∆ Y, W 0)2]1/2 [1 − σ(A1, W 0)2]1/2
+
+= (a − gf + gjh + bih ) − (−f + ga + jh )( g)[1 − (−f + ga + jh )2]1/2 [1 − g2]1/2
+
+= a(1 − g2) + bih 
+
+[1 − (−f + ga + jh )2]1/2 [1 − g2]1/2
+
+ρ(∆ Y, W 1|W0) = σ(∆ Y, W 1) − σ(∆ Y, W 0)σ(W1, W 0)[1 − σ(∆ Y, W 0)2]1/2 [1 − σ(W1, W 0)2]1/2
+
+= (h − jf + jga + iba ) − (−f + ga + jh )( j)[1 − (−f + ga + jh )2]1/2 [1 − j2]1/2
+
+= h(1 − j2) + iba 
+
+[1 − (−f + ga + jh )2]1/2 [1 − j2]1/2
+
+ρ(A1, W 1|W0) = σ(A1, W 1) − σ(A1, W 0)σ(W1, W 0)[1 − σ(A1, W 0)2]1/2 [1 − σ(W1, W 0)2]1/2
+
+= (gj + bi ) − (g)( j)[1 − g2]1/2 [1 − j2]1/2
+
+= bi 
+
+[1 − g2]1/2 [1 − j2]1/2
+
+34 Substituting into Cram´ er’s covariance formula for the partial regression coefficient: 
+
+> β(∆ Y, A 1|W1, W 0) =  σ(∆ Y |W0)
+> σ(A1|W0) · ρ(∆ Y, A 1|W0) − ρ(∆ Y, W 1|W0) ρ(A1, W 1|W0)1 − ρ(A1, W 1|W0)2
+> =
+> 1 − (−f + ga  + jh )21/2
+> [1  − g2]1/2 ·
+> a(1  − g2) +  bih
+> [1  − (−f + ga  + jh )2]1/2 [1  − g2]1/2 − h(1  − j2) +  iba
+> [1  − (−f + ga  + jh )2]1/2 [1  − j2]1/2 · bi
+> [1  − g2]1/2 [1  − j2]1/2
+> 1 − b2i2
+> (1  − g2)(1  − j2)=
+> 1 − (−f + ga  + jh )21/2
+> [1  − g2]1/2 ·
+> a(1  − g2) +  bih  (1  − j2) − h(1  − j2) +  iba  · bi
+> [1  − (−f + ga  + jh )2]1/2 [1  − g2]1/2 (1  − j2)(1  − g2)(1  − j2) − b2i2
+> (1  − g2)(1  − j2)=
+> 1 − (−f + ga  + jh )21/2
+> [1  − g2]1/2 ·
+> a(1  − g2)(1  − j2) +  bih (1  − j2) − bih (1  − j2) − ab 2i2
+> [1  − (−f + ga  + jh )2]1/2 [1  − g2]1/2 (1  − j2)(1  − g2)(1  − j2) − b2i2
+> (1  − g2)(1  − j2)=
+> 1 − (−f + ga  + jh )21/2
+> [1  − g2]1/2 ·
+> a (1  − g2)(1  − j2) − b2i2
+> [1  − (−f + ga  + jh )2]1/2 [1  − g2]1/2 (1  − j2)(1  − g2)(1  − j2) − b2i2
+> (1  − g2)(1  − j2)=
+> 1 − (−f + ga  + jh )21/2
+> [1  − g2]1/2 · a (1  − g2)(1  − j2) − b2i2
+> [1  − (−f + ga  + jh )2]1/2 [1  − g2]1/2 (1  − j2) · (1  − g2)(1  − j2)(1  − g2)(1  − j2) − b2i2
+> = 11 − g2 · a(1  − g2)= a
+
+35 Scenario 5.3.4 (Figure 10) Pairwise covariances via Wright’s rules: σ(∆ Y, A 1) = a + ih + gjh − gf σ(∆ Y, W 0) = ga + gih + jh − fσ(A1, W 0) = g
+
+Substituting into Cram´ er’s covariance formula for the partial regression coefficient: 
+
+β(∆ Y, A 1|W0) = σ(∆ Y, A 1) − σ(∆ Y, W 0)σ(A1, W 0)1 − σ(A1, W 0)2
+
+= a + ih + gjh − gf − (ga + gih + jh − f )( g)1 − g2
+
+= a + ih + gjh − gf − ag 2 − ihg 2 − gjh + gf 
+
+1 − g2
+
+= a − ag 2 + ih − ihg 2
+
+1 − g2
+
+= a − ag 2
+
+1 − g2 + ih − ihg 2
+
+1 − g2
+
+= a(1 − g2)1 − g2 + ih (1 − g2)1 − g2
+
+= a + ih (total effect) 36 Scenario 5.4 (Figure 11) Pairwise covariances via Wright’s rules: σ(∆ Y1, A 1) = a + gih − gf σ(∆ Y2, A 1) = a + gijk − gf σ(∆ Y1, W 0) = ga + ih − fσ(∆ Y2, W 0) = ga + ijk − fσ(A1, W 0) = g
+
+Substituting into Cram´ er’s covariance formula for the partial regression coefficient at times 1 and 2: 
+
+β(∆ Y1, A 1|W0) = σ(∆ Y1, A 1) − σ(∆ Y1, W 0)σ(A1, W 0)1 − σ(A1, W 0)2
+
+= a + gih − gf − (ga + ih − f )( g)1 − g2
+
+= a + gih − gf − ag 2 − gih + gf 
+
+1 − g2
+
+= a − ag 2
+
+1 − g2
+
+= a(1 − g2)1 − g2
+
+= aβ(∆ Y2, A 1|W0) = σ(∆ Y2, A 1) − σ(∆ Y2, W 0)σ(A1, W 0)1 − σ(A1, W 0)2
+
+= a + gijk − gf − (ga + ijk − f )( g)1 − g2
+
+= a + gijk − gf − ag 2 − gijk + gf 
+
+1 − g2
+
+= a − ag 2
+
+1 − g2
+
+= a(1 − g2)1 − g2
+
+= a
+
+37 Scenario 5.4 (2)  (Figure 12) Pairwise covariances via Wright’s rules:  σ(∆ Y1, A 1) =  a + hi  + gji  − gf σ(∆ Y1, W 0) =  ga  + ji  + ghi  − fσ(A1, W 0) =  gσ(∆ Y2, A 2) =  a + mn  − f gp  − f jl  − f ghl  + nkl  + nkhp  + nkgjp  + b2hkn σ(∆ Y2, W 0) =  −f + agp  + ajl  + aghl  + mngp  + mnjl  + mnghl  + nkj  + nkgh σ(∆ Y2, W 1) =  nk  + al  + ahp  + ab 2h + agjp  + mnl  + mnhp  + mnb 2h + mngjp  − f j  − f gh σ(A2, W 0) =  gp  + jl  + ghl σ(A2, W 1) =  l + hp  + b2h + gjp σ(W0, W 1) =  j + gh 
+
+> Conditional standard deviations given  W0: σ(∆ Y2|W0) =  1 − (−f + agp  + ajl  + aghl  + mngp  + mnjl  + mnghl  + nkj  + nkgh )21/2
+> σ(A2|W0) =  1 − (gp  + jl  + ghl )21/2
+> Partial correlations given  W0:
+> ρ(∆ Y2, A 2|W0) =  σ(∆ Y2, A 2) − σ(∆ Y2, W 0)σ(A2, W 0)[1  − σ(∆ Y2, W 0)2]1/2 [1  − σ(A2, W 0)2]1/2
+> = (a + mn  − f gp  − f jl  − f ghl  + nkl  + nkhp  + nkgjp  + b2hkn ) − (−f + agp  + ajl  + aghl  + mngp  + mnjl  + mnghl  + nkj  + nkgh )( gp  + jl  + ghl )[1  − (−f + agp  + ajl  + aghl  + mngp  + mnjl  + mnghl  + nkj  + nkgh )2]1/2 [1  − (gp  + jl  + ghl )2]1/2
+> = (a + mn ) 1 − (gp  + jl  + ghl )2 + nk  (l + hp  + b2h + gjp ) − (gp  + jl  + ghl )( j + gh )
+> [1  − (−f + agp  + ajl  + aghl  + mngp  + mnjl  + mnghl  + nkj  + nkgh )2]1/2 [1  − (gp  + jl  + ghl )2]1/2
+
+38 ρ(∆ Y2, W 1|W0) =  σ(∆ Y2, W 1) − σ(∆ Y2, W 0)σ(W1, W 0)[1  − σ(∆ Y2, W 0)2]1/2 [1  − σ(W1, W 0)2]1/2
+
+> = (nk  + al  + ahp  + ab 2h + agjp  + mnl  + mnhp  + mnb 2h + mngjp  − f j  − f gh ) − (−f + agp  + ajl  + aghl  + mngp  + mnjl  + mnghl  + nkj  + nkgh )( j + gh )[1  − (−f + agp  + ajl  + aghl  + mngp  + mnjl  + mnghl  + nkj  + nkgh )2]1/2 [1  − (j + gh )2]1/2
+> = nk  1 − (j + gh )2 + ( a + mn ) (l + hp  + b2h + gjp ) − (gp  + jl  + ghl )( j + gh )
+> [1  − (−f + agp  + ajl  + aghl  + mngp  + mnjl  + mnghl  + nkj  + nkgh )2]1/2 [1  − (j + gh )2]1/2
+> ρ(A2, W 1|W0) =  σ(A2, W 1) − σ(A2, W 0)σ(W1, W 0)[1  − σ(A2, W 0)2]1/2 [1  − σ(W1, W 0)2]1/2 = (l + hp  + b2h + gjp ) − (gp  + jl  + ghl )( j + gh )[1  − (gp  + jl  + ghl )2]1/2 [1  − (j + gh )2]1/2
+> Substituting into Cram´ er’s covariance formula for the partial regression coefficient at time 1:
+> β(∆ Y1, A 1|W0) =  σ(∆ Y1, A 1) − σ(∆ Y1, W 0)σ(A1, W 0)1 − σ(A1, W 0)2
+> = a + hi  + gji  − gf  − (ga  + ji  + ghi  − f )( g)1 − g2
+> = a + hi  + gji  − gf  − ag 2 − gji  − hig 2 + gf
+> 1 − g2
+> = a − ag 2 + hi  − hig 2
+> 1 − g2
+> = a(1  − g2)1 − g2 + hi (1  − g2)1 − g2
+> = a + hi  (total effect)
+
+39 Simplifying the main fraction of Cram´ er’s covariance formula for the partial regression coefficient at time 2: 
+
+> ρ(∆ Y2, A 2|W0) − ρ(∆ Y2, W 1|W0) ρ(A2, W 1|W0)1 − ρ(A2, W 1|W0)2
+> = 1[1  − (−f + agp  + ajl  + aghl  + mngp  + mnjl  + mnghl  + nkj  + nkgh )2]1/2 ·
+> (a + mn ) 1 − (gp  + jl  + ghl )2 + nk  (l + hp  + b2h + gjp ) − (gp  + jl  + ghl )( j + gh ) 1 − (j + gh )2
+> [1  − (gp  + jl  + ghl )2]1/2 [1  − (j + gh )2]
+> − 1[1  − (−f + agp  + ajl  + aghl  + mngp  + mnjl  + mnghl  + nkj  + nkgh )2]1/2 ·
+> nk  1 − (j + gh )2 + ( a + mn ) (l + hp  + b2h + gjp ) − (gp  + jl  + ghl )( j + gh ) (l + hp  + b2h + gjp ) − (gp  + jl  + ghl )( j + gh )
+> [1  − (gp  + jl  + ghl )2]1/2 [1  − (j + gh )2]
+> !
+> ÷
+> 1 − (gp  + jl  + ghl )2  1 − (j + gh )2 − (l + hp  + b2h + gjp ) − (gp  + jl  + ghl )( j + gh )2
+> [1  − (gp  + jl  + ghl )2] [1  − (j + gh )2]=(a + mn )
+> n1 − (gp  + jl  + ghl )2  1 − (j + gh )2 − (l + hp  + b2h + gjp ) − (gp  + jl  + ghl )( j + gh )2o
+> [1  − (−f + agp  + ajl  + aghl  + mngp  + mnjl  + mnghl  + nkj  + nkgh )2]1/2 [1  − (gp  + jl  + ghl )2]1/2 [1  − (j + gh )2]
+> ·
+> 1 − (gp  + jl  + ghl )2  1 − (j + gh )2
+> [1  − (gp  + jl  + ghl )2] [1  − (j + gh )2] − [( l + hp  + b2h + gjp ) − (gp  + jl  + ghl )( j + gh )] 2
+> = (a + mn ) 1 − (gp  + jl  + ghl )2
+> [1  − (−f + agp  + ajl  + aghl  + mngp  + mnjl  + mnghl  + nkj  + nkgh )2]1/2 [1  − (gp  + jl  + ghl )2]1/2
+
+40 Substituting back into Cram´ er’s covariance formula for the partial regression coefficient at time 2: 
+
+> β(∆ Y2, A 2|W1, W 0) =  σ(∆ Y2|W0)
+> σ(A2|W0) · ρ(∆ Y2, A 2|W0) − ρ(∆ Y2, W 1|W0) ρ(A2, W 1|W0)1 − ρ(A2, W 1|W0)2
+> =
+> 1 − (−f + agp  + ajl  + aghl  + mngp  + mnjl  + mnghl  + nkj  + nkgh )21/2
+> [1  − (gp  + jl  + ghl )2]1/2
+> · (a + mn ) 1 − (gp  + jl  + ghl )2
+> [1  − (−f + agp  + ajl  + aghl  + mngp  + mnjl  + mnghl  + nkj  + nkgh )2]1/2 [1  − (gp  + jl  + ghl )2]1/2
+> = 11 − (gp  + jl  + ghl )2 · (a + mn ) · 1 − (gp  + jl  + ghl )2
+> = a + mn  (total effect)
+
+41 B Estimation 
+
+Below, we detail our implementation of all estimation methods in common notation, emphasizing how each incorporates covariates. As a shorthand for the adjustment set, we use Xi for the vector of covariates observed for unit i, which may include time-varying covariates. In our simulations, the components of this vector correspond to elements from the graphical models, such as Wi0, Zi0, Zi1, etc. The ∆ Y (X) method uses “wide” data. That is, the observed data have one outcome change observation for each unit and post-treatment period (relative to a pre-treatment reference period). For instance, given pre-treatment period t = 0, we have ∆ Yit = Yit − Yi0, for t ∈ { 1, 2}. We regress these outcome changes on an indicator of treatment group and covariates, ∆Yit ∼ θA i1 + β′Xi , (14) taking the coefficient θ as the treatment effect estimate. The TWFE estimator, Y (X), uses “long” data in which we have outcome observations for each unit in each time period. We fit a regression model to the longitudinal outcomes, 
+
+Yit ∼ η0 + ηAAi1 + ηP Pt + θA i1Pt + β′
+
+> t
+
+Xi , (15) where Pt = I{t ≥ t0} for t0 an indicator of the first post-treatment period. The estimated coefficient θ on the interaction term is taken as an estimate the treatment effect estimate. Note that we have given the covariates time-varying coefficients βt.To implement the de Chaisemartin and D’Haultfœuille’s estimator, ϵ(∆ Y (∆ X)),[36], we use the did multiplegt 
+
+function from the DIDmultiplegt package with the mode="old" option. This function operates on covariate changes, ∆ Xit = Xit − Xit 0 , where we have extended out notation slightly to indicate that changes at each time point are taken relative to a reference period t0. Then the function regresses outcome changes on co-variate changes in the comparison group only, ∆Yit ∼ β′∆Xit | Ai1 = 0 .
+
+From this, we obtain predicted outcome changes for each unit via d∆Y it = ˆβ′∆Xit , and residuals, ϵit =∆Yit − d∆Y it . Finally, we take the difference in these residuals between treated and control units as the estimate of the treatment effect, 
+
+Etrt (ϵit ) − Ectrl (ϵit ) , (16) where for a generic xi, Etrt (xi) = 1 
+
+> |N trt |
+
+P  
+
+> i∈N trt
+
+xi.We fit Heckman’s outcome regression, Abadie’s IPW, and Sant’Anna and Zhao’s DR estimators using the 
+
+did package [40] via the att gt function. For the first of these, Heckman’s outcome regression, ϵ(∆ Y (X), 42 (using option est method="reg" ) we regress outcome changes on covariates in the comparison group only, ∆Yit ∼ β′Xi |Ai1 = 0 , (17) which yields predicted outcome changes for treated units via d∆Y it = ˆβ′Xi. The estimator is simply the difference between observed and predicted outcome changes in the treated group, 
+
+Etrt 
+
+
+
+∆Yit − d∆Y it 
+
+
+
+. (18) Abadie’s IPW estimator, w(X)∆ Y , (fit using option est method="ipw" ) omits outcome regression and instead adjusts for covariates using propensity scores. In the propensity score model, we regress the treatment indicator on the covariates, 
+
+P r (Ai1 = 1) ∼ logit −1(π′Xi) , (19) which yields propensity scores for any unit via ˆ e (Xi) = logit −1 ( ˆ π′Xi). These are converted into weights for use in weighted regression. The weights for treated units are wi ∝ 1, while the weights for control units are 
+
+wi ∝ ˆe (Xi)1 − ˆe (Xi) .
+
+Normalizing constants ensure that each set of weights sum to one. The estimator is the weighted difference in outcome changes, 
+
+Etrt (wi∆Yit ) − Ectrl (wi∆Yit ) . (20) Finally, the doubly robust estimator, w(X)∆ Y , fit using (option est method="dr" ) combines the output of both models as 
+
+Etrt 
+
+h
+
+ˆwi
+
+
+
+∆Yi − d∆Y i
+
+i 
+
+− Ectrl 
+
+h
+
+ˆwi
+
+
+
+∆Yi − d∆Y i
+
+i 
+
+, (21) We consider two propensity score weighting procedures from Stuart et al. [31]. In the first approach, 
+
+wg (X)Y , (the authors’ preferred) we weight three of the groups in the 2x2 DiD table toward a single reference group. We first construct a four-level indicator variable in our “long” data, where g = 1 is treated, pre (the reference group); g = 2 is comparison, pre; g = 3 is comparison, post; and g = 4 is treated, post. Then we fit a log-linear multinomial model to the group indicator, 
+
+P r (Gi = g) = exp  π′ 
+
+> g
+
+Xi
+
+ (22) using the multinom function of the nnet package [43], which fits these models using neural nets. Then we use the model’s predicted probabilities of membership in each group to construct weights for each unit, 
+
+wi = ˆe1(Xit )ˆeGi (Xit ) ,
+
+43 where ˆ eg (Xi) is the model-predicted probability of belonging to group g and Gi is the index of the group to which the unit belongs. The other estimator, wt(X)Y , fits separate propensity score models for the pre and post periods using long data and two logistic models, 
+
+P r (Ai1 = 1 |Xit ) = logit −1 (π′
+
+> t
+
+Xit ) , (23) which yield propensity scores for each unit via ˆ et(Xit ) = logit −1 ( ˆ π′
+
+> t
+
+Xit ). From these, we can construct the following weights 
+
+wit =
+
+ 
+
+> 1ˆet(Xit )
+
+, A i1 = 1 , 
+
+> 11−ˆet(Xit )
+
+, A i1 = 0 .
+
+(24) For both estimators, we simply fit a weighted linear regression with the weights given above, 
+
+Yit ∼ η0 + ηAAi1 + ηP Pt + θA i1Pt , (25) and take the coefficient θ as the treatment effect estimate. Finally, we consider two hybrid estimation procedures from Myint [21]. Myint compared sequential exchangeability and parallel trends identification strategies, but we focus on the estimators of group-time ATT’s, of which there are 6 in the Myint paper. Two combine time-varying treatment weights with marginal structural models for estimation, while two use either ATT or ATE weights with the C-S’A estimator. The propensity score model regresses the treatment indicator on covariates as in Eq. 19, which produces the usual estimated propensity scores. From these, we form stabilized ATE weights 
+
+wit =
+
+ 
+
+> ptrt
+> ˆe(Xit )
+
+, A i1 = 1  
+
+> 1−ptrt
+> 1−ˆe(Xit )
+
+, A i1 = 0 ,
+
+(26) and ATT weights 
+
+wi =
+
+
+
+1 , A i1 = 1  
+
+> ˆe(Xit )1−ˆe(Xit )
+
+, A i1 = 0 .
+
+(27) Finally, the estimator is a weighted difference in outcome changes between treated and control, 
+
+Etrt (wit ∆Yit ) − Ectrl (wit ∆Yit ) . (28) and take the coefficient θ as the treatment effect. 44

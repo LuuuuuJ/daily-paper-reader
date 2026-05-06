@@ -1,0 +1,5255 @@
+Title: The Multiplicative Quasi-Instrumental Variable Model
+
+URL Source: https://arxiv.org/pdf/2605.03911v1
+
+Published Time: Wed, 06 May 2026 01:26:11 GMT
+
+Number of Pages: 47
+
+Markdown Content:
+# The Multiplicative Quasi-Instrumental Variable Model 
+
+## Jiewen Liu 1, Chan Park 2, David Richardson 3, and Eric J. Tchetgen Tchetgen ∗4,1 1Department of Biostatistics, Perelman School of Medicine, University of Pennsylvania 
+
+> 2
+
+## Department of Statistics, University of Illinois Urbana-Champaign 
+
+> 3
+
+## Joe C. Wen School of Population & Public Health, University of California, Irvine 
+
+> 4
+
+## Department of Statistics and Data Science, Wharton School, University of Pennsylvania 
+
+Abstract 
+
+We introduce the Multiplicative Quasi-Instrumental Variable (MQIV) model , a framework for causal inference with unmeasured confounding which leverages an instrument that may be imper-fectly exogenous. We allow the candidate quasi-instrument to have a direct effect on the outcome not mediated by the treatment, thus violating the standard IV exclusion restriction. We establish nonparametric identification of the population average treatment effect on the treated (ATT) under a treatment model that is multiplicative with respect to the quasi-IV and the hidden confounder (Hern´ an & Robins, 2006). Such a multiplicative treatment model may arise naturally either when treatment occurs only if two independent instrument-driven and confounder-driven causal mecha-nisms are present; or alternatively, when an instrument’s effect on treatment uptake is inherently heterogeneous and scales with a person’s latent propensity, best capturing settings in which it is chal-lenging for a given instrument to overcome a person’s inherent lack of preference for the treatment in view. Importantly, as we establish, the MQIV model is simultaneously agnostic to treatment-effect heterogeneity with respect to hidden confounders, and violation of the core IV exclusion restriction condition. Identification is achieved via a modified Wald ratio estimand, which corrects the bias due to the exclusion restriction violation, and we propose a new class of estimators that are multiply ro-bust and semiparametric efficient. Finally, we evaluate the approach in extensive simulations and an application to evaluate the causal effect of having three or more children on mothers’ labor-market engagement. 
+
+> ∗
+
+ett@wharton.upenn.edu Address for correspondence: Eric J. Tchetgen Tchetgen, 407 Academic Research Building, 265 South 37th Street, Philadelphia, PA 19104. Email: ett@wharton.upenn.edu 
+
+1
+
+> arXiv:2605.03911v1 [stat.ME] 5 May 2026
+
+1 INTRODUCTION 
+
+Keywords: Unmeasured Confounding, Instrumental Variable, Effect of Treatment on the Treated, Exclusion Restriction. 
+
+# 1 Introduction 
+
+Instrumental variable methods are a popular approach for making valid inference about the causal effect of a treatment from observational data potentially subject to unmeasured confounding. Informally, an instrumental variable is an observed exogenous factor that is known to induce the treatment of interest and is associated with the outcome only insofar as the induced treatment causally impacts the outcome. Under suitable conditions, a valid instrument can identify a causal effect of interest even when treatment assignment is confounded. The specific causal effect that can be identified with a given instrument typically depends on restrictions on the degree of heterogeneity, either in the effect of the treatment on the outcome model or in the effect of the instrument on the treatment model. Illustrating the former, Robins (1994) considered an assumption known as “no current treatment value interaction (NCTI),” which restricts effect heterogeneity in the outcome model to identify the effect of treatment on the treated. Specifically, Robins (1994) assumed that the average treatment effect among the treated (ATT) is constant across values of the instrument. Illustrating the latter, in their celebrated paper, Angrist, Imbens, and Rubin (1996) restrict heterogeneity in the treatment model by assuming that the effect of the instrument on treatment is monotone at the individual level. Under this assumption, Angrist et al. (1996) formally establish identification of the local average treatment effect (LATE), i.e., the treatment effect for the subpopulation of compliers . See also Permutt and Hebel (1989); Baker and Lindeman (1994) for contemporane-ous related developments. More recently, Wang and Tchetgen Tchetgen (2018) established identification of the population average treat-ment effect (ATE) under a union of no-heterogeneity conditions: either (i) there is no additive interaction between the treatment and an unmeasured confounder on the mean of the outcome; or (ii) there is no additive interaction between the instrument and an unmeasured confounder in the treatment assignment model; see also Cui and Tchetgen Tchetgen (2021) for a related result. Tchetgen Tchetgen, Michael, and Cui (2018) and Michael et al. (2024) extended these results by establishing that assumption (ii) yields IV identification of a marginal causal effect on any scale that would conceivably be identified under unconfoundedness, in both point treatment and time-varying treatment settings. Another interesting treatment assignment model takes a familiar multiplicative form, in which the instrument does not interact with the unmeasured confounder on the multiplicative scale for the propensity score. Hern´ an and Robins (2006) considered this model under a certain structural equations model with independent error 
+
+21 INTRODUCTION 
+
+(SEM-IE) interpretation of the IV model, and showed that it implies the NCTI condition. Therefore, their result shows that under an SEM-IE multiplicative model for the treatment assignment, the ATT is identified by averag-ing a standard conditional Wald ratio given baseline covariates among the treated. The multiplicative model may arise naturally when treatment occurs only if independent instrument-induced and confounder-induced causal mechanisms are present, or when uptake follows a certain latent index model. More recently, building on the multiplicative model of Hern´ an and Robins (2006), Liu et al. (2025) further showed that under a single world intervention graph (SWIG) interpretation of the IV model encoding a weaker version of latent unconfoundedness, and assuming the multiplicative model holds for a latent propensity score model, the ATT is identified by aver-aging a certain single arm conditional Wald ratio given baseline covariates among the treated. Also, they showed that the SEM-IE multiplicative model is in fact over-identified for the ATT, and they established the somewhat surprising result that their proposed semiparametric efficient estimator for the ATT under the SWIG multiplica-tive model remains semiparametric efficient under the more restrictive NPSEM-IE multiplicative model; see Liu et al. (2025) for details. Notably, we emphasize that these results crucially rely on the core exclusion restric-tion condition that the instrument does not have a direct effect on the outcome other than through the treatment. A fast-growing body of recent works have aimed to identify a causal effect of a confounded treatment given an imperfect instrument that does not satisfy the exclusion restriction, under an assumption that the additive effect of treatment is constant and a stronger instrument relevance condition, namely that the instrument impacts both the mean and the variance of either the treatment (Lewbel, 2012; Sun, Liu, & Tchetgen Tchetgen, 2023) or the outcome (Liu, Sun, Ye, Richardson, & Tchetgen Tchetgen, 2025). Other proposed robust methods leverage multiple instruments, assuming some but not necessarily all are valid, without a priori knowledge of which IVs are invalid (Koles´ ar, Chetty, Friedman, Glaeser, & Imbens, 2015; Kang, Zhang, Cai, & Small, 2016; Bowden, Davey Smith, Haycock, & Burgess, 2016; Guo, Kang, Tony Cai, & Small, 2018; Sun et al., 2023; Kang, Guo, Liu, & Small, 2025), or they assume that the direct effects of invalid instruments on the outcome are orthogonal to their effects on the treatment, also known as the InSIDE condition (MR-Egger) (Bowden, Davey Smith, & Burgess, 2015). Crucially, the aforementioned methods a priori rule out the possibility of an additive interaction between the treatment and the hidden confounder in the outcome model, and therefore effectively assume a constant treatment effect. In this paper, we propose the Multiplicative Quasi-Instrumental Variable (MQIV) framework, which identi-fies the effect of a confounded treatment under the multiplicative model of Hern´ an and Robins (2006) and (Liu et al., 2025); however, unlike these previous papers, we establish the somewhat surprising result that the ATT remains nonparametrically identified even if the exclusion restriction assumption is violated due to the presence of a direct effect of the instrument on the outcome other than through the treatment. Under the proposed 
+
+32 FRAMEWORK AND IDENTIFICATION 
+
+framework, we appropriately formally refer to the candidate instrument as a quasi-instrument given that it may or may not satisfy the exclusion restriction condition. In contrast with other quasi-IV methods, a salient feature of the MQIV model is that it allows for heterogeneous treatment effects with respect to a hidden confounder, a property we view as particularly advantageous. A key contribution of the paper is to show that a modified version of the Wald ratio estimand nonparametrically identifies the ATT under the MQIV model. The modifi-cation involves a correction term to account for the presence of a direct effect of the instrument on the outcome. For estimation and inference, we characterize the semiparametric efficiency bound for the proposed modified Wald estimand under a nonparametric model for the observed data distribution; and construct a multiply robust semiparametric estimator which, combined with flexible machine learning estimators of nuisance functions via cross-fitting, attains the efficiency bound provided the nuisance functions can be estimated at sufficiently fast convergence rates. We evaluate the approach in an extensive simulation study and an application aiming to estimate the causal effect of having more than two children on mothers’ labor-market engagement. 
+
+# 2 Framework and Identification 
+
+## 2.1 Causal Structure and Notation 
+
+Suppose we observe an i.i.d. sample of size N consisting of variables O = ( Y, A, Z, X ), where Y is an outcome of interest, ( A, Z ) ∈ { 0, 1}2 denote a binary treatment and a binary QIV, and X ∈ X ⊆ Rd is a vector of measured covariates. Let U denote unmeasured confounders of the causal effect of A on Y . For each ( a, z ) ∈ { 0, 1}2, let 
+
+Y a,z be the potential outcome under a hypothetical intervention that sets ( A, Z ) to ( a, z ), and let Az be the potential treatment if, possibly contrary to the fact, Z were set to z; we also write Y a for the potential outcome under an intervention that sets A to a regardless of Z. Our primary target is the marginal average treatment effect on the treated (ATT), 
+
+ψ := E  Y a=1 − Y a=0 |A = 1  .
+
+A Y
+
+X
+
+U
+
+Z
+
+Figure 1: A Graphical Representation of the MQIV model under Assumptions 1 – 3. 42.1 Causal Structure and Notation 2 FRAMEWORK AND IDENTIFICATION 
+
+We will first consider the conditional ATT defined by ψ(X) and subsequently recover the marginal ATT de-noted by ψ through marginalizing over the covariate distribution among the treated. Throughout, we assume consistency, Y = Y A,Z and A = AZ almost surely. We further assume positivity: 0 < P r (Z = 1 |X) < 1 and 0 < P r (A = 1 |Z, U, X ) < 1 almost surely. Finally, I(C) denotes the indicator of event C, and W ⊥⊥ H|R denotes conditional independence between random variables W and H given R.Throughout, we will consider the following formalization of key IV assumptions: 
+
+Assumption 1 (Relevance) A̸ ⊥⊥ Z|X;
+
+Assumption 2 (Independence) Z ⊥⊥ U, A z , Y a,z |X ;
+
+Assumption 3 (Latent Exchangeability) Az∗
+
+⊥⊥ Y a,z |Z = z, U, X for a ∈ { 0, 1} and (z, z )∗ ∈ { 0, 1}2.
+
+The first assumption 1 states that Z must be relevant for the treatment within levels of X; the second as-sumption 2 states that Z and ( U, A z , Y a,z ) must be independent in the population conditional on X, such that the causal effect of Z on Y and A is unconfounded; while the third assumption 3 essentially states that (X, U ) suffices to account for confounding of the causal effect of A on Y , under an NPSEM-IE interpretation of conditional (latent) ignorability; also see Hern´ an and Robins (2006) who rely on essentially the same condition. Figure 1 presents graphical representations of the IV model under assumptions 1–3 using a directed acyclic graph (DAG). The arrow Z → Y encodes the possibility of a direct effect of Z on Y not mediated by A, even after accounting for all confounding by conditioning on ( U, X, A ), which is accommodated by assumption 3. The following definitions are used throughout the paper: 
+
+ez (X) := E (Y |Z = z, X ) , ea,z (X) := E (Y |A = a, Z = z, X ) ,πz (X) := f (Z = z|X), pz (X) := P r (A = 1 |Z = z, X ),ρ(X) := P r (A = 1 |X), ϕ(X) := e11 (X) − e10 (X),δ∗(X) := δ(X) − ϕ(X)/ {p1(X) − p0(X)} , δ∗ := E {Aδ ∗(X)/P r (A = 1) }
+
+δ(X) := {e1(X) − e0(X)} / {p1(X) − p0(X)} w(X) := E {Y − Aδ ∗(X) − Zϕ (X)|X} .
+
+Moreover, for a sequence of random variables {VN }, we define: P(V ) = PNi=1 Vi/N , the empirical mean of the observed data; |I k|, the cardinality of the set Ik, and PIk (V ) = P 
+
+> i∈I k
+
+Vi/|I k|, the empirical mean over the subset Ik. Furthermore, we use the standard notation VN = OP (rN ) to denote that VN /r N is stochastically 
+
+52.2 The QIV & Data-Generating Mechanisms 2 FRAMEWORK AND IDENTIFICATION 
+
+bounded , VN = oP (rN ) to denote that VN /r N converges to 0 as N → ∞ , and −→ D to denote the convergence in distribution. 
+
+## 2.2 The QIV & Data-Generating Mechanisms 
+
+We define Z to be a valid QIV if it satisfies assumptions 1–3 and the following assumption. 
+
+Assumption 4 (Stable Direct Effect) E  Y z=1 − Y z=0 |A, Z, U, X  = βZ (X) almost surely; for some unre-stricted function βZ (X).
+
+Assumptions 3 and 4 allow for a direct effect of the QIV on the outcome and therefore entail a significant relaxation of the standard IV exclusion restriction, which requires 
+
+βZ (X) = 0 , almost surely . (ER) Note that (ER) implies assumption 4, but not conversely; thus, while our proposed framework accommodates a valid instrument as a special case, it does not require one. Notably, the assumption allows for unrestricted effect heterogeneity of the (additive) direct effect of the instrument; however, it rules out any heterogeneity with respect to either the treatment or the hidden confounder upon conditioning on measured covariate X. To make these assumptions more concrete, consider the following nonparametric structural equation model for the mean of the potential outcome Y a,z across values of ( A, Z, X, U ) for ( a, z ) ∈ { 0, 1}2, compatible with assumptions 1–2, 
+
+E (Y a,z |U, X ) = βA(U, z, X )a + βU (U, X ) + βZ (U, X )z, (SME) where the functions βA, β U , β Z and βX are a priori unrestricted, and therefore the model is fully saturated. Then, we have that assumption 4 is implied by conditions βZ (U, X ) = βZ (X), so that it does not depend on U ,and βA(U, z, X ) = βA(U, X ), so that it does not depend on z, therefore ruling out any heterogeneity in the direct effect of z on Y encoding a violation of the exclusion restriction, with respect to ( U, A ). While this assumption might seem restrictive, it is notable that it is considerably less restrictive than the standard exclusion restriction assumption routinely made under the standard IV model, i.e. βZ (X) = 0, almost surely. It is well known that a valid IV satisfying assumptions 1–3 and (ER) yields a test of the sharp null of no individual-level treatment effect, and can deliver bounds for various causal estimands (Swanson, Hern´ an, Miller, Robins, & Richardson, 2018). However, without an additional restriction, a valid IV generally does not point identify causal effects such as the ATT. The lack of point identification logically extends to the QIV setting, which means the weaker assumptions 1–4 alone are insufficient for point identification and thus that an additional 
+
+62.2 The QIV & Data-Generating Mechanisms 2 FRAMEWORK AND IDENTIFICATION 
+
+assumption is required for identification. To make progress, we will consider the multiplicative model for the treatment assignment introduced in Hern´ an and Robins (2006) and Liu et al. (2025). The model rules out a multiplicative interaction between the QIV Z and the hidden confounder U in the propensity score. 
+
+Assumption 5 (Multiplicative Treatment Model) P r (A = 1 |Z, X, U ) = exp {α1(Z, X ) + α2(U, X )} where 
+
+α1(·, ·) and α2(·, ·) are arbitrary functions, with the sole restriction α1(0 , X ) = 0 almost surely, and the natural constraint P r (A = 1 |Z, X, U ) ∈ (0 , 1) almost surely. 
+
+To build intuition for the multiplicative model, we consider two alternative treatment selection mechanisms that imply the multiplicative model ; throughout we suppress X to simplify notation. Synergy (“AND-Gate”) Rule: Let Zg = Zg (Z, ϵ m) ∈ { 0, 1} denote an instrument-driven mechanism depending on Z and an exogenous cause ϵm, and let Ug = Ug (U, ϵ t) ∈ { 0, 1} denote a confounder-driven mechanism de-pending on U and an exogenous cause ϵt, with ϵm ⊥⊥ ϵt. A graphical representation of this mechanism is given in Figure 2. The model states that treatment uptake A = 1 occurs if and only if both mechanisms are present; otherwise A = 0: 
+
+I(A = 1) = Zg Ug . (1) Although A is a collider of the two mechanisms along the pathway Z → Zg → A ← Ug ← U , conditioning on {A = 1 } under (1) implicitly sets {Zg = 1 , U g = 1 }, which eliminates any induced association and yields 
+
+U ⊥⊥ Z|A = 1. In contrast, conditioning on {A = 0 } is consistent with three possible values for ( Zg , U g ), namely (Zg = 1 , U g = 0) , (Zg = 0 , U g = 1), or ( Zg = 0 , U g = 0), which may induce a spurious association U̸ ⊥⊥ Z|A = 0, via collider stratification bias (Hern´ an, Hern´ andez-D´ ıaz, & Robins, 2004). An immediate consequence of the assumptions ϵm ⊥⊥ ϵt and (1) is therefore the multiplicative treatment selection model 
+
+P r (A = 1 |U, Z ) = gZ (Z) gU (U ), (2) obtained by averaging over ( ϵm, ϵ t) on the right hand side of (1). Importantly, (2) is strictly weaker than the above generative model: independence and synergy imply (2), but the latter need not imply either condition. Such a synergy (“AND-Gate”) rule has been explored in the sufficient-cause literature on mechanistic interac-
+
+Z
+
+U
+
+Zg
+
+Ug
+
+A
+
+Figure 2: Graphical representation of the synergy (“AND-gate”) treatment selection model, in which treatment uptake occurs only when both mechanisms Zg and Ug are present. 72.2 The QIV & Data-Generating Mechanisms 2 FRAMEWORK AND IDENTIFICATION 
+
+tions. For instance, VanderWeele and Robins (2008) illustrate mechanistic interaction of this sort with several examples in which an outcome occurs only when two causes are jointly present, such as “two poisons” acting together. VanderWeele, Vansteelandt, and Robins (2010) further apply this idea to arsenic in well water and tobacco smoking for premalignant skin lesions, emphasizing pathways that require both exposures. More gener-ally, multiplicative selection patterns may also arise in broader multi-causal or multi-stage models, for example when distinct causes govern different transitions along a sequential pathway to treatment uptake. Related ideas also appear in the epidemiologic literature on multiplicative disease-risk models; see, for example, Walter and Holford (1978), who discuss the “no-hit” model under which multiplicative patterns can arise from mechanistic structures involving multiple causal components. 
+
+Latent Index Model: An alternative treatment uptake generative model for the multiplicative model is the fol-lowing generalized latent index model (GLIM). Specifically, Liu et al. (2025) show that the potential treatment can be generated as 
+
+Az = I {gZ (z) gU (U ) ≥ ϵz } , ϵz ∼ U nif (0 , 1) , (3) 
+
+for some functions gZ (·) and gU (·) such that gZ (z) gU (U ) ∈ (0 , 1) .
+
+The GLIM in (3) describes treatment uptake as a latent utility index gZ (z) gU (U ) crossing a uniformly distributed threshold ϵz . This representation gives a useful interpretation of the multiplicative treatment model. The factor 
+
+gU (U ) may be viewed as capturing a person’s latent propensity, readiness, or preference for the treatment, while 
+
+gZ (z) captures the instrument-driven multiplicative shift in this latent propensity. Thus, the effect of the instru-ment on treatment uptake is inherently heterogeneous: the same value of Z produces a larger absolute change in the latent index for individuals with higher baseline propensity gU (U ), and a smaller change for individuals with low latent propensity. This is especially natural in settings where the instrument may encourage or facilitate treatment uptake, but may be insufficient to overcome a person’s inherent lack of preference, motivation, readi-ness, or perceived need for the treatment in view. Equivalently, because gZ (z)gU (U ) ∈ (0 , 1) and ϵz ∈ (0 , 1), the latent index model can be written on the logarithmic scale as 
+
+Az = I {log gZ (z) + log gU (U ) ≥ log ϵz } .
+
+On this scale, the multiplicative model corresponds to an additive latent index with an instrument component log gZ (z) and a latent-propensity component log gU (U ). However, the induced change in the original probability scale remains multiplicative and therefore depends on the individual’s latent propensity. For comparison, Liu et al. (2025) also derive GLIMs that correspond to alternative “no-interaction” assumptions in the treatment selection model, and contrast these with the GLIM formulation of the monotonicity condition due to (Vytlacil, 
+
+82.3 Comparison with Related IV Models 2 FRAMEWORK AND IDENTIFICATION 
+
+2002). They make the important observation that while the GLIM equivalent representation of monotonicity restricts the degree of individual-level heterogeneity by imposing ϵz to be degenerate, consequently imposing a degenerate joint distribution for the potential treatments ( Az=0 , A z=1 ), the GLIM multiplicative generative model readily incorporates such heterogeneity. We refer the reader to Liu et al. (2025) for a detailed discussion. 
+
+## 2.3 Comparison with Related IV Models 
+
+We refer to the model under Assumptions 1–5 as the MQIV model, since it combines the quasi-IV conditions with the multiplicative treatment model. It is useful to compare MQIV with several related IV models for point identification with a binary treatment and a binary instrument. These models differ in whether identification is obtained by restricting heterogeneity in the outcome model, restricting heterogeneity in the treatment-selection model, or maintaining the exclusion restriction. 
+
+Robins’ no current treatment interaction condition. For identification of the ATT, Robins (1994) con-sidered a no-treatment-effect-heterogeneity condition known as no current treatment interaction (NCTI). In the present notation, a version of the Robins IV conditions can be written as 
+
+E  Y a=0 |Z, X  ⊥⊥ Z|X, (4) 
+
+E  Y a=1 − Y a=0 |A = 1 , Z, X  ⊥⊥ Z|A = 1 , X. (5) The NCTI condition (5) states that the conditional ATT given ( Z, X ) is invariant across levels of the instrument among the treated. Under IV relevance and (4)–(5), the conditional ATT is identified by the standard conditional Wald ratio δ(X). This condition is attractive because it is automatically satisfied under the conditional ATT null and is therefore locally robust for testing the ATT null. However, it restricts the causal effect of primary interest to be constant across strata of the instrument, which may be undesirable when treatment-effect heterogeneity with respect to Z is scientifically plausible. 
+
+The Hern´ an–Robins multiplicative IV model under NPSEM-IE. Hern´ an and Robins (2006) related NCTI to a multiplicative treatment model under a nonparametric structural equation model with independent errors (NPSEM-IE). In the notation of the present paper, the corresponding formulation imposes a strong latent ignorability and exclusion restriction: 
+
+Y a ⊥⊥ (A, Z )|X, U, a ∈ { 0, 1}. (6) 
+
+92.4 Identification Result 2 FRAMEWORK AND IDENTIFICATION 
+
+They prove that, together with IV relevance, IV independence, and the multiplicative treatment model, condition (6) implies NCTI and identifies the ATT by the standard Wald ratio. Thus, the Hern´ an–Robins model does not directly impose a constant treatment effect with respect to the hidden confounder U ; instead, NCTI follows from the stronger NPSEM-IE-style restrictions together with multiplicative treatment selection. 
+
+The MIV model of Liu et al. (2025). Liu et al. (2025) considered a weaker version of the Hern´ an–Robins formulation by replacing (6) with a single-world condition involving only the treatment-free potential outcome: 
+
+Y a=0 ⊥⊥ (A, Z )|X, U. (7) Under the remaining valid-IV and multiplicative treatment-model assumptions, this weaker MIV model identifies the treatment-free counterfactual mean among the treated using a single-arm Wald ratio based on the untreated outcome (1 − A)Y . Consequently, the ATT can be identified without imposing restrictions on Y a=1 or on the extent to which treatment effects vary with hidden confounders. Compared with the Hern´ an–Robins model, this formulation removes assumptions on treated potential outcomes that are not necessary for ATT identification, and shifts the key identifying structure to the treatment-selection mechanism rather than to the outcome model. 
+
+The proposed MQIV model. The proposed MQIV model further relaxes the weak exclusion condition in Liu et al. (2025). Instead of requiring the treatment-free potential outcome to be unaffected by the instrument conditional on ( X, U ), MQIV allows the candidate instrument to have a direct effect on the outcome, provided that this direct effect is stable with respect to ( A, U ) conditional on X, as formalized in Assumption 4. Thus, MQIV maintains the multiplicative treatment-selection restriction of MIV but relaxes the requirement that the instrument affect the outcome only through treatment, thus delivering a more robust quasi-instrumental variable method. 
+
+## 2.4 The Identification Result under the MQIV Model 
+
+We now state a key nonparametric identification result under the MQIV model. 
+
+Theorem 1 Under the MQIV model, ψ(X) is identified from the observed data by the following expression: 
+
+ψ(X) = δ∗(X) = δ(X) − ϕ(X)/ {p1(X) − p0(X)} .
+
+Additionally, the counterfactual mean parameter ψ is identified by R 
+
+> X
+
+δ∗(X)dF (X|A = 1) .
+
+Theorem 1 establishes identification of the ATT in the MQIV model via a modified Wald ratio estimand 
+
+10 3 A SEMIPARAMETRIC EFFICIENT ESTIMATOR 
+
+δ∗(X), without invoking the exclusion restriction. A salient feature of this result is that it avoids any a pri-ori restriction on the extent to which the treatment may interact with the hidden confounder U and there-fore the extent of latent heterogeneity of the effects of A in determining Y . To make this more concrete, let us again consider structural equation model (SME) compatible with assumptions 1–5. The conditional ATT given X is defined as E {βA(U, X )|A = 1 , X }, which clearly accommodates latent effect heterogeneity by U by averaging over it. Interestingly, compared to the standard Wald ratio δ(X), the identification for-mula δ∗(X) in the Theorem 1 involves backing out the contrast ϕ(X) from the reduced form in the numer-ator of δ(X). This contrast measures the additive association between the QIV and the outcome among the treated, and is formally shown in the proof of the theorem to identify the causal effect of Z on Y in a hypothetical world in which the treatment is set to zero. Specifically, under the assumptions of the The-orem 1, the contrast ϕ(X) = E (Y |A = 1 , Z = 1 , X ) − E (Y |A = 1 , Z = 0 , X ) identifies the controlled direct effect E  Y a=0 ,z =1 − Y a=0 ,z =0 |X = βZ (X), and thus captures the magnitude of the departure from the exclu-sion restriction assumption on the additive scale. Therefore, subtracting this contrast from the reduced form 
+
+E (Y |Z = 1 , X ) − E (Y |Z = 0 , X ) in the numerator of the standard Wald ratio effectively renders the QIV a valid instrumental variable, thereby debiasing and allowing it to be interpreted causally. It is further interesting to compare our identification result to that of Hern´ an and Robins (2006) who con-sidered the multiplicative model with a genuine IV satisfying the exclusion restriction. Specifically, suppose that assumptions 1, 2, 5, and (ER) hold. Then, Hern´ an and Robins (2006) showed that the conditional ATT is nonparametrically identified by δ(X). For completeness, we reproduce their proof in the Appendix. The result crucially relies on the exclusion restriction (ER) and does not appear to hold otherwise. In contrast, Theo-rem 1 drops (ER) by allowing a direct effect of Z on Y through assumptions 3–4, and achieves identification by explicitly accounting for the direct effect via the adjustment term ϕ(X). 
+
+# 3 A Semiparametric Efficient Estimator 
+
+## 3.1 Semiparametric Efficiency Bound 
+
+In this section, we derive the Efficient Influence Function (EIF) of the identifying functional δ∗, under a nonpara-metric model denoted M that places no restriction on the observed data distribution. The following theorem states the main result. 
+
+Theorem 2 (1) The EIF of δ∗ in model M is: 
+
+EIF (O; δ∗) = 1
+
+P r (A = 1) [A {δ∗(X) − δ∗} + θ(O)] ,
+
+11 3.2 Estimator 3 A SEMIPARAMETRIC EFFICIENT ESTIMATOR 
+
+where θ (O) := ρ(X)
+
+p1(X) − p0(X)2Z − 1
+
+πZ (X)
+
+
+
+Y − Aδ ∗(X) − Zϕ (X) − w(X) − ApZ (X) {Y − Zϕ (L) − e10 (X)}
+
+
+
+.
+
+Hence, the corresponding semiparametric efficiency bound for δ∗ in model M is V ar {EIF (O; δ∗)}.
+
+(2) The EIF is a multiply robust moment equation for δ∗ in the sense that it is an unbiased moment equa-tion, i.e. E {EIF (O; δ∗)} = 0 , under the union of the following three models: 
+
+M1 : models for pz (X) and πz (X) are evaluated at their true value, for z ∈ { 0, 1};
+
+M2 : models for δ∗(X), e 1z (X) and w(X) are evaluated at their true value, for z ∈ { 0, 1};
+
+M3 : models for δ∗(X), e 1z (X) and πz (X) are evaluated at their true value, for z ∈ { 0, 1}.
+
+The first component of the EIF, A{δ∗(X) − δ∗}/ Pr( A = 1), may be viewed as the influence function for the marginal parameter δ∗ if contrary to fact, the nuisance function δ∗(X) were known, obtained by rewriting the identifying expression in Theorem 1 as a moment function. The second component, θ(O)/ Pr( A = 1), serves as an adjustment accounting for the uncertainty due to having to estimate δ∗(X), and for the nuisance functions needed to estimate the latter. This correction term is key to the multiple-robustness property in part (2) of Theorem 2 and, as shown below, facilitates the construction of an estimator for δ∗ whose bias is at most second order. As a direct consequence of multiple robustness, writing the diacritic ∼ to denote model misspecification, we have for z ∈ { 0, 1}:
+
+M1 : E
+
+n
+
+EIF 
+
+
+
+O; δ∗, ˜e1z (X), p z (X), π z (X), ˜w(X), ˜δ∗(X)
+
+o 
+
+= 0; 
+
+M2 : E {EIF (O; δ∗, e 1z (X), ˜pz (X), ˜πz (X), w (X), δ ∗(X)) } = 0; 
+
+M3 : E {EIF (O; δ∗, e 1z (X), ˜pz (X), π z (X), ˜w(X), δ ∗(X)) } = 0 .
+
+## 3.2 Semiparametric Efficient Debiased Estimator 
+
+Our estimator is built on the EIF and uses the Double/Debiased Machine Learning (DDML) framework to allow for flexible machine learning estimation of nuisance functions (Chernozhukov et al., 2018). In particular, DDML relies on cross-fitting: we partition the sample {Oi : i = 1 , . . . , N } into K disjoint folds {I 1, . . . , IK }. For each fold k, nuisance functions are estimated on the training sample Ick (the complement of Ik), and the target parameter δ∗ is evaluated on the held-out fold Ik. The final estimator averages the resulting K fold-specific estimates. Each fold-specific estimate is computed via the following two steps: (i) estimate nuisance functions on Ick; (ii) plug them into the EIF and target δ∗ on Ik.
+
+12 3.3 Asymptotic Theory 3 A SEMIPARAMETRIC EFFICIENT ESTIMATOR 
+
+(Step 1: Estimation of e1z (X), ez (X), pz (X), and πz (X)): For a given split k, we fit ˆ e(−k)1z (X), ˆ e(−k) 
+
+> z
+
+(X), ˆp(−k) 
+
+> z
+
+(X), and ˆ π(−k) 
+
+> z
+
+(X) using the training fold Ick. One may use an ensemble learner such as Super Learner, which combines a user-specified library of candidate estimators and returns a convex combination of their fitted values. Super Learner enjoys an oracle-type guarantee: under suitable conditions, its risk is asymptotically no worse than that of the best candidate in the library for a chosen loss (e.g., mean squared error) (van der Laan, Polley, & Hubbard, 2007). With these nuisance estimates, we also form plug-in estimators for the remaining nuisance quantities: ˆϕ(−k)(X) = ˆ e(−k)11 (X) − ˆe(−k)10 (X),
+
+ˆδA(−k)(X) = ˆ p(−k)1 (X) − ˆp(−k)0 (X),
+
+ˆδ∗(−k)(X) = 
+
+n
+
+ˆe(−k)1 (X) − ˆe(−k)0 (X) − ˆϕ(−k)(X)
+
+o ˆδA(−k)(X),
+
+ˆρ(−k)(X) = ˆ p(−k)1 (X)ˆ π(−k)1 (X) + ˆ p(−k)0 (X)ˆ π(−k)0 (X),
+
+ˆw(−k)(X) = ˆ e(−k)1 (X)ˆ p(−k)1 (X) + ˆ e(−k)0 (X)ˆ p(−k)0 (X) − ˆρ(−k)(X)ˆδ∗(−k)(X) − ˆπ(−k)1 (X) ˆϕ(−k)(X).
+
+(Step 2: Cross-fitted estimator of δ∗): For each k = 1 , . . . , K , we compute a fold-specific estimate ˆδ∗(k) by evaluating the EIF on Ik with nuisance functions obtained from Ick. We then average over folds to obtain the cross-fitted EIF estimator: ˆδ∗EIF = 1
+
+K
+
+> K
+
+X
+
+> k=1
+
+ˆδ∗(k), (8) 
+
+where 
+
+ˆδ∗(k) = 1
+
+P(A) PIk
+
+Aˆδ∗(−k)(X) + ˆρ(−k)(X)ˆp(−k)1 (X) − ˆp(−k)0 (X)2Z − 1ˆπ(−k) 
+
+> Z
+
+(X)
+
+
+
+Y − Aˆδ∗(−k)(X) − Z ˆϕ(−k)(X) − ˆw(−k)(X)
+
+− A
+
+ˆp(−k) 
+
+> Z
+
+(X)
+
+n
+
+Y − Z ˆϕ(−k)(X) + ˆ e(−k)10 (X)
+
+o .
+
+## 3.3 Asymptotic Theory for the Proposed Estimator 
+
+Let || · || P, 2 denote the L2(P )-norm for the arm A = 1 with respect to the true law P that generates the observed data: 
+
+r(−k) 
+
+> η,N
+
+= ∥ˆη(−k)(X) − η(X)∥P, 2 =
+
+Z 
+
+> X
+
+n
+
+ˆη(−k)(X) − η(X)
+
+o2
+
+dF (X|A = 1) 
+
+1/2
+
+,
+
+for η ∈ { pz , π z , e z , e 1z , w, δ ∗}, z ∈ { 0, 1} and k ∈ { 1, . . . , K }. Suppose the following conditions hold for estimated nuisance functions for all k = 1 , . . . , K :
+
+Assumption 6 (Boundedness of the Estimated Nuisance Functions) There exist constants c1, c 2 > 0
+
+such that ˆp(−k) 
+
+> z
+
+(x) ∈ [c1, 1 − c1], ˆπ(−k) 
+
+> z
+
+(x) ∈ [c1, 1 − c1], ˆe(−k) 
+
+> z
+
+(x) ∈ [−c2, c 2], ˆe(−k)1z (x) ∈ [−c2, c 2], ˆw(−k)(x) ∈
+
+[−c2, c 2] and ˆδ(−k)(x) ∈ [−c2, c 2] for all z ∈ { 0, 1} and x ∈ X .
+
+13 3.3 Asymptotic Theory 3 A SEMIPARAMETRIC EFFICIENT ESTIMATOR 
+
+Assumption 7 (Consistent Estimation) r(−k)  
+
+> pz,N
+
+, r(−k)  
+
+> πz,N
+
+, r(−k)  
+
+> e1z,N
+
+, r(−k) 
+
+> w,N
+
+and r(−k) 
+
+> δ∗,N
+
+are oP (1) .
+
+Assumption 8 (Cross-Product Rates) 
+
+r(−k) 
+
+> δ∗,N
+
+r(−k)  
+
+> pz,N
+
+, r (−k) 
+
+> δ∗,N
+
+r(−k)  
+
+> πz,N
+
+, r (−k) 
+
+> ϕ,N
+
+r(−k) 
+
+> p1,N
+
+, r (−k) 
+
+> w,N
+
+r(−k)  
+
+> πz,N
+
+, r (−k) 
+
+> e10 ,N
+
+r(−k)  
+
+> pz,N
+
+, and r(−k) 
+
+> e10 ,N
+
+r(−k)  
+
+> πz,N
+
+are oP
+
+
+
+N −1/2
+
+for z ∈ { 0, 1}.
+
+Assumption 6 requires uniform boundedness of the estimators, with pz (X) and πz (X) bounded away from 0 and 1, and ez (X), e1z (X), w(X), and δ(X) uniformly bounded on X . Assumption 7 requires the estimated nuisance functions to converge to their corresponding truth as N → ∞ , a property satisfied by many nonparametric machine learning estimators under standard regularity conditions. Assumption 8 further requires the relevant cross-product remainder terms to be oP
+
+ N −1/2.Importantly, the latter condition allows for rate trade-offs across nuisance estimators. Specifically, if a suit-able subset of the five nuisance functions pz (X), πz (X), e1z (X), w(X), and δ(X) is estimated sufficiently fast (e.g., faster than oP (N −1/4)), then the remaining nuisance functions may converge more slowly (potentially slower than oP (N −1/4)), provided that the list of cross-product terms highlighted in 8 satisfy the rate condition. In particular, Assumptions 7–8 are satisfied when each nuisance function is estimated at rate oP (N −1/4). For the nuisance quantities that can be directly learned from the observed data, namely pz (X), πz (X), ez (X), and 
+
+e1z (X), such rates are attainable with a broad class of modern nonparametric machine learning methods. No-tably, w(X) and δ(X) are not directly estimable and are currently constructed via plug-in estimators, so their convergence rates inherit those of their plug-in components. These assumptions are key to deriving the asymptotic distribution of the estimator in (8) in Theorem 3. Finally, we note that they are consistent with the conditions ensuring EIF unbiasedness in Theorem 2 under the union model M1 ∪ M 2 ∪ M 3.The following Theorem 3 formally establishes the asymptotic normality of the estimator ˆδ∗EIF under the stated assumptions. 
+
+Theorem 3 Suppose that assumptions 1 – 8 hold. Under model M, the estimator in (8) satisfies 
+
+√N
+
+ˆδ∗EIF − δ∗
+
+−→ D N (0 , σ 2) as N → ∞ . (9) 
+
+The variance σ2 matches the semiparametric efficient bound for δ∗ in the nonparametric model for the observed 
+
+14 4 SIMULATION STUDIES 
+
+data, i.e. σ2 = var {EIF (O; δ∗)}. A consistent estimator of σ2 is given by 
+
+ˆσ2 = 1
+
+K
+
+> K
+
+X
+
+> i=1
+
+PIk
+
+(
+
+ˆγ(−k)(O) − Aˆδ∗EIF 
+
+P(A)
+
+)2
+
+where 
+
+ˆγ(−k)(O) = Aˆδ∗(−k)(X) + ˆρ(−k)(X)ˆp(−k)1 (X) − ˆp(−k)0 (X)2Z − 1ˆπ(−k) 
+
+> Z
+
+(X)
+
+
+
+Y − Aˆδ∗(−k)(X) − Z ˆϕ(−k)(X) − ˆw(−k)(X)
+
+− A
+
+ˆp(−k) 
+
+> Z
+
+(X)
+
+n
+
+Y − Z ˆϕ(−k)(X) + ˆ e(−k)10 (X)
+
+o .
+
+Of note, assumptions 7 and 8 ensure that the scaled (by √N ) second-order bias of the proposed estimator is oP (1). Let z1−α/ 2 denote the (1 − α/ 2) quantile of the standard normal distribution. By Theorem 3, an asymptotic 100(1 − α)% Wald-type confidence interval for δ∗ is given by 
+
+
+
+ˆδ∗EIF − z1−α/ 2
+
+ˆσ
+
+√N , ˆδ∗EIF + z1−α/ 2
+
+ˆσ
+
+√N
+
+
+
+.
+
+# 4 Simulation Studies 
+
+In this section, we evaluate the finite-sample performance of the proposed estimators. Notably, as discussed earlier, the estimator developed under the MQIV framework does not rely on the exclusion restriction encoded in (ER) and remains consistent under our assumptions, even when (ER) fails. We therefore evaluate its perfor-mance in both settings where (ER) holds and when it does not. We generate i.i.d. samples {Yi, A i, Z i, X 1i, X 2i, U i} that are compatible with assumptions 1–5 under the fol-lowing data-generating process (DGP). We also generate Y ER i such that samples {Y ER i , A i, Z i, X 1i, X 2i, U i}
+
+satisfy assumptions 1, 2, 5 and (ER). Here, Y reflects a direct effect of Z, whereas Y ER is generated under the restriction (ER) and thus rules out any direct effect of Z on Y . Aside from this difference, the remaining components of the joint data-generating law are identical across the two settings. 
+
+X1, X 2, U ∼ U nif orm (0 , 1) 
+
+P r (Z = 1 |X) = exp (−1 + X1 + X2)1 + exp (−1 + X1 + X2)
+
+α1(Z, X ) = Z (X1/2 + X2/2 + 0 .5) 
+
+α2(U, X ) = −X1/2 − X2/2 − U − 0.5
+
+P r (A = 1 |Z, X, U ) = exp {α1(Z, X ) + α2(U, X )}
+
+βU (U, X ) = X1 + X22 + U
+
+15 4 SIMULATION STUDIES 
+
+βA(U, A, X ) = U ∗ X1 + U ∗ X2 + U 2
+
+βZ (X) = X1 + X2 + X1 ∗ X2
+
+βX (X) = X1
+
+E  Y A,Z |U, A, Z, X  = βA(U, A, X )A + βU (U, X ) + βZ (X)Z + βX (X)
+
+ϵ ∼ N (0 , 0.52)
+
+Y = E  Y A,Z |U, X, Z  + ϵY ER = Y − βZ (X)Z
+
+The marginal ATT ψ under this DGP is 0.679. We consider three classes of estimators for the ATT: (1) the modified Wald ratio-based estimator proposed in this paper, (2) the standard Wald ratio-based estimator proposed by Levis, Kennedy, and Keele (2024), and (3) the single-arm Wald ratio-based estimator proposed by Liu et al. (2025). Estimators (2) and (3) serve as natural benchmarks, as their consistency relies on the validity of (ER). It is worth emphasizing that under assumption 1-3, 5, and (ER), both (2) and (3) are consistent, but only (3) attains the semiparametric efficiency bound (Liu et al., 2025). For each class, we study both a plug-in implementation and an IF-based implementation. (1) (Plug-In) ˆδW 1: The modified Wald ratio-based estimator P
+
+h
+
+{A/ P(A)}
+
+n
+
+ˆe1(X) − ˆe0(X) − ˆϕ(X)
+
+o
+
+/{ˆp1(X)
+
+−ˆp0(X)}
+
+i
+
+, which is a plug-in estimator of the identifying formula in Theorem 1. (1) (IF-Based) ˆδIF 1: The IF-based estimator ˆδ∗EIF proposed in Theorem 3. This estimator is consistent and semiparametric efficient in the nonparametric model under assumptions 1–5. (2) (Plug-In) ˆδW 2: The plug-in estimator based on the standard Wald ratio P [{A/ P(A)} · δ(X)], which we do not expect to be consistent if the exclusion restriction condition does not hold; however, it should be consistent if assumption 1-3, 5 and (ER) hold. (2) (IF-Based) ˆδIF 2: The estimator based on the IF of the functional E {A/P r (A = 1) · δ(X)} (Levis et al., 2024). The estimator is consistent but potentially inefficient in the semiparametric model where assumption 1-3, 5 and (ER) hold, but not otherwise; see (Liu et al., 2025) for details. (3) (Plug-In) ˆδW 3: The plug-in estimator based on the single-arm Wald ratio P {A/ P(A)} δSW (Y, X )
+
+δSW (Y, X ) := Y + E {Y (1 − A)|Z = 1 , X } − E {Y (1 − A)|Z = 0 , X }
+
+p1(X) − p0(X) .
+
+(3) (IF-Based) ˆδIF 3: The estimator based on the IF of the functional E A/P r (A = 1) · δSW (Y, X ) (Liu et al., 2025). The estimator is consistent and efficient in the semiparametric model where assumption 1-3, 5 and (ER) hold, but not otherwise. 
+
+16 4 SIMULATION STUDIES 
+
+Figure 3: Graphical summary of the simulation results. Each column shows boxplots of the bias for the proposed estimators ˆδ∗W ald , ˆδ∗EIF , ˆδW ald , and ˆδEIF at sample sizes N ∈ { 600 , 1200 , 2400 , 3600 , 7200 }.The left panel visualizes biases under generated data {Y ER i , A i, Z i, X 1i, X 2i, U i}, where (ER) is violated. The right panel reports biases under generated {Yi, A i, Z i, X 1i, X 2i, U i}, where (ER) holds. 
+
+We consider moderate to large sample sizes N ∈ { 600 , 1200 , 2400 , 3600 , 7200 } under two regimes: one in which (ER) holds and one in which it does not. For the IF-based estimator ˆδIF 1, we implement the estimation pro-cedure described in Section 3.2. For the other two IF-based estimators, ˆδIF 2 and ˆδIF 3, we follow an analogous DDML workflow, using SuperLearner to estimate nuisance functions with cross-validation. Our SuperLearner library includes elastic-net penalized regression, random forests, XGBoost, and generalized additive models as candidate learners (Friedman, Hastie, & Tibshirani, 2010; Breiman, 2001; Wood, 2018; Chen & Guestrin, 2016). Figure 3 summarizes results from 1000 Monte Carlo replications at each sample size. The left panel reports the performance of the six estimators under the DGP in which (ER) is violated. Across all sample sizes, ˆδW 1 ex-hibits substantially larger bias than ˆδIF 1. As expected, ˆδW 2, ˆδIF 2, ˆδW 3, and ˆδIF 3 display large, non-diminishing bias because they do not account for the direct effect of Z on Y . Compared with ˆδW 2 and ˆδIF 2, the single-arm estimators ˆδW 3 and ˆδIF 3 are less biased, since they use the empirical mean to estimate E  Y 1 | A = 1 ; conse-quently, violating (ER) affects only the estimation of E  Y 0 | A = 1 .As N increases, the standard errors of all six estimators decrease. Notably, the empirical coverage of the nominal 95% confidence interval for ˆδW 1 is far below 95%, whereas the coverage for ˆδIF 1 is close to the nominal level, consistent with Theorem 3. The right panel reports results under the DGP with (ER) imposed. In this setting, all six estimators are consistent. Moreover, the IF-based estimators ˆδIF 1, ˆδIF 2, and ˆδIF 3 achieve near-nominal 
+
+17 5 APPLICATION 
+
+Estimators 
+
+DGP with (ER) Violated DGP with (ER) Satisfied 
+
+Metrics ˆδW 1 ˆδIF 1 ˆδW 2 ˆδIF 2 ˆδW 3 ˆδIF 3 ˆδW 1 ˆδIF 1 ˆδW 2 ˆδIF 2 ˆδW 3 ˆδIF 3
+
+Sample size N = 600 Bias −0.066 0.024 3.253 2.938 2.139 2.059 −0.094 −0.060 0.019 0.026 −0.074 −0.018 ASE 0.154 0.343 0.415 0.471 0.232 0.259 0.080 0.291 0.177 0.195 0.129 0.144 ESE 0.151 0.342 0.418 0.538 0.235 0.271 0.072 0.293 0.181 0.207 0.135 0.152 Coverage 0.934 0.947 0.000 0.034 0.000 0.002 0.721 0.938 0.932 0.958 0.904 0.939 
+
+Sample size N = 1200 Bias −0.052 0.022 3.235 3.045 2.129 2.090 −0.090 −0.049 0.021 0.026 −0.058 −0.021 ASE 0.120 0.226 0.276 0.291 0.162 0.169 0.056 0.181 0.117 0.127 0.083 0.096 ESE 0.121 0.240 0.276 0.324 0.161 0.179 0.056 0.181 0.117 0.118 0.082 0.126 Coverage 0.930 0.944 0.000 0.002 0.000 0.002 0.574 0.952 0.912 0.962 0.882 0.946 
+
+Sample size N = 2400 Bias −0.059 0.019 3.227 3.110 2.121 2.110 −0.082 −0.045 0.025 0.023 −0.059 −0.022 ASE 0.095 0.160 0.187 0.193 0.111 0.115 0.039 0.126 0.084 0.089 0.060 0.066 ESE 0.096 0.141 0.188 0.190 0.110 0.114 0.039 0.125 0.085 0.086 0.060 0.059 Coverage 0.886 0.951 0.000 0.000 0.000 0.000 0.371 0.946 0.879 0.934 0.811 0.953 
+
+Sample size N = 3600 Bias −0.054 0.013 3.222 3.102 2.110 2.103 −0.081 −0.045 0.022 0.013 −0.051 −0.018 ASE 0.087 0.132 0.155 0.156 0.092 0.093 0.032 0.106 0.071 0.073 0.050 0.055 ESE 0.088 0.122 0.152 0.152 0.084 0.094 0.035 0.108 0.070 0.071 0.052 0.049 Coverage 0.874 0.948 0.000 0.000 0.000 0.000 0.295 0.944 0.864 0.940 0.805 0.950 
+
+Sample size N = 7200 Bias −0.046 0.007 3.222 3.109 2.115 2.114 −0.075 −0.038 0.019 0.009 −0.031 −0.012 ASE 0.063 0.099 0.108 0.111 0.065 0.069 0.025 0.071 0.048 0.053 0.035 0.040 ESE 0.062 0.081 0.107 0.106 0.062 0.065 0.024 0.070 0.044 0.048 0.034 0.033 Coverage 0.869 0.954 0.000 0.000 0.000 0.000 0.135 0.945 0.861 0.951 0.807 0.948 
+
+Table 1: Numerical summaries of estimator performance under violation and satisfaction of the exclu-sion restriction (ER). Each block reports the empirical bias, asymptotic standard error (ASE), empirical standard error (ESE), and empirical coverage of 95% confidence intervals based on the ASE, across different sample sizes. 
+
+95% coverage. Among them, ˆδIF 3 has the smallest standard error, as expected since ˆδIF 3 is based on the efficient influence function. Table 1 provides the corresponding numerical summary. 
+
+# 5 Application 
+
+To illustrate the proposed methods, we analyze the Fertility–Labor Supply Study dataset available in the R
+
+package ivmte (Shea & Torgovitsky, 2023). This dataset is based on the study of Angrist and Evans (1996) on the causal impact of childbearing on mother’s weekly working hours. The study sample consists of mothers with at least two children and includes key labor-market outcomes together with baseline covariates used in our analysis, including the mother’s birth year and race/ethnicity indicators. The sample size is N =209,133. Table 2 reports some key descriptive statistics for the study sample. 
+
+18 5 APPLICATION 
+
+Our goal is to estimate the average causal effect of an additional child on mother’s weekly working hours, among families ending up with more than two children in the MQIV model proposed in this paper. The causal relationship between fertility and weekly working hours is likely confounded by unmeasured factors such as pref-erences for market work versus home production, career orientation, and family-related attitudes, which may jointly influence both childbearing decisions and labor-market outcomes. In this setting, IV methods offer a potential way to address unmeasured confounding. In prior work, Angrist and Evans (1996) exploit exogenous variation in fertility induced by (i) the occurrence of twins at the second birth and (ii) the sex composition of the first two children as the candidate IVs for the higher-order birth; in our MQIV setting, we consider the latter and operationalize it as the binary same-sex indicator Z. We define Y as weekly hours worked, A as an indicator for having three or more children, Z as an indicator for whether the first two children are of the same sex (i.e., Z = I{the first two children are of the same sex }), and let X collect the baseline covariates. We treat 
+
+Z as a QIV for A and implement the three IF-based estimators in the Simulation section to assess the effect of an additional child on labor-market outcomes. 
+
+Exactly two children Three or more children Variable All Mixed sex Same sex Mixed sex Same sex Sample Size 209,133 72,048 67,663 31,194 38,228 Hours (weekly) 16.87 (18.37) 18.48 (18.46) 18.59 (18.44) 13.47 (17.85) 13.53 (17.65) Year of birth 48.02 (2.81) 48.21 (2.83) 48.28 (2.88) 47.57 (2.65) 47.59 (2.67) Black 6.8% 6.3% 6.4% 8.0% 7.3% Hispanic 2.4% 2.0% 1.9% 3.4% 3.3% Other 3.4% 3.3% 3.2% 3.6% 3.4% White 87.4% 88.4% 88.5% 85.0% 86.0% Table 2: Descriptive statistics overall and by family size and sex composition of the first two children 
+
+Within the latent-index representation, assumption 5 may be plausible in this setting if the instrument Z acts multiplicatively on the latent index governing fertility. This specification allows for latent heterogeneity in fer-tility responses: the same-sex composition of the first two children may induce a larger shift in the propensity to have an additional child for mothers with stronger preferences for larger families (i.e., with a higher baseline 
+
+g(U, X )), while having a smaller impact for mothers who are less responsive to family-size considerations (low baseline g(U, X )). In contrast to much of the existing literature, we adopt a QIV perspective that allows for a direct effect of Z on Y , which mitigates the concern that the same-sex composition of the first two children may directly affect mother’s weekly working hours through channels unrelated to fertility. For example, children of the same sex may share gender-specific resources such as clothing, toys, and extracurricular activities, lead-ing to lower childcare and organizational costs. Moreover, parenting same-sex children may generate “learning 
+
+19 6 DISCUSSION 
+
+economies,” whereby accumulated experience with gender-specific needs reduces the time and effort required for caregiving and household logistics. These mechanisms may free up maternal time and increase labor-market participation, inducing a positive direct effect of Z on Y . Such a positive Z → Y effect may partially offset the negative effect of having an additional child, leading standard IV estimators that ignore the presence of such direct effects to attenuate the estimated A → Y effect. To assess the relevance of this concern, we compare ˆδIF 1,which accommodates such a potential direct effect of Z on Y , to ˆδIF 2 and ˆδIF 3, which do not account for a direct effect of Z.We implement the estimation procedure under the DDML framework, adjusting for all available pre-instrument covariates X. Nuisance functions are estimated using a stacked SuperLearner that includes elastic-net-penalized regression, random forests, XGBoost and generalized additive models as candidate learners. The results of the three estimators are reported in Table 3. All estimators yield statistically significant negative treatment effects. The proposed estimator, ˆδIF 1, indicates a reduction of approximately 5.3 hours in weekly working hours, whereas the conventional estimators, ˆδIF 2 and ˆδIF 3, imply a smaller decrease of about 2.6 and 3.5 hours, respectively. This discrepancy between these estimates can be attributed to the uniformly positive ˆϕ(x) across values of x in the dataset, suggesting a positive direct effect of the QIV Z on the outcome Y under the MQIV framework. In Table 3, we also report ˆϕ, the estimated direct effect of Z on Y averaged over covariates in the treated group, targeting the quantity E {A/P r (A = 1) · ϕ(X)}.Estimator Description Point estimate 95% Confidence Interval ˆδIF 1 The estimator based on the IF of the modified Wald ratio proposed in Theorem 3. -5.285 (-8.486, -2.084) ˆδIF 2 The estimator based on the IF of the standard Wald ratio. -2.573 (-5.055, -0.090) ˆδIF 3 The estimator based on the IF of the single-arm Wald ratio. -3.500 (-5.540, -1.460) ˆϕ The IF-based estimator of the average direct effect of Z on 
+
+Y among the treated. 0.134 (-0.082, 0.349) 
+
+Table 3: Numerical summaries for the data analysis. 
+
+# 6 Discussion 
+
+In this paper, we studied identification and estimation of the marginal ATT under the proposed MQIV framework. The framework relaxes the exclusion restriction by allowing a stable direct effect of the QIV on the outcome. We derived the EIF and the semiparametric efficiency bound for the marginal ATT within a nonparametric model for the observed data, and constructed an EIF-based estimator that leverages generic machine learning methods to flexibly estimate the required nuisance functions. We also formalized sufficient convergence-rate conditions for the nuisance estimators under which the proposed estimator is asymptotically normal. Simulation studies appear 
+
+20 References References 
+
+to corroborate the theoretical properties of the proposed estimator and additionally compared its performance with the EIF-based estimator of Liu et al. (2025), which is consistent only under the exclusion restriction. Finally, we illustrated the proposed method by estimating the ATT of having more children on mothers’ engagement in the labor market using the Fertility–Labor Supply Study dataset. The framework presented in this paper can be extended in several directions. One interesting question is whether analogous results can be developed for count, binary, or survival outcomes by considering outcome models with appropriate link functions. Such extensions would constitute worthwhile generalizations, and we plan to pursue them in separate work. It would also be of interest to explore applications in environmental epidemiology, where a spatial variable such as location is often used to construct or predict an exposure measure A, and interest centers on the association between A and an outcome Y . In many such settings, the spatial variable is used only at the exposure-assessment stage and is otherwise ignored in the analysis. Our framework suggests that, if such a variable could instead be viewed as a QIV variable, it may be possible to leverage it to address unmeasured confounding in studies of exposure effects. In addition, the identification results established here rely on key assumptions of the multiplicative model for the treatment and the stable direct-effect condition. Future research may develop sensitivity analysis tools to assess how inference on the ATT might be impacted when these two assumptions do not hold exactly. 
+
+# Declaration of the use of generative AI and AI-assisted technologies 
+
+During the preparation of this work the authors used ChatGPT (version 5.4) in order to identify and correct textual errors and improve expression. After using this tool/service the authors reviewed and edited the content as necessary and take full responsibility for the content of the publication. 
+
+# References 
+
+Angrist, J., & Evans, W. N. (1996). Children and their parents’ labor supply: Evidence from exogenous variation in family size. National bureau of economic research Cambridge, Mass., USA. Angrist, J. D., Imbens, G. W., & Rubin, D. B. (1996). Identification of causal effects using instrumental variables. Journal of the American statistical Association , 91 (434), 444–455. Baker, S. G., & Lindeman, K. S. (1994). The paired availability design: a proposal for evaluating epidural analgesia during labor. Statistics in medicine , 13 (21), 2269–2278. 21 References References 
+
+Bowden, J., Davey Smith, G., & Burgess, S. (2015). Mendelian randomization with invalid instru-ments: effect estimation and bias detection through egger regression. International journal of epidemiology , 44 (2), 512–525. Bowden, J., Davey Smith, G., Haycock, P. C., & Burgess, S. (2016). Consistent estimation in mendelian randomization with some invalid instruments using a weighted median estimator. Genetic epi-demiology , 40 (4), 304–314. Breiman, L. (2001). Random forests. Machine Learning , 45 , 5–32. Chen, T., & Guestrin, C. (2016). Xgboost: A scalable tree boosting system. In Proceedings of the 22nd acm sigkdd international conference on knowledge discovery and data mining (pp. 785–794). Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W., & Robins, J. (2018). Double/debiased machine learning for treatment and structural parameters. The Econo-metrics Journal , 21 (1), C1–C68. Cui, Y., & Tchetgen Tchetgen, E. J. (2021). On a necessary and sufficient identification condition of optimal treatment regimes with an instrumental variable. Statistics & Probability Letters , 178 ,109180. Friedman, J., Hastie, T., & Tibshirani, R. (2010). Regularization paths for generalized linear models via coordinate descent. Journal of Statistical Software , 33 (1), 1. Guo, Z., Kang, H., Tony Cai, T., & Small, D. S. (2018). Confidence intervals for causal effects with invalid instruments by using two-stage hard thresholding with voting. Journal of the Royal Statistical Society Series B: Statistical Methodology , 80 (4), 793–815. Hern´ an, M. A., Hern´ andez-D´ ıaz, S., & Robins, J. M. (2004). A structural approach to selection bias. 
+
+Epidemiology , 15 (5), 615–625. Hern´ an, M. A., & Robins, J. M. (2006). Instruments for causal inference: an epidemiologist’s dream? 
+
+Epidemiology , 17 (4), 360–372. Kang, H., Guo, Z., Liu, Z., & Small, D. (2025). Identification and inference with invalid instruments. 
+
+Annual review of statistics and its application , 12 (1), 385–405. Kang, H., Zhang, A., Cai, T. T., & Small, D. S. (2016). Instrumental variables estimation with some invalid instruments and its application to mendelian randomization. Journal of the American statistical Association , 111 (513), 132–144. Koles´ ar, M., Chetty, R., Friedman, J., Glaeser, E., & Imbens, G. W. (2015). Identification and inference 22 References References 
+
+with many invalid instruments. Journal of Business & Economic Statistics , 33 (4), 474–484. Levis, A. W., Kennedy, E. H., & Keele, L. (2024). Nonparametric identification and efficient estimation of causal effects with instrumental variables. arXiv preprint arXiv:2402.09332 .Lewbel, A. (2012). Using heteroscedasticity to identify and estimate mismeasured and endogenous regressor models. Journal of business & economic statistics , 30 (1), 67–80. Liu, J., Park, C., Lee, Y., Zhang, Y., Yu, M., Robins, J. M., & Tchetgen Tchetgen, E. J. (2025). The multiplicative instrumental variable model. arXiv preprint arXiv:2507.09302 .Liu, Z., Sun, B., Ye, T., Richardson, D., & Tchetgen Tchetgen, E. J. (2025). Quasi instrumental variable methods for stable hidden confounding and binary outcome. arXiv preprint arXiv:2508.16096 .Michael, H., Cui, Y., Lorch, S. A., & Tchetgen Tchetgen, E. J. (2024). Instrumental variable estima-tion of marginal structural mean models for time-varying treatment. Journal of the American Statistical Association , 119 (546), 1240–1251. Newey, W. K. (1990). Semiparametric efficiency bounds. Journal of applied econometrics , 5 (2), 99–135. Permutt, T., & Hebel, J. R. (1989). Simultaneous-equation estimation in a clinical trial of the effect of smoking on birth weight. Biometrics , 619–622. Robins, J. M. (1994). Correcting for non-compliance in randomized trials using structural nested mean models. Communications in Statistics-Theory and methods , 23 (8), 2379–2412. Shea, J., & Torgovitsky, A. (2023). ivmte: An r package for extrapolating instrumental variable estimates away from compliers. Observational Studies , 9 (2), 1–42. Sun, B., Liu, Z., & Tchetgen Tchetgen, E. J. (2023). Semiparametric efficient g-estimation with invalid instrumental variables. Biometrika , 110 (4), 953–971. Swanson, S. A., Hern´ an, M. A., Miller, M., Robins, J. M., & Richardson, T. S. (2018). Partial identification of the average treatment effect using instrumental variables: review of methods for binary instruments, treatments, and outcomes. Journal of the American Statistical Association ,
+
+113 (522), 933–947. Tchetgen Tchetgen, E. J., Michael, H., & Cui, Y. (2018). Marginal structural models for time-varying endogenous treatments: A time-varying instrumental variable approach. arXiv preprint arXiv:1809.05422 .Tsiatis, A. A. (2006). Semiparametric theory and missing data (Vol. 4). Springer. 23 References References 
+
+van der Laan, M. J., Polley, E. C., & Hubbard, A. E. (2007). Super learner. Statistical Applications in Genetics and Molecular Biology , 6 (1). VanderWeele, T. J., & Robins, J. M. (2008). Empirical and counterfactual conditions for sufficient cause interactions. Biometrika , 95 (1), 49–61. VanderWeele, T. J., Vansteelandt, S., & Robins, J. M. (2010). Marginal structural models for sufficient cause interactions. American journal of epidemiology , 171 (4), 506–514. Vytlacil, E. (2002). Independence, monotonicity, and latent index models: An equivalence result. 
+
+Econometrica , 70 (1), 331–341. Walter, S., & Holford, T. (1978). Additive, multiplicative, and other models for disease risks. American Journal of Epidemiology , 108 (5), 341–346. Wang, L., & Tchetgen Tchetgen, E. J. (2018). Bounded, efficient and multiply robust estimation of average treatment effects using instrumental variables. Journal of the Royal Statistical Society Series B: Statistical Methodology , 80 (3), 531–550. Wood, S. (2018). Mixed gam computation vehicle with gcv/aic/reml/ncv smoothness estimation and gamms by reml/pql. 24 A SUPPLEMENTARY MATERIAL 
+
+# A Supplementary Material 
+
+## A.1 Proof of Theorem 1 – Identification of the ATT 
+
+To show ψ(X) = δ∗(X), we first note that the mutiplicative model assumption 5 introduces the independence condition U ⊥⊥ Z|A = 1 , X :
+
+f (U |A = 1 , Z, X ) Bayes ′ Rule 
+
+= P r (A = 1 |U, Z, X )f (U |Z, X )
+
+P r (A = 1 |Z, X )
+
+> A2
+
+= P r (A = 1 |U, Z, X )f (U |X)
+
+P r (A = 1 |Z, X )= P r (A = 1 |U, Z, X )f (U |X)
+
+R 
+
+> U
+
+P r (A = 1 |U, Z, X )f (U |X)dU 
+
+> A4
+
+= exp {α1(Z, X ) + α2(U, X )}f (U |X)
+
+R exp {α1(Z, X ) + α2(U, X )}dU = exp {α2(U, X )}f (U |X)
+
+R 
+
+> U
+
+exp {α2(U, X )}f (U |X)dU independent of Z. 
+
+Then, one can show βZ (X) in assumption 4 is identified by ϕ(X)
+
+ϕ(X)= E  Y 1,1|A = 1 , Z = 1 , X  − E  Y 1,0|A = 1 , Z = 0 , X 
+
+by independence U ⊥⊥ Z|A = 1 , X 
+
+=
+
+Z
+
+> U
+
+E  Y 1,1|U, A = 1 , Z = 1 , X  − E  Y 1,0|U, A = 1 , Z = 0 , X  dF (U |A = 1 , X )=
+
+Z
+
+> U
+
+
+
+E  Y 1,1|U, A = 1 , Z = 1 , X  − E  Y 1,0|U, A = 1 , Z = 1 , X | {z }  
+
+> =βZ(X)by assumption 4
+
++ E  Y 1,0|U, A = 1 , Z = 1 , X  − E  Y 1,0|U, A = 1 , Z = 0 , X 
+
+dF (U |A = 1 , X )= βZ (X) + 
+
+Z
+
+> U
+
+E  Y 1,0|U, A 1 = 1 , Z = 1 , X  − E  Y 1,0|U, A 0 = 1 , Z = 0 , X  dF (U |A = 1 , X )
+
+by assumption 2 that Z ⊥⊥ Y a,z , A z , U |X and assumption 3 that Az∗
+
+⊥⊥ Y a,z |Z = z∗, U, X for all (z, z )∗ ∈ { 0, 1}2
+
+= βZ (X) + 
+
+Z
+
+> U
+
+E  Y 1,0|U, X  − E  Y 1,0|U, X  dF (U |A = 1 , X )= βZ (X).
+
+Of note, one also has E (Y |U, A = a, Z = 1 , X ) = E (Y |U, A = a, Z = 0 , X ) + ϕ(X) for a = 0 , 1 because 
+
+E (Y |U, A = a, Z = 1 , X ) = E  Y a, 1|U, A 1 = a, Z = 1 , X  = E  Y a, 1|U, X  = E  Y a, 0|U, X  + ϕ(X)= E  Y a, 0|A0 = a, Z = 0 , U, X  + ϕ(X) = E (Y |A = a, Z = 0 , U, X ) + ϕ(X).
+
+Next, we show δ∗(X) identifies the conditional ATT 
+
+δ∗(X)= E (Y |Z = 1 , X ) − E (Y |Z = 0 , X ) − ϕ(X)
+
+P r (A = 1 |Z = 1 , X ) − P r (A = 1 |Z = 0 , X )
+
+1A.1 Proof of Theorem 1 – Identification of the ATT A SUPPLEMENTARY MATERIAL 
+
+= EU {E (Y |U, A, Z = 1 , X ) |Z = 1 , X } − E {EU (Y |U, A, Z = 0 , X ) |Z = 0 , X } − ϕ(X)
+
+P r (A = 1 |Z = 1 , X ) − P r (A = 1 |Z = 0 , X )=
+
+
+
+EU {E (Y |U, A = 1 , Z = 1 , X ) P r (A = 1 |U, Z = 1 , X ) + E (Y |U, A = 0 , Z = 1 , X ) P r (A = 0 |U, Z = 1 , X )|Z = 1 , X }− EU {E (Y |U, A = 1 , Z = 0 , X ) P r (A = 1 |U, Z = 0 , X ) + E (Y |U, A = 0 , Z = 0 , X ) P r (A = 0 |U, Z = 0 , X )|Z = 0 , X }− ϕ(X)
+
+
+
+P r (A = 1 |Z = 1 , X ) − P r (A = 1 |Z = 0 , X )
+
+notice E (Y |U, A = a, Z = 1 , X ) = E (Y |U, A = a, Z = 0 , X ) + ϕ(X)=
+
+
+
+EU {E (Y |U, A = 1 , Z = 0 , X ) P r (A = 1 |U, Z = 1 , X ) + E (Y |U, A = 0 , Z = 0 , X ) P r (A = 0 |U, Z = 1 , X )|Z = 1 , X }− EU {E (Y |U, A = 1 , Z = 0 , X ) P r (A = 1 |U, Z = 0 , X ) + E (Y |U, A = 0 , Z = 0 , X ) P r (A = 0 |U, Z = 0 , X )|Z = 0 , X }
+
++ ϕ(X)EU {P r (A = 1 |U, Z = 1 , X ) + P r (A = 0 |U, Z = 1 , X )} − ϕ(X)
+
+
+
+P r (A = 1 |Z = 1 , X ) − P r (A = 1 |Z = 0 , X )(10) 
+
+rearrange the numerator 
+
+=
+
+
+
+E {E (Y |U, A = 1 , Z = 0 , X ) P r (A = 1 |U, Z = 1 , X ) − E (Y |U, A = 1 , Z = 0 , X ) P r (A = 1 |U, Z = 0 , X )|X}
+
++ E {E (Y |U, A = 0 , Z = 0 , X ) P r (A = 0 |U, Z = 1 , X ) − E (Y |U, A = 0 , Z = 0 , X ) P r (A = 0 |U, Z = 0 , X )|X}
+
+
+
+P r (A = 1 |Z = 1 , X ) − P r (A = 1 |Z = 0 , X )
+
+notice E (Y |U, A = a, Z = z, X ) = E (Y a,z |U, A z = a, Z = z, X ) = E (Y a,z |U, X )
+
+by assumption 2 that Z ⊥⊥ Y a,z , A z , U |X and assumption 3 that Az∗
+
+⊥⊥ Y a,z |Z = z, U, X for (z, z ∗) ∈ { 0, 1}2
+
+= EU
+
+E  Y a=1 ,z =0 |U, X  − E  Y a=0 ,z =0 |U, X  P r (A = 1 |U, Z = 1 , X ) − P r (A = 1 |U, Z = 0 , X )
+
+P r (A = 1 |Z = 1 , X ) − P r (A = 1 |Z = 0 , X ) |X
+
+
+
+=
+
+Z
+
+> U
+
+E  Y a=1 ,z =0 − Y a=0 ,z =0 |U, X  f (U |A = 1 , X )
+
+f (U |X) f (U |X)dU (11) =
+
+Z
+
+> U
+
+E  Y a=1 ,z =0 − Y a=0 ,z =0 |U, X  f (U |A = 1 , X )dU 
+
+=
+
+Z
+
+> U
+
+E  Y a=1 ,z =0 − Y a=0 ,z =0 |Az=0 = 1 , Z = 0 , U, X  f (U |A = 1 , Z = 0 , X )dU 
+
+=
+
+Z
+
+> U
+
+E  Y a=1 ,z =0 − Y a=0 ,z =0 |A = 1 , Z = 0 , U, X  f (U |A = 1 , Z = 0 , X )dU 
+
+= E  Y a=1 ,z =0 − Y a=0 ,z =0 |A = 1 , Z = 0 , X  .
+
+Equation (11) holds by 
+
+P r (A = 1 |U, Z = 1 , X ) − P r (A = 1 |U, Z = 0 , X )
+
+P r (A = 1 |Z = 1 , X ) − P r (A = 1 |Z = 0 , X )
+
+> Bayes ′Rule
+
+=     
+
+> f(U|A=1 ,Z =1 ,X )P r (A=1 |Z=1 ,X )
+> f(U|Z=1 ,X )
+
+− f (U |A=1 ,Z =0 ,X )P r (A=1 |Z=0 ,X )  
+
+> f(U|Z=0 ,X )
+
+P r (A = 1 |Z = 1 , X ) − P r (A = 1 |Z = 0 , X )=     
+
+> f(U|A=1 ,X )P r (A=1 |Z=1 ,X )
+> f(U|X)
+
+− f (U |A=1 ,X )P r (A=1 |Z=0 ,X )  
+
+> f(U|X)
+
+P r (A = 1 |Z = 1 , X ) − P r (A = 1 |Z = 0 , X ) = f (U |A = 1 , X )
+
+f (U |X) (by U ⊥⊥ Z|X and U ⊥⊥ Z|A = 1 , X ) .
+
+2A.1 Proof of Theorem 1 – Identification of the ATT A SUPPLEMENTARY MATERIAL 
+
+By parallel algebra, one can also show δ∗(X) identifies E  Y a=1 ,z =1 − Y a=0 ,z =1 |A = 1 , Z = 1 , X  by letting equation (10) in the previous derivation be (difference colored in red) 
+
+
+
+EU {E (Y |U, A = 1 , Z = 1 , X ) P r (A = 1 |U, Z = 1 , X ) + E (Y |U, A = 0 , Z = 1 , X ) P r (A = 0 |U, Z = 1 , X )|Z = 1 , X }− EU {E (Y |U, A = 1 , Z = 1 , X ) P r (A = 1 |U, Z = 0 , X ) + E (Y |U, A = 0 , Z = 1 , X ) P r (A = 0 |U, Z = 0 , X )|Z = 0 , X }
+
++ ϕ(X)EU {P r (A = 1 |U, Z = 1 , X ) + P r (A = 0 |U, Z = 1 , X )} − ϕ(X)
+
+
+
+P r (A = 1 |Z = 1 , X ) − P r (A = 1 |Z = 0 , X ) ,
+
+and then proceed with the analogous steps. Finally, we conclude the proof with 
+
+δ∗(X) = E  Y a=1 ,z =0 − Y a=0 ,z =0 |A = 1 , Z = 0 , X  = E  Y a=1 ,z =1 − Y a=0 ,z =1 |A = 1 , Z = 1 , X 
+
+= E  Y a=1 − Y a=0 |A = 1 , X  ,
+
+because 
+
+δ∗ = E  Y a=1 ,z =0 − Y a=0 ,z =0 |A = 1 , Z = 0 , X  = E  Y a=1 ,z =1 − Y a=0 ,z =1 |U, A = 1 , Z = 1 , X 
+
+by U ⊥⊥ Z|A = 1 , X E  Y a=1 ,z =0 − Y a=0 ,z =0 |A = 1 , Z = 0 , X  =
+
+Z
+
+> U
+
+E  Y a=1 ,z =0 − Y a=0 ,z =0 |U, A = 1 , Z = 0 , X  f (U |A = 1 , Z = 0 , X )dU E  Y a=1 ,z =1 − Y a=0 ,z =1 |A = 1 , Z = 1 , X  =
+
+Z
+
+> U
+
+E  Y a=1 ,z =1 − Y a=0 ,z =1 |U, A = 1 , Z = 1 , X  f (U |A = 1 , Z = 1 , X )dU 
+
+by assumption 2 Z ⊥⊥ Y a,z , A z , U |X and assumption 3 Az∗
+
+⊥⊥ Y a,z |Z = z, U, X for (z, z ∗) ∈ { 0, 1}2 and consistency 
+
+E  Y a=1 ,z =0 − Y a=0 ,z =0 |A = 1 , Z = 0 , X  =
+
+Z
+
+> U
+
+E  Y a=1 − Y a=0 |U, A = 1 , Z = 0 , X  f (U |A = 1 , Z = 0 , X )dU E  Y a=1 ,z =1 − Y a=0 ,z =1 |A = 1 , Z = 1 , X  =
+
+Z
+
+> U
+
+E  Y a=1 − Y a=0 |U, A = 1 , Z = 1 , X  f (U |A = 1 , Z = 0 , X )dU 
+
+=⇒ δ∗ = P r (Z = 1 |A = 1 , X )δ∗ + P r (Z = 0 |A = 1 , X )δ∗
+
+=
+
+Z
+
+> U
+
+E  Y a=1 − Y a=0 |U, A = 1 , Z = 1 , X  P r (Z = 1 |A = 1 , U, X )f (U |A = 1 , X )dU 
+
++
+
+Z
+
+> U
+
+E  Y a=1 − Y a=0 |U, A = 1 , Z = 0 , X  P r (Z = 0 |A = 1 , U, X )f (U |A = 1 , X )dU 
+
+=
+
+Z
+
+> U
+
+E  Y a=1 − Y a=0 |U, A = 1 , X  f (U |A = 1 , X )dU = E  Y a=1 − Y a=0 |A = 1 , X  .
+
+3A.2 Identification of the ATT under Assumptions 1, 2, 5, and (ER) A SUPPLEMENTARY MATERIAL 
+
+## A.2 Identification of the ATT under Assumptions 1, 2, 5, and (ER) 
+
+We prove the conditional ATT is nonparametrically identified by δ(X) under assumptions 1, 2, 5, and (ER). 
+
+δ(X)= E (Y |Z = 1 , X ) − E (Y |Z = 0 , X )
+
+P r (A = 1 |Z = 1 , X ) − P r (A = 1 |Z = 0 , X )= E Y 1,1A + Y 0,1(1 − A)|Z = 1 , X − E Y 1,0A + Y 0,0(1 − A)|Z = 0 , X 
+
+P r (A = 1 |Z = 1 , X ) − P r (A = 1 |Z = 0 , X )=
+
+R
+
+> U
+
+E Y 1,1A + Y 0,1(1 − A)|U, Z = 1 , X − E Y 1,0A + Y 0,0(1 − A)|U, Z = 0 , X  dF (U |X)
+
+P r (A = 1 |Z = 1 , X ) − P r (A = 1 |Z = 0 , X )
+
+by assumption 2 that Z ⊥⊥ Y a,z , A z , U |X
+
+=
+
+R
+
+> U
+
+E Y 1,1A + Y 0,1(1 − A)|U, X − E Y 1,0A + Y 0,0(1 − A)|U, X  dF (U |X)
+
+P r (A = 1 |Z = 1 , X ) − P r (A = 1 |Z = 0 , X )=
+
+R
+
+> U
+
+E   Y 1,1 − Y 1,0 A|U, X − E   Y 0,1 − Y 0,0 (1 − A)|U, X  dF (U |X)
+
+P r (A = 1 |Z = 1 , X ) − P r (A = 1 |Z = 0 , X )=
+
+R
+
+> U
+
+E Y 1,1 − Y 1,0|A = 1 , U, X P r (A = 1 |U, Z = 1 , X ) − E Y 0,1 − Y 0,0|A = 0 , U, X P r (A = 1 |U, Z = 0 , X ) dF (U |X)
+
+P r (A = 1 |Z = 1 , X ) − P r (A = 1 |Z = 0 , X )
+
+by (ER) that E  Y z=1 − Y z=0 |A, Z, U, X  = 0 almost surely 
+
+=
+
+R 
+
+> U
+
+E  Y 1 − Y 0|U, X  {P r (A = 1 |U, Z = 1 , X ) − P r (A = 1 |U, Z = 0 , X )} dF (U |X)
+
+P r (A = 1 |Z = 1 , X ) − P r (A = 1 |Z = 0 , X )=
+
+R 
+
+> U
+
+E  Y 1 − Y 0|U, X  [P r (A = 1 |U, Z = 1 , X ) − P r (A = 1 |U, Z = 0 , X )] dF (U |X)
+
+P r (A = 1 |Z = 1 , X ) − P r (A = 1 |Z = 0 , X )
+
+Z
+
+> U
+
+E  Y 1 − Y 0|U, X  f (U |A = 1 , X )
+
+f (U |X) f (U |X)dU 
+
+= E  Y 1 − Y 0|A = 1 , X 
+
+## A.3 Proof of Theorem 2 
+
+In this section, we first prove part (1) and then part (2) of Theorem 2. 
+
+Deriving the EIF 
+
+We assume regular parametric submodels Pv = {P v : v ∈ R}, indexed by a real-valued parameter v, within the nonparametric model M of interest (Newey, 1990; Tsiatis, 2006). Let Pv denote the probability distribution under parameter value v, with P = Pv=0 representing the true data-generating distribution. Denote the observed data by O = ( Y, A, Z, X ), and let fv be the density (or probability mass) function of Pv . We write ∇v = 
+
+> ∂∂v
+
+, and denote the pathwise derivative of fv by f ′ 
+
+> v
+
+= ∇v fv , and likewise for the probability mass function: 
+
+P r ′ 
+
+> v
+
+= ∇v P r v . The score function for the submodel is given by Sv = f ′ 
+
+> v
+
+/f v (or Sv = P r ′ 
+
+> v
+
+/P r v in the discrete case). We omit the subscript v when v = 0, meaning the quantity is defined under the true law P . Let 
+
+4A.3 Proof of Theorem 2 A SUPPLEMENTARY MATERIAL 
+
+L2(W ) = h(W )|E h2(W ) < ∞ denote the Hilbert space of square-integrable functions of a random variable 
+
+W , equipped with the inner product ⟨h1, h 2⟩ = E {h1(W )h2(W )}.The following properties T1, T2 and T3 are used for the following EIF derivation: T1: E {h(X)S(Y |X)} = 0 , ∀h(X) ∈ L 2(X); (score has expectation 0 and by iterated expectation;) 
+
+T2: E[h(X) {Y − E(Y |X)}] = 0 , ∀h(X) ∈ L 2(X); (by iterated expectation;) 
+
+T3: S(O) = S(Y, A, Z, X ) = S(Y |A, Z, X ) + S(A|Z, X ) + S(Z|X) + S(X) ; (by the chain rule.) 
+
+We begin deriving the EIF for δ∗ = E {Aδ ∗(X)/P r (A = 1) }. The canonical gradient for δ∗ 
+
+> v
+
+= Ev {Aδ ∗ 
+
+> v
+
+(X)/P r v (A = 1) }
+
+in the parametric submodel Mv is given by 
+
+∂∂v δ∗
+
+> v
+
+= ∂∂v 
+
+Z
+
+δ∗ 
+
+> v
+
+(X) AP r v (A = 1) fv (A, X )d(A, X )=
+
+Z ∂∂v 
+
+
+
+δ∗ 
+
+> v
+
+(X) AP r v (A = 1) fv (A, X )
+
+
+
+d(A, X )=
+
+Z
+
+δ∗ 
+
+> v
+
+(X) AP r v (A = 1) 
+
+f ′ 
+
+> v
+
+(A, X )
+
+fv (A, X ) fv (A, X )d(A, X ) + 
+
+Z
+
+{∇ v δ∗ 
+
+> v
+
+(X)} AP r v (A = 1) fv (A, X )d(A, X )+
+
+Z
+
+δ∗ 
+
+> v
+
+(X)
+
+
+
+− AP r v (A = 1) 
+
+P r ′ 
+
+> v
+
+(A = 1) 
+
+P r v (A = 1) 
+
+
+
+fv (A, X )d(A, X )= Ev
+
+
+
+δ∗ 
+
+> v
+
+(X) AP r v (A = 1) Sv (A, X )
+
+| {z }
+
+> Part 1
+
++ Ev
+
+
+
+(∇v δ∗ 
+
+> v
+
+(X)) AP r v (A = 1) 
+
+| {z }
+
+> Part 2
+
+− Ev
+
+
+
+δ∗ 
+
+> v
+
+(X) AP r v (A = 1) Sv (A = 1) 
+
+| {z }
+
+> Part 3
+
+The second-to-last equation above holds by the chain rule of differentiation. We find alternative representations of Parts 1-3 as follows: Part 1: By T1, one has 
+
+Ev
+
+
+
+δ∗ 
+
+> v
+
+(X) AP r v (A = 1) Sv (A, X )
+
+
+
+= Ev
+
+
+
+δ∗ 
+
+> v
+
+(X) AP r v (A = 1) Sv (Y, A, Z, X )
+
+
+
+= Ev
+
+
+
+δ∗ 
+
+> v
+
+(X) AP r v (A = 1) Sv (O)
+
+
+
+.
+
+Part 3: 
+
+Ev
+
+
+
+δ∗ 
+
+> v
+
+(X) AP r v (A = 1) Sv (A = 1) 
+
+
+
+=
+
+Z
+
+δ∗ 
+
+> v
+
+(X) AP r v (A = 1) Sv (A = 1) fv (A, X )d(A, X )=
+
+Z
+
+δ∗ 
+
+> v
+
+(X) AP r v (A = 1) Sv (A = 1) fv (A = 1 , X )d(A, X )
+
+5A.3 Proof of Theorem 2 A SUPPLEMENTARY MATERIAL 
+
+=
+
+Z
+
+δ∗ 
+
+> v
+
+(X)Sv (A = 1) fv (X|A = 1) d(A, X )= Sv (A = 1) Ev {δ∗ 
+
+> v
+
+(X)|A = 1 }
+
+= Sv (A = 1) δ∗
+
+> v
+
+= Ev
+
+
+
+δ∗
+
+> v
+
+AP r v (A = 1) Sv (A)
+
+
+
+= Ev
+
+
+
+δ∗
+
+> v
+
+AP r v (A = 1) Sv (Y, A, Z, X )
+
+
+
+= Ev
+
+
+
+δ∗
+
+> v
+
+AP r v (A = 1) Sv (O)
+
+
+
+The third-to-last equality follows by noting that Ev {A/P r v (A = 1) Sv (A)} = Sv (A = 1), and the second-to-last equality holds by T1. Part 2: 
+
+Ev
+
+
+
+{∇ v δ∗ 
+
+> v
+
+(X)} AP r v (A = 1) 
+
+
+
+=
+
+Z
+
+{∇ v δ∗ 
+
+> v
+
+(X)} AP r v (A = 1) fv (X, A )d(X, A )Note that ∇v δ∗ 
+
+> v
+
+(X) can be expressed as follows by the chain rule: 
+
+∇v δ∗ 
+
+> v
+
+(X) = {∇ v δY v (X)} δAv (X) − δY v (X) {∇ v δAv (X)}]
+
+{δAv (X)}2 , (12) where 
+
+δY v (X) := Ev (Y |Z = 1 , X ) − Ev (Y |Z = 0 , X ) − [Ev (Y |A = 1 , Z = 1 , X ) − Ev (Y |A = 1 , Z = 0 , X )] ,δAv (X) := P r v (A = 1 |Z = 1 , X ) − P r v (A = 1 |Z = 0 , X ).
+
+Hence, it suffices to find expressions of ∇v δY v (X)
+
+∇v δY v (X) = ∇v Ev (Y |Z = 1 , X )−∇ v Ev (Y |Z = 0 , X )−[∇v Ev (Y |A = 1 , Z = 1 , X ) − ∇ v Ev (Y |A = 1 , Z = 0 , X )] and ∇v δAv (X)
+
+∇v δAv (X) = ∇v P r v (A − 1|Z = 1 , X ) − ∇ v P r v (A = 1 |Z = 0 , X ).
+
+We first derive an expression of ∇v Ev (Y |Z = z, X ) and ∇v Ev (Y |A = 1 , Z = z, X ): 
+
+∇v Ev (Y |Z = z, X )= ∂∂v 
+
+Z
+
+Y f v (Y |Z = z, X )dY 
+
+6A.3 Proof of Theorem 2 A SUPPLEMENTARY MATERIAL 
+
+=
+
+Z
+
+Y f ′ 
+
+> v
+
+(Y |Z = z, X )
+
+fv (Y |Z = z, X ) fv (Y |Z = z, X )dy 
+
+= Ev {Y S v (Y |Z = z, X )|Z = z, X }
+
+= Ev [{Y − Ev (Y |Z = z, X )} Sv (Y |Z = z, X )|Z = z, X ]
+
+∇v Ev (Y |A = 1 , Z = z, X )= ∂∂v 
+
+Z
+
+Y f v (Y |A = 1 , Z = z, X )dY 
+
+=
+
+Z
+
+Y f ′ 
+
+> v
+
+(Y |A = 1 , Z = z, X )
+
+fv (Y |A = 1 , Z = z, X ) fv (Y |A = 1 , Z = z, X )dy 
+
+= Ev {Y S v (Y |A = 1 , Z = z, X )|A = 1 , Z = z, X }
+
+= Ev [{Y − Ev (Y |A = 1 , Z = z, X )} Sv (Y |A = 1 , Z = z, X )|A = 1 , Z = z, X ]The last equality holds by T2. 
+
+∇v δY v (X) has the following representation: 
+
+∇v δY v (X)= ∇v Ev (Y |Z = 1 , X ) − ∇ v Ev (Y |Z = 0 , X ) − [∇v Ev (Y |A = 1 , Z = 1 , X ) − ∇ v Ev (Y |A = 1 , Z = 0 , X )] = Ev [{Y − Ev (Y |Z = 1 , X )} Sv (Y, A |Z = 1 , X )|Z = 1 , X ] − Ev [{Y − Ev (Y |Z = 0 , X )} Sv (Y, A |Z = 0 , X )|Z = 0 , X ]
+
+− Ev [{Y − Ev (Y |A = 1 , Z = z, X )} Sv (Y |A = 1 , Z = z, X )|A = 1 , Z = z, X ]+ Ev [{Y − Ev (Y |A = 1 , Z = z, X )} Sv (Y |A = 1 , Z = z, X )|A = 1 , Z = z, X ]= Ev
+
+ 2Z − 1
+
+fv (Z|X) {Y − Ev (Y |Z, X )} Sv (Y, A |Z, X ) X
+
+
+
+− Ev
+
+ 2Z − 1
+
+fv (Z|X)
+
+AP r v (A = 1 |Z, X ) {Y − Ev (Y |A = 1 , Z, X )} Sv (Y, A |Z, X ) X
+
+
+
+= Ev
+
+ 2Z − 1
+
+fv (Z|X)
+
+
+
+{Y − Ev (Y |Z, X )} − AP r v (A = 1 |Z, X ) {Y − Ev (Y |A = 1 , Z, X )}
+
+
+
+Sv (Y, A, Z |X) X
+
+
+
+. (13) The last equality holds by T1. Based on analogous algebra, one can show that: 
+
+∇v δAv (X) = Ev
+
+ 2Z − 1
+
+fv (Z|X) {A − P r v (A = 1 |Z, X )}Sv (Y, A, Z |X) X
+
+
+
+(14) Combining (12)-(14), we have 
+
+∇v δ∗ 
+
+> v
+
+(X)
+
+7A.3 Proof of Theorem 2 A SUPPLEMENTARY MATERIAL 
+
+= 1
+
+δAv (X)2 [{∇ v δY v (X)} δAv (X) − δY v (X) {∇ v δAv (X)}]= 1
+
+δAv (X)2
+
+ Ev
+
+h 2Z−1 
+
+> fv(Z|X)
+
+h
+
+{Y − Ev (Y |Z, X )} − AP r v (A=1 |Z,X ) {Y − Ev (Y |A = 1 , Z, X )}
+
+i
+
+Sv (Y, A, Z |X) X
+
+i
+
+δAv (X)
+
+−δY v (X)Ev
+
+h 2Z−1  
+
+> f(Z|X)
+
+{A − P r v (A = 1 |Z, X )} Sv (Y, A, Z |X)} X
+
+i
+
+= Ev
+
+  
+
+> 1
+> δAv (X)2Z−1
+> fv(Z|X)
+
+h
+
+{Y − Ev (Y |Z, X )} − AP r v (A=1 |Z,X ) {Y − Ev (Y |A = 1 , Z, X )}
+
+i
+
+Sv (Y, A, Z |X)
+
+− 1   
+
+> δAv (X)2Z−1
+> f(Z|X)
+
+{A − P r v (A = 1 |Z, X )} Sv (Y, A, Z |X)δ∗ 
+
+> v
+
+(X)
+
+X
+
+
+
+= Ev
+
+ 2Z − 1
+
+fv (Z|X)1
+
+δAv (X)
+
+
+
+Y − Ev (Y |Z, X ) − { A − P r v (A = 1 |Z, X )} δ∗ 
+
+> v
+
+(X)
+
+− AP r v (A = 1 |Z, X ) {Y − Ev (Y |A = 1 , Z, X )}
+
+ Sv (Y, A, Z |X) X
+
+ .
+
+Based on this result, Part 2 is expressed as follows: 
+
+Ev
+
+h
+
+{∇ v δ∗ 
+
+> v
+
+(X)} AP r v (A = 1) 
+
+i
+
+=
+
+Z
+
+{∇ v δ∗ 
+
+> v
+
+(X)} fv (X|A = 1) dX 
+
+=
+
+Z P r v (A = 1 |X)
+
+P r v (A = 1) {∇ v δ∗ 
+
+> v
+
+(X)} fv (X)dX 
+
+=
+
+Z Z P r v (A = 1 |X)
+
+P r v (A = 1) 2Z − 1
+
+fv (Z|X)1
+
+δAv (X)
+
+
+
+Y − Ev (Y |Z, X ) − { A − P r v (A = 1 |Z, X )} δ∗ 
+
+> v
+
+(X)
+
+− AP r v (A = 1 |Z, X ) {Y − Ev (Y |A = 1 , Z, X )}
+
+
+
+× Sv (Y, A, Z |X)fv (Y, A, Z |X)d(Y, A, Z ) fv (X)dX 
+
+=
+
+Z P r v (A = 1 |X)
+
+P r v (A = 1) 2Z − 1
+
+fv (Z|X)1
+
+δAv (X)
+
+
+
+Y − Ev (Y |Z, X ) − { A − P r v (A = 1 |Z, X )} δ∗ 
+
+> v
+
+(X)
+
+− AP r v (A = 1 |Z, X ) {Y − Ev (Y |A = 1 , Z, X )}
+
+ Sv (O)fv (O)dO 
+
+= Ev
+
+ P r v (A = 1 |X)
+
+P r v (A = 1) 2Z − 1
+
+fv (Z|X)1
+
+δAv (X)
+
+
+
+Y − Ev (Y |Z, X ) − { A − P r v (A = 1 |Z, X )} δ∗ 
+
+> v
+
+(X)
+
+− AP r v (A = 1 |Z, X ) {Y − Ev (Y |A = 1 , Z, X )}
+
+ Sv (O)
+
+
+
+The third-to-last equality holds by T2. Define θv (O) as 
+
+θv (O) := 2Z − 1
+
+fv (Z|X)1
+
+δAv (X)
+
+
+
+Y − Ev (Y |Z, X ) − { A − P r v (A = 1 |Z, X )} δ∗ 
+
+> v
+
+(X) − AP r v (A = 1 |Z, X ) {Y − Ev (Y |A = 1 , Z, X )}
+
+
+
+Combining the derived expressions for Part 1, Part 2 and Part 3, we establish the following result: 
+
+∂∂v δ∗
+
+> v
+
+= Part 1 + Part 2 - Part 3 
+
+8A.3 Proof of Theorem 2 A SUPPLEMENTARY MATERIAL 
+
+= Ev
+
+
+
+δ∗ 
+
+> v
+
+(X) AP r v (A = 1) Sv (O) + P r v (A = 1 |X)
+
+P r v (A = 1) θv (O)Sv (O) − δ∗
+
+> v
+
+AP r v (A = 1) Sv (O)
+
+
+
+= Ev
+
+ AP r v (A = 1) (δ∗ 
+
+> v
+
+(X) − δ∗ 
+
+> v
+
+) + θv (O)
+
+
+
+Sv (O)
+
+
+
+This result implies that δ∗ is pathwise differentiable (Newey, 1990) with an influence function EIF (O; δ∗) defined as follows: 
+
+EIF (O; δ∗) = AP r (A = 1) {δ∗(X) − δ∗} + ρ(X)
+
+P r (A = 1) θ(O),θ(O) := 2Z − 1
+
+f (Z|X)1
+
+δA(X)
+
+
+
+Y − E (Y |Z, X ) − { A − P r (A = 1 |Z, X )} δ∗(X) − AP r (A = 1 |Z, X ) {Y − E (Y |A = 1 , Z, X )}
+
+
+
+.
+
+Of note, EIF (O; δ∗) derived above satisfies the following equation: 
+
+∂∂v δ∗
+
+> v
+> v=0
+
+= E {EIF (O; δ∗)S(O)} .
+
+In other words, δ∗ is pathwise differentiable (Newey, 1990), with an influence function EIF (O; δ∗). Since the model M is nonparametric, EIF (O; δ∗) is the unique influence function satisfying ( ?? ). Consequently, 
+
+EIF (O; δ∗) is the EIF for δ∗. This completes the proof. Of note, θ(O) has the alternative representation: 
+
+θ(O) := 2Z − 1
+
+f (Z|X)1
+
+δA(X)
+
+
+
+Y − E (Y |Z, X ) − { A − P r (A = 1 |Z, X )} δ∗(X) − AP r (A = 1 |Z, X ) {Y − E (Y |A = 1 , Z, X )}
+
+
+
+= 2Z − 1
+
+f (Z|X)1
+
+δA(X)
+
+
+
+Y − Z {E (Y |Z = 1 , X ) − E (Y |Z = 0 , X )} − E (Y |Z = 0 , X )
+
+− { A − Z {P r (A = 1 |Z = 1 , X ) − P r (A = 1 |Z = 0 , X )} − P r (A = 1 |Z = 0 , X )} δ∗(X)
+
+− AP r (A = 1 |Z, X ) {Y − Z {E (Y |A = 1 , Z = 1 , X ) − E (Y |A = 1 , Z = 0 , X )} − E (Y |A = 1 , Z = 0 , X )}
+
+
+
+= 2Z − 1
+
+f (Z|X)1
+
+δA(X)
+
+
+
+Y − E (Y |Z = 0 , X )
+
+− { A − P r (A = 1 |Z = 0 , X )} δ∗(X)
+
+− Z {E (Y |Z = 1 , X ) − E (Y |Z = 0 , X )} + Z {P r (A = 1 |Z = 1 , X ) − P r (A = 1 |Z = 0 , X )} δ∗(X)
+
+− AP r (A = 1 |Z, X ) {Y − Zϕ (X) − E (Y |A = 1 , Z = 0 , X )}
+
+
+
+= 2Z − 1
+
+f (Z|X)1
+
+δA(X)
+
+
+
+Y − Aδ ∗(X) − E (Y |Z = 0 , X ) + P r (A = 1 |Z = 0 , X )δ∗(X)
+
+− AP r (A = 1 |Z, X ) {Y − Zϕ (X) − E (Y |A = 1 , Z = 0 , X )}
+
+
+
+= 2Z − 1
+
+f (Z|X)1
+
+δA(X)
+
+
+
+Y − Aδ ∗(X) − Zϕ (X) − { E (Y |Z = 0 , X ) − P r (A = 1 |Z = 0 , X )δ∗(X)}− AP r (A = 1 |Z, X ) {Y − Zϕ (X) − E (Y |A = 1 , Z = 0 , X )}
+
+
+
+9A.3 Proof of Theorem 2 A SUPPLEMENTARY MATERIAL 
+
+= 2Z − 1
+
+f (Z|X)1
+
+δA(X)
+
+
+
+Y − Aδ ∗(X) − Zϕ (X) − E {Y − Aδ ∗(X) − Zϕ (X)|X}− AP r (A = 1 |Z, X ) {Y − Zϕ (X) − E (Y |A = 1 , Z = 0 , X )}
+
+
+
+The last equation can be seen from 
+
+E {Y − Aδ ∗(X) − Zϕ (X)|X}
+
+= E [[ E {Y − Aδ ∗(X) − ϕ(X)|Z = 1 , X } − E {Y − Aδ ∗(X)|Z = 0 , X }] Z|X] + E {Y − Aδ ∗(X)|Z = 0 , X }
+
+= E
+
+
+
+{E (Y |Z = 1 , X ) − E (Y |Z = 0 , X )} Z − ϕ(X)Z
+
+− { P r (A = 1 |Z = 1 , X ) − P r (A = 1 |Z = 0 , X )} δ∗(X)Z
+
++ E {Y |Z = 0 , X } − P r (A = 1 |Z = 0 , X )δ∗(X)
+
+X
+
+
+
+= E
+
+
+
+{E (Y |Z = 1 , X ) − E (Y |Z = 0 , X )} Z − ϕ(X)Z
+
+− { E (Y |Z = 1 , X ) − E (Y |Z = 0 , X ) − ϕ(X)} Z
+
++ E {Y |Z = 0 , X } − P r (A = 1 |Z = 0 , X )δ∗(X)
+
+X
+
+
+
+= E (Y |Z = 0 , X ) − P r (A = 1 |Z = 0 , X )δ∗(X)Use the notation in the maintext, one has 
+
+θ(O) = 2Z − 1
+
+f (Z|X)1
+
+p1(X) − p0(X)
+
+
+
+Y − Aδ ∗(X) − Zϕ (X) − w(X) − ApZ (X) {Y − Zϕ (X) − e10 (X)}
+
+
+
+;or equivalently, 
+
+θ(O) = 2Z − 1
+
+f (Z|X)1
+
+p1(X) − p0(X)
+
+
+
+Y − eZ (X) − { A − pZ (X)} δ∗(X) − ApZ (X) {Y − Zϕ (X) − e10 (X)}
+
+
+
+,
+
+Multiple Robustness Property 
+
+We verify that the EIF is an unbiased moment equation under each of the models M1, M2 and M3. Again, we let the superscript ∼ indicate a misspecified model. 
+
+M1 : models for pz (X) and πz (X) are evaluated at their true value, for z ∈ { 0, 1}
+
+E
+
+n
+
+EIF (O; δ∗, ˜e1z (X), p z (X), π z (X), ˜w(X), ˜δ∗(X)) 
+
+o
+
+= E
+
+ AP r (A = 1) 
+
+n˜δ∗(X) − δ∗o
+
++ E
+
+ ρ(X)
+
+P r (A = 1) 2Z − 1
+
+πZ (X)1
+
+p1(X) − p0(X)
+
+
+
+Y − ˜eZ (X) − { A − pZ (X)} ˜δ∗(X) − ApZ (X)
+
+n
+
+Y − Z ˜ϕ(X) − ˜e10 (X)
+
+o 
+
+=
+
+˜δ∗ − δ∗
+
+10 A.4 Proof of Theorem 3 A SUPPLEMENTARY MATERIAL 
+
++ E
+
+ ρ(X)
+
+P r (A = 1) 1
+
+p1(X) − p0(X) [e1(X) − e0(X) − { ˜e1(X) − ˜e0(X)} − { e11 (X) − e10 (X) − ˜e11 (X) − ˜e10 (X)}]
+
+
+
+=
+
+˜δ∗ − δ∗
+
++ E
+
+ ρ(X)
+
+P r (A = 1) 
+
+e1(X) − e0(X) − { e11 (X) − e10 (X)}
+
+p1(X) − p0(X)
+
+
+
+− E
+
+ ρ(X)
+
+P r (A = 1) ˜e1(X) − ˜e0(X) − { ˜e11 (X) − ˜e10 (X)}
+
+p1(X) − p0(X)
+
+
+
+=
+
+˜δ∗ − δ∗
+
++
+
+
+
+δ∗ − ˜δ∗
+
+= 0 
+
+M2 : models for δ∗(X), e 1z (X) and w(X) are evaluated at their true value, for z ∈ { 0, 1};
+
+E {EIF (O; δ∗, e 1z (X), ˜pz (X), ˜πz (X), w (X), δ ∗(X)) }
+
+= E
+
+ AP r (A = 1) {δ∗(X) − δ∗}
+
+
+
++ E
+
+ ˜ρ(X)
+
+P r (A = 1) 2Z − 1˜πZ (X)1˜p1(X) − ˜p0(X)
+
+
+
+Y − Aδ ∗(X) − Zϕ (X) − w(X) − A
+
+˜pZ (X) {Y − Zϕ (X) − e10 (X)}
+
+ 
+
+= 0 + E
+
+ ˜ρ(X)
+
+P r (A = 1) 2Z − 1˜πZ (X)1˜p1(X) − ˜p0(X)
+
+
+
+0 − A
+
+˜pZ (X) · 0
+
+ 
+
+= 0 
+
+M3 : models for δ∗(X), e 1z (X) and πz (X) are evaluated at their true value, for z ∈ { 0, 1}
+
+E {EIF (O; δ∗, e 1z (X), ˜pz (X), π z (X), ˜w(X), δ ∗(X)) }
+
+= E
+
+ AP r (A = 1) {δ∗(X) − δ∗}
+
+
+
++ E
+
+ ˜ρ(X)
+
+P r (A = 1) 2Z − 1
+
+πZ (X)1˜p1(X) − ˜p0(X)
+
+
+
+Y − ˜eZ (X) − { A − ˜pZ (X)} δ∗(X) − A
+
+˜pZ (X) {Y − Zϕ (X) − e10 (X)}
+
+ 
+
+= E
+
+ ˜ρ(X)
+
+P r (A = 1) 1˜p1(X) − ˜p0(X) [e1(X) − e0(X) − { ˜e1(X) − ˜e0(X)} − { p1(X) − p0(X)} δ∗(X) + {˜p1(X) − ˜p0(X)} δ∗(X)] 
+
+
+
+= E
+
+ ˜ρ(X)
+
+P r (A = 1) 1˜p1(X) − ˜p0(X) [ϕ(X) − { ˜e1(X) − ˜e0(X)} + {˜p1(X) − ˜p0(X)} δ∗(X)] 
+
+
+
+= E
+
+ ˜ρ(X)
+
+P r (A = 1) [ϕ(X) − [{˜p1(X) − ˜p0(X)} δ∗(X) + ϕ(X)] + {˜p1(X) − ˜p0(X)} δ∗(X)] 
+
+
+
+= 0 
+
+## A.4 Proof of Theorem 3 – Asymptotic Normality of the Proposed Estimator 
+
+In this section, we prove Theorem 3 in the main text. For notational convenience, we use the shorthand f = f (X)or f = f (O), and apply this convention to any function of X, including ez = ez (X), e1z = e1z (X), pz = pz (X), 
+
+πz = πz (X), ρ = ρ(X), δ∗ = δ∗(X), w = w(X) and θ = θ(O). To avoid confusion between the conditional 
+
+11 A.4 Proof of Theorem 3 A SUPPLEMENTARY MATERIAL 
+
+quantity δ∗(X) and its marginal counterpart, we re-denote the marginal estimand by 
+
+δ∗ 
+
+> m
+
+:= E
+
+ AP r (A = 1) δ∗(X)
+
+
+
+.
+
+Throughout the remainder of this section, δ∗ 
+
+> m
+
+refers to the marginal quantity, whereas δ∗ always denotes the conditional one. If one can show that ˆδ∗(k) has the asymptotic representation 
+
+p|I k|
+
+ˆδ∗(k) − δ∗
+
+> m
+
+
+
+= 1
+
+p|I k|
+
+X
+
+> i∈I k
+
+EIF (Oi; δ∗
+
+> m
+
+) + oP (1) , (15) and one further establishes ˆδ∗EIF = K−1
+
+> K
+
+X
+
+> k=1
+
+ˆδ∗(k)
+
+> m
+
+has asymptotic representation 
+
+√N
+
+ˆδ∗EIF − δ∗
+
+> m
+
+
+
+= 1
+
+√N
+
+> N
+
+X
+
+> i=1
+
+EIF (Oi; δ∗
+
+> m
+
+) + oP (1) . (16) Then, the asymptotic normality result holds from a standard central limit theorem. Hence, we begin by proving that (15) holds under assumptions 1 – 8. Recall ˆδ∗(k) = {P(A)}−1 PIk
+
+h
+
+Aˆδ∗(−k) + ˆθ(−k)i
+
+,
+
+ˆθ(−k) = ˆρ(−k)
+
+ˆp(−k)1 − ˆp(−k)0
+
+2Z − 1ˆπ(−k)
+
+> Z
+
+"
+
+Y − Aˆδ∗(−k) − Z ˆϕ(−k) − ˆw(−k) − A
+
+ˆp(−k)
+
+> Z
+
+n
+
+Y − Z ˆϕ(−k) + ˆ e(−k)10 
+
+o#
+
+,
+
+ˆρ(−k) = ˆ p(−k)1 ˆπ(−k)1 + ˆ p(−k)0 ˆπ(−k)0 .
+
+Let Mi = Aiδ∗ 
+
+> i
+
++ θi and cM (−k) 
+
+> i
+
+= Ai ˆδ∗(−k) 
+
+> i
+
++ ˆθ(−k) 
+
+> i
+
+. The left-hand side of (15) is given by 
+
+p|I k|
+
+ˆδ∗(k) − δ∗
+
+> m
+
+
+
+= 1
+
+p|I k|
+
+X
+
+> i∈I k
+
+( cM (−k)
+
+> i
+
+P(A) − Aiδ∗
+
+> m
+
+PIk (A)
+
+)
+
+= 1
+
+p|I k|
+
+X
+
+> i∈I k
+
+(
+
+P r (A = 1) 
+
+P(A)
+
+cM (−k)
+
+> i
+
+P r (A = 1) − P r (A = 1) 
+
+PIk (A)
+
+Aiδ∗
+
+> m
+
+P r (A = 1) 
+
+)
+
+(use the decomposition that ab − cd = 12 (a − c)( b + d) + 12 (a + c)( b − d))
+
+12 A.4 Proof of Theorem 3 A SUPPLEMENTARY MATERIAL 
+
+= 121
+
+p|I k|
+
+ P r (A = 1) 
+
+P(A) − P r (A = 1) 
+
+PIk (A)
+
+| {z }
+
+> op(1)
+
+X
+
+> i∈I k
+
+cM (−k) 
+
+> i
+
++ Aiδ∗
+
+> m
+
+P r (A = 1) 
+
+| {z }
+
+> Op(1)
+
++ 121
+
+p|I k|
+
+ P r (A = 1) 
+
+P(A) + P r (A = 1) 
+
+PIk (A)
+
+| {z }
+
+> 2+ op(1)
+
+X
+
+> i∈I k
+
+cM (−k) 
+
+> i
+
+− Aiδ∗
+
+> m
+
+P r (A = 1) 
+
+| {z } 
+
+> AN :Op(1)
+
+= 1
+
+p|I k|
+
+X
+
+> i∈I k
+
+( cM (−k) 
+
+> i
+
+− Aiδ∗
+
+> m
+
+P r (A = 1) 
+
+)
+
++ op(1) The fourth line holds because PIk (A) = P r (A = 1) + oP (1) and P(A) = P r (A = 1) + oP (1) by the law of large number and cM (−k) 
+
+> i
+
+is bounded. Let GIk (V ) = |I k|−1/2 P 
+
+> i∈I k
+
+{Vi − E(Vi)} be the empirical process of Vi centered by E(Vi). Similarly, let 
+
+G(−k)
+
+> Ik
+
+ bV (−k)
+
+
+
+= |I k|−1/2 P
+
+> i∈I k
+
+n bV (−k) 
+
+> i
+
+− E(−k)
+
+ bV (−k)
+
+o 
+
+be the empirical process of bV (−k) centered by E(−k)
+
+ bV (−k)
+
+
+
+,where E(−k)(·) is the expectation after considering random functions obtained from Ick as fixed functions. The empirical process of cM (−k) 
+
+> i
+
+− Aiδ∗ 
+
+> m
+
+is 
+
+|I k|−1/2 X
+
+> i∈I k
+
+n cM (−k) 
+
+> i
+
+− Aiδ∗
+
+> m
+
+o
+
+= GIk (M − Aδ ∗
+
+> m
+
+) (17) + |I k|1/2E(−k)  cM (−k) 
+
+> i
+
+− M
+
+
+
+(18) + G(−k)
+
+> Ik
+
+ cM (−k) − M
+
+
+
+(19) From the two subsections below, we show that (18) and (19) are oP (1), indicating that (17) is asymptotically normal, and consequently, ( AN ) is Op(1). Moreover, we establish (15), concluding the proof as follows: 
+
+p|I k|
+
+ˆδ∗(k) 
+
+> m
+
+− δ∗
+
+> m
+
+
+
+= 1
+
+p|I k|
+
+X
+
+> i∈I k
+
+( cM (−k) 
+
+> i
+
+− Aiδ∗
+
+> m
+
+P r (A = 1) 
+
+)
+
++ op(1) = 1
+
+p|I k|
+
+X
+
+> i∈I k
+
+EIF (Oi; δ∗
+
+> m
+
+) + op(1) .
+
+Asymptotic Property of (18) 
+
+The term (18) 
+
+|I k|1/2E(−k)  cM (−k) − M
+
+
+
+= |I k|1/2E(−k) n
+
+Aˆδ∗(−k) + ˆθ(−k) − Aδ ∗ − θ
+
+o
+
+= |I k|1/2E(−k) n
+
+A
+
+ˆδ∗(−k) − δ∗
+
++ ˆθ(−k) − θ
+
+o
+
+= |I k|1/2E(−k) n
+
+A
+
+ˆδ∗(−k) − δ∗
+
++ ˆθ(−k) − θ
+
+o
+
+.
+
+13 A.4 Proof of Theorem 3 A SUPPLEMENTARY MATERIAL 
+
+We note E(−k) (θ) = 0 (mean 0), A in E(−k)
+
+n
+
+A
+
+ˆδ∗ − δ∗
+
+o 
+
+contributes ρ = P r (A = 1 |X). Thus, one has the decomposition that 
+
+E(−k) ˆθ(−k)
+
+= E(−k)
+
+(
+
+ˆρ(−k)
+
+ˆp(−k)1 − ˆp(−k)0
+
+2Z − 1ˆπ(−k)
+
+> Z
+
+"
+
+Y − Aˆδ∗(−k) − Z ˆϕ(−k) − ˆw(−k) − A
+
+ˆp(−k)
+
+> Z
+
+n
+
+Y − Z ˆϕ(−k) + ˆ e(−k)10 
+
+o#) 
+
+apply the conditional expectation that Y = ( e1 − e0)Z + e0 and A = ( p1 − p0)Z + p0
+
+= E(−k)
+
+
+
+ˆρ(−k)
+
+ˆp(−k)1 − ˆp(−k)0
+
+2Z − 1ˆπ(−k)
+
+> Z
+
+
+
+(e1 − e0) Z + e0 − { (p1 − p0)Z + p0} ˆδ∗(−k) − Z ˆϕ(−k) − ˆw(−k)
+
+− A
+
+ˆp(−k)
+
+> Z
+
+n
+
+Y − Z ˆϕ(−k) + ˆ e(−k)10 
+
+o
+
+= E(−k)
+
+
+
+ˆρ(−k)
+
+ˆp(−k)1 − ˆp(−k)0
+
+2Z − 1ˆπ(−k)
+
+> Z
+
+
+
+Zδ ∗(p1 − p0) + Zϕ + e0 − Z(p1 − p0)ˆδ∗(−k) − p0 ˆδ∗(−k)
+
+− Z ˆϕ(−k) − ˆw(−k) − A
+
+ˆp(−k)
+
+> Z
+
+n
+
+Z(e11 − e10 ) + e10 − Z ˆϕ(−k) + ˆ e(−k)10 
+
+o
+
+= E(−k)
+
+
+
+ˆρ(−k)
+
+ˆp(−k)1 − ˆp(−k)0
+
+2Z − 1ˆπ(−k)
+
+> Z
+
+
+
+Z(p1 − p0)
+
+
+
+δ∗ − ˆδ∗(−k)
+
++ Z
+
+
+
+ϕ − ˆϕ(−k)
+
++ p0
+
+
+
+δ∗ − ˆδ∗(−k)
+
++
+
+n
+
+e0 − p0δ∗ − ˆw(−k)o
+
++
+
+n
+
+Z
+
+
+
+ϕ − ˆϕ(−k)
+
+−
+
+n
+
+e10 − ˆe(−k)10 
+
+oo 
+
+= E(−k)
+
+
+
+ˆρ(−k)
+
+ˆp(−k)1 − ˆp(−k)0
+
+2Z − 1ˆπ(−k)
+
+> Z
+
+
+
+Z(p1 − p0)
+
+
+
+δ∗ − ˆδ∗(−k)
+
++ Z
+
+
+
+ϕ − ˆϕ(−k)
+
++ p0
+
+
+
+δ∗ − ˆδ∗(−k)
+
++
+
+n
+
+w − ˆw(−k)o
+
++
+
+n
+
+Z
+
+
+
+ϕ − ˆϕ(−k)
+
+−
+
+n
+
+e10 − ˆe(−k)10 
+
+oo 
+
+.
+
+The last equation holds by 
+
+E(−k) (w) = E(−k) (Y − Aδ ∗ − Zϕ ) = E(−k) {(e1 − e0) Z + e0 − Aδ ∗ − Zϕ }
+
+= E(−k) {(e1 − e0) Z + e0 − { (p1 − p0)Z + p0} δ∗ − Zϕ }
+
+= E(−k) {Z(p1 − p0)δ∗ + Zϕ + e0 − Z(p1 − p0)δ∗ − p0δ∗ − Zϕ } = E(−k) (e0 − p0δ∗) .
+
+Then, the term (18) becomes 
+
+|I k|1/2E(−k)  cM (−k) − M
+
+
+
+= |I k|1/2E(−k) n
+
+A
+
+ˆδ∗(−k) − δ∗
+
++ ˆθ(−k) − θ
+
+o
+
+= |I k|1/2E(−k) n
+
+ρ
+
+ˆδ∗(−k) − δ∗
+
++ ˆθ(−k)o
+
+= |I k|1/2E(−k)
+
+"
+
+ρ
+
+ˆδ∗(−k) − δ∗
+
++ ˆρ(−k)
+
+ˆp(−k)1 − ˆp(−k)0
+
+2Z − 1ˆπ(−k)
+
+> Z
+
+"
+
+Y − Aˆδ∗(−k) − Z ˆϕ(−k) − ˆw(−k) − A
+
+ˆp(−k)
+
+> Z
+
+n
+
+Y − Z ˆϕ(−k) + ˆ e(−k)10 
+
+o## 
+
+14 A.4 Proof of Theorem 3 A SUPPLEMENTARY MATERIAL 
+
+= |I k|1/2E(−k)
+
+
+
+ρ
+
+ˆδ∗(−k) − δ∗
+
++ ˆρ(−k)
+
+ˆp(−k)1 − ˆp(−k)0
+
+2Z − 1ˆπ(−k)
+
+> Z
+
+
+
+Z(p1 − p0)
+
+
+
+δ∗ − ˆδ∗(−k)
+
++ Z
+
+
+
+ϕ − ˆϕ(−k)
+
++ p0
+
+
+
+δ∗ − ˆδ∗(−k)
+
++
+
+
+
+w − ˆw(−k)
+
++ A
+
+ˆp(−k)
+
+n
+
+Z
+
+
+
+ϕ − ˆϕ(−k)
+
+−
+
+n
+
+e10 − ˆe(−k)10 
+
+oo 
+
+= |I k|1/2E(−k)
+
+
+
+ρ
+
+ˆδ∗(−k) − δ∗
+
+++ ˆ ρ(−k) p1 − p0
+
+ˆp(−k)1 − ˆp(−k)0
+
+π1
+
+ˆπ(−k)1
+
+
+
+δ∗ − ˆδ∗(−k)
+
++ ˆ ρ(−k) 1ˆp(−k)1 − ˆp(−k)0
+
+π1
+
+ˆπ(−k)1
+
+
+
+ϕ − ˆϕ(−k)
+
++ ˆ ρ(−k) 1ˆp(−k)1 − ˆp(−k)0
+
+(
+
+π1
+
+ˆπ(−k)1
+
+− π0
+
+ˆπ(−k)0
+
+) n 
+
+w − ˆw(−k)
+
++ p0
+
+
+
+δ∗ − ˆδ∗(−k)o 
+
+− ˆρ(−k) 1ˆp(−k)1 − ˆp(−k)0
+
+(
+
+π1
+
+ˆπ(−k)1
+
+p1
+
+ˆp(−k)1
+
+) 
+
+ϕ − ˆϕ(−k)
+
+− ˆρ(−k) 1ˆp(−k)1 − ˆp(−k)0
+
+(
+
+π1
+
+ˆπ(−k)1
+
+p1
+
+ˆp(−k)1
+
+− π0
+
+ˆπ(−k)0
+
+p0
+
+ˆp(−k)0
+
+) n
+
+e10 − ˆe(−k)10 
+
+o
+
+.
+
+We handle each term of the above expression: 
+
+ρ = p1π1 + p0π0
+
+|I k|1/2E(−k)  cM (−k) − M
+
+
+
+= |I k|1/2E(−k) (T1 + T2 + T3 + T4 − T5 − T6) T1 = ( p1π1 + p0π0)
+
+ˆδ∗(−k) − δ∗
+
+T2 = 
+
+
+
+ˆp(−k)1 ˆπ(−k)1 + ˆ p(−k)0 ˆπ(−k)0
+
+ p1 − p0
+
+ˆp(−k)1 − ˆp(−k)0
+
+π1
+
+ˆπ(−k)1
+
+
+
+δ∗ − ˆδ∗(−k)
+
+T3 = 
+
+
+
+ˆp(−k)1 ˆπ(−k)1 + ˆ p(−k)0 ˆπ(−k)0
+
+ 1ˆp(−k)1 − ˆp(−k)0
+
+π1
+
+ˆπ(−k)1
+
+
+
+ϕ − ˆϕ(−k)
+
+T4 = 
+
+
+
+ˆp(−k)1 ˆπ(−k)1 + ˆ p(−k)0 ˆπ(−k)0
+
+ 1ˆp(−k)1 − ˆp(−k)0
+
+(
+
+π1
+
+ˆπ(−k)1
+
+− π0
+
+ˆπ(−k)0
+
+) n 
+
+w − ˆw(−k)
+
++ p0
+
+
+
+δ∗ − ˆδ∗(−k)o 
+
+T5 = 
+
+
+
+ˆp(−k)1 ˆπ(−k)1 + ˆ p(−k)0 ˆπ(−k)0
+
+ 1ˆp(−k)1 − ˆp(−k)0
+
+(
+
+π1
+
+ˆπ(−k)1
+
+p1
+
+ˆp(−k)1
+
+) 
+
+ϕ − ˆϕ(−k)
+
+T6 = 
+
+
+
+ˆp(−k)1 ˆπ(−k)1 + ˆ p(−k)0 ˆπ(−k)0
+
+ 1ˆp(−k)1 − ˆp(−k)0
+
+(
+
+π1
+
+ˆπ(−k)1
+
+p1
+
+ˆp(−k)1
+
+− π0
+
+ˆπ(−k)0
+
+p0
+
+ˆp(−k)0
+
+) n
+
+e10 − ˆe(−k)10 
+
+o
+
+.
+
+We focus on T1 first. T1 = ( p1π1 + p0π0)
+
+ˆδ∗(−k) − δ∗
+
+= p1
+
+
+
+π1 − ˆπ(−k)1
+
+  ˆδ∗(−k) − δ∗
+
++ p0
+
+
+
+π0 − ˆπ(−k)0
+
+  ˆδ∗(−k) − δ∗
+
+15 A.4 Proof of Theorem 3 A SUPPLEMENTARY MATERIAL 
+
++ p1 ˆπ(−k)1
+
+ˆδ∗(−k) − δ∗
+
++ p0 ˆπ(−k)0
+
+ˆδ∗(−k) − δ∗
+
+= p1
+
+ρρ
+
+
+
+π1 − ˆπ(−k)1
+
+  ˆδ∗(−k) − δ∗
+
++ p0
+
+ρρ
+
+
+
+π0 − ˆπ(−k)0
+
+  ˆδ∗(−k) − δ
+
+
+
+(T1-1) + ˆ π(−k)1
+
+ρρ
+
+
+
+p1 − ˆp(−k)1
+
+  ˆδ∗(−k) − δ∗
+
++ ρρ ˆπ0
+
+
+
+p0 − ˆp(−k)0
+
+  ˆδ∗(−k) − δ∗
+
+(T1-2) +
+
+
+
+ˆp(−k)1 ˆπ(−k)1 + ˆ p(−k)0 ˆπ(−k)0
+
+  ˆδ∗(−k) − δ
+
+
+
+(T1-3) 
+
+E(−k) (T1-1) ≲ ˆδ∗(−k) − δ∗ 
+
+> P, 2
+
+· ˆπ(−k)1 − π1 P, 2 + ˆδ∗(−k) − δ∗ 
+
+> P, 2
+
+· ˆπ(−k)0 − π0 P, 2
+
+E(−k) (T1-2) ≲ ˆδ∗(−k) − δ∗
+
+> P, 2
+
+· ˆp(−k)1 − p1 P, 2
+
++ ˆδ∗(−k) − δ∗
+
+> P, 2
+
+· ˆp(−k)0 − p0 P, 2
+
+We consider T1-3 and T2 together. T1-3 + T2 =
+
+
+
+ˆp(−k)1 ˆπ(−k)1 + ˆ p(−k)0 ˆπ(−k)0
+
+  ˆδ∗(−k) − δ∗
+
++
+
+
+
+ˆp(−k)1 ˆπ(−k)1 + ˆ p(−k)0 ˆπ(−k)0
+
+ p1 − p0
+
+ˆp(−k)1 − ˆp(−k)0
+
+π1
+
+ˆπ(−k)1
+
+
+
+δ∗ − ˆδ∗(−k)
+
+= ˆ ρ(−k) ˆπ(−k)1
+
+ˆπ(−k)1
+
+ˆp(−k)1 − ˆp(−k)0
+
+ˆp(−k)1 − ˆp(−k)0
+
+ˆδ∗(−k) − δ∗
+
++ ˆ ρ(−k) p1 − p0
+
+ˆp(−k)1 − ˆp(−k)0
+
+π1
+
+ˆπ(−k)1
+
+
+
+δ∗ − ˆδ∗(−k)
+
+= ˆ ρ(−k) ˆπ(−k)1
+
+ˆπ(−k)1
+
+ˆp(−k)1 − ˆp(−k)0
+
+ˆp(−k)1 − ˆp(−k)0
+
+ˆδ∗(−k) − δ∗
+
++ ˆ ρ(−k) p1 − p0
+
+ˆp(−k)1 − ˆp(−k)0
+
+π1
+
+ˆπ(−k)1
+
+
+
+δ∗ − ˆδ∗(−k)
+
+= ˆ ρ(−k) 1ˆπ(−k)1
+
+1ˆp(−k)1 − ˆp(−k)0
+
+ˆδ∗(−k) − δ∗ n 
+
+ˆπ(−k)1
+
+
+
+ˆp(−k)1 − ˆp(−k)0
+
+
+
+− π1 (p1 − p0)
+
+o| {z }
+
+> (∗)
+
+apply the decomposition that ab − cd = 12 (a − c)( b + d) + 12 (a + c)( b − d) to (∗)
+
+E(−k) (T1-3 + T2) ≲
+
+ˆδ∗(−k) − δ∗
+
+> P, 2
+
+· ˆπ(−k)1 − π1 P, 2
+
++ ˆδ∗(−k) − δ∗
+
+> P, 2
+
+· ˆp(−k)1 − p1 P, 2
+
++ ˆδ∗(−k) − δ∗
+
+> P, 2
+
+· ˆp(−k)0 − p0 P, 2
+
+.
+
+Next, we handle T3 −T5 toghether. T3 −T5 =
+
+
+
+ˆp(−k)1 ˆπ(−k)1 + ˆ p(−k)0 ˆπ(−k)0
+
+ 1ˆp(−k)1 − ˆp(−k)0
+
+π1
+
+ˆπ(−k)1
+
+
+
+ϕ − ˆϕ(−k)
+
+−
+
+
+
+ˆp(−k)1 ˆπ(−k)1 + ˆ p(−k)0 ˆπ(−k)0
+
+ 1ˆp(−k)1 − ˆp(−k)0
+
+(
+
+π1
+
+ˆπ(−k)1
+
+p1
+
+ˆp(−k)1
+
+) 
+
+ϕ − ˆϕ(−k)
+
+= ˆ ρ(−k) 1ˆp(−k)1 − ˆp(−k)0
+
+π1
+
+ˆπ(−k)1
+
+ˆp(−k)1
+
+ˆp(−k)1
+
+
+
+ϕ − ˆϕ(−k)
+
+− ˆρ(−k) 1ˆp(−k)1 − ˆp(−k)0
+
+(
+
+π1
+
+ˆπ(−k)1
+
+p1
+
+ˆp(−k)1
+
+) 
+
+ϕ − ˆϕ(−k)
+
+= ˆ ρ(−k) 1ˆp(−k)1 − ˆp(−k)0
+
+π1
+
+ˆπ(−k)1
+
+1ˆp(−k)1
+
+
+
+ˆp(−k)1 − p1
+
+  
+
+ϕ − ˆϕ(−k)
+
+E(−k) (T3 −T5) ≲ ˆp(−k)1 − p1 P, 2
+
+· ˆϕ(−k) − ϕ P, 2
+
+.
+
+16 A.4 Proof of Theorem 3 A SUPPLEMENTARY MATERIAL 
+
+For T4, T4 =
+
+
+
+ˆp(−k)1 ˆπ(−k)1 + ˆ p(−k)0 ˆπ(−k)0
+
+ 1ˆp(−k)1 − ˆp(−k)0
+
+(
+
+π1
+
+ˆπ(−k)1
+
+− π0
+
+ˆπ(−k)0
+
+) n 
+
+w − ˆw(−k)
+
++ p0
+
+
+
+δ∗ − ˆδ∗(−k)o 
+
+=
+
+
+
+ˆp(−k)1 ˆπ(−k)1 + ˆ p(−k)0 ˆπ(−k)0
+
+ 1ˆp(−k)1 − ˆp(−k)0
+
+1ˆπ(−k)1 ˆπ(−k)0
+
+n
+
+ˆπ(−k)0 π1 − ˆπ(−k)1 π0
+
+o| {z }
+
+> (∗)
+
+n 
+
+w − ˆw(−k)
+
++ p0
+
+
+
+δ∗ − ˆδ∗(−k)o 
+
+apply the decomposition that ab − cd = 12 (a − c)( b + d) + 12 (a + c)( b − d) to (∗)
+
+E(−k) (T4) ≲
+
+ˆπ(−k)0 − π0 P, 2
+
+· ˆw(−k) − w P, 2
+
++ ˆπ(−k)0 − π0 P, 2
+
+· ˆδ∗(−k) − δ∗
+
+> P, 2
+
++ ˆπ(−k)1 − π1 P, 2
+
+· ˆw(−k) − w P, 2
+
++ ˆπ(−k)1 − π1 P, 2
+
+· ˆδ∗(−k) − δ∗
+
+> P, 2
+
+.
+
+For T6, T6 =
+
+
+
+ˆp(−k)1 ˆπ(−k)1 + ˆ p(−k)0 ˆπ(−k)0
+
+ 1ˆp(−k)1 − ˆp(−k)0
+
+(
+
+π1
+
+ˆπ(−k)1
+
+p1
+
+ˆp(−k)1
+
+− π0
+
+ˆπ(−k)0
+
+p0
+
+ˆp(−k)0
+
+) n
+
+e10 − ˆe(−k)10 
+
+o
+
+= ˆ ρ(−k) 1ˆp(−k)1 − ˆp(−k)0
+
+(
+
+1ˆπ(−k)1 ˆp(−k)1 ˆπ(−k)0 ˆp(−k)0
+
+) n
+
+π1p1 ˆπ(−k)0 ˆp(−k)0 − π0p0 ˆπ(−k)1 ˆp(−k)1
+
+o| {z }
+
+> (∗)
+
+n
+
+e10 − ˆe(−k)10 
+
+o
+
+apply the decomposition that ab − cd = 12 (a − c)( b + d) + 12 (a + c)( b − d) to (∗)
+
+E(−k) (-T6) ≲
+
+ˆπ(−k)0 − π0 P, 2
+
+· ˆe(−k)10 − e10 P, 2
+
++ ˆπ(−k)1 − π1 P, 2
+
+· ˆe(−k)10 − e10 P, 2
+
++ ˆp(−k)0 − p0 P, 2
+
+· ˆe(−k)10 − e10 P, 2
+
++ ˆp(−k)1 − p1 P, 2
+
+· ˆe(−k)10 − e10 P, 2
+
+.
+
+Therefore, we find the term (18) admits the following bias structure (using the abbreviated notation r(−k) 
+
+> f
+
+=
+
+ˆf (−k) − f P, 2
+
+) : 
+
+|I k|1/2E(−k)  cM (−k) − M
+
+
+
+= |I k|1/2E(−k) (T1 + T2 + T3 + T4 − T5 − T6) 
+
+≲ rδ∗ · rp1 + rδ∗ · rp0
+
++ rδ∗ · rπ1 + rδ∗ · rπ0
+
++ rϕ · rp1
+
++ rw · rπ1 + rw · rπ0
+
++ re10 · rπ1 + re10 · rπ0
+
++ re10 · rp1 + re10 · rp0
+
+17 A.4 Proof of Theorem 3 A SUPPLEMENTARY MATERIAL 
+
+We further observe that the robustness property of the EIF is reflected in its bias structure; that is, the EIF remains unbiased when certain nuisance functions are evaluated at their true values (colored in red): 
+
+M1 : models for pz (X) and πz (X) are evaluated at their true value, for z ∈ { 0, 1};
+
+|I k|1/2E(−k)  cM (−k) − M
+
+
+
+≲ rδ∗ · rp1 + rδ∗ · rp0
+
++ rδ∗ · rπ1 + rδ∗ · rπ0
+
++ rϕ · rp1
+
++ rw · rπ1 + rw · rπ0
+
++ re10 · rπ1 + re10 · rπ0
+
++ re10 · rp1 + re10 · rp0
+
+M2 : models for δ∗(X), e 1z (X) and w(X) are evaluated at their true value, for z ∈ { 0, 1};
+
+|I k|1/2E(−k)  cM (−k) − M
+
+
+
+≲ rδ∗ · rp1 + rδ∗ · rp0
+
++ rδ∗ · rπ1 + rδ∗ · rπ0
+
++ rϕ · rp1
+
++ rw · rπ1 + rw · rπ0
+
++ re10 · rπ1 + re10 · rπ0
+
++ re10 · rp1 + re10 · rp0 .
+
+M3 : models for δ∗(X), e 1z (X) and πz (X) are evaluated at their true value, for z ∈ { 0, 1}|I k|1/2E(−k)  cM (−k) − M
+
+
+
+≲ rδ∗ · rp1 + rδ∗ · rp0
+
++ rδ∗ · rπ1 + rδ∗ · rπ0
+
++ rϕ · rp1
+
++ rw · rπ1 + rw · rπ0
+
++ re10 · rπ1 + re10 · rπ0
+
++ re10 · rp1 + re10 · rp0 .
+
+Asymptotic Property of (19) 
+
+18 A.4 Proof of Theorem 3 A SUPPLEMENTARY MATERIAL 
+
+The expectation of the term (19) 
+
+G(−k)
+
+> Ik
+
+ cM (−k) − M
+
+
+
+has mean 0 conditional on I(−k) 
+
+> k
+
+. And, the variance is 
+
+var (−k) n
+
+G(−k)
+
+> Ik
+
+ cM (−k) − M
+
+o 
+
+≤ var (−k) n cM (−k) 
+
+> i
+
+− M
+
+o 
+
+≤ E(−k)
+
+ cM (−k) 
+
+> i
+
+− M
+
+2
+
+Then, it suffices to find the rate of E(−k)
+
+n cM (−k) 
+
+> i
+
+− M
+
+o2
+
+.We first consider the expansion of ˆθ(−k)
+
+ˆθ(−k) = ˆρ(−k)
+
+ˆp(−k)1 − ˆp(−k)0
+
+2Z − 1ˆπ(−k)
+
+> Z
+
+"
+
+Y − Aˆδ∗(−k) − Z ˆϕ(−k) − ˆw(−k) − A
+
+ˆp(−k)
+
+> Z
+
+n
+
+Y − Z ˆϕ(−k) + ˆ e(−k)10 
+
+o#
+
+=
+
+
+
+ˆρ(−k) − ρ
+
+ 1ˆp(−k)1 − ˆp(−k)0
+
+2Z − 1ˆπ(−k)
+
+> Z
+
+"
+
+Y − Aˆδ∗(−k) − Z ˆϕ(−k) − ˆw(−k) − A
+
+ˆp(−k)
+
+> Z
+
+n
+
+Y − Z ˆϕ(−k) + ˆ e(−k)10 
+
+o#
+
++ ρ
+
+(
+
+1ˆp(−k)1 − ˆp(−k)0
+
+− 1
+
+p1 − p0
+
+)
+
+2Z − 1ˆπ(−k)
+
+> Z
+
+"
+
+Y − Aˆδ∗(−k) − Z ˆϕ(−k) − ˆw(−k) − A
+
+ˆp(−k)
+
+> Z
+
+n
+
+Y − Z ˆϕ(−k) + ˆ e(−k)10 
+
+o#
+
++ ρ 1
+
+p1 − p0
+
+(
+
+1ˆπ(−k)
+
+> Z
+
+− 1
+
+πZ
+
+)
+
+(2 Z − 1) 
+
+"
+
+Y − Aˆδ∗(−k) − Z ˆϕ(−k) − ˆw(−k) − A
+
+ˆp(−k)
+
+> Z
+
+n
+
+Y − Z ˆϕ(−k) + ˆ e(−k)10 
+
+o#
+
++ ρ 1
+
+p1 − p0
+
+1
+
+πZ
+
+(2 Z − 1) 
+
+"
+
+Y − A
+
+ˆδ∗(−k) − δ∗
+
+− Z
+
+ ˆϕ(−k) − ϕ
+
+
+
+−
+
+
+
+ˆw(−k) − w
+
+
+
+− A
+
+(
+
+1
+
+pZ
+
+− 1ˆp(−k)
+
+> Z
+
+) n
+
+Y − Z ˆϕ(−k) + ˆ e(−k)10 
+
+o#
+
++ ρ 1
+
+p1 − p0
+
+1
+
+πZ
+
+(2 Z − 1) 
+
+
+
+−Aδ ∗ − Zϕ − w − A 1
+
+pZ
+
+n
+
+Y − Z
+
+ ˆϕ(−k) − ϕ
+
+
+
++
+
+
+
+ˆe(−k)10 − e10 
+
+o 
+
++ ρ 1
+
+p1 − p0
+
+1
+
+πZ
+
+(2 Z − 1) 
+
+
+
+−A 1
+
+pZ
+
+{− Zϕ + e10 }
+
+
+
+=
+
+
+
+ˆρ(−k) − ρ
+
+ 1ˆp(−k)1 − ˆp(−k)0
+
+2Z − 1ˆπ(−k)
+
+> Z
+
+"
+
+Y − Aˆδ∗(−k) − Z ˆϕ(−k) − ˆw(−k) − A
+
+ˆp(−k)
+
+> Z
+
+n
+
+Y − Z ˆϕ(−k) + ˆ e(−k)10 
+
+o#
+
++ ρ
+
+(
+
+1ˆp(−k)1 − ˆp(−k)0
+
+− 1
+
+p1 − p0
+
+)
+
+2Z − 1ˆπ(−k)
+
+> Z
+
+"
+
+Y − Aˆδ∗(−k) − Z ˆϕ(−k) − ˆw(−k) − A
+
+ˆp(−k)
+
+> Z
+
+n
+
+Y − Z ˆϕ(−k) + ˆ e(−k)10 
+
+o#
+
++ ρ 1
+
+p1 − p0
+
+(
+
+1ˆπ(−k)
+
+> Z
+
+− 1
+
+πZ
+
+)
+
+(2 Z − 1) 
+
+"
+
+−Aˆδ∗(−k) − Z ˆϕ(−k) − ˆw(−k) − A
+
+ˆp(−k)
+
+> Z
+
+n
+
+Y − Z ˆϕ(−k) + ˆ e(−k)10 
+
+o#
+
++ ρ 1
+
+p1 − p0
+
+1
+
+πZ
+
+(2 Z − 1) 
+
+"
+
+−A
+
+ˆδ∗(−k) − δ∗
+
+− Z
+
+ ˆϕ(−k) − ϕ
+
+
+
+−
+
+
+
+ˆw(−k) − w
+
+
+
+− A
+
+(
+
+1
+
+pZ
+
+− 1ˆp(−k)
+
+> Z
+
+) n
+
+Y − Z ˆϕ(−k) + ˆ e(−k)10 
+
+o#
+
++ ρ 1
+
+p1 − p0
+
+1
+
+πZ
+
+(2 Z − 1) 
+
+
+
+−A 1
+
+pZ
+
+n
+
+−Z
+
+ ˆϕ(−k) − ϕ
+
+
+
++
+
+
+
+ˆe(−k)10 − e10 
+
+o 
+
++ ρ 1
+
+p1 − p0
+
+2Z − 1
+
+πZ
+
+
+
+Y − Aδ ∗ − Zϕ − w − ApZ
+
+(Y − ϕ + e10 )
+
+| {z }
+
+> =θ
+
+.
+
+19 A.4 Proof of Theorem 3 A SUPPLEMENTARY MATERIAL 
+
+Each element of 
+
+ cM (−k) 
+
+> i
+
+− M
+
+
+
+is 
+
+ cM (−k) 
+
+> i
+
+− M
+
+
+
+= A
+
+ ˆδ∗∗(−k)
+
+− δ∗
+
++ ˆθ(−k) − θ
+
+= A
+
+ ˆδ∗∗(−k)
+
+− δ∗
+
++ ˆρ(−k)
+
+ˆp(−k)1 − ˆp(−k)0
+
+2Z − 1ˆπ(−k)
+
+> Z
+
+
+
+Y − Aˆδ∗(−k) − Z ˆϕ(−k) − ˆw(−k)
+
+− A
+
+ˆp(−k)
+
+> Z
+
+n
+
+Y − Z ˆϕ(−k) + ˆ e(−k)10 
+
+o
+
+− 1
+
+p1 − p0
+
+2Z − 1
+
+πZ
+
+
+
+Y − Aδ ∗ − Zϕ − w
+
+− ApZ
+
+{Y − Zϕ + e10 }
+
+
+
+= A
+
+ ˆδ∗∗(−k)
+
+− δ∗
+
+(J1) +
+
+
+
+ˆρ(−k) − ρ
+
+ 1ˆp(−k)1 − ˆp(−k)0
+
+2Z − 1ˆπ(−k)
+
+> Z
+
+"
+
+Y − Aˆδ∗(−k) − Z ˆϕ(−k) − ˆw(−k) − A
+
+ˆp(−k)
+
+> Z
+
+n
+
+Y − Z ˆϕ(−k) + ˆ e(−k)10 
+
+o#
+
+(J2) + ρ
+
+(
+
+1ˆp(−k)1 − ˆp(−k)0
+
+− 1
+
+p1 − p0
+
+)
+
+2Z − 1ˆπ(−k)
+
+> Z
+
+"
+
+Y − Aˆδ∗(−k) − Z ˆϕ(−k) − ˆw(−k) − A
+
+ˆp(−k)
+
+> Z
+
+n
+
+Y − Z ˆϕ(−k) + ˆ e(−k)10 
+
+o#
+
+(J3) + ρ 1
+
+p1 − p0
+
+(
+
+1ˆπ(−k)
+
+> Z
+
+− 1
+
+πZ
+
+)
+
+(2 Z − 1) 
+
+"
+
+−Aˆδ∗(−k) − Z ˆϕ(−k) − ˆw(−k) − A
+
+ˆp(−k)
+
+> Z
+
+n
+
+Y − Z ˆϕ(−k) + ˆ e(−k)10 
+
+o#
+
+(J4) + ρ 1
+
+p1 − p0
+
+1
+
+πZ
+
+(2 Z − 1) 
+
+
+
+− A
+
+ˆδ∗(−k) − δ∗
+
+− Z
+
+ ˆϕ(−k) − ϕ
+
+
+
+−
+
+
+
+ˆw(−k) − w
+
+
+
+− A
+
+(
+
+1
+
+pZ
+
+− 1ˆp(−k)
+
+> Z
+
+) n
+
+Y − Z ˆϕ(−k) + ˆ e(−k)10 
+
+o (J5) + ρ 1
+
+p1 − p0
+
+1
+
+πZ
+
+(2 Z − 1) 
+
+
+
+−A 1
+
+pZ
+
+n
+
+−Z
+
+ ˆϕ(−k) − ϕ
+
+
+
++
+
+
+
+ˆe(−k)10 − e10 
+
+o 
+
+(J6) For a finite number of random variables {W1, . . . , W K }, there exists a constant C satisfying 
+
+E
+
+
+
+> K
+
+X
+
+> j=1
+
+Wj
+
+
+
+> 2
+
+ ≤ C · E(W 2 
+
+> j
+
+).
+
+Thus, it suffices to study the rate of the L(P )-norm of each term, which are given in ( ?? )-( ?? ) below. (J1) : E
+
+n
+
+ρ
+
+ ˆδ∗∗(−k)
+
+− δ∗o 2
+
+≲ ˆδ∗∗(−k)
+
+− δ∗ 2
+
+> P, 2
+
+= r2 
+
+> δ∗
+
+;(J2) : E
+
+"
+
+ˆρ(−k) − ρ
+
+ 1ˆp(−k)1 − ˆp(−k)0
+
+2Z − 1ˆπ(−k)
+
+> Z
+
+"
+
+Y − Aˆδ∗(−k) − Z ˆϕ(−k) − ˆw(−k) − A
+
+ˆp(−k)
+
+> Z
+
+n
+
+Y − Z ˆϕ(−k) + ˆ e(−k)10 
+
+o## 
+
+≲ ˆp(−k)1 − p1
+
+> 2
+> P, 2
+
++ ˆp(−k)0 − p0
+
+> 2
+> P, 2
+
++ ˆπ(−k)1 − π1
+
+> 2
+> P, 2
+
++ ˆπ(−k)0 − π0
+
+> 2
+> P, 2
+
+= rp1 + rp0 + rπ1 + rπ0
+
+20 A.4 Proof of Theorem 3 A SUPPLEMENTARY MATERIAL 
+
+(J3) : E
+
+"
+
+ρ
+
+(
+
+1ˆp(−k)1 − ˆp(−k)0
+
+− 1
+
+p1 − p0
+
+)
+
+2Z − 1ˆπ(−k)
+
+> Z
+
+"
+
+Y − Aˆδ∗(−k) − Z ˆϕ(−k) − ˆw(−k) − A
+
+ˆp(−k)
+
+> Z
+
+n
+
+Y − Z ˆϕ(−k) + ˆ e(−k)10 
+
+o## 
+
+≲ ˆp(−k)1 − p1
+
+> 2
+> P, 2
+
++ ˆp(−k)0 − p0
+
+> 2
+> P, 2
+
+= rp1 + rp0
+
+(J4) : E
+
+"
+
+ρ 1
+
+p1 − p0
+
+(
+
+1ˆπ(−k)
+
+> Z
+
+− 1
+
+πZ
+
+)
+
+(2 Z − 1) 
+
+"
+
+−Aˆδ∗(−k) − Z ˆϕ(−k) − ˆw(−k) − A
+
+ˆp(−k)
+
+> Z
+
+n
+
+Y − Z ˆϕ(−k) + ˆ e(−k)10 
+
+o## 
+
+≲ ˆπ(−k)1 − π1
+
+> 2
+> P, 2
+
++ ˆπ(−k)0 − π0
+
+> 2
+> P, 2
+
+= rπ1 + rπ0
+
+(J5) : E
+
+ρ 1
+
+p1 − p0
+
+1
+
+πZ
+
+(2 Z − 1) 
+
+
+
+− A
+
+ˆδ∗(−k) − δ∗
+
+− Z
+
+ ˆϕ(−k) − ϕ
+
+
+
+−
+
+
+
+ˆw(−k) − w
+
+
+
+− A
+
+(
+
+1
+
+pZ
+
+− 1ˆp(−k)
+
+> Z
+
+) n
+
+Y − Z ˆϕ(−k) + ˆ e(−k)10 
+
+o
+
+≲ ˆδ∗(−k) − δ∗ 2
+
+> P, 2
+
++ ˆϕ(−k) − ϕ 2
+
+> P, 2
+
++ ˆw(−k) − w 2
+
+> P, 2
+
++ ˆp(−k)1 − p1
+
+> 2
+> P, 2
+
++ ˆp(−k)0 − p0
+
+> 2
+> P, 2
+
+= rδ∗ + rϕ + rw + rπ1 + rπ0
+
+(J6) : E
+
+
+
+ρ 1
+
+p1 − p0
+
+1
+
+πZ
+
+(2 Z − 1) 
+
+
+
+−A 1
+
+pZ
+
+n
+
+−Z
+
+ ˆϕ(−k) − ϕ
+
+
+
++
+
+
+
+ˆe(−k)10 − e10 
+
+o  
+
+≲ ˆϕ(−k) − ϕ 2
+
+> P, 2
+
++ ˆe(−k)10 − e10 
+
+> 2
+> P, 2
+
+= rϕ + re10 
+
+Combining these results, we find 
+
+var (−k) n
+
+G(−k)
+
+> Ik
+
+ cM (−k) 
+
+> i
+
+− M
+
+o 
+
+≲ rδ∗ + rϕ + rw + rp1 + rp0 + rπ1 + rπ0 + re10 .
+
+Under assumption 7 that r(−k)  
+
+> pz,N
+
+, r(−k)  
+
+> πz,N
+
+, r(−k) 
+
+> e10 ,N
+
+, r(−k) 
+
+> w,N
+
+and r(−k) 
+
+> δ,N
+
+are oP (1) for z ∈ { 0, 1}, var (−k)
+
+n
+
+G(−k)
+
+> Ik
+
+ cM (−k) 
+
+> i
+
+− M
+
+o 
+
+=
+
+oP (1), indicating (19) is oP (1) by Chebyshev’s inequality (by showing it has 0 expectation and shrinking variance). 
+
+Consistent Variance Estimation 
+
+Using the the shorthand notation f = f (X) or f = f (O), the consistent estimator of σ2 proposed in Theorem 3 is ˆσ2 = 1
+
+K
+
+> K
+
+X
+
+> i=1
+
+1
+
+P(A) PIk
+
+n
+
+ˆγ(−k) − Aˆδ∗EIF o2
+
+where 
+
+ˆγ(−k) = Aˆδ∗(−k) + θ(−k), θ(−k) = ˆρ(−k)
+
+ˆp(−k)1 − ˆp(−k)0
+
+2Z − 1ˆπ(−k)
+
+> Z
+
+
+
+Y − Aˆδ∗(−k) − Z ˆϕ(−k) − ˆw(−k)
+
+− A
+
+ˆp(−k)
+
+> Z
+
+n
+
+Y − Z ˆϕ(−k) + ˆ e(−k)10 
+
+o .
+
+21 A.4 Proof of Theorem 3 A SUPPLEMENTARY MATERIAL 
+
+which can also be written as ˆσ2 = K−1
+
+> K
+
+X
+
+> i=1
+
+ˆσ2,(k), ˆσ2,(k) = P(A)−1PIk
+
+n
+
+Aˆδ∗(−k) + ˆθ(−k) − Aˆδ∗EIF o2
+
+.
+
+Therefore, it suffices to show that ˆ σ2,k − σ2 = oP (1), which is represented as follows: 
+
+σ2 = {P (A)}−2 PIk
+
+h
+
+{Aδ ∗ + θ − Aδ ∗
+
+> m
+
+}2i
+
+ˆσ2,k = {P (A)}−2 PIk
+
+n
+
+Aδ ∗(−k) + θ(−k) − AˆδEIF o2
+
+ˆσ2,k − σ2 = {P r (A = 1) }−2 PIk
+
+n
+
+Aδ ∗(−k) + θ(−k) − Aˆδ∗EIF o2
+
+− { Aδ ∗ + θ − Aδ ∗
+
+> m
+
+}2
+
+
+
++ oP (1) The last equation holds by the law of large numbers. From some algebra, we find the term on the RHS of the last equation is 
+
+PIk
+
+n
+
+Aδ ∗(−k) + θ(−k) − Aˆδ∗EIF o2
+
+− { Aδ ∗ + θ − Aδ ∗
+
+> m
+
+}2
+
+
+
+= PIk
+
+n
+
+Aδ ∗(−k) + θ(−k) − Aˆδ∗EIF + Aδ ∗ + θ − Aδ ∗
+
+> m
+
+o
+
+·
+
+n
+
+Aδ ∗(−k) + θ(−k) − Aˆδ∗EIF − Aδ ∗ − θ + Aδ ∗
+
+> m
+
+o 
+
+= PIk
+
+n
+
+A
+
+
+
+δ∗(−k) − δ∗ + δ∗
+
++
+
+n
+
+θ(−k) − θ + θ
+
+o
+
+− A
+
+ˆδ∗EIF − δ∗ 
+
+> m
+
++ δ∗
+
+> m
+
+
+
++ Aδ ∗ + θ − Aδ ∗
+
+> m
+
+o
+
+·
+
+n
+
+A
+
+
+
+δ∗(−k) − δ∗
+
++
+
+n
+
+θ(−k) − θ
+
+o
+
+− A
+
+ˆδ∗EIF − δ∗
+
+> m
+
+o 
+
+= PIk
+
+n
+
+A
+
+
+
+δ∗(−k) − δ∗
+
++
+
+n
+
+θ(−k) − θ
+
+o
+
+− A
+
+ˆδ∗EIF − δ∗
+
+> m
+
+
+
++ 2 {Aδ ∗ + θ − Aδ ∗
+
+> m
+
+}
+
+o
+
+·
+
+n
+
+A
+
+
+
+δ∗(−k) − δ∗
+
++
+
+n
+
+θ(−k) − θ
+
+o
+
+− A
+
+ˆδ∗EIF − δ∗
+
+> m
+
+o 
+
+= PIk
+
+n
+
+A
+
+
+
+δ∗(−k) − δ∗
+
++
+
+n
+
+θ(−k) − θ
+
+o
+
+− A
+
+ˆδ∗EIF − δ∗
+
+> m
+
+o 2
+
+(D1) + 2 PIk
+
+hn 
+
+A
+
+
+
+δ∗(−k) − δ∗
+
++
+
+n
+
+θ(−k) − θ
+
+o
+
+− A
+
+ˆδ∗EIF − δ∗
+
+> m
+
+o 
+
+{Aδ ∗ + θ − Aδ ∗
+
+> m
+
+}
+
+i
+
+(D2) Let H(−k) =
+
+n
+
+A  δ∗(−k) − δ∗ + θ(−k) − θ + A
+
+ˆδ∗EIF − δ∗
+
+> m
+
+o 
+
+. By the H¨ older’s inequality: 
+
+{(D1) + (D2) }2
+
+=
+
+h
+
+PIk
+
+n
+
+H(−k)o
+
++ 2 PIk
+
+n
+
+H(−k)o
+
+PIk {Aδ ∗ + θ − Aδ ∗
+
+> m
+
+}
+
+i2
+
+≲ PIk
+
+n
+
+H(−k)o2
+
++ 2 PIk
+
+n
+
+H(−k)o2
+
+PIk
+
+h
+
+{Aδ ∗ + θ − Aδ ∗
+
+> m
+
+}2i
+
+.
+
+Since PIk
+
+h
+
+{Aδ ∗ + θ − Aδ ∗
+
+> m
+
+}2i
+
+= P r (A = 1) σ2 + oP (1) = Op(1), (D1) + (D2) is oP (1) if PIk
+
+hH(−k) 2i
+
+is oP (1). 
+
+22 A.4 Proof of Theorem 3 A SUPPLEMENTARY MATERIAL 
+
+From some algebra, we find 
+
+PIk
+
+n
+
+H(−k)o2
+
+= PIk
+
+n
+
+A
+
+
+
+δ∗(−k) − δ∗
+
++
+
+n
+
+θ(−k) − θ
+
+o
+
++ A
+
+ˆδ∗EIF − δ∗
+
+> m
+
+o 2
+
+≤ 3PIk
+
+n
+
+θ(−k) − θ
+
+o2
+
++ 3 PIk
+
+
+
+δ∗(−k) − δ∗2
+
++ 3 PIk
+
+ˆδ∗EIF − δ∗
+
+> m
+
+2
+
+= 3 E(−k)
+
+
+
+θ(−k) − θ
+
+2
+
++ oP (1) + 3 E(−k)
+
+
+
+δ∗(−k) − δ∗2
+
++ oP (1) + 3 E
+
+ˆδ∗EIF − δ∗
+
+> m
+
+2
+
++ oP (1) = op(1) (each estimate is consistent by assumption (7) ).
+
+Therefore, the proposed estimator ˆ σ2 is consistent for σ2
+
+ˆσ2,k − σ2 = {P r (A = 1) }−2 {(D1) + (D2) } + oP (1) = oP (1) .
+
+23
