@@ -1,0 +1,705 @@
+Title: Probabilities of Causation for Continuous Outcomes: Bounds and Identification
+
+URL Source: https://arxiv.org/pdf/2605.01883v1
+
+Published Time: Tue, 05 May 2026 01:13:02 GMT
+
+Number of Pages: 25
+
+Markdown Content:
+# Probabilities of Causation for Continuous Outcomes: Bounds and Identification 
+
+Jile Chaoge 1, Kesen Han 1, Fahui Liu ∗1, and Peng Wu 11School of Mathematics and Statistics, Beijing Technology and Business University, 100048, China 
+
+Abstract 
+
+The probability of necessity (PN), which quantifies the probability that an observed event would not have occurred in the absence of the treatment, is a central estimand in attribu-tion analysis. While PN has been extensively studied for binary outcomes and has recently been developed for ordinal outcomes, a formal framework for continuous outcomes remains underdeveloped. To address this gap, we propose the general probability of necessity (GPN) for continuous outcomes, a setting that is substantially more challenging than the binary and ordinal cases. Rather than imposing strong identifiability assumptions, we adopt a partial iden-tification perspective and derive sharp lower and upper bounds under standard assumptions of ignorability and monotonicity. We further introduce a copula-based framework that exploits de-pendence information between potential outcomes to tighten these bounds. Simulation studies and real-world applications demonstrate the effectiveness of our method. 
+
+Keywords : Causal Attribution; Probability of Causation; Copula Models; Causal Inference 
+
+> ∗
+
+Corresponding author: 2451051003@st.btbu.edu.cn 
+
+1
+
+> arXiv:2605.01883v1 [stat.ME] 3 May 2026
+
+# 1. Introduction 
+
+Much of the causal inference literature has focused on forward-looking questions, such as estimating the average treatment effect on a population. In many high-stakes domains, however, the central questions are backward-looking, or attributional Pearl (2015); Dawid and Musio (2022). For exam-ple, in legal settings, courts must determine whether a specific plaintiff’s injury was caused by the defendant’s action, rather than assessing general risks Dawid et al. (2014); Sanders et al. (2021). Similarly, in personalized medicine, it is often necessary to assess whether a patient’s recovery can be attributed to a treatment or whether it would have occurred in its absence Khoury et al. (2004). The primary estimands for such questions are the probability of necessity (PN) and its analogues Pearl (1999). While PN is well studied for binary outcomes and has recently been generalized to ordinal settings Zhang et al. (2025a), a formal formulation for continuous outcomes–such as blood pres-sure, tumor size, or financial loss–remains underdeveloped. In practice, discretizing continuous outcomes leads to information loss, motivating the need for an attribution framework that operates on continuous outcomes. The main challenge in identifying the PN for continuous outcomes arises from the unobserv-ability of the joint distribution of the potential outcomes ( Y (1) , Y (0)). Since these two outcomes are never observed simultaneously for any individual, their dependence structure is not identifiable from the observed data, even under randomization Holland (1986). In binary and ordinal settings, this difficulty is typically addressed by assuming monotonicity ( Y (1) ≥ Y (0)) for binary outcomes and monotonic incremental treatment effect (0 ≤ Y (1) − Y (0) ≤ 1) for ordinal outcomes, achieving point identification Pearl (1999); Zhang et al. (2025a). In the continuous setting, however, mono-tonicity conditions are no longer sufficient. This is because monotonicity restricts the direction of the treatment effect but does not determine the specific value of Y (1) given Y (0) (or Y (0) given 
+
+Y (1)), providing only limited information. Consequently, relying on these assumptions often yields wide bounds. In this paper, we consider a new estimand, the general probability of necessity (GPN), for continuous outcomes. The formulation of the GPN provides a unified framework for defining PN across various types of outcomes. Rather than imposing additional restrictive assumptions to achieve point identification, we adopt a partial identification approach that derives lower and upper bounds for the GPN. We first derive bounds under the standard ignorability assumption Rosenbaum and Rubin (1983), as well as under the combined ignorability and monotonicity assumptions. The former cor-responds to the classic Fr´ echet-–Hoeffding bounds. These bounds provide a basis for comparison and encompass several previous results for binary outcomes. Subsequently, given that the mono-tonicity is often strong in practice and provides limited information about the GPN, we propose a novel method to improve the Fr´ echet-–Hoeffding bounds based on copula models Nelsen (2006). By Sklar’s Theorem Sklar (1959), the joint distribution of ( Y (1) , Y (0)) can be expressed in terms 2of its marginal distributions and a copula capturing their dependence. Accordingly, we reformulate the GPN in a copula representation. The copula representation provides a key insight into how to improve bounds on the GPN. The rationale is that, under the copula representation, the GPN depends only on an association parameter ρ that captures the dependence between the potential outcomes under the ignorability assumption. When no information about ρ is available, the resulting bounds reduce to the Fr´ echet– Hoeffding bounds. However, any domain knowledge that restricts ρ to a subset of its admissible range serves to tighten these bounds. Notably, the association parameter ρ is not identifiable under the ignorability assumption alone, but its plausible range may be informed by domain knowledge; see Wu et al. (2024); Bodik et al. (2025) for further discussion. Moreover, even when specifying a precise interval for ρ is difficult due to limited expert knowledge, determining the sign of the dependence is often feasible. A simple and practically appealing restriction is to assume positive dependence (i.e., ρ ≥ 0), which yields significantly tighter bounds on GPN. Moreover, the copula representation naturally establishes a sensitivity analysis framework for GPN by treating ρ as the sensitivity parameter, enabling the assessment of the robustness of the resulting conclusions. The main contributions are summarized as follows: 
+
+• We propose a new estimand for attribution analysis for continuous outcomes: the general probability of necessity (GPN), which extends and encompasses previous estimands for binary and ordinal outcomes. 
+
+• We derive identification bounds for the GPN under the standard ignorability assumption, as well as under the combined ignorability and monotonicity assumptions. 
+
+• We further develop a framework for improving the bounds on the GPN based on copula models. This framework not only facilitates the incorporation of expert knowledge to improve bounds but also provides a sensitivity analysis method to evaluate the robustness of the bounds as the association parameter varies. 
+
+• We illustrate the proposed bounds through simulations and real-world applications, demon-strating the effectiveness of the proposed method. 
+
+# 2. Related Work 
+
+Probabilities of Causation. Causal attribution studies “causes of effects”, in contrast to the estimation of “effects of causes” (e.g., ATE) Dawid and Musio (2022). It has been applied in medicine, law, policy analysis, and invariant learning Pearl (2015); Dawid et al. (2014); Sanders et al. (2021); Khoury et al. (2004); Yang et al. (2023); Sun et al. (2025). Pearl (1999) formalized attribution within structural causal models by defining the probability of necessity (PN) and the probability of sufficiency (PS). Early work focused on binary outcomes without covariates, deriving 3identification results and sharp bounds under standard assumptions. Under ignorability, sharp bounds on PN were obtained, whereas the addition of monotonicity led to point identification Pearl (1999); Tian and Pearl (2000). Subsequent studies incorporated covariates and mediators to further tighten these bounds Dawid et al. (2017); Mueller et al. (2021); Zhang et al. (2025b). In recent years, extensions to settings with non-binary treatment or non-binary outcomes have been considered Li et al. (2022); Zhao et al. (2023); Li and Pearl (2024). Regarding non-binary out-comes, Zhang et al. (2025a) extended PN and PS to ordinal outcomes and achieved identification under a monotonic incremental treatment effect assumption. In contrast, a general framework for continuous outcomes remains limited, despite their prevalence in scientific and economic applica-tions. This work addresses this gap by defining and discussing the GPN for continuous outcomes. 
+
+Partial Identification and Sensitivity Analysis. A central difficulty in attribution analysis is that the joint distribution of potential outcomes is not identified from observational data Holland (1986). As a result, point identification typically requires strong assumptions, such as monotonic-ity Pearl (1999) or conditional independence Shen et al. (2013). Beyond identification, Tian and Wu (2025) studied statistical efficiency and proposed semiparametric efficient estimators for PN and PS under these assumptions. However, when such assumptions are not credible, partial identification provides an alternative by characterizing sets of compatible values. Recent work has adopted sen-sitivity analysis and bounding approaches that relax restrictive assumptions. For example, Bodik et al. (2025) used copulas to derive prediction intervals for individual treatment effects. In this setting, we introduce a copula-based framework for GPN that allows the dependence structure between potential outcomes to be restricted using domain knowledge (e.g., positive dependence). This approach tightens the Fr´ echet–Hoeffding bounds without imposing monotonicity. 
+
+# 3. Preliminaries 
+
+3.1. Notation 
+
+Let Z ∈ { 0, 1} denote a binary treatment indicator, X ∈ X ⊆ Rd a vector of pre-treatment covariates, and Y ∈ R the observed outcome. We adopt the potential outcomes framework Splawa-Neyman et al. (1990); Rubin (1974) to describe causal estimands. Specifically, for each unit, let 
+
+Y (1) and Y (0) denote the potential outcomes that would be observed under treatment ( Z = 1) and control ( Z = 0), respectively. Under the stable unit treatment value assumption (SUTVA), the observed outcome Y = Z Y (1)+(1 −Z) Y (0) . Suppose that the observed data D = {(Xi, Z i, Y i)}ni=1 
+
+consist of n independent and identically distributed (i.i.d.) observations drawn from a superpopu-lation P. Let E[·] denote the expectation with respect to P.
+
+3.2. Probabilities of Causation 
+
+In causal inference, the goal is not only to quantify the effects of specific interventions but also to uncover the causes underlying observed outcomes Dawid and Musio (2022); the latter is typically 4addressed through attribution analysis Pearl (2009); Pearl et al. (2016). In the context of attribution analysis, much of the literature focuses on binary outcomes, for which two widely used causal quantities are the probability of necessity (PN) and the probability of sufficiency (PS), defined as PN = P(Y (0) = 0 | Z = 1 , Y = 1) ,
+
+PS = P(Y (1) = 1 | Z = 0 , Y = 0) . (1) Intuitively, PN evaluates whether the treatment was a necessary factor for the observed event (Y = 1); it represents the probability that the event would not have occurred had the treatment been absent, given that the event occurred under treatment. In contrast, PS captures the sufficiency of the treatment, quantifying its capacity to produce the event in situations where it would not have occurred under control. Recently, Zhang et al. (2025a) extended PN and PS from binary to ordinal outcomes. For example, PN was defined as P(Y (0) < y | Z = 1 , Y = y). In this paper, we extend prior work to accommodate continuous outcomes. In many application domains, such as clinical trials (e.g., tumor size and blood pressure) and economics (e.g., revenue and customer lifetime value), outcomes are inherently continuous. Discretizing these variables inevitably incurs information loss and introduces sensitivity to binning choices. 
+
+# 4. Conceptual Framework 
+
+In this section, we present two metrics for attribution analysis with continuous outcomes, relate them to existing formulations for binary and ordinal outcomes, and highlight the challenges posed by the continuous setting. For continuous outcomes, we define the general probability of necessity (GPN) and the general probability of sufficiency (GPS) as follows: GPN = P(Y (0) < c 0 | Z = 1 , Y ≥ c1),
+
+GPS = P(Y (1) ≥ c1 | Z = 0 , Y < c 0), (2) where c0 and c1 are prespecified thresholds for potential outcomes Y (0) and Y (1), respectively. We set c1 ≥ c0 for ease of interpretation, although this is not mathematically required. The values of 
+
+c0 and c1 are used to define the event in which the treatment Z exerts the minimal effect required to constitute an effective cause. To avoid redundancy, we focus on GPN in the following discussion, as the analysis for GPS can be conducted in a similar manner. A more flexible definition of the GPN is P(c0 ≤ Y (0) < c 0 | Z = 1 , c 1 ≤ Y < c 1), where (c0, c 0, c 1, c 1) are prespecified constants. However, we show that this formulation can be expressed as a weighted linear combination of the GPNs defined in (2); see Appendix A1 for details. Conse-quently, our discussion of GPN subsumes this estimand. 
+
+Connection to Previous Definitions . GPN provides a unified way for defining PN with 5binary and ordinal outcomes. Specifically, (a) binary outcomes: for Y ∈ { 0, 1} with thresholds 
+
+c0 = c1 = 1, GPN reduces to the PN in (1). (b) Ordinal Outcomes: For Y ∈ 1, . . . , K , Zhang et al. (2025a) defined the PNS for a specific outcome level as P(Y (0) < y | Z = 1 , Y = y). When a restriction is imposed (e.g., y ≤ Y < y + δ for a small δ), the flexible definition of the GPN naturally encompasses this estimand. 
+
+Challenges. Two main challenges arise in identifying GPN. (a) Joint distribution of potential outcomes . The definition of GPN depends on the joint dis-tribution of potential outcomes. Since the joint values of potential outcomes are never observed simultaneously for each individual, the estimand is inherently unidentifiable from the observed data, even under randomization. (b) Standard conditions for binary and ordinal outcomes are insufficient . For identification, beyond the standard ignorability assumption (Assumption 1), common conditions for discrete out-comes are inadequate for GPN. Specifically, assumptions such as monotonicity (for binary outcomes, Assumption 2) and the monotonic incremental treatment effect (for ordinal outcomes) Zhang et al. (2025a) do not yield point identification for continuous outcomes. Consequently, rather than imposing additional restrictive and untestable assumptions to force point identification, we adopt a partial identification approach that focuses on deriving sharp bounds on the GPN. The sharp bounds represent the tightest bounds attainable for an estimand under the observed data distribution and maintained assumptions Fan and Park (2010); Rosenbaum (2020); Ding (2024). 
+
+# 5. Sharp Bounds under Common Conditions 
+
+In this section, we explore the sharp bounds on the conditional GPN, defined as GPN( x) = P(Y (0) < c 0 | X = x, Z = 1 , Y ≥ c1)= P(Y (0) < c 0, Y (1) ≥ c1 | X = x, Z = 1) 
+
+P(Y ≥ c1 | X = x, Z = 1) . (3) We derive these bounds under the standard ignorability assumption and under the combined “ig-norability + monotonicity” assumptions, respectively. Analyzing the sharp bounds on GPN( x) is more general than studying GPN directly, since we can always obtain the sharp bounds on GPN by taking the expectation of the sharp bounds on GPN( X) with respect to X. Throughout, we maintain the standard ignorability assumption. 
+
+Assumption 1 (Ignorability) .
+
+(a) Unconfoundedness: ( Y (1) , Y (0)) ⊥⊥ Z | X;(b) Overlap: 0 < P(Z = 1 | X = x) < 1 for all x ∈ X .The unconfoundedness states that, conditional on covariates, treatment assignment is indepen-dent of the potential outcomes, while the overlap requires that every individual has a positive 6probability of receiving each treatment. Under Assumption 1, the conditional marginal cumulative distribution functions (CDFs) FY (1) |X (y|x) = P(Y (1) ≤ y | X = x) and FY (0) |X (y|x) = P(Y (0) ≤
+
+y | X = x) are identifiable from the observed data. However, Assumption 1 alone is insufficient to identify GPN( x), since it depends on the joint distribution of ( Y (1) , Y (0)), which is not identifiable. 
+
+5.1. Sharp Bounds under Ignorability 
+
+We first derive sharp bounds on GPN( x) that rely solely on the ignorability assumption. These bounds build upon the Fr´ echet–Hoeffding inequalities Fr´ echet (1960). 
+
+Lemma 1 (Fr´ echet–Hoeffding Bounds) . Under Assumption 1, GPN( x) lies within the interval [LFH (x), U FH (x)], where 
+
+LFH (x) = max 
+
+
+
+0, 1 − P(Y ≥ c0 | X = x, Z = 0) 
+
+P(Y ≥ c1 | X = x, Z = 1) 
+
+
+
+,UFH (x) = min 
+
+
+
+1, P(Y < c 0 | X = x, Z = 0) 
+
+P(Y ≥ c1 | X = x, Z = 1) 
+
+
+
+.
+
+These bounds are sharp. The Fr´ echet–Hoeffding bounds in Lemma 1 require fewer assumptions, but they are often wide in practice. This is because Assumption 1 imposes no restriction on the relationship between 
+
+Y (1) and Y (0). Consequently, the Fr´ echet–Hoeffding bounds represent the widest possible limits, capturing the worst- and best-case scenarios for an arbitrary dependence between Y (1) and Y (0). 
+
+5.2. Sharp Bounds under Ignorability and Monotonicity 
+
+For binary outcomes, monotonicity is a standard assumption for identifying PN Pearl (1999), but it is insufficient to identify GPN for continuous outcomes. We examine the bounds on GPN( x)under this additional assumption. 
+
+Assumption 2 (Monotonicity) . P(Y (1) ≥ Y (0)) = 1. Monotonicity assumes that the treatment has a non-negative effect for all individuals almost surely. While commonly imposed, this assumption is restrictive and hard to satisfy in settings with substantial individual heterogeneity. 
+
+Proposition 1 (Sharp Bounds under Monotonicity) . Under Assumptions 1 and 2, GPN( x) lies within the interval [ Lmono (x), U mono (x)], where 
+
+Lmono (x) = LFH (x),Umono (x) = min 
+
+
+
+UFH (x), 1 − P(Y ≥ c1 | X = x, Z = 0) 
+
+P(Y ≥ c1 | X = x, Z = 1) 
+
+
+
+.
+
+These bounds are sharp. 7Proposition 1 establishes the sharp bounds on GPN( x) under the ignorability and monotonicity assumptions. Comparing Proposition 1 with Lemma 1 highlights the role that monotonicity plays in tightening the bounds on GPN( x). Specifically, the lower bound remains unchanged, indicating that the monotonicity does not contribute additional information for the lower bound on GPN( x). The reason is that monotonicity permits the case Y (1) = Y (0), under which GPN( x) is equal to zero. In contrast, the upper bound is tightened, i.e., Umono (x) ≤ UFH (x). Intuitively, this improvement arises from excluding individuals for whom Y (0) > Y (1). Moreover, the GPN( x) is point-identifiable when c1 = c0 under the ignorability and monotonicity assumptions, as shown in Corollary 1. 
+
+Corollary 1 (Identification under Monotonicity) . Under Assumptions 1 and 2, if c0 = c1 = c,GPN( x) is point-identifiable, and the identifiability formula is given by GPN( x) = 1 − P(Y (0) ≥ c | X = x)
+
+P(Y (1) ≥ c | X = x) .
+
+Corollary 1 aligns with our intuition. When c1 = c0 = c, the continuous outcomes is collapsed into a binary variable, and the problem reduces to the binary outcomes setting studied in Pearl (1999). However, when c1 > c 0, the equivalence no longer holds. Although monotonicity restricts the direction of the treatment effect, it leaves the strength of dependence between Y (1) and Y (0) largely unspecified. This suggests that obtaining sharper bounds requires capturing the continuous dependence structure. We achieve this using copula models in Section 6. 
+
+# 6. Improved Bounds via Copula-Based Sensitivity Analysis 
+
+As discussed in Section 5.1, the Fr´ echet—Hoeffding bounds are often too wide to be informative, whereas the monotonicity is restrictive and provides only limited improvement in tightening the bounds. In this section, we propose an alternative approach that improves the bounds by explicitly modeling the dependence between the potential outcomes. 
+
+6.1. Copula Representation of GPN 
+
+For ease of presentation, we define 
+
+u1(x) = P(Y (1) ≤ c1 | x), u 0(x) = P(Y (0) ≤ c0 | x),
+
+where are identifiable under Assumption 1. According to Sklar’s Theorem Nelsen (2006); Sklar (1959), for any continuous joint distribution, there exists a unique copula Cρ : [0 , 1] 2 → [0 , 1] such that 
+
+P(Y (1) ≤ c1, Y (0) ≤ c0 | x) = Cρ(u1(x), u 0(x)) ,
+
+where ρ is the association parameter that governs the dependence between the potential outcomes. This copula representation enables an explicit expression of GPN( x) in terms of the marginal 8distributions and the parameter ρ.
+
+Proposition 2 (Copula Representation) . For a given copula family Cρ(·, ·), GPN( x) admits the following formulation: GPN( x; ρ) = u0(x) − Cρ(u1(x), u 0(x)) 1 − u1(x) . (4) Equation (4) decomposes GPN( x) into two components: the marginal probabilities u1(x) and 
+
+u0(x), which are point-identifiable under Assumption 1, and the copula term Cρ, which characterizes the unobserved dependence between the potential outcomes. Although the association parameter 
+
+ρ is not identifiable due to the fundamental problem of causal inference Holland (1986), this for-mulation provides a natural basis for deriving bounds on GPN( x) by leveraging information about the dependence structure. 
+
+6.2. Improved Bounds via Dependence Restriction 
+
+Although the association parameter ρ is not identifiable under Assumption 1, in real-world appli-cations, we may provide a plausible range for it, informed by domain and expert knowledge Bodik et al. (2025). 
+
+Assumption 3 (Dependence Restriction) . ρ ∈ [ρmin , ρ max ], where the lower and upper bounds are given. Assumption 3 restricts the strength of dependence between the potential outcomes. Under this assumption, bounds on ρ translate directly into bounds on the copula value and, consequently, into bounds on GPN( x). Specifically, for an arbitrary pair ( u, v ), let 
+
+Cmin (u, v ) = min  
+
+> ρ∈[ρmin ,ρ max ]
+
+Cρ(u, v ),Cmax (u, v ) = max  
+
+> ρ∈[ρmin ,ρ max ]
+
+Cρ(u, v ),
+
+then we have the following conclusion. 
+
+Theorem 1 (Sharp Bounds under Copula Model) . Under Assumptions 1 and 3, the sharp bounds on GPN( x) are  u0(x) − Cmax (u1(x), u 0(x)) 1 − u1(x) , u0(x) − Cmin (u1(x), u 0(x)) 1 − u1(x)
+
+
+
+.
+
+Theorem 1 provides a flexible framework for obtaining bounds on GPN( x) by allowing the incorporation of domain priors regarding ρmin and ρmax . Below, we outline several practical impli-cations. First, Theorem 1 includes the Fr´ echet–Hoeffding bounds as a special case corresponding to the absence of any dependence restriction. For example, when we set ρ ∈ [−1, 1] for the Gaussian copula, the resulting bounds reduce to the Fr´ echet–Hoeffding bounds presented in Lemma 1 (see 9Appendix A5 for details). This also indicates how the worst-case bounds (i.e., the Fr´ echet–Hoeffding bounds) can be improved: any domain knowledge that restricts ρ to a subset of its full range serves to tighten the identification interval. Second, even if it may be difficult to specify exact values for ρmin and ρmax due to limited expert knowledge, determining the sign of the dependence is often feasible. A simple restriction is to assume positive dependence (i.e., ρmin = 0). This assumption is mild and reasonable in many contexts. For instance, in medical studies, unmeasured factors such as a patient’s overall health or genetic resilience are likely to influence both Y (0) and Y (1) in the same direction, resulting in a positive correlation between the potential outcomes Efron and Feldman (1991). Furthermore, Wu et al. Wu et al. (2024) and Bodik et al. Bodik et al. (2025) provide additional examples illustrating the plausibility of assuming positive dependence. Third, Theorem 1 naturally establishes a sensitivity analysis framework for GPN( x) by treating 
+
+ρ as the sensitivity parameter, enabling the assessment of the robustness of our conclusions. Such insights are not captured in a purely worst-case analysis, as exemplified by the Fr´ echet-–Hoeffding bounds and the sharp bounds derived under the monotonicity assumption. In addition, it reveals how expert knowledge can further refine these bounds; see our application in Section 8.2 for details. 
+
+# 7. Empirical Implementation of the Bounds 
+
+The preceding analysis shows that the sharp bounds in Theorem 1 for GPN( x) are fully determined by the conditional distribution functions uz (x) = P(Y (z) ≤ cz | X = x) for z ∈ { 0, 1}, together with the specified dependence structure in the copula framework. Likewise, the bounds in Lemma 1 and Proposition 1 can be expressed in terms of these similar quantities. Consequently, the statistical task reduces to estimating the conditional distribution functions. We take u1(x) as an example to illustrate the estimation procedure; the estimation of u0(x)follows analogously. Under Assumption 1, u1(x) is identified as 
+
+u1(x) = E[I(Y ≤ c1) | X = x, Z = 1] .
+
+Based on it, a direct approach to estimate u1(x) is to regress the indicator I(Y ≤ c1) on X using the treated units. To enhance robustness to model misspecification, we instead employ the doubly robust (DR) estimator for the conditional distribution function proposed by Givens et al. (2024). For clarity, we outline the estimation procedure for the DR estimator, which consists of two main steps: 
+
+Step 1: Nuisance Parameter Estimation. We first estimate the nuisance parameters for the efficient influence function in the DR estimator: the propensity score ˆ e(x) = ˆP(Z = 1 | X = x)and the initial conditional distribution function ˆ ν1(x) = ˆP(Y ≤ c1 | Z = 1 , X = x). We could estimate these quantities using parametric models (e.g., linear models) or flexible machine learning methods (e.g., MLPs). 
+
+Step 2: Pseudo-Outcome Regression. Using the nuisance parameter estimates from Step 10 1, we construct a doubly robust pseudo-outcome ˆ φ1,i for each unit i. Derived from the efficient influence function, it takes the form ˆφ1,i = ˆ ν1(Xi) + Zi
+
+ˆe(Xi) (I(Yi ≤ c1) − ˆν1(Xi)) . (5) We then regress the pseudo-outcomes { ˆφ1,i } on the covariates {Xi} to obtain the estimator ˆ u1(x). Once the doubly robust estimates ˆ u1(x) and ˆ u0(x) are obtained, we could compute the sharp bounds on GPN( x) in Theorem 1 using a plug-in approach. For example, under the Gaussian copula framework, substituting these estimates into the analytic expressions derived in Corollary 2 with the specified correlation range [ ρmin , ρ max ] yields ˆLcopula (x) = ˆu0(x) − Φρmax (Φ −1(ˆ u1(x)) , Φ−1(ˆ u0(x))) 1 − ˆu1(x) ,
+
+ˆUcopula (x) = ˆu0(x) − Φρmin (Φ −1(ˆ u1(x)) , Φ−1(ˆ u0(x))) 1 − ˆu1(x) .
+
+7.1. Illustration with Gaussian Copula 
+
+We illustrate the practical application of Theorem 1 using the widely employed Gaussian copula, which is explicitly given by Cρ(u, v ) = Φ ρ(Φ −1(u), Φ−1(v)) , where Φ ρ denotes the bivariate standard normal cumulative distribution function with correlation ρ, and Φ −1 is its inverse. Since Cρ(u, v )is monotonic in ρ, the bounds on GPN( x) can be obtained directly by applying Theorem 1. 
+
+Corollary 2 (Sharp Bounds with Gaussian Copula) . Under Assumptions 1 and 3, with a Gaussian copula, GPN( x) lies within the interval [ Lcopula (x), U copula (x)], where 
+
+Lcopula (x) = u0(x) − Φρmax (Φ −1(u1(x)) , Φ−1(u0(x))) 1 − u1(x) ,Ucopula (x) = u0(x) − Φρmin (Φ −1(u1(x)) , Φ−1(u0(x))) 1 − u1(x) ,
+
+where Φρ(Φ −1(u1(x)) , Φ−1(u0(x))) =
+
+Z a
+
+> −∞
+
+Z b
+
+> −∞
+
+12πp1 − ρ2 exp 
+
+
+
+− s2 + t2 − 2ρst 
+
+2 (1 − ρ2)
+
+
+
+ds dt, 
+
+with a = Φ −1(u0(x)) and b = Φ −1(u1(x)). Based on Corollary 2, setting ρ ∈ [0 , 1] allows researchers to quantify attribution under the assumption of non-negative dependence, while narrower ranges (e.g., ρ ∈ [0 , 0.5]) can be used to assess robustness to weak-to-moderate positive associations. Additionally, several other families of copulas can be employed to flexibly model the joint distribution of potential outcomes; interested readers may refer to Nelsen (2006); Joe (2014) for further details. 11 8. Experiments 
+
+In this section, we evaluate the finite-sample performance of the proposed methods and then illus-trate their practical utility through a real-world application. 
+
+8.1. Simulation Study 
+
+We consider three data-generating processes (DGPs). In all scenarios, we generate a 3-dimensional covariate vector X = ( X0, X 1, X 2)⊤ from a multivariate normal distribution N (μX , ΣX ), with mean 
+
+μX = (0 .5, −0.5, 0) ⊤ and covariance matrix ΣX =
+
+
+
+1 0.3 0.10.3 1 0.20.1 0.2 1
+
+ .
+
+The binary treatment Z is generated from a logistic model: P(Z = 1 | X) = σ(−1.5 + 0 .5eX0 −
+
+0.8X1 + 0 .4X2), where σ(·) is the sigmoid function. The potential outcomes are generated as 
+
+Y (z) = μz (X) + εz for z ∈ { 0, 1}.We consider three cases for the outcome mechanisms. 
+
+(a) Monotonic Case: The treatment effect is non-negative for all units. We set μ0(X) = 10 + 2 X0 + X1 − 0.5X2 and μ1(X) = μ0(X) + X20 . The errors ε1 = ε0 ∼ N (0 , 1). 
+
+(b) Linear Case ( ρ = 0 .5): The means are linear in X: μ0(X) = 10 + 2 X0 + X1 − 0.5X2 and 
+
+μ1(X) = 12 + 1 .5X0 + 1 .2X1 + 1 .5X2. The error terms ( ε0, ε 1)⊤ are drawn from N (0 , Σε) with covariance Σ ε =
+
+"
+
+1 0.50.5 1
+
+#
+
+.
+
+(c) Nonlinear Case ( ρ = 0 .5): The outcomes exhibit complex nonlinear dependencies, with 
+
+μ0(X) = 10 + 0 .5X20 + X21 + X0X2 − 2X1X2 and μ1(X) = 13 + 0 .5X20 + 2 .5X21 + 1 .5X0X2 + 4 X1X2.As in the linear case, the error terms ( ε0, ε 1)⊤ are drawn from N (0 , Σε). We set the thresholds as c0 = 10 .0 and c1 = 12 .0, and the training sample size to n = 4 ,096. 
+
+Implementation. The marginal distributions uz (x) = P(Y (z) ≤ cz | X = x) and the mono-tonicity correction term u0,c 1 (x) = P(Y (0) ≤ c1 | X = x) are estimated using the DR learner. We implement the nuisance and target estimators using Multi-Layer Perceptrons (MLPs) in PyTorch, ensuring robustness against model misspecification. 
+
+Competing Methods . We compare four bounding strategies: (1) FH : The Fr´ echet–Hoeffding bounds under only ignorability, see Lemma 1; (2) Monotonicity : the bounds under ignorability and additional monotonicity, see Proposition 1; (3) Conservative : the bounds under ignorability and a conservative restriction on ρ (i.e., ρ ∈ [0 , 1]) under the Gaussian copula, see Theorem 1 and Corollary 2; (4) Expert : similar to the Conservative method, we impose a more stringent restriction on ρ: ρ ∈ [0 .2, 0.7] for Cases (b)–(c) and ρ ∈ [0 .5, 1.0] for Case (a). For the Expert method, the range of ρ is specified solely for ease of comparison, with the aim of examining how varying levels of prior information influence the bounds. 12 Table 1: Performance of GPN( x) bounds across three scenarios ( n = 4 ,096). 
+
+Method (a) Monotonic Case (b) Linear DGP (c) Nonlinear DGP MSE-LB MSE-UB Width MSE-LB MSE-UB Width MSE-LB MSE-UB Width FH 0.015 0.516 0.547 0.094 0.218 0.435 0.057 0.102 0.079 Monotonicity 0.015 0.463 0.506 0.094 0.139 0.331 0.057 0.077 0.052 Conservative ( ρ ∈ [0 , 1] ) 0.015 0.226 0.299 0.094 0.068 0.132 0.057 0.063 0.032 Expert 0.015 0.087 0.159 0.065 0.060 0.066 0.056 0.060 0.016 
+
+Evaluation Metrics. We evaluate numerical performance by computing the mean squared error (MSE) between each estimated bound (the lower bound ˆL(x) and the upper bound ˆU (x)) and the true GPN( x): MSE-LB = n−1
+
+nX
+
+i=1 
+
+  ˆL(Xi) − GPN( Xi)2,
+
+MSE-UB = n−1
+
+nX
+
+i=1 
+
+  ˆU (Xi) − GPN( Xi)2,
+
+along with the average interval width: Width = n−1
+
+nX
+
+i=1 
+
+ ˆU (Xi) − ˆL(Xi)
+
+
+
+.
+
+Smaller values of these metrics indicate that the estimated bounds on GPN( x) are tighter. Consis-tent with the DGPs, the true GPN( x) is derived analytically. Specifically, for case (a), P(Y (1) ≤
+
+c1, Y (0) ≤ c0 | X = x) = Φ (min( c0, c 1 − τ (x)) − μ0(x)), where τ (x) = μ1(x) − μ0(x). For cases (b) and (c), P(Y (1) ≤ c1, Y (0) ≤ c0 | X = x) = Φ ρ(c1 − μ1(x), c 0 − μ0(x)). 0.0 0.2 0.4 0.6 0.8 1.0                  
+
+> Sensitivity Parameter ρ
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> 0.7
+> 0.8
+> 0.9
+> Estimated Average GPN
+> (a) Monotonic Case
+> Ignorability (FH) Monotonicity Conservative ( ρ∈[0,1])Expert GPN via Copula True GPN
+> 0.00.20.40.60.81.0
+> Sensitivity Parameter ρ
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> 0.7(b) Linear DGP
+> 0.00.20.40.60.81.0
+> Sensitivity Parameter ρ
+> 0.26
+> 0.28
+> 0.30
+> 0.32
+> 0.34
+> 0.36
+> 0.38
+> 0.40 (c) Nonlinear DGP
+
+Figure 1: Sensitivity analysis of the average GPN. The truth (star) falls within the Expert region and on the estimated Copula curve. 
+
+Numerical Results. The numerical results are presented in Table 1. First, the estimated bounds exhibit a clear performance ordering: the Expert method outperforms the Conservation 13 method, and both outperform the Monotonicity and FH methods. Second, the Expert method significantly outperforms the other methods, indicating that incorporating domain knowledge about 
+
+ρ is highly effective in narrowing the bounds on GPN( x). Third, it is noteworthy that in case (a), where the monotonicity assumption is satisfied, the Monotonicity method still yields a wider interval (Width: 0.506) and a higher MSE-UB (0.463) than the copula-based Expert method (Width: 0.159, MSE-UB: 0.087). This suggests that in continuous outcome settings, the standard monotonicity assumption is often less informative than explicitly modeling the dependence structure. Figure 1 illustrates the estimated bounds on the average GPN, where the star indicates the true value. The estimated average GPN is given by n−1 Pni=1 [GPN( Xi), where [GPN( Xi) denotes the generic estimated bounds obtained using different methods. In Figure 1, the gray shaded region corresponds to the average FH bounds. The green shaded region shows the Monotonicity bounds. The blue and red shaded regions represent the Conservative and Expert bounds, respectively. The Conservative and Expert bounds are substantially tighter than those under Ignorability and Monotonicity, while still containing the true value. Figure 1 also presents a sensitivity analysis with respect to ρ, where the blue line represents the estimated average GPN under a Gaussian copula across different values of ρ. This explicitly illustrates how changes in ρ affect the estimated GPN, highlighting the importance of choosing an appropriate value of ρ to obtain tighter bounds on GPN. 
+
+Sensitivity Analysis. We further conduct a sensitivity analysis to assess the impact of copula family misspecification. We perform additional simulations in which the true joint distribution of (Y (1) , Y (0)) follows a Gaussian, Clayton, or Gumbel copula, while estimation is still carried out using the Gaussian copula as a working model. We consider three levels of dependence, indexed by Kendall’s τ ∈ 0.20 , 0.33 , 0.50, corresponding approximately to ρ ∈ 0.31 , 0.50 , 0.71 under the Gaussian working model. We retain the same covariate distribution and treatment-assignment mechanism as in Cases (a)–(c), and generate the potential outcomes from the linear mean model: 
+
+Y (z) = μz (X) + εz for z ∈ 0, 1, where μ0(X) = 10 + 2 X0 + X1 − 0.5X2 and μ1(X) = 12 + 1 .5X0 +1.2X1 + 1 .5X2, with ( ε0, ε 1) generated from the specified copula family. The numerical results are reported in Table 2. Across these scenarios, the lower and upper bounds, as well as the interval widths, vary only modestly across copula families, indicating a degree of robustness. Table 2: Sensitivity to Copula Family Misspecification.                                                                                                                                
+
+> Family τρTrue Mean GPN FH LB FH UB FH Width Conservative (ρ∈[0 ,1] ) LB Conservative (ρ∈[0 ,1] ) UB Conservative (ρ∈[0 ,1] ) Width Expert LB Expert UB Expert Width Gaussian 0.20 0.31 0.206 0.152 0.617 0.464 0.185 0.435 0.250 0.318 0.395 0.077 Gaussian 0.33 0.50 0.197 0.150 0.620 0.470 0.185 0.434 0.249 0.272 0.344 0.072 Gaussian 0.50 0.71 0.186 0.134 0.606 0.472 0.168 0.416 0.249 0.207 0.280 0.073 Clayton 0.20 0.31 0.206 0.145 0.607 0.462 0.176 0.417 0.241 0.302 0.377 0.076 Clayton 0.33 0.50 0.197 0.154 0.621 0.467 0.187 0.437 0.250 0.273 0.346 0.073 Clayton 0.50 0.71 0.186 0.131 0.601 0.470 0.160 0.412 0.253 0.198 0.270 0.072 Gumbel 0.20 0.31 0.206 0.163 0.624 0.460 0.195 0.442 0.246 0.328 0.403 0.075 Gumbel 0.33 0.50 0.197 0.143 0.598 0.455 0.178 0.417 0.240 0.263 0.332 0.070 Gumbel 0.50 0.71 0.186 0.156 0.624 0.468 0.193 0.439 0.246 0.230 0.302 0.072
+
+14 8.2. Real Data Application 
+
+Data. We apply our proposed method to assess whether maternal healthy behaviors constitute a necessary risk factor for reductions in infant birth weight, from the perspective of attribution analysis. The dataset 1 contains n = 4 ,642 observations from the Pennsylvania Department of Health. The outcome Y is the infant’s birth weight (in grams). We define the treatment Z as the adoption of healthy behaviors. We consider two risk factors as the treatment: (1) Smoking : Z = 1 denotes non-smoking mothers, and Z = 0 denotes smoking mothers. (2) Alcohol : Z = 1 denotes non-drinking mothers, and Z = 0 denotes mothers who consume alcohol. We control for a rich set of covariates X, including maternal age, education, marital status, and race, the number of prenatal care visits, etc. 
+
+Threshold Selection. For GPN, we need to set two thresholds. (a) Adverse Threshold ( c0 =2,500 g): We set c0 to 2,500 grams, corresponding to the internationally accepted clinical definition of low birth weight established by the World Health Organization (1992). Infants below this threshold are at a significantly higher risk of neonatal mortality and long-term health complications. (b) Healthy Threshold ( c1 = 3 ,000 g): We set c1 to 3,000 grams, representing a clearly healthy birth weight. Under this setup ( c1 > c 0), the GPN could be used to address a specific attribution question: 
+
+“For a mother who engaged in healthy behavior (did not smoke or drink) and delivered a healthy baby ( Y ≥ 3,000 g), what is the probability that the baby would have suffered from low birth weight (Y (0) < 2,500 g) had she engaged in the unhealthy behavior?” This query investigates whether the healthy behavior was necessary to prevent a drastic decline in health status , rather than causing a minor weight reduction. In this real-world application, the positive dependence between potential outcomes is biologically plausible: unobserved factors such as maternal genetics, nutritional absorption capacity, and overall physiological resilience are likely to positively influence birth weight, regardless of maternal smoking or drinking status Almond et al. (2005). Consistent with the simulation study, we follow the same procedure to estimate the bounds on the average GPN. Table 3: Estimated bounds for the average GPN in the application.                                          
+
+> Method Smoking Alcohol Lower Bound Upper Bound Lower Bound Upper Bound FH 0.063 ±0.021 0.143 ±0.038 0.015 ±0.005 0.045 ±0.011
+> Monotonicity 0.063 ±0.021 0.088 ±0.026 0.015 ±0.005 0.024 ±0.006
+> Conservative 0.063 ±0.021 0.097 ±0.029 0.015 ±0.005 0.022 ±0.006
+
+Results. The estimated bounds on GPN are visualized in Figure 2, which displays the results for two risk factors: Smoking and Alcohol . Similar to Figure 2, the shaded regions represent the bounds derived from the FH, Monotonicity, and Conservative methods. The blue line represents  
+
+> 1It is publicly available at http://www.stata-press.com/data/r13/cattaneo2.dta .
+
+15 0.0 0.2 0.4 0.6 0.8 1.0 
+
+> Sensitivity Parameter ρ
+> 0.06
+> 0.08
+> 0.10
+> 0.12
+> 0.14
+> 0.16
+> 0.18
+> 0.20
+> Estimated Average GPN
+> 0.14
+
+Application: Smoking       
+
+> 0.00.20.40.60.81.0
+> Sensitivity Parameter ρ
+> 0.010
+> 0.015
+> 0.020
+> 0.025
+> 0.030
+> 0.035
+> 0.040
+> 0.045
+> 0.050
+> 0.00
+
+Application: Alcohol    
+
+> Ignorability (FH) Monotonicity Conservative ( ρ∈[0,1])GPN via Copula
+
+Figure 2: Sensitivity analysis of the estimated average GPN for Smoking (left) and Alcohol (right). the sensitivity analysis with respect to ρ based on the Gaussian copula. We mark the intersection between the curve and the tightest upper bound with a red dot. Taking Smoking (left panel) as an example, this figure illustrates how expert knowledge can further refine the bounds. If expert knowledge indicates that the correlation coefficient ρ > 0.14, we can tighten the upper bound; moreover, as long as ρ < 1, we can also improve the lower bound. Table 3 presents the numerical results for the bounds, along with their standard deviations obtained via subsampling (100 subsamples). We use subsampling rather than the ordinary boot-strap because inference for partially identified bounds involving min/max operators is nonstandard, and subsampling has well-known theoretical advantages in such irregular settings; see, for exam-ple, Romano and Wolf (1999). The results reveal two key insights. First, for both Smoking and 
+
+Alcohol , the lower bounds of the GPN are significantly positive. This suggests that avoiding unhealthy behaviors is a necessary cause of healthy infant birth weight for a substantial fraction of the population; that is, without such avoidance, these infants would have fallen into the low birth weight category. Second, compared with Alcohol , the bounds on the GPN for Smoking are larger, underscoring the severity of smoking as a risk factor. This indicates that avoiding smoking is critical to prevent low infant birth weight. This finding aligns with and supports for the public health consensus that smoking poses a greater risk to infant development and therefore warrants prioritized intervention Da Veiga and Wilder (2008); Walker et al. (2009). 
+
+# 9. Conclusion 
+
+This paper addresses a gap in attributional causal inference by developing a principled framework for the probability of necessity with continuous outcomes. We introduced the general probability of necessity (GPN), which unifies and extends existing formulations for binary and ordinal outcomes while avoiding information loss induced by discretization. Recognizing that point identification is generally impossible in this setting, we adopted a partial identification perspective and derived 16 sharp bounds for the GPN under standard ignorability and monotonicity assumptions. To move beyond the often overly conservative Fr´ echet–Hoeffding bounds, we further proposed a copula-based framework that exploits restrictions on the dependence between potential outcomes. This representation reveals that the GPN depends on a single association parameter governing the joint distribution of the potential outcomes, enabling both principled incorporation of domain knowledge and transparent sensitivity analysis. Even weak and practically plausible restrictions, such as assuming positive dependence, can substantially tighten the resulting bounds. We hope this framework will encourage further research on dependence-aware causal attribution and on practical strategies for eliciting and validating domain knowledge about counterfactual dependence. 
+
+# References 
+
+Douglas Almond, Kenneth Y. Chay, and David S. Lee. The costs of low birth weight. The Quarterly Journal of Economics , 120(3):1031–1083, 2005. Juraj Bodik, Yaxuan Huang, and Bin Yu. Cross-world assumption and refining prediction intervals for individual treatment effects. arXiv:2507.12581 , 2025. Paula Veloso Da Veiga and Ronald P Wilder. Maternal smoking during pregnancy and birthweight: a propensity score matching approach. Maternal and Child Health Journal , 12(2):194–203, 2008. A. Philip Dawid and Monica Musio. Effects of causes and causes of effects. Annual Review of Statistics and Its Application , 9:261–287, 2022. A Philip Dawid, David L Faigman, and Stephen E Fienberg. Fitting science into legal contexts: assessing effects of causes or causes of effects? Sociological Methods & Research , 43(3):359–390, 2014. A Philip Dawid, Monica Musio, and Rossella Murtas. The probability of causation. Law, Probability and Risk , 16(4):163–179, 2017. Peng Ding. A First Course in Causal Inference . Chapman and Hall/CRC, 1st edition, 2024. Bradley Efron and David Feldman. Compliance as an explanatory variable in clinical trials. Journal of the American Statistical Association , 86(413):9–17, 1991. Yanqin Fan and Sang Soo Park. Sharp bounds on the distribution of the treatment effect and their statistical inference. Econometric Theory , 26(3):931–951, 2010. M. Fr´ echet. Sur les tableaux dont les marges et des bornes sont donn´ ees. Revue de l’Institut International de Statistique / Review of the International Statistical Institute , 28(1/2):10–32, 1960. 17 Josh Givens, Henry W J Reeve, Song Liu, and Katarzyna Reluga. Conditional outcome equiva-lence: A quantile alternative to CATE. In Proceedings of the Advances in Neural Information Processing Systems (NeurIPS 2024) , volume 37, pages 102634–102671, Vancouver, BC, Canada, 2024. Curran Associates, Inc. Paul W. Holland. Statistics and causal inference. Journal of the American Statistical Association ,81(396):945–960, 1986. H. Joe. Dependence Modeling with Copulas . Chapman and Hall/CRC, 1st edition, 2014. Muin J Khoury, Quanhe Yang, Marta Gwinn, Julian Little, and W Dana Flanders. An epidemiologic assessment of genomic profiling for measuring susceptibility to common diseases and targeting interventions. Genetics in Medicine , 6(1):38–47, 2004. Ang Li and Judea Pearl. Probabilities of causation with nonbinary treatment and effect. In 
+
+Proceedings of the AAAI Conference on Artificial Intelligence (AAAI 2024) , volume 38, pages 20465–20472, Vancouver, BC, Canada, 2024. AAAI Press. Ang Li, Song Jiang, Yizhou Sun, and Judea Pearl. Learning probabilities of causation from finite population data. arXiv:2210.08453 , 2022. Scott Mueller, Ang Li, and Judea Pearl. Causes of effects: Learning individual responses from population data. arXiv:2104.13730 , 2021. Roger B. Nelsen. An Introduction to Copulas . Springer, 2nd edition, 2006. World Health Organization. Low birth weight: A tabulation of available information. Technical report, World Health Organization, Geneva, Switzerland, 1992. Judea Pearl. Probabilities of causation: three counterfactual interpretations and their identification. 
+
+Synthese , 121(1):93–149, 1999. Judea Pearl. Causality . Cambridge University Press, 2nd edition, 2009. Judea Pearl. Causes of effects and effects of causes. Sociological Methods & Research , 44(1):149–164, 2015. Judea Pearl, Madelyn Glymour, and Nicholas P. Jewell. Causal Inference in Statistics: A Primer .John Wiley & Sons, 1st edition, 2016. Joseph P. Romano and Michael Wolf. Subsampling inference for the mean in the heavy-tailed case. 
+
+Metrika , 50(1):55–69, 1999. Paul R. Rosenbaum. Design of Observational Studies . Springer, 2nd edition, 2020. Paul R Rosenbaum and Donald B Rubin. The central role of the propensity score in observational studies for causal effects. Biometrika , 70(1):41–55, 1983. 18 D. B. Rubin. Estimating causal effects of treatments in randomized and nonrandomized studies. 
+
+Journal of educational psychology , 66(5):688–701, 1974. Joseph Sanders, David L Faigman, Peter B Imrey, and Philip Dawid. Differential etiology: Inferring specific causation in the law from group data in science. Ariz. L. Rev. , 63(4):851–922, 2021. Changyu Shen, Jaesik Jeong, Xiaochun Li, Peng-Sheng Chen, and Alfred Buxton. Treatment benefit and treatment harm rate to characterize heterogeneity in treatment effect. Biometrics ,69(3):724–731, 2013. Abe Sklar. Fonctions de r´ epartition ` a n dimensions et leurs marges. Annales de l’ISUP , 8(3): 229–231, 1959. Jerzy Splawa-Neyman, D. M. Dabrowska, and T. P. Speed. On the application of probability theory to agricultural experiments. essay on principles. section 9. Statistical Science , 5(4):465–472, 1990. Zexu Sun, Qiyu Han, Hao Yang, Anpeng Wu, Minqin Zhu, Dugang Liu, Chen Ma, Yunpeng Weng, Xing Tang, and Xiuqiang He. Invariant deep uplift modeling for incentive assignment in online marketing via probability of necessity and sufficiency. In Proceedings of the 42nd International Conference on Machine Learning (ICML 2025) , volume 267, pages 57450–57468, Vancouver, BC, Canada, 2025. PMLR. Jin Tian and Judea Pearl. Probabilities of causation: Bounds and identification. Annals of Math-ematics and Artificial Intelligence , 28(1):287–313, 2000. Zhaoqing Tian and Peng Wu. Semiparametric efficient inference for the probability of necessary and sufficient causation. Statistics in Medicine , 44(18-19):e70242, 2025. Mary Beth Walker, Erdal Tekin, and Sally Wallace. Teen smoking and birth outcomes. Southern Economic Journal , 75(3):892–907, 2009. Peng Wu, Peng Ding, Zhi Geng, and Yue Li. Quantifying individual risk for binary outcome: Bounds and inference. arXiv:2402.10537 , 2024. Mengyue Yang, Zhen Fang, Yonggang Zhang, Yali Du, Furui Liu, Jean-Francois Ton, Jianhong Wang, and Jun Wang. Invariant learning via probability of sufficient and necessary causes. In 
+
+Proceedings of the Advances in Neural Information Processing Systems (NeurIPS 2023) , vol-ume 36, pages 79832–79857, New Orleans, LA, USA, 2023. Curran Associates, Inc. Chao Zhang, Zhi Geng, Wei Li, and Peng Ding. Identifying and bounding the probability of necessity for causes of effects with ordinal outcomes. Biometrika , 112(3):asaf049, 2025a. Ping Zhang, Ruoyu Wang, and Wang Miao. Causal attribution with confidence. arXiv:2504.08294 ,2025b. 19 Ruiqi Zhao, Lei Zhang, Shengyu Zhu, Zitong Lu, Zhenhua Dong, Chaoliang Zhang, Jun Xu, Zhi Geng, and Yangbo He. Conditional counterfactual causal effect for individual attribution. In 
+
+Proceedings of the 39th Conference on Uncertainty in Artificial Intelligence (UAI 2023) , volume 216, pages 2519–2528, Pittsburgh, PA, USA, 2023. PMLR. 20 Appendix A1. Generalization of GPN to Interval Events 
+
+In Section 4, we defined the General Probability of Necessity (GPN): GPN = GPN( c0, c 1) = P(Y (0) < c 0 | Z = 1 , Y ≥ c1).
+
+We consider a flexible definition of GPN, denoted as GPN int , defined over intervals [ c0, c 0) for 
+
+Y (0) and [ c1, c 1) for Y (1): GPN int = P(c0 ≤ Y (0) < c 0 | Z = 1 , c 1 ≤ Y (1) < c 1). (A1) By the definition of conditional probability, we have GPN int = P(c0 ≤ Y (0) < c 0, c 1 ≤ Y (1) < c 1 | Z = 1) 
+
+P(c1 ≤ Y (1) < c 1 | Z = 1) . (A2) The denominator in (A2) decomposes into 
+
+P(c1 ≤ Y (1) < c 1 | Z = 1) = P(Y (1) ≥ c1 | Z = 1) − P(Y (1) ≥ c1 | Z = 1) .
+
+The numerator involves the joint probability of two interval events. Expanding the joint prob-ability in the numerator: 
+
+P(c0 ≤ Y (0) < c 0, c 1 ≤ Y (1) < c 1 | Z = 1) = P({c0 ≤ Y (0) < c 0} ∩ { c1 ≤ Y (1) < c 1} | Z = 1) = P({Y (0) < c 0} ∩ { c1 ≤ Y (1) < c 1} | Z = 1) 
+
+− P({Y (0) < c 0} ∩ { c1 ≤ Y (1) < c 1} | Z = 1) = P(Y (0) < c 0, Y (1) ≥ c1 | Z = 1) − P(Y (0) < c 0, Y (1) ≥ c1 | Z = 1) 
+
+− P(Y (0) < c 0, Y (1) ≥ c1 | Z = 1) − P(Y (0) < c 0, Y (1) ≥ c1 | Z = 1)  .
+
+Using the relation P(Y (0) < c 0, Y (1) ≥ c1 | Z = 1) = GPN( c0, c 1) · P(Y (1) ≥ c1 | Z = 1), the numerator becomes 
+
+P(c0 ≤ Y (0) < c 0, c 1 ≤ Y (1) < c 1 | Z = 1) = GPN( c0, c 1) · P(Y (1) ≥ c1 | Z = 1) 
+
+− GPN( c0, c 1) · P(Y (1) ≥ c1 | Z = 1) 
+
+− GPN( c0, c 1) · P(Y (1) ≥ c1 | Z = 1) + GPN( c0, c 1) · P(Y (1) ≥ c1 | Z = 1) .
+
+A1 Substituting these into (A2) yields the linear combination: GPN int = w1 · GPN( c0, c 1) − GPN( c0, c 1)
+
+− w2 · GPN( c0, c 1) − GPN( c0, c 1) , (A3) where the weights are given by 
+
+w1 = P(Y (1) ≥ c1 | Z = 1) 
+
+P(Y (1) ≥ c1 | Z = 1) − P(Y (1) ≥ c1 | Z = 1) , (A4) 
+
+w2 = P(Y (1) ≥ c1 | Z = 1) 
+
+P(Y (1) ≥ c1 | Z = 1) − P(Y (1) ≥ c1 | Z = 1) . (A5) It follows that w1 −w2 = 1. This derivation confirms that any interval-based probability of necessity can be calculated as a linear combination of the GPNs, with weights determined by the identifiable marginal distribution of Y (1). 
+
+# A2. Proof of Lemma 1 
+
+Lemma A1 (Fr´ echet–Hoeffding Bounds on GPN) . Under Assumption 1, GPN( x) lies within the interval [ LFH (x), U FH (x)], where 
+
+LFH (x) = max 
+
+
+
+0, 1 − P(Y ≥ c0 | X = x, Z = 0) 
+
+P(Y ≥ c1 | X = x, Z = 1) 
+
+
+
+,UFH (x) = min 
+
+
+
+1, P(Y < c 0 | X = x, Z = 0) 
+
+P(Y ≥ c1 | X = x, Z = 1) 
+
+
+
+.
+
+These bounds are sharp. 
+
+Proof of Lemma 1. The GPN( x) is given by GPN( x) = P(Y (0) < c 0, Y (1) ≥ c1 | X = x)
+
+P(Y (1) ≥ c1 | X = x) .
+
+Let A = {Y (0) < c 0} and B = {Y (1) ≥ c1}. By the Fr´ echet–Hoeffding inequality Fr´ echet (1960), the joint probability is bounded by max(0 , P(A | X = x) + P(B | X = x) − 1) ≤ P(A ∩ B | X = x) ≤ min( P(A | X = x), P(B | X = x)) .
+
+(A6) Dividing by the denominator P(B | X = x) yields the upper bound: 
+
+UFH (x) = min( P(A | X = x), P(B | X = x)) 
+
+P(B | X = x) = min 
+
+
+
+1, P(A | X = x)
+
+P(B | X = x)
+
+
+
+= min 
+
+
+
+1, P(Y < c 0 | X = x, Z = 0) 
+
+P(Y ≥ c1 | X = x, Z = 1) 
+
+
+
+.
+
+A2 Similarly, the lower bound is derived as 
+
+LFH (x) = max(0 , P(A | X = x) + P(B | X = x) − 1) 
+
+P(B | x) = max 
+
+
+
+0, 1 − 1 − P(A | X = x)
+
+P(B | X = x)
+
+
+
+= max 
+
+
+
+0, 1 − P(Y ≥ c0 | X = x, Z = 0) 
+
+P(Y ≥ c1 | X = x, Z = 1) 
+
+
+
+.
+
+Sharpness holds because the Fr´ echet–Hoeffding bounds are pointwise sharp for any pair of marginal distributions. This completes the proof. 
+
+# A3. Proof of Proposition 1 
+
+Proposition A1 (Sharp Bounds under Monotonicity) . Under Assumptions 1 and 2, GPN( x) lies within the interval [ Lmono (x), U mono (x)], where 
+
+Lmono (x) = LFH (x),Umono (x) = min 
+
+
+
+UFH (x), 1 − P(Y ≥ c1 | X = x, Z = 0) 
+
+P(Y ≥ c1 | X = x, Z = 1) 
+
+
+
+.
+
+These bounds are sharp. 
+
+Proof of Proposition 1. We suppress the conditioning on X = x for notational brevity. Let A =
+
+{Y (0) < c 0} and B = {Y (1) ≥ c1}. The numerator of the GPN is P(A ∩ B). Define the event 
+
+C = {Y (0) ≥ c1}.Under Assumption 2 ( Y (1) ≥ Y (0)), the event C implies Y (1) ≥ c1, so C ⊆ B. Additionally, since c1 > c 0, C implies Y (0) ≥ c0, so C ⊆ Ac. Thus, C ⊆ B ∩ Ac = B \ A.Using the decomposition P(A ∩ B) = P(B) − P(B \ A), the inclusion C ⊆ B \ A implies 
+
+P(A ∩ B) ≤ P(B) − P(C). (A7) Combining this with the Fr´ echet–Hoeffding upper bound P(A), the sharp upper bound for the numerator is min( P(A), P(B) − P(C)). Dividing by the denominator P(B) yields 
+
+Umono (x) = min 
+
+ P(A)
+
+P(B) , P(B) − P(C)
+
+P(B)
+
+
+
+= min 
+
+
+
+UFH (x), 1 − P(Y ≥ c1 | Z = 0) 
+
+P(Y ≥ c1 | Z = 1) 
+
+
+
+.
+
+For the lower bound, the event A∩B corresponds to Y (0) < c 0 < c 1 ≤ Y (1), which is consistent with the monotonicity assumption Y (1) ≥ Y (0). Thus, monotonicity imposes no additional constraints on the lower bound beyond the marginal distributions, yielding Lmono (x) = LFH (x). This completes the proof. A3 A4. Proof of Corollary 1 
+
+Corollary A1 (Identification under Monotonicity) . Under Assumptions 1 and 2, if c0 = c1 = c,GPN( x) is point-identifiable, and the identifiability formula is given by GPN( x) = 1 − P(Y (0) ≥ c | X = x)
+
+P(Y (1) ≥ c | X = x) .
+
+Proof of Corollary 1. Define the events E1 = {Y (1) ≥ c} and E0 = {Y (0) ≥ c}. The numerator of GPN( x) corresponds to the joint probability P(E1 ∩ Ec 
+
+> 0
+
+| X = x). Under Assumption 2 ( Y (1) ≥ Y (0)), observing Y (0) ≥ c implies Y (1) ≥ c. Thus, E0 ⊆ E1.Consequently, the joint probability simplifies to 
+
+P(E1 ∩ Ec 
+
+> 0
+
+| X = x) = P(E1 \ E0 | X = x) = P(E1 | X = x) − P(E0 | X = x). (A8) Dividing by the denominator P(E1 | X = x) yields GPN( x) = P(E1 | X = x) − P(E0 | X = x)
+
+P(E1 | X = x) = 1 − P(Y (0) ≥ c | X = x)
+
+P(Y (1) ≥ c | X = x) .
+
+This completes the proof. 
+
+# A5. Consistency with Fr´ echet–Hoeffding Bounds 
+
+We show that the bounds derived from the Gaussian copula with ρ ∈ [−1, 1] coincide with the Fr´ echet–Hoeffding bounds. Recall the copula representation of the GPN( x; ρ)in Proposition 2: GPN( x; ρ) = u0(x) − Cρ(u1(x), u 0(x)) 1 − u1(x) ,
+
+where u1(x) = P(Y (1) ≤ c1 | X = x), u0(x) = P(Y (0) ≤ c0 | X = x), and Cρ is the copula function governing the joint distribution. The Gaussian copula Cρ(u, v ) satisfies the limit properties: lim  
+
+> ρ→1
+
+Cρ(u, v ) = min( u, v ), (A9) lim  
+
+> ρ→− 1
+
+Cρ(u, v ) = max( u + v − 1, 0) . (A10) The lower bound of GPN( x; ρ) is attained when Cρ is maximized ( ρ → 1). Substituting (A9) 
+
+Lcopula (x) = u0(x) − min( u1(x), u 0(x)) 1 − u1(x) .
+
+A4 If u1(x) ≥ u0(x), the numerator equals 0; if u1(x) < u 0(x), it equals u0(x) − u1(x). Thus 
+
+Lcopula (x) = max 
+
+
+
+0, u0(x) − u1(x)1 − u1(x)
+
+
+
+.
+
+This is identical to the Fr´ echet–Hoeffding lower bound LFH = max 
+
+
+
+0, 1 − P(Y ≥c0|X=x,Z =0)  
+
+> P(Y≥c1|X=x,Z =1)
+
+
+
+derived in Lemma 1. The upper bound is attained when Cρ is minimized ( ρ → − 1). Substituting (A10) 
+
+Ucopula (x) = u0(x) − max( u1(x) + u0(x) − 1, 0) 1 − u1(x) .
+
+If u1(x) + u0(x) − 1 < 0, the expression simplifies to u0(x)1−u1(x) . Otherwise, the numerator becomes 
+
+u0(x) − (u1(x) + u0(x) − 1) = 1 − u1(x), yielding a value of 1. Thus 
+
+Ucopula (x) = min 
+
+
+
+1, u0(x)1 − u1(x)
+
+
+
+. (A11) This is identical to the Fr´ echet–Hoeffding upper bound UFH = min 
+
+
+
+1, P(Y <c 0|X=x,Z =0)  
+
+> P(Y≥c1|X=x,Z =1)
+
+
+
+derived in Lemma 1. The equivalence establishes that the proposed copula framework generalizes the classical Fr´ echet– Hoeffding bounds. By restricting the association parameter (e.g., ρ ∈ [0 , 0.5]) based on domain knowledge, the framework strictly tightens the identification interval compared to the worst-case bounds. A5
