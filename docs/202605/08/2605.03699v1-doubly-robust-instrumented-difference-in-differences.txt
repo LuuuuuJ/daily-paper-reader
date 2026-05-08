@@ -1,0 +1,4884 @@
+Title: Doubly Robust Instrumented Difference-in-Differences
+
+URL Source: https://arxiv.org/pdf/2605.03699v1
+
+Published Time: Wed, 06 May 2026 00:56:04 GMT
+
+Number of Pages: 69
+
+Markdown Content:
+# Doubly Robust Instrumented Difference-in-Differences 
+
+Jonas Skjold Raaschou-Pedersen ∗† 
+
+May 6, 2026 
+
+Abstract 
+
+We study estimation of the local average treatment effect on the treated ( LAT T )in instrumented difference-in-differences (IDiD) designs with covariates and staggered instrument exposure. We derive the efficient influence function (EIF) of the target parameter in both panel and repeated cross-sections settings, allowing for two classes of control groups: never-exposed and not-yet-exposed. Building on the EIF, we construct doubly robust estimands and corresponding estimators from first principles. The resulting procedures are the IDiD analogues of the difference-in-differences (DiD) procedures in Callaway and Sant’Anna (2021), targeting LAT T rather than AT T . We further establish a Bloom-type result under one-sided compliance and absorbing treatment, linking LAT T 
+
+to a convex combination of exposure-cohort-specific AT T (g, t ) parameters, making the connection between IDiD and DiD explicit. Asymptotic properties are established under conditions on the remainder term and either Donsker conditions or via cross-fitting. We also construct double machine learning (DML) estimators for the LAT T in both data settings and show their equivalence to cross-fitted estimators. Simulations assess the double robustness and finite-sample performance of the proposed methods. An implementation is available in the Python package idid 1.
+
+Keywords: Difference-in-differences, instrumental variables, causal inference, semipara-metric inference, instrumented difference-in-differences, double machine learning 
+
+> ∗
+
+Center for Social Data Science, University of Copenhagen. Email: jsr-p@sodas.ku.dk .
+
+> †
+
+I thank Andreas Bjerre-Nielsen and Anders Munch for helpful comments. 
+
+> 1
+
+Replication code is available at https://github.com/jsr-p/idid .
+
+1
+
+> arXiv:2605.03699v1 [econ.EM] 5 May 2026
+
+# 1 Introduction 
+
+Difference-in-differences (DiD) is a central tool in applied econometrics for estimating causal effects in non-experimental settings. Recent work, often referred to as the “DiD renaissance”, has exposed important limitations of classical DiD methods, particularly under treatment effect heterogeneity across cohorts and over time. In such settings, coefficients from standard regression specifications can lack a clear causal interpretation. Two broad responses have emerged. One is to refine the underlying regression model. The other is to begin with a well-defined, interpretable statistical target, an estimand , rather than starting from a regression model. Under suitable identifying assumptions, this estimand can be linked to observable quantities and estimated in a way that admits a transparent causal interpretation. A central object in this approach is the efficient influence function (EIF), which is used to construct semiparametrically efficient estimators and valid inference. This perspective is adopted, for example, in the work of Sant’Anna and Zhao (2020) and Callaway and Sant’Anna (2021). However, even modern DiD approaches can fail when the treatment is endogenous. Aclassical remedy is the use of instrumental variables (IV). The integration of IV with DiD remained underdeveloped until Miyaji (2026), who introduced the instrumented difference-in-differences (IDiD) framework with staggered exposure to the instrument. Adopting an estimand-based perspective, Miyaji (2026) defines the causal parameter of interest, the cohort-specific time-varying local average treatment effect on the treated (LAT T (e, t )), and links it to an estimable quantity under identifying assumptions. However, the framework does not incorporate covariates, which are often essential in empirical applications to support the plausibility of the identifying assumptions. In related work, Chen et al. (2025) identify the LAT T parameter of Miyaji (2026) with the inclusion of covariates as a special case of their sequential conditional moment restriction framework for DiD. They derive the efficient influence function of the parameter in the panel data setting and construct a corresponding doubly robust estimator. However, their analysis focuses on the case with a single exposure date to the instrument. Moreover, they leave the case of repeated cross-sections for future work. This paper studies the general case with covariates and staggered exposure to the instrument in both panel data and repeated cross-sections. We derive the efficient influence function for the LAT T parameter in both data settings. The repeated cross-sections case is empirically relevant in settings where balanced panels are unavailable, for example in “trimmed panel” data or repeated survey samples. A novel contribution is that the EIF is derived explicitly using the approach developed by Kennedy (2023). Moreover, as done in Miyaji (2026), the framework of Callaway and Sant’Anna (2021) is extended to the IDiD case allowing the use of not-yet-exposed units as controls, analogous to the not-yet-treated control group in the staggered DiD setting. Both control variables are handled generally by invoking either of the corresponding identifying assumptions. Using the derived EIFs, we construct doubly robust estimands and corresponding estimators for the LAT T parameter in both data settings. The construction follows the estimating equation approach: the estimand solves the population moment condition implied by the EIF, while the estimator solves its empirical counterpart. This construction also underlies the doubly robust estimand and estimators in Sant’Anna and Zhao (2020) (and, by extension, Callaway and Sant’Anna (2021)), although implicitly. The resulting doubly robust estimators have a structure closely related to those proposed by Sant’Anna and Zhao (2020) and Callaway and Sant’Anna (2021). In particular, the estimator takes the form of a ratio of two doubly robust estimators for ATT-type parameters. The numerator corresponds to the outcome of interest and the denominator to the treatment variable, with the instrument exposure variable playing 2the role of the treatment indicator. This structure arises naturally because the identified LAT T 
+
+parameter itself can be written as a ratio of two ATT-type parameters. The estimators reduce to those of Miyaji (2026) in the case of no covariates. The asymptotic behavior of the estimator is established via a decomposition into an influence function term, an empirical process term, and a remainder term (cf. Kennedy (2023)). The remainder term is handled directly in the proofs. The empirical process term is controlled either via Donsker class assumptions or by employing cross-fitting, which permits the use of flexible machine learning methods. We derive DML estimators, which we show are equivalent to the cross-fitted estimator in Kennedy (2023), for both data settings. A simulation study illustrates the finite-sample properties of the proposed estimators. A freely available implementation is provided in the Python package idid .
+
+Contributions This paper makes three contributions. First, we derive the efficient influence function for the LAT T parameter in the IDiD framework with covariates and staggered instrument exposure. The derivation covers both panel data and repeated cross-sections. Second, using the EIF, we construct doubly robust estimands and estimators for the LAT T 
+
+parameter. Third, the paper illustrates how the influence function derivation strategy of Kennedy (2023) can be applied to econometric target parameters. This approach provides a practical alternative to classical tangent space calculations (Newey, 1990; Tsiatis, 2006) and ensures that the resulting estimators target precisely the interpretable estimand specified by the researcher. We also construct Neyman-orthogonal scores for DML estimation using the EIFs and relate IDiD with staggered instrument exposure to DiD with staggered treatment via a Bloom-type result. 
+
+Related literature This paper relates to several strands of the literature. First, it contributes to the literature on IDiD. Miyaji (2026) introduce the IDiD framework and define the LAT T parameter. Chen et al. (2025) extend this framework to allow for covariates and derive a doubly robust estimator in the panel setting with a single exposure date. The present paper studies the general case with covariates and staggered exposure to the instrument in both panel data and repeated cross-sections, and derives corresponding doubly robust estimands and estimators. Second, the paper relates to the literature on semiparametric DiD estimation. Sant’Anna and Zhao (2020) and Callaway and Sant’Anna (2021) develop doubly robust estimators for ATT-type parameters in two-period and staggered adoption settings. The estimators proposed here have a similar structure but tailored to the IDiD framework. Moreover, in deriving the influence function, doubly robust estimand, and estimators for the LATT parameter, we simultaneously derive the corresponding results for the ATT parameter, thereby recovering the results of Sant’Anna and Zhao (2020) and Callaway and Sant’Anna (2021) from first principles. Third, the paper connects to recent work at the intersection of modern semiparametric methods and DiD/IDiD, as well as to recent work on doubly robust IV estimators. For example, Chang (2020) develop DML estimators for DiD in the case of panel data and repeated cross-sections, Deng et al. (2025) develop a TMLE estimator for the two-period DiD parameter, while Lan et al. (2025) propose a meta-learner algorithm for the LAT T in two-period IDiD with panel data. Słoczyński et al. (2022) develop doubly robust estimators for LATE and LATT in cross-sectional IV settings, whose structure resembles the panel data estimator derived here. More broadly, the paper relates to recent work emphasizing clearly defined target parameters in causal inference and IV analysis, including Mogstad and Torgovitsky (2024), who distinguish between forward and reverse engineering approaches to IV parameters. In this paper, we take the forward engineering approach. It also connects to the targeted learning literature Van 3Der Laan and Rose (2011); van der Laan (2015), which emphasizes aligning the estimand with the underlying scientific question and constructing estimators under minimal modeling assumptions, rather than relying on potentially misspecified parametric models. Finally, it relates to the double machine learning literature Chernozhukov et al. (2018), as we derive two DML estimators. 
+
+Organization of the paper Section 2 introduces IDiD, the causal estimands, and the main identification results. Section 2.5 studies aggregated effects. Section 3 develops the doubly robust and DML estimators and establishes their asymptotic properties. Section 4 reports the simulation results. Proofs and derivations are collected in the appendix. Section B provides a detailed account of how the influence function calculations fit into the development of the paper. 
+
+Notation For a measurable function f , let ∥f ∥q,P = ( ∫ |f |qdP )1/q denote its Lq(P ) norm. Write Pnf = n−1 ∑ni=1 f (Xi) for the empirical average and P f = ∫ f dP for the expectation under P . We also write E[f (X)] for the expectation (under the relevant distribution) and use the notation interchangeably where convenient. If f depends on a parameter τ and some nuisance η, we write Pnf (·; τ, η ) = n−1 ∑ni=1 f (Xi; τ, η ) and P f (·; τ, η ) = ∫ f (·; τ, η ) dP . The empirical process is written √n(Pn − P )[ f ]. Calligraphic letters denote supports of random variables, e.g. E, D, and Z for E, D, and Z. For an event A, 1{A} denotes its indicator. We write O for a generic tuple of random variables that is context-dependent. See also Section B.1 for details on the notation for the influence function operator, IF .
+
+# 2 Identification 
+
+2.1 Setup 
+
+We first introduce the notation used throughout the article, building on Miyaji (2026). We consider the general case of T periods. Let Dt ∈ { 0, 1} denote treatment status and Zt ∈ { 0, 1}
+
+the instrument status. Moreover, let D = ( D1, D 2, . . . , D T ) and Z = ( Z1, Z 2, . . . , Z T ) denote the treatment and instrument paths. We make the following assumption on the instrument: 
+
+Assumption 1 (Staggered adoption) . Z1 = 0 2; and for t = 2 , . . . , T :
+
+Zt−1 = 1 = ⇒ Zt = 1 . (1) Assumption 1 enforces that no units are exposed to the instrument in the first period and all units that are exposed in some period stay exposed 3. Assumption 1 implies that the time period where the instrument switches on characterizes the instrument path Z completely. Because of this we define the cohort exposure variable E := min {t | Zt = 1 } and Ee := 1{E = e}.To identify the target parameter, valid control groups are needed. In the DiD literature, commonly used control groups are never-treated and not-yet-treated units. Here, we construct similar control groups but based on the instrument instead of the treatment variable. Hence, we define 
+
+Cnev := 1{E = ∞} , Cnye e,s := 1{Ee = 0 , Z s = 0 }, (2) 
+
+> 2If not already stated explicitly, equalities involving random variables are understood to hold almost surely.
+> 3This is analogous to Assumption 1 on the treatment variable assumed by Callaway and Sant’Anna (2021).
+
+4for the never-exposed and not-yet-exposed control groups, respectively 4. Let ¯e := max i Ei; in the case of never-exposed units, ¯e = ∞, and in the case of only not-yet-exposed units, ¯e < ∞.Denote the support of the exposure variable excluding ¯e as E := supp (E) \ ¯e ⊆ { 2, 3, . . . , T } 5.Denote the generalized propensity scores corresponding to the control variable in use as 
+
+pe(X) := P (Ee = 1 | X, E e + Cnev = 1) , pe,s (X) := P (Ee = 1 | X, E e + Cnye e,s = 1) . (3) The conditioning on Ee + C = 1 restricts attention to the relevant 2 × 2 comparison: units are either in the exposed cohort, Ee = 1 , or in the control group, C = 1 . Within each such slice, the objects behave as in the corresponding two-period setup. 
+
+Potential treatment and outcomes Let Dt(∞) denote a unit’s unexposed potential treatment at time t if they remain untreated through time period T , i.e., if they were not to be exposed to the instrument across all available time periods. For e = 2 , 3, . . . , T , let Dt(e)
+
+denote the potential treatment that a given unit would experience at time t if they were to first become exposed to the instrument in time period e. The observed and potential treatment for a given unit are related through 
+
+Dt = Dt(∞) + ∑
+
+> 2≤e≤T
+
+[Dt(e) − Dt(∞)] · 1{E = e}, (4) i.e., we only observe one potential treatment path for each unit. Let Yt(d, z ) be a given unit’s potential outcome in period t had they been given treatment path D = d and instrument path Z = z. The analogy between the treatment and instrument for the DiD and IDiD frameworks differs in the sense that the instrument does not affect the outcome directly but only through the treatment. Specifically, the instrument creates exogenous variation in the treatment that allows us to identify the effect of the treatment on the outcome in the presence of hidden confounders. This relation between the instrument and the potential outcomes is enforced in the following assumption: 
+
+Assumption 2 (No carryover and exclusion restriction in multiple time periods) .
+
+∀z ∈ Z , ∀d ∈ D , ∀t ∈ { 1, . . . , T } , Y t(d, z ) = Yt(dt), (5) Assumption 2 means that the potential outcomes at time t only depend on the treatment variable at time t, and that they do not depend directly on the instrument. The latter is analogous to the exclusion restriction in the simple cross-sectional IV design. To arrive at an expression for the observed outcome, let Yt(0) denote a given unit’s potential outcome at time t if they are untreated at time period t, and Yt(1) if they are treated at time period t. With (4) we can write the observed outcome in terms of the potential outcomes and treatments as: 
+
+Yt = Yt(0) + [ Yt(1) − Yt(0)] Dt (6) 
+
+= Yt(0) + [ Yt(1) − Yt(0)][ Dt(∞) + ∑
+
+> 2≤e≤T
+
+[Dt(e) − Dt(∞)] · 1{E = e}]. (7)                      
+
+> 4The control variable Cnye e,s is analogous to (1 −Ds)(1 −Gg)in Callaway and Sant’Anna (2021), but here corresponds to units not in the cohort exposed at E=eand not yet exposed at time s, i.e., Zs= 0 . In the appendix, we provide a table comparing the different objects in the two-period DiD, staggered adoption DiD and our case of staggered IDiD; see Table 7.
+> 5Analogous to Callaway and Sant’Anna (2021), when there is a never-exposed cohort, E=∞,Eonly excludes this. In the case of not-yet-exposed control groups only, we exclude the last exposed cohort because there are no available control groups for this cohort.
+
+5Using (7), we define the exposed/unexposed outcomes as: 
+
+Yt(Dt(E)) := 
+
+> 
+
+Yt(Dt(e)) := Yt(0) + [ Yt(1) − Yt(0)] Dt(e), E = e, Yt(Dt(∞)) := Yt(0) + [ Yt(1) − Yt(0)] Dt(∞), E = ∞. (8) The exposed/unexposed outcomes 6 play a key role in the identification results, Propositions 1 and 5. 
+
+Sampling assumption Our results apply to both panel data and repeated cross-sections, which are covered by the following assumption. Let T ∈ { 1, . . . , T } denote the period a unit is observed in the repeated cross-sections case. 
+
+Assumption 3 (Random Sampling or Repeated Cross-Sections) . Assume either: (A) The data are i.i.d. from the distribution of (Y1, . . . , Y T , D 1, . . . , D T , E 2, . . . , E T , C nev , X ).(B) Conditional on T = t, the data are i.i.d. from the distribution of (Yt, D t, E 2, . . . , E T , C nev , X )
+
+with (E2, E 3, . . . , E T , C nev , X ) being invariant to T .Assumption 3(A) implies that the observed data consist of panel data, whereas Assump-tion 3(B) implies that the observed data are i.i.d. draws from the mixture distribution 
+
+FM (y, d, e 2, . . . , e T , c, t, x ) = 
+
+> T∑
+> t=1
+
+λt · FY,D,E 2,E 3,...,E T ,C nev ,X |T (y, d, e 2, . . . , e T , c, x | t), (9) where λt := P (Tt = 1) and Tt := 1{T = t}. This mixture distribution setup is analogous to Abadie (2005); Sant’Anna and Zhao (2020); Callaway and Sant’Anna (2021) but here for the IDiD design with staggered exposure. 
+
+Remark 1. All expectations in the repeated cross-sections case are taken with respect to the mixture measure PM , although we suppress this subscript in the notation. Moreover, in the repeated cross-section setting, for each unit in the pooled sample we observe (Y, D, E 2, . . . , E T , C nev , T, X ).
+
+2.2 The LATT parameter 
+
+The target parameter in this paper is the cohort-specific time-varying local average treatment effect on the treated of Miyaji (2026) 
+
+LAT T (e, t ) := E[Yt(1) − Yt(0) | Ee = 1 , D t(e) > D t(∞)] . (10) Equation (10) is the treatment effect, Yt(1) − Yt(0) , averaged over the subpopulation of compliers, Dt(e) > D t(∞), and the units exposed to the instrument in period e, Ee = 1 . The parameter varies across cohorts E and time t; hence it allows us to answer questions related to the heterogeneity across cohorts and time. In Section 2.5 we show how to aggregate the parameters into aggregated effects; similar to how Callaway and Sant’Anna (2021) aggregates their AT T (g, t ) parameters.                               
+
+> 6As noted by Miyaji (2026), the concept of exposed and unexposed outcomes is not new. In the standard cross-sectional binary IV setup with potential outcomes Y(0) , Y (1) , potential treatments D(0) , D (1) , and instrument Z, the observed treatment can be written as D=D(0) + [ D(1) −D(0)] Z. Substituting this into the observed outcome equation Y=Y(0) + [ Y(1) −Y(0)] Dyields the exposed and unexposed outcomes
+> Y(D(Z)) := Y(0) + [ Y(1) −Y(0)] D(Z)for Z∈ { 0,1}. This is analogous to the staggered exposure setting in eq. (7), which leads to the exposed and unexposed outcomes in eq. (8).
+
+62.3 Identifying assumptions 
+
+Assumption 4 (Monotonicity assumption in multiple time periods) . For all e ∈ E and t ≥ e:
+
+P (Dt(e) ≥ Dt(∞) | X) = 1 a.s. Assumption 4 is analogous to the monotonicity assumption in cross-sectional IV and requires that the instrument, here the exposure cohort variable E, affects the treatment in only one direction. 
+
+Assumption 5 (No anticipation in the first stage) . For all e ∈ E and t < e :
+
+E[Dt(e) | X, E e = 1] = E[Dt(∞) | X, E e = 1] (11) Assumption 5 is analogous to the standard no-anticipation assumption in DiD, with the exposure variable replacing the treatment, and requires that exposure does not affect the treatment prior to the exposure date. The following two assumptions use the never-exposed control group Cnev .
+
+Assumption 6 (Conditional parallel trends in the treatment based on "Never-Exposed" Group) .
+
+For all e, t :
+
+E[Dt(∞) − Dt−1(∞) | X, E e = 1] = E[Dt(∞) − Dt−1(∞) | X, C nev = 1] a.s. (12) 
+
+Assumption 7 (Conditional parallel trends in the unexposed outcome based on "Never-Ex-posed" Groups) . For all e, t :
+
+E[Yt(Dt(∞)) − Yt−1(Dt−1(∞)) | X, E e = 1] = E[Yt(Dt(∞)) − Yt−1(Dt−1(∞)) | X, C nev = 1] a.s. (13) The following two assumptions are analogous to the previous two, but use the not-yet-exposed control group Cnye e,s .
+
+Assumption 8 (Conditional parallel trends in the treatment based on "Not-Yet-Exposed" Groups) . For all e, t :
+
+E[Dt(∞) − Dt−1(∞) | X, E e = 1] = E[Dt(∞) − Dt−1(∞) | X, C nye e,s = 1] a.s. (14) 
+
+Assumption 9 (Conditional parallel trends in the unexposed outcome based on "Not-Yet-Ex-posed" Groups) . For all e, t :
+
+E[Yt(Dt(∞)) − Yt−1(Dt−1(∞)) | X, E e = 1] = E[Yt(Dt(∞)) − Yt−1(Dt−1(∞)) | X, C nye e,s = 1] a.s. (15) In the identification proofs we invoke either pair of the four assumptions above depending on the control variable used. If using the never-exposed control group Cnev , we assume Assump-tions 6 and 7, and if using the not-yet-exposed control group Cnye e,t , we assume Assumptions 8 and 9. Writing C for a generic control variable allows us to encompass both control variables in the identification arguments. 
+
+Assumption 10 (Overlap) . For each t ∈ { 2, 3, . . . , T } , e ∈ E , there exist some c > 0 such that P (Ee = 1) > c and P (Ee = 1 | X) < 1 − c a.s. Assumption 10 is a standard overlap condition. It requires that, for each exposure cohort, the probability of exposure is bounded away from zero, and from one conditional on covariates. This ensures that all relevant subpopulations have a non-negligible probability of being both exposed and unexposed, which is necessary for identification and stable estimation. 72.4 Nonparametric identification of the group-time LATT parame-ter 
+
+2.4.1 Notation 
+
+To derive the main identification result, we introduce the central objects and notation below. Let Vt be a generic random variable and define 
+
+∆t−e+1 Vt := Vt − Ve−1,
+
+i.e. the change of Vt between period t and the pre-exposure period e − 1.
+
+Panel data. For panel data, define the outcome regression functions for treated, never-exposed, and not-yet-exposed units as 
+
+mtrt,p e,t (X) := E[∆ t−e+1 Yt | X, E e = 1] , (16) 
+
+mnev,p e,t (X) := E[∆ t−e+1 Yt | X, C nev = 1] , mnye,p e,t (X) := E[∆ t−e+1 Yt | X, C nye e,t = 1] .
+
+Analogously, define gtrt,p e,t (X), gnev,p e,t (X), and gnye,p e,t (X) with outcome ∆t−e+1 Dt.
+
+Repeated cross-sections. For repeated cross-sections, the outcome regression functions are defined as 
+
+mtrt,rc e,t (X) := E[Y | X, E e = 1 , T = t], (17) 
+
+mnev,rc e,t (X) := E[Y | X, C nev = 1 , T = t], mnye,rc e,s,t (X) := E[Y | X, C nye e,s = 1 , T = t],
+
+with corresponding definitions gtrt,rc e,t (X), gnev,rc e,t (X), and gnye,rc e,s,t (X) obtained by replacing Y
+
+with D.
+
+Encompassing both never exposed and not-yet-exposed A generic control variable is written as C and the corresponding propensity as p(X). Below we write mc,p e,t (X), g c,p e,t (X) for a generic control variable outcome regression function in the case of panel data, and similarly 
+
+mc,rc e,s,t (X), g c,rc e,s,t (X) in the case of repeated cross-sections. The proofs for the not-yet-exposed and never-exposed cases are identical, differing only in the control indicator and propensity score. To avoid repetition, we present a unified argument covering both cases. The results follow under Assumptions 6 and 7 for the never-exposed case and under Assumptions 8 and 9 for the not-yet-exposed case. This is done for both the panel-data and repeated-cross-sections settings. 
+
+2.4.2 Panel Data Proposition 1 (Identification Panel Data) . Fix e ∈ E and t ≥ e. Suppose Assumption 3(A) and assumptions 1, 2, 4, 5 and 10 hold. Let C denote a generic control-group indicator, where either C = Cnev or C = Cnye e,t . If C = Cnev , additionally assume Assumptions 6 and 7. If 
+
+C = Cnye e,t , additionally assume Assumptions 8 and 9. Let mc,p e,t (X) and gc,p e,t (X) be the mean functions eq. (16) for a generic control variable. Then the cohort-specific time-varying local average treatment effect on the treated eq. (10) is identified by 
+
+LAT T (e, t ) = E[mtrt,p e,t (X) − mc,p e,t (X) | Ee = 1] 
+
+E[gtrt,p e,t (X) − gc,p e,t (X) | Ee = 1] =: τ pe,t . (18) Proof in Section A.1. 
+
+Remark 2. The identification result in eq. (18) is closely related to Chen et al. (2025), but adapted here to also including the case of not-yet-exposed controls. Its general structure also mirrors the results of Frölich and Lechner (2010) and Słoczyński et al. (2022), derived here for panel data in the IDiD framework allowing for the different control group variables in eq. (2). 8Influence functions and construction of the DR Estimands Below we derive DR estimands and corresponding DR estimators for the LAT T (e, t ) in both data settings. The steps are as follows: 1. Identification yields an initial estimand which is a ratio of two ATT-type parameters, e.g. eqs. (18) and (33). 2. We derive the efficient influence function (EIF) of the initial estimand 7. This EIF involves weights that are normalized to Hájek-type weights that are variance stabilizing cf. (Sant’Anna and Zhao, 2020). 3. Solving the population version of the estimating equation using the EIF for the target parameter yields the doubly robust (DR) estimand. 4. We derive the EIF of the DR estimand 8.5. The estimator is the plug-in estimator of the DR estimand, with inference based on the estimated influence function from step 4. As the above procedure shows, the EIF of the target parameter is central to deriving the DR estimands. A key feature is that the identified LATT parameters are ratios of ATT components and that the staggered exposure setting reduces to two-period comparisons. This allows us to start from the canonical two-period DiD case targeting the ATT parameter and derive the DR estimands and EIFs in this setting. As part of this derivation, we recover the DR DiD estimands of Sant’Anna and Zhao (2020) from first principles. We then exploit the ratio structure of the LATT parameters together with the EIF machinery of Kennedy (2023) developed for our setting in Section B to combine the components. Constructing the resulting estimators requires additional work and is taken up in Section 3. 
+
+Weights definition As noted in Step 3 of the procedure, the doubly robust estimands and their corresponding EIFs rely on Hájek-type normalized weights. The construction of these weights in both sampling settings follows the same principle as in Sant’Anna and Zhao (2020); Callaway and Sant’Anna (2021): the control weights are normalized to sum to one in sample (in contrast to the unnormalized control weights appearing in the EIF derived in Step 2). The weights in the panel data setting are: 
+
+wtrt,p e := Ee
+
+ρ , ρ := E[Ee] (19) 
+
+wnev,p e := Cnev pe(X)1 − pe(X)/E 
+
+> [
+
+Cnev pe(X)1 − pe(X)
+
+> ]
+
+(20) 
+
+wnye,p e,t := Cnye e,t 
+
+pe,t (X)1 − pe,t (X)/E 
+
+> [
+
+Cnye e,t 
+
+pe,t (X)1 − pe,t (X)
+
+> ]
+
+(21) The weights in the repeated cross-sections setting are: 
+
+wtrt,rc e,t := Ee · 1{T = t}
+
+ρtrt,rc e,t 
+
+, ρtrt,rc e,t := E[Ee · 1{T = t}] (22) 
+
+wnev,rc e,t := Cnev · 1{T = t}pe(X)1 − pe(X) /E  
+
+> [
+
+Cnev · 1{T = t}pe(X)1 − pe(X)
+
+> ]
+
+(23) 
+
+wnye,rc e,s,t := Cnye e,s · 1{T = t}pe,s (X)1 − pe,s (X) /E  
+
+> [
+
+Cnye e,s · 1{T = t}pe,s (X)1 − pe,s (X)
+
+> ]
+
+. (24)  
+
+> 7Kennedy distinguishes between the influence function for a parameter and that for an estimator, referring to the former as an influence curve . We do not adopt this distinction in terminology.
+> 8The normalization in Step 2 requires an adjusted influence function that accounts for the normalization.
+
+9In the repeated cross-sections setting, we further define: 
+
+wtrt,rc e := wtrt,rc e,t − wtrt,rc e,e −1, (25) 
+
+wc,rc e := wc,rc e,t,t − wc,rc e,t,e −1 (26) for wc,rc e,t,s a generic control-weight. 
+
+Estimand and EIF Proposition 2. Fix e ∈ E and t ≥ e. Suppose the conditions of Proposition 1 hold. Let C
+
+denote a generic control-group indicator, where either C = Cnev or C = Cnye e,t , and let p(X)
+
+denote the corresponding propensity score. Write mc,p e,t (X) and gc,p e,t (X) for the mean functions in eq. (16) corresponding to the chosen control group. For eq. (18) , define τ pe,t =: τ p,num e,t /τ p,den e,t .Then the efficient influence function for τ pe,t is 
+
+φp(O; τ pe,t , η pe,t ) (27) 
+
+= 1
+
+τ p,den e,t 
+
+[{wtrt,p e − wc,p e,t }{ ∆t−e+1 Yt − mc,p e,t (X)} − τ pe,t {wtrt,p e − wc,p e,t }{ ∆t−e+1 Dt − gc,p e,t (X)}],
+
+and the nonparametric efficiency bound equals E[{φp(O; τ pe,t , η pe,t )}2], where ηpe,t = ( ρ, p, m c,p e,t , g c,p e,t )
+
+is the nuisance-function tuple. 
+
+Proof in Section B.4.1. 
+
+DR estimands and estimator decomposition In the following, we denote a generic estimand by τ and its plug-in estimator by ˆτ . A generic decomposition of this plug-in estimator into a CLT, empirical process and remainder term, similar to Kennedy (2023) 9, can be written as: 
+
+√n(ˆ τ − τ ) (28) 
+
+= √n(Pn − P )φ(·; τ, η ) + √n(Pn − P )[ φ(·; τ, ˆη) − φ(·; τ, η )] + √nP φ (·; τ, ˆη) + oP (1) 
+
+where φ(·; τ, η ) is the influence function and η is a tuple of nuisance parameters. We derive our doubly robust estimands by using the EIF, φ(·; τ, η ), corresponding to τ and solving 
+
+P φ (·; τ dr , η ) = 0 (29) for the new target parameter τ dr , where the superscript "dr" means doubly robust. This is also how the estimands of Sant’Anna and Zhao (2020) are derived (although not explicitly shown in their paper). In Section B we show this from first principles, hence demystifying where the estimands come from, building up to our DR estimands for the LAT T parameter in both data settings. The resulting estimators are of the "estimating equation form", i.e., for ˆη a generic estimator of the nuisance, the estimator, ˆτ , solves: 
+
+Pnφ(·; ˆ τ , ˆη) = 0 . (30) Note that the DR estimands, e.g. the τ dr estimand found through eq. (29), have their own influence functions, which differ from those of the original parameter, e.g. τ . Denote this influence function for the DR estimand as φdr (·; τ dr , η dr ). We use this influence function     
+
+> 9We depart from the notation in Kennedy (2023) by indexing the EIF explicitly by the target parameter and nuisance functions, φ(·;τ, η ), rather than by the distribution Palone.
+
+10 to conduct inference for the DR estimators. This is also what Sant’Anna and Zhao (2020) does. However, Sant’Anna and Zhao (2020) also study the estimation effects arising from the nuisance function estimators of ηdr . The estimation effects arise from their linearization of their estimators and entails Taylor expanding the components building up to their influence function. In the IDiD setting, the estimand and estimators are ratios and hence the Taylor expansion becomes significantly more tedious to derive. Hence, in this paper, we do not pursue this approach. Instead, we take the more general approach of either assuming Donsker conditions or using cross-fitting to tame the empirical process term in eq. (28) cf. Kennedy (2023). The remainder term is handled explicitly in the proofs; see Propositions 11 and 12. A drawback of taking the more general approach is that our estimator does not inherit the DR-for-inference property as in Sant’Anna and Zhao (2020); we leave this for future work (see also Dukes et al. (2024)). 
+
+DR Estimand and EIF Proposition 3. Fix e ∈ E and t ≥ e. Suppose the conditions of Proposition 1 hold. Then the doubly robust panel-data estimand for LAT T (e, t ) is 
+
+τ dr,p e,t = E[{wtrt,p e − wc,p e,t }{ ∆t−e+1 Yt − mc,p e,t (X)}]
+
+E[{wtrt,p e − wc,p e,t }{ ∆t−e+1 Dt − gc,p e,t (X)}] . (31) Proof in Section C.2.1. 
+
+Remark 3. The estimand in eq. (31) resembles a ratio of two AT T dr (g, t ; 0) estimands from Callaway and Sant’Anna (2021), with the treatment replaced by Ee and Dt used as the outcome in the denominator. It is also related to the cross-sectional LATT estimand in Słoczyński et al. (2022). As in that work, the choice of nuisance models follows the outcome structure: for count outcomes, a Poisson model for mc,p (X) is natural, while for the denominator, a binomial mean model for 
+
+gc,p (X) is appropriate. The resulting plug-in estimator, discussed in Section 3, is related to the estimator of LATE in Tan (2006) in the cross-sectional IV case. 
+
+Proposition 4. Fix e ∈ E and t ≥ e. Let C denote a generic control-group indicator, where either C = Cnev or C = Cnye e,t . Write mc,p e,t (X) and gc,p e,t (X) for the corresponding control-group mean functions. Define the residuals 
+
+εY,p e,t := ∆ t−e+1 Yt − mc,p e,t (X), εD,p e,t := ∆ t−e+1 Dt − gc,p e,t (X),
+
+and τ dr,p e,t =: τ dr,p,num e,t /τ dr,p,den e,t . Let wc,p e,t be the control-weight for the generic control variable. Then the influence function of the doubly robust estimand eq. (31) is 
+
+φdr,p (O; τ dr,p e,t , η dr,p e,t ) = 1
+
+τ dr,p,den e,t 
+
+> [
+
+wtrt,p e {εY,p e,t − E[wtrt,p e εY,p e,t ]} − wc,p e,t {εY,p e,t − E[wc,p e,t εY,p e,t ]} (32) 
+
+− τ dr,p e,t (wtrt,p e {εD,p e,t − E[wtrt,p e εD,p e,t ]} − wc,p e,t {εD,p e,t − E[wc,p e,t εD,p e,t ]})
+
+> ]
+
+where ηdr,p e,t = ( ρ, p, m c,p e,t , g c,p e,t ) is the tuple of nuisance functions. 
+
+Proof in Section D.0.1. 11 2.4.3 Repeated Cross-Sections Proposition 5 (Identification in repeated cross-sections) . Fix e ∈ E and t ≥ e. Suppose Assumption 3(B) and assumptions 1, 2, 4, 5 and 10 hold. Let C denote a generic control-group indicator, where either C = Cnev or C = Cnye e,t , and let p(X) denote the corresponding propensity score. Write mc,rc e,s,t (X) and gc,rc e,s,t (X) for the mean functions in eq. (17) corresponding to the chosen control group (in the never-exposed case, the middle subscript s is redundant). If C = Cnev , additionally assume Assumptions 6 and 7. If C = Cnye e,t , additionally assume Assumptions 8 and 9. Then the cohort-time local average treatment effect on the treated is identified by 
+
+LAT T (e, t ) = E[mtrt,rc e,t (X) − mtrt,rc e,e −1(X) − [mc,rc e,t,t (X) − mc,rc e,t,e −1(X)] | Ee = 1] 
+
+E [
+
+gtrt,rc e,t (X) − gtrt,rc e,e −1(X) − [gc,rc e,t,t (X) − gc,rc e,t,e −1(X)] | Ee = 1 ] =: τ rc e,t . (33) Proof in Section A.2. 
+
+Estimand and EIF In the repeated cross-sections case, we denote generic mean functions for both control groups in eq. (17) by mc,rc e,s,T (X) and gc,rc e,s,T (X) (again, in the never-exposed case, the index s is not used). This notation allows us to treat both cases jointly. Using this notation, we define the control mean functions unified across periods e − 1 and t as: 
+
+mc,rc e,Y (X) := 1{T = e − 1} · mc,rc e,t,e −1(X) + 1{T = t} · mc,rc e,t,t (X), (34) 
+
+gc,rc e,D (X) := 1{T = e − 1} · gc,rc e,t,e −1(X) + 1{T = t} · gc,rc e,t,t (X), (35) and 
+
+mtrt,rc e,Y (X) := 1{T = e − 1} · mtrt,rc e,e −1(X) + 1{T = t} · mtrt,rc e,t (X), (36) 
+
+gtrt,rc e,D (X) := 1{T = e − 1} · gtrt,rc e,e −1(X) + 1{T = t} · gtrt,rc e,t (X), (37) where implicitly, because we only consider 2 × 2 comparisons, 1{T = e − 1} + 1{T = t} = 1 .
+
+Proposition 6. Let C be either of the control variables and p(X) the corresponding propensity. Suppose the conditions of Proposition 5 hold. For eq. (33) , define τ rc e,t =: τ rc,num e,t /τ rc,den e,t . Then the efficient influence function for the LATT when repeated cross-sections are available equals: 
+
+φrc (O; τ rc e,t , η rc e,t ) = 1
+
+τ rc,den e,t 
+
+[wtrt,rc e {Y − mtrt,rc e,Y (X)} − wc,rc e {Y − mc,rc e,Y (X)} (38) 
+
++ Ee
+
+ρ {mtrt,rc e,t (X) − mtrt,rc e,e −1(X) − [mc,rc e,t,t (X) − mc,rc e,t,e −1(X)] }− τ rc e,t (wtrt,rc e {D − gtrt,rc e,Y (X)} − wc,rc e {D − gc,rc e,D (X)}
+
++ Ee
+
+ρ {gtrt,rc e,t (X) − gtrt,rc e,e −1(X) − [gc,rc e,t,t (X) − gc,rc e,t,e −1(X)] })] 
+
+where the nonparametric efficiency bound equals E[{φrc (O; τ rc e,t , η rc e,t )}2], and where ηrc e,t =(ρ, λ e−1, λ t, p, m trt,rc e,t , m trt,rc e,e −1, g trt,rc e,t , g trt,rc e,e −1mc,rc e,t,t , m c,rc e,t,e −1, g c,rc e,t,t , g c,rc e,t,e −1) is the tuple of nuisance func-tions. 
+
+Proof in Section B.4.2. 12 DR Estimand and EIF Proposition 7. Fix e ∈ E and t ≥ e. Suppose the conditions of Proposition 5 hold. Then the doubly robust repeated-cross-section estimand for LAT T (e, t ) is 
+
+τ dr,rc e,t = E[{wtrt,rc e − wc,rc e }{ Y − mc,rc e,Y (X)}] + κY,rc e,t 
+
+E[{wtrt,rc e − wc,rc e }{ D − gc,rc e,Y (X)}] + κD,rc e,t 
+
+, (39) 
+
+where 
+
+κY,rc e,t (40) 
+
+:= E[mtrt,rc e,t (X) − mc,rc e,t,t (X) | Ee = 1] − E[mtrt,rc e,t (X) − mc,rc e,t,t (X) | Ee = 1 , T = t]
+
+− (
+
+E[mtrt,rc e,e −1(X) − mc,rc e,t,e −1(X) | Ee = 1] − E[mtrt,rc e,e −1(X) − mc,rc e,t,e −1(X) | Ee = 1 , T = e − 1] )
+
+,κD,rc e,t (41) 
+
+:= E[gtrt,rc e,t (X) − gc,rc e,t,t (X) | Ee = 1] − E[gtrt,rc e,t (X) − gc,rc e,t,t (X) | Ee = 1 , T = t]
+
+− (
+
+E[gtrt,rc e,e −1(X) − gc,rc e,t,e −1(X) | Ee = 1] − E[gtrt,rc e,e −1(X) − gc,rc e,t,e −1(X) | Ee = 1 , T = e − 1] )
+
+.
+
+Proof in Section C.2.2. 
+
+Remark 4. The estimand in eq. (39) again looks familiar; it resembles a ratio of two AT T dr,rc (g, t ; 0) 
+
+estimands from Callaway and Sant’Anna (2021), with the treatment replaced by the exposure variable Ee and D used as the outcome in the denominator. Also, eq. (39) has a similar form as eq. (31), a weighted residual including the control units mean function, but in the repeated cross-sections setting also including the terms κY,rc e,t , κ D,rc e,t , consisting of differences between the treated and control mean functions in both periods. 
+
+Proposition 8. For the doubly robust estimand eq. (39) , define 
+
+εY,trt,rc e,t := Y − mtrt,rc e,t (X), εY,c,rc e,s,t := Y − mc,rc e,s,t (X), (42) 
+
+εD,trt,rc e,t := D − gtrt,rc e,t (X), εD,c,rc e,s,t := D − gc,rc e,s,t (X),τ dr,rc e,t =: τ dr,rc,num e,t /τ dr,rc,den e,t , and: 
+
+mtrt,rc e, ∆ (X) := mtrt,rc e,t (X) − mtrt,rc e,e −1(X), mc,rc e,t, ∆(X) := mc,rc e,t,t (X) − mc,rc e,t,e −1(X). (43) 
+
+Then the efficient influence function of eq. (39) is 
+
+φdr,rc (O; τ dr,rc e,t ; ηdr,rc e,t ) (44) 
+
+= 1
+
+τ dr,rc,den e,t 
+
+[
+
+φdr,rc num (O; τ dr,rc,num e,t ; ηdr,rc,num e,t ) − τ dr,rc e,t φdr,rc den (O; τ dr,rc,den e,t ; ηdr,rc,den e,t )
+
+]
+
+,
+
+where 
+
+φdr,rc num (O; τ dr,rc,num e,t ; ηdr,rc,num e,t ) (45) 
+
+:= wtrt,rc e,t 
+
+{
+
+εY,trt,rc e,t − E[wtrt,rc e,t εY,trt,rc e,t ]}
+
++ wtrt,p e
+
+{
+
+mtrt,rc e, ∆ (X) − E[wtrt,p e mtrt,rc e, ∆ (X)] }
+
+− [
+
+wtrt,rc e,e −1
+
+{
+
+εY,trt,rc e,e −1 − E[wtrt,rc e,e −1εY,trt,rc e,e −1 ]}
+
++ wtrt,p e
+
+{
+
+mc,rc e,t, ∆(X) − E[wtrt,p e mc,rc e,t, ∆(X)] }] 
+
+− [wc,rc e,t,t 
+
+{
+
+εY,c,rc e,t,t − E[wc,rc e,t,t εY,c,rc e,t,t ]}
+
+− wc,rc e,t,e −1
+
+{
+
+εY,c,rc e,t,e −1 − E[wc,rc e,t,e −1εY,c,rc e,t,e −1]}
+
+]
+
+φdr,rc den (O; τ dr,rc,den e,t ; ηdr,rc,den e,t ) (46) 
+
+:= wtrt,rc e,t 
+
+{
+
+εD,trt,rc e,t − E[wtrt,rc e,t εD,trt,rc e,t ]}
+
++ wtrt,p e
+
+{
+
+gtrt,rc e, ∆ (X) − E[wtrt,p e gtrt,rc e, ∆ (X)] }
+
+− [
+
+wtrt,rc e,e −1
+
+{
+
+εD,trt,rc e,e −1 − E[wtrt,rc e,e −1εD,trt,rc e,e −1 ]}
+
++ wtrt,p e
+
+{
+
+gc,rc e,t, ∆(X) − E[wtrt,p e gc,rc e,t, ∆(X)] }] 
+
+− [wc,rc e,t,t 
+
+{
+
+εD,c,rc e,t,t − E[wc,rc e,t,t εD,c,rc e,t,t ]}
+
+− wc,rc e,t,e −1
+
+{
+
+εD,c,rc e,t,e −1 − E[wc,rc e,t,e −1εD,c,rc e,t,e −1]}
+
+],
+
+13 and ηdr,rc e,t = ( ρ, λ e−1, λ t, p, m trt,rc e,t , m trt,rc e,e −1, g trt,rc e,t , g trt,rc e,e −1, m c,rc e,t,t , m c,rc e,t,e −1, g c,rc e,t,t , g c,rc e,t,e −1) is the nuisance-function tuple. 
+
+Proof in Section D.0.2. 
+
+2.4.4 Double Robustness Proposition 9. Fix e ∈ E and t ≥ e, and let C denote a generic control-group indicator, where either C = Cnev or C = Cnye e,t and p(X) the corresponding propensity. Let π(X) be a working model for the propensity p(X). In the panel data setting, let μc,p e,t (X) and ηc,p e,t (X) be working models of mc,p e,t (X) and gc,p e,t (X), respectively. Similarly, in the repeated cross-sections setting, let μc,rc e,Y (X) and ηc,rc e,Y (X) be the working models of mc,rc e,Y (X) and gc,rc e,D (X), respectively. Assume the conditions of Propositions 1 and 5 hold. Then the following statements hold: (a) In the panel-data setting, 
+
+τ dr,p e,t = LAT T (e, t )
+
+if either (but not necessarily both) π(X) = p(X) almost surely, or 
+
+μc,p e,t (X) = mc,p e,t (X) and ηc,p e,t (X) = gc,p e,t (X)
+
+almost surely. (b) In the repeated cross-section setting, 
+
+τ dr,rc e,t = LAT T (e, t )
+
+if either (but not necessarily both) π(X) = p(X) almost surely, or 
+
+μc,rc e,Y (X) = mc,rc e,Y (X) and ηc,rc e,Y (X) = gc,rc e,D (X)
+
+almost surely. 
+
+Proof in Section A.3. 
+
+2.4.5 Bloom-type result 
+
+In the special case of absorbing treatment (defined below) and one-sided compliance (i.e., no units unexposed to the instrument are treated), the LAT T (e, t ) parameter can be related to the instrument-exposure-cohort-specific AT T (g, t ) parameters of Callaway and Sant’Anna (2021). The following result shows this: 
+
+Proposition 10 (Bloom-type result) . Assume that panel data is available. Let C denote a generic control-group indicator, where either C = Cnev or C = Cnye e,t . Assume that treatment is an absorbing state, i.e. D1 = 0 and 
+
+Dt−1 = 1 = ⇒ Dt = 1 , t ∈ { 2, 3, . . . , T } , (47) 
+
+and one-sided compliance: 
+
+C = 1 = ⇒ Dt = 0 . (48) 
+
+Then: 
+
+LAT T (e, t ) = ∑
+
+> g≤t
+
+AT T (g, t, e )P (Gg = 1 | Dt = 1 , E e = 1) (49) 14 where 
+
+AT T (g, t, e ) := E[Yt(g) − Yt(0) | Gg = 1 , E e = 1] , (50) 
+
+is an exposure-cohort-specific AT T (g, t )-estimand of Callaway and Sant’Anna (2021) and 
+
+G := min {t | Dt = 1 }; Gg := 1{G = g} the corresponding treatment cohort dummies. This result shows that the local average treatment effect on the treated in period t for exposure cohort 
+
+e, LAT T (e, t ), under absorbing treatment and one-sided compliance, identifies an exposure-cohort-specific weighted average of AT T (g, t )’s for all those treated by time t.
+
+Proof in Section A.3. 
+
+Remark 5.
+
+1. Proposition 10 is a Bloom-type result (Bloom, 1984; Angrist and Pischke, 2009) for the case of IDiD. Moreover, eq. (49) is a “sensible causal estimand” (Mogstad and Torgovitsky, 2024) in the sense that it is a convex combination of the causal AT T (g, t, e ) estimands with weights P (Gg = 1 | Dt = 1 , E e = 1) , g ≤ t.2. Proposition 10 is useful in randomized experiments with one-sided non -compliance, where treatment received Dt may differ from treatment assignment Zt. In this case, the random assignment Zt can be used as an instrument for the received treatment Dt, allowing researchers to approximate the treatment effect in the presence of hidden confounding, extending the cross-sectional Bloom result, as described in Angrist and Pischke (2009), to the IDiD framework. In the two-period case ( T = 2 ), there is only a single exposed and treatment cohort. By eq. (49), LAT T (2 , 2) = AT T (2 , 2, 2) , which coincides with the DiD estimand AT T (2 , 2) , implying that IDiD exactly recovers the average treatment effect on the treated. 3. The result is also related to the point that "IDiD is a natural generalization of DiD, and the differences between the two designs arise because IDiD allows the non-compliance of the assigned treatment" as stated in Miyaji (2025). Here, because of the mechanical one-sided compliance, we can write the LAT T (e, t ) as a convex average of exposure-cohort-specific staggered DiD estimands, making the link between IDiD with staggered exposure and DiD with staggered treatment explicit. 4. An analogous result obtains under the one-sided compliance condition, Ee = 1 = ⇒ Dt =1. In this case, LAT T (e, t ) admits a representation as a convex average of treatment effects for the non-treated (cf. Angrist and Pischke (2009)); this result is omitted for brevity. 5. The result extends to repeated cross-sections with analogous arguments; details are again omitted for brevity. 
+
+2.4.6 Group-level difference estimand 
+
+Researchers often compare the target parameter across subgroups. This can be handled explicitly by expressing subgroup parameters as functionals of the full population distribution. Differences are then represented by embedding the corresponding influence functions in a common full-sample framework, weighted by the group indicator and its probability. To see this, let B ∈ { m, f } denote a group indicator. We consider the difference in subgroup-specific LATTs, LAT T ∆(e, t ) := LAT T m(e, t ) − LAT T f (e, t ), for example based on the DR estimand in the panel data setting: 
+
+τ dr,p, ∆ 
+
+> e,t
+
+:= τ dr,p,m e,t − τ dr,p,f e,t , (51) where each component admits an influence function under the corresponding subgroup distri-bution, φdr,p,m (O; τ dr,p,m e,t , η m) and φdr,p,f (O; τ dr,p,f e,t , η f ), respectively. These subgroup influence 15 functions can be embedded into the full population as: 
+
+φdr,p (O; τ dr,p, ∆ 
+
+> e,t
+
+, η dr,p, ∆ 
+
+> e,t
+
+) (52) 
+
+= 1{B = m}
+
+P (B = m) φdr,p,m (O; τ dr,p,m e,t , η dr,p,m e,t ) − 1{B = f }
+
+P (B = f ) φdr,p,f (O; τ dr,p,f e,t , η dr,p,f e,t )
+
+where ηdr,p, ∆ 
+
+> e,t
+
+= ( ηdr,p,m e,t , η dr,p,f e,t ) collects the subgroup-specific nuisance functions. Thus, inference on eq. (51) can be based on eq. (52). The group-level difference estimand in the case of repeated cross-sections is constructed in the exact same way and is omitted for brevity. 
+
+2.5 Aggregated effects 
+
+As shown in Miyaji (2026), the LAT T (e, t ) parameters can be aggregated into estimands of interest, in a manner entirely analogous to the aggregation of AT T (g, t ) parameters in Callaway and Sant’Anna (2021). In this section, we apply the EIF machinery developed in Section B to derive the influence function for a general weighted estimand θ, defined below. Consider an estimand that aggregates the LAT T (e, t ) parameters: 
+
+θ := ∑
+
+> e∈E T∑
+> t=2
+
+w(e, t ) LAT T (e, t ), (53) where w(e, t ) denotes a (possibly data-dependent) weighting scheme. To ease notation, define 
+
+τe,t := LAT T (e, t ). Let I := {(e, t ) ∈ E × { 2, 3, . . . , T } | Ae,t } be a set of indices that picks out the correct cohorts and time indices related to the summary parameter θ. By the product rule eq. (107), the EIF of the weighted estimand eq. (53) equals: 
+
+φθ(O; {τi}i∈I ; {ηi}i∈I ) := ∑
+
+> (e,t )∈I
+
+[IF (w(e, t )) τe,t + w(e, t )IF (τe,t )] . (54) 
+
+Weighted estimands and weights Define the cohort-specific average exposed effect on the treated in the first stage, i.e., the share of the compliers in cohort e in period t:
+
+AET (e, t ) := P (Dt(e) > D t(∞) | E = 1) . (55) Table 1 shows the weighted estimands and their corresponding weights. For comparison, we also include the same aggregation procedure as in Callaway and Sant’Anna (2021), but without the cohort-specific time-varying complier weights. This allows researchers to choose whether to weight by complier shares or not, although the complier-weighted version is the most natural when the target parameter is the LATT. The weights are themselves estimands, so the tools developed in Section B.1 can be applied to derive influence functions for each weight in Table 1. With these in hand, we apply eq. (54) to obtain the influence function of the weighted estimand. As is evident from Table 1, most of the weights consist of sums of cohort probabilities conditional on different events, and the time-varying complier share AET (e, t ). For instance, for the weighted estimand θo,IV W , the main component of the weight has influence function (using the quotient rule eq. (113)) 
+
+IF (P (E = e | E ≤ T )) (56) 
+
+= 1
+
+P (E ≤ T ) [IF (P (E = e)) − P (E = e | E ≤ T )IF (P (E ≤ T ))] 
+
+16 with IF (P (E ≤ T )) = ∑ 
+
+> e≤T
+
+IF (P (E = e)) and IF (P (E = e)) = 1{E = e} − P (E = e) cf. eq. (111). The influence function of the weight can now be derived using eq. (56) and the quotient-rule eq. (113) summing the correct terms. 
+
+Weighted Estimand w(e, t )
+
+IDiD 
+
+θIV es (l) 1{e + l ≤ T } 1{t = e + l}P (E = e | E + l ≤ T ) AET (e,t )∑    
+
+> e∈E P(E=e|E+l≤T )AET (e,t )
+
+θIV bal,es (l, l ′) 1{e + l′ ≤ T } 1{t = e + l}P (E = e | E + l′ ≤ T ) AET (e,t )∑    
+
+> e∈E P(E=e|E+l′≤T )AET (e,t )
+
+θIV sel (˜ e) 1{t ≥ e}1{e = ˜ e} AET (e,t )
+
+∑T  
+
+> t=˜ eAET (e,t )
+
+θIV c (˜ t) 1{t ≥ e}1{t = ˜ t}P (E = e | E ≤ t) AET (e,t )∑   
+
+> e∈E P(E=e|E≤t)AET (e,t )
+
+θcumm,IV c (˜ t) 1{t ≥ e}1{t ≤ ˜t}P (E = e | E ≤ t) AET (e,t )∑   
+
+> e∈E P(E=e|E≤t)AET (e,t )
+
+θo,IV W 1{t ≥ e}P (E = e | E ≤ T )
+
+/ ∑
+
+> e∈E
+
+∑T 
+
+> t=2
+
+1{t ≥ e}P (E = e | E ≤ T )
+
+θo,IV sel 1{t ≥ e}P (E = e | E ≤ T ) AET (e,t )
+
+∑T  
+
+> t=eAET (e,t )
+
+CSA 
+
+θes (l) 1{e + l ≤ T } 1{t = e + l}P (E = e | E + l ≤ T )
+
+θbal,es (l, l ′) 1{e + l′ ≤ T } 1{t = e + l}P (E = e | E + l′ ≤ T )
+
+θsel (˜ e) 1{t ≥ e}1{e = ˜ e}/(T − e + 1) 
+
+θc(˜ t) 1{t ≥ e}1{t = ˜ t}P (E = e | E ≤ t)
+
+θcumm c (˜ t) 1{t ≥ e}1{t ≤ ˜t}P (E = e | E ≤ t)
+
+θosel 1{t ≥ e}P (E = e | E ≤ T )/(T − e + 1) 
+
+Table 1: Weighted estimands and their weights 
+
+The table shows different versions of eq. (53) and the corresponding weights w(e, t ). The upper IDiD part of the table is a modification of the table in Miyaji (2026). The lower part is a modification of the one in Callaway and Sant’Anna (2021) tailored to the IDiD setting. Note that the θIV es (l), θbal,IV es (l, l ′),
+
+θIV c ( ˜t), have the group probability multiplied in the denominator compared to Miyaji (2026) in order for the weights to sum to 1 (and likewise for θcumm,IV c ( ˜t) for it to sum to T − 1). The θo,IV W parameter equals 
+
+θoW , so the latter is omitted. The indicators for cohort e and time t are also implicitly included in the denominator notation. 
+
+Event study at horizon l parameter, θIV es (l) Here, we focus on the event study at horizon 
+
+l target parameter, which aggregates the LAT T (e, t ) parameter at time t = e + l, i.e., l periods after exposure to the instrument. The target parameter is: 
+
+θIV es (l) := ∑
+
+> e∈E T
+
+∑
+
+> t=2
+
+wIV es (l)(e, t )τe,t (57) where the weight wIV es (l)(e, t ) is defined in the upper part of Table 1. 
+
+Influence function of θIV es (l) To derive the influence function of the θIV es (l) estimand, we apply the product rule eq. (107) and derive the influence function of each component separately. First, we find the influence function of the weight wIV es (l)(e, t ). We apply the product rule eq. (107) to get the EIF of a generic term in the numerator and denominator, and then use the quotient rule to get the EIF of the weight. Towards this end, define 
+
+φwIV es (l),num e,t := IF (P (E = e | E + l ≤ T )AET (e, t )) = IF (P (E = e | E + l ≤ T )) AET (e, t ) + P (E = e | E + l ≤ T )IF (AET (e, t )) .
+
+For the conditional probability we can use the block eq. (112), and the EIF for AET (e, t ) is the IF of the denominator for our (estimable) target parameter at hand. Hence, applying the 17 quotient rule gives: 
+
+φwIV es (l) 
+
+> e,t
+
+(O; wIV es (l)(e, t ), η ) (58) 
+
+:= 1{e + l ≤ T , t = e + l} 
+
+> ∑
+> e∈E
+
+P (E = e | E + l ≤ T )AET (e, t )
+
+> [
+
+φwIV es (l),num e,t − wIV es (l)(e, t ) ∑
+
+> e∈E
+
+φwIV es (l),num e,t 
+
+> ]
+
+.
+
+Let Il := {(e, t ) ∈ E × { 2, 3, . . . , T } | e + l ≤ T ∧ t = e + l}. Thus, using eq. (58), and writing 
+
+φe,t (O; τe,t , η ) for the influence function of the generic τe,t , we get using eq. (54): 
+
+φθes (l)(O; {τi}i∈I l ; {ηi}i∈I ) (59) 
+
+:= ∑
+
+> (e,t )∈I l
+> [
+
+φwIV es (l) 
+
+> e,t
+
+(O; wIV es (l)(e, t ), η )τe,t + wIV es (l)(e, t )φe,t (O; τe,t , η )
+
+> ]
+
+.
+
+Equation (59) is the influence function we use to conduct inference with on the horizon l
+
+parameters, θIV es (l).Note that we chose θIV es (l) over θIV bal,es (l, l ′) for simplicity. The point on compositional changes making the interpretation of θIV es (l) harder, as pointed out in Callaway and Sant’Anna (2021), still applies, and it is up to the econometrician to make the trade-off of interpretability vs efficiency (more observations). 
+
+Multiplier Bootstrap and Simultaneous Confidence Bands Researchers often interpret multiple θIV es (l) jointly. In this case, simultaneous confidence bands are appropriate. Callaway and Sant’Anna (2021) show how to construct such bands via the multiplier bootstrap and establish validity for the vector of AT T (g, t ) in their Theorem 3. An analogous result applies to the vector of LAT T (e, t ), allowing us to use their Algorithm 1 for inference on our parameters of interest. In particular, their Corollary 1 implies that the resulting bands achieve correct asymptotic coverage, so simultaneous inference on {θIV es (l) : l ∈ { 0, 1, . . . , h }} is valid. The multiplier bootstrap is applied to the influence function eq. (59) for each l. We verify the procedure in Section 4.2. 
+
+# 3 Estimation and inference 
+
+We consider plug-in estimators of τ dr,p e,t and τ dr,rc e,t in eqs. (31) and (39). We take two approaches. First, we estimate the nuisance functions using simple parametric models (e.g. linear or logistic regression) and invoke Donsker conditions to control the empirical process term. Second, we allow for flexible machine learning methods, avoid empirical process assumptions, and instead use DML. We show below that the resulting DML estimators coincide with the cross-fitted estimator of Kennedy (2023). 
+
+Asymptotically linear representation The plug-in estimators of τ dr,p e,t and τ dr,rc e,t admit the decomposition in Equation (28). Kennedy (2023) shows that the general plug-in estimator has first-order bias equal to − ∫ φ(·; ˆτ , ˆη) dP . This bias can be removed by imposing the moment condition Pn[φ(·; ˆτ , ˆη)] = 0 and solving for the estimator, yielding an estimating equation estimator 1011 .  
+
+> 10 We show in Section 3.3 that the cross-fitted estimating equation estimator coincides with the DML estimator under the DML2 algorithm; see Remark 7.
+> 11 Alternative approaches include one-step estimators and targeted maximum likelihood estimation (TMLE); see Kennedy (2023).
+
+18 As discussed in Section 2.4.2, the estimators based on the DR estimands in this paper are of this type and therefore eliminate the first-order bias by construction 12 . This justifies the decomposition in eq. (28) for our plug-in estimators. To obtain the asymptotic linear representation 
+
+√n(ˆ τ − τ ) = √n(Pn − P )φ(·; τ, η ) + oP (1) , (60) it remains to control the empirical process and remainder terms. Specifically, to go from eq. (28) to eq. (60) we require 
+
+√n(Pn − P )[
+
+φ(·; τ, ˆη) − φ(·; τ, η )]
+
+= oP (1) , √nP φ (·; τ, ˆη) = oP (1) . (61) The first condition is ensured by cross-fitting or Donsker assumptions, while the second requires case-specific arguments (Kennedy, 2023), formalized in Propositions 11 and 12. 
+
+3.1 Remainder terms 
+
+The following proposition provides conditions under which the remainder term is asymptotically negligible, i.e., satisfies the right-hand side of eq. (61), in the panel data setting. 
+
+Proposition 11 (Remainder term: panel data) . Suppose the identification in Proposition 1 holds, and that the second-order rate condition holds: 
+
+∥∥∥∥
+
+p
+
+1 − p − ˆp
+
+1 − ˆp
+
+∥∥∥∥2,P 
+
+∥∥∥∥mc,p e,t − ˆmc,p e,t 
+
+∥∥∥∥2,P 
+
+= oP (n−1/2),
+
+∥∥∥∥
+
+p
+
+1 − p − ˆp
+
+1 − ˆp
+
+∥∥∥∥2,P 
+
+∥∥∥∥gc,p e,t − ˆgc,p e,t 
+
+∥∥∥∥2,P 
+
+= oP (n−1/2).
+
+Then the remainder term for the influence function eq. (32) satisfies 
+
+√n P φ dr,p (·; τ dr,p e,t , ˆηdr,p e,t ) = oP (1) . (62) Proof in Section E.0.1. The following proposition provides conditions under which the remainder term is asymptotically negligible, i.e., satisfies the right-hand side of eq. (61), in the repeated cross-sections setting. 
+
+Proposition 12 (Remainder term: repeated cross-sections) . Suppose the identification in Proposition 5 holds. Moreover, assume: 1. (Treated nuisance consistency) 
+
+∥mtrt,rc e,t − ˆmtrt,rc e,t ∥2,P = oP (1) , ∥gtrt,rc e,t − ˆgtrt,rc e,t ∥2,P = oP (1) , (63) 
+
+and similarly for t = e − 1.2. (Weight fluctuations) 
+
+∣∣∣∣∣
+
+λt
+
+ˆρtrt,rc e,t 
+
+− 1ˆρ
+
+∣∣∣∣∣ = OP (n−1/2),
+
+∣∣∣∣∣
+
+λe−1
+
+ˆρtrt,rc e,e −1
+
+− 1ˆρ
+
+∣∣∣∣∣ = OP (n−1/2),
+
+where ˆρtrt,rc e,t := Pn[Ee · 1{T = t}] and ˆρ := Pn[Ee] are estimators of the denominators of the weights in eqs. (19) and (22) , respectively. 
+
+> 12
+
+Although the plug-in estimator of eq. (31) solves the estimating equation based on eq. (27), 
+
+Pnφp(O; ˆτ dr,p e,t , ˆηpe,t ) = 0 , rather than the IF φdr,p (·; τ dr,p e,t , η dr,p e,t ) in eq. (32), the plug-in bias is still zero since Pnφdr,p (O; ˆτ dr,p e,t , ˆηdr,p e,t ) = 0 as well. The same holds for repeated cross-sections. This follows by direct calculation; see Section F.1. 
+
+19 3. (Second-order rate condition) 
+
+> ∥∥∥∥
+
+p
+
+1 − p − ˆp
+
+1 − ˆp
+
+> ∥∥∥∥2,P
+> ∥∥∥∥
+
+mc,rc e,t − ˆmc,rc e,t 
+
+> ∥∥∥∥2,P
+
+= oP (n−1/2)
+
+> ∥∥∥∥
+
+p
+
+1 − p − ˆp
+
+1 − ˆp
+
+> ∥∥∥∥2,P
+> ∥∥∥∥
+
+gc,rc e,t − ˆgc,rc e,t 
+
+> ∥∥∥∥2,P
+
+= oP (n−1/2),
+
+and similarly for t = e − 1.Then 
+
+√n P φ dr,rc (·; τ dr,rc e,t , ˆηdr,rc e,t ) = oP (1) . (64) Proof in Section E.0.2. 
+
+Remark 6 (Rate double robustness of the remainder term) . Compared to Proposition 11, the repeated cross-sections remainder does not exhibit the same rate double robustness, in that the outcome and propensity models cannot offset each other’s estimation error, as in the panel setting. While double robustness for consistency still holds, only the control-group nuisance components enter through the usual propensity-outcome product structure; see also (Kennedy, 2023, p. 26). 
+
+3.2 Plug-in estimators 
+
+In the following, we derive asymptotic linear representations for plug-in estimators of τ dr,p e,t 
+
+and τ dr,rc e,t under Donsker class conditions, building on the remainder results in Propositions 11 and 12. Such conditions are often restrictive in high-dimensional settings. Accordingly, Section 3.3 introduces a DML estimator that avoids these assumptions by controlling the empirical process term via cross-fitting. 
+
+Panel Data Proposition 13. Consider the plug-in estimator of eq. (31) , ˆτ dr,p e,t . Suppose Proposition 11 holds and that Donsker conditions ensure the empirical process term is oP (1) as in eq. (61) .Then 
+
+√n(ˆ τ dr,p e,t − τ dr,p e,t ) = √n(Pn − P )φdr,p (·; τ dr,p e,t , η dr,p e,t ) + oP (1) , (65) 
+
+and consequently, 
+
+√n(ˆ τ dr,p e,t − τ dr,p e,t ) d
+
+→ N (
+
+0, E [{φdr,p (O; τ dr,p e,t , η dr,p e,t )}2])
+
+.
+
+Repeated Cross-Sections Proposition 14. Consider the plug-in estimator of eq. (39) , ˆτ dr,rc e,t . Suppose Proposition 12 holds and that Donsker conditions ensure the empirical process term is oP (1) as in eq. (61) .Then 
+
+√n(ˆ τ dr,rc e,t − τ dr,rc e,t ) = √n(Pn − P )φdr,rc (·; τ dr,rc e,t , η dr,rc e,t ) + oP (1) , (66) 
+
+and consequently, 
+
+√n(ˆ τ dr,rc e,t − τ dr,rc e,t ) d
+
+→ N (0 , E [{φdr,rc (O; τ dr,rc e,t , η dr,rc e,t )}2]) .
+
+20 3.3 Double Machine Learning / Cross-Fitting 
+
+In this section, we present DML estimators for both data settings. In each setting, the Neyman-orthogonal score is based on the corresponding EIF in eqs. (27) and (38). The resulting estimators coincide with the cross-fitted estimating equation estimator of Kennedy (2023). This follows because DML applies cross-fitting to Neyman-orthogonal scores; when these scores are derived from the EIFs in section 2.4, the procedure is equivalent to cross-fitting the corresponding estimating equation estimator. 
+
+Regularization and overfitting bias The Donsker assumptions made in the previous section are often unrealistic in settings where the nuisances are high-dimensional and complex. Here, flexible machine learning estimators are more appropriate. Estimating nuisance functions with machine learning induces two forms of bias, often referred to as regularization and overfitting bias in the DML literature (Chernozhukov et al., 2018). The remedy is to leverage a Neyman-orthogonal score for the DML estimator and apply cross-fitting (Chernozhukov et al., 2018). This is what we will do below. 
+
+DML Algorithm We construct our DML estimators using the DML2 procedure of (Cher-nozhukov et al., 2018; Bach et al., 2022). The key components are: 1. a Neyman-orthogonal score identifying the target parameter 2. machine learning estimators of the nuisance functions 3. K-fold cross-fitting of the nuisance estimators 4. plugging the cross-fitted nuisances into the score and solving the resulting moment condition yielding the DML estimator Hence, we first construct the Neyman-orthogonal scores. For this we can use the influence functions eqs. (27) and (38). 
+
+Panel Data Using the EIF for the panel data setting in eq. (27), we obtain: 
+
+φp(O; τ pe,t , η pe,t )
+
+∝ { wtrt,p e − wc,p e,t }{ ∆t−e+1 Yt − mc,p e,t (X)} − τ pe,t {wtrt,p e − wc,p e,t }{ ∆t−e+1 Dt − gc,p e,t (X)}
+
+=: ψpb (O; ηpe,t ) − τ pe,t ψpa(O; ηpe,t )=: ψp(O; τ pe,t , η pe,t ) (67) where we use DML notation for the score components, i.e. ψ, ψa and ψb. Hence, we see that the influence function is proportional to a score (i.e. function that identifies the target parameter) that is linear in the estimand τ pe,t .Let {Oi}ni=1 be partitioned into K folds of equal size nk = n/K , and denote the empirical measure on fold k by P kn 13 . Let ˆηp, −ke,t be the nuisance estimator trained on all observations outside fold k (the superscript −k indicates this). Hats denote estimated quantities. The DML estimator solves: 
+
+K−1
+
+> K∑
+> k=1
+
+P kn [ψp(O; ˆ τ dml,p e,t , ˆηp, −ke,t )] = 0 
+
+⇐⇒ ˆτ dml,p e,t = K−1 ∑Kk=1 P kn [ψpb (O; ˆ ηp, −ke,t )] 
+
+K−1 ∑Kk=1 P kn [ψpa(O; ˆηp, −ke,t )] = K−1 ∑Kk=1 P kn [{ ˆwtrt,p, −ke − ˆwc,p, −ke,t }{ ∆t−e+1 Yt − ˆmc,p, −ke,t (X)}]
+
+K−1 ∑Kk=1 P kn [{ ˆwtrt,p, −ke − ˆwc,p, −ke,t }{ ∆t−e+1 Dt − ˆgc,p, −ke,t (X)}] .           
+
+> 13 For equal-sized folds: K−1Pkn[f] = K−1n−1
+> k
+> ∑ni=1 f(Oi) = n−1∑ni=1 f(Oi).
+
+21 Hence we have the result: 
+
+Proposition 15 (DML Panel Data) . Suppose the identification in Proposition 1 holds, and also the condition on the remainder in proposition 11 14 . Then: 
+
+√n(ˆ τ dml,p e,t − τ pe,t, 0) d
+
+→ N (0 , σ 2,p e,t ),
+
+where 
+
+σ2,p e,t := ( Jp 
+
+> 0
+
+)−2E[{ψp(O; τ pe,t, 0, η pe,t, 0)}2], Jp 
+
+> 0
+
+= E[ψpa(O; ηpe,t, 0)] 
+
+and we use the notation τ pe,t, 0, η pe,t, 0 for the true value of the target parameter and nuisance function, respectively. A variance estimator is: 
+
+ˆσ2,p e,t = ( ˆJp 
+
+> 0
+
+)−2K−1
+
+> K
+
+∑
+
+> k=1
+
+P kn [{ψp(O; ˆ τ dml,p e,t , ˆηp, −ke,t )}2], ˆJp 
+
+> 0
+
+= K−1
+
+> K
+
+∑
+
+> k=1
+
+P kn [ψpa(O; ˆ ηp, −ke,t )] 
+
+and an approximate (1 − α)% confidence interval is constructed as: 
+
+[ˆ τ dml,p e,t ± Φ−1(1 − α/ 2)ˆ σpe,t /√n],
+
+where Φ−1(·) is the quantile function of the standard normal distribution. 
+
+Repeated Cross-Sections Using the EIF for the repeated cross-sections setting in eq. (38), we obtain: 
+
+φrc (O; τ rc e,t , η rc e,t ) ∝ wtrt,rc e {Y − mtrt,rc e,Y (X)} − wc,rc e {Y − mc,rc e,Y (X)}
+
++ Ee
+
+ρ {mtrt,rc e,t (X) − mtrt,rc e,e −1(X) − [mc,rc e,t,t (X) − mc,rc e,t,e −1(X)] }− τ rc e,t (wtrt,rc e {D − gtrt,rc e,Y (X)} − wc,rc e {D − gc,rc e,D (X)}
+
++ Ee
+
+ρ {gtrt,rc e,t (X) − gtrt,rc e,e −1(X) − [gc,rc e,t,t (X) − gc,rc e,t,e −1(X)] })=: ψrc b (O; ηrc e,t ) − τ rc e,t ψrc a (O; ηrc e,t ) (68) 
+
+=: ψrc (O; τ rc e,t , η rc e,t ).
+
+Again, the influence function is proportional to a score that is linear in the estimand τ rc e,t .Similarly to the panel data case, the DML estimator solves: 
+
+K−1
+
+> K
+
+∑
+
+> k=1
+
+P kn [ψrc (O; ˆ τ dml,rc e,t , ˆηrc, −ke,t )] = 0 
+
+⇐⇒ ˆτ dml,rc e,t = K−1 ∑Kk=1 P kn [ψrc b (O; ˆ ηrc, −ke,t )] 
+
+K−1 ∑Kk=1 P kn [ψrc a (O; ˆ ηrc, −ke,t )] ,
+
+where the score components are defined in eq. (68). Hence we have the result: 
+
+> 14
+
+In Remark 12 I show the remainder terms using either eq. (27) or eq. (32) are the same and likewise for the repeated cross-sections setting eq. (38) or eq. (44). Hence, Proposition 11 can be used even though the DML score was constructed based on eq. (27) and not eq. (32). The same statements hold in the repeated cross-sections case for Proposition 16. 
+
+22 Proposition 16 (DML Repeated Cross-Sections) . Suppose the identification in Proposition 5 holds, and also the condition on the remainder in proposition 12. Then: 
+
+√n(ˆ τ dml,rc e,t − τ rc e,t, 0) d
+
+→ N (0 , σ 2,rc e,t ),
+
+where 
+
+σ2,rc e,t := ( Jrc  
+
+> 0
+
+)−2E[{ψrc (O; τ rc e,t, 0, η rc e,t, 0)}2], Jrc  
+
+> 0
+
+= E[ψrc a (O; ηrc e,t, 0)] 
+
+A variance estimator is: 
+
+ˆσ2,rc e,t = ( ˆJrc  
+
+> 0
+
+)−2K−1
+
+> K∑
+> k=1
+
+P kn [{ψrc (O; ˆ τ dml,rc e,t , ˆηrc, −ke,t )}2], ˆJrc  
+
+> 0
+
+= K−1
+
+> K∑
+> k=1
+
+P kn [ψrc a (O; ˆ ηrc, −ke,t )] 
+
+and an approximate (1 − α)% confidence interval is constructed as: 
+
+[ˆ τ dml,rc e,t ± Φ−1(1 − α/ 2)ˆ σrc e,t /√n].
+
+Remark 7 (Comparing DML to cross-fitting for IDiD) . DML with the Neyman-orthogonal scores eqs. (67) and (68) is equivalent to a cross-fitted plug-in estimator based on the double robust estimands eqs. (31) and (39), and conducting inference using the cross-fitted efficient influence functions eqs. (27) and (38). To see this, note that the cross-fitted estimator is obtained by solving an equation of the form in eq. (30). When Equations (27) and (38) are used, the resulting estimating-equation estimator coincides with the plug-in estimators of Equations (31) and (39). For instance, the panel denominator is estimated by 
+
+Pn[{ ˆwtrt,p e − ˆwc,p e,t }{ ∆t−e+1 Dt − ˆgc,p e,t (X)}] = Pn[ψpa(O; ˆ ηpe,t )] 
+
+and in the repeated cross-sections case by 
+
+Pn[{ ˆwtrt,rc e − ˆwc,rc e }{ D − ˆgc,rc e,Y (X)}] + ˆ κD,rc e,t = Pn[ψrc a (O; ˆ ηrc e,t )] ,
+
+and similarly for the numerators. Hence, the cross-fitted estimators are equivalent to the DML estimators. Because of this equivalence, the remainder terms and nuisance-rate conditions for the cross-fitted estimators are the same as those needed for the DML estimators. The theorem for the cross-fitted estimator in Kennedy (2023) therefore also applies to the DML estimators. The DML estimators are also doubly robust, since they implicitly estimate the doubly robust estimand, and cross-fitting handles the empirical process term in the general decomposition automatically. As a final point, the DML estimators are built from the EIF with normalized weights. Hence the DML estimators with K = 1 correspond to the estimating-equation estimators based on the normalized influence functions, which match the DR plug-in estimators of eqs. (31) and (39). However, the variance estimators of the DML estimators do not take into account the normalization adjustments as done in the influence functions eqs. (32) and (44) when conducting inference. This does not seem to matter in the simulation experiments in Section 4.1. 
+
+Estimators of aggregated effects For completeness, we state below a proposition for estimators of the weighted estimands in Section 2.5. 
+
+Proposition 17. Suppose the assumptions of one of Propositions 13 to 16 hold for each cohort-time estimator entering the aggregated estimator ˆθ. Then 
+
+√n(ˆθ − θ) d
+
+→ N (0 , E [{φθ(O; {τi}i∈I ; {ηi}i∈I )}2]) 
+
+where the estimand and influence function are defined in eqs. (53) and (54) , respectively. 
+
+Proposition 17 is analogous to Corollary 1 in Miyaji (2026) and Corollary 2 of Callaway and Sant’Anna (2021), and the proof is omitted. 23 4 Simulation Experiments 
+
+In this section, we present three simulation experiments that assess the finite-sample perfor-mance and double robustness of the estimators in Section 3. The first experiment verifies double robustness in a simple two-period DGP using the never-exposed control group. We compare the main estimators, namely the DR estimators in Propositions 13 and 14 and the DML estimators in Propositions 15 and 16, to three non-doubly robust alternatives: inverse probability weighting (IPW), standardized IPW (IPWS), and outcome regression (REG), each constructed by exploiting the ratio-of-ATT-parameters structure in eqs. (18) and (33). The standardization in IPWS corresponds to the normalization of control weights as done in Section 2.4. This simulation setup follows the one in Sant’Anna and Zhao (2020). The second experiment considers staggered exposure to the instrument for both control groups in eq. (2), in both data settings, and in the presence of an unobserved confounder affecting both treatment and outcome. We focus on the LAT T (e, t ) estimates varying across cohorts and time, and aggregate these into estimates of the weighted estimand in eq. (57). Finally, we introduce a group indicator under which LAT T differs across the two groups. We estimate group-specific effects via eq. (51) and aggregate these to horizon-specific effects as in eq. (57), capturing average dynamic differences across groups for each horizon l.The third experiment follows the same setup as in the second experiment (without the group indicator) but now imposes absorbing treatment eq. (47). This setting allows us to verify the Bloom-type result in Proposition 10 and compare our estimators to those of Callaway and Sant’Anna (2021). As before, a hidden confounder jointly determines treatment and outcome, so the DiD estimator is biased, whereas the IDiD estimator is not. 
+
+4.1 Simulation Experiment 1: Double Robustness 
+
+We compare the DR and DML estimators to the IPW, IPWS and REG estimators through a simulation experiment similar to Sant’Anna and Zhao (2020). To assess the double robustness properties, we simulate four DGPs with varying degrees of misspecification. The first DGP has both the outcome regression and propensity score correctly specified. The second DGP has the outcome regression correctly specified and the propensity score misspecified. The third DGP has the outcome regression misspecified and the propensity score correctly specified. The fourth and last DGP has both the outcome regression and propensity score misspecified. We focus on a two-period setup with covariates using a never-exposed control group with panel data. Let 
+
+X = ( X1, X 2)′ ∼ N (0 , I 2), supp( E) = {∞ , 2},
+
+and 
+
+hℓ(X) = 0 .8X1 − 0.5X2, hn(X) = 0 .8 sin( X1) − 0.5 · 1{X2 > 0} + 0 .3X1X2,
+
+and define 
+
+gps (X) ∈ { hℓ(X), h n(X)}, s(X) ∈ { hℓ(X), h n(X)}.
+
+Here, hℓ corresponds to correct specification and hn to misspecification. Exposure occurs in period 2 with probability 
+
+P (E = 2 | X) = expit( gps (X)) .
+
+24 Treatment propensities are 
+
+pt(∞) = expit(0 .2 + s(X) − 0.4t), pt(2) = expit(0 .2 + s(X) − 0.4t + κ),
+
+and treatment states are generated as 
+
+Dt(∞) = 1{U ≤ pt(∞)}, Dt(2) = 1{U ≤ pt(2) }, U ∼ Uniform(0 , 1) .
+
+Untreated potential outcomes follow 
+
+Yt(0) = [1 + 0 .8 · (t − 1)] s(X) + εt,
+
+while treated outcomes are 
+
+Yt(1) = Yt(0) + τ, 
+
+where ε1, ε 2 ∼ N (0 , 0.22). The observed treatment is given by eq. (4) and the observed outcome by eq. (6). Note that the treatment and outcome evolutions depend on the same specification 
+
+s(X). Also, the true local average treatment effect on the treated for those exposed in period 
+
+2 equals LAT T (2 , 2) = τ .In the experiment, we set κ, τ = 1 , n = 5000 , T = 2 , and repeat the experiment B = 4999 
+
+times. For the repeated cross-sections case, we set λ = 0 .5. For the DML estimators, we use 
+
+K = 5 folds for cross-fitting. Outcome regressions are estimated by linear regression, and propensity scores, when required, by logistic regression. The results are shown in Tables 2 and 3 for the panel and repeated cross-sections settings, respectively. The panel results confirm the expected double robustness and efficiency properties of the proposed estimators. When both nuisance components are correctly specified (DGP1), all estimators are essentially unbiased with coverage close to the nominal level. The IPW estimators exhibit substantially higher variance than the other estimators. When only the outcome regression is correctly specified (DGP2), the DR, DML and regression estimators remain approximately unbiased, whereas the IPW estimators become severely biased and coverage deteriorates. Conversely, when only the propensity score is correctly specified (DGP3), the DR and DML estimators again remain unbiased, while the regression estimator is biased, illustrating the double robustness property. When both nuisance components are misspecified (DGP4), all estimators are biased, as expected. The repeated cross-section results display the same qualitative double robustness pattern but with larger dispersion. In DGP1-DGP3, the DR and DML estimators remain approximately unbiased with reasonable coverage, again verifying the double robustness property, although their variance is higher than in the panel case. In contrast, the IPW estimators, even in DGP1 under correct specification, exhibit extreme variability, reflected in very large RMSE and asymptotic variance, driven by instability in the weighting scheme. In particular, the non-standardized IPW estimator explodes in variance, as was also the case for the two-period DiD experiment in Sant’Anna and Zhao (2020), although here further amplified by the ratio structure of the estimators. When the propensity score is misspecified (DGP2), the DR and DML estimators remain relatively robust, while the regression estimator is biased. Finally, when both nuisance components are misspecified (DGP4), all estimators are biased. Overall, the results highlight the double robustness of the proposed estimators. While this property holds in both data settings, the repeated cross-section estimators are less stable in finite samples due to noisier estimation of the underlying components; larger sample sizes would mitigate this. The DR and DML estimators perform similarly in this experiment, although the DML estimator exhibits slightly higher variance, likely due to cross-fitting. In more complex 25 settings, DML, combined with more flexible nuisance models, is expected to outperform the simpler DR estimator. Table 2: Simulation experiment 1: Panel data DGP1: OR Correct, PS Correct DGP2: OR Correct, PS Incorrect Semiparametric efficiency bound: 15.49 Semiparametric efficiency bound: 11.19 Av. Bias Med. Bias RMSE Asy. V Cover CIL Av. Bias Med. Bias RMSE Asy. V Cover CIL ˆτ dr,p e,t -0.001 -0.001 0.057 16.56 0.953 0.225 0.023 0.022 0.051 11.264 0.931 0.186 ˆτ dml,p e,t -0.0 -0.0 0.057 16.781 0.954 0.226 0.023 0.022 0.052 11.312 0.931 0.186 ˆτ reg,p e,t -0.0 -0.0 0.055 15.752 0.954 0.219 -0.001 -0.001 0.045 10.589 0.955 0.18 ˆτ ipw,p e,t 0.003 0.008 0.144 98.781 0.936 0.536 -0.315 -0.311 0.324 31.589 0.007 0.309 ˆτ ipws,p e,t 0.004 0.007 0.129 78.454 0.937 0.48 -0.294 -0.292 0.303 27.136 0.009 0.287 DGP3: OR Incorrect, PS Correct DGP4: OR Incorrect, PS Incorrect Semiparametric efficiency bound: 11.19 Semiparametric efficiency bound: 8.55 Av. Bias Med. Bias RMSE Asy. V Cover CIL Av. Bias Med. Bias RMSE Asy. V Cover CIL ˆτ dr,p e,t -0.003 -0.007 0.109 60.403 0.936 0.411 0.647 0.643 0.652 41.96 0.0 0.356 ˆτ dml,p e,t 0.001 -0.003 0.111 66.882 0.946 0.43 0.65 0.646 0.656 43.48 0.0 0.363 ˆτ reg,p e,t -0.28 -0.278 0.289 26.014 0.024 0.282 0.479 0.478 0.485 25.186 0.0 0.277 ˆτ ipw,p e,t -0.0 -0.002 0.067 21.925 0.947 0.252 0.499 0.497 0.504 25.683 0.0 0.28 ˆτ ipws,p e,t -0.0 -0.002 0.067 21.446 0.947 0.251 0.487 0.485 0.492 24.393 0.0 0.273 
+
+Notes: Simulations are based on B = 4999 Monte Carlo repetitions with sample size n = 5000 . The target parameter is LAT T (2 , 2) ; all subscripts (e, t ) = (2 , 2) .
+
+ˆτ reg,s e,t denotes the outcome regression (OR) estimator, ˆτ ipw,s e,t the inverse probability weighting (IPW) estimator, ˆτ ipws,s e,t the standardized IPW estimator, ˆτ dr,s e,t the doubly robust (DR) estimator, and ˆτ dml,s e,t the DML estimator, where s ∈ { p, rc } indicates the panel and repeated cross-section settings, respectively. We use a linear working model for the outcome regression and a logistic working model for the propensity score, with parameters estimated by OLS and maximum likelihood. “Av. Bias”, “Med. Bias”, “RMSE”, “Asy. V”, “Cover”, and “CIL” denote the average bias, median bias, root mean squared error, average estimated asymptotic variance, 95% coverage probability, and average confidence interval length, respectively. The semiparametric efficiency bounds are calculated using the true values and the results from Propositions 2 and 6, respectively. The table follows the structure of Sant’Anna and Zhao (2020). 
+
+Table 3: Simulation experiment 1: Repeated cross-sections DGP1: OR Correct, PS Correct DGP2: OR Correct, PS Incorrect Semiparametric efficiency bound: 31.07 Semiparametric efficiency bound: 21.77 Av. Bias Med. Bias RMSE Asy. V Cover CIL Av. Bias Med. Bias RMSE Asy. V Cover CIL ˆτ dr,rc e,t -0.002 -0.001 0.086 38.352 0.965 0.336 0.019 0.018 0.074 25.256 0.947 0.275 ˆτ dml,rc e,t -0.001 -0.001 0.086 38.924 0.965 0.338 0.024 0.023 0.075 25.518 0.948 0.276 ˆτ reg,rc e,t -0.019 -0.005 0.321 525.481 0.961 1.237 -0.017 -0.006 0.293 444.634 0.959 1.15 ˆτ ipw,rc e,t -0.341 0.012 4.781 423965314.276 0.928 21.934 -0.46 -0.317 0.972 7609.885 0.984 2.991 ˆτ ipws,rc e,t -0.043 0.018 0.672 2341.413 0.957 2.535 -0.334 -0.294 0.636 1471.135 0.953 2.069 DGP3: OR Incorrect, PS Correct DGP4: OR Incorrect, PS Incorrect Semiparametric efficiency bound: 22.49 Semiparametric efficiency bound: 16.31 Av. Bias Med. Bias RMSE Asy. V Cover CIL Av. Bias Med. Bias RMSE Asy. V Cover CIL ˆτ dr,rc e,t -0.028 -0.032 0.336 592.106 0.956 1.251 0.688 0.682 0.732 334.385 0.173 0.993 ˆτ dml,rc e,t -0.024 -0.025 0.367 777.441 0.968 1.398 0.654 0.649 0.703 369.962 0.263 1.043 ˆτ reg,rc e,t -0.296 -0.288 0.381 306.508 0.817 0.951 0.479 0.473 0.529 262.154 0.426 0.887 ˆτ ipw,rc e,t -0.022 -0.009 0.279 463.296 0.976 1.071 0.518 0.493 0.586 417.504 0.507 1.073 ˆτ ipws,rc e,t -0.013 -0.007 0.257 341.479 0.963 0.995 0.488 0.483 0.543 299.06 0.453 0.946 
+
+Notes: See Table 2 for notes. 
+
+26 4.2 Simulation Experiment 2: Staggered exposure and control groups 
+
+In this simulation experiment we simulate a panel with staggered exposure and introduce the time-varying hidden confounder Ht determining both the treatment Dt and outcome Yt. The setup for the simulation is as follows. We simulate a time-invariant covariate and time-varying hidden confounder as X, H t ∼ N (0 , 1) , and exposure cohorts from 
+
+P (E = e | X) = exp( βeX, ) 
+
+> ∑
+> e∈E
+
+exp( βeX, ), supp( E) = {∞ , 2, 3, . . . , n E }, (69) with βe ∈ { 0.1, . . . , 0.3}, e ∈ supp (E), equally spaced between 0.1 and 0.315 . The potential treatments and outcomes are simulated as: 
+
+Lt = ν + 0 .5X + Ht + 18t/ T , ν ∼ Uniform( −1, −0.2) , (70) 
+
+pt(∞) = expit( Lt), pt(e) = expit( Lt + δ),Dt(∞) = 1{Ut ≤ pt(∞)}, Dt(e) = 1{Ut ≤ pt(e)}, Ut ∼ Uniform(0 , 1) ,Yt(0) = η + X + Ht + t/ T + εt, Yt(1) = Yt(0) + τt + νt, (71) where η, ε t, ν t ∼ N (0 , 1) . Note that Ht determines both the treatment and outcome cf. eqs. (70) and (71). Again, the observed treatment is given by eq. (4) and the observed outcome by eq. (6). For simplicity, we focus on the DR estimators eqs. (65) and (66) and evaluate their finite-sample performance under panel and repeated cross-section sampling, respectively, using never-exposed and not-yet-exposed control groups. We set n = 10 ,000 , T = 5 , τt = 1 for all t,
+
+δ = 1 , nE = 5 and perform B = 1499 simulation draws. In the not-yet-exposed experiment the 
+
+E = ∞ is removed from eq. (69). The average evolution of the treatment Dt and outcome Yt,conditional on the exposure cohort E, for a simulated dataset is shown in Figure 1a. 
+
+Cohort-time effects. Figure 1b reports the distribution of ˆτ dr,p e,t and ˆτ dr,rc e,t across all (e, t ) pairs. The estimates are centered around the true value in all designs, showing the robustness of the IDiD procedure to hidden confounding. The panel case is most tightly concentrated, while the repeated cross-sections case exhibits higher dispersion; both show occasional large realizations due to the ratio structure. In both designs, the not-yet-exposed estimates, compared to the never-exposed, become increasingly dispersed at longer horizons, reflecting the corresponding reduction in the size of the control group. 
+
+Event study aggregation. Figure 2 shows the aggregated effects ˆθIV es (l). The same pattern emerges: estimates remain centered, but variability increases in repeated cross-sections. Again, for the not-yet-exposed controls, dispersion increases with the horizon due to the shrinking control group. We conduct a multiplier bootstrap and construct simultaneous confidence bands for {θIV es (l) |
+
+l = 0 , 1, 2} in eq. (57). Let ˆCIV es (l) denote the interval for the horizon-l effect. Then, as in Callaway and Sant’Anna (2021), the intervals are simultaneous in the sense that 16 
+
+P (θIV es (l) ∈ ˆCIV es (l) ∀l ∈ { 0, 1, 2}) → 1 − α. (72)                                                                 
+
+> 15 For P(E=e|X)simulated this way, the generalized propensity eq. (3) in the case of the never-exposed control group equals p:= P(E=e|X, E e+Cnev = 1) = expit ([ βe−β∞]X),where β∞is the parameter corresponding to the never-exposed control group; hence, p/ (1 −p) = exp ([ βe−β∞]X)∼
+> LogNormal (0 ,[βe−β∞]2).Thus, in order to stabilize the propensity in the simulations, we constrain the parameters βeto {0.1, . . . , 0.3}so the maximum difference is 0.2.
+> 16 The general simultaneous confidence band for LAT T (e, t ),t≥e, is simultaneous in the sense that
+> P(LAT T (e, t )∈ˆC(e, t )∀(e, t )∈ E × { 2,3, . . . , T } :t≥e)→1−α; see Callaway and Sant’Anna (2021) for details.
+
+27 Time 
+
+> 0.30
+> 0.35
+> 0.40
+> 0.45
+> 0.50
+> 0.55
+> 0.60
+> 0.65
+> Average Treatment
+> Panel
+
+Dt
+
+> Time
+> 0.5
+> 1.0
+> 1.5
+> 2.0
+> 2.5
+> Average Outcome
+
+Yt        
+
+> 12345
+> Time
+> 0.30
+> 0.35
+> 0.40
+> 0.45
+> 0.50
+> 0.55
+> 0.60
+> 0.65
+> Average Treatment
+> Repeated cross-sections
+> 12345
+> Time
+> 0.5
+> 1.0
+> 1.5
+> 2.0
+> 2.5
+> Average Outcome
+> E
+> 0
+> 2
+> 3
+> 4
+> 5
+
+(a) Average evolution of treatment Dt and outcome Yt conditional on exposure cohort E from the DGP of Simulation Experiment 2. The upper row shows panel data and the lower repeated cross-sections. (2, 2) (2, 3) (2, 4) (3, 3) (3, 4) (4, 4) 
+
+0.51.01.5
+
+> Estimate
+
+A Panel, never-exposed 
+
+> (2, 2) (2, 3) (2, 4) (3, 3) (3, 4) (4, 4)
+
+0.51.01.5
+
+B Panel, not-yet-exposed 
+
+> (2, 2) (2, 3) (2, 4) (3, 3) (3, 4) (4, 4)
+
+−202
+
+> Estimate
+
+C Repeated cross-sections, never-exposed 
+
+> (2, 2) (2, 3) (2, 4) (3, 3) (3, 4) (4, 4)
+
+−10123
+
+D Repeated cross-sections, not-yet-exposed 
+
+(E, t )
+
+Estimates True value = 1 
+
+(b) Simulation experiment 2: distributions of the cohort-time estimators ˆτ dr,p e,t and ˆτ dr,rc e,t across (e, t )
+
+pairs, for panel data and repeated cross-sections under never-exposed and not-yet-exposed controls. The estimates for (e, t ) = (5 , 5) using never-exposed controls are not shown. 
+
+Figure 1: Simulation experiment 2: design and estimator distributions. 28 We verify this in Table 4 with α = 0 .05 . The block “Pooled” reports coverage rates eq. (72) computed from simultaneous confidence bands (“Simultaneous”) obtained via the multiplier bootstrap and from pointwise confidence intervals (“Pointwise”). As expected, the simultaneous coverage is close to 0.95 , whereas the pointwise coverage is too low. The repeated cross-section estimates are noisier, which propagates to the simultaneous bands, yielding slightly conservative (too high) coverage. l = 0 l = 1 l = 2          
+
+> 0.40.60.81.01.21.4
+> Estimate
+> APanel
+> l= 0 l= 1 l= 2
+> −0.50.00.51.01.52.02.5
+> BRepeated cross-sections
+> Event time
+> Never-exposed Not-yet-exposed True value = 1
+
+Figure 2: Simulation experiment 2: aggregated effects using never-exposed and not-yet-exposed controls, for panel data and repeated cross-sections. The largest realizations are omitted for readability. Table 4: Simulation experiment 2: aggregated effects coverage Panel Repeated Cross-Sections Pointwise Simultaneous Pointwise Simultaneous Pooled Never-exposed 0.893 0.949 0.881 0.953 Not-yet-exposed 0.881 0.949 0.895 0.963 Group Never-exposed 0.878 0.955 0.922 0.978 Not-yet-exposed 0.869 0.951 0.896 0.967 
+
+Notes: The first two rows report joint coverage for the horizon-aggregated effects in Figure 2. The last two rows report joint coverage for the differenced group-specific horizon-aggregated effects in Figure 3. 
+
+Group-specific aggregation. Finally, we simulate a new dataset with a binary group indicator 
+
+F ∼ Bern (0 .5) splitting the units into two groups. The groups have different LAT T s with 
+
+F = 1 being affected less. We set n = 20 , 000 so there are two groups of approximately 10 , 000 .Our aim is to estimate the group-wise estimand τ dr,p, ∆ 
+
+> e,t
+
+as defined in eq. (51) and aggregate the effects into dynamic horizon-l effects as in eq. (57). The treated state in eq. (71) now becomes 
+
+Yt(1) = Yt(0) + τt(1 − 0.5F ) + νt,
+
+where those with F = 1 have LAT T (e, t ) = 0 .5τt.Figure 3 reports the aggregated group-specific horizon effects and their difference, i.e., the aggregated estimates of τ dr,p, ∆ 
+
+> e,t
+
+. The estimator tracks the targets well in the panel setting, whereas repeated cross-sections exhibit higher variability, particularly for the difference estimand. Again, the not-yet-exposed case has higher variability because of the shrinking control group. We again verify the validity of the multiplier bootstrap to construct simultaneous confidence bands for the aggregated effects, here for the aggregated horizon-l effects of τ dr,p, ∆ 
+
+> e,t
+
+. The results 29 are reported in block “Group” of Table 4. For panel data, the simultaneous coverage is close to 
+
+0.95 for both control groups. In repeated cross-sections, coverage is again slightly conservative (above 0.95 ), reflecting the higher variability of this design, compounded by the additional noise from differencing. Pointwise coverage is too low across all simulations, as expected. l = 0 l = 1 l = 2                         
+
+> −1.0
+> −0.50.00.51.0
+> Estimate
+> APanel, never-exposed
+> l= 0 l= 1 l= 2
+> −1.0
+> −0.50.00.51.01.5
+> BPanel, not-yet-exposed
+> l= 0 l= 1 l= 2
+> −2
+> −1012
+> Estimate
+> CRepeated cross-sections, never-exposed
+> l= 0 l= 1 l= 2
+> −2
+> −1012
+> DRepeated cross-sections, not-yet-exposed
+> Event time
+> F= 0 F= 1 Difference Dashed lines: true values
+
+Figure 3: Simulation experiment 2: group-specific aggregated effects and their difference under never-exposed and not-yet-exposed controls. The largest realizations are omitted for readability. 
+
+4.3 Simulation Experiment 3: One-sided compliance and staggered exposure 
+
+We simulate a setting with staggered exposure to the instrument and one-sided compliance in the presence of an unobserved confounder affecting both treatment and outcomes to verify Proposition 10. The setup follows Simulation Experiment 2, except that treatment is an absorbing state, i.e. eq. (47), and the treatment effects are now heterogeneous across treatment cohorts and time. The potential outcomes of eq. (71) in the treated state are now given by 
+
+Yt(g) = Yt(0) + τg,t + νt, τg,t = t − g + 1 2 , (73) where the dependence on g reflects the absorbing treatment; the AT T (g, t, e ) parameters increases linearly over post-treatment periods as 1/2, 1, 3/2, . . . and are invariant across exposure cohorts e ∈ E . The potential outcomes in the untreated states are as in eq. (71). In the simulation experiment, we set n = 10 , 000 , T = 5 , supp (E) = {∞ , 2, 3, 4, 5}, use as control group the never-exposed units, Cnev , and repeat the experiment B = 1499 times. The implied AT T (g, t ) parameters are {τ2,2, τ 2,3, τ 2,4, τ 2,5, τ 3,3, τ 3,4, τ 3,5, τ 4,4, τ 4,5, τ 5,5}, with true values given by eq. (73). For each draw, we estimate LAT T (e, t ) using our DR estimators in each data setting. We also construct the treatment cohort variable G = min {t | Dt = 1 }, enabling two quantities: (i) the true AT T (g, t, e ), computed from the simulated (unobserved) potential outcomes, and (ii) 
+
+AT T (g, t ) estimated via the procedure of Callaway and Sant’Anna (2021). By Proposition 10, for each (e, t ) ∈ E × { 2, 3, . . . , T } with t ≥ e, ˆLAT T (e, t ) should approximately equal ∑ 
+
+> g≤t
+
+ˆAT T (g, t, e ) ˆP (G = g | Dt = 1 , E e = 1) , cf. eq. (49). We compute 30 this quantity using Oracle estimates for ˆAT T (g, t, e ) (the CSA estimators won’t work because of the hidden confounder) and empirical conditional probabilities for the weights. Results are reported in Table 5. For horizon l = t−e = 0 , the LAT T (e, t ) estimates coincide exactly with the exposure-cohort-specific AT T (g, t ), so the aggregated l = 0 effect equals the cohort-weighted AT T (g, t ), which equals 1/2 for each pair (e, t ) ∈ { (2 , 2) , (3 , 3) , . . . , (5 , 5) }.For l > 0, the estimates of LAT T (e, t ) are a convex combination of the underlying AT T (g, t, e )
+
+parameters. For instance, 
+
+ˆLAT T (2 , 4) = 1 .25 ≈ ˆAT T (2 , 4, 2) ˆP (G2 = 1 | D4 = 1 , E 2 = 1) + ˆAT T (3 , 4, 2) ˆP (G3 = 1 | D4 = 1 , E 2 = 1) + ˆAT T (4 , 4, 2) ˆP (G4 = 1 | D4 = 1 , E 2 = 1) = 1 .501 · 0.615 + 1 .001 · 0.266 + 0 .493 · 0.119 = 1 .248 ,
+
+use the first two entries in row (e, t ) = (2 , 4) of Table 5 (the oracle and weight estimates are not reported in the table). The weights ˆP (Gg = 1 | D4 = 1 , E 2 = 1) , g = 2 , 3, 4, are decreasing, reflecting that treatment is absorbing. Among units first exposed at t = 2 , a large share is treated at t = 2 ,a smaller share at t = 3 , and only a small fraction remains untreated until t = 4 . The heterogeneity in ˆAT T (g, 4, 2) captures the different treatment horizons. Comparing the Oracle and LAT T (e, t ) columns across both data settings, we see that the columns are approximately equal, verifying the result in Proposition 10. In contrast, the DiD estimates of AT T (g, t ) in the CSA column are biased because of the unobserved confounder Ht
+
+affecting both the treatment and outcome, cf. eqs. (70) and (71). The instrumental variable component of the IDiD estimator addresses this source of bias and remains unbiased, illustrating the robustness of the IDiD design to hidden confounding, and how the IDiD estimators can be leveraged in settings where DiD estimators fail. Table 5: Simulation experiment 3 Panel Data Repeated cross-section IDiD CSA IDiD CSA (e, t ) Oracle LAT T (e, t ) SD (g, t ) AT T (g, t ) SD (e, t ) Oracle LAT T (e, t ) SD (g, t ) AT T (g, t ) SD (2, 2) 0.5 0.497 0.114 (2, 2) 0.864 0.073 (2, 2) 0.501 0.502 0.372 (2, 2) 1.22 0.229 (2, 3) 0.848 0.849 0.082 (2, 3) 1.033 0.073 (2, 3) 0.848 0.841 0.258 (2, 3) 1.375 0.231 (2, 4) 1.248 1.25 0.073 (2, 4) 1.583 0.077 (2, 4) 1.249 1.246 0.234 (2, 4) 1.922 0.237 (2, 5) 1.682 1.683 0.069 (2, 5) 2.192 0.072 (2, 5) 1.684 1.686 0.221 (2, 5) 2.54 0.229 (3, 3) 0.5 0.501 0.118 (3, 3) 1.013 0.065 (3, 3) 0.499 0.49 0.354 (3, 3) 1.335 0.201 (3, 4) 0.852 0.852 0.082 (3, 4) 1.209 0.064 (3, 4) 0.852 0.854 0.259 (3, 4) 1.528 0.201 (3, 5) 1.253 1.255 0.071 (3, 5) 1.819 0.066 (3, 5) 1.255 1.26 0.222 (3, 5) 2.15 0.21 (4, 4) 0.5 0.503 0.113 (4, 4) 1.071 0.063 (4, 4) 0.502 0.515 0.359 (4, 4) 1.545 0.193 (4, 5) 0.854 0.858 0.083 (4, 5) 1.334 0.064 (4, 5) 0.855 0.862 0.253 (4, 5) 1.799 0.199 (5, 5) 0.499 0.502 0.111 (5, 5) 1.143 0.061 (5, 5) 0.496 0.501 0.344 (5, 5) 1.84 0.2 
+
+Notes: The table shows the simulation results of simulation experiment 3. Each entry is an average over 
+
+B = 1499 replications. The “ LAT T (e, t )” columns report the IDiD estimates, the “Oracle” columns report the right-hand side of eq. (49) using the simulated potential outcomes and estimated group probabilities, and the “ AT T (g, t )” columns report the DiD estimates based on the estimator of Callaway and Sant’Anna (2021). The comparison between the “ LAT T (e, t )” and “Oracle” columns verifies Proposition 10. The ”SD“ column reports the standard deviation of the LAT T (e, t ) and AT T (g, t ) over all simulation draws. 
+
+# 5 Conclusion 
+
+This paper develops doubly robust estimands for the LAT T (e, t ) parameter in the IDiD setting with covariates, covering both panel data and repeated cross-sections, and allowing for never-31 exposed and not-yet-exposed control groups. We also construct corresponding DR and DML estimators. Our approach is estimand-based: using the influence function machinery of Kennedy (2023), adapted to our setting in Section B, we derive the DR estimands from first principles. The simulation results confirm the validity of the corresponding estimators across both data settings and control groups, and verify the group-difference estimands and the Bloom result under absorbing treatment, linking IDiD with staggered instrument exposure to DiD with staggered treatment. At the same time, the analysis highlights an important distinction between the two data settings: while both admit doubly robust identification and estimation, the repeated-cross-sections case does not inherit the same remainder-term behavior as the panel case because of the additional nuisance components. More broadly, the paper underscores the value of an estimand-based approach: it replaces reverse-engineering of regression parameters with the specification of interpretable estimands, and enables modular reuse of components across settings, in particular when deriving the corresponding EIFs. It also provides another example of constructing Neyman-orthogonal scores from EIFs (cf. (Chernozhukov et al., 2018, Section 2.2.5); see also Chen et al. (2026)) and of two cases in which the cross-fitted estimator coincides with the DML estimator. Practically, the paper delivers both the DR and DML estimators, together with a software implementation, making the proposed methods directly usable in applied work. We hope that the approach and components developed here, together with the work on which they build, serve as a useful guide and toolbox for future work. 32 6 References 
+
+Abadie, A. (2005, January). Semiparametric Difference-in-Differences Estimators. The Review of Economic Studies 72 (1), 1–19. Angrist, J. D. and J.-S. Pischke (2009). Mostly Harmless Econometrics: An Empiricist’s Companion . Princeton University Press. Bach, P., V. Chernozhukov, M. S. Kurz, and M. Spindler (2022). Doubleml-an object-oriented implementation of double machine learning in python. Journal of Machine Learning Research 23 (53), 1–6. Bloom, H. S. (1984). Estimating the effect of job-training programs, using longitudinal data: Ashenfelter’s findings reconsidered. Journal of Human Resources , 544–556. Callaway, B. and P. H. C. Sant’Anna (2021, December). Difference-in-Differences with multiple time periods. Journal of Econometrics 225 (2), 200–230. Chang, N.-C. (2020, May). Double/debiased machine learning for difference-in-differences models. The Econometrics Journal 23 (2), 177–191. Chen, X., P. H. C. Sant’Anna, and H. Xie (2025, June). Efficient Difference-in-Differences and Event Study Estimators. Chen, Y., E. H. Kennedy, and S. Balakrishnan (2026). On the equivalence between neyman orthogonality and pathwise differentiability. arXiv preprint arXiv:2603.15817 .Chernozhukov, V., D. Chetverikov, M. Demirer, E. Duflo, C. Hansen, W. Newey, and J. Robins (2018, February). Double/debiased machine learning for treatment and structural parameters. 
+
+The Econometrics Journal 21 (1), C1–C68. Deng, Y., T. Zhang, X. Peng, and Q. Liu (2025, December). Improved two-period difference-in-differences by targeted estimation. Economics Letters 257 , 112600. Dukes, O., S. Vansteelandt, and D. Whitney (2024). On doubly robust inference for double ma-chine learning in semiparametric regression. Journal of Machine Learning Research 25 (279), 1–46. Frölich, M. and M. Lechner (2010, September). Exploiting Regional Treatment Intensity for the Evaluation of Labor Market Policies. Journal of the American Statistical Association 105 (491), 1014–1029. Kennedy, E. H. (2023, January). Semiparametric doubly robust targeted double machine learning: A review. Lan, H., H. Chang, E. Dillon, and V. Syrgkanis (2025, April). A Meta-learner for Heterogeneous Effects in Difference-in-Differences. Miyaji, S. (2025, January). Instrumented Difference-in-Differences with Heterogeneous Treat-ment Effects. Miyaji, S. (2026, February). Instrumented Difference-in-Differences with Heterogeneous Treat-ment Effects. Mogstad, M. and A. Torgovitsky (2024). Instrumental variables with unobserved heterogeneity in treatment effects. In Handbook of labor economics , Volume 5, pp. 1–114. Elsevier. 33 Newey, W. K. (1990). Semiparametric efficiency bounds. Journal of Applied Econometrics 5 (2), 99–135. Sant’Anna, P. H. and J. Zhao (2020, November). Doubly robust difference-in-differences estimators. Journal of Econometrics 219 (1), 101–122. Słoczyński, T., S. D. Uysal, and J. M. Wooldridge (2022). Doubly Robust Estimation of Local Average Treatment Effects Using Inverse Probability Weighted Regression Adjustment . Tan, Z. (2006, December). Regression and Weighting Methods for Causal Inference Using Instrumental Variables. Journal of the American Statistical Association 101 (476), 1607–1618. Tsiatis, A. (2006). Semiparametric Theory and Missing Data . Springer Series in Statistics. New York, NY: Springer New York. van der Laan, M. (2015). Statistics as a science, not an art: the way to survive in data science. 
+
+Amstat News 1 , 292. Van Der Laan, M. J. and S. Rose (2011). Targeted Learning: Causal Inference for Observational and Experimental Data . Springer Series in Statistics. New York, NY: Springer. 34 A Proofs 
+
+A.1 Panel Data Case 
+
+Define the LATT conditional on X:
+
+LAT T (e, t, X ) := E[Yt(1) − Yt(0) | X, E e = 1 , D t(e) > D t(∞)] (74) Also: 
+
+LAT T num (e, t, X ) := LAT T (e, t, X )P (Dt(e) > D t(∞) | X, E e = 1) (75) 
+
+LAT T den (e, t, X ) := P (Dt(e) > D t(∞) | X, E e = 1) (76) such that by definition LAT T (e, t, X ) = LAT T num (e, t, X )/LAT T den (e, t, X ).
+
+Lemma 1. 
+
+E[LAT T num (e, t, X ) | Ee = 1] = LAT T (e, t )P (Dt(e) > D t(∞) | Ee = 1) (77) 
+
+Proof. First, notice: 
+
+E ([ Yt(1) − Yt(0)] 1{Dt(e) > D t(∞)} | X, E e = 1) = E (Yt(1) − Yt(0) | X, E e = 1 , D t(e) > D t(∞)) P (Dt(e) > D t(∞) | X, E e = 1) = LAT T num (e, t, X )
+
+An application of the LIE yields: 
+
+E {LAT T num (e, t, X ) | Ee = 1 }
+
+= E {E ([ Yt(1) − Yt(0)] 1{Dt(e) > D t(∞)} | X, E e = 1) | Ee = 1 }
+
+= E {[Yt(1) − Yt(0)] 1{Dt(e) > D t(∞)} | Ee = 1 }
+
+= E {Yt(1) − Yt(0) | Ee = 1 , D t(e) > D t(∞)} P (Dt(e) > D t(∞) | Ee = 1) = LAT T (e, t )P (Dt(e) > D t(∞) | Ee = 1) 
+
+where the second last equal sign used the LIE together with Monotonicity Assumption 4. 
+
+Proposition 18. 
+
+LAT T (e, t ) = E[LAT T num (e, t, X ) | Ee = 1] 
+
+E[LAT T den (e, t, X ) | Ee = 1] (78) 
+
+Proof. We already have an expression for the numerator in eq. (77). For the denominator, an application of the LIE yields: 
+
+E[LAT T den (e, t, X ) | Ee = 1] = E[P (Dt(e) > D t(∞) | X, E e = 1) | E1 = 1] = P (Dt(e) > D t(∞) | Ee = 1) (79) Combining eqs. (77) and (79) yields eq. (78). 
+
+Proposition 19. Recall mean functions in eq. (16) . eq. (18) . Identification of conditional LATT: 
+
+LAT T (e, t, X ) = mtrt,p e,t (X) − mc,p e,t (X)
+
+gtrt,p e,t (X) − gc,p e,t (X) (80) 35 Proof. Numerator: 
+
+mtrt,p e,t (X) − mc,p e,t (X)= E[∆ t−e+1 Yt | X, E e = 1] − E[∆ t−e+1 Yt | X, C = 1] (81) 
+
+= E[Yt(Dt(e)) − Ye−1(De−1(e)) | X, E e = 1] − E[Yt(Dt(∞)) − Ye−1(De−1(∞)) | X, C = 1] = E[Yt(Dt(e)) − Ye−1(De−1(∞)) | X, E e = 1] − E[Yt(Dt(∞)) − Ye−1(De−1(∞)) | X, C = 1] = E[Yt(Dt(e)) − Yt(Dt(∞)) | X, E e = 1] + E[Yt(Dt(∞)) − Ye−1(De−1(∞)) | X, E e = 1] − E[Yt(Dt(∞)) − Ye−1(De−1(∞)) | X, C = 1] = E[Yt(Dt(e)) − Yt(Dt(∞)) | X, E e = 1] +
+
+> t−e∑
+> l=0
+
+E[∆ Yt−l(Dt−l(∞)) | X, E e = 1] −
+
+> t−e∑
+> l=0
+
+E[∆ Yt−l(Dt−l(∞)) | X, C = 1] = E[Yt(Dt(e)) − Yt(Dt(∞)) | X, E e = 1] = E{[Yt(1) − Yt(0)][ Dt(e) − Dt(∞)] | Ee = 1 , X }
+
+= E (Yt(1) − Yt(0) | Ee = 1 , D t(e) > D t(∞), X ) P (Dt(e) > D t(∞) | X, E e = 1) = LAT T num (e, t, X ) (82) where we in the second equal sign used the definition of the exposed/unexposed outcomes eq. (8), in the third equal sign used Assumption 5, in the fourth equal sign used the add-0-trick; likewise in the fifth equal sign for t − 1, t − 2, . . . , e − 2, using the notation ∆Yt(Dt(∞)) := 
+
+Yt(Dt(∞)) − Yt−1(Dt−1(∞)) ; in the sixth equality used Assumption 7 or Assumption 9, and in the seventh equality used monotonicity Assumption 4 and the LIE. 
+
+Denominator 
+
+gtrt,p e,t (X) − gc,p e,t (X)= E[∆ t−e+1 Dt | X, E e = 1] − E[∆ t−e+1 Dt | X, C = 1] (83) 
+
+= E[Dt(e) − De−1(e) | X, E e = 1] − E[Dt(∞) − De−1(∞) | X, C = 1] = E[Dt(e) − De−1(∞) | X, E e = 1] − E[Dt(∞) − De−1(∞) | X, C = 1] = E[Dt(e) − Dt(∞) | X, E e = 1] + E[Dt(∞) − De−1(∞) | X, E e = 1] − E[Dt(∞) − De−1(∞) | X, C = 1] = E[Dt(e) − Dt(∞) | X, E e = 1] +
+
+> t−e∑
+> l=0
+
+E[∆ Dt−l(∞) | X, E e = 1] −
+
+> t−e∑
+> l=0
+
+E[∆ Dt−l(∞) | X, C = 1] = E[Dt(e) − Dt(∞) | X, E e = 1] = P (Dt(e) > D t(∞) | X, E e = 1) = LAT T den (e, t, X ) (84) using similar steps as for the outcome, the conditional parallel trends in the treatment, Assumption 6 or Assumption 8, and in the last equal sign that Dt(e) − Dt(∞) is binary by monotonicity. Dividing (82) by (84) yields eq. (80). 
+
+Proof of Proposition 1. Taking the conditional expectation conditional on (Ee = 1) in (82) 36 and (84) yields: 
+
+E[E[∆ t−e+1 Yt | X, E e = 1] − E[∆ t−e+1 Yt | X, C = 1] | Ee = 1] 
+
+E[E[∆ t−e+1 Dt | X, E e = 1] − E[∆ t−e+1 Dt | X, C = 1] | Ee = 1] (85) 
+
+= E[mtrt,p e,t (X) − mc,p e,t (X) | Ee = 1] 
+
+E[gtrt,p e,t (X) − gc,p e,t (X) | Ee = 1] = E[LAT T num (e, t, X ) | Ee = 1] 
+
+E[LAT T den (e, t, X ) | Ee = 1] = LAT T (e, t )
+
+where the last equality follows by Proposition 18. 
+
+A.2 Repeated Cross-Sections Case 
+
+Proposition 20. Let C be either of the control variables Cnev and Cnye e,s . Recall the mean functions eq. (17) . Then: 
+
+LAT T num (e, t, X ) = mtrt,rc e,t (X) − mtrt,rc e,e −1(X) − [mrc,c e,t,t (X) − mrc,c e,t,e −1(X)] a.s. (86) 
+
+LAT T den (e, t, X ) = gtrt,rc e,t (X) − gtrt,rc e,e −1(X) − [grc,c e,t,t (X) − grc,c e,t,e −1(X)] a.s. (87) 
+
+Proof. For the numerator: 
+
+mtrt,rc e,t (X) − mtrt,rc e,e −1(X) − [mrc,c e,t,t (X) − mrc,c e,t,e −1(X)] = E[Y | X, E e = 1 , T = t] − E[Y | X, E e = 1 , T = e − 1] 
+
+− (E[Y | X, C = 1 , T = t] − E[Y | X, C = 1 , T = e − 1]) = E[Yt − Ye−1 | Ee = 1 , X ] − E[Yt − Ye−1 | C = 1 , X ]= LAT T num (e, t, X )
+
+where the second last equality follows by Assumption 3(B) and the last equality follows by eq. (82). For the denominator: 
+
+gtrt,rc e,t (X) − gtrt,rc e,e −1(X) − [grc,c e,t,t (X) − grc,c e,t,e −1(X)] = E[D | X, E e = 1 , T = t] − E[D | X, E e = 1 , T = e − 1] 
+
+− (E[D | X, C = 1 , T = t] − E[D | X, C = 1 , T = e − 1]) = E[Dt − De−1 | Ee = 1 , X ] − E[Dt − De−1 | C = 1 , X ]= LAT T den (e, t, X )
+
+where the second last equality follows by Assumption 3(B) and the last equality follows by eq. (84). 
+
+Proof of Proposition 5 
+
+Proof. A similar argument to Lemma 1 and Proposition 18 using the mixture measure PM
+
+allows us to write the LAT T (e, t ) estimand in the ratio form as: 
+
+LAT T (e, t ) = E[LAT T num (e, t, X ) | Ee = 1 , T = t]
+
+E[LAT T den (e, t, X ) | Ee = 1 , T = t] (88) 37 Next, exploiting that LAT T num (e, t, X ) and LAT T den (e, t, X ) are functions of X only, and the invariance in Assumption 3(B), yields: 
+
+E[LAT T num (e, t, X ) | Ee = 1 , T = t]
+
+E[LAT T den (e, t, X ) | Ee = 1 , T = t]= E[LAT T num (e, t, X ) | Ee = 1] 
+
+E[LAT T den (e, t, X ) | Ee = 1] (89) 
+
+= E[mtrt,rc e,t (X) − mtrt,rc e,e −1(X) − [mrc,c e,t,t (X) − mrc,c e,t,e −1(X)] | Ee = 1] 
+
+E[gtrt,rc e,t (X) − gtrt,rc e,e −1(X) − [grc,c e,t,t (X) − grc,c e,t,e −1(X)] | Ee = 1] 
+
+where the last equality follows from Proposition 20. 
+
+A.3 Other Proofs 
+
+Proof of Proposition 9. For the panel case, write the normalized control weights eqs. (20) and (21) as wc,p e,t (C, X ; π), where π is a propensity score model and C is a generic control indicator. For the repeated cross-sections case, write the normalized control weights eqs. (23) and (24) as wc,rc e,t (C, X ; π), suppressing the period subscript s in the not-yet-exposed case. Similarly, write μc,rc e,t (X) and ηc,rc e,t (X) for working models of mc,rc e,t (X) and gc,rc e,t (X), again suppressing the period subscript s.Akin to Callaway and Sant’Anna (2021), the normalizations of the weights eqs. (21) and (23) reduce under correct specification, in the panel case, as: 
+
+E
+
+[
+
+C p(X)1 − p(X)
+
+]
+
+= E[Ee], (90) and in the repeated cross-sections case, eqs. (23) and (24), as 
+
+E
+
+[ C · 1{T = t}p(X)1 − p(X)
+
+]
+
+= E[Ee] · λt, (91) matching the normalization constants from the influence function panel data eq. (119) and repeated cross-sections eq. (127). Also, in the repeated cross-sections case, 
+
+E[Ee · 1{T = t}] = E[Ee] · λt (92) by the invariance assumption in Assumption 3(B). 
+
+Case 1: Panel Data and propensity correctly specified: π(X) = p(X) a.s. Write: 
+
+E[{wtrt,p e − wc,p e,t (C, X ; π)}{ ∆t−e+1 Yt − μc,p e,t (X)}]= E[{wtrt,p e − wc,p e,t (C, X ; p)}{ ∆t−e+1 Yt − μc,p e,t (X)}]= E[{wtrt,p e − wc,p e,t (C, X ; p)}∆t−e+1 Yt] − E[{wtrt,p e − wc,p e,t (C, X ; p)}μc,p e,t (X)] 
+
+The second term equals 0 by a LIE application: 
+
+E
+
+
+
+Ee
+
+E[Ee] − C p(X)1−p(X)
+
+E [
+
+C p(X)1−p(X)
+
+] μc,p e,t (X)
+
+ = E
+
+[{ Ee
+
+E[Ee] − CE[Ee]
+
+p(X)1 − p(X)
+
+}
+
+μc,p e,t (X)
+
+]
+
+= E
+
+[{ p(X)
+
+E[Ee] − 1 − p(X)
+
+E[Ee]
+
+p(X)1 − p(X)
+
+}
+
+μc,p e,t (X)
+
+]
+
+= 0 
+
+38 using eq. (90), and Ee + C = 1 so P (C = 1 | X) = 1 − P (Ee = 1 | X) = 1 − p(X). For the first term we have similarly: 
+
+E
+
+[{ Ee
+
+E[Ee] − CE[Ee]
+
+p(X)1 − p(X)
+
+}
+
+∆t−e+1 Yt
+
+]
+
+= E [∆ t−e+1 Yt | Ee = 1] − 1
+
+E[Ee]E
+
+[ p(X)1 − p(X)E[C | X]E[∆ t−e+1 Yt | X, C = 1] 
+
+]
+
+= E [E[∆ t−e+1 Yt | X, E e = 1] | Ee = 1] − 1
+
+E[Ee]E [p(X)E[∆ t−e+1 Yt | X, C = 1]] = E [E[∆ t−e+1 Yt | X, E e = 1] − E[∆ t−e+1 Yt | X, C = 1] | Ee = 1] 
+
+i.e. the numerator of eq. (85). A similar argument applied to the denominator yields: 
+
+E
+
+
+
+Ee
+
+E[Ee] − C p(X)1−p(X)
+
+E [
+
+C p(X)1−p(X)
+
+] ηc,p e,t (X)
+
+ = 0 
+
+and 
+
+E
+
+[{ Ee
+
+E[Ee] − CE[Ee]
+
+p(X)1 − p(X)
+
+}
+
+∆t−e+1 Dt
+
+]
+
+= E [E[∆ t−e+1 Dt | X, E e = 1] − E[∆ t−e+1 Dt | X, C = 1] | Ee = 1] 
+
+i.e. the denominator of eq. (85). Taking this together yields the identification 
+
+τ dr,p e,t = E[{wtrt,p e − wc,p e,t (C, X ; p)}{ ∆t−e+1 Yt − μc,p e,t (X)}]
+
+E[{wtrt,p e − wc,p e,t (C, X ; p)}{ ∆t−e+1 Dt − ηc,p e,t (X)}] = LAT T (e, t ).
+
+Case 2: Panel data and outcome regressions correctly specified In this case, 
+
+μc,p e,t (X) = mc,p e,t (X) a.s. , ηc,p e,t (X) = gc,p e,t (X) a.s. Consider the numerator: 
+
+E[{wtrt,p e − wc,p e,t (C, X ; π)}{ ∆t−e+1 Yt − μc,p e,t (X)}]= E[{wtrt,p e − wc,p e,t (C, X ; π)}{ ∆t−e+1 Yt − mc,p e,t (X)}]= E
+
+[ Ee
+
+E[Ee]{E[∆ t−e+1 Yt | X, E e = 1] − mc,p e,t (X)}
+
+]
+
+− E
+
+ C π(X)1−π(X)
+
+E [
+
+C π(X)1−π(X)
+
+] {E[∆ t−e+1 Yt | X, C = 1] − mc,p e,t (X)}
+
+
+
+= E [
+
+mtrt,p e,t (X) − mc,p e,t (X) | Ee = 1 ]
+
+using the definitions eq. (16). Similarly for the denominator, 
+
+E[{wtrt,p e − wc,p e,t (C, X ; π)}{ ∆t−e+1 Dt − ηc,p e,t (X)}] = E [
+
+gtrt,p e,t (X) − gc,p e,t (X) | Ee = 1 ]
+
+These two terms constitute again the fraction eq. (85), hence: 
+
+τ dr,p e,t = E[{wtrt,p e − wc,p e,t (C, X ; π)}{ ∆t−e+1 Yt − mc,p e,t (X)}]
+
+E[{wtrt,p e − wc,p e,t (C, X ; π)}{ ∆t−e+1 Dt − gc,p e,t (X)}] = LAT T (e, t ).
+
+39 Case 3: Repeated cross-sections and propensity score model correctly specified: 
+
+π(X) = p(X) a.s. Consider the numerator of eq. (39). As in Sant’Anna and Zhao (2020), by Assumption 3(B), for any generic integrable and measurable function μ, E[μ(X)|Ee = 1] = 
+
+E[μ(X)|Ee = 1 , T = t] for any t. Thus, 
+
+E[κY,rc e,t ] = 0 , (93) Hence: 
+
+E[{wtrt,rc e − wc,rc e (X, C ; π)}{ Y − μc,rc e,Y (X)} + κY,rc e,t ]= E[{wtrt,rc e − wc,rc e (X, C ; p)}Y ] − E[{wtrt,rc e − wc,rc e (X, C ; p)}μc,rc e,Y (X)] (94) Hence, 
+
+E[wtrt,rc e | X] = E[wtrt,rc e,t | X] − E[wtrt,rc e,e −1 | X]= E[Ee · 1{T = t} | X]
+
+E[Ee] · λt
+
+− E[Ee · 1{T = e − 1} | X]
+
+E[Ee] · λe−1
+
+= p(X)λt
+
+E[Ee] · λt
+
+− p(X)λe−1
+
+E[Ee] · λe−1
+
+= 0 
+
+using eq. (92) and that T is invariant to X cf. Assumption 3(B). For the control weights: 
+
+E[wc,rc e (X, C ; p) | X] = E[wc,rc e,t (X, C ; p) | X] − E[wc,rc e,e −1(X, C ; p) | X]= 1
+
+E[Ee] · λt
+
+E
+
+[ C · 1{T = t}p(X)1 − p(X) | X
+
+]
+
+− 1
+
+E[Ee] · λe−1
+
+E
+
+[ C · 1{T = e − 1}p(X)1 − p(X) | X
+
+]
+
+= p(X)λt
+
+E[Ee] · λt
+
+− p(X)λe−1
+
+E[Ee] · λe−1
+
+= 0 .
+
+Combining these two, we have 
+
+E[{wtrt,rc e − wc,rc e (X, C ; p)}μc,rc e,Y (X)] = E[E[wtrt,rc e − wc,rc e (X, C ; p) | X]μc,rc e,Y (X)] = 0 .
+
+Thus we are only left with the first term in eq. (94). Consider first: 
+
+E[wtrt,rc e Y ] = E[wtrt,rc e,t Y ] − E[wtrt,rc e,e −1Y ]
+
+For the first term: 
+
+E[wtrt,rc e,t Y ] = E
+
+[ Ee · 1{T = t}
+
+E[Ee · 1{T = t}]Y
+
+]
+
+= E
+
+[ Ee · 1{T = t}
+
+E[Ee] · λt
+
+E[Y | X, E e, T ]
+
+]
+
+= E
+
+[ Ee · 1{T = t}
+
+E[Ee] · λt
+
+E[Y | X, E e = 1 , T = t]
+
+]
+
+= E
+
+[ Ee
+
+E[Ee]mtrt,rc e,t (X)
+
+]
+
+= E [
+
+mtrt,rc e,t (X) | Ee = 1 ]
+
+, (95) 40 where we in the second last equal sign again used the invariance assumption of Assumption 3(B). With the exact same reasoning, 
+
+E[wtrt,rc e,e −1Y ] = E [
+
+mtrt,rc e,e −1(X) | Ee = 1 ]
+
+. (96) Next, consider: 
+
+E[wc,rc e (X, C ; p)Y ] = E[wc,rc e,t (X, C ; p)Y ] − E[wc,rc e,e −1(X, C ; p)Y ].
+
+Expanding out the definitions: 
+
+E[wc,rc e,t (X, C ; p)Y ] = E
+
+[( C · 1{T = t}p(X)1 − p(X) /E 
+
+[ C · 1{T = t}p(X)1 − p(X)
+
+]) 
+
+Y
+
+]
+
+= 1
+
+E[Ee] · λt
+
+E
+
+[ C · 1{T = t}p(X)1 − p(X) Y
+
+]
+
+= 1
+
+E[Ee] · λt
+
+E
+
+[ C · 1{T = t}p(X)1 − p(X) E[Y | X, C, T ]
+
+]
+
+= 1
+
+E[Ee] · λt
+
+E
+
+[ E[C | X] · E[1{T = t} | X]p(X)1 − p(X) E[Y | X, C = 1 , T = t]
+
+]
+
+= 1
+
+E[Ee]E [
+
+p(X)mrc,c e,t (X)]
+
+= 1
+
+E[Ee]E [
+
+Eemrc,c e,t (X)]
+
+= E [
+
+mrc,c e,t (X) | Ee = 1 ]
+
+(97) where we in the first equal sign used eq. (91) and the LIE repeatedly. With the exact same reasoning, 
+
+E[wc,rc e,e −1(X, C ; p)Y ] = E [
+
+mrc,c e,e −1(X) | Ee = 1 ]
+
+. (98) Combining eqs. (95) to (98) we have 
+
+E[{wtrt,rc e − wc,rc e (X, C ; p)}{ Y − μc,rc e,Y (X)} + κY,rc e,t ]= E[mtrt,rc e,t (X) − mtrt,rc e,e −1(X) − [mc,rc e,t (X) − mc,rc e,e −1(X)] | Ee = 1] .
+
+The exact same calculations apply to the denominator of eq. (39), yielding: 
+
+E[{wtrt,rc e − wc,rc e (X, C ; p)}{ D − ηc,rc e,Y (X)}] + κD,rc e,t 
+
+= E[gtrt,rc e,t (X) − gtrt,rc e,e −1(X) − [gc,rc e,t (X) − gc,rc e,e −1(X)] Ee = 1] .
+
+Combining the above two expressions we have, using eq. (33), the result: 
+
+E[{wtrt,rc e − wc,rc e (X, C ; p)}{ Y − μc,rc e,Y (X)} + κY,rc e,t 
+
+E[{wtrt,rc e − wc,rc e (X, C ; p)}{ D − ηc,rc e,Y (X)}] + κD,rc e,t 
+
+= τ rc e,t = LAT T (e, t ).
+
+Case 4: Repeated cross-sections and outcome regressions correctly specified In this case: 
+
+μrc,trt e,t (X) = mtrt,rc e,t (X) a.s. , μrc,c e,s,t (X) = mrc,c e,s,t (X) a.s. ,ηrc,trt e,t (X) = gtrt,rc e,t (X) a.s. , ηrc,c e,s,t (X) = grc,c e,s,t (X) a.s. .
+
+41 We consider again the numerator of eq. (39). In this case, note that κY,rc e,t consists of the misspecified outcome regressions. However, the misspecified functions are also just measurable functions of X, and thus eq. (93) still holds. Hence, 
+
+E[{wtrt,rc e − wc,rc e (C, X ; π)}{ Y − μc,rc e,Y (X)} + κY,rc e,t ]= E[{wtrt,rc e − wc,rc e (C, X ; π)}{ Y − mc,rc e,Y (X)}]= E[wtrt,rc e {Y − mc,rc e,Y (X)}] − E[wc,rc e (C, X ; π){Y − mc,rc e,Y (X)}]
+
+By a consequence of the time indicators in the weights, wc,rc e (C, X ; π), we have, using the LIE: 
+
+E[wc,rc e (C, X ; π){Y − mc,rc e,Y (X)}]= E[wc,rc e (C, X ; π){E[Y | X, C, T ] − mc,rc e,Y (X)}]= E[wc,rc e (C, X ; π){mc,rc e,Y (X) − mc,rc e,Y (X)}]= 0 
+
+where the second last equality follows by constructing the mean function eq. (34) under the expectation operator and multiplied by the time period indicators. Next, 
+
+E[wtrt,rc e {Y − mc,rc e,Y (X)}] = E[wtrt,rc e Y ] − E[wtrt,rc e mc,rc e,Y (X)] 
+
+For the first term in the expression above, eqs. (95) and (96) gives: 
+
+E[wtrt,rc e Y ] = E[mtrt,rc e,t (X) − mtrt,rc e,e −1(X) | Ee = 1] . (99) For the second term, we can expand the definitions as: 
+
+E[wtrt,rc e mc,rc e,Y (X)] = E
+
+[( Ee · 1{T = t}
+
+E[Ee] · λt
+
+− Ee · 1{T = e − 1}
+
+E[Ee] · λe−1
+
+)
+
+× (1{T = t} · mc,rc e,t,t (X) + 1{T = e − 1} · mc,rc e,t,e −1(X)) 
+
+]
+
+= E
+
+[ Ee · 1{T = t}
+
+E[Ee] · λt
+
+· mc,rc e,t,t (X) − Ee · 1{T = e − 1}
+
+E[Ee] · λe−1
+
+mc,rc e,t,e −1(X)) 
+
+]
+
+= E
+
+[ E[Ee · 1{T = t} | X]
+
+E[Ee] · λt
+
+· mc,rc e,t,t (X) − E[Ee · 1{T = e − 1} | X]
+
+E[Ee] · λe−1
+
+mc,rc e,t,e −1(X)) 
+
+]
+
+= E
+
+[ p(X){mc,rc e,t,t (X) − mc,rc e,t,e −1(X)) }
+
+E[Ee]
+
+]
+
+= E
+
+[ p(X){mc,rc e,t,t (X) − mc,rc e,t,e −1(X)) }
+
+E[Ee]
+
+]
+
+= E[mc,rc e,t (X) − mc,rc e,e −1(X) | Ee = 1] . (100) where we in the last equal sign went backwards from a LIE application and used the definition of the conditional expectation. Thus, by eqs. (99) and (100): 
+
+E[{wtrt,rc e − wc,rc e (C, X ; π)}{ Y − μc,rc e,Y (X)} + κY,rc e,t ]= E[mtrt,rc e,t (X) − mtrt,rc e,e −1(X) − [mc,rc e,t (X) − mc,rc e,e −1(X)] | Ee = 1] . (101) Again, the exact same calculations apply to the denominator of eq. (39), yielding: 
+
+E[{wtrt,rc e − wc,rc e (C, X ; π)}{ D − ηc,rc e,Y (X)} + κD,rc e,t ]= E[gtrt,rc e,t (X) − gtrt,rc e,e −1(X) − [gc,rc e,t (X) − gc,rc e,e −1(X)] | Ee = 1] . (102) 42 Combining eqs. (101) and (102), and again using eq. (33), we have the double robustness result: 
+
+E[{wtrt,rc e − wc,rc e (C, X ; π)}{ Y − μc,rc e,Y (X)} + κY,rc e,t ]
+
+E[{wtrt,rc e − wc,rc e (C, X ; π)}{ D − ηc,rc e,Y (X)} + κD,rc e,t ] = τ rc e,t = LAT T (e, t ).
+
+Proof of Proposition 10. First note that, as Ee + C = 1 , the event (C = 0) is equivalent to 
+
+(Ee = 1) . Thus, taking the contrapositive of eq. (48) yields: 
+
+Dt = 1 = ⇒ Ee = 1 . (103) Consider the numerator eq. (81). The control term equals: 
+
+E[Yt − Ye−1 | X, C = 1] = E[Yt(0) − Ye−1(0) | X, C = 1] 
+
+using eqs. (6) and (48). Using eq. (6) again, the treated term equals: 
+
+E[Yt − Ye−1 | X, E e = 1] = E
+
+> [
+
+Yt(0) − Ye−1(0) + [ Yt(1) − Yt(0)] Dt + [ Ye−1(1) − Ye−1(0)] De−1 | X, E e = 1 
+
+> ]
+
+= E[Yt(0) − Ye−1(0) | X, E e = 1] + E[τtDt | X, E e = 1] 
+
+where we used that Ee = 1 implies De−1 = 0 , since the unit has not yet been exposed in period e − 1, and defined τt := Yt(1) − Yt(0) . By the exclusion restriction, Assumption 2, the instrument is independent of the potential outcomes, hence 
+
+E[Yt(0) − Ye−1(0) | X, E e = 1] − E[Yt(0) − Ye−1(0) | X, C = 1] = 0 .
+
+Taking these expressions together, the numerator eq. (81) equals: 
+
+E[Yt − Ye−1 | X, E e = 1] − E[Yt − Ye−1 | X, C = 1] = E[τtDt | X, E e = 1] 
+
+Similarly, for the denominator eq. (83), 
+
+E[Dt − De−1 | X, E e = 1] − E[Dt − De−1 | X, C = 1] = P (Dt = 1 | X, E e = 1) 
+
+by the same argument. Applying the LIE to the numerator yields: 
+
+E [E[τtDt | X, E e = 1] | Ee = 1] = E[τtDt | Ee = 1] = E[τt | Dt = 1 , E e = 1] P (Dt = 1 | Ee = 1) (104) Likewise for the denominator, 
+
+E[P (Dt = 1 | X, E e = 1) | Ee = 1] = P (Dt = 1 | Ee = 1) . (105) Hence, dividing eq. (104) by eq. (105) yields: 
+
+E[τt | Dt = 1 , E e = 1] P (Dt = 1 | Ee = 1) 
+
+P (Dt = 1 | Ee = 1) . = E[τt | Dt = 1 , E e = 1] (106) 43 That treatment is absorbing implies that units can be uniquely partitioned into the treatment-cohort groups G, eq. (50). The event (Dt = 1) consists of all individuals treated at time 
+
+t, which by the previous point can be written as a union over the cohort groups, (Dt =1) = ∪g≤t(Gg = 1) . Moreover, we can write the observed outcome in terms of the potential outcomes and treatment cohort indicator variables cf. Callaway and Sant’Anna (2021) as 
+
+Yt = Yt(0) + ∑T
+
+> g=2
+
+[Yt(g) − Yt(0)] Gg. In this case, the individual time t treatment effect can be written as τt = Yt(g) − Yt(0) . Hence, we can further decompose eq. (106) as: 
+
+E[τt | Dt = 1 , E e = 1] = E[τt | ∪ g≤t(Gg = 1) , E e = 1] = ∑
+
+> g≤t
+
+E[τt | Gg = 1 , ∪g≤t(Gg = 1) , E e = 1] P (Gg = 1 | ∪ g≤t(Gg = 1) , E e = 1) = ∑
+
+> g≤t
+
+E[Yt(g) − Yt(0) | Gg = 1 , E e = 1] P (Gg = 1 | Dt = 1 , E e = 1) = ∑
+
+> g≤t
+
+AT T (g, t, e )P (Gg = 1 | Dt = 1 , E e = 1) 
+
+proving eq. (49) and the proposition. 44 B Influence Functions 
+
+In the following, we derive the DR estimands and corresponding EIFs in both data settings. As an overview of the construction, Table 6 summarizes the main steps. In both sampling schemes, we first express the identified LATT as a ratio of two simple ATT parameters; see Remark 8. We then derive the LATT EIF by applying the quotient rule (eq. (113); to be defined), and use this representation to construct the corresponding doubly robust estimand and its EIF. Figure 4 illustrates this schematically 17 .
+
+Remark 8 (Relabeling DiD objects for IDiD) . As shown in Section 2, identification yields initial LATT estimands that are ratios of two ATT-type parameters, eqs. (18) and (33). We then derive EIFs for general ATT-type parameters corresponding to DiD with panel data and repeated cross-sections, and with the tools developed section B.1, use these DiD objects together with the ratio structure to get corresponding IDiD objects. Specifically, we apply the DiD formulas to each relevant 2 × 2 comparison, replacing the DiD group indicator with the exposed-cohort indicator Ee and the control indicator with the corresponding control variable C. In the panel case, the outcome is replaced by ∆t−e+1 Yt in the numerator and by ∆t−e+1 Dt in the denominator. In the repeated cross-sections case, the same replacement is applied separately to the treated and control mean components in periods 
+
+t and e − 1, using Y in the numerator and D in the denominator. Table 6: Roadmap of identification, influence functions, and doubly robust estimands 
+
+Step Panel data Repeated cross-sections DiD estimand and EIF eqs. (117) and (118) eqs. (123) and (125) LATT identification eq. (18) eq. (33) LATT EIF eq. (27) eq. (38) DR estimand and EIF eqs. (31) and (32) eqs. (39) and (44)  
+
+> DiD esti-mand + EIF eqs. (117) and (118)
+> Panel data
+> LATT iden-tification eq. (18)
+> LATT EIF eq. (27)
+> DR esti-mand + EIF eqs. (31) and (32)
+> Repeated cross-sections
+> DiD esti-mand + EIF eqs. (123) and (125)
+> LATT iden-tification eq. (33)
+> LATT EIF eq. (38)
+> DR esti-mand + EIF eqs. (39) and (44)
+> ATT ratio + relabeling + normalization
+> quotient rule
+> EE and EIF derivation
+> ATT ratio + relabeling + normalization
+> quotient rule EE and EIF derivation
+
+Figure 4: Roadmap from simple DiD objects to DR estimands and EIF for the LATT. The “ATT ratio + relabeling” step is described in Remark 8. The "+ normalization" step refers to normalizing the control weights after relabeling. The “EE and EIF derivation” step means we derive the DR estimand using the estimation equation approach shown in eq. (29) and then derive the DR estimand’s EIF. 
+
+> 17 See also Table 7 for a comparison between DiD (two-period and staggered adoption) and the more general IDiD framework considered in this paper.
+
+45 Two-period DiD CSA (DiD) IDiD Timing structure Single treatment Staggered treatment Staggered exposure Group variable D G := min {t | Dt = 1 }; Gg = 1{G = g} E := min {t | Zt = 1 }; Ee = 1{E = e}                                                                                           
+
+> Target parameter AT T =E[Yt(1) −Yt(0) |D= 1] AT T (g, t ) = E[Yt(g)−Yt(0) |Gg= 1] LAT T (e, t ) = E[Yt(1) −Yt(0) |Ee= 1 , D t(e)> D t(∞)]
+> Control group(s) D= 0 C:= 1{G=∞} = 1 or (1 −Ds)(1 −Gg) = 1 Cnev := 1{E=∞} = 1 or Cnye e,s = 1
+> Propensity score(s) p(X) = P(D= 1 |X)pg(X) = P(Gg= 1 |X, G g+C= 1)
+> or pg,s (X) = P(Gg= 1 |X, G g+ (1 −Ds)(1 −Gg) = 1)
+> pe(X) = P(Ee= 1 |X, E e+Cnev = 1)
+> or pe,s (X) := P(Ee= 1 |X, E e+Cnye e,s = 1)
+> Notes : The table compares the treatment definition, causal estimand, and propensity score(s) used in classical two-period DiD e.g. Sant’Anna and Zhao (2020), DiD with staggered adoption Callaway and Sant’Anna (2021), and general IDiD with staggered exposure and covariates. The control variables for the IDiD setup are given in eq. (2).
+
+Table 7: Comparison of treatment indicators, estimands, and propensity scores across designs. 
+
+B.1 EIF derivation strategy 
+
+Instead of using the tangent space approach as in Sant’Anna and Zhao (2020) (which follows the tradition in the econometrics literature cf. Newey (1990)), we follow the approach of Kennedy (2023) to derive the EIFs in a nonparametric model. Specifically, we use Kennedy’s “Strategy 2”, which consists of: 1. Computing Gateaux derivatives assuming data are discrete 2. Using derivative rules with simple influence functions as building blocks Below, we state the strategy for completeness. 
+
+Strategy 2 Kennedy (2023) Introduce the operator 
+
+IF : Ψ → L2(P ),
+
+mapping functionals ψ : P → R (i.e. estimands) to their influence functions φ ∈ L2(P ) in a nonparametric model. The strategy to derive efficient influence functions in a nonparametric model can then be stated as follows: 
+
+Trick 1. Pretend the data are discrete 
+
+Trick 2. Treat influence functions as derivatives, allowing use of differentiation rules 
+
+Trick 2a. (Product rule) 
+
+IF (ψ1ψ2) = IF (ψ1) ψ2 + ψ1 IF (ψ2). (107) 
+
+Trick 2b. (Chain rule) 
+
+IF (f (ψ)) = f ′(ψ) IF (ψ).
+
+Trick 3. Use influence function building blocks . E.g. that the influence function of the density p(x) equals: 
+
+IF (p(x)) = 1{X = x} − p(x), (108) the influence function of the expectation E[Y ] equals 
+
+IF (E[Y ]) = Y − E[Y ], (109) and the influence function of the conditional expectation E[Y | X = x] equals: 
+
+IF (E[Y | X = x]) = 1{X = x}
+
+P (X = x) {Y − E[Y | X = x]}. (110) 46 B.2 Building Blocks 
+
+In this section, we derive some more building blocks that we will use to arrive at the main influence functions for the LATT parameter in the panel-data and repeated-cross-sections settings. 
+
+Influence Function Probability Let D ∈ { 0, 1} be binary. Using the building block eq. (109) we derive the influence function of the probability P (D = 1) as: 
+
+IF (P (D = 1)) = IF (E[1{D = 1 }]) = 1{D = 1 } − P (D = 1) . (111) where we used that D is binary. In a similar fashion, using the building block eq. (110), we derive the influence function of the conditional probability P (D = 1 | X = x) as: 
+
+IF (P (D = 1 | X = x)) = IF (E(D | X = x)) = 1{X = x}
+
+P (X = x) {D − P (D = 1 | X = x)}. (112) 
+
+Quotient Rule for Influence Functions We can also derive the influence function of an estimand that is a ratio of two parameters: 
+
+ψratio = ψnum 
+
+ψden 
+
+which is done as follows: 
+
+IF (ψratio ) = IF  
+
+> (
+
+ψnum 
+
+ψden 
+
+> )
+
+= IF (ψnum )
+
+ψden + ψnum IF  
+
+> (
+
+1
+
+ψden 
+
+> )
+
+= IF (ψnum )
+
+ψden − ψnum 1(ψden )2 IF (ψden )= IF (ψnum )
+
+ψden − ψnum 
+
+ψden 
+
+IF (ψden )
+
+ψden 
+
+= 1
+
+ψden 
+
+> [
+
+IF (ψnum ) − ψratio IF (ψden )]
+
+, (113) where the second equality follows by Trick 2a, the third equality follows by Trick 2b, and the rest by simple algebra. 
+
+Ratio Estimand Linear IF Often we can write the influence functions for the numerator and denominator as linear in their respective target parameter weighted by some (possibly data and nuisance-function-dependent) weight w(O; η):
+
+IF (ψnum ) = ϕnum (·; ηnum ) − w(·; η)ψnum , IF (ψden ) = ϕden (·; ηden ) − w(·; η)ψden . (114) In this case, eq. (113) equals: 
+
+IF (ψratio ) = 1
+
+ψden 
+
+> [
+
+ϕnum (·; ηnum ) − ψratio ϕden (·; ηden )]
+
+(115) as −w(ηnum )ψnum  
+
+> ψden
+
++ 1 
+
+> ψden
+> ψnum
+> ψden
+
+w(η)ψden = 0 .
+
+47 Influence Function Conditional Density Let again D ∈ 0, 1 be binary. We derive the influence function of the conditional density pX|D(x | d) using the building blocks established above. The influence functions of the joint and marginal density equal: 
+
+IF (pD(1)) = 1{D = 1 } − pD(1) 
+
+IF (pX,D (x, 1)) = 1{X = x, D = 1 } − pX,D (x, 1) .
+
+With the above and the quotient rule eq. (113), we derive the influence function as: 
+
+IF (pX|D(x | 1)) = IF  
+
+> (
+
+pX,D (x, 1) 
+
+pD(1) 
+
+> )
+
+= 1
+
+pD(1) 
+
+> [
+
+IF (pX,D (x, 1)) − pX,D (x, 1) 
+
+pD(1) IF (pD(1)) 
+
+> ]
+
+= 1
+
+pD(1) 
+
+> [
+
+{1{X = x, D = 1 } − pX,D (x, 1) } − pX,D (x, 1) 
+
+pD(1) {1{D = 1 } − pD(1) }
+
+> ]
+
+= 1
+
+pD(1) 
+
+> [
+
+{D1{X = x} − pX,D (x, 1) } − 
+
+> {
+
+D pX,D (x, 1) 
+
+pD(1) − pX,D (x, 1) 
+
+> }]
+
+= DpD(1) 
+
+> [
+
+1{X = x} − pX,D (x, 1) 
+
+pD(1) 
+
+> ]
+
+= DpD(1) 
+
+> [
+
+1{X = x} − pX|D(x | 1) ]
+
+. (116) 
+
+B.3 ATT parameter 
+
+B.3.1 Panel case Proposition 21. Let D ∈ 0, 1 be binary, X some vector of covariates and ∆Y := Y1 − Y0 the differenced outcome variable. Define the estimand of interest to be the average treatment effect on the treated when panel data is available: 
+
+τ p = E[E[∆ Y | D = 1 , X ] − E[∆ Y | D = 0 , X ] | D = 1] (117) 
+
+= E[μ(1 , X ) − μ(0 , X ) | D = 1] 
+
+for μ(d, x ) := E[∆ Y | D = d, X = x]18 . Then the influence function of τ p equals: 
+
+φ(O; τ p, η p) = {wp 
+
+> 1
+
+(D) − wp 
+
+> 0
+
+(D, X ; p)} { ∆Y − μ(0 , X )} − Dρ τ p (118) 
+
+where ρ := P (D = 1) , p(X) := P (D = 1 | X) and 
+
+wp 
+
+> 1
+
+(D) := Dρ , wp 
+
+> 0
+
+(D, X ; p) := (1 − D)
+
+ρp(X)1 − p(X). (119) 
+
+Remark 9. An equivalent representation of the influence function eq. (118) follows from 
+
+wp 
+
+> 1
+
+(D) − wp 
+
+> 0
+
+(D, X ; p) = D[1 − p(X)] − (1 − D)p(X)
+
+ρ[1 − p(X)] = D − p(X)
+
+ρ[1 − p(X)] 
+
+> 18 This estimable parameter identifies the ATT in the two-period DiD setup assuming no anticipation and parallel trends.
+
+48 such that 
+
+φ(O; τ p, η p) = D − p(X)
+
+ρ[1 − p(X)] {∆Y − μ(0 , X )} − Dρ τ p.
+
+We retain the formulation in eq. (118), as the distinction between treated and control weights is more convenient for extensions to the LAT T estimands. 
+
+Proof. Split up the estimand in two parts: 
+
+τ p = ψ1 − ψ2,ψ1 := E[μ(1 , X ) | D = 1] = 
+
+> ∫
+
+μ(1 , x )dP (X ∈ dx | D = 1) ,ψ2 := E[μ(0 , X ) | D = 1] = 
+
+> ∫
+
+μ(0 , x )dP (X ∈ dx | D = 1) .
+
+Influence function of ψ1. We proceed as follows: 
+
+IF (ψ1)= IF 
+
+> (∑
+> x
+
+μ(1 , x )pX|D(x | 1) 
+
+> )
+
+= ∑
+
+> x
+> [
+
+IF {μ(1 , x )}pX|D(x | 1) + μ(1 , x )IF {pX|D(x | 1) }]
+
+= ∑ 
+
+> x
+> (
+
+1{X = x, D = 1 }
+
+pX,D (x, 1) {∆Y − μ(1 , x )}pX|D(x | 1) + μ(1 , x ) 
+
+> [
+
+DpD(1) 
+
+> {
+
+1{X = x} − pX|D(x | 1) }]) 
+
+= ∑
+
+> x
+> (
+
+D 1{X = x}
+
+pD(1) {∆Y − μ(1 , x )} + μ(1 , x ) 
+
+> [
+
+DpD(1) 
+
+> {
+
+1{X = x} − pX|D(x | 1) }]) 
+
+= ∑
+
+> x
+
+D 1{X = x}
+
+pD(1) {∆Y − μ(1 , x )} + ∑
+
+> x
+
+1{X = x} DpD(1) μ(1 , x ) − ∑
+
+> x
+
+pX|D(x | 1) DpD(1) μ(1 , x )= DpD(1) {∆Y − μ(1 , X )} + DpD(1) μ(1 , X ) − ∑
+
+> x
+
+DpD(1) μ(1 , x )pX|D(x | 1) = Dρ {∆Y − μ(1 , X )} + Dρ μ(1 , X ) − Dρ ψ1 (120) where we in the first equality used Trick 1, in the second equality used Trick 2a, and defined 
+
+ρ := pD(1) = P (D = 1) .
+
+Influence function of ψ2. Using the identity: 
+
+pX|D(x | 1) 
+
+pX,D (x, 0) = pX,D (x, 1) /p D(1) 
+
+pD|X (0 | x)p(x) = 1
+
+pD(1) 
+
+pD|X (1 | x)1 − pD|X (1 | x) (121) we get: 
+
+IF (ψ2)= ∑
+
+> x
+> [
+
+IF {μ(0 , x )}pX|D(x | 1) + μ(0 , x )IF {pX|D(x | 1) }]
+
+= ∑ 
+
+> x
+> (
+
+1{X = x, D = 0 }
+
+pX,D (x, 0) {∆Y − μ(0 , x )}pX|D(x | 1) + μ(0 , x ) 
+
+> [
+
+DpD(1) 
+
+> {
+
+1{X = x} − pX|D(x | 1) }]) 
+
+= ∑
+
+> x
+> (
+
+(1 − D)1{X = x}
+
+pD(1) 
+
+pD|X (1 | x)1 − pD|X (1 | x){∆Y − μ(0 , x )} + μ(0 , x ) 
+
+> [
+
+DpD(1) 
+
+> {
+
+1{X = x} − pX|D(x | 1) }]) 
+
+= (1 − D)
+
+ρp(X)1 − p(X){∆Y − μ(0 , X )} + Dρ μ(0 , X ) − Dρ ψ0 (122) 49 where we in the third equality used (121), and defined p(X) := pD|X (1 | x) = P (D = 1 | X).
+
+Combining Influence functions. Combining eqs. (120) and (122): 
+
+IF (τ p)= IF (ψ1) − IF (ψ2)= Dρ {∆Y − μ(1 , X )} + Dρ μ(1 , X ) − Dρ ψ1
+
+− 
+
+> (
+
+(1 − D)
+
+ρp(X)1 − p(X){∆Y − μ(0 , X )} + μ(0 , X )Dρ − Dρ ψ0
+
+> )
+
+= Dρ {∆Y − μ(1 , X )} − (1 − D)
+
+ρp(X)1 − p(X){∆Y − μ(0 , X )} + Dρ [μ(1 , X ) − μ(0 , X )] − Dρ [ψ1 − ψ0]= Dρ {∆Y − μ(1 , X )} − (1 − D)
+
+ρp(X)1 − p(X){∆Y − μ(0 , X )} + Dρ [μ(1 , X ) − μ(0 , X ) − τ p]
+
+which matches the expression in the appendix of (Sant’Anna and Zhao, 2020, p. 6). This expression can be further reduced as: 
+
+IF (τ p) = Dρ {∆Y − μ(1 , X )} − (1 − D)
+
+ρp(X)1 − p(X){∆Y − μ(0 , X )} + Dρ [μ(1 , X ) − μ(0 , X ) − τ p]= Dρ {∆Y − μ(0 , X )} − (1 − D)
+
+ρp(X)1 − p(X){∆Y − μ(0 , X )} − Dρ τ p
+
+= 
+
+> [
+
+Dρ − (1 − D)
+
+ρp(X)1 − p(X)
+
+> ]
+
+{∆Y − μ(0 , X )} − Dρ τ p
+
+= {wp 
+
+> 1
+
+(D) − wp 
+
+> 0
+
+(D, X ; p)} { ∆Y − μ(0 , X )} − Dρ τ p
+
+completing the proof. Note that reducing the estimand in eq. (117) by the LIE to E[∆ Y | D = 1] − E[E[∆ Y |
+
+D = 0 , X ] | D = 1] and then applying the IF-derivation-procedure of course leads to the same IF, namely eq. (118). 
+
+B.3.2 Repeated Cross-Sections Proposition 22. Let D, T ∈ { 0, 1} be binary, for D a treatment dummy and T a time dummy; 
+
+X some vector of covariates; and Y an outcome variable. Define the estimand of interest to be the 
+
+τ rc = E
+
+> [
+
+E [Y | D = 1 , T = 1 , X ] − E [Y | D = 1 , T = 0 , X ] (123) 
+
+−
+
+> (
+
+E [Y | D = 0 , T = 1 , X ] − E [Y | D = 0 , T = 0 , X ]
+
+> )
+
+| D = 1 
+
+> ]
+
+= E[μ1,1(X) − μ1,0(X) − [μ0,1(X) − μ0,0(X)] | D = 1] 
+
+for μd,t (X) := E [Y | D = d, T = t, X ]. Assume that (D, X ) is invariant to T and that we sample from a mixture distribution with probability λ := P (T = 1) 19 . Define: 
+
+μd,Y (T, X ) := T · μd, 1(X) + (1 − T ) · μd, 0(X) (124) 
+
+> 19 I.e. akin to assumption 1.b of Sant’Anna and Zhao (2020).
+
+50 Then the influence function of τ rc equals: 
+
+IF (τ rc ) = wrc  
+
+> 1
+
+(D, T ){Y − μ1,Y (T, X )} − wrc  
+
+> 0
+
+(D, T, X ; p){Y − μ0,Y (T, X )} (125) 
+
++ Dρ {μ1,1(X) − μ1,0(X) − [μ0,1(X) − μ0,0(X)] − τ rc }
+
+where λ = P (T = 1) and 
+
+wrc  
+
+> 1
+
+(D, T ) = wrc 
+
+> 1,1
+
+(D, T ) − wrc 
+
+> 1,0
+
+(D, T ) := DT ρλ − D(1 − T )
+
+ρ(1 − λ) (126) 
+
+wrc  
+
+> 0
+
+(D, T, X ; p) = wrc 
+
+> 0,1
+
+(D, T, X ; p) − wrc 
+
+> 0,0
+
+(D, T, X ; p) (127) 
+
+:= (1 − D)Tρλ p(X)1 − p(X) − (1 − D)(1 − T )
+
+ρ(1 − λ)
+
+p(X)1 − p(X)
+
+Proof. Split up the estimand as 
+
+τ rc = E
+
+[
+
+μ1,1(X) − μ1,0(X) − [μ0,1(X) − μ0,0(X)] | D = 1 
+
+]
+
+=: ψ1,1 − ψ1,0 − [ψ0,1 − ψ0,0] (128) As a helper, consider the influence function for d, t ∈ { 0, 1}:
+
+IF (E[μd,t (X) | D = 1]) = ∑
+
+> x
+
+( 1{D = d, T = t, X = x}
+
+pD,T,X (d, t, x ) {Y − μd,t (x)}pX|D(x | 1) + μd,t (x)
+
+[ DpD(1) 
+
+{
+
+1{X = x} − pX|D(x | 1) }] )
+
+= ∑
+
+> x
+
+1{D = d}1{T = t}1{X = x}
+
+pD,X |T (d, x | t)pT (t) {Y − μd,t (x)}pX|D(x | 1) + DpD(1) {μd,t (X) − ψd,t }
+
+= ∑
+
+> x
+
+1{D = d}1{T = t}1{X = x}
+
+p(d, x )pT (t) {Y − μd,t (x)}pX|D(x | 1) + DpD(1) {μd,t (X) − ψd,t } (129) where the last line follows by the assumption of (D, X ) being invariant to T .Setting d = 1 in eq. (129) gives: 
+
+IF (E[μ1,t (X) | D = 1]) = ∑
+
+> x
+
+1{D = 1 }1{T = t}1{X = x}
+
+pX|D(x | 1) pD(1) pT (t) {Y − μ1,t (x)}pX|D(x | 1) + DpD(1) {μ1,t (X) − ψ1,t }
+
+= ∑
+
+> x
+
+D1{T = t} 1{X = x}
+
+pD(1) pT (t){Y − μ1,t (x)} + DpD(1) {μ1,t (X) − ψ1,t }
+
+= D1{T = t}
+
+ρ[tλ + (1 − t)(1 − λ)] {Y − μ1,t (X)} + DpD(1) {μ1,t (X) − ψ1,t }
+
+where we set pT (t) = tλ + (1 − t)(1 − λ). Hence, the influence function of the first two components in eq. (128) equal: 
+
+IF (ψ1,1) = IF (E[μ1,1(X) | D = 1]) = DT ρλ {Y − μ1,1(X)} + Dρ {μ1,1(X) − ψ1,1}
+
+IF (ψ1,0) = IF (E[μ1,0(X) | D = 1]) = D(1 − T )
+
+ρ(1 − λ) {Y − μ1,0(X)} + Dρ {μ1,0(X) − ψ1,0}
+
+51 where λ := pT (1) = P (T = 1) .Setting d = 0 in eq. (129) gives: 
+
+IF (E[μ0,t (X) | D = 1]) = ∑
+
+> x
+
+1{D = 0 }1{T = t}1{X = x}
+
+pX,D (x, 0) pT (t) {Y − μd,t (x)}pX|D(x | 1) + DpD(1) {μd,t (X) − ψ0,t }
+
+= ∑
+
+> x
+
+1{D = 0 }1{T = t}1{X = x}
+
+pD(1) pT (t)
+
+pD|X (1 | x)1 − pD|X (1 | x){Y − μ0,t (x)} + DpD(1) {μ0,t (X) − ψ0,t }
+
+= (1 − D)1{T = t}
+
+ρ[tλ + (1 − t)(1 − λ)] 
+
+p(X)1 − p(X){Y − μ0,t (X)} + Dρ {μ0,t (X) − ψ0,t }
+
+where we in the second equality used (121). So: 
+
+IF (ψ0,1) = IF (E[μ0,1(X) | D = 1]) = (1 − D)Tρλ p(X)1 − p(X){Y − μ0,1(X)} + Dρ {μ0,1(X) − ψ0,1}
+
+IF (ψ0,0) = IF (E[μ0,0(X) | D = 1]) = (1 − D)(1 − T )
+
+ρ(1 − λ)
+
+p(X)1 − p(X){Y − μ0,0(X)} + Dρ {μ0,0(X) − ψ0,0}
+
+Combining: 
+
+IF (τ rc ) = IF (ψ1,1) − IF (ψ1,0) − IF (ψ0,1) + IF (ψ0,0)= DT ρλ {Y − μ1,1(X)} + Dρ {μ1,1(X) − ψ1,1}− D(1 − T )
+
+ρ(1 − λ) {Y − μ1,0(X)} − Dρ {μ1,0(X) − ψ1,0}− (1 − D)Tρλ p(X)1 − p(X){Y − μ0,1(X)} − Dρ {μ0,1(X) − ψ0,1}
+
++ (1 − D)(1 − T )
+
+ρ(1 − λ)
+
+p(X)1 − p(X){Y − μ0,0(X)} + Dρ {μ0,0(X) − ψ0,0}
+
+= DT ρλ {Y − μ1,1(X)} − D(1 − T )
+
+ρ(1 − λ) {Y − μ1,0(X)}− (1 − D)Tρλ p(X)1 − p(X){Y − μ0,1(X)} + (1 − D)(1 − T )
+
+ρ(1 − λ)
+
+p(X)1 − p(X){Y − μ0,0(X)}
+
++ Dρ {μ1,1(X) − μ1,0(X) − [μ0,1(X) − μ0,0(X)] − [ψ1,1 − ψ1,0 − { ψ0,1 − ψ0,0}]}
+
+This expression almost matches the one in the appendix of (Sant’Anna and Zhao, 2020, p. 8) 20 .Using T 2 = T such that T (1 − T ) = (1 − T )T = 0 , we can reduce the previous expression into 
+
+> 20
+
+Sant’Anna and Zhao (2020) haven’t reduced their expression entirely as there is a 
+
+> Dp(X)
+
+{μ1,1(X) − μ1,0(X) − [μ0,1(X) − μ0,0(X)] } left to be to be cancelled. 
+
+52 the form 
+
+IF (τ rc ) = wrc  
+
+> 1
+
+(D, T )Y − wrc  
+
+> 0
+
+(D, T, X ; p)Y
+
+− DT ρλ {T · μ1,1(X) + (1 − T ) · μ1,0(X)} + D(1 − T )
+
+ρ(1 − λ) {T · μ1,1(X) + (1 − T ) · μ1,0(X)}
+
++ (1 − D)Tρλ p(X)1 − p(X){T · μ0,1(X) + (1 − T ) · μ0,0(X)}− (1 − D)(1 − T )
+
+ρ(1 − λ)
+
+p(X)1 − p(X){T · μ0,1(X) + (1 − T ) · μ0,0(X)}
+
++ Dρ {μ1,1(X) − μ1,0(X) − [μ0,1(X) − μ0,0(X)] − [ψ1,1 − ψ1,0 − { ψ0,1 − ψ0,0}]}
+
+= wrc  
+
+> 1
+
+(D, T )Y − wrc  
+
+> 0
+
+(D, T, X ; p)Y − wrc  
+
+> 1
+
+(D, T )μ1,Y (X) + wrc  
+
+> 0
+
+(D, T )μ0,Y (X)+ Dρ {μ1,1(X) − μ1,0(X) − [μ0,1(X) − μ0,0(X)] − [ψ1,1 − ψ1,0 − { ψ0,1 − ψ0,0}]}
+
+i.e. eq. (125), completing the proof. 
+
+B.4 LATT parameter 
+
+In this section, we apply the influence function derived for the ATT parameter to arrive at the influence function of the LATT parameter (10) . we do this directly for the case of staggered exposure; the case of two-period IDiD then follows by setting T = 2 . The key step is using the quotient rule eq. (113) together with the just derived influence functions. 
+
+B.4.1 Panel Data Proof of Proposition 2. We apply Proposition 21 using the relabeling described in Remark 8 to obtain the influence function eq. (118) for the numerator and denominator components. Also, we normalize the control weights when going from wp 
+
+> 0
+
+(D, X ; p) in eq. (119) to wnev,p e,t , w nye,p e,s,t in eqs. (20) and (21) after relabeling. Then: 
+
+φnum (O; τ p,num e,t , η p,num e,t ) := IF (τ p,num e,t ) (130) 
+
+= {
+
+wtrt,p e − wc,p e,t 
+
+}
+
+{∆t−e+1 Yt − mc,p e,t (X)} − Ee
+
+E[Ee]τ p,num e,t ,φden (O; τ p,den e,t , η p,den e,t ) := IF (τ p,den e,t ) (131) 
+
+= {
+
+wtrt,p e − wc,p e,t 
+
+}
+
+{∆t−e+1 Dt − gc,p e,t (X)} − Ee
+
+E[Ee]τ p,den e,t .
+
+Note that the above components are of the form eq. (114); hence the terms involving the target parameter for the numerator and denominator will cancel. Thus cf. the quotient rule eq. (115): 
+
+φ(O; τ pe,t , η pe,t ) := IF 
+
+( τ p,num e,t 
+
+τ p,den e,t 
+
+)
+
+(132) 
+
+= 1
+
+τ p,den e,t 
+
+[
+
+IF (
+
+τ p,num e,t 
+
+)
+
+− τ p,num e,t 
+
+τ p,den e,t 
+
+IF (
+
+τ p,den e,t 
+
+)]
+
+= 1
+
+τ p,den e,t 
+
+[ {
+
+wtrt,p e − wc,p e,t 
+
+}
+
+{∆t−e+1 Yt − mc,p e,t (X)} − τ pe,t 
+
+[{ 
+
+wtrt,p e − wc,p e,t 
+
+}
+
+{∆t−e+1 Dt − gc,p e,t (X)}] ]
+
+.
+
+53 B.4.2 Repeated Cross-Sections Proof of Proposition 6. As done in the panel setting, we apply Proposition 22 using the relabeling described in Remark 8 to obtain the influence function eq. (125) for the numerator and denominator components. Also, we normalize the control weights when going from 
+
+wrc  
+
+> 0
+
+(D, T, X ; p) in eq. (127) to wnev,rc e,t , w nye,rc e,s,t in eqs. (23) and (24) after relabeling. Then: 
+
+IF (τ rc,num e,t ) (133) 
+
+= wtrt,rc e {Y − mtrt,rc e,Y (X)} − wc,rc e {Y − mc,rc e,Y (X)}
+
++ Ee
+
+ρ
+
+{
+
+mtrt,rc e,t (X) − mtrt,rc e,e −1(X) − [mc,rc e,t,t (X) − mc,rc e,t,e −1(X)] − τ rc,num e,t 
+
+}
+
+,
+
+IF (τ rc,den e,t ) (134) 
+
+= wtrt,rc e {D − gtrt,rc e,D (X)} − wc,rc e {D − gc,rc e,D (X)}
+
++ Ee
+
+ρ
+
+{
+
+gtrt,rc e,t (X) − gtrt,rc e,e −1(X) − [gc,rc e,t,t (X) − gc,rc e,t,e −1(X)] − τ rc,den e,t 
+
+}
+
+.
+
+The above components are of the form eq. (114); hence applying the quotient rule eq. (115) yields: 
+
+φrc (O; τ rc e,t , η rc e,t ) := IF 
+
+( τ rc,num e,t 
+
+τ rc,den e,t 
+
+)
+
+= 1
+
+τ rc,den e,t 
+
+[
+
+IF (
+
+τ rc,num e,t 
+
+)
+
+− τ rc,num e,t 
+
+τ rc,den e,t 
+
+IF (
+
+τ rc,den e,t 
+
+)]
+
+(135) 
+
+= 1
+
+τ rc,den e,t 
+
+[
+
+wtrt,rc e {Y − mtrt,rc e,Y (X)} − wc,rc e {Y − mc,rc e,Y (X)} (136) 
+
++ Ee
+
+ρ
+
+{
+
+mtrt,rc e,t (X) − mtrt,rc e,e −1(X) − [mc,rc e,t,t (X) − mc,rc e,t,e −1(X)] }
+
+− τ rc e,t 
+
+(
+
+wtrt,rc e {D − gtrt,rc e,D (X)} − wc,rc e {D − gc,rc e,D (X)}
+
++ Ee
+
+ρ
+
+{
+
+gtrt,rc e,t (X) − gtrt,rc e,e −1(X) − [gc,rc e,t,t (X) − gc,rc e,t,e −1(X)] } )] 
+
+.
+
+# C DR Estimands motivated by EIFs 
+
+C.1 ATT 
+
+C.1.1 Panel data Proposition 23. When panel data are available, a doubly robust estimand for the ATT equals 
+
+τ = E [{wp 
+
+> 1
+
+(D) − wp 
+
+> 0
+
+(D, X ; p)} { ∆Y − μ(0 , X )}] (137) 
+
+Proof. Using eq. (118): 
+
+E[IF (τ )] = E
+
+[( Dρ − (1 − D)
+
+ρp(X)1 − p(X)
+
+)
+
+{∆Y − μ(0 , X )}
+
+]
+
+− E
+
+[ Dρ τ
+
+]
+
+= 0 
+
+⇐⇒ τ = E [{wp 
+
+> 1
+
+(D) − wp 
+
+> 0
+
+(D, X ; p)} { ∆Y − μ(0 , X )}]
+
+using E[D] = ρ.54 C.1.2 Repeated Cross-Sections Proposition 24. When repeated cross-sections are available, the expected value of the influence function eq. (125) equals: 
+
+E [IF (τ )] = E [{wrc  
+
+> 1
+
+(D, T ) − wrc  
+
+> 0
+
+(D, T, X ; p)}{ Y − μ0,Y (T, X )}] + κ − τ, (138) 
+
+where 
+
+κ := E [μ1,1(X) − μ0,1(X) | D = 1] − E[μ1,1(X) − μ0,1(X) | D = 1 , T = 1] 
+
+− (E [μ1,0(X) − μ0,0(X) | D = 1] − E[μ1,0(X) − μ0,0(X) | D = 1 , T = 0]) ,
+
+and hence, a doubly robust estimand for the LATT equals 
+
+τ = E [{wrc  
+
+> 1
+
+(D, T ) − wrc  
+
+> 0
+
+(D, T, X ; p)}{ Y − μ0,Y (T, X )}] + κ. (139) 
+
+Proof. The expected value of the influence function in eq. (125) equals: 
+
+E[IF (τ )] = E [wrc  
+
+> 1
+
+(D, T ){Y − μ1,Y (T, X )}] − E [wrc  
+
+> 0
+
+(D, T, X ; p){Y − μ0,Y (T, X )}] (140) 
+
++ E 
+
+> [
+
+Dρ {μ1,1(X) − μ1,0(X) − [μ0,1(X) − μ0,0(X)] }
+
+> ]
+
+− τ
+
+using E[D/ρτ ] = τ E [D]/ρ = τ .Inspecting the third term we see that: 
+
+E 
+
+> [
+
+Dρ {μ1,1(X) − μ1,0(X) − [μ0,1(X) − μ0,0(X)] }
+
+> ]
+
+= E [μ1,1(X) − μ1,0(X) | D = 1] − E [μ0,1(X) − μ0,0(X) | D = 1] = E [μ1,1(X) − μ0,1(X) | D = 1] − E [μ1,0(X) − μ0,0(X) | D = 1] (141) by the definition of the conditional expectation and rearranging in the last equal sign. By invariance: 
+
+E[1{D = 1 , T = t}] = E[D]E[1{T = t}] = 
+
+> 
+
+ρλ, t = 1 ,ρ(1 − λ), t = 0 . (142) As a helper, for t ∈ { 0, 1} and generic μ(·):
+
+E[μ(X) | D = 1 , T = t] = E[1{D = 1 , T = t}μ(X)] 
+
+E[1{D = 1 , T = t}] = E[D1{T = t}μ(X)] 
+
+E[D]E[1{T = t}] (143) Hence, expanding the weight eq. (126) we get: 
+
+E [wrc  
+
+> 1
+
+(D, T ){Y − μ1,Y (T, X )}]= E 
+
+> [(
+
+DT ρλ − D(1 − T )
+
+ρ(1 − λ)
+
+> )
+
+Y
+
+> ]
+
+− E 
+
+> [
+
+DT ρλ μ1,1(X)
+
+> ]
+
++ E 
+
+> [
+
+D(1 − T )
+
+ρ(1 − λ) μ1,0(X)
+
+> ]
+
+= E [wrc  
+
+> 1
+
+(D, T )Y ] − E[μ1,1(X) | D = 1 , T = 1] + E[μ1,0(X) | D = 1 , T = 0] 
+
+55 where the last equality follows by eq. (143). Continuing from the last equality, adding and subtracting 0 twice gives: 
+
+E [wrc  
+
+> 1
+
+(D, T )Y ] − E[μ1,1(X) | D = 1 , T = 1] + E[μ1,0(X) | D = 1 , T = 0] 
+
+± E[μ0,1(X) | D = 1 , T = 1] ± E[μ0,0(X) | D = 1 , T = 0] = E [wrc  
+
+> 1
+
+(D, T )Y ] − E[μ0,1(X) | D = 1 , T = 1] + E[μ0,0(X) | D = 1 , T = 0] + E[μ0,1(X) | D = 1 , T = 1] − E[μ0,0(X) | D = 1 , T = 0] 
+
+− E[μ1,1(X) | D = 1 , T = 1] + E[μ1,0(X) | D = 1 , T = 0] = E [wrc  
+
+> 1
+
+(D, T )Y ] − E
+
+[ DT ρλ μ0,1(X)
+
+]
+
++ E
+
+[ D(1 − T )
+
+ρ(1 − λ) μ0,0(X)
+
+]
+
+− E[μ1,1(X) − μ0,1(X) | D = 1 , T = 1] + E[μ1,0(X) − μ0,0(X) | D = 1 , T = 0] = E [wrc  
+
+> 1
+
+(D, T )Y ] − E
+
+[ DT ρλ T · μ0,1(X)
+
+]
+
++ E
+
+[ D(1 − T )
+
+ρ(1 − λ) (1 − T ) · μ0,0(X)
+
+]
+
++ E
+
+[ D(1 − T )
+
+ρ(1 − λ) T · μ0,1(X)
+
+]
+
+− E
+
+[ DT ρλ (1 − T ) · μ0,0(X)
+
+]
+
+− E[μ1,1(X) − μ0,1(X) | D = 1 , T = 1] + E[μ1,0(X) − μ0,0(X) | D = 1 , T = 0] = E [wrc  
+
+> 1
+
+(D, T )Y ] − E
+
+[( DT ρλ − D(1 − T )
+
+ρ(1 − λ)
+
+)
+
+{T · μ0,1(X) + (1 − T ) · μ0,0(X)}
+
+]
+
+− E[μ1,1(X) − μ0,1(X) | D = 1 , T = 1] + E[μ1,0(X) − μ0,0(X) | D = 1 , T = 0] = E [wrc  
+
+> 1
+
+(D, T ){Y − μ0,Y (X)}] (144) 
+
+− E[μ1,1(X) − μ0,1(X) | D = 1 , T = 1] + E[μ1,0(X) − μ0,0(X) | D = 1 , T = 0] 
+
+using the helper eq. (143), T 2 = T ; (1 − T )2 = (1 − T ), adding zero twice again and the mean function definition eq. (124), Hence, combining eqs. (140), (141) and (144) gives: 
+
+E [IF (τ )] = E [wrc  
+
+> 1
+
+(D, T ){Y − μ0,Y (T, X )}]
+
+− E[μ1,1(X) − μ0,1(X) | D = 1 , T = 1] + E[μ1,0(X) − μ0,0(X) | D = 1 , T = 0] 
+
+− E [wrc  
+
+> 0
+
+(D, T, X ; p){Y − μ0,Y (T, X )}]+ E [μ1,1(X) − μ0,1(X) | D = 1] − E [μ1,0(X) − μ0,0(X) | D = 1] = E [{wrc  
+
+> 1
+
+(D, T ) − wrc  
+
+> 0
+
+(D, T, X ; p)}{ Y − μ0,Y (T, X )}]+ E [μ1,1(X) − μ0,1(X) | D = 1] − E[μ1,1(X) − μ0,1(X) | D = 1 , T = 1] 
+
+− (E [μ1,0(X) − μ0,0(X) | D = 1] − E[μ1,0(X) − μ0,0(X) | D = 1 , T = 0]) − τ
+
+= E [{wrc  
+
+> 1
+
+(D, T ) − wrc  
+
+> 0
+
+(D, T, X ; p)}{ Y − μ0,Y (T, X )}] + κ − τ, 
+
+and by using that the expected value of the influence function equals zero, eq. (139) now follows. 
+
+C.2 LATT 
+
+C.2.1 Panel Data Proof of Proposition 3. Setting the expected value of eq. (27) equal to 0 yields: 
+
+E [
+
+φ(O; τ pe,t , η pe,t )]
+
+= 0 
+
+⇐⇒ τ dr,p = E[{wtrt,p e − wc,p e,t }{ ∆t−e+1 Yt − mc,p e,t (X)}]
+
+E[{wtrt,p e − wc,p e,t }{ ∆t−e+1 Dt − gc,p e,t (X)}] .
+
+56 C.2.2 Repeated Cross-Sections Proof of Proposition 7. The expected value of influence function in repeated cross-sections case can be reduced as in eq. (138). We can apply this to eq. (133) and eq. (134) to get expressions for E [
+
+IF (τ rc,num e,t )]
+
+and E [
+
+IF (τ rc,den e,t )]
+
+, respectively. These influence functions are linear in the parameters, and hence by the quotient rule eq. (115): 
+
+E
+
+[
+
+IF 
+
+( τ rc,num e,t 
+
+τ rc,den e,t 
+
+)] 
+
+= 1
+
+τ rc,den e,t 
+
+[
+
+E [
+
+IF (
+
+τ rc,num e,t 
+
+)] 
+
+− τ rc,num e,t 
+
+τ rc,den e,t 
+
+E [
+
+IF (
+
+τ rc,den e,t 
+
+)] ]
+
+= 0 
+
+⇐⇒ τ dr,rc e,t := τ rc,num e,t 
+
+τ rc,den e,t 
+
+= E [
+
+{wtrt,rc e − wc,rc e }{ Y − mc,rc e,Y (X)}]
+
++ κY,rc e,t 
+
+E [
+
+{wtrt,rc e − wc,rc e }{ D − gc,rc e,Y (X)}]
+
++ κD,rc e,t 
+
+. (145) 
+
+# D EIFs for DR estimands 
+
+In the following we will derive the influence functions for the DR estimands in eq. (31) and eq. (39). The normalization of the weights complicates the derivations a little bit. Fortunately, the quotient rule eq. (113) can be applied in a similar fashion as previously. To do this, we will first derive some helpers for deriving the influence function of the weighted terms in the estimands. 
+
+EIF Weight Term Let w := 1{B}/E [1{B}] for some event B. This form encompasses all weights in eqs. (19) to (21) and likewise for the repeated cross-section setting. Let Vt be a generic random variable. Then 
+
+E[wV t] = E[1{B}Vt]
+
+E[1{B}] .
+
+Applying the quotient rule eq. (113) yields 
+
+IF (
+
+E[wV t])
+
+= 1
+
+E[1{B}]
+
+[
+
+1{B}Vt − E[1{B}Vt] − E[1{B}Vt]
+
+E[1{B}]
+
+(
+
+1{B} − E[1{B}])]
+
+= 1{B}
+
+E[1{B}]
+
+[
+
+Vt − E[1{B}Vt]
+
+E[1{B}]
+
+]
+
+= w {Vt − E[wV t]} . (146) 
+
+D.0.1 Panel Data Proof of Proposition 4. Recall definition of estimand eq. (31). We will apply eq. (146) to each term in the numerator and denominator. First the numerator: 
+
+φdr,p num := IF (τ dr,p num ) = wtrt,p e
+
+{
+
+∆t−e+1 Yt − E[wtrt,p e ∆t−e+1 Yt]}
+
+− wc,p e,t 
+
+{
+
+∆t−e+1 Yt − E[wc,p e,t ∆t−e+1 Yt]}
+
+− wtrt,p e
+
+{
+
+mc,p e,t (X) − E[wtrt,p e mc,p e,t (X)] }
+
++ wc,p e,t 
+
+{
+
+mc,p e,t (X) − E[wc,p e,t mc,p e,t (X)] }
+
+= wtrt,p e {∆t−e+1 Yt − mc,p e,t (X) − E[wtrt,p e {∆t−e+1 Yt − mc,p e,t (X)}]}− wc,p e,t {∆t−e+1 Yt − mc,p e,t (X) − E[wc,p e,t {∆t−e+1 Yt − mc,p e,t (X)}]}
+
+= wtrt,p e {εY,p e,t − E[wtrt,p e εY,p e,t ]} − wc,p e,t {εY,p e,t − E[wc,p e,t εY,p e,t ]} (147) 57 Likewise for the denominator: 
+
+φdr,p den := IF (τ dr,p den ) = wtrt,p e {∆t−e+1 Dt − gc,p e,t (X) − E[wtrt,p e {∆t−e+1 Dt − gc,p e,t (X)}]} (148) 
+
+− wc,p e,t {∆t−e+1 Dt − gc,p e,t (X) − E[wc,p e,t {∆t−e+1 Dt − gc,p e,t (X)}]}
+
+= wtrt,p e {εD,p e,t − E[wtrt,p e εD,p e,t ]} − wc,p e,t {εD,p e,t − E[wc,p e,t εD,p e,t ]} (149) Hence applying the quotient rule eq. (113) to IF (τ dr,p num /τ dr,p den ) gives eq. (32). 
+
+Remark 10 (Relating the results to Sant’Anna and Zhao (2020)) .
+
+• Equation (147) is exactly, when relabeling the exposure variable E to the treatment variable D, the ηp 
+
+> 1
+
+(W ; β) − ηp 
+
+> 0
+
+(W ; β, γ ) term of Sant’Anna and Zhao (2020) just without the parametrization. Inserting estimators into the expression and Taylor-expanding the estimators will yield the final ηpest (W ; β∗, γ ∗) term of their influence function. 
+
+• The core of their DR-for-inference argument is that using inverse propensity tilting for the propensity score model, and weighted least squares for the outcome regression, will exactly set the estimation effects ηpest (W ; β∗, γ ∗) to 0, and hence that their improved DR estimator, ˆτ dr,p imp , admits an asymptotic linear representation that is insensitive to first-step estimators. 
+
+D.0.2 Repeated Cross-Sections IF of the weights Weights joint rc eq. (26). By a similar argument to eq. (146), 
+
+IF (
+
+E[wtrt,rc e,t Vt])
+
+= wtrt,rc e,t 
+
+{
+
+Vt − E[wtrt,rc e,t Vt]}
+
+(150) 
+
+IF (E[wc,rc e Vt]) = wc,rc e {Vt − E[wc,rc e Vt]} . (151) 
+
+Proof of Proposition 8. Define 
+
+εY,rc e,t = Y − mc,rc e,Y (X), εD,rc e,t = D − gc,rc e,D (X). (152) 
+
+Numerator: Consider numerator of eq. (39): 
+
+IF (τ dr,rc num ) = IF (E [
+
+{wtrt,rc e − wc,rc e }εY,rc e,t 
+
+]
+
++ κY,rc e,t ) (153) For the first term: 
+
+IF (
+
+E [
+
+{wtrt,rc e − wc,rc e }εY,rc e,t 
+
+]) 
+
+= IF (
+
+E [
+
+[wtrt,rc e,t − wtrt,rc e,e −1]εY,rc e,t − [wc,rc e,t,t − wc,rc e,t,e −1]εY,rc e,t 
+
+]) 
+
+= wtrt,rc e,t 
+
+{
+
+εY,rc e,t − E[wtrt,rc e,t εY,rc e,t ]}
+
+− wtrt,rc e,e −1
+
+{
+
+εY,rc e,t − E[wtrt,rc e,e −1εY,rc e,t ]}
+
+(154) 
+
+− wc,rc e,t,t 
+
+{
+
+εY,rc e,t − E[wc,rc e,t,t εY,rc e,t ]}
+
++ wc,rc e,t,e −1
+
+{
+
+εY,rc e,t − E[wc,rc e,t,e −1εY,rc e,t ]}
+
+which matches the ηrc, 11 (W ; β) − ηrc, 10 (W ; β) term of Sant’Anna and Zhao (2020) without the parametrization. Recall def of κY,rc e,t in eq. (40) and the conditional expectation trick eq. (143) (under the mixture assumption Assumption 3(B)). We can write it out as: 
+
+κY,rc e,t 
+
+= E[mtrt,rc e,t (X) − mc,rc e,t,t (X) | Ee = 1] − E[mtrt,rc e,t (X) − mc,rc e,t,t (X) | Ee = 1 , T = t]
+
+− (
+
+E[mtrt,rc e,e −1(X) − mc,rc e,t,e −1(X) | Ee = 1] − E[mtrt,rc e,e −1(X) − mc,rc e,t,e −1(X) | Ee = 1 , T = e − 1] )
+
+,
+
+= E [
+
+{wtrt,p e − wtrt,rc e,t }{ mtrt,rc e,t (X) − mc,rc e,t,t (X)}]
+
+− E [
+
+[wtrt,p e − wtrt,rc e,e −1]{mtrt,rc e,e −1(X) − mc,rc e,t,e −1(X)}]
+
+(155) 58 Thus, we can use eqs. (146) and (150) to get: 
+
+IF (κY,rc e,t ) (156) 
+
+= wtrt,p e
+
+{
+
+{mtrt,rc e,t (X) − mc,rc e,t,t (X)} − E[wtrt,p e {mtrt,rc e,t (X) − mc,rc e,t,t (X)}]}
+
+− wtrt,rc e,t 
+
+{
+
+{mtrt,rc e,t (X) − mc,rc e,t,t (X)} − E[wtrt,rc e,t {mtrt,rc e,t (X) − mc,rc e,t,t (X)}]}
+
+− wtrt,p e
+
+{
+
+{mtrt,rc e,e −1(X) − mc,rc e,t,e −1(X)} − E[wtrt,p e {mtrt,rc e,e −1(X) − mc,rc e,t,e −1(X)}]}
+
++ wtrt,rc e,e −1
+
+{
+
+{mtrt,rc e,e −1(X) − mc,rc e,t,e −1(X)} − E[wtrt,rc e,e −1{mtrt,rc e,e −1(X) − mc,rc e,t,e −1(X)}]}
+
+= wtrt,p e
+
+{
+
+mtrt,rc e, ∆ (X) − E[wtrt,p e mtrt,rc e, ∆ (X)] }
+
+− wtrt,p e
+
+{
+
+mc,rc e,t, ∆(X) − E[wtrt,p e mc,rc e,t, ∆(X)] }
+
+− wtrt,rc e,t 
+
+{
+
+{mtrt,rc e,t (X) − mc,rc e,t,t (X)} − E[wtrt,rc e,t {mtrt,rc e,t (X) − mc,rc e,t,t (X)}]}
+
++ wtrt,rc e,e −1
+
+{
+
+{mtrt,rc e,e −1(X) − mc,rc e,t,e −1(X)} − E[wtrt,rc e,e −1{mtrt,rc e,e −1(X) − mc,rc e,t,e −1(X)}]}
+
+For the residuals eq. (152), weights eqs. (25) and (26) and mean function eq. (36), multiplying the control residual with the weight picks out the mean function in the same period as the weight: 
+
+wtrt,rc e,t εY,rc e,t = wtrt,rc e,t [Y − mc,rc e,Y (X)] = wtrt,rc e,t [Y − mc,rc e,t,t (X)] 
+
+wc,rc e,t,t εY,rc e,t = wc,rc e,t,t [Y − mc,rc e,t,t (X)] 
+
+We can use this on eq. (154) to get: 
+
+IF (
+
+E [
+
+{wtrt,rc e − wc,rc e }εY,rc e,t 
+
+]) 
+
+= wtrt,rc e,t 
+
+{
+
+[Y − mc,rc e,t,t (X)] − E[wtrt,rc e,t [Y − mc,rc e,t,t (X)]] }
+
+− wtrt,rc e,e −1
+
+{
+
+[Y − mc,rc e,t,e −1(X)] − E[wtrt,rc e,e −1[Y − mc,rc e,t,e −1(X)]] }
+
+− wc,rc e,t,t 
+
+{
+
+[Y − mc,rc e,t,t (X)] − E[wc,rc e,t,t [Y − mc,rc e,t,t (X)]] }
+
++ wc,rc e,t,e −1
+
+{
+
+[Y − mc,rc e,t,e −1(X)] − E[wc,rc e,t,e −1[Y − mc,rc e,t,e −1(X)]] }
+
+Thus, 
+
+IF (
+
+E [
+
+{wtrt,rc e − wc,rc e }εY,rc e,t 
+
+]) 
+
+− wtrt,rc e,t 
+
+{
+
+{mtrt,rc e,t (X) − mc,rc e,t,t (X)} − E[wtrt,rc e,t {mtrt,rc e,t (X) − mc,rc e,t,t (X)}]}
+
++ wtrt,rc e,e −1
+
+{
+
+{mtrt,rc e,e −1(X) − mc,rc e,t,e −1(X)} − E[wtrt,rc e,e −1{mtrt,rc e,e −1(X) − mc,rc e,t,e −1(X)}]}
+
+= wtrt,rc e,t 
+
+{
+
+[Y − mtrt,rc e,t (X)] − E[wtrt,rc e,t [Y − mtrt,rc e,t (X)]] }
+
+− wtrt,rc e,e −1
+
+{
+
+[Y − mtrt,rc e,e −1(X)] − E[wtrt,rc e,e −1[Y − mtrt,rc e,e −1(X)]] }
+
+− wc,rc e,t,t 
+
+{
+
+[Y − mc,rc e,t,t (X)] − E[wc,rc e,t,t [Y − mc,rc e,t,t (X)]] }
+
++ wc,rc e,t,e −1
+
+{
+
+[Y − mc,rc e,t,e −1(X)] − E[wc,rc e,t,e −1[Y − mc,rc e,t,e −1(X)]] }
+
+i.e. the mean-functions of the controls cancel under the treated weights. Hence, combining 59 eqs. (154) and (156) 
+
+IF (τ dr,rc num ) (157) 
+
+= wtrt,rc e,t 
+
+{
+
+[Y − mtrt,rc e,t (X)] − E[wtrt,rc e,t [Y − mtrt,rc e,t (X)]] }
+
++ wtrt,p e
+
+{
+
+mtrt,rc e, ∆ (X) − E[wtrt,p e mtrt,rc e, ∆ (X)] }
+
+− wtrt,rc e,e −1
+
+{
+
+[Y − mtrt,rc e,e −1(X)] − E[wtrt,rc e,e −1[Y − mtrt,rc e,e −1(X)]] }
+
+− wtrt,p e
+
+{
+
+mc,rc e,t, ∆(X) − E[wtrt,p e mc,rc e,t, ∆(X)] }
+
+− wc,rc e,t,t 
+
+{
+
+[Y − mc,rc e,t,t (X)] − E[wc,rc e,t,t [Y − mc,rc e,t,t (X)]] }
+
++ wc,rc e,t,e −1
+
+{
+
+[Y − mc,rc e,t,e −1(X)] − E[wc,rc e,t,e −1[Y − mc,rc e,t,e −1(X)]] }
+
+= wtrt,rc e,t 
+
+{
+
+εY,trt,rc e,t − E[wtrt,rc e,t εY,trt,rc e,t ]}
+
++ wtrt,p e
+
+{
+
+mtrt,rc e, ∆ (X) − E[wtrt,p e mtrt,rc e, ∆ (X)] }
+
+(158) 
+
+− [
+
+wtrt,rc e,e −1
+
+{
+
+εY,trt,rc e,e −1 − E[wtrt,rc e,e −1εY,trt,rc e,e −1 ]}
+
++ wtrt,p e
+
+{
+
+mc,rc e,t, ∆(X) − E[wtrt,p e mc,rc e,t, ∆(X)] }] 
+
+(159) 
+
+− [wc,rc e,t,t 
+
+{
+
+εY,c,rc e,t,t − E[wc,rc e,t,t εY,c,rc e,t,t ]}
+
+− wc,rc e,t,e −1
+
+{
+
+εY,c,rc e,t,e −1 − E[wc,rc e,t,e −1εY,c,rc e,t,e −1]}
+
+] (160) A similar expression is found for IF (τ dr,rc den ) by applying the exact same previous steps. Applying the quotient rule eq. (113) now yields the result eq. (44). 
+
+Remark 11 (Relating the results to Sant’Anna and Zhao (2020)) .
+
+• Relabeling the exposure variable E to the treatment variable D, we see that eq. (158), eq. (159), and eq. (160) correspond to ηrc, 21,1 (W ; β), ηrc, 21,0 (W ; β), and ηrc, 20 (W ; β) of Sant’Anna and Zhao (2020) (without the parametrization), respectively. 
+
+• Again, the same DR-for-inference comment as in Remark 10 also holds for the repeated cross-section case. Interestingly, as noted in Sant’Anna and Zhao (2020), estimating the OR coefficients associated with the treated group does not lead to any estimation effect. 
+
+# E Remainder terms 
+
+Below we analyze the remainder terms of the estimators. We show that the remainder is second order, implying double robustness: it is proportional to the product of the L2(P ) errors of the propensity score and outcome regression estimators, so each nuisance estimator may converge at rates slower than n−1/2 (in the panel case). For repeated cross-sections, we additionally require consistency of the treated mean function. 
+
+Decomposition of panel and rcs estimators The numerator and denominator can be written as in Equation (114) 
+
+φ(·; τe,t , η e,t ) = ϕ(·; ηe,t ) − w(·; ηe,t )τe,t 
+
+The estimating equation implies that the estimator ˆτe,t solves: 
+
+Pnφ(·; ˆ τe,t , ˆηe,t ) = 0 ⇐⇒ ˆτe,t = Pnϕ(·; ˆ ηe,t ) (161) using Pnw(·; ˆ ηe,t ) = 1 . Thus, the ratio estimator is also an estimating-equation estimator. 60 Using this: 
+
+ˆτe,t − τe,t := ˆτ num e,t 
+
+ˆτ den e,t 
+
+− τ num e,t 
+
+τ den e,t 
+
+= ˆτ num e,t τ den e,t − τ num e,t ˆτ den e,t 
+
+ˆτ den e,t τ den e,t 
+
+= 1ˆτ den e,t 
+
+[
+
+ˆτ num e,t − τ num e,t 
+
+τ den e,t 
+
+ˆτ den e,t 
+
+]
+
+= 1ˆτ den e,t 
+
+[
+
+Pnϕnum (·; ˆ ηnum e,t ) − τ num e,t 
+
+τ den e,t 
+
+Pnϕden (·; ˆ ηden e,t )
+
+]
+
+= 1ˆτ den e,t 
+
+Pn
+
+[
+
+ϕnum (·; ˆ ηnum e,t ) − τ num e,t 
+
+τ den e,t 
+
+ϕden (·; ˆ ηden e,t )
+
+]
+
+,
+
+where in the third equality we used that the numerator and denominator estimators are of the estimating-equation type, i.e. satisfy eq. (161). Multiplying both sides by √n gives: 
+
+√n(ˆ τe,t − τe,t ) = 1ˆτ den e,t 
+
+√nP n
+
+[
+
+ϕnum (·; ˆ ηnum e,t ) − τ num e,t 
+
+τ den e,t 
+
+ϕden (·; ˆ ηden e,t )
+
+]
+
+= 1
+
+τ den e,t 
+
+√nP n
+
+[
+
+ϕnum (·; ˆ ηnum e,t ) − τ num e,t 
+
+τ den e,t 
+
+ϕden (·; ˆ ηden e,t )
+
+]
+
++ oP (1) = √nP nφ(·; τe,t , ˆηe,t ) + oP (1) , (162) using ˆτ den e,t P
+
+→ τ den e,t and the definition of the influence function Equation (115). 
+
+Further Decomposition A further decomposition of eq. (162) gives: 
+
+√n(ˆ τe,t − τe,t )= √nP nφ(·; τe,t , ˆηe,t ) ± √nP nφ(·; τe,t , η e,t ) ± √nP φ (·; τe,t , ˆηe,t ) + oP (1) = √n(Pn − P )φ(·; τe,t , η e,t ) + √n(Pn − P )[ φ(·; τe,t , ˆηe,t ) − φ(·; τe,t , η e,t )] + √nP φ (·; τe,t , ˆηe,t ) + oP (1) 
+
+This yields the standard decomposition in Equation (28). The first term is mean-zero with variance Var (φ(O; τe,t , η e,t )) = E[{φ(O; τe,t , η e,t )}2] and, by a central limit theorem, converges in distribution to N (0 , E [{φ(O; τe,t , η e,t )}2]) . The second term is an empirical process term and is oP (1) under either Donsker class conditions or by cross-fitting. The final term is a remainder term, which we analyze for each estimator in this section. 
+
+Estimators satisfying expansion above Panel EE estimator: Define the weights eqs. (19) to (21) with estimated nuisances as ˆwtrt,p e , ˆwc,p e (both control cases) which sum to one in sample. Numerator and denominator eqs. (130) and (131) satisfies eq. (161). 
+
+Pnφpnum (·; τ p,num e,t , ˆηp,num e,t ) = Pnϕpnum (·; ˆ ηp,num e,t ) − τ p,num e,t = ˆ τ p,num e,t − τ p,num e,t 
+
+Pnφpden (·; τ p,den e,t , ˆηp,den e,t ) = Pnϕpden (·; ˆ ηp,den e,t ) − τ p,den e,t = ˆ τ p,den e,t − τ p,den e,t 
+
+where 
+
+ˆτ p,num e,t = Pn[( ˆ wtrt,p e − ˆwc,p e,t )ˆ εY,p e,t ], ˆτ p,den e,t = Pn[( ˆ wtrt,p e − ˆwc,p e,t )ˆ εD,p e,t ].
+
+61 Panel EE estimator double IF: Have influence functions: eqs. (147) and (149). We can write the influence function components out as: 
+
+φdr,p,num (O; τ dr,p,num e,t , η dr,p,num e,t ) = wtrt,p e {εY,p e,t − E[wtrt,p e εY,p e,t ]} − wc,p e,t {εY,p e,t − E[wc,p e,t εY,p e,t ]}
+
+= ( wtrt,p e − wc,p e,t )εY,p e,t − wtrt,p e E[wtrt,p e εY,p e,t ] + wc,p e,t E[wc,p e,t εY,p e,t ]=: ( wtrt,p e − wc,p e,t )εY,p e,t − wtrt,p e τ dr,p,num e,t, 1 + wc,p e,t τ dr,p,num e,t, 0
+
+where τ dr,p,num e,t = τ dr,p,num e,t, 1 − τ dr,p,num e,t, 0 . Applying the empirical measure to the expression above evaluated at ˆηdr,p,num e,t yields: 
+
+Pnφdr,p,num (·; τ dr,p,num e,t , ˆηdr,p,num e,t ) = Pn[( ˆ wtrt,p e − ˆwc,p e,t )ˆ εY,p e,t ] − Pn[ ˆ wtrt,p e ]τ dr,p,num e,t, 1 + Pn[ ˆ wc,p e,t ]τ dr,p,num e,t, 0
+
+= Pn[( ˆ wtrt,p e − ˆwc,p e,t )ˆ εY,p e,t ] − τ dr,p,num e,t 
+
+= ˆ τ dr,p,num e,t − τ dr,p,num e,t 
+
+The same argument applies to the denominator. 
+
+Comparing the decompositions The estimators above are very similar. The latter is based on the DR-estimand while the former is based on the original LATT estimand. Hence the estimands, τ pe,t and τ dr,p e,t , are different but the meat, i.e. the estimators 
+
+Pnϕdr,p num (·; ˆ ηdr,p,num e,t ) = Pnϕpnum (·; ˆ ηp,num e,t ), Pnϕdr,p den (·; ˆ ηdr,p,den e,t ) = Pnϕpden (·; ˆ ηp,den e,t ),
+
+are the same due to the cancellation. This is consistent with the fact that both estimators solve the estimating equation with the original influence function; what differs is the influence function used for inference. Applying the decomposition Equation (162) yields: 
+
+√n(ˆ τ dr,p e,t − τ dr,p e,t ) = 1
+
+τ dr,p,den e,t 
+
+√nP n[ϕdr,p,num (·; ˆ η) − τ dr,p,num e,t 
+
+τ dr,p,den e,t 
+
+ϕdr,p,den (·; ˆ η)] + oP (1) = √nP nφdr,p (·; τ dr,p e,t , ˆηdr,p e,t ) + oP (1) (163) and similarly for the other. Hence the remainder terms, 
+
+P φ dr,p (·; τ dr,p , ˆηdr,p ), P φ p(·; τ p, ˆηp)
+
+are the same as well; see Remark 12. 
+
+E.0.1 Remainder Panel Data Proof of Proposition 11. Consider the DR estimand eq. (31) with influence function eq. (32). Write the estimand as τ dr,p e,t = τ dr,p,num e,t /τ dr,p,den e,t . Define notation for the parameters in the influence function eq. (32): 
+
+τ dr,p,num e,t, 1 := E[wtrt,p e εY,p e,t ], τ dr,p,num e,t, 0 := E[wc,p e,t εY,p e,t ]
+
+τ dr,p,den e,t, 1 := E[wtrt,p e εD,p e,t ], τ dr,p,den e,t, 0 := E[wc,p e,t εD,p e,t ]
+
+Consider the remainder: 
+
+P φ dr,p (·; τ dr,p e,t , ˆηdr,p e,t )= E
+
+[ 1
+
+τ dr,p,den e,t 
+
+[
+
+ˆwtrt,p e {ˆεY,p e,t − τ dr,p,num e,t, 1 } − ˆwc,p e,t {ˆεY,p e,t − τ dr,p,num e,t, 0 }− τ dr,p,num e,t 
+
+τ dr,p,den e,t 
+
+( ˆ wtrt,p e {ˆεD,p e,t − τ dr,p,den e,t, 1 } − ˆwc,p e,t {ˆεD,p e,t − τ dr,p,den e,t, 0 })
+
+]] 
+
+62 We focus on the numerator components; the denominator follows by simlar arguments. Consider the components weighted by the treated weight: 
+
+τ dr,p,num e,t, 1 = E[wtrt,p e εY,p e,t ] = E
+
+[ Ee
+
+ρ εY,p e,t 
+
+]
+
+⇐⇒ ρτ dr,p,num e,t, 1 = E [
+
+EeεY,p e,t 
+
+]
+
+.
+
+Hence, as ρτ dr,p,num e,t, 1 = E[Eeτ dr,p,num e,t, 1 ] and 
+
+E [
+
+EeεY,p e,t 
+
+]
+
+= E [
+
+Ee{E[∆ t−e+1 Yt | X, E e] − mc,p e,t (X)}]
+
+= E [
+
+Ee{mtrt,p e,t (X) − mc,p e,t (X)}]
+
+,
+
+where we used the LIE, we have: 
+
+E[Eeτ dr,p,num e,t, 1 ] = E [
+
+Ee{mtrt,p e,t (X) − mc,p e,t (X)}]
+
+. (164) Likewise, 
+
+E [
+
+ˆwtrt,p e ˆεY,p e,t 
+
+]
+
+= E
+
+[ Ee
+
+ˆρ {∆t−e+1 Yt − ˆmc,p e,t (X)}
+
+]
+
+= E [
+
+ˆwtrt,p e {mtrt,p e,t (X) − ˆmc,p e,t (X)}]
+
+,
+
+and with an analogous LIE argument for the controls: 
+
+E [
+
+ˆwc,p e,t ˆεY,p e,t 
+
+]
+
+= E [
+
+ˆwc,p e,t {mc,p e,t (X) − ˆmc,p e,t (X)}]
+
+.
+
+Lastly, 
+
+τ dr,p,num e,t, 0 = E[wc,p e,t εY,p e,t ] = E[wc,p e,t {mc,p e,t (X) − mc,p e,t (X)}] = 0 ,
+
+where we implicitly use that the mean function for the controls is correctly specified, so 
+
+τ dr,p,num e,t = E[wtrt,p e {mtrt,p e,t (X) − mc,p e,t (X)}] = E[mtrt,p e,t (X) − mc,p e,t (X) | Ee = 1] (165) i.e. RHS of eq. (18). Hence, 
+
+P φ dr,p,num (·; τ dr,p,num e,t , ˆηdr,p,num e,t ) (166) 
+
+= E[ ˆ wtrt,p e {ˆεY,p e,t − τ dr,p,num e,t, 1 } − ˆwc,p e,t {ˆεY,p e,t − τ dr,p,num e,t, 0 }]= E[ ˆ wtrt,p e {mtrt,p e,t (X) − ˆmc,p e,t (X) − { mtrt,p e,t (X) − mc,p e,t (X)}} − ˆwc,p e,t {mc,p e,t (X) − ˆmc,p e,t (X)}]= E[( ˆ wtrt,p e − ˆwc,p e,t ){mc,p e,t (X) − ˆmc,p e,t (X)}]
+
+Next, the expected value of the weights equals: 
+
+E[ ˆ wtrt,p e − ˆwc,p e,t ] = E
+
+[ Ee
+
+ˆρ − C
+
+ˆρ0
+
+ˆp(X)1 − ˆp(X)
+
+]
+
+= E
+
+[ p(X)ˆρ − 1 − p(X)ˆρ0
+
+ˆp(X)1 − ˆp(X)
+
+]
+
+= E
+
+[
+
+{1 − p(X)}
+
+[ 1ˆρp(X)1 − p(X) − 1ˆρ0
+
+ˆp(X)1 − ˆp(X)
+
+]] 
+
+where we used the LIE in the second equals sign, that E[C | X] = 1 − p(X) for a generic control variable and corresponding propensity score, and defined ˆρ0 as the estimated value of the denominator in the corresponding control weight. Therefore: 
+
+E[ ˆ wtrt,p e {ˆεY,p e,t − τ dr,p,num e,t, 1 } − ˆwc,p e,t {ˆεY,p e,t − τ dr,p,num e,t, 0 }]= E
+
+[
+
+{1 − p(X)}
+
+[ 1ˆρp(X)1 − p(X) − 1ˆρ0
+
+ˆp(X)1 − ˆp(X)
+
+]
+
+{mc,p e,t (X) − ˆmc,p e,t (X)}
+
+]
+
+63 The exact same argument applies to the denominator, yielding: 
+
+E[ ˆ wtrt,p e {ˆεD,p e,t − τ dr,p,den e,t, 1 } − ˆwc,p e,t {ˆεD,p e,t − τ dr,p,den e,t, 0 }]= E
+
+[
+
+{1 − p(X)}
+
+[ 1ˆρp(X)1 − p(X) − 1ˆρ0
+
+ˆp(X)1 − ˆp(X)
+
+]
+
+{gc,p e,t (X) − ˆgc,p e,t (X)}
+
+]
+
+Using the above, we can bound the remainder term as: 
+
+|P φ dr,p (·; τ dr,p , ˆηdr,p )|≤
+
+∣∣∣∣
+
+1
+
+τ dr,p,den e,t 
+
+∣∣∣∣E
+
+[∣ ∣∣∣{1 − p(X)}
+
+[ 1ˆρp(X)1 − p(X) − 1ˆρ0
+
+ˆp(X)1 − ˆp(X)
+
+]
+
+{mc,p e,t (X) − ˆmc,p e,t (X)}
+
+∣∣∣∣]
+
++
+
+∣∣∣∣
+
+τ dr,p 
+
+τ dr,p,den e,t 
+
+∣∣∣∣E
+
+[∣ ∣∣∣{1 − p(X)}
+
+[ 1ˆρp(X)1 − p(X) − 1ˆρ0
+
+ˆp(X)1 − ˆp(X)
+
+]
+
+{gc,p e,t (X) − ˆgc,p e,t (X)}
+
+∣∣∣∣]
+
+≤
+
+∣∣∣∣
+
+1
+
+τ dr,p,den e,t 
+
+∣∣∣∣
+
+1
+
+c E
+
+[∣ ∣∣∣[ 1ˆρp(X)1 − p(X) − 1ˆρ0
+
+ˆp(X)1 − ˆp(X)
+
+]
+
+{mc,p e,t (X) − ˆmc,p e,t (X)}
+
+∣∣∣∣]
+
++
+
+∣∣∣∣
+
+τ dr,p 
+
+τ dr,p,den e,t 
+
+∣∣∣∣
+
+1
+
+c E
+
+[∣ ∣∣∣[ 1ˆρp(X)1 − p(X) − 1ˆρ0
+
+ˆp(X)1 − ˆp(X)
+
+]
+
+{gc,p e,t (X) − ˆgc,p e,t (X)}
+
+∣∣∣∣]
+
+≤
+
+∣∣∣∣
+
+1
+
+τ dr,p,den e,t 
+
+∣∣∣∣
+
+1
+
+c
+
+∥∥∥∥
+
+1ˆρp
+
+1 − p − 1ˆρ0
+
+ˆp
+
+1 − ˆp
+
+∥∥∥∥2,P 
+
+∥∥∥∥mc,p e,t − ˆmc,p e,t 
+
+∥∥∥∥2,P 
+
++
+
+∣∣∣∣
+
+τ dr,p 
+
+τ dr,p,den e,t 
+
+∣∣∣∣
+
+1
+
+c
+
+∥∥∥∥
+
+1ˆρp
+
+1 − p − 1ˆρ0
+
+ˆp
+
+1 − ˆp
+
+∥∥∥∥2,P 
+
+∥∥∥∥gc,p e,t − ˆgc,p e,t 
+
+∥∥∥∥2,P 
+
+where we in the first inequality used Jensen’s inequality and the triangle inequality for integrals, in the second inequality used Hölder’s inequality and that 1−p(X) ≤ 1 < 1/c cf. Assumption 10, and in the third inequality used Hölder’s inequality again. Provided the assumptions on the nuisances of Proposition 11 hold the proposition now follows. 
+
+E.0.2 Remainder Repeated Cross-Sections Proof of Proposition 12. Consider the DR estimand eq. (39) with influence function eq. (44). Write the estimand as τ dr,rc e,t = τ dr,rc,num e,t /τ dr,rc,den e,t . As in the panel case, we consider the numerator and denominator separately. First we rewrite the numerator of the estimand in eq. (39) into another form. Write out eq. (155) recalling mean function definitions eq. (43): 
+
+κY,rc e,t 
+
+= E [
+
+{wtrt,p e − wtrt,rc e,t }{ mtrt,rc e,t (X) − mc,rc e,t,t (X)}]
+
+− E [
+
+[wtrt,p e − wtrt,rc e,e −1]{mtrt,rc e,e −1(X) − mc,rc e,t,e −1(X)}]
+
+= E [
+
+wtrt,rc e,e −1{mtrt,rc e,e −1(X) − mc,rc e,t,e −1(X)} − wtrt,rc e,t {mtrt,rc e,t (X) − mc,rc e,t,t (X)}]
+
++ E [
+
+wtrt,p e [mtrt,rc e, ∆ (X) − mc,rc e,t, ∆(X)] ]
+
+Next, write out the term with the residuals eq. (42): 
+
+E [
+
+{wtrt,rc e − wc,rc e }εY,rc e,t 
+
+]
+
+= E
+
+[
+
+wtrt,rc e,t [Y − mc,rc e,t,t (X)] − wtrt,rc e,e −1[Y − mc,rc e,t,e −1(X)] 
+
+− wc,rc e,t,t [Y − mc,rc e,t,t (X)] + wc,rc e,t,e −1[Y − mc,rc e,t,e −1(X)] 
+
+]
+
+64 Using the expressions above we see, as before, that the mean functions for the controls under the treated rc-weights cancel: 
+
+τ dr,rc,num e,t = E [
+
+{wtrt,rc e − wc,rc e }εY,rc e,t 
+
+]
+
++ κY,rc e,t 
+
+= E
+
+[
+
+wtrt,rc e,t [Y − mtrt,rc e,t (X)] − wtrt,rc e,e −1[Y − mtrt,rc e,e −1(X)] 
+
+− wc,rc e,t,t [Y − mc,rc e,t,t (X)] + wc,rc e,t,e −1[Y − mc,rc e,t,e −1(X)] 
+
+]
+
++ E [
+
+wtrt,p e [mtrt,rc e, ∆ (X) − mc,rc e,t, ∆(X)] ]
+
+= E
+
+[
+
+wtrt,rc e,t εY,trt,rc e,t − wtrt,rc e,e −1εY,trt,rc e,e −1 − wc,rc e,t,t εY,c,rc e,t,t (167) 
+
++ wc,rc e,t,e −1εY,c,rc e,t,e −1 + wtrt,p e [mtrt,rc e, ∆ (X) − mc,rc e,t, ∆(X)] 
+
+]
+
+.
+
+Next, we show the terms involving the residual ε equal 0 in expectation,. Recall the weights: eq. (22) and consider: 
+
+E[wtrt,rc e,t εY,trt,rc e,t ] = E
+
+[ Ee · 1{T = t}
+
+E[Ee · 1{T = t}]εY,trt,rc e,t 
+
+]
+
+= E
+
+[ Ee · 1{T = t}
+
+E[Ee · 1{T = t}][Y − mtrt,rc e,t (X)] 
+
+]
+
+= E
+
+[ Ee · 1{T = t}
+
+E[Ee · 1{T = t}][mtrt,rc e,t (X) − mtrt,rc e,t (X)] 
+
+]
+
+= 0 
+
+using the LIE; similar calculation shows the other weighted residual terms in eq. (167) equal 0.Hence we are left with: 
+
+τ dr,rc,num e,t = E
+
+[
+
+wtrt,p e [mtrt,rc e, ∆ (X) − mc,rc e,t, ∆(X)] 
+
+]
+
+=: τ dr,rc,num e,t, 1 − τ dr,rc,num e,t, 0 (168) matching the numerator of eq. (33) (which we already knew). Can write the IF eq. (45) using the notation for the implicit estimand eq. (168) as: 
+
+φdr,rc num (O; τ dr,rc,num e,t ; ηdr,rc,num e,t ) (169) 
+
+= wtrt,rc e,t εY,trt,rc e,t + wtrt,p e
+
+{
+
+mtrt,rc e, ∆ (X) − τ dr,rc,num e,t, 1
+
+}
+
+− [
+
+wtrt,rc e,e −1εY,trt,rc e,e −1 + wtrt,p e
+
+{
+
+mc,rc e,t, ∆(X) − τ dr,rc,num e,t, 0
+
+}] 
+
+− [wc,rc e,t,t εY,c,rc e,t,t − wc,rc e,t,e −1εY,c,rc e,t,e −1]= wtrt,rc e,t εY,trt,rc e,t − wtrt,rc e,e −1εY,trt,rc e,e −1 − [wc,rc e,t,t εY,c,rc e,t,t − wc,rc e,t,e −1εY,c,rc e,t,e −1]+ wtrt,p e mtrt,rc e, ∆ (X) − wtrt,p e mc,rc e,t, ∆(X) − wtrt,p e τ dr,rc,num e,t 
+
+Thus the relevant part of the influence function is exactly: 
+
+P φ dr,rc num (·; τ dr,rc,num e,t ; ˆ ηdr,rc num ) (170) 
+
+= E
+
+[
+
+ˆwtrt,rc e,t ˆεY,trt,rc e,t − ˆwtrt,rc e,e −1 ˆεY,trt,rc e,e −1 − ˆwc,rc e,t,t ˆεY,c,rc e,t,t + ˆ wc,rc e,t,e −1 ˆεY,c,rc e,t,e −1 (171) 
+
++ ˆ wtrt,p e ˆmtrt,rc e, ∆ (X) − ˆwtrt,p e ˆmc,rc e,t, ∆(X) − ˆwtrt,p e τ dr,rc,num e,t 
+
+]
+
+As done for the panel case in eq. (164), 
+
+τ dr,rc,num e,t = E
+
+[ Ee
+
+E[Ee][mtrt,rc e, ∆ (X) − mc,rc e,t, ∆(X)] 
+
+]
+
+⇐⇒ E[Eeτ dr,rc,num e,t ] = E
+
+[
+
+Ee[mtrt,rc e, ∆ (X) − mc,rc e,t, ∆(X)] 
+
+]
+
+(172) 65 Now: 
+
+E[ ˆ wtrt,rc e,t ˆεY,trt,rc e,t ] = E[ ˆ wtrt,rc e,t {Y − ˆmtrt,rc e,t (X)}] = E[ ˆ wtrt,rc e,t [mtrt,rc e,t (X) − ˆmtrt,rc e,t (X)]] (173) by the LIE, and similar for the other three terms: 
+
+E[ ˆ wtrt,rc e,e −1 ˆεY,trt,rc e,e −1 ] = E[ ˆ wtrt,rc e,e −1{mtrt,rc e,e −1(X) − ˆmtrt,rc e,e −1(X)}] (174) 
+
+E[ ˆ wc,rc e,t,t ˆεY,c,rc e,t,t ] = E[ ˆ wc,rc e,t,t {mc,rc e,t (X) − ˆmc,rc e,t (X)}]
+
+E[ ˆ wc,rc e,t,e −1 ˆεY,c,rc e,t,e −1] = E[ ˆ wc,rc e,t,e −1{mc,rc e,e −1(X) − ˆmc,rc e,e −1(X)}]
+
+Hence, we can rewrite the remainder term eq. (170), using eq. (172) and eqs. (173) and (174), as: 
+
+P φ dr,rc num (·; τ dr,rc,num e,t ; ˆ ηdr,rc num )= E
+
+[
+
+ˆwtrt,rc e,t [mtrt,rc e,t (X) − ˆmtrt,rc e,t (X)] − ˆwtrt,rc e,e −1{mtrt,rc e,e −1(X) − ˆmtrt,rc e,e −1(X)}− ˆwc,rc e,t,t {mc,rc e,t (X) − ˆmc,rc e,t (X)} + ˆ wc,rc e,t,e −1{mc,rc e,e −1(X) − ˆmc,rc e,e −1(X)}
+
++ ˆ wtrt,p e [ ˆ mtrt,rc e,t (X) − ˆmtrt,rc e,e −1(X) − { ˆmc,rc e,t,t (X) − ˆmc,rc e,t,e −1(X)}]
+
+− ˆwtrt,p e [mtrt,rc e,t (X) − mtrt,rc e,e −1(X) − { mc,rc e,t,t (X) − mc,rc e,t,e −1(X)}]
+
+]
+
+= E
+
+[
+
+( ˆ wtrt,rc e,t − ˆwtrt,p e )[ mtrt,rc e,t (X) − ˆmtrt,rc e,t (X)] (175) 
+
+− ( ˆ wtrt,rc e,e −1 − ˆwtrt,p e ){mtrt,rc e,e −1(X) − ˆmtrt,rc e,e −1(X)}− ( ˆ wc,rc e,t,t − ˆwtrt,p e ){mc,rc e,t (X) − ˆmc,rc e,t (X)}
+
++ ( ˆ wc,rc e,t,e −1 − ˆwtrt,p e ){mc,rc e,e −1(X) − ˆmc,rc e,e −1(X)}
+
+]
+
+The expression in eq. (175) has the correct form for the mean functions; that is, the true mean function minus the estimated one. What remains is to derive an expression for the weights. To this end, recall the weight definitions eqs. (22) to (24). For notational purposes we refine the denominators of the weights as follows: 
+
+wtrt,rc e,t := Ee · 1{T = t}/ρ trt,rc e,t , wc,rc e,t := C · 1{T = t}p(X)1 − p(X) /ρ c,rc e,t 
+
+and likewise 
+
+ˆwtrt,rc e,t := Ee · 1{T = t}/ˆρtrt,rc e,t , ˆwc,rc e,t := C · 1{T = t}ˆp(X)1 − ˆp(X) /ˆρc,rc e,t 
+
+where we defined ˆρc,rc e,t := Pn
+
+[ C·1{T =t}ˆp(X)1−ˆp(X)
+
+]
+
+for an estimator of the denominator of a generic control weight in the repeated cross-sections case eqs. (23) and (24). Then, 
+
+E[ ˆ wtrt,rc e,t ] = E[E[Ee1{T = t} | X]/ˆρtrt,rc e,t ] = E[p(X)λt/ˆρtrt,rc e,t ]
+
+and 
+
+E[ ˆ wc,rc e,t ] = E
+
+[
+
+[1 − p(X)] λt
+
+ˆp(X)1 − ˆp(X)/ˆρc,rc e,t 
+
+]
+
+.
+
+66 Also, ˆwtrt,p e is similar to the panel case, where we define ρ := E[Ee] and ˆρ its estimated value. Hence: 
+
+E[ ˆ wc,rc e,t − ˆwtrt,p e ] = E[[1 − p(X)] λt
+
+ˆp(X)1 − ˆp(X)/ˆρc,rc e,t − p(X)/ˆρ]= −E
+
+[
+
+[1 − p(X)] 
+
+( p(X)1 − p(X)/ˆρ − λt
+
+ˆp(X)1 − ˆp(X)/ˆρc,rc e,t 
+
+)] 
+
+and similarly: 
+
+E[ ˆ wc,rc e,e −1 − ˆwtrt,p e ] = −E
+
+[
+
+[1 − p(X)] 
+
+( p(X)1 − p(X)/ˆρ − λe−1
+
+ˆp(X)1 − ˆp(X)/ˆρc,rc e,e −1
+
+)] 
+
+The last two difference-in-weights of eq. (175), corresponding to the treated cases in periods t
+
+and e − 1, are rewritten as follows: 
+
+E[ ˆ wtrt,rc e,t − ˆwtrt,p e ] = E[p(X)λt/ˆρtrt,rc e,t − p(X)/ˆρ] = E[p(X)( λt/ˆρtrt,rc e,t − 1/ˆρ)] ,E[ ˆ wtrt,rc e,e −1 − ˆwtrt,p e ] = E[p(X)( λe−1/ˆρtrt,rc e,e −1 − 1/ˆρ)] .
+
+Hence, taking the absolute value of eq. (175), we can bound it as: 
+
+|P φ dr,rc num (·; τ dr,rc,num e,t ; ˆ ηdr,rc num )|
+
+=
+
+∣∣∣∣E
+
+[
+
+p(X)( λt/ˆρtrt,rc e,t − 1/ˆρ)[ mtrt,rc e,t (X) − ˆmtrt,rc e,t (X)] 
+
+− p(X)( λe−1/ˆρtrt,rc e,e −1 − 1/ˆρ){mtrt,rc e,e −1(X) − ˆmtrt,rc e,e −1(X)}
+
++ [1 − p(X)] 
+
+( p(X)1 − p(X)/ˆρ − λt
+
+ˆp(X)1 − ˆp(X)/ˆρc,rc e,t 
+
+)
+
+{mc,rc e,t (X) − ˆmc,rc e,t (X)}− [1 − p(X)] 
+
+( p(X)1 − p(X)/ˆρ − λe−1
+
+ˆp(X)1 − ˆp(X)/ˆρc,rc e,e −1
+
+)
+
+{mc,rc e,e −1(X) − ˆmc,rc e,e −1(X)}
+
+]∣ ∣∣∣
+
+≤ E
+
+[∣ ∣∣∣p(X)( λt/ˆρtrt,rc e,t − 1/ˆρ)[ mtrt,rc e,t (X) − ˆmtrt,rc e,t (X)] 
+
+∣∣∣∣
+
++
+
+∣∣∣∣p(X)( λe−1/ˆρtrt,rc e,e −1 − 1/ˆρ){mtrt,rc e,e −1(X) − ˆmtrt,rc e,e −1(X)}
+
+∣∣∣∣
+
++
+
+∣∣∣∣[1 − p(X)] 
+
+( p(X)1 − p(X)/ˆρ − λt
+
+ˆp(X)1 − ˆp(X)/ˆρc,rc e,t 
+
+)
+
+{mc,rc e,t (X) − ˆmc,rc e,t (X)}
+
+∣∣∣∣
+
++
+
+∣∣∣∣[1 − p(X)] 
+
+( p(X)1 − p(X)/ˆρ − λe−1
+
+ˆp(X)1 − ˆp(X)/ˆρc,rc e,e −1
+
+)
+
+{mc,rc e,e −1(X) − ˆmc,rc e,e −1(X)}
+
+∣∣∣∣]
+
+≤
+
+∣∣∣∣p(λt/ˆρtrt,rc e,t − 1/ˆρ)
+
+∣∣∣∣∥∥∥∥mtrt,rc e,t − ˆmtrt,rc e,t 
+
+∥∥∥∥2,P 
+
++
+
+∣∣∣∣p(λe−1/ˆρtrt,rc e,e −1 − 1/ˆρ)
+
+∣∣∣∣∥∥∥∥mtrt,rc e,e −1 − ˆmtrt,rc e,e −1
+
+∥∥∥∥2,P 
+
++
+
+∣∣∣∣[1 − p]
+
+( p
+
+1 − p/ˆρ − λt
+
+ˆp
+
+1 − ˆp/ˆρc,rc e,t 
+
+) ∣∣∣∣∥∥∥∥mc,rc e,t − ˆmc,rc e,t 
+
+∥∥∥∥2,P 
+
++
+
+∣∣∣∣[1 − p]
+
+( p
+
+1 − p/ˆρ − λe−1
+
+ˆp
+
+1 − ˆp/ˆρc,rc e,e −1
+
+) ∣∣∣∣∥∥∥∥mc,rc e,e −1 − ˆmc,rc e,e −1
+
+∥∥∥∥2,P 
+
+≤ (1 − c)
+
+{∣ ∣∣∣λt/ˆρtrt,rc e,t − 1/ˆρ
+
+∣∣∣∣∥∥∥∥mtrt,rc e,t − ˆmtrt,rc e,t 
+
+∥∥∥∥2,P 
+
+(176) 
+
++
+
+∣∣∣∣λe−1/ˆρtrt,rc e,e −1 − 1/ˆρ
+
+∣∣∣∣∥∥∥∥mtrt,rc e,e −1 − ˆmtrt,rc e,e −1
+
+∥∥∥∥2,P 
+
+}
+
++ 1
+
+c
+
+{∥ ∥∥∥
+
+p
+
+1 − p/ˆρ − λt
+
+ˆp
+
+1 − ˆp/ˆρc,rc e,t 
+
+∥∥∥∥2,P 
+
+∥∥∥∥mc,rc e,t − ˆmc,rc e,t 
+
+∥∥∥∥2,P 
+
++
+
+∥∥∥∥
+
+p
+
+1 − p/ˆρ − λe−1
+
+ˆp
+
+1 − ˆp/ˆρc,rc e,e −1
+
+∥∥∥∥2,P 
+
+∣∣∣∣∥∥∥∥mc,rc e,e −1 − ˆmc,rc e,e −1
+
+∥∥∥∥2,P 
+
+}
+
+67 where we in the first inequality used Jensen’s inequality and the triangle inequality for integrals, in the second inequality used Hölder’s inequality, in the third Hölder’s inequality again together with 1 − p(X) < 1/c and p(X) < 1 − c cf. Assumption 10. The exact same argument applies to the denominator, providing a bound on |P φ dr,rc den (·; τ dr,rc,den e,t ; ˆηdr,rc den )|
+
+for Equation (46). It has the exact same form as eq. (176) but with the mean function related to the denominator instead of the numerator. Hence, similar to the panel data case, by the quotient rule, the unscaled remainder term satisfies: 
+
+> ∣∣∣∣
+
+P φ dr,rc (·; τ dr,rc ; ˆηdr,rc ) 
+
+> ∣∣∣∣
+
+= oP (n−1/2)
+
+provided the assumptions in Proposition 12 hold. 
+
+Remark 12 (Identical remainder terms) .
+
+Panel Data: Equation (165) equals eq. (18); and from Equation (171) we see 
+
+P φ dr,p,num (·; τ dr,p,num e,t , ˆηdr,p,num e,t )= E[( ˆ wtrt,p e − ˆwc,p e,t )ˆ εY,p e,t − ˆwtrt,p e τ dr,p,num e,t, 1 ] = P φ p,num (·; τ p,num e,t , ˆηp,num e,t )
+
+i.e. the numerator component of eq. (27) is identical to eq. (44) under the expectation operator with estimated nuisances inserted. Hence the remainder terms using either influence function eq. (27) or eq. (32) are the same, and similarly for the denominator and the joint influence function. 
+
+Repeated Cross-Sections: Equation (168) equals eq. (33); and Equation (171) is exactly equal to P φ rc,num (·; τ rc e,t , ˆηrc e,t ). Hence the remainder terms using either influence function eq. (38) or eq. (44) are the same, i.e. 
+
+P φ dr,rc num (·; τ dr,rc,num e,t ; ˆ ηdr,rc num ) = P φ rc,num (·; τ rc e,t , ˆηrc,num e,t )
+
+and similarly for the denominator and the joint influence function. 
+
+Remark 13 (Similarity of the IDiD and DiD remainder term calculations) .
+
+• The analysis was applied to the numerator and denominator separately and then joined together. Hence the same remainder-term calculations also apply to the DiD setting for the AT T (g, t ) estimand and its influence function, cf. Sant’Anna and Zhao (2020); Callaway and Sant’Anna (2021). 
+
+• As for the panel case, the non-normalized eq. (38) and normalized influence function turn out to have a similar remainder term. 68 F Other calculations 
+
+F.1 Plug-in bias DR EIF 
+
+Here we show that even though the DR estimator ˆτ dr,p e,t solves 
+
+Pnφp(·; ˆ τ dr,p e,t , ˆηpe,t ) = 0 
+
+using the EIF φp(O; τ pe,t , η pe,t ) eq. (27), it also holds that 
+
+Pnφdr,p (·; ˆ τ dr,p e,t , ˆηdr,p e,t ) = 0 
+
+that is, the empirical mean of φdr,p (·; ˆ τ dr,p e,t , ˆηdr,p e,t ) equals 0. A similar argument shows that 
+
+Pnφdr,rc (·; ˆ τ dr,rc e,t , ˆηdr,rc e,t ) = 0 
+
+as well. To see this, first write eq. (27) as 
+
+φp(O; τ pe,t , η pe,t ):= 1
+
+τ p,den e,t 
+
+[{wtrt,p e − wc,p e,t }{ ∆t−e+1 Yt − mc,p e,t (X)} − τ pe,t {wtrt,p e − wc,p e,t }{ ∆t−e+1 Dt − gc,p e,t (X)}]= 1
+
+τ p,den e,t 
+
+[{wtrt,p e − wc,p e,t }εY,p e,t − τ pe,t {wtrt,p e − wc,p e,t }εD,p e,t ],
+
+and eq. (32) as 
+
+φdr,p (O; τ dr,p e,t , η dr,p e,t ) = 1
+
+τ dr,p,den e,t 
+
+[
+
+wtrt,p e {εY,p e,t − E[wtrt,p e εY,p e,t ]} − wc,p e,t {εY,p e,t − E[wc,p e,t εY,p e,t ]}− τ dr,p e,t (wtrt,p e {εD,p e,t − E[wtrt,p e εD,p e,t ]} − wc,p e,t {εD,p e,t − E[wc,p e,t εD,p e,t ]})
+
+]
+
+Consider the part corresponding to the numerator of the latter expression: 
+
+wtrt,p e {εY,p e,t − E[wtrt,p e εY,p e,t ]} − wc,p e,t {εY,p e,t − E[wc,p e,t εY,p e,t ]}
+
+= ( wtrt,p e − wc,p e,t )εY,p e,t − wtrt,p e E[wtrt,p e εY,p e,t ] + wc,p e,t E[wc,p e,t εY,p e,t ].
+
+Taking expectations yields 
+
+E [
+
+(wtrt,p e − wc,p e,t )εY,p e,t − wtrt,p e E[wtrt,p e εY,p e,t ] + wc,p e,t E[wc,p e,t εY,p e,t ]]
+
+= E [
+
+(wtrt,p e − wc,p e,t )εY,p e,t 
+
+]
+
+− E[( wtrt,p e − wc,p e,t )εY,p e,t ] = 0 
+
+since the expected values of the normalized weights equal 1. The same calculation applies to the denominator. Hence the influence function has mean zero. Likewise, its empirical mean also equals 0:
+
+Pn
+
+[
+
+( ˆ wtrt,p e − ˆwc,p e,t )ˆ εY,p e,t − ˆwtrt,p e Pn[ ˆ wtrt,p e ˆεY,p e,t ] + ˆ wc,p e,t Pn[ ˆ wc,p e,t ˆεY,p e,t ]]
+
+= Pn
+
+[
+
+( ˆ wtrt,p e − ˆwc,p e,t )ˆ εY,p e,t 
+
+]
+
+− Pn[( ˆ wtrt,p e − ˆwc,p e,t )ˆ εY,p e,t ]= 0 
+
+since the weights also sum to 1 in sample. The same calculation applies to the denominator. Therefore, even though we solve the estimating equation for the first influence function, the second one is also equal to 0 in sample. It follows that for the plug-in estimator of 
+
+τ dr,s e,t , s ∈ { p, rc }, the only remaining terms to handle are the empirical process term and the remainder term. The remainder term is the same for both influence functions. 69
