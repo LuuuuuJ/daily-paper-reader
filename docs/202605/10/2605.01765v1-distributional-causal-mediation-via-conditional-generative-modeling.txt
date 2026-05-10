@@ -1,0 +1,1841 @@
+Title: Distributional Causal Mediation via Conditional Generative Modeling
+
+URL Source: https://arxiv.org/pdf/2605.01765v1
+
+Published Time: Tue, 05 May 2026 01:03:10 GMT
+
+Number of Pages: 20
+
+Markdown Content:
+# Distributional Causal Mediation via Conditional Generative Modeling 
+
+Jinlun Zhang 1 Haoneng Huang 1 Zishu Zhan 1 Chun-quan Ou 1
+
+## Abstract 
+
+Mediation analysis has traditionally focused on outcome-level summary contrasts, such as mean effects, which may obscure substantial distribu-tional changes induced by complex and nonlinear causal mechanisms. We propose Distributional Causal Mediation Analysis (DCMA), a generative learning framework for identifying and estimating treatment effects on entire outcome distributions transmitted through multiple mediators. DCMA learns conditional generative models for the me-diators and the outcome, recovering the relevant conditional distributions from observational data. Leveraging the identification formulas, it recon-structs interventional outcome distributions via Monte Carlo forward simulation by noise resam-pling, enabling the capture of both classical sum-mary effects and rich distributional contrasts such as energy distance and the Wasserstein distance. Analytical error bounds are derived to decompose how estimation errors in the learned conditional models propagate to the reconstructed interven-tional outcome distributions. The empirical ef-fectiveness of DCMA is demonstrated through numerical experiments and real-world data appli-cations. 
+
+## 1. Introduction 
+
+Causal mediation analysis aims to characterize how an expo-sure or treatment A affects an outcome Y through mediators 
+
+M (Robins & Greenland, 1992; Imai et al., 2010; Vander-Weele & Vansteelandt, 2014). Depending on the scientific objective, mediation analysis can be studied from an ex-planatory perspective, which decomposes the total effect into direct and indirect pathways, or from an interventional perspective, which defines effects in terms of hypothetical in-
+
+> 1
+
+State Key Laboratory of Multi-organ Injury Prevention and Treatment, Department of Biostatistics, Guangdong Provincial Key Laboratory of Tropical Disease Research, School of Public Health, Southern Medical University, Guangzhou, China. Corre-spondence to: Zishu Zhan <treer0927@smu.edu.cn >, Chun-quan Ou <ouchunquan@hotmail.com >.
+
+Preprint. May 5, 2026. 
+
+terventions on exposures or mediators (Nguyen et al., 2021). The interventional mediation framework is particularly well suited to policy-relevant what-if questions. Figure 1 illustrates the interventional mediation framework with two mediators, which can be extended naturally to S
+
+mediators. The green edge represents the interventional direct effect (IDE), while the blue and orange edges cor-respond to the interventional path-specific effects (IPSE) operating through M1 and M2, respectively, excluding any pathways through their descendants in the graph. 
+
+> A
+> M1
+> M2
+> Y
+> Z
+
+Figure 1. Causal directed acyclic graph (DAG) with exposure A,two mediators M1, M2, outcome Y , and baseline covariates Z.The green edge denotes the IDE, the blue edges denote the IPSE through M1, and the orange edges denote the IPSE through M2.
+
+However, existing approaches often rely on parametric mod-els and focus on summary effects such as mean contrasts, which may obscure important nonlinear mechanisms and distributional heterogeneity. Interventions with similar aver-age effects can yield very different outcome distributions, for example by affecting subgroups differently. A track-ing program, through differences in teacher support and resources, may leave the class average unchanged while widening the gap between high and low performers, result-ing in a bimodal distribution. Therefore, it is essential to move beyond summary-based mediation analysis toward a full distributional characterization of interventional effects. Moreover, in practice there are typically multiple mediators, raising the question of how to capture the path-specific dis-tributional effects of an exposure on an outcome that operate through distinct mediators. Motivated by above considerations, we extend interven-tional mediation analysis to a distributional framework that characterizes how interventions reshape the entire outcome distribution, both directly and through multiple mediators. 1
+
+> arXiv:2605.01765v1 [stat.ML] 3 May 2026 Distributional Causal Mediation via Conditional Generative Modeling
+
+We further introduce a generalized notion of distributional mediation effects that unifies a broad class of causal targets, including mean and quantile effects, exceedance probabili-ties, and distributional distances such as the energy distance (ED) (Rizzo & Sz´ ekely, 2016). We derive identification results that express distributional in-terventional effects in terms of conditional distributions, re-ducing estimation to learning the conditional laws of media-tors and outcomes under appropriate interventions. Building on this characterization, we develop a deep generative learn-ing framework that flexibly models these conditional distri-butions via a conditional generator g(X, ε ), enabling effi-cient Monte Carlo approximation of interventional outcome distributions without explicit likelihood specification (Zhou et al., 2023; Song et al., 2025; Shen & Meinshausen, 2025). Leveraging these insights, we propose the Distributional Causal Mediation Analysis (DCMA) framework. Our con-tributions are threefold: • We introduce distributional interventional mediation estimands that characterize causal mediation effects at the level of full outcome distributions, generalizing classical mean-based mediation effects. • We develop a generative mediation framework that models the conditional distributions of multiple media-tors and outcome via noise-based conditional genera-tors, enabling flexible distributional effect estimation. • We establish identification results and derive analytical error bounds that quantify how estimation errors in the learned mediator and outcome conditional models propagate to the reconstructed interventional outcome distributions. 
+
+## 2. Related Works on Interventional Mediation 
+
+Interventional mediation was formally introduced to en-able effect decomposition in settings with exposure-induced mediator–outcome confounding, where natural mediation effects may be ill-defined or non-identifiable (VanderWeele et al., 2014). By defining mediation effects through interven-tions on mediator distributions rather than fixing mediators at counterfactual values, this framework avoids reliance on cross-world counterfactual assumptions. Building on this formulation, subsequent work extended in-terventional mediation to increasingly complex settings, in-cluding multiple mediators with unknown causal structures (Vansteelandt & Daniel, 2017; Lin & VanderWeele, 2017; Loh et al., 2022a), longitudinal settings with time-varying exposures and mediators (VanderWeele & Tchetgen Tch-etgen, 2017), and nonlinear models with high-dimensional mediators (Loh et al., 2022b). More recently, (Moreno-Betancur et al., 2021) further enriched the conceptual frame-work of interventional mediation by aligning it with target trial emulation, providing a policy-oriented interpretation through hypothetical shifts in mediator distributions. Along related lines, Benkeser & Ran (2021) proposed non-parametric and semiparametric estimation and inference for interventional mediation effects. Building on earlier simulation-based strategies for mediation analysis (Imai et al., 2010), Zhou & Wodtke (2025) develop a Monte Carlo–based framework for interventional mediation effects using normalizing flows as flexible conditional density mod-els. However, their analysis still focuses on mean-based effects, does not account for differences in entire outcome distributions, and lacks theoretical convergence guarantees. 
+
+## 3. Notion and Target Estimands 
+
+3.1. Notations 
+
+Let Y denote the outcome variable, A the binary treat-ment, M = ( M1, . . . , M S ) the S mediators, and Z a d-dimensional covariate vector. The notation Yam 1...m S repre-sents the potential outcome of Y when the treatment A is set to a, and each mediator Ms is set to ms for s = 1 , . . . , S .Let Msa denote the potential value of mediator Ms under treatment A = a, and ˜Msa a random draw from the distri-bution of Msa .For the purpose of defining IPSE, it is convenient to partition the mediator vector around the mediator Ms. We define 
+
+˜Ma := ( ˜M1a, . . . , ˜MSa ),
+
+˜M (<s ) 
+
+> a
+
+:= ( ˜M1a, . . . , ˜M(s−1) a),
+
+˜M (>s ) 
+
+> a
+
+:= ( ˜M(s+1) a, . . . , ˜MSa ),
+
+so that ˜M (<s ) 
+
+> a
+
+collects the first s − 1 mediators and ˜M (>s )
+
+> a
+
+collects the remaining S − s mediators under treatment level A = a. The random vectors ˜Ma, ˜M (<s ) 
+
+> a
+
+, and ˜M (>s )
+
+> a
+
+are sampled jointly from the corresponding interventional distributions of the included mediators. 
+
+3.2. Target Estimands 
+
+We extend interventional mediation effects to a distribu-tional framework, where the primary objects of interest are the interventional outcome distributions themselves. Given a bivariate functional Ψ : P(R) × P (R) → R, similar to Vansteelandt & Daniel (2017) (see Appendix A), we define the distribution-based interventional total effect (ITE), IDE, 2Distributional Causal Mediation via Conditional Generative Modeling 
+
+and IPSE for the mediator s (s = 1 , . . . , S ) as follows: ITE Ψ := Ψ 
+
+
+
+PY1 ˜M1
+
+, P Y0 ˜M0
+
+
+
+,
+
+IDE Ψ := Ψ 
+
+
+
+PY1 ˜M0
+
+, P Y0 ˜M0
+
+
+
+,
+
+IPSE Ψ 
+
+> s
+
+:= Ψ 
+
+
+
+PY1 ˜M (<s )0 ˜Ms1 ˜M (>s )1
+
+, P Y1 ˜M (<s )0 ˜Ms0 ˜M (>s )1
+
+
+
+.
+
+Here P· denotes the corresponding interventional outcome distribution. This formulation is general in form. Different choices of Ψ lead to effect estimands with distinct interpre-tations and properties. 
+
+Contrast-type summary estimands We first consider contrast-type functionals of the form 
+
+Ψ( P, Q ) = T (P ) − T (Q),
+
+where T : P(R) → R is a summary operator acting on dis-tributions. This class of functionals compares interventional outcome distributions through differences in interpretable distributional summaries. When T is chosen as the mean functional, the resulting estimands coincide with the classi-cal interventional mediation effects (Vansteelandt & Daniel, 2017). Other choices of T may include the cumulative dis-tribution function (CDF), the probability density function (PDF), and the quantile function. 1
+
+Distributional difference estimands Beyond summary-based contrasts, one may directly assess discrepancies be-tween interventional outcome distributions themselves. In this case, Ψ can be chosen as a distributional discrepancy measure, such as the Kullback–Leibler divergence, the ED, or the Wasserstein distance (Villani et al., 2008). Such discrepancy-based estimands quantify global differences between interventional outcome distributions that are not captured by low-dimensional summaries. 
+
+3.3. Identification 
+
+To identify the interventional mediation effects, we invoke the standard assumptions of consistency, positivity, and sequential ignorability. 
+
+Assumption 3.1 (Consistency) . For any a and m =(m1, . . . , m S ), if (A, M ) = ( a, m), then Y = Yam. More-over, for each mediator s = 1 , . . . , S , if A = a, then 
+
+Ms = Msa .
+
+Assumption 3.2 (Positivity) . For all covariate values z
+
+with positive probability, P(A = a | Z = z) > 0 for the   
+
+> 1Choosing Tas the CDF yields a distributional treatment effect (DTE), selecting the PDF yields a probability density treatment effect (PTE) (Byambadalai et al., 2025), and taking the quantile function yields a quantile treatment effect (QTE), all extended here to the interventional mediation setting.
+
+treatment levels of interest. In addition, for each mediator 
+
+s = 1 , . . . , S , the conditional distribution of Ms given (A =
+
+a, Z = z) has support covering the values induced by the interventions under consideration. 
+
+Assumption 3.3 (Sequential ignorability) .
+
+(1) Yam ⊥⊥ A | Z,
+
+(2) Yam ⊥⊥ M | (A, Z),
+
+(3) Ma ⊥⊥ A | Z.
+
+Assumption 3.3 states that there is no unmeasured confound-ing for the exposure–outcome and exposure–mediator re-lationships conditional on baseline covariates Z, and no unmeasured confounding for the mediator–outcome rela-tionship conditional on (A, Z).
+
+Theorem 3.4 (Identification) . Under Assumptions 3.1–3.3, the interventional outcome distributions are identifiable from the observed data. Specifically, for any z ∈ supp( Z),
+
+PYa ˜Ma′ |Z=z =
+
+Z
+
+PY |A=a, M =m, Z=z PM |A=a′, Z=z (dm).
+
+Consequently, all causal estimands defined as functionals of the interventional outcome distributions in Section 3.2 are also identifiable. 
+
+Proof is provided in Appendix C. An analogous identifica-tion result holds for the IPSE-related interventional outcome distributions, explicit formulas are provided in Appendix A. The identification result expresses the interventional out-come distributions in terms of observable conditional distri-butions, thereby motivating a distribution-learning approach to estimation. 
+
+## 4. DCMA Framework 
+
+4.1. Overall Pipeline 
+
+Figure 2 summarizes the proposed DCMA framework, which consists of four main stages. 
+
+(i) Data preprocessing. The observed data are split into training and validation sets, and the mediators M , outcome 
+
+Y , and covariates Z are standardized for numerical stability. 
+
+(ii) Conditional generative modeling. DCMA learns a me-diator generator fM (A, Z, εM ) and an outcome generator 
+
+fY (A, Z, M , εY ) to approximate the conditional mediator and outcome distributions. During training, independent noise variables εM and εY are repeatedly sampled and in-jected into the generators, and the model parameters are optimized using distributional learning objectives. 
+
+(iii) Interventional distribution generation. Interventional mediator and outcome samples are generated by forward simulation (Algorithm details can be found in Appendix D) 3Distributional Causal Mediation via Conditional Generative Modeling 
+
+from the trained generators under the corresponding treat-ment assignments, implementing the identification formulas via noise resampling. 
+
+(iv) Causal effects estimation. Because the model is gen-erative, it can be used to sample counterfactual outcomes under user-specified interventions. Distributional causal es-timands are then obtained by applying the corresponding functionals (e.g., means, quantiles, exceedance probabili-ties) to the resulting Monte Carlo draws. Input data                   
+
+> (A, Z,M, Y )
+> ϵ-sampling
+> Mediator generator
+> fM(·)
+> Outcome generator
+> fY(·)
+> Standardized
+> Conditional generative modeling
+> Interventional joint distribution of M
+> Generate Mjointly
+> Interventional product distribution of M
+> Permute Interventional distribution of Y
+> Plug-in
+> Generate Y
+> Interventional distribution generation
+> Mean, quantiles, energy distance over {ITE ,IDE ,IPSE 1, . . . , IPSE S}
+> Compute causal estimands
+> Causal effects estimation
+
+Figure 2. Overview of DCMA: data preprocessing, conditional generative modeling, interventional distribution generation, distri-butional causal effects estimation. 
+
+4.2. Conditional Generators for Mediators and Outcome 
+
+We model each conditional distribution using a noise-driven generator that maps exogenous randomness to samples fol-lowing the desired conditional distribution. For the mediators, let εM be a noise vector independent of (A, Z) with distribution PεM . We consider a generative function 
+
+fM (a, z, εM )
+
+such that, for every (a, z) in the support of (A, Z),
+
+fM (a, z, εM ) d
+
+= PM |A=a, Z=z .
+
+That is, the generator fM induces the conditional distribu-tion of the mediators given (A, Z). Conditional samples from PM |A=a, Z=z are obtained by drawing εM and evaluat-ing fM (a, z, εM ). We denote by PfM (·| a, z) the distribution induced by the mediator generator. The outcome generator is defined analogously. Let εY be independent noise with distribution PεY , independent of 
+
+(A, M , Z). We consider a generative function 
+
+fY (a, m, z, εY )
+
+such that 
+
+fY (a, m, z, εY ) d
+
+= PY |A=a, M =m,Z=z .
+
+We denote by PfY (·| a, m,z) the distribution induced by the outcome generator. 
+
+4.3. Population Objective via Distributional Discrepancy 
+
+We train the generators by minimizing a conditional distri-butional discrepancy. Let D(P, Q ) denote any distributional discrepancy satisfying that, for any probability distributions 
+
+P and Q,
+
+D(P, Q ) ≥ D (Q, Q ),
+
+with equality if and only if P = Q. The population risks are defined as 
+
+LM = EA, Z
+
+h
+
+D PfM (·| A, Z), P M |A, Z
+
+i
+
+,
+
+LY = EA, M ,Z
+
+h
+
+D PfY (·| A, M ,Z), P Y |A, M ,Z
+
+i
+
+.
+
+The population-optimal generators satisfy 
+
+f ∗ 
+
+> M
+
+∈ arg min   
+
+> f∈M
+
+LM , f ∗ 
+
+> Y
+
+∈ arg min   
+
+> f∈Y
+
+LY ,
+
+where M and Y denote sufficiently rich function classes. 
+
+Implications of the population objective. Under the dis-tributional discrepancy D defined above and sufficiently rich function classes M and Y, any population-optimal genera-tors f ∗ 
+
+> M
+
+and f ∗ 
+
+> Y
+
+recover the true conditional data-generating mechanisms in the following sense: 
+
+Pf ∗  
+
+> M(·| a, z)
+
+= PM |A=a, Z=z ,Pf ∗  
+
+> Y(·| a, m,z)
+
+= PY |A=a, M =m,Z=z ,
+
+for almost all relevant conditioning values. This implies that, at the population optimum, DCMA recovers the exact conditional interventional distributions without requiring likelihood specification, parametric assumptions, or explicit density modeling. A proof is provided in Appendix C. 
+
+4.4. Practical Implementation 
+
+In practice, we instantiate D using the energy score (ES), which admits a simple and stable Monte Carlo implementa-tion without requiring explicit density evaluation. 2
+
+> 2
+
+An alternative choice of D is the Wasserstein distance, which has been widely used for training generative models (Arjovsky 
+
+4Distributional Causal Mediation via Conditional Generative Modeling 
+
+Let P1(Rd) denote the set of probability measures on Rd
+
+with finite first moments. For a predictive distribution P ∈P1(Rd) and an observation y, the ES is defined as 
+
+ES( P, y ) = 12 EU,U ′∼P ∥U − U ′∥ − EU ∼P ∥U − y∥.
+
+The ES is strictly proper (Gneiting & Raftery, 2007), imply-ing that for any data-generating distribution Q,
+
+EY ∼Q[ES( P, Y )] ≤ EY ∼Q[ES( Q, Y )] ,
+
+with equality if and only if P = Q. Accordingly, we define the distributional discrepancy 
+
+D(P, Q ) = −EY ∼Q[ES( P, Y )] .
+
+In practice, the expectations appearing in the population objectives are approximated by Monte Carlo. Given ob-served data Oi := {(Ai, Zi, Mi, Y i)}ni=1 and K indepen-dent noise draws {εik }Kk=1 , we generate mediator samples 
+
+Uik = fM (Ai, Zi, εik ),
+
+and approximate the ES( PfM ( ·| Ai,Zi), Mi) by 
+
+cES = 12K(K − 1) 
+
+> K
+
+X 
+
+> k,k ′=1
+> k̸=k′
+
+∥Uik −Uik ′ ∥− 1
+
+K
+
+> K
+
+X
+
+> k=1
+
+∥Uik −Mi∥.
+
+This yields the empirical objective 
+
+bLM (fM ) = − 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+cES  PfM ( ·| Ai,Zi), Mi
+
+.
+
+The outcome generator is trained in the same manner. 
+
+4.5. Monte Carlo Reconstruction of Interventional Distributions 
+
+Once the generators ˆfM and ˆfY are trained, estimation of interventional effects proceeds entirely through forward simulation. For each observation Oi and Monte Carlo draw 
+
+b = 1 , . . . , B , we first sample independent noise variables 
+
+ε(i,b )  
+
+> M0
+
+and ε(i,b )  
+
+> M1
+
+, and then generate mediator counterfactuals 
+
+˜M (i,b )0 = ˆfM (0 , Zi, ε (i,b )  
+
+> M0
+
+),
+
+˜M (i,b )1 = ˆfM (1 , Zi, ε (i,b )  
+
+> M1
+
+).
+
+For IPSEs, hybrid mediators are constructed by combining independently permuted blocks drawn from the simulated 
+
+et al., 2017; Gulrajani et al., 2017). We present a complemen-tary Wasserstein-based implementation where the conditional generators are realized via Wasserstein Generative Regression (WGR) (Song et al., 2025) in Appendix B. 
+
+collections, ensuring mutual independence across compo-nents without additional sampling. Given these mediator draws, interventional outcomes are obtained by evaluating the outcome generator under the corresponding treatment and mediator assignments. Given these mediator draws, interventional outcomes are obtained by evaluating the out-come generator under the corresponding treatment and me-diator assignments. Appendix D provides an algorithmic description of the above forward simulation procedure. Ap-plying a user-specified functional Ψ to these empirical dis-tributions yields estimates of the distributional ITE, IDE, and IPSEs of interest. 
+
+## 5. Error Analysis 
+
+5.1. ED and its RKHS representation 
+
+We use the ED (Rizzo & Sz ´ekely, 2016) to quantify distri-butional estimation error as it is closely aligned with the ES used for training. Specifically, the expected ES of a predic-tive distribution differs from its ED to the true distribution only by a constant that depends on the true distribution. For any P, Q ∈ P 1(Rd), the ED is defined as 
+
+ED( P, Q ) = 2 E∥X − Y ∥ − E∥X − X′∥ − E∥Y − Y ′∥,
+
+where X, X ′ ∼ P and Y, Y ′ ∼ Q are independent. The ED is nonnegative and equals zero if and only if P = Q.The Euclidean distance appearing in the definition of ED is of negative type. A fundamental result of Sejdinovic et al. (2013) establishes that for any positive definite kernel k
+
+inducing a negative-type semimetric ρ(z, w ) = k(z, z ) + 
+
+k(w, w ) − 2k(z, w ), the corresponding RKHS Hk satisfies 
+
+ED( P, Q ) = 2 μk(P ) − μk(Q) 2
+
+> Hk
+
+,
+
+where μk(P ) = R k(·, x ) P (dx ) denotes the kernel mean embedding. This representation allows distributional errors to be analyzed using Hilbert space techniques. 
+
+5.2. Errors decomposition 
+
+Building on the RKHS representation of the ED established above, we now study how estimation errors from the me-diator and outcome models propagate to the reconstructed interventional outcome distribution. For notational simplicity, we write bPM |a′,z and bPY |a, m,z
+
+for the estimated conditional mediator and outcome distribu-tions, and PM |a′,z and PY |a, m,z for their true counterparts. Let 
+
+bR := 
+
+ZbPY |a, m,z bPM |a′,z (dm),R := 
+
+Z
+
+PY |a, m,z PM |a′,z (dm)
+
+5Distributional Causal Mediation via Conditional Generative Modeling 
+
+denote the estimated and true interventional outcome distri-butions. We quantify their discrepancy by 
+
+B := ED   bR, R .
+
+To separate the contributions of the mediator and outcome models, we introduce the intermediate distribution 
+
+Rmed =
+
+ZbPY |a, m,z PM |a′,z (dm),
+
+which corresponds to evaluating the learned outcome model under the true mediator distribution. Using the Hilbert space norm inequality ∥u − v∥2 ≤ 2∥u −
+
+w∥2 + 2 ∥w − v∥2 implied by the RKHS representation of the ED, we obtain 
+
+B ≤ 2
+
+h
+
+ED   bR, R med | {z }
+
+> B1
+
++ ED  Rmed , R | {z }
+
+> B2
+
+i
+
+.
+
+These two terms admit a clear interpretation. The term B1
+
+captures how errors in estimating the mediator distribution propagate through the outcome mechanism, while B2 re-flects the approximation error of the conditional outcome model when evaluated under the true mediator distribution. 
+
+5.3. Regularity conditions 
+
+Let kY be a positive definite kernel on the outcome space that induces the ED, and let HkY denote its associated RKHS. We impose the following regularity conditions to control the two error terms arising in the decomposition of interventional distributional errors. 
+
+Condition 1 For all relevant (a, m, z), the conditional outcome distributions bPY |a, m,z and PY |a, m,z belong to 
+
+P1(RdY ). Moreover, the mapping 
+
+m 7 → μkY
+
+ bPY |a, m,z
+
+
+
+is strongly measurable and Bochner integrable with respect to both the estimated and true interventional mediator distri-butions bPM |a′,z and PM |a′,z .
+
+Condition 2 The mediator distributions bPM |a′,z and 
+
+PM |a′,z belong to P1(RdM ).
+
+Condition 3 Define the estimated conditional outcome embedding 
+
+bψa, z (m) = μkY
+
+ bPY |a, m,z
+
+
+
+∈ H kY .
+
+There exists a constant Lψ < ∞ such that 
+
+bψa, z (m)− bψa, z (m′) HkY
+
+≤ Lψ ∥m−m′∥, ∀ m, m′.
+
+Conditions 1 and 2 impose mild moment assumptions on the conditional outcome and mediator distributions, ensuring that EDs and kernel mean embeddings are well defined and that the relevant Bochner integrals exist. Condition 3 is a technical regularity assumption on the estimated conditional outcome embedding, requiring Lipschitz continuity with respect to the mediator argument. It is imposed to facilitate the theoretical analysis of error propagation to the induced interventional outcome distributions. 
+
+5.4. Error bounds Lemma 5.1 (Mediator distribution error propagation) . Let 
+
+W1(·, ·) denote the 1-Wasserstein distance. Under Condi-tions 1–3, 
+
+B1 ≤ 2L2 
+
+> ψ
+
+W 21
+
+ bPM |a′,z , P M |a′,z
+
+
+
+.
+
+Lemma 5.2 (Outcome model error contribution) . Under Conditions 1–2, 
+
+B2 ≤
+
+Z
+
+ED 
+
+ bPY |a, m,z , P Y |a, m,z
+
+
+
+PM |a′,z (dm).
+
+Combining the above two lemmas immediately yields the following structural error bound for the reconstructed inter-ventional distribution. 
+
+Theorem 5.3 (Structural error bound for interventional out-come distributions) . Under Conditions 1–3, 
+
+B ≤ 2L2 
+
+> ψ
+
+W 21
+
+ bPM |a′,z , P M |a′,z
+
+
+
++
+
+Z
+
+ED 
+
+ bPY |a, m,z , P Y |a, m,z
+
+
+
+PM |a′,z (dm).
+
+Thus, the overall error of DCMA admits a clean additive decomposition into two terms, controlled by conditional mediator and outcome distribution estimation errors. If both terms vanish, the estimated interventional outcome distribution converges to the oracle distribution in ED. However, establishing nonasymptotic error bounds under the ED metric remains an open problem. In contrast, the Wasserstein distance admits tractable nonasymptotic error analysis under suitable regularity conditions. As shown in Appendix B, the Wasserstein distance between the estimated and true interventional outcome distributions, W1
+
+  bR, R ,converges at a rate determined by the slower of the WGR estimation rates for the mediator and outcome generators, up to logarithmic factors. 
+
+## 6. Experiments 
+
+6.1. Simulation Study 
+
+We conduct simulation experiments to evaluate DCMA un-der the interventional mediation paradigm. Across all sce-6Distributional Causal Mediation via Conditional Generative Modeling 0.0 0.1 0.2 0.3 0.4 0.5     
+
+> 0.0 2.5 5.0 7.5 10.0
+
+Y
+
+> Density
+
+A    
+
+> 0.0 0.1 0.2 0.3
+> 0.0 2.5 5.0 7.5 10.0
+
+Y
+
+> Density
+
+B    
+
+> 0.0 0.1 0.2 0.3
+> 0.0 2.5 5.0 7.5 10.0
+
+Y
+
+> Density
+
+C  
+
+> Truth DCMA mean DCMA interval
+
+Figure 3. True and DCMA estimated interventional outcome distributions. Panels (A)–(C) show the true (black) and DCMA–ES estimated (red) densities for Y0M0 , Y1M0 , and Y1M1 , respectively. The DCMA estimate is obtained by pointwise averaging over 100 replications, and the shaded region denotes the 95% inter-replication interval defined by the 2.5th and 97.5th percentiles across replications. 
+
+narios, the treatment is A ∼ Bernoulli(0 .5) and the covari-ate is Z ∼ N (0 , 1) , with mutually independent noise terms unless stated otherwise. Each experiment uses a sample size of n = 5 ,000 and is repeated over 100 replications. We compare two implementations of DCMA: DCMA–ES, where the conditional generators are trained using the ES-based loss, and DCMA–WGR, where the generators are trained using WGR. Ground-truth interventional outcome distributions are obtained by applying the same Monte Carlo forward sampling procedure to the known data-generating mechanism with n = 100 ,000 samples and B = 200 draws per sample. Estimation accuracy is evaluated using bias and RMSE relative to the ground truth. We consider the following two scenarios: 
+
+S1: Single mediator with bimodal outcome. We first consider a setting with a single continuous mediator and a bimodal outcome distribution. The mediator follows 
+
+M = 0 .5 + 1 .0X + 0 .3Z + εM , εM ∼ N (0 , 0.52).
+
+For X = 0 , generate 
+
+Y = 4 .3 + 0 .3A + 0 .5M + 0 .2Z + εY0 .
+
+For X = 1 , generate a bimodality Y by introducing a latent class S defined by S = 1 if Z ≤ 0 and S = 0 otherwise, and generate 
+
+Y =
+
+(2 + 0 .3A + 0 .5M + 0 .2Z + εY1 , S = 0 ,
+
+6 + 0 .3A + 0 .5M + 0 .2Z + εY2 , S = 1 ,
+
+where εY0 , εY1 , and εY2
+
+> i.i.d.
+
+∼ N (0 , 12).
+
+S2: Multiple mediators with dependence. To demon-strate the ability of the proposed method to handle multiple mediators, we consider settings with S = 5 dependent me-diators. The mediators are generated as 
+
+M = 0 .5 15 + bAA + bZ Z + εM , εM ∼ N (05, Σ) ,
+
+where 15 and 05 denote the 5-dimensional vectors of ones and zeros, and Σ ∈ R5×5 has entries Σij =0.6|i−j|. We set bA = (1 .0, 0.8, 0.6, 0.4, 0.2) and bZ =(0 .3, 0.3, 0.2, 0.2, 0.1) . The outcome is generated as 
+
+Y = 1 + 0 .6X + 0 .2 1⊤ 
+
+> 5
+
+M + sin ( M1M2) + 0 .2Z + εY ,
+
+where εY ∼ N (0 , 1) .Figure 3 shows that DCMA accurately reconstructs the in-terventional outcome distributions in the bimodal setting, with small variability across replications. This scenario challenges additive Gaussian noise models, which cannot represent multimodal conditional outcome distributions (see Appendix F). A key feature of this scenario is that the true IDE is nearly zero in terms of the mean (Table 1), suggesting little difference between Y0M0 and Y1M0 at the expectation level. However, Figure 3 shows that the two interventional distributions differ substantially in shape, exhibiting uni-modal versus bimodal structures. This discrepancy is clearly captured by the ED, highlighting DCMA’s ability to uncover mediation effects at the distributional level that conventional mean contrasts fail to reveal. Across both scenarios, DCMA–ES and DCMA–WGR achieve similar accuracy for ED based effects, indicating reliable recovery of overall distributional structure (Table 1). In contrast, DCMA–ES provides more accurate estimation of mean based effects than DCMA–WGR, despite the built in L2 regularization in the WGR objective. 7Distributional Causal Mediation via Conditional Generative Modeling 
+
+Table 1. Simulation results for mean-based and ED-based interventional mediation effects under two scenarios. 
+
+S1: Bimodal Outcome S2: Multiple mediators with dependence Method Metric IDE IPSE 1 ITE IDE IPSE 1 IPSE 2 IPSE 3 IPSE 4 IPSE 5 ITE 
+
+Mean-based effects 
+
+Truth -0.002 0.500 0.498 0.599 0.275 0.213 0.120 0.080 0.040 1.170 DCMA–ES Bias 0.008 -0.010 -0.001 0.003 0.033 -0.050 -0.002 -0.003 -0.002 -0.032 
+
+DCMA–WGR Bias -0.038 -0.053 -0.091 -0.018 -0.116 -0.066 -0.016 -0.006 0.000 -0.089 DCMA–ES RMSE 0.086 0.069 0.048 0.045 0.060 0.072 0.036 0.025 0.013 0.058 
+
+DCMA–WGR RMSE 0.089 0.081 0.113 0.054 0.127 0.083 0.028 0.021 0.013 0.112 
+
+ED-based effects 
+
+Truth 0.281 0.071 0.348 0.142 0.033 0.020 0.006 0.003 0.001 0.543 DCMA–ES Bias 0.062 -0.001 0.069 0.009 0.008 -0.006 0.001 0.000 0.000 -0.001 
+
+DCMA–WGR Bias -0.061 -0.005 -0.061 0.003 -0.003 -0.010 -0.003 -0.002 -0.001 -0.041 DCMA–ES RMSE 0.077 0.019 0.074 0.027 0.015 0.010 0.005 0.002 0.001 0.047 
+
+DCMA–WGR RMSE 0.071 0.018 0.073 0.026 0.012 0.013 0.004 0.003 0.002 0.068 −1 01     
+
+> 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9
+> Quantile level
+> Quantile effect
+> A
+> 0.0 0.2 0.4 0.6 0.8
+> 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9
+> Quantile level
+> Quantile effect
+> B
+> IDE IPSE1 IPSE2 IPSE3 IPSE4 IPSE5
+
+Figure 4. Quantile-based mediation effect estimates. Panels (A) and (B) correspond to Scenarios S1 and S2, respectively. Solid lines denote the true quantile effects, dashed lines denote the DCMA estimates, and shaded regions denote the 95% inter-replication interval, defined by the 2.5th and 97.5th percentiles across Monte Carlo replications. 
+
+Figure 4 further examines quantile based effects. In Sce-nario S2, only mediators M1 and M2 enter the outcome model through nonlinear interactions, so only their IPSEs exhibit quantile dependent heterogeneity, while the remain-ing mediators show nearly flat quantile effects. DCMA successfully recovers both the presence and absence of this heterogeneity pattern, demonstrating its ability to identify which mediators contribute to distributional effect hetero-geneity. 
+
+6.2. Real Data Study 
+
+We illustrate the proposed DCMA framework using data from the UK Biobank (UKB). We consider smoking status (A) as a binary exposure (ever vs. never smokers), systolic blood pressure (SBP, mmHg) measured at the first follow-up as the outcome ( Y ), and baseline serum total choles-terol ( M1, mmol/L) together with baseline body mass index (BMI, M2, kg/m 2) as mediators. Covariates include three baseline variables ( Z): age, sex, and socioeconomic status measured by the Townsend deprivation index. The analysis includes 18,318 individuals with complete data on these variables. The 95% uncertainty intervals were constructed using the percentile bootstrap method with 100 resamples. Further details of the data are described in Appendix E. 
+
+Table 2. Distributional causal mediation effects of smoking on systolic blood pressure (SBP) through body mass index (BMI) and total cholesterol estimated by DCMA. Effect Mean Effect P(SBP ≥ 140) ED ITE 0.108 [-0.345, 0.450] 0.004 [-0.007, 0.012] 0.008 [0.004, 0.024] IDE 0.037 [-0.415, 0.366] 0.002 [-0.008, 0.011] 0.009 [0.003, 0.021] 
+
+IPSE 1
+
+0.075 [0.029, 0.132] 0.002 [0.000, 0.003] 0.005 [0.002, 0.009] 
+
+IPSE 2
+
+0.001 [-0.036, 0.024] 0.000 [-0.001, 0.001] 0.004 [0.002, 0.009] 
+
+We examine three interventional mediation estimands: mean contrasts in SBP, exceedance probabilities above the clinical hypertension threshold of 140 mmHg, and distributional effects quantified by the the ED. Only the path-specific ef-fect through BMI ( IPSE 1) was statistically distinguishable from zero: shifting the BMI distribution from that of never smokers to that of ever smokers increased SBP by 0.075 mmHg on average (95% uncertainty interval: 0.029, 0.132) and raised the probability of SBP exceeding 140 mmHg by 0.2% (95% uncertainty interval: 0.0%, 0.3%) (Table 2). The small ED values across all mediation effects suggest that, smoking is associated with only limited changes in the overall distribution of SBP. This is further illustrated by the density curves shown in Figure 6 in the Appendix E. 8Distributional Causal Mediation via Conditional Generative Modeling 
+
+## 7. Discussion and Conclusion 
+
+In summary, DCMA provides a principled generative frame-work for distributional causal mediation analysis, enabling the estimation of mediation effects beyond conventional mean contrasts. By characterizing interventional effects at the level of entire outcome distributions, DCMA offers ad-ditional insights into complex and heterogeneous mediation mechanisms that are not captured by mean-based analyses. DCMA reconstructs interventional outcome distributions via Monte Carlo forward simulation by resampling exoge-nous noise and plugging it into the trained conditional gen-erators, a mechanism that naturally aligns with structural causal models and do-interventions. By training with proper distribution discrepancies, DCMA ensures consistent esti-mation of the underlying interventional outcome distribu-tions. While alternative generative models such as normaliz-ing flows or diffusion models could also be incorporated, our main contribution lies in establishing a causally aligned, the-oretically grounded, and computationally stable framework for distributional causal mediation analysis. 
+
+## Acknowledgements Impact Statement 
+
+This paper presents work whose goal is to advance the field of Machine Learning. There are many potential societal consequences of our work, none which we feel must be specifically highlighted here. 
+
+## References 
+
+Arjovsky, M., Chintala, S., and Bottou, L. Wasserstein gen-erative adversarial networks. In International conference on machine learning , pp. 214–223. PMLR, 2017. Benkeser, D. and Ran, J. Nonparametric inference for in-terventional effects with multiple mediators. Journal of Causal Inference , 9(1):172–189, 2021. Byambadalai, U., Hirata, T., Oka, T., and Yasui, S. On efficient estimation of distributional treatment effects un-der covariate-adaptive randomization. arXiv preprint arXiv:2506.05945 , 2025. Gneiting, T. and Raftery, A. E. Strictly proper scoring rules, prediction, and estimation. Journal of the American statistical Association , 102(477):359–378, 2007. Gulrajani, I., Ahmed, F., Arjovsky, M., Dumoulin, V., and Courville, A. C. Improved training of wasserstein gans. 
+
+Advances in neural information processing systems , 30, 2017. Imai, K., Keele, L., and Tingley, D. A general approach to causal mediation analysis. Psychological methods , 15(4): 309, 2010. Lin, S.-H. and VanderWeele, T. Interventional approach for path-specific effects. Journal of Causal Inference , 5(1): 20150027, 2017. Loh, W. W., Moerkerke, B., Loeys, T., and Vansteelandt, S. Disentangling indirect effects through multiple medi-ators without assuming any causal structure among the mediators. Psychological Methods , 27(6):982, 2022a. Loh, W. W., Moerkerke, B., Loeys, T., and Vansteelandt, S. Nonlinear mediation analysis with high-dimensional mediators whose causal structure is unknown. Biometrics ,78(1):46–59, 2022b. Moreno-Betancur, M., Moran, P., Becker, D., Patton, G. C., and Carlin, J. B. Mediation effects that emulate a tar-get randomised trial: simulation-based evaluation of ill-defined interventions on multiple mediators. Statistical Methods in Medical Research , 30(6):1395–1412, 2021. Nguyen, T. Q., Schmid, I., and Stuart, E. A. Clarify-ing causal mediation analysis for the applied researcher: Defining effects based on what we want to learn. Psycho-logical methods , 26(2):255, 2021. Rizzo, M. L. and Sz ´ekely, G. J. Energy distance. wiley interdisciplinary reviews: Computational statistics , 8(1): 27–38, 2016. Robins, J. M. and Greenland, S. Identifiability and exchange-ability for direct and indirect effects. Epidemiology , 3(2): 143–155, 1992. Sejdinovic, D., Sriperumbudur, B., Gretton, A., and Fuku-mizu, K. Equivalence of distance-based and rkhs-based statistics in hypothesis testing. The annals of statistics ,pp. 2263–2291, 2013. Shen, X. and Meinshausen, N. Engression: extrapolation through the lens of distributional regression. Journal of the Royal Statistical Society Series B: Statistical Method-ology , 87(3):653–677, 2025. Song, S., Wang, T., Shen, G., Lin, Y., and Huang, J. Wasser-stein generative regression. Journal of the Royal Sta-tistical Society Series B: Statistical Methodology , pp. qkaf053, 2025. VanderWeele, T. and Vansteelandt, S. Mediation analysis with multiple mediators. Epidemiologic methods , 2(1): 95–115, 2014. VanderWeele, T. J. and Tchetgen Tchetgen, E. J. Mediation analysis with time varying exposures and mediators. Jour-nal of the Royal Statistical Society Series B: Statistical Methodology , 79(3):917–938, 2017. 9Distributional Causal Mediation via Conditional Generative Modeling 
+
+VanderWeele, T. J., Vansteelandt, S., and Robins, J. M. Effect decomposition in the presence of an exposure-induced mediator-outcome confounder. Epidemiology ,25(2):300–306, 2014. Vansteelandt, S. and Daniel, R. M. Interventional effects for mediation analysis with multiple mediators. Epidemiol-ogy , 28(2):258–265, 2017. Villani, C. et al. Optimal transport: old and new , volume 338. Springer, 2008. Zhou, J. and Wodtke, G. T. Causal mediation analysis with multiple mediators: A simulation approach. arXiv preprint arXiv:2506.14019 , 2025. Zhou, X., Jiao, Y., Liu, J., and Huang, J. A deep gener-ative approach to conditional sampling. Journal of the American Statistical Association , 118(543):1837–1848, 2023. 10 Distributional Causal Mediation via Conditional Generative Modeling 
+
+## A. Interpretation and identification for IPSE-related interventional distributions 
+
+Recall that IPSE Ψ 
+
+> s
+
+:= Ψ 
+
+
+
+PY1 ˜M (<s )0 ˜Ms1 ˜M (>s )1
+
+, P Y1 ˜M (<s )0 ˜Ms0 ˜M (>s )1
+
+
+
+.
+
+This definition of IPSE aligns with the definition of interventional mediation effects in Vansteelandt & Daniel (2017) and does not assume any causal ordering among the mediators. However, it is defined with respect to a pre-specified index-based partition of the mediator vector. As a result, the estimand depends on the chosen partition and may differ under alternative mediator indexings or partitions when the outcome mechanism involves non-additive interactions among mediators. Since IPSE is defined as a functional Ψ of two interventional outcome distributions, identification of IPSE reduces to identification of the distributions 
+
+PY1 ˜M (<s )0 ˜Msa ˜M (>s )1
+
+, a ∈ { 0, 1}.
+
+Theorem A.1 (Identification of IPSE-related interventional distributions) . Under the assumptions of consistency, positivity, and Assumption 3.3, for any z in the support of Z and any a ∈ { 0, 1},
+
+P Y1 ˜M (<s )0 ˜Msa ˜M (>s )1 
+
+> |Z=z
+
+=
+
+Z
+
+P Y |A=1 , M =m, Z=z P M (<s )|A=0 , Z=z (dm(<s ))
+
+× P Ms|A=a, Z=z (dm s) P M (>s )|A=1 , Z=z (dm(>s )),
+
+where m = ( m(<s ), m s, m(>s )).
+
+## B. Wasserstein-Based Training and Error Analysis 
+
+In this appendix, we adopt the Wasserstein-1 distance as the primary metric D for measuring distributional errors and derive non-asymptotic error bounds for interventional outcome distributions under this metric. This provides a complementary perspective to the ES-based analysis presented in the main text. 
+
+Wasserstein-1 distance. Let P1(Rd) denote the set of probability measures on Rd with finite first moments. For any 
+
+μ, ν ∈ P 1(Rd), the Wasserstein-1 distance is defined as 
+
+W1(μ, ν ) = inf 
+
+> π∈Π( μ,ν )
+
+Z
+
+∥x − y∥ π(d x, dy),
+
+where Π( μ, ν ) denotes the set of all couplings of μ and ν. Equivalently, by the Kantorovich–Rubinstein duality, 
+
+W1(μ, ν ) = sup  
+
+> ∥f∥Lip ≤1
+
+n
+
+Eμ[f (X)] − Eν [f (X)] 
+
+o
+
+,
+
+where the supremum is taken over all real-valued 1-Lipschitz functions f .Intuitively, W1(μ, ν ) measures the minimal transportation cost required to transform one distribution into the other, where the cost of moving a unit of mass from x to y is given by the Euclidean distance ∥x − y∥. The dual formulation further shows that W1 can be interpreted as the largest difference in expectations over all 1-Lipschitz test functions. 
+
+B.1. Wasserstein generative regression 
+
+Building on the Wasserstein-1 distance, Song et al. (2025) proposed the Wasserstein generative regression (WGR) framework for learning conditional generative models. WGR augments the Wasserstein loss with an additional ℓ2 regularization term, which primarily serves to improve training stability and to reinforce the learning of structural relationships between covariates and responses, rather than merely matching their distributional shapes. Specifically, the WGR objective is given by 
+
+min  
+
+> g
+
+max  
+
+> f∈F Lip
+
+λw
+
+E[f (X, Y )] − E[f (X, g (X, ε ))] + λl E∥Y − g(X, ε )∥2,
+
+where f denotes a 1-Lipschitz critic, ε is an exogenous noise vector, 0 ≤ λℓ < 1, 0 < λ w ≤ 1, and λℓ + λw = 1 balance the Wasserstein matching objective and the ℓ2 regression regularization, respectively. 11 Distributional Causal Mediation via Conditional Generative Modeling 
+
+B.2. Error Decomposition 
+
+Our ultimate goal is to derive a non-asymptotic upper bound for the expected prediction error measured by the Wasserstein-1 distance, 
+
+ES EZ
+
+h
+
+W1
+
+ bR, R 
+
+ i 
+
+,
+
+where the expectations are taken over the training sample S and the exogenous noise Z, respectively. To this end, we first establish an error decomposition analogous to that under the ED metric in the main text. By the triangle inequality, we obtain the following decomposition: 
+
+W1( bR, R ) ≤ W1
+
+  bR, R med  + W1
+
+ Rmed , R .
+
+Unlike the ED, which corresponds to the squared norm of a metric in an RKHS, the Wasserstein-1 distance is itself a metric on P1(Rd) and therefore directly satisfies the triangle inequality. To derive an error propagation result analogous to that in the main text under the Wasserstein metric, we impose a slightly modified set of regularity conditions. 
+
+Condition 1 ′ For all relevant (a, m, z), the conditional outcome distributions bPY |a, m,z and PY |a, m,z belong to P1(RdY ).Moreover, the mapping 
+
+m 7 → W1
+
+  bPY |a, m,z , P Y |a, m,z
+
+
+
+is measurable and integrable with respect to PM |a′,z .
+
+Condition 2 ′ For all relevant (a′, z), the conditional mediator distributions bPM |a′,z and PM |a′,z belong to P1(RdM ).
+
+Condition 3 ′ There exists a constant LM < ∞ such that for all relevant (a, z) and all m, m ′,
+
+W1
+
+  bPY |a, m,z , bPY |a, m′,z
+
+ ≤ LM ∥m − m′∥.
+
+Theorem B.1 (Wasserstein error decomposition) . Under Assumptions 1’–3’, 
+
+W1( bR, R ) ≤ LM W1
+
+  bPM |a′,z , P M |a′,z
+
+ +
+
+Z
+
+W1
+
+  bPY |a, m,z , P Y |a, m,z
+
+ PM |a′,z (d m).
+
+B.3. Nonasymptotic error bounds 
+
+After establishing the Wasserstein error decomposition, we next derive non-asymptotic convergence bounds by leveraging the results of Song et al. (2025). For notational simplicity and theoretical convenience, we adopt a unified notation throughout the paper. We use g ∈ G to represent both the mediator and outcome generators, mapping an input X ∈ Rd and an exogenous noise vector ε ∈ Rq to an output Y ∈ Rm via 
+
+Y = g(X, ε ).
+
+The dimensions d, q, and m denote the input, output, and noise dimensions, respectively, and may vary across different components of the model. The following regularity conditions are needed. 
+
+Condition 4 ′ For any g ∈ G , the joint distributions of (X, Y ) and (X, g (X, ε )) are supported on a compact set X × Y ⊂ 
+
+[−B1, B 1]d+q for some constant 0 < B 1 < ∞.
+
+Condition 5 ′ The latent noise variable ε has support Ωε ⊂ [−B1, B 1]m.
+
+Condition 6 ′ The true conditional generative mechanism g∗ = ( g∗ 
+
+> 1
+
+, . . . , g ∗ 
+
+> q
+
+)⊤ satisfies 
+
+g∗ 
+
+> k
+
+∈ H β (X × Ωε, B 1), k = 1 , . . . , q, 
+
+for some β > 0. Here, Hβ (X × Ωε, B 1) denotes the H ¨older class of β-smooth functions on X × Ωε with H ¨older constant bounded by B1.12 Distributional Causal Mediation via Conditional Generative Modeling 
+
+Condition 7 ′. For any x ∈ X , there exists a vector εx ∈ Ωε such that 
+
+Eε[g(x, ε )] − Eε[˜ g(x, ε )] 1 ≤ ∥ g(x, ε x) − ˜g(x, ε x)∥1, ∀ g, ˜g ∈ G .
+
+Here, ∥ · ∥ 1 denotes the ℓ1-norm. Under the above conditions and appropriate network parameter choices, the Wasserstein-1 estimation error of the learned conditional distributions admits the following non-asymptotic bound. 
+
+Lemma B.2 (Corollary 1 of Song et al. (2025)) . Under Conditions 4 ′–7 ′ and appropriate network parameter choices, for 
+
+J ≳ n, the WGR estimator bg satisfies 
+
+ES EX
+
+h
+
+W1
+
+  bPY |X , P Y |X
+
+i
+
+≤ C2 n−α (log n) 2βm+d ∨ 1,
+
+where 
+
+α := β
+
+2β + {3( m + d)} ∨ { 2β(d + q + 1) } .
+
+Here, n denotes the sample size, J is the number of Monte Carlo samples drawn from the noise distribution of ε, and C2 is a positive constant independent of n and J.
+
+Building on Lemma B.2, we now derive a non-asymptotic bound for the estimation error of the interventional outcome distribution measured by the Wasserstein-1 distance. 
+
+Theorem B.3 (Non-asymptotic bound for interventional outcome distributions) . Assume the conditions of Theorem B.1 hold, and Conditions 4 ′–7 ′ in Lemma B.2 hold for both the mediator and outcome generators under appropriate network parameter choices with J ≳ n. Then for any treatment levels a, a ′ ∈ { 0, 1} with P(A = a) > 0 and P(A = a′) > 0, we have 
+
+ES EZ
+
+h
+
+W1
+
+ bR, R 
+
+i 
+
+≤ LM
+
+CM
+
+P(A = a′) n−αM (log n) 2βMmM +dM ∨ 1 + CY
+
+P(A = a) n−αY (log n) 2βYmY +dY ∨ 1,
+
+where CM , C Y are positive constants independent of n and J, and 
+
+αM := βM
+
+2βM + {3( mM + dM )} ∨ { 2βM (dM + qM + 1) } , αY := βY
+
+2βY + {3( mY + dY )} ∨ { 2βY (dY + qY + 1) } .
+
+Here (dM , q M , m M , β M ) and (dY , q Y , m Y , β Y ) denote the input dimension, output dimension, noise dimension, and H¨ older smoothness index for the mediator and outcome generators, respectively. 
+
+Up to logarithmic factors, the bound is of order O n− min( αM ,α Y ). Hence, the convergence rate of the interventional distribution estimator is effectively controlled by the slower of the WGR rates for the mediator and outcome generators. 
+
+## C. Proofs 
+
+C.1. Proof of Theorem 3.4 
+
+Proof. Consider the conditional distribution of Ya ˜Ma′ given Z = z. By the law of total probability, 
+
+PYa ˜Ma′ |Z=z =
+
+Z
+
+PYa m|Z=z, ˜Ma′ =m P ˜Ma′ |Z=z (dm)=
+
+Z
+
+PYa m|Z=z P ˜Ma′ |Z=z (dm),
+
+where the second equality uses the fact that ˜Ma′ is sampled independently from its distribution given Z.By Assumption 3.3, 
+
+PYam|Z=z =PYam|A=a, M =m,Z=z ,P ˜Ma′ |Z=z (dm) = P ˜Ma′ |A=a′,Z=z (dm),
+
+13 Distributional Causal Mediation via Conditional Generative Modeling 
+
+Hence, Z
+
+PYam|Z=z P ˜Ma′ |Z=z (dm) = 
+
+Z
+
+PYam|A=a, M =m,Z=z P ˜Ma′ |A=a′,Z=z (dm).
+
+Finally, the consistency assumption implies that Yam = Y whenever A = a, M = m, and by construction ˜Ma′ has the same distribution as M given A = a′ and Z = z. Therefore, 
+
+Z
+
+PYam|A=a, M =m,Z=z P ˜Ma′ |A=a′,Z=z (dm) = 
+
+Z
+
+PY |A=a, M =m,Z=z PM |A=a′,Z=z (dm),
+
+which yields the desired expression. 
+
+C.2. Proof of the population-level optimality result stated in Section 4.3. 
+
+Proof. We detail the mediator stage; the outcome stage follows by the same reasoning. For any fixed (a, z ), the strict propriety of the energy score implies 
+
+D(PM |a, z , P M |a, z ) ≤ D (Q, P M |a, z ),
+
+with equality if and only if Q = PM |a, z . Hence PM |a, z is the unique minimizer of the conditional expected score. If QM differs from PM |A, Z on a set of positive PAZ -measure, the inequality is strict on that set. Integrating over 
+
+(A, Z) ∼ PAZ yields 
+
+LM (QM ) − L M (PM |A, Z ) > 0,
+
+and therefore QM cannot be a global minimizer of the population objective. Thus any minimizer f ⋆M must induce PM |a, z
+
+for PAZ -almost every (a, z).The same argument, conditioning on (a, m, z) and integrating over PAM Z , establishes the claim for the outcome stage. 
+
+C.3. Proof of Lemma 5.1 
+
+Proof. By the definitions of bR and Rmed , we have 
+
+bR(B) = 
+
+ZbPY |a, m,z (B) bP ˜M |a′,z (dm), ∀ B ∈ B (Rd),
+
+and analogously for Rmed . By Condition 1, the mapping m 7 → μkY ( bPY |a, m,z ) is strongly measurable and Bochner integrable with respect to bP ˜M |a′,z and P ˜M |a′,z . Recall that the kernel mean embedding of a distribution P is given by 
+
+μkY (P ) = 
+
+Z
+
+kY (·, y ) P (dy ).
+
+By the defination of bR, we have 
+
+μkY ( bR) = 
+
+Z
+
+kY (·, y ) bR(dy ) = 
+
+Z Z 
+
+kY (·, y ) bPY |a, m,z (dy )
+
+bP ˜M |a′,z (dm).
+
+By the Bochner–Fubini theorem, the order of integration can be exchanged, which yields 
+
+μkY ( bR) = 
+
+Z
+
+μkY
+
+ bPY |a, m,z
+
+ bP ˜M |a′,z (dm).
+
+An analogous argument gives 
+
+μkY (Rmed ) = 
+
+Z
+
+μkY
+
+ bPY |a, m,z
+
+
+
+P ˜M |a′,z (dm).
+
+Let bψa, z (m) = μkY
+
+ bPY |a, m,z
+
+
+
+∈ H kY .
+
+14 Distributional Causal Mediation via Conditional Generative Modeling 
+
+Then 
+
+μkY ( bR) − μkY (Rmed ) = 
+
+Zbψa, z (m)
+
+ bP ˜M |a′,z − P ˜M |a′,z
+
+
+
+(dm).
+
+By the dual characterization of the Hilbert norm, 
+
+μkY ( bR) − μkY (Rmed ) HkY
+
+= sup  
+
+> ∥h∥HkY≤1
+
+Z
+
+⟨h, bψa, z (m)⟩HkY
+
+ bP ˜M |a′,z − P ˜M |a′,z
+
+
+
+(dm) .
+
+Fix any h ∈ H kY with ∥h∥HkY ≤ 1 and define fh(m) = ⟨h, bψa, z (m)⟩HkY . By Condition 3, for any h ∈ H kY ,
+
+|fh(m) − fh(m′)| = ⟨h, bψa, z (m) − bψa, z (m′)⟩HkY ≤ ∥ h∥HkY
+
+bψa, z (m) − bψa, z (m′) HkY
+
+≤ Lψ ∥m − m′∥.
+
+Hence fh/L ψ is 1-Lipschitz with respect to the Euclidean metric on the mediator space. By Condition 2, the measures bP ˜M |a′,z and P ˜M |a′,z have finite first moments, so the 1-Wasserstein distance is well defined and admits the Kantorovich–Rubinstein dual representation: 
+
+W1
+
+ bP ˜M |a′,z , P ˜M |a′,z
+
+
+
+= sup 
+
+> Lip( g)≤1
+
+Z
+
+g(m)
+
+ bP ˜M |a′,z − P ˜M |a′,z
+
+
+
+(dm) ,
+
+where Lip( g) ≤ 1 denotes that g is 1-Lipschitz with respect to the Euclidean norm. Since fh/L ψ is 1-Lipschitz, plugging 
+
+g = fh/L ψ into the above supremum yields 
+
+Z fh(m)
+
+Lψ
+
+ bP ˜M |a′,z − P ˜M |a′,z
+
+
+
+(dm) ≤ W1
+
+ bP ˜M |a′,z , P ˜M |a′,z
+
+
+
+.
+
+Multiplying both sides by Lψ gives 
+
+Z
+
+fh(m)
+
+ bP ˜M |a′,z − P ˜M |a′,z
+
+
+
+(dm) ≤ Lψ W1
+
+ bP ˜M |a′,z , P ˜M |a′,z
+
+
+
+.
+
+Taking the supremum over all ∥h∥HkY ≤ 1 gives 
+
+μkY ( bR) − μkY (Rmed ) HkY
+
+≤ Lψ W1
+
+ bP ˜M |a′,z , P ˜M |a′,z
+
+
+
+.
+
+Finally, using the RKHS representation of the energy distance, 
+
+ED 
+
+ bR, R med 
+
+= 2 μkY ( bR) − μkY (Rmed ) 2
+
+> HkY
+
+,
+
+the desired bound follows. 
+
+C.4. Proof of Lemma 5.2 
+
+Proof. By the same reasoning as in the proof of Lemma 5.1, and by Condition 1, Fubini’s theorem for Bochner integrals yields 
+
+μkY (Rmed ) = 
+
+Z
+
+μkY
+
+ bPY |a, m,z
+
+
+
+P ˜M |a′,z (dm),μkY (R) = 
+
+Z
+
+μkY
+
+ PY |a, m,z
+
+ P ˜M |a′,z (dm).
+
+Define the RKHS-valued error function 
+
+∆a, z (m) = μkY
+
+ bPY |a, m,z
+
+
+
+− μkY
+
+ PY |a, m,z
+
+ .
+
+15 Distributional Causal Mediation via Conditional Generative Modeling 
+
+Then the difference between the two kernel mean embeddings can be written as 
+
+μkY (Rmed ) − μkY (R) = 
+
+Z
+
+∆a, z (m) P ˜M |a′,z (dm).
+
+Since the squared RKHS norm is a convex function, Jensen’s inequality for Bochner integrals implies 
+
+μkY (Rmed ) − μkY (R) 2
+
+> HkY
+
+≤
+
+Z
+
+∥∆a, z (m)∥2
+
+> HkY
+
+P ˜M |a′,z (dm).
+
+Using the RKHS representation of the energy distance, 
+
+∥∆a, z (m)∥2
+
+> HkY
+
+= 12 ED 
+
+ bPY |a, m,z , P Y |a, m,z
+
+
+
+,
+
+we obtain 
+
+ED  Rmed , R  ≤
+
+Z
+
+ED 
+
+ bPY |a, m,z , P Y |a, m,z
+
+
+
+P ˜M |a′,z (dm),
+
+which completes the proof. 
+
+C.5. Proof of Theorem A.1 
+
+Proof. The proof is analogous to that of Theorem 3.4 and is therefore omitted. 
+
+C.6. Proof of Theorem B.1 
+
+Proof. By the triangle inequality for W1,
+
+W1( bR, R ) ≤ W1( bR, R med ) + W1(Rmed , R ) =: B1 + B2.
+
+We first bound B2. Using the Kantorovich dual representation, 
+
+W1(μ, ν ) = sup 
+
+> ∥h∥Lip ≤1
+
+Eμ[h(Y )] − Eν [h(Y )] ,
+
+we obtain 
+
+B2 = sup 
+
+> ∥h∥Lip ≤1
+
+Z 
+
+E bPY |a, m,z [h(Y )] − EPY |a, m,z [h(Y )] 
+
+
+
+PM |a′,z (d m)
+
+≤
+
+Z
+
+sup 
+
+> ∥h∥Lip ≤1
+
+
+
+E bPY |a, m,z [h(Y )] − EPY |a, m,z [h(Y )] 
+
+
+
+PM |a′,z (d m)=
+
+Z
+
+W1
+
+  bPY |a, m,z , P Y |a, m,z
+
+PM |a′,z (d m).
+
+Next, consider B1. For any ∥h∥Lip ≤ 1, define 
+
+ϕh(m) := E bPY |a, m,z [h(Y )] .
+
+Then 
+
+B1 = sup 
+
+> ∥h∥Lip ≤1
+
+Z 
+
+ϕh(m) bPM |a′,z (d m) −
+
+Z
+
+ϕh(m) PM |a′,z (d m)
+
+
+
+.
+
+By Condition 2 ′, for any m, m′ we have 
+
+ϕh(m) − ϕh(m′) = E bPY |a, m,z [h(Y )] − E bPY |a, m′,z
+
+[h(Y )] ≤ W1
+
+  bPY |a, m,z , bPY |a, m′,z
+
+ ≤ LM ∥m − m′∥.
+
+Hence, ϕh is an LM -Lipschitz function on the mediator space. 16 Distributional Causal Mediation via Conditional Generative Modeling 
+
+Applying the Kantorovich–Rubinstein dual representation to the mediator distributions, we obtain 
+
+B1 = sup 
+
+> ∥h∥Lip ≤1
+
+Z 
+
+ϕh(m) bPM |a′,z (d m) −
+
+Z
+
+ϕh(m) PM |a′,z (d m)
+
+
+
+= sup 
+
+> ∥h∥Lip ≤1
+
+LM
+
+Z ϕh(m)
+
+LM
+
+bPM |a′,z (d m) −
+
+Z ϕh(m)
+
+LM
+
+PM |a′,z (d m)
+
+
+
+≤ LM sup 
+
+> ∥g∥Lip ≤1
+
+Z 
+
+g(m) bPM |a′,z (d m) −
+
+Z
+
+g(m) PM |a′,z (d m)
+
+
+
+= LM W1
+
+  bPM |a′,z , P M |a′,z
+
+.
+
+Combining the bounds for B1 and B2 yields the stated result. 
+
+C.7. Proof for Theorem B.3 
+
+Proof. By Theorem B.1, for any relevant (a, a ′, z),
+
+W1( bR, R ) ≤ LM W1( bPM |a′,z , P M |a′,z ) + 
+
+Z
+
+W1( bPY |a, m,z , P Y |a, m,z ) PM |a′,z (dm).
+
+Taking expectations over the training sample S and the covariates Z yields 
+
+ES EZ
+
+h
+
+W1( bR, R )
+
+i
+
+≤ LM ES EZ
+
+h
+
+W1( bPM |a′,Z , P M |a′,Z )
+
+i
+
++ ES EZ
+
+Z 
+
+W1( bPY |a, m,Z , P Y |a, m,Z ) PM |a′,Z (dm)
+
+
+
+.
+
+We first bound the mediator-related term in the error decomposition. By the law of total expectation and the positivity assumption, 
+
+ES EZ
+
+h
+
+W1( bPM |a′,Z , P M |a′,Z )
+
+i
+
+= ES E(A, Z)
+
+h
+
+W1( bPM |A, Z , P M |A, Z ) A = a′i
+
+≤ 1
+
+P(A = a′) ES E(A, Z)
+
+h
+
+W1( bPM |A, Z , P M |A, Z )
+
+i
+
+.
+
+Applying Lemma B.2 to the mediator generator yields 
+
+ES E(A, Z)
+
+h
+
+W1( bPM |A, Z , P M |A, Z )
+
+i
+
+≤ CM n−αM (log n) 2βMmM +dM ∨ 1,
+
+and therefore 
+
+ES EZ
+
+h
+
+W1( bPM |a′,Z , P M |a′,Z )
+
+i
+
+≤ CM
+
+P(A = a′) n−αM (log n) 2βMmM +dM ∨ 1.
+
+We next bound the outcome-related term. By the law of total expectation and the positivity assumption, 
+
+ES EZ
+
+Z 
+
+W1( bPY |a, m,Z , P Y |a, m,Z ) PM |a′,Z (dm)
+
+
+
+= ES E(A, M ,Z)
+
+h
+
+W1( bPY |A, M ,Z , P Y |A, M ,Z ) A = a
+
+i
+
+≤ 1
+
+P(A = a) ES E(A, M ,Z)
+
+h
+
+W1( bPY |A, M ,Z , P Y |A, M ,Z )
+
+i
+
+.
+
+Applying Lemma B.2 to the outcome generator yields 
+
+ES E(A, M ,Z)
+
+h
+
+W1( bPY |A, M ,Z , P Y |A, M ,Z )
+
+i
+
+≤ CY n−αY (log n) 2βYmY +dY ∨ 1,
+
+and therefore 
+
+ES EZ
+
+Z 
+
+W1( bPY |a, m,Z , P Y |a, m,Z ) PM |a′,Z (dm)
+
+
+
+≤ CY
+
+P(A = a) n−αY (log n) 2βYmY +dY ∨ 1.
+
+Substituting the bounds into the decomposition completes the proof. 17 Distributional Causal Mediation via Conditional Generative Modeling 
+
+## D. Algorithmic Description of Forward Simulation 
+
+Algorithm 1 summarizes the forward simulation procedure used to construct interventional outcome distributions for ITE, IDE, and IPSE estimation. 
+
+Algorithm 1 Forward simulation for ITE, IDE, and IPSE estimation 
+
+Require: Trained generators ˆfM , ˆfY , covariates Zi, Monte Carlo size B
+
+1: for i = 1 , . . . , n do 
+
+2: for b = 1 , . . . , B do 
+
+3: Sample exogenous noises independently: 
+
+ε(i,b )  
+
+> M0
+
+, ε (i,b )  
+
+> M1
+
+∼ PεM , ε(i,b )  
+
+> Y11
+
+, ε (i,b )  
+
+> Y00
+
+, ε (i,b )  
+
+> Y10
+
+∼ PεY , ε(i,b ) 
+
+> Y(s, 1)
+
+, ε (i,b )  
+
+> Y(s, 0)
+
+∼ PεY ,
+
+4: Generate mediator draws: 
+
+˜M (i,b )0 = ˆfM (0 , Zi, ε (i,b )  
+
+> M0
+
+), ˜M (i,b )1 = ˆfM (1 , Zi, ε (i,b )  
+
+> M1
+
+)
+
+5: Draw two independent random permutations π1, π 2 of {1, . . . , B }.
+
+6: Construct hybrid mediators for IPSE along pathway s:
+
+  ˜M (i,π 1(b),<s )0 , ˜M (i,b ) 
+
+> s1
+
+, ˜M (i,π 2(b),>s )1
+
+,   ˜M (i,π 1(b),<s )0 , ˜M (i,b ) 
+
+> s0
+
+, ˜M (i,π 2(b),>s )1
+
+
+
+7: Generate interventional outcomes for ITE: 
+
+Y (i,b )1 ˜M1
+
+= ˆfY (1 , ˜M (i,b )1 , Zi, ε (i,b )  
+
+> Y11
+
+), Y (i,b )0 ˜M0
+
+= ˆfY (0 , ˜M (i,b )0 , Zi, ε (i,b )  
+
+> Y00
+
+)
+
+8: Generate interventional outcomes for IDE: 
+
+Y (i,b )1 ˜M0
+
+= ˆfY (1 , ˜M (i,b )0 , Zi, ε (i,b )  
+
+> Y10
+
+)
+
+9: Generate interventional outcomes for IPSEs: 
+
+Y (i,b )1 ˜M (<s )0 ˜Ms1 ˜M (>s )1
+
+= ˆfY (1 , ( ˜M (i,π 1(b),<s )0 , ˜M (i,b ) 
+
+> s1
+
+, ˜M (i,π 2(b),>s )1 ), Zi, ε (i,b ) 
+
+> Y(s, 1)
+
+),Y (i,b )1 ˜M (<s )0 ˜Ms0 ˜M (>s )1
+
+= ˆfY (1 ,   ˜M (i,π 1(b),<s )0 , ˜M (i,b ) 
+
+> s0
+
+, ˜M (i,π 2(b),>s )1
+
+, Zi, ε (i,b ) 
+
+> Y(s, 0)
+
+)
+
+10: end for 
+
+11: Store (for this i) the collection 
+
+{Y (i,b )1 ˜M1
+
+, Y (i,b )0 ˜M0
+
+, Y (i,b )1 ˜M0
+
+, Y (i,b )1 ˜M (<s )0 ˜Ms1 ˜M (>s )1
+
+, Y (i,b )1 ˜M (<s )0 ˜Ms0 ˜M (>s )1
+
+}Bb=1 
+
+12: end for 
+
+13: return all stored draws for i = 1 , . . . , n 
+
+## E. Details of the Real Data Study 
+
+We applied the proposed framework to data from the UK Biobank (UKB), a large population-based cohort of over 500,000 participants aged 37–73 years, recruited between 2006 and 2010. Individuals with complete data on smoking status, serum total cholesterol, body mass index (BMI), systolic blood pressure (SBP), age, sex, and the Townsend deprivation index were included. After applying these inclusion criteria, the final analytical sample consisted of 18,318 participants. Table 3 presents descriptive statistics stratified by smoking status, with 10,764 participants in the Never Smoked group and 7,554 in the Ever Smoked group. Categorical variables are reported as counts and percentages, while continuous variables are summarized as means and standard deviations. On average, individuals who had ever smoked exhibited slightly higher SBP than those who had never smoked (139.89 mmHg vs. 138.25 mmHg). 18 Distributional Causal Mediation via Conditional Generative Modeling 
+
+Table 3. Descriptive statistics stratified by smoking status. Variable Never Smoked (n=10,764) Ever Smoked (n=7,554) p-value Sex = Female, n (%) 6019 (55.9) 3344 (44.3) < 0.001 
+
+Age, mean (year, SD) 56.49 (7.53) 58.17 (7.10) < 0.001 
+
+TDI, mean (SD) −2.22 (2.57) −1.75 (2.84) < 0.001 
+
+BMI (M1), mean ( kg/m 2 SD) 26.50 (4.43) 27.38 (4.52) < 0.001 
+
+Cholesterol (mmol/L, M2), mean (SD) 5.68 (1.11) 5.66 (1.14) 0.230 SBP (mmHg, Y), mean (SD) 138.25 (18.52) 139.89 (18.44) < 0.001 
+
+Figure 5 displays the empirical distributions of BMI, total cholesterol, and SBP. BMI exhibits a right-skewed distribution (skewness = 1.10), whereas both total cholesterol and SBP are approximately normally distributed. 
+
+Figure 5. Distributions and normality diagnostics of BMI, total cholesterol, and systolic blood pressure. The upper panels display histograms (gray bars) overlaid with kernel density estimates (solid lines) and fitted normal curves (dashed lines), while the lower panels present the corresponding Q–Q plots against the theoretical normal distribution. 
+
+To reduce algorithmic randomness, DCMA was trained 50 times on the original dataset and the resulting estimates were averaged. The 95% uncertainty intervals were constructed using the percentile bootstrap method with 100 resamples, each involving three DCMA refits. 
+
+Figure 6. Estimated interventional outcome distributions of systolic blood pressure (SBP) under different exposure–mediator contrasts. The dashed vertical line indicates the hypertension threshold at SBP = 140 mmHg. 
+
+19 Distributional Causal Mediation via Conditional Generative Modeling 
+
+Figure 6 illustrates the estimated interventional distributions of Y1M1 , Y1M0 , and Y0M0 . Apart from minor differences around the modes, the three distributions are largely overlapping, suggesting that, in this toy example, smoking status has a limited impact on the overall distribution of SBP, either directly or indirectly through BMI and total cholesterol. It is worth noting that this result should be interpreted with caution. The analysis is intended primarily as a proof-of-concept illustration of the proposed DCMA framework. Residual confounding may remain unaccounted for, and the relatively long follow-up interval in the UKB, together with the restricted sample size after applying the exclusion criteria, may introduce selection bias. 
+
+## F. Ablation Study 
+
+To assess whether distributional recovery truly requires a flexible outcome generator, we conduct a targeted ablation within the DCMA framework under the bimodal outcome scenario S1. We compare the full DCMA model with a variant in which the outcome generator is replaced by a linear Gaussian model, while keeping the mediator generator unchanged. A linear Gaussian outcome model is inherently centered on conditional mean recovery under a unimodal normality assumption. Even when used for Monte Carlo sampling, it can only produce Gaussian outcomes and is therefore incapable of representing bimodal or more complex interventional outcome distributions. This mismatch is clearly illustrated in Figure 7, where the ablated model generates only unimodal Gaussian samples that fail to match the true bimodal structure. The consequence of this limitation is quantified in Figure 8. Across 100 repetitions, the resulting EDs for the Linear–Gaussian ablation are consistently and substantially larger than those obtained by the full DCMA model for all interventional outcome distributions. 0.0 0.1 0.2 0.3 0.4 0.5     
+
+> 0.0 2.5 5.0 7.5 10.0
+
+Y
+
+> Density
+
+A    
+
+> 0.0 0.1 0.2 0.3
+> 0.0 2.5 5.0 7.5 10.0
+
+Y
+
+> Density
+
+B    
+
+> 0.0 0.1 0.2 0.3
+> 0.0 2.5 5.0 7.5 10.0
+
+Y
+
+> Density
+
+C  
+
+> Truth DCMA mean DCMA interval
+
+Figure 7. True and DCMA-estimated interventional outcome distributions. Panels (A)–(C) display the true (black) and DCMA-estimated (red) densities for Y0M0 , Y1M0 , and Y1M1 , respectively. The DCMA estimate is obtained by pointwise averaging over 100 Monte Carlo replications, and the shaded region denotes the 95% inter-replication interval constructed from the 2.5th and 97.5th percentiles. 0.000 0.025 0.050 0.075 0.100    
+
+> Y0M 0Y1M 0Y1M 1
+> ED  DCMA
+> Ablation
+
+Figure 8. Energy distances (ED) between the estimated and true interventional outcome distributions across 100 repeats. The proposed DCMA method is shown in red, while the ablated Linear–Gaussian outcome model is shown in blue. 
+
+20

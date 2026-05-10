@@ -1,0 +1,1266 @@
+Title: Minimum Specification Perturbation: Robustness as Distance-to-Falsification in Causal Inference
+
+URL Source: https://arxiv.org/pdf/2605.01579v1
+
+Published Time: Tue, 05 May 2026 00:49:05 GMT
+
+Number of Pages: 36
+
+Markdown Content:
+# Minimum Specification Perturbation: Robustness as Distance-to-Falsification in Causal Inference 
+
+# Hoang Dang Independent Researcher 
+
+# hoangdang112023@gmail.com 
+
+# Luan Pham RMIT University, Australia 
+
+# luan.pham@rmit.edu.au 
+
+# Minh Nguyen Florida Atlantic University, USA 
+
+# minhnguyen@fau.edu 
+
+# May 5, 2026 
+
+Abstract 
+
+Empirical causal claims depend on many analyst decisions, from selecting covariates to choosing estimators. Existing robustness tools summarize how results vary across these choices, but, to the best of our knowledge, do not answer: How many analyst decisions must change to reach a specification, which is a set of choices, whose confidence interval (CI) contains zero? We introduce Minimum Specifi-cation Perturbation (MSP) , the smallest number of changes. MSP is small under the null, grows with effect strength and captures distance-to-falsification information that dispersion-based summaries cannot report; when making decisions under weak effects, an MSP-based rule yields lower false-positive rates than dispersion-based rules. We show that Fragility Index and MSP measure orthogonal vulnerabilities: fragility to in-fluential observations need not imply fragility to specification choices. On the LaLonde benchmark, MSP = 1 implies that one decision change makes the CI contain zero. We further provide exact permutation calibration under randomization and character-ize computation, showing tractable cases under additive structure and NP-hardness in general. 
+
+# 1 Introduction 
+
+Empirical causal claims depend on many defensible choices: estimator, covariates, functional form, trimming, and sample restrictions. Robustness checks summarize how estimates move across choices. They do not show how many coordinated changes are needed to overturn the conclusion. This gap matters. A typical empirical study involves many defensible choices [9, 27], and different analysts working on the same data often reach different conclusions depending on which choices they make [26, 29]. A reader who is told that “most specifications give 1
+
+> arXiv:2605.01579v1 [stat.ME] 2 May 2026
+
+a negative estimate” cannot tell whether the conclusion rests on genuine insensitivity or merely on an unexplored corner of the specification space. Knowing how many changes are needed to reach non-significance gives an auditable answer to that question, one relevant to policy decisions on causal findings. (By auditable , we mean that each axis is prespecified, defensible, and interpretable as one analyst decision.) We introduce minimum specification perturbation (MSP), the smallest number of speci-fication changes needed for the CI for the effect to contain zero (a Hamming-distance notion: the number of axis flips needed to reach a specification whose CI contains zero). Small MSP means that a conclusion can be overturned by a few changes. Large MSP means that many changes are required. MSP complements three existing families of robustness tools. Specification curve and multiverse analyses [26, 28, 29] summarize how dispersed estimates are across choices, but not how close the baseline is to being overturned. Sensitivity analyses such as the E-value [5, 31] ask how strong hidden bias must be to explain away a result, varying a bias model rather than the analyst’s reported choices. Data-fragility measures [3, 19] ask how few observations to remove to change a conclusion, perturbing data rather than decisions. To our knowledge, they do not report the minimum number of coordinated analyst-decision changes needed to reach non-significance in a declared specification space. Section 2 discusses each family in detail. Figure 1 illustrates the distinction. In the LaLonde NSW–CPS example, most estimates are negative, so a dispersion summary suggests robustness. But changing just one analyst decision is enough to make the CI contain zero, so MSP equals 1. 
+
+Toy example. To fix ideas, consider a study with K = 2 analyst decisions: covariate set (basic = 0 , full = 1 ) and estimator (OLS = 0 , IPW = 1 ). The specification space is 
+
+S = {0, 1}2 and the baseline is s0 = (0 , 0) . All four specifications are admissible (included in the declared specification space S), and each CI is constructed at the same 95% level. Hypothetical results are: 
+
+s Covariates Estimator 95% CI 0 ∈ CI( s)(0 , 0) basic OLS [−600 , −100] No 
+
+(1 , 0) full OLS [−200 , +40 ] Yes 
+
+(0 , 1) basic IPW [−500 , −60 ] No 
+
+(1 , 1) full IPW [−180 , +80 ] Yes The feasible set is N (S) = {(1 , 0) , (1 , 1) }. Since s0 = (0 , 0) , the Hamming distance to the baseline equals ∥s∥0. Therefore, 
+
+MSP( S) = min   
+
+> s∈N (S)
+
+∥s∥0 = min {1, 2} = 1 ,
+
+A single decision, switching to full covariates while keeping OLS, yields a specification whose CI no longer excludes zero. The conclusion is fragile within this space. Had all one-flip neighbours also excluded zero, MSP would equal 2, meaning two coordinated changes are required; the conclusion would be more robust within the same space. Our contributions are fourfold. 21. We define MSP and establish properties: refinement monotonicity (Proposition 1); sharp-null permutation calibration for complete randomization (Proposition 2) using fixed bootstrap resamples across permutations; and a weighted extension with a sand-wich bound linking weighted and unweighted MSP (Proposition 3). 2. We characterize computation. Under a bounded-step additive specification model with constant CI width, MSP admits a greedy O(K log K) algorithm (Theorem 1). We also give variable-width tractable extensions based on a verifiable greedy solution and a sufficient condition for automatic feasibility (Propositions 4 and 5). Beyond these tractable classes, we provide an exact branch-and-bound procedure for auditable spaces, and we show that without bounded-step structure, computation is NP-hard in the additive class (Theorem 2). 3. We apply MSP to two LaLonde settings [6, 14]. On the observational NSW–CPS sam-ple, MSP = 1 : one analyst decision moves the CI to include zero, a fragile conclusion. On the randomized NSW sample, MSP = ∞ (no specification nullifies the result) and lies in the top 1.5% of the sharp-null permutation distribution ( ˆp ≈ 0.015 ), validating calibration. Against the Fragility Index, eFI adv = 3 (significance vanishes after zeroing three outcomes) while MSP = ∞: a result can be data-fragile and specification-robust simultaneously .4. We study MSP in simulation. MSP is small under the null and grows with effect strength when falsification is possible. In a classification task (effect present vs. absent), MSP achieves AUC = 0 .941 versus AUC = 0 .236 for share-significant-any, which is worse than chance, making weak configurations appear significant. This contrast is sharpest at τ = 0 .3: requiring MSP ≥ 2 before trusting a claim gives false-positive rate 0.010, whereas comparable dispersion-based thresholds exceed 0.86, making them unreliable. 
+
+# 2 Related Work 
+
+MSP is related to three literatures: tools that enumerate estimates across specifications, methods that assess sensitivity to unmeasured confounding, and measures of minimum-change robustness. MSP differs from each: it measures the minimum number of documented analyst decisions needed to reach a specification whose CI contains zero, a question none of the three literatures addresses. 
+
+Specification enumeration. Analytic flexibility can materially affect published conclu-sions [9, 27]. Multiverse analysis and specification curve analysis summarize how estimates vary across defensible specifications [28, 29], while related diagnostics measure dispersion or instability across model choices [1, 21]. Triangulation emphasizes agreement across ap-proaches with distinct biases to strengthen causal claims [12]. MSP asks a different question: not how dispersed the specification set is, but how close it lies to N (S) in Hamming distance. 
+
+Sensitivity analysis and hidden bias. A second robustness tradition studies how strong unmeasured confounding must be to overturn a result [5, 15, 20, 24, 25, 31]. These methods complement MSP because they vary a bias model rather than auditable analyst 30 2 4 6 8 10 12 14 
+
+> Configuration (sorted by point estimate)
+> −10000
+> −8000
+> −6000
+> −4000
+> −2000
+> 0
+> 2000
+> Raw earnings
+> ATE
+> Raw earnings (16 configs)
+> Not null-compatible
+> Null-compatible (0 ∈ CI)
+> Specification Curve — LaLonde/NSW (K=4, MSP=1)
+
+Figure 1: LaLonde illustration. Fixing the outcome scale to raw earnings, the remaining 
+
+K = 4 binary axes, estimator (OLS/IPW), covariates (basic/full), functional form (lin-ear/nonlinear), and trimming (off/on), yield 24 = 16 configurations, sorted here by point estimate. Red intervals contain zero. The baseline specification (leftmost significant negative point) is at Hamming distance 1 (one axis flip) from a specification whose CI contains zero, so MSP equals 1. choices. MSP conditions on the declared specification space rather than on a parameterized hidden-bias model. 
+
+Minimum-perturbation robustness. Data-fragility measures such as the Fragility Index and influence-based diagnostics ask how few outcome or observation changes overturn a conclusion [3, 13, 33]. In machine learning, adversarial robustness studies the minimum perturbation needed to change a prediction [4, 10, 18]. Certified robustness radii under ℓ0
+
+constraints [17] and discrete perturbations in NLP [7] provide analogous “how far to failure” measures over combinatorial input spaces. The counterfactual literature [11, 16, 22, 30, 32] similarly seeks minimum-change interventions to alter an outcome. MSP adapts this minimum-change logic to specification space: the perturbation acts on analyst decisions, and failure means reaching a CI that contains zero. These connections position MSP as an auditable distance-to-N (S) summary over analyst choices, complementing dispersion-based robustness summaries rather than replacing them. 
+
+# 3 Methodology 
+
+# 3.1 Framework 
+
+3.1.1 Object and interpretation 
+
+Let S ⊆ { 0, 1}K be a specification space. Each coordinate is a binary axis, and sk = 1 
+
+means that axis k is perturbed relative to a baseline s = 0. Let ˆτ (s) and CI( s) denote the estimated effect and CI. Define the set of specifications whose CIs contain zero: 
+
+N (S) = {s ∈ S : 0 ∈ CI( s)}.
+
+4The MSP of (S, N (S)) is 
+
+MSP( S) = 
+
+(
+
+min {∥ s∥0 : s ∈ N (S)}, N (S)̸ = ∅,
+
+∞, N (S) = ∅.
+
+The ∞ case matters. It says no specification in this space falsifies the conclusion. MSP is conditional on the specification space. It measures sensitivity within that space ; it does not certify validity of any specification. See Appendix B for guidance on constructing specifica-tion spaces. For theory it is useful to separate the combinatorial object. Let F ⊆ S be any feasible set. Then 
+
+MSP( S, F ) = 
+
+(
+
+min {∥ s∥0 : s ∈ F }, F̸ = ∅,
+
+∞, F = ∅.
+
+All theoretical results below are stated for (S, F ). The causal version sets F = N (S).
+
+Interpretation. MSP is an ℓ0 or Hamming-distance notion of falsification complexity. It asks for the smallest number of analyst moves needed to reach a specification whose CI contains zero. MSP summarizes how close a result is to being overturned in a specification space. 
+
+# 3.2 Structural Properties 
+
+This section separates two questions. First, what combinatorial structure does MSP satisfy on a specification space? Second, what calibration holds when MSP is computed from randomized data? 
+
+3.2.1 Combinatorial structure Definition (feasibility-preserving refinement). Let S = {0, 1}K be a coarse specifica-tion space with feasible set F ⊆ S, and let S′ = {0, 1}K′
+
+be a refined space with feasible set 
+
+F ′ ⊆ S′. A refinement is feasibility-preserving if there exists an embedding ι : S → S′ such that 
+
+∥ι(s)∥0 = ∥s∥0 for all s ∈ S, ι(F ) ⊆ F ′.
+
+Thus a coarse feasible configuration remains feasible in the refined space, preserving Ham-ming cost. 
+
+Example. A coarse axis “nonlinear” may be refined into two axes “quadratic terms” and “interactions.” A canonical embedding sends 
+
+ι(linear ) = (0 , 0) , ι(nonlinear ) = (1 , 0) .
+
+If feasible configurations remain feasible after replacing the coarse axis by its embedded refined representative, then the refinement is feasibility-preserving. The additional refined option (1 , 1) enlarges the space without increasing MSP, because all coarse feasible configu-rations remain available. 5Proposition 1 (Refinement monotonicity) . Let (S′, F ′) be a feasibility-preserving refinement of (S, F ):
+
+MSP( S′, F ′) ≤ MSP( S, F ).
+
+A coarse grid yields a conservative upper bound: under a feasibility-preserving refinement, adding a new orthogonal axis can only weakly lower MSP. The embedding must preserve Hamming cost; changes that alter the estimand or target population are not feasibility-preserving refinements. 
+
+3.2.2 Statistical calibration Proposition 2 (Permutation calibration) . Under a sharp null H0 : Yi(1) = Yi(0) for all i,complete randomization with a fixed number of treated units, and fixed bootstrap resamples 
+
+U , the add-one Monte Carlo permutation p-value based on MSP satisfies 
+
+Pr(ˆ p ≤ α | H0) ≤ α ∀α ∈ [0 , 1] .
+
+Here ˆp = (1 + # {j ∈ { 1, . . . , P } : Vj ≥ V0})/(P + 1) , where V0 is the observed MSP and 
+
+V1, . . . , V P are the MSP values computed on P permutations of the treatment assignment vector. 
+
+Validity follows from the add-one argument [23]: we use a bootstrap and draw the boot-strap index matrix once, holding it fixed across permutations, so the statistic is determin-istic in the assignment vector; under the sharp null and complete randomization, permuted statistics are exchangeable. In observational data, exact calibration fails; the permutation distribution is only a diagnostic reference. 
+
+3.2.3 Combinatorial extension: weighting 
+
+The next result returns to the geometry of the object. It shows how a weighted version of MSP compares with the unweighted Hamming-distance summary. 
+
+Proposition 3 (Weighted MSP sandwich) . Let wk > 0 and define 
+
+wMSP( S, F, w ) = min 
+
+> s∈FK
+
+X
+
+> k=1
+
+skwk.
+
+Write wmin = min k wk and wmax = max k wk. Then 
+
+wmin MSP( S, F ) ≤ wMSP( S, F, w ) ≤ wmax MSP( S, F ).
+
+This bound keeps the main metric simple. If axes are comparable, unweighted MSP is informative. If axes are heterogeneous, the ratio wmax /w min indicates the discrepancy be-tween weighted and unweighted MSP; as user-chosen weights introduce a researcher degree of freedom, they should be preregistered or reported alongside unweighted MSP (Appendix B). 63.3 Characterization 
+
+Theorem 1 (Additive characterization) . Suppose S = {0, 1}K and 
+
+ˆτ (s) = τ0 +
+
+> K
+
+X
+
+> k=1
+
+skδk.
+
+Assume a symmetric CI with constant half-width c > 0, τ0 > c , and the bounded individual effect condition max k |δk| ≤ 2c. Let K− = {k : τ0δk < 0} be the set of opposing axes and write K− = |K −|. Order the opposing axes so that 
+
+|δπ(1) | ≥ · · · ≥ | δπ(K−)|.
+
+Then 
+
+MSP = min 
+
+(
+
+m ∈ { 1, . . . , K −} :
+
+> m
+
+X
+
+> j=1
+
+|δπ(j)| ≥ τ0 − c
+
+)
+
+,
+
+if such m exists, and MSP = ∞ otherwise. 1
+
+The proof is a greedy exchange argument. Under additivity, the smallest falsifying set is the smallest prefix of the largest opposing shifts whose attenuation reaches estimates containing zero. Therefore: 
+
+Corollary 1. Under the model of Theorem 1, MSP is computable in O(K log K) time. 
+
+Remark (variable confidence widths). Theorem 1 assumes constant CI half-width. When widths vary, each axis contributes both a shift δk and width adjustment ∆ck, imposing two null-band inequalities; the greedy algorithm no longer applies. The next results identify regimes where it does. 
+
+Proposition 4 (Variable-width greedy exactness) . Suppose S = {0, 1}K ,
+
+ˆτ (s) = τ0 +
+
+> K
+
+X
+
+> k=1
+
+skδk, c(s) = c0 +
+
+> K
+
+X
+
+> k=1
+
+sk∆ck,
+
+with τ0 > c 0 > 0 and c(s) ≥ 0 for all s ∈ S. Define the effective shifts 
+
+ek = ∆ ck − δk,
+
+let K+ = {k : ek > 0} with K+ = |K +|, and order these axes so that 
+
+eπ(1) ≥ · · · ≥ eπ(K+) > 0.
+
+If ties occur, fix any deterministic tie-breaking rule (implementations should evaluate all tied prefixes, since equal ek may have differing ∆ck). For r = 1 , . . . , K +, let 
+
+Er =
+
+> r
+
+X
+
+> j=1
+
+eπ(j),        
+
+> 1The case τ0<−cfollows by sign symmetry: apply the result to (−τ0,−δk).The same applies to Propositions 4 and 5.
+
+7and let 
+
+m = min {r ∈ { 1, . . . , K +} : Er ≥ τ0 − c0},
+
+if such m exists. Let sg activate exactly the axes {π(1) , . . . , π (m)}. If sg satisfies the lower-bound condition 
+
+ˆτ (sg) ≥ − c(sg),
+
+then sg has a CI that contains zero and 
+
+∥sg∥0 = MSP .
+
+If no such m exists, then MSP = ∞.
+
+The proof applies the greedy prefix argument to effective shifts ek; the upper-bound constraint reduces to P 
+
+> k
+
+skek ≥ τ0 − c0, so the first greedy prefix is the candidate. Exactness holds when that prefix also passes the lower-bound check; if sg exists but fails it, one falls back to branch-and-bound (Section 3.4). The next result gives a sufficient condition eliminating the post hoc check. 
+
+Proposition 5 (A structural sufficient condition for automatic feasibility) . Under the setup of Proposition 4, additionally assume 
+
+∆ck ≥ 0 ∀k ∈ K +, max  
+
+> k∈K +
+
+ek ≤ 2c0.
+
+Then the greedy prefix sg from Proposition 4 automatically satisfies 
+
+ˆτ (sg) ≥ − c(sg).
+
+Consequently, whenever m exists, sg has a CI that contains zero and 
+
+∥sg∥0 = MSP; 
+
+if no such m exists, then MSP = ∞.
+
+The diagnostic ρ = max k |δk − ∆ck|/(2 c0) gives a scope check: if ∆ck ≥ 0 for all k ∈ K +
+
+and ρ ≤ 1, Proposition 5 applies; otherwise revert to Proposition 4’s direct lower-bound check. In causal practice, prognostic covariates often shrink CIs ( ∆ck < 0), violating the structural condition; the fallback applies in those cases and succeeded in all additive regimes tested (Appendix B). Setting ∆ck = 0 recovers Theorem 1’s constant-width greedy, with a sharper bounded-step condition. 
+
+# 3.4 Computation 
+
+This section addresses usability. Under additive structure, MSP is tractable. In general, computing MSP requires finding the minimum-weight element of N (S), a search over {0, 1}K ,and exact computation is worst-case exponential. The goal here is to make the contrast explicit: tractable under structure, intractable in general, but often manageable in the small-
+
+K spaces used in practice. 8In auditable specification spaces, K is moderate (we use K ≤ 5), so exhaustive enumer-ation suffices and no shortcut is needed. When Theorem 1 holds, greedy gives O(K log K)
+
+computation; Propositions 4 and 5 extend this to variable-width CIs, with the additive R2
+
+serving as a diagnostic for when the shortcut is reliable. For larger K, branch-and-bound with [MSP add as a pruning bound remains exact (verified against exhaustive enumeration, Appendix B); this pruning is admissible only when interactions stay within the additive prediction, and should be disabled otherwise. 
+
+Theorem 2 (Computational hardness without the bounded-step condition) . Consider the 
+
+additive MSP problem with constant CI half-width but without the bounded-step assumption 
+
+max k |δk| ≤ 2c: given an instance (K, τ 0, c, δ 1, . . . , δ K ) with rational entries encoded in binary, determine MSP = min {∥ s∥0 : s ∈ N (S)} where ˆτ (s) = τ0 + P 
+
+> k
+
+skδk and N (S) = {s ∈{0, 1}K : |ˆτ (s)| ≤ c}. This problem is NP-hard. Theorem 1 and Proposition 5 identify tractable bounded-step subclasses; without that structure, exact computation need not admit a polynomial-time algorithm. 
+
+The proof in Appendix A reduces from SUBSET SUM [8]: given integers a1, . . . , a n
+
+and target T , one constructs an additive MSP instance with K = n axes, opposing shifts 
+
+δk = −ak, and constant half-width c = 1 /4. Since the ak can be arbitrarily large relative to 2c = 1 /2, the bounded-step condition of Theorem 1 is violated, and null-compatibility reduces to P 
+
+> k∈I
+
+ak = T . Since verifying a candidate s is polynomial in the binary input length, the feasibility version lies in NP and the reduction shows it is NP-complete; hence NP-hard. This justifies the branch-and-bound and heuristic approaches above: MSP has no polynomial-time algorithm unless P =NP. MSP is intended for specification spaces in which the analyst can enumerate, defend, and interpret each axis as one substantive robustness dimension. In applied work, this leads to moderate K, not because the method is restricted to search spaces, but because a robustness exercise is not an unrestricted hyperparameter search. The object is an auditable set of analyst choices. 
+
+# 4 Experiment 
+
+# 4.1 LaLonde Illustration 
+
+Figure 1 illustrates MSP on the NSW treated sample with CPS comparison controls, in the LaLonde literature [6, 14]. The specification space has K = 4 axes: estimator (OLS/IPW), covariates (basic/full), functional form (linear/nonlinear), trimming (off/on), yielding 16 configurations. The baseline specification uses OLS, the basic covariate set, a linear outcome model, no trimming, yielding ˆτ = −$3 ,807 with 95% CI [−$5 ,106 , −$2 ,720] .Across the 16 configurations, 6 have CIs containing zero. MSP equals 1. The nearest configuration changes only the covariate set from basic to full on the raw-earnings scale. That specification yields ˆτ = $879 with 95% CI [−$380 , $2 ,196] . Within this space, the conclusion is fragile. 9Table 1: Compact permutation calibration summary for the NSW randomized sample. observed MSP perm. median perm. mean Pπ(MSP = ∞) ˆp
+
+∞ 0 0.086 0.010 0.015 Two points matter. First, MSP is conditional on the chosen axes. “Fragile” means fragile 
+
+within the considered specification space . Second, the axis that breaks the conclusion may reflect better adjustment for confounding rather than an arbitrary modeling choice. MSP measures sensitivity of the conclusion; it does not adjudicate which specification is correct, and a small MSP from a biased baseline reflects bias correction rather than genuine fragility of the underlying causal claim. An additive diagnostic fit on the raw-earnings grid attains R2 = 0 .679 ; the greedy rule predicts MSP = 1 , matching enumeration. Illustrations are in Appendix B (ML pipeline and Card–Krueger). 
+
+# 4.2 Permutation Calibration of MSP on the NSW Randomized Sample (Proposition 2) 
+
+The LaLonde NSW experiment provides a setting in which randomization justifies a sharp-null permutation calibration. We use the randomized sample (185 treated, 260 controls) and consider a specification space with K = 4 binary axes (16 configurations): estimator (OLS vs. IPW), covariates (basic vs. full), functional form (linear vs. nonlinear), and outcome scale (raw earnings vs. log(1 + earnings )). A trimming axis is omitted because it is not meaningful in this RCT. Because raw and log outcomes define different estimands, we report an outcome-scale check in Appendix B. Across the 16 configurations, the observed MSP equals ∞: no specification yields a 95% bootstrap confidence interval that contains zero ( B = 200 ). MSP = ∞ does not imply absolute robustness, but only that no admissible analysis within this space yields a zero-crossing interval. We calibrate this extremal value using P = 200 permutations under complete random-ization, recomputing MSP in each permutation with fixed bootstrap resamples ( B = 50 ) to ensure a deterministic statistic. The permutation distribution is concentrated at zero: the median MSP is 0, the mean is ≈ 0.09, and MSP = ∞ occurs in 2/200 permutations. This 
+
+MSP = ∞ lies in the upper tail of the null distribution, yielding an add-one Monte Carlo p-value of ˆp ≈ 0.015 (given P = 200 ); Table 1. 
+
+# 4.3 MSP versus Fragility Index 
+
+The Fragility Index (FI) [33] counts how many binary outcome changes needed to make the result non-significant, it measures data fragility, whereas MSP measures specification 
+
+fragility. We compare the two on the NSW randomized sample. We report an adversarial variant eFI adv (zeroing highest earners first) and a random-ordering median eFI rnd ; details are in Appendix B (Section ). 10 Table 2: Fragility Index vs. MSP on the NSW randomized sample ( ntreated = 185 , B = 500 ). The two metrics probe different perturbation types on the same result. metric perturbation type value fraction perturbed 
+
+eFI adv (adversarial) data (top earners set to zero) 3 3/185 treated (1.6%) 
+
+eFI rnd (random, median) data (random outcomes set to zero) 16 16/185 treated (8.6%) MSP specification (analyst choices) ∞ 0/16 configurations On that sample, eFI adv = 3 and eFI rnd = 16 , while MSP = ∞ (Table 2). Three extreme earners suffice to flip the conclusion under adversarial data perturbation, yet no specification in the declared 4-axis space does so. A result can therefore be data-fragile and specification-robust simultaneously : eFI asks “how few outcome records need to change?”; MSP asks “how many analyst decisions need to change?” Reporting both is informative because they capture distinct fragility dimensions; Section in Appendix B gives synthetic regimes in which they diverge in opposite directions. 
+
+# 4.4 Simulation 
+
+Simulation does two jobs. It checks whether MSP behaves as intended and whether the theory tracks the metric in controlled settings. The data-generating process is 
+
+Y = τ A + g(X) + ε, 
+
+where A ∈ { 0, 1} is the treatment indicator, g(X) is a systematic component, and ε is mean-zero noise, with four covariates, confounded treatment assignment, and continuous outcomes (Appendix B). The baseline analysis keeps confounders, uses a flexible outcome model, and trims overlap observations. A perturbation sets one of four axes to a weaker choice: omit 
+
+X1, omit X2, force linearity, or disable trimming. We enumerate 24 = 16 configurations, compute CIs with resamples. 
+
+4.4.1 Power and Null Calibration 
+
+Table 3 reports the main summary. Under the null, MSP is near zero. For stronger effects, the median finite MSP rises from 1 to 2. The weak-effect regime ( τ = 0 .3) differs from the moderate-effect regime ( τ = 0 .7) in an informative way: many weak-effect replicates have 
+
+N (S) = ∅, while moderate effects usually satisfy N (S)̸ = ∅ with MSP = 1 .The mechanism is overshoot: a perturbation drives the CI past zero rather than to it, so no null-compatible configuration (one with 0 ∈ CI( s)) exists. Under τ = 0 .3, omitting a confounder drives the estimate from positive to significantly negative, so the CI skips over zero. Under τ = 0 .7, the same perturbation lands near zero, so a configuration whose confidence interval contains zero exists. Under the null, 92.5% of replicates satisfy MSP ≤ 1, confirming tight null concentration. Refinement, additive-fit, and bootstrap-sensitivity checks are in Appendix B. 11 Table 3: Simulation summary for power and null calibration ( n = 800 , B = 100 , 120 
+
+replicates per τ ). 
+
+τ P (MSP = ∞) median (MSP | finite) P (MSP ≤ 1) baseline significant 0.0 0.075 0 0.925 0.092 0.3 0.833 1 0.142 0.950 0.7 0.025 1 0.958 1.000 1.5 0.125 2 0.000 1.000 Table 4: MSP and baseline summaries by effect size ( n = 800 , B = 100 , 200 replicates per 
+
+τ ). Dispersion is the standard deviation of ˆτ across all 16 configurations. 
+
+τ P (MSP = ∞) med(MSP |finite) share null-compat. share sig. (any) share sig. (pos.) dispersion 0.0 0.085 0 0.227 0.773 0.010 0.498 0.3 0.815 1 0.035 0.965 0.236 0.500 0.7 0.025 1 0.417 0.583 0.264 0.499 1.5 0.080 2 0.185 0.815 0.814 0.503 
+
+4.4.2 MSP versus Specification-Curve Summaries 
+
+A question is whether MSP adds information beyond standard specification-curve summaries. We therefore compare MSP with three baseline diagnostics computed from the same 16-configuration bootstrap results: the share of configurations whose confidence intervals con-tain zero ( share_null_compat ), the share significant in either direction ( share_sig_any ), the share significantly positive ( share_sig_pos ), and the dispersion of ˆτ across configurations. Table 4 shows the key contrast is that dispersion varies little while MSP shifts sharply. Across the four effect-size regimes, estimate dispersion remains nearly constant at 0.498– 0.503, a range of only 0.005. By contrast, P (MSP = ∞) swings from 2.5% at τ = 0 .7
+
+to 81.5% at τ = 0 .3. Dispersion carries essentially no information about whether N (S) is empty. A second contrast: at τ = 0 .3, share_significant_any is 0.965 yet 81.5% of replicates have MSP = ∞. The overshoot (Section 4.4.1) explains this: confounding bias flips estimates to significantly negative, so all configurations are significant in some direction while none straddles zero. Share_significant_any measures significance; MSP measures distance to falsification. 
+
+4.4.3 Decision-Rule Comparison 
+
+Treating each summary as a binary classifier (true positive: τ ∈ { 0.7, 1.5}; true negative: τ ∈{0.0, 0.3}), MSP achieves AUC = 0 .941 , followed by share_sig_pos (0.889 ). Share_sig_any 
+
+attains AUC = 0 .236 < 0.5, because the τ = 0 .3 overshoot regime makes all configurations significant in some direction. Table 11 in Appendix B reports false-positive rates at τ =0.3; MSP ≥ 2 achieves FPR = 0 .010 while dispersion-based thresholds exceed 0.86, making 12 them unreliable. (Replicates with MSP = ∞ are scored as non-robust in the classifier; see Appendix B for details.) ROC curves are in Appendix B (Figure 2); Appendix B compares MSP with the SCA joint test. 
+
+# 5 Conclusion 
+
+MSP measures falsification complexity in a declared specification space: the minimum num-ber of coordinated specification changes needed for the confidence interval to contain zero. We establish refinement monotonicity and exact sharp-null permutation calibration un-der complete randomization, and we characterize computation: greedy O(K log K) under bounded-step additivity and tractable variable-width extensions (Propositions 4 and 5), but NP-hardness in general. In the LaLonde benchmark, MSP equals 1: one analyst decision moves the CI to include zero. In simulation, MSP is small under the null and grows with effect strength when falsification is possible. MSP is conditional on the axes and inference procedure, and exact calibration is confined to randomized settings; in observational data, permutations are only diagnostic references. 
+
+Limitations. MSP does not certify causal validity unconditionally and does not bound sensitivity to unmeasured confounding or choices outside the declared space. The additive tractability results depend on structural assumptions that may not hold, and exact compu-tation is NP-hard in general. 
+
+# Acknowledgments 
+
+We thank the reviewers for their constructive feedback. 
+
+# References 
+
+[1] Susan Athey and Guido Imbens. A measure of robustness to misspecification. American Economic Review , 105(5):476–480, 2015. [2] Barry Becker and Ronny Kohavi. Adult. UCI Machine Learning Repository, 1996. DOI: https://doi.org/10.24432/C5XW20. [3] Tamara Broderick, Ryan Giordano, and Rachael Meager. An automatic finite-sample robustness metric: when can dropping a little data make a big difference? arXiv preprint arXiv:2011.14999 , 2020. [4] Nicholas Carlini and David Wagner. Towards evaluating the robustness of neural net-works. In 2017 ieee symposium on security and privacy (sp) , pages 39–57. Ieee, 2017. [5] Carlos Cinelli and Chad Hazlett. Making sense of sensitivity: Extending omitted vari-able bias. Journal of the Royal Statistical Society Series B: Statistical Methodology , 82 (1):39–67, 2020. 13 [6] Rajeev H Dehejia and Sadek Wahba. Causal effects in nonexperimental studies: Reeval-uating the evaluation of training programs. Journal of the American statistical Associ-ation , 94(448):1053–1062, 1999. [7] Javid Ebrahimi, Anyi Rao, Daniel Lowd, and Dejing Dou. Hotflip: White-box adver-sarial examples for text classification. In Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics (Volume 2: Short Papers) , pages 31–36, 2018. [8] Michael R Garey and David S Johnson. Computers and intractability , volume 29. wh freeman New York, 2002. [9] Andrew Gelman and Eric Loken. The garden of forking paths: Why multiple compar-isons can be a problem, even when there is no “fishing expedition” or “p-hacking” and the research hypothesis was posited ahead of time. Department of Statistics, Columbia University , 348(1-17):3, 2013. [10] Ian J Goodfellow, Jonathon Shlens, and Christian Szegedy. Explaining and harnessing adversarial examples. arXiv preprint arXiv:1412.6572 , 2014. [11] Riccardo Guidotti. Counterfactual explanations and how to find them: literature review and benchmarking: R. guidotti. Data Mining and Knowledge Discovery , 38(5):2770– 2824, 2024. [12] Gemma Hammerton and Marcus R Munafò. Causal inference with observational data: the need for triangulation of evidence. Psychological medicine , 51(4):563–578, 2021. [13] Frank R Hampel. A general qualitative definition of robustness. The annals of mathe-matical statistics , 42(6):1887–1896, 1971. [14] Guido Imbens and Yiqing Xu. Lalonde (1986) after nearly four decades: Lessons learned. 
+
+arXiv preprint arXiv:2406.00827 , 14, 2024. [15] Guido W Imbens. Sensitivity to exogeneity assumptions in program evaluation. Amer-ican Economic Review , 93(2):126–132, 2003. [16] Amir-Hossein Karimi, Bernhard Schölkopf, and Isabel Valera. Algorithmic recourse: from counterfactual explanations to interventions. In Proceedings of the 2021 ACM conference on fairness, accountability, and transparency , pages 353–362, 2021. [17] Guang-He Lee, Yang Yuan, Shiyu Chang, and Tommi Jaakkola. Tight certificates of ad-versarial robustness for randomly smoothed classifiers. Advances in Neural Information Processing Systems , 32, 2019. [18] Aleksander Madry, Aleksandar Makelov, Ludwig Schmidt, Dimitris Tsipras, and Adrian Vladu. Towards deep learning models resistant to adversarial attacks. arXiv preprint arXiv:1706.06083 , 2017. 14 [19] Matthew A Masten and Alexandre Poirier. Inference on breakdown frontiers. Quanti-tative Economics , 11(1):41–111, 2020. [20] Emily Oster. Unobservable selection and coefficient stability: Theory and evidence. 
+
+Journal of Business & Economic Statistics , 37(2):187–204, 2019. [21] Chirag J Patel, Belinda Burford, and John PA Ioannidis. Assessment of vibration of effects due to model specification can demonstrate the instability of observational associations. Journal of clinical epidemiology , 68(9):1046–1058, 2015. [22] Martin Pawelczyk, Chirag Agarwal, Shalmali Joshi, Sohini Upadhyay, and Himabindu Lakkaraju. Exploring counterfactual explanations through the lens of adversarial ex-amples: A theoretical and empirical analysis. In International Conference on Artificial Intelligence and Statistics , pages 4574–4594. PMLR, 2022. [23] Belinda Phipson and Gordon K Smyth. Permutation p-values should never be zero: calculating exact p-values when permutations are randomly drawn. arXiv preprint arXiv:1603.05766 , 2016. [24] Ashesh Rambachan and Jonathan Roth. A more credible approach to parallel trends. 
+
+Review of Economic Studies , 90(5):2555–2591, 2023. [25] Paul R Rosenbaum. Observational studies. In Observational studies , pages 1–17. Springer, 2002. [26] Raphael Silberzahn, Eric L Uhlmann, Daniel P Martin, Pasquale Anselmi, Frederik Aust, Eli Awtrey, Štěpán Bahník, Feng Bai, Colin Bannard, Evelina Bonnier, et al. Many analysts, one data set: Making transparent how variations in analytic choices affect results. Advances in methods and practices in psychological science , 1(3):337–356, 2018. [27] Joseph P Simmons, Leif D Nelson, and Uri Simonsohn. False-positive psychology: Undisclosed flexibility in data collection and analysis allows presenting anything as significant. Psychological science , 22(11):1359–1366, 2011. [28] Uri Simonsohn, Joseph P Simmons, and Leif D Nelson. Specification curve analysis. 
+
+Nature human behaviour , 4(11):1208–1214, 2020. [29] Sara Steegen, Francis Tuerlinckx, Andrew Gelman, and Wolf Vanpaemel. Increasing transparency through a multiverse analysis. Perspectives on Psychological Science , 11 (5):702–712, 2016. [30] Berk Ustun, Alexander Spangher, and Yang Liu. Actionable recourse in linear classifi-cation. In Proceedings of the conference on fairness, accountability, and transparency ,pages 10–19, 2019. [31] Tyler J VanderWeele and Peng Ding. Sensitivity analysis in observational research: introducing the e-value. Annals of internal medicine , 167(4):268–274, 2017. 15 [32] Sandra Wachter, Brent Mittelstadt, and Chris Russell. Counterfactual explanations without opening the black box: Automated decisions and the gdpr. Harv. JL & Tech. ,31:841, 2017. [33] Michael Walsh, Sadeesh K Srinathan, Daniel F McAuley, Marko Mrkobrada, Oren Levine, Christine Ribic, Amber O Molnar, Neil D Dattani, Andrew Burke, Gordon Guyatt, et al. The statistical significance of randomized controlled trial results is fre-quently fragile: a case for a fragility index. Journal of clinical epidemiology , 67(6): 622–628, 2014. 
+
+# Appendix A: Proofs 
+
+Proofs are provided in full detail. For self-containedness we restate the key definitions and proposition statements before each proof. 
+
+Notation and definitions. Let S ⊆ { 0, 1}K be a specification space . Each coordinate is a binary axis, and sk = 1 means that axis k is perturbed relative to a baseline s = 0. Let 
+
+ˆτ (s) be an estimated treatment effect and let CI( s) be its CI. The set of specifications whose CIs contain zero is 
+
+N (S) = {s ∈ S : 0 ∈ CI( s)}.
+
+For theory it is useful to separate the combinatorial object from its causal interpretation. Let F ⊆ S be any feasible set. The Minimum Specification Perturbation (MSP) of (S, F ) is 
+
+MSP( S, F ) = 
+
+(
+
+min {∥ s∥0 : s ∈ F }, F̸ = ∅,
+
+∞, F = ∅,
+
+where ∥s∥0 = PKk=1 sk is the Hamming weight of s. The causal version sets F = N (S).A feasibility-preserving refinement of (S, F ) is a refined space (S′, F ′) with S′ = {0, 1}K′
+
+,
+
+F ′ ⊆ S′, together with an embedding ι : S → S′ such that 
+
+∥ι(s)∥0 = ∥s∥0 for all s ∈ S, ι(F ) ⊆ F ′.
+
+Thus each coarse feasible configuration remains feasible in the refined space, under an em-bedding that preserves Hamming cost. 
+
+Proposition 1 (Refinement monotonicity). Statement. Let (S′, F ′) be a feasibility-preserving refinement of (S, F ). Then 
+
+MSP( S′, F ′) ≤ MSP( S, F ).
+
+Proof. If F = ∅, then MSP( S, F ) = ∞, so the inequality holds immediately. Assume F̸ = ∅,and let s⋆ ∈ F attain MSP( S, F ) = ∥s⋆∥0.
+
+∥ι(s⋆)∥0 = ∥s⋆∥0
+
+16 by the defining Hamming-weight preservation property of a feasibility-preserving refinement. Also, ι(F ) ⊆ F ′, so ι(s⋆) ∈ F ′. Therefore 
+
+MSP( S′, F ′) ≤ ∥ ι(s⋆)∥0 = ∥s⋆∥0 = MSP( S, F ),
+
+which proves the claim. 
+
+Proposition 2 (Permutation calibration). Statement. Under a sharp null H0 : Yi(1) = 
+
+Yi(0) for all i, complete randomization with a fixed number of treated units, and fixed bootstrap resamples U , the add-one Monte Carlo permutation p-value based on MSP satisfies 
+
+Pr(ˆ p ≤ α | H0) ≤ α ∀α ∈ [0 , 1] .
+
+Here ˆp = (1 + # {j ∈ { 1, . . . , P } : Vj ≥ V0})/(P + 1) , where V0 is the observed MSP and 
+
+V1, . . . , V P are the MSP values computed on P independent permutations of the treatment assignment vector. 
+
+Proof. Write D(A) = {(xi, A i, Y i)}ni=1 , and let T (D; S, U ) denote MSP computed on dataset 
+
+D, specification space S, and fixed bootstrap resamples U . Once S and U are fixed, T (·; S, U )
+
+is a deterministic function of the dataset: the same data and the same resamples produce the same CIs, the same set N (S) of specifications whose CIs contain zero, and the same MSP. Under the sharp null H0 : Yi(1) = Yi(0) for all i, the observed outcomes satisfy Yi = Yi(0) 
+
+regardless of Ai. Thus, conditioning on the fixed covariates and potential outcomes, the only randomness in D(A) comes from the treatment assignment vector A.Under complete randomization with a fixed number of treated units, A is uniform on 
+
+ΩA = {a ∈ { 0, 1}n :
+
+> n
+
+X
+
+> i=1
+
+ai = n1}.
+
+For any permutation π of {1, . . . , n }, the permuted vector Aπ also lies in ΩA, and the map 
+
+a 7 → aπ is a bijection of ΩA. Hence Aπ has the same distribution as A. Because outcomes are fixed under H0, the permuted dataset 
+
+Dπ = {(xi, A π(i), Y i)}ni=1 
+
+has the same distribution as D(A).Let π0 be the identity permutation, and let π1, . . . , π P be i.i.d. uniform permutations, independent of A. Define 
+
+Vj = T (Dπj ; S, U ), j = 0 , 1, . . . , P. 
+
+Because T (·; S, U ) is deterministic once S and U are fixed, it remains to justify that (V0, . . . , V P )
+
+is jointly exchangeable. Let G0, . . . , G P be i.i.d. uniform permutations of {1, . . . , n }, indepen-dent of A. Since A is uniform on ΩA and G0 is independent of A, the permuted assignment vector AG0 has the same distribution as A. Therefore 
+
+ D(A), D G1 , . . . , D GP
+
+ d
+
+=  DG0 , D G1 , . . . , D GP
+
+.
+
+17 Conditional on A, the assignment vectors AG0 , . . . , AGP are i.i.d. uniform on ΩA: for fixed A, every element of ΩA is obtained from A by the same number of permutations, and the permutations G0, . . . , G P are independent. Hence the datasets DG0 , . . . , D GP are conditionally i.i.d., and therefore jointly exchangeable, given A. Applying the deterministic map T (·; S, U ) coordinatewise preserves conditional exchangeability, so 
+
+ T (DG0 ; S, U ), . . . , T (DGP ; S, U )
+
+is conditionally exchangeable given A, hence exchangeable unconditionally. By the preceding distributional equality, (V0, . . . , V P ) is also jointly exchangeable under H0.The standard add-one Monte Carlo randomization-test argument now applies; see, for example, [23]. Because (V0, . . . , V P ) is jointly exchangeable under H0, the observed statistic 
+
+V0 is no more likely than any of the P permuted statistics to appear in the extreme upper tail. After applying the add-one rule to handle ties, the Monte Carlo permutation p-value 
+
+ˆp = 1 + # {j ∈ { 1, . . . , P } : Vj ≥ V0}
+
+P + 1 
+
+satisfies 
+
+Pr(ˆ p ≤ α | H0) ≤ α ∀α ∈ [0 , 1] .
+
+This is exactly the stated result. 
+
+Proposition 3 (Weighted MSP sandwich). Statement. Let wk > 0 for each axis 
+
+k = 1 , . . . , K , and define the weighted MSP as 
+
+wMSP( S, F, w ) = min 
+
+> s∈FK
+
+X
+
+> k=1
+
+skwk.
+
+Write wmin = min k wk and wmax = max k wk. Then 
+
+wmin MSP( S, F ) ≤ wMSP( S, F, w ) ≤ wmax MSP( S, F ).
+
+Proof. If F = ∅, then both MSP( S, F ) and wMSP( S, F, w ) equal ∞, so the inequalities hold in the extended nonnegative reals. Assume F̸ = ∅.Let s⋆ ∈ F attain MSP( S, F ) = ∥s⋆∥0. Since s⋆ is feasible for the weighted problem, 
+
+wMSP( S, F, w ) ≤
+
+> K
+
+X
+
+> k=1
+
+s⋆kwk ≤
+
+> K
+
+X
+
+> k=1
+
+s⋆kwmax = wmax ∥s⋆∥0 = wmax MSP( S, F ).
+
+This proves the upper bound. For the lower bound, let ˜s ∈ F attain wMSP( S, F, w ) = PKk=1 ˜skwk. Because each 
+
+wk ≥ wmin ,
+
+wMSP( S, F, w ) = 
+
+> K
+
+X
+
+> k=1
+
+˜skwk ≥
+
+> K
+
+X
+
+> k=1
+
+˜skwmin = wmin ∥˜s∥0.
+
+18 Since ˜s ∈ F , its Hamming weight cannot be smaller than the minimum feasible Hamming weight: 
+
+∥˜s∥0 ≥ MSP( S, F ).
+
+Combining the last two displays gives 
+
+wMSP( S, F, w ) ≥ wmin MSP( S, F ).
+
+Together with the upper bound, this yields the sandwich inequality. The bound is tight when weights are constant. 
+
+Theorem 1 (Additive characterization). Statement. Suppose S = {0, 1}K and the point-estimate map is additive: 
+
+ˆτ (s) = τ0 +
+
+> K
+
+X
+
+> k=1
+
+skδk.
+
+Assume a symmetric CI with constant half-width c > 0, a positive baseline τ0 > c , and the bounded individual effect condition max k |δk| ≤ 2c. Let K− = {k : τ0δk < 0} be the set of opposing axes (those whose activation moves the estimate toward zero) and write 
+
+K− = |K −|. Order the opposing axes by decreasing magnitude: 
+
+|δπ(1) | ≥ · · · ≥ | δπ(K−)|.
+
+Then 
+
+MSP = min 
+
+(
+
+m ∈ { 1, . . . , K −} :
+
+> m
+
+X
+
+> j=1
+
+|δπ(j)| ≥ τ0 − c
+
+)
+
+,
+
+if such m exists, and MSP = ∞ otherwise. The case of a negative significant baseline (τ0 < −c) follows by sign symmetry: apply the result to (−τ0, −δk). The same remark applies to Propositions 4 and 5 below. 
+
+Proof. Because τ0 > c , the baseline configuration does not have a CI containing zero. For any subset T ⊆ K −, define 
+
+D(T ) = X
+
+> k∈T
+
+|δk|.
+
+The problem reduces to selecting a subset of opposing axes of minimum cardinality such that the cumulative shift enters the band of estimates whose CIs contain zero. Each k ∈ K −
+
+moves the estimate toward zero, so δk = −| δk|. Hence, if s(T ) is the configuration that activates exactly the axes in T ,
+
+ˆτ (s(T )) = τ0 − D(T ).
+
+Null-compatibility is therefore equivalent to 
+
+|ˆτ (s(T )) | ≤ c ⇐⇒ D(T ) ∈ [τ0 − c, τ 0 + c].
+
+19 Axes not in K− cannot reduce the minimum cardinality required. The upper-bound inequality ˆτ (s) ≤ c rearranges to 
+
+> K
+
+X
+
+> k=1
+
+sk(−δk) ≥ τ0 − c. 
+
+For k / ∈ K −, δk has the same sign as τ0 > 0, so −δk ≤ 0 and activating k cannot contribute positively to this sum (the case δk = 0 leaves the sum unchanged but increases ∥s∥0). Hence any null-compatible configuration must already satisfy the upper bound using its activated axes in K−, and a minimum-cardinality feasible set may be sought among subsets of K−
+
+only. For r = 1 , . . . , K −, let 
+
+Dr =
+
+> r
+
+X
+
+> j=1
+
+|δπ(j)|.
+
+By construction, among all subsets T ⊆ K − with |T | = r, the maximum possible value of 
+
+D(T ) is Dr: sorting in decreasing order of |δk| makes the prefix {π(1) , . . . , π (r)} the best subset of size r. Thus, for any fixed cardinality r, the greedy prefix achieves the maximal possible attenuation toward zero. Suppose first that there exists m with Dm ≥ τ0 − c, and let m be the smallest such index. Then for every r < m , Dr < τ 0 − c. Since any subset T ⊆ K − with |T | = r satisfies 
+
+D(T ) ≤ Dr, no subset of size r < m can yield a CI containing zero. This establishes prefix optimality: no feasible set uses fewer than m opposing axes. It remains to show that the greedy prefix of size m is feasible. By minimality of m,
+
+Dm−1 < τ 0 − c. 
+
+Using the bounded step-size condition on the next increment, 
+
+Dm = Dm−1 + |δπ(m)| < (τ0 − c) + 2 c = τ0 + c. 
+
+Together with Dm ≥ τ0 − c, this implies 
+
+Dm ∈ [τ0 − c, τ 0 + c].
+
+Hence the prefix {π(1) , . . . , π (m)} yields a CI containing zero, so MSP = m.If no such m exists, then Dr < τ 0 − c for every r ≤ K−. Therefore every subset T ⊆ K −
+
+satisfies D(T ) < τ 0 − c, so no subset can enter the band of estimates whose CIs contain zero. Since non-opposing axes cannot help satisfy the upper-bound inequality (as established above), no configuration in S yields a CI containing zero, and MSP = ∞.
+
+Proposition 4 (Variable-width greedy exactness). Statement. Suppose S = {0, 1}K
+
+with additive point estimates and additive confidence-interval half-widths: 
+
+ˆτ (s) = τ0 +
+
+> K
+
+X
+
+> k=1
+
+skδk, c(s) = c0 +
+
+> K
+
+X
+
+> k=1
+
+sk∆ck,
+
+20 with τ0 > c 0 > 0 and c(s) ≥ 0 for all s ∈ S. A configuration s has a CI containing zero if and only if ˆτ (s) ∈ [−c(s), c (s)] . Define the effective shifts 
+
+ek = ∆ ck − δk,
+
+let K+ = {k : ek > 0} and write K+ = |K +|. Order these axes so that 
+
+eπ(1) ≥ · · · ≥ eπ(K+) > 0.
+
+If ties occur, fix any deterministic tie-breaking rule; because tied effective shifts ek may have differing width adjustments ∆ck, an implementation should evaluate all tied candidate prefixes before concluding that the greedy approach has failed. If m exists but sg fails the lower-bound check, fall back to exact search (e.g. branch-and-bound). For r = 1 , . . . , K +,let 
+
+Er =
+
+> r
+
+X
+
+> j=1
+
+eπ(j),
+
+and let 
+
+m = min {r ∈ { 1, . . . , K +} : Er ≥ τ0 − c0},
+
+if such m exists. Let sg activate exactly the axes {π(1) , . . . , π (m)}. If sg satisfies the lower-bound condition 
+
+ˆτ (sg) ≥ − c(sg),
+
+then sg yields a CI containing zero and 
+
+∥sg∥0 = MSP .
+
+If no such m exists, then MSP = ∞.
+
+Proof. For any configuration s,
+
+ˆτ (s) ≤ c(s) ⇐⇒ τ0 +
+
+> K
+
+X
+
+> k=1
+
+skδk ≤ c0 +
+
+> K
+
+X
+
+> k=1
+
+sk∆ck ⇐⇒ 
+
+> K
+
+X
+
+> k=1
+
+skek ≥ τ0 − c0.
+
+Thus the upper-bound part of null-compatibility depends only on the effective shifts ek =∆ck −δk. If ek ≤ 0, activating axis k cannot help this inequality and only increases Hamming weight, so a minimum-cardinality configuration may be sought among subsets of K+ only. For T ⊆ K +, write E(T ) = P 
+
+> k∈T
+
+ek. By the ordering of the ek’s, for every r ∈{1, . . . , K +} the largest possible value of E(T ) over all subsets T ⊆ K + with |T | = r is 
+
+Er, attained by the greedy prefix {π(1) , . . . , π (r)}.Suppose m exists and is the smallest index with Em ≥ τ0 − c0. Then for every r < m ,
+
+Er < τ 0 − c0. Hence any subset T ⊆ K + with |T | = r satisfies 
+
+E(T ) ≤ Er < τ 0 − c0,
+
+so it fails the upper-bound inequality. Since axes outside K+ cannot help with that inequality, no configuration with fewer than m active coordinates can yield a CI containing zero. This yields 
+
+MSP ≥ m. 
+
+21 By definition of m, the greedy prefix sg satisfies 
+
+> K
+
+X
+
+> k=1
+
+(sg)kek = Em ≥ τ0 − c0,
+
+hence ˆτ (sg) ≤ c(sg). If sg also satisfies the lower-bound condition ˆτ (sg) ≥ − c(sg), then sg
+
+yields a CI containing zero. Since sg has exactly m active axes and no configuration with a CI containing zero can use fewer than m, it follows that 
+
+∥sg∥0 = m = MSP .
+
+If no such m exists, then Er < τ 0−c0 for every r ≤ K+. By the maximality of greedy prefix sums, no configuration satisfies the upper-bound inequality, hence the set of specifications whose CIs contain zero is empty and MSP = ∞.
+
+Proposition 5 (A structural sufficient condition for automatic feasibility). State-ment. Under the setup of Proposition 4 (additive point estimates and additive CI half-widths with τ0 > c 0 > 0), additionally assume 
+
+∆ck ≥ 0 ∀k ∈ K +, max  
+
+> k∈K +
+
+ek ≤ 2c0.
+
+The first condition says that activating a helpful axis does not shrink the CI; the second says that no single effective shift can overshoot the full null-band gap 2c0. Then the greedy prefix 
+
+sg from Proposition 4 automatically satisfies the lower-bound condition ˆτ (sg) ≥ − c(sg).Consequently, whenever m exists, sg yields a CI containing zero and ∥sg∥0 = MSP ; if no such m exists, then MSP = ∞.
+
+Proof. Keep the notation m, Em, and sg from Proposition 4, and define the lower-bound loads 
+
+bk = −δk − ∆ck.
+
+For any configuration s,
+
+ˆτ (s) ≥ − c(s) ⇐⇒ τ0 +
+
+> K
+
+X
+
+> k=1
+
+skδk ≥ − 
+
+
+
+c0 +
+
+> K
+
+X
+
+> k=1
+
+sk∆ck
+
+
+
+⇐⇒ 
+
+> K
+
+X
+
+> k=1
+
+skbk ≤ τ0 + c0.
+
+Because sg is supported on K+ and ∆ck ≥ 0 for every k ∈ K +, we have bk ≤ ek on the support of sg, since 
+
+ek − bk = (∆ ck − δk) − (−δk − ∆ck) = 2∆ ck ≥ 0.
+
+Hence KX
+
+> k=1
+
+(sg)kbk ≤
+
+> K
+
+X
+
+> k=1
+
+(sg)kek = Em.
+
+By minimality of m, Em−1 < τ 0 − c0. Since the last selected axis π(m) ∈ K + satisfies 
+
+eπ(m) ≤ 2c0,
+
+Em = Em−1 + eπ(m) < (τ0 − c0) + eπ(m) ≤ (τ0 − c0) + 2 c0 = τ0 + c0.
+
+Therefore P
+
+> k
+
+(sg)kbk < τ 0 + c0, which strictly implies the non-strict lower-bound condition P
+
+> k
+
+(sg)kbk ≤ τ0 + c0, i.e. ˆτ (sg) ≥ − c(sg). The remaining claims then follow from Proposi-tion 4. 22 Theorem 2 (Computational hardness without the bounded-step condition). State-ment. Consider the additive MSP problem with constant CI half-width but without the bounded-step assumption max k |δk| ≤ 2c: given an instance (K, τ 0, c, δ 1, . . . , δ K ) with ra-tional entries encoded in binary, determine MSP = min {∥ s∥0 : s ∈ N (S)} where ˆτ (s) = 
+
+τ0 + P 
+
+> k
+
+skδk and N (S) = {s ∈ { 0, 1}K : |ˆτ (s)| ≤ c}. This problem is NP-hard. Theorem 1 and Proposition 5 identify tractable bounded-step subclasses; without that structure, exact computation need not admit a polynomial-time algorithm. 
+
+Proof. This hardness result applies outside the bounded-step tractable subclasses of The-orem 1 and Proposition 5; those results identify settings where greedy yields O(K log K)
+
+computation. We reduce from the SUBSET SUM problem, which is known to be NP-complete (Garey and Johnson, 1979, Problem SP13). 
+
+Step 1: SUBSET SUM instance. Let (a1, . . . , a n, T ) be an arbitrary instance of SUBSET SUM, where each ak is a positive integer and T is a positive integer target. The decision problem asks whether there exists a subset I ⊆ { 1, . . . , n } such that P 
+
+> k∈I
+
+ak = T .
+
+Step 2: Construction of the MSP instance. Define an additive MSP instance with 
+
+K = n binary axes, opposing shifts δk = −ak for each k, constant CI half-width c = 1 /4,and baseline point estimate τ0 = T + c = T + 1 /4. The point estimate at configuration s is 
+
+ˆτ (s) = τ0 +
+
+> K
+
+X
+
+> k=1
+
+skδk = T + 14 −
+
+> K
+
+X
+
+> k=1
+
+skak.
+
+Step 3: Null-compatibility condition. A configuration s has a CI containing zero if and only if |ˆτ (s)| ≤ c = 1 /4, i.e., 
+
+−14 ≤ T + 14 −
+
+> K
+
+X
+
+> k=1
+
+skak ≤ 14 .
+
+Rearranging gives 
+
+T ≤
+
+> K
+
+X
+
+> k=1
+
+skak ≤ T + 12 .
+
+Since all ak are positive integers, the sum P 
+
+> k
+
+skak is a nonnegative integer. The interval 
+
+[T, T + 1 /2] contains exactly one nonnegative integer, namely T (the next integer T + 1 
+
+exceeds T + 1 /2). Therefore null-compatibility reduces to 
+
+> K
+
+X
+
+> k=1
+
+skak = T, 
+
+which is exactly the SUBSET SUM decision problem. 
+
+Step 4: Feasibility version. Consider the feasibility problem: does there exist s ∈ { 0, 1}K
+
+such that |ˆτ (s)| ≤ c? This problem belongs to NP: given a candidate s, one verifies |ˆτ (s)| ≤ c
+
+23 in time polynomial in the binary input length. The reduction in Steps 1–3 is polynomial-time (the MSP instance has size linear in the SUBSET SUM input). Combined with the NP-hardness from the reduction, this feasibility problem is NP-complete. 
+
+Step 5: From feasibility to optimization. Computing MSP = min s∈N (S) ∥s∥0 is at least as hard as the feasibility problem, since from the output of the optimization one can determine feasibility immediately: N (S)̸ = ∅ if and only if MSP < ∞. Since the feasibility version is NP-complete, the optimization version is NP-hard. 
+
+Empirical pass/fail evidence for variable-width greedy. Appendix B (Table 15) reports greedy exactness across the empirical illustrations and the K = 10 synthetic exper-iment. Greedy gives the exact MSP in every empirical example, including two cases where 
+
+ρ > 1 (LaLonde: ρ = 1 .641 ; ML pipeline: ρ = 1 .317 ), outside the automatic-feasibility envelope of Proposition 5 but still passing the lower-bound check of Proposition 4. In both additive synthetic regimes (constant and variable width), greedy is exact in every replicate. In the interaction-heavy regime the exactness rate drops to 72.5%, but branch-and-bound recovers the exact MSP in all cases. 
+
+# Appendix B: Supplementary Empirics 
+
+ML pipeline illustration. Purpose: to show that MSP applies outside causal inference and to provide an example where MSP = ∞, contrasting with the fragile LaLonde result. 
+
+We apply MSP to a supervised classification pipeline on the UCI Adult income dataset [2], which asks whether annual income exceeds $50,000. The declared conclusion is that a fitted model significantly outperforms the majority-class baseline (78.2% accuracy) on a held-out test set of 2,000 observations. Significance is assessed via a 95% percentile bootstrap CI for the accuracy gain ˆ∆ = ˆ pmodel − pbaseline , using B = 200 bootstrap resamples held fixed across all configurations. The specification space has K = 4 binary axes: model class (logistic regression vs. random forest), feature set (full 14-dimensional set vs. reduced 6-feature demographic sub-set), missing-value handling (mean imputation vs. row deletion), and regularization (default strength vs. relaxed). This yields 16 configurations. The baseline uses random forest, the full feature set, mean imputation, and default regularization. The baseline accuracy gain is ˆ∆ = 0 .083 with 95% bootstrap CI [0 .070 , 0.098] . Across all 16 configurations, every CI excludes zero and MSP = ∞. The most adversarial configuration still gives ˆ∆ = 0 .022 with 95% CI [0 .008 , 0.037] . Thus MSP is meaningful outside economics: in contrast to the fragile LaLonde illustration, no admissible perturbation in this declared pipeline reaches a configuration whose CI contains zero. Table 5: MSP summary for the ML pipeline illustration (UCI Adult, K = 4 , 16 configura-tions, B = 200 ). baseline ˆ∆ baseline 95% CI # configs with CI ∋ 0 MSP 0.083 [0.070, 0.098] 0 / 16 ∞
+
+24 Illustrative weighted MSP on LaLonde. To make Proposition 3 concrete, we revisit the raw-earnings subset of the LaLonde illustration, where the unweighted MSP equals 1 and the nearest configuration whose CI contains zero changes only the covariate set. Consider illustrative axis weights 
+
+westimator = 2 , wcovariates = 3 , wnonlinear = 0 .5, wtrim = 0 .5.
+
+These weights are not normative; they simply encode the idea that switching covariate adjustment or estimator class is a larger perturbation than adding nonlinearity or overlap trimming. Under this weighting, the same configuration remains optimal, but its cost rises from 1 to 3. Table 6 shows how weighted MSP changes the scale of robustness even when the closest configuration in N (S) is unchanged. Table 6: Illustrative weighted MSP on the LaLonde raw-earnings subset. configuration unweighted cost weighted cost CI contains zero full covariates only 1 3.0 yes full covariates + trimming 2 3.5 yes full covariates + nonlinear 2 3.5 yes With wmin = 0 .5, wmax = 3 , and unweighted MSP = 1 , Proposition 3 gives 
+
+0.5 ≤ wMSP ≤ 3,
+
+and the observed value wMSP = 3 attains the upper endpoint. This small example is intended only as a usage demonstration; in applications, weights should be justified sub-stantively and reported alongside the unweighted MSP, for example via expert elicitation, analyst-time proxies, or agreed reporting conventions for major versus minor specification changes. 
+
+Card–Krueger difference-in-differences illustration. To show that MSP also applies in a standard difference-in-differences setting, we revisit the Card–Krueger fast-food study of the New Jersey minimum wage. The specification space has K = 4 axes (16 configurations): estimator (first-difference DiD versus long OLS DiD), controls (on/off), outcome scale (level employment versus log(1 + employment )), and sample (full sample with permanent closures coded as zero versus balanced panel only). The baseline specification uses first-difference DiD, controls, level employment, and the full sample with closures. Its estimated treatment effect is 2.785 full-time-equivalent employees with 95% bootstrap CI [0 .119 , 5.340] .Table 7: Compact MSP summary for the Card–Krueger DiD illustration. baseline ˆτ baseline 95% CI MSP nearest specification whose CI contains zero 2.785 [0.119, 5.340] 1 log outcome only Across the 16 configurations, 9 have CIs that contain zero and MSP equals 1 (Table 7). The nearest specification whose CI contains zero changes only the outcome scale from levels 25 to log(1 + employment ), yielding ˆτ = 0 .075 with 95% CI [−0.038 , 0.189] . Thus the DiD conclusion is again fragile within the declared specification space: one admissible perturba-tion suffices to make the effect’s CI contain zero. The point of this illustration is not to adjudicate the Card–Krueger debate, but to show that MSP extends naturally beyond the LaLonde benchmark to a familiar panel design. Because the level and log specifications tar-get different estimands, this pooled grid should be read as a declared robustness space rather than as a common-scale additive summary. For substantive interpretation, we recommend faceting such spaces by outcome scale and reporting scale-specific MSP alongside the pooled diagnostic whenever both transformations are considered defensible. 
+
+Outcome-scale check for the NSW randomized sample. In the NSW randomized sample, the permutation-calibration grid includes an outcome-scale axis (raw earnings vs. 
+
+log(1 + earnings )), so pooled configurations mix estimands. To confirm that the observed 
+
+MSP = ∞ is not an artefact of cross-scale cancellation, we recompute MSP separately on the two scale-specific K = 3 subgrids (8 configurations each), holding fixed the same bootstrap procedure and resamples. Both scale-specific grids also yield MSP = ∞: no configuration has a 95% CI that contains zero. 
+
+MSP vs. Fragility Index: construction details. The standard Fragility Index [33] is defined for 2 ×2 tables and Fisher’s exact test. To enable a direct comparison on the NSW continuous-outcome data, we define eFI as the minimum number of treated-unit post-period earnings that must be set to zero for the bootstrap 95% CI to contain zero (baseline specifica-tion: OLS, basic covariates, linear model, no trimming; B = 500 fixed resamples). We report two variants: eFI adv zeros the highest-earning treated units first (adversarial ordering); eFI rnd 
+
+reports the median over 50 random orderings. Toy example. Suppose a baseline specification yields a bootstrap 95% CI of [2 , 12] on a treated sample with earnings (30 , 25 , 20 , 10 , 5) . We then ask how many treated units must have earnings replaced by zero before the same CI contains zero. Under the adversarial ordering, we zero the highest earners first: after zeroing 30 the CI is still [1 , 10] , after zeroing 30 and 25 it is still [0 .5, 8] , and after zeroing 30, 25, and 20 it becomes [−1, 6] , so eFI adv = 3 . Under a random ordering, the answer can differ; for example, under the order (5 , 10 , 20 , 25 , 30) , four zeroings may be needed before the CI con-tains zero. Repeating this over many random orderings and taking the median gives eFI rnd .Unlike MSP, which perturbs analyst choices while holding the data fixed, eFI perturbs the data while holding the specification fixed. In the adversarial case, the three earnings zeroed are $60,308, $36,647, and $34,099. Results and interpretation are reported in the main text (Table 2). 
+
+Synthetic FI–MSP flip experiment: construction and results. The NSW random-ized sample establishes one direction of divergence between data fragility and specification fragility. To show that the contrast is bidirectional, we simulate two regimes using the same 
+
+K = 4 binary MSP axes as in Block 3: omit X1, omit X2, force linearity, and disable trim-ming. MSP is computed from common-bootstrap percentile CIs over all 16 configurations. Within each replicate, FI is computed on the baseline specification only, using a separate 26 fixed bootstrap index matrix and an adversarial ordering that zeros treated outcomes from highest Y downward. 
+
+Regime A (tail-driven, specification-stable). Treatment assignment is nearly random, with weak dependence on X1 and X2, so analyst choices induce little bias variation across specifications. A small random subset of treated units receives a large outcome bonus that is orthogonal to covariates. This concentrates evidential support in a few treated observa-tions: zeroing those outcomes can quickly make the baseline CI contain zero, but changing specification rarely does. 
+
+Regime B (diffuse-effect, specification-sensitive). The treatment effect is homogeneous across treated units, but treatment assignment depends strongly on X1, X2, and X3, while untreated outcomes depend negatively on X1 and X2. Under this opposite-sign confounding structure, the baseline specification recovers the effect, but omitting X1 is often enough to produce a null-compatible CI. Because the effect is diffuse rather than concentrated in a few treated observations, many adversarial zeroings are required before the baseline CI contains zero. The paper-quality run uses n = 800 , BMSP = 100 , BFI = 100 , and 120 Monte Carlo replicates per regime. In Regime A, the tail bonus is assigned to 3% of treated units with magnitude 15 σ; this yields a baseline significant result in 97.5% of replicates while keeping the signal concentrated. In Regime B, the diffuse treatment effect is τ = 0 .7, strong enough for the baseline to be significant in every replicate but still vulnerable to the single-axis omission of X1.Table 8: Detailed summary for the synthetic FI–MSP flip experiment ( n = 800 , 120 replicates per regime). summary Regime A: tail-driven Regime B: spec-sensitive 
+
+P (baseline significant ) 0.975 1.000 median FI 7 38 mean FI 7.24 38.19 
+
+P (FI ≤ 3) 0.067 0.000 
+
+P (FI ≤ 10) 0.883 0.000 median FI / ntreated 1.75% 10.27% 
+
+P (MSP = 1) 0.017 0.925 
+
+P (MSP = ∞) 0.958 0.033 median finite MSP 0 1Table 8 shows a near-perfect reversal. In Regime A, FI is small but MSP is almost always infinite: the conclusion is data-fragile yet specification-robust. In Regime B, FI is large but MSP is almost always 1: the conclusion is data-robust yet specification-fragile. This is the synthetic counterpart to the NSW randomized illustration. The distinction is not simply that the two measures use different scales; they respond to different geometric objects. FI tracks how concentrated the support for significance is across observations, whereas MSP tracks how close the baseline is to the null-compatible region in specification space. For that reason, the two metrics are best read jointly: each supplies robustness information that the other is not designed to capture. 27 Simulation data-generating processes. Main simulation (Tables 3, 4, 11). Four covari-ates X1, X 2, X 3, X 4iid 
+
+∼ N (0 , 1) are drawn independently. Treatment is assigned via a logistic model, A | X ∼ Bernoulli( σ(η)) with σ(t) = (1 + e−t)−1 clipped to [0 .02 , 0.98] . Under the additive regime: 
+
+η = −0.2 + 0 .8X1 + 0 .8X2 + 1 .1X3, g(X) = −1.2X1 − 1.0X2 − 0.6X3 + 0 .2X4.
+
+Under the interaction-heavy regime: 
+
+η = −0.2 + 0 .8X1 + 0 .6X2 + 1 .1X3 + 1 .0X1X2,g(X) = −1.1X1 − 0.7X2 − 0.6X3 + 0 .2X4 − 1.0X1X2 − 0.8X22 .
+
+The outcome is Y = τ A + g(X) + ε with ε ∼ N (0 , 1) . Opposite-sign confounding (treated units selected on covariates associated with lower untreated outcomes) means naive adjust-ment attenuates ˆτ .
+
+FI–MSP flip experiment (Appendix, Table 8). Regime A (tail-driven): treatment is nearly random, η = 0 .05 X1 + 0 .05 X2, and g(X) = 0 .1X1 + 0 .1X2. Significance is driven by a tail bonus assigned to a proportion ptail = 0 .03 of treated units, each receiving an additive boost of 15 σ to their outcome; no specification omission removes this signal so MSP = ∞ in almost every replicate. Regime B (spec-sensitive): η = −0.2 + 1 .2X1 + 0 .8X2 + 0 .6X3 and 
+
+g(X) = −1.5X1 − 1.0X2 − 0.5X1X2, with τ = 0 .7. The strong opposite-sign confounding via 
+
+X1 means that omitting X1 alone is sufficient to flip the CI, so MSP = 1 in almost every replicate. 
+
+Higher-dimensional experiment ( K = 10 , Table 9). This is a synthetic search-surface 
+
+experiment, not a data-generating model. No outcome or assignment model is simulated. Instead, each replicate directly samples axis-level shift parameters: τ0 = 2 .0, c0 = 0 .5, and six of ten axes are designated opposing with δk ∼ − Uniform(0 .18 , 0.85) ; the remaining four have 
+
+δk ∼ Uniform(0 .00 , 0.25) . For variable-width scenarios, ∆ck ∼ Uniform( −0.05 , 0.15) . Pair-wise interaction terms γkj ∼ N (0 , σ 2 
+
+> γ
+
+) are added to the point-estimate map in the interaction-heavy scenario ( σγ = 0 .22 ), and exactness is verified against exhaustive enumeration in every replicate. 
+
+Replicate counts. Tables 3 and 8 use R = 120 replicates per τ ; Tables 4 and 11 use 
+
+R = 200 replicates per τ ; Table 12 uses R = 80 replicates per τ ; Table 9 uses 80 replicates per scenario (not per τ , since there is no treatment-effect parameter in the synthetic search surface). The differences reflect compute budgets: the 200-replicate runs omit permuta-tion tests; the 80-replicate runs include either P = 300 permutations per replicate (SCA comparison) or the full exhaustive-enumeration verification ( K = 10 ). All main simula-tions use n = 800 , so slightly differing point estimates for the same cell across tables (e.g. 
+
+ˆP (MSP = ∞ | τ = 0) ) trace to independent seeds and differing replicate counts. 
+
+Formal definitions of the simulation summary statistics. For each fixed effect size 
+
+τ , let r = 1 , . . . , R index Monte Carlo replicates, where each replicate consists of one newly simulated dataset, evaluation of the full specification space, and computation of the resulting MSP. Let MSP r(τ ) ∈ { 0, 1, . . . , K, ∞} denote the MSP in replicate r, and let [L(0)  
+
+> r
+
+(τ ), U (0)  
+
+> r
+
+(τ )] 
+
+28 denote the CI for the baseline configuration in that same replicate. Then the columns reported in Table 3 are computed as 
+
+bP (MSP = ∞ | τ ) = 1
+
+R
+
+> R
+
+X
+
+> r=1
+
+1{MSP r(τ ) = ∞} ,
+
+median(MSP | finite , τ ) = median MSP r(τ ) : MSP r(τ ) < ∞ ,
+
+bP (MSP ≤ 1 | τ ) = 1
+
+R
+
+> R
+
+X
+
+> r=1
+
+1{MSP r(τ ) ≤ 1},
+
+and 
+
+bP (baseline significant | τ ) = 1
+
+R
+
+> R
+
+X
+
+> r=1
+
+1{0 /∈ [L(0)  
+
+> r
+
+(τ ), U (0)  
+
+> r
+
+(τ )] }.
+
+Equivalently, the final column is the empirical proportion of replicates in which the baseline configuration rejects the null at the nominal confidence level. The conditional median over finite MSP values is used because MSP = ∞ occurs nontrivially in some regimes, so the finite and infinite parts of the distribution are reported separately rather than collapsed into a single summary. 
+
+Refinement check. To match the refinement proposition, we compare a coarse 3-axis grid to a refined 4-axis grid linked by a canonical embedding that preserves Hamming weight. Across 120 replicates, the inequality MSP refined ≤ MSP coarse holds in every case. The mean coarse and refined MSP are both 1.067 . The experiment is therefore a consistency check rather than a source of strict empirical separation, but it aligns exactly with the theorem. 
+
+Additive versus interaction structure. The additive theorem concerns the point-estimate map s 7 → ˆτ (s), so we evaluate it through fit diagnostics rather than through MSP predicted from configuration-specific CIs. Under the additive data-generating process, the additive ap-proximation attains mean R2 = 0 .985 and mean absolute error 0.048 . Under the interaction-heavy process, the fit worsens to R2 = 0 .928 and mean absolute error 0.085 . Expressed in percentage terms, moving from the additive to the interaction-heavy DGP lowers mean R2
+
+by about 5.8 percentage points and raises mean absolute error by about 77%. The main takeaway is qualitative rather than dramatic: additive fit remains reasonably good in both regimes, but it deteriorates consistently once interaction structure is introduced. 
+
+Higher-dimensional synthetic experiment ( K = 10 ). To study a moderate-size spec-ification space closer to what an applied robustness exercise might report, we ran a synthetic search experiment on K = 10 binary axes. This yields 210 = 1024 configurations, so exhaus-tive search is still feasible and can serve as exact ground truth. We compare three methods: brute-force enumeration, the additive greedy rule, and branch-and-bound using the additive lower bound [MSP add for pruning. Pruning by a lower bound is exact only when that bound is admissible; the additive bound is admissible when interactions in ˆτ (·) and c(·) do not exceed the additive prediction, and outside that regime one should disable that pruning step or use a 29 verified conservative bound. We therefore certify exactness by comparing branch-and-bound output against exhaustive enumeration in every replicate. We study three scenarios: (i) additive point estimates with constant width, to verify Theorem 1 beyond K ≤ 5; (ii) addi-tive point estimates with variable widths, to test whether mild width heterogeneity disrupts the heuristic; and (iii) interaction-heavy point estimates with variable widths, to expose the failure mode when the additive assumptions break. For each replicate we also record two compact diagnostics: a bounded-step ratio 
+
+ρ = max  
+
+> k
+
+|δk − ∆ck|/(2 c0),
+
+which tracks whether any single axis can overshoot the upper null-band gap in the additive-width heuristic, and the coefficient of variation of the configuration-specific half-widths, 
+
+CV( c) = sd {c(s) : s ∈ S}
+
+mean {c(s) : s ∈ S}.
+
+Table 9: Higher-dimensional synthetic experiment ( K = 10 , 80 replicates per scenario). Times are average milliseconds per replicate for the combinatorial search only , measured over a precomputed grid of axis shifts and CI half-widths; baseline model fitting and bootstrap costs are excluded (not applicable for this synthetic search-surface experiment). Panel A reports MSP and greedy accuracy; Panel B reports diagnostics and runtimes. 
+
+Panel A: MSP and greedy accuracy. 
+
+scenario exact MSP greedy MSP greedy exact greedy MAE additive + constant width 2.64 2.64 1.000 0.000 additive + variable width 2.44 2.44 1.000 0.000 interaction-heavy + variable width 2.21 2.55 0.725 0.338 
+
+Panel B: diagnostics and runtimes. 
+
+scenario mean ρ mean CV (c) B&B exact brute ms B&B ms additive + constant width 0.782 0.000 1.000 4.60 0.07 additive + variable width 0.817 0.156 1.000 4.38 0.06 interaction-heavy + variable width 0.830 0.157 1.000 8.87 0.49 Table 9 shows the intended pattern. Under the additive constant-width regime, greedy is exact in every replicate, as predicted by Theorem 1. With mild width variation but no interactions, greedy remains exact in this experiment, suggesting that modest departures from constant width need not break the ordering in practice. The diagnostics sharpen this interpretation: in both additive regimes the mean bounded-step ratio stays below one ( 0.782 ,
+
+0.817 ), and even with variable widths the mean width CV is only 0.156 . Under interaction-heavy, variable-width perturbations, greedy degrades while branch-and-bound matches the exhaustive enumeration in every replicate (Panel B), even though the mean diagnostics remain similar ( ρ = 0 .830 , CV( c) = 0 .157 ). Exactness here is empirically verified rather than analytically guaranteed, since the additive pruning bound is not admissible in general 30 under interactions. Thus the observed greedy failures are driven primarily by interaction structure, not by width heterogeneity alone. The point is not to position MSP as a tool for massive hyperparameter grids, but to show that the search narrative remains coherent on moderate specification spaces of the sort researchers can still audit and interpret axis by axis. In that regime, the diagnostics provide a compact scope check for the additive story, while exact branch-and-bound remains available when that story is doubtful. 
+
+CI construction ablation on the LaLonde raw-earnings subset. Because MSP is defined through CIs that contain zero, it is useful to check how much the empirical illustration depends on the interval construction itself. We therefore revisit the raw-earnings LaLonde subset, fix the same K = 4 specification space (16 configurations), and hold fixed everything except the CI rule: dataset, point-estimation pipeline, bootstrap size, seed, and the common bootstrap index matrix U used across all configurations. We compare percentile bootstrap intervals, bias-corrected (BC) bootstrap intervals, and bootstrap-Wald intervals based on the same stored bootstrap draws ( B = 500 ). Table 10: CI-construction ablation on the LaLonde raw-earnings subset ( K = 4 , 16 con-figurations, common bootstrap matrix, B = 500 ). The main-text CI [−$380 , $2 ,196] for the nearest configuration (Section 4.1) uses B = 200 ; the percentile-bootstrap entry here ([−320 .2, 2001 .1] ) uses B = 500 with a different seed, which accounts for the difference. CI method MSP # CIs containing zero nearest configuration CI at nearest configuration percentile 1 5 full covariates [-320.2, 2001.1] BC 1 5 full covariates [-264.6, 2089.5] bootstrap-Wald 1 5 full covariates [-319.5, 2077.5] Table 10 shows that the signal is stable across these reasonable constructions. MSP is unchanged, the closest configuration in N (S) remains the same one-axis perturbation, and the count of specifications whose CIs contain zero is identical across methods. Thus, in this illustration, CI construction affects the exact endpoints but not the qualitative conclusion of concentrated vulnerability. 
+
+ROC curves and false-positive rates for the decision-rule comparison. MSP = ∞
+
+means no zero-crossing CI exists in the declared space, typically because overshoot drives every perturbation past zero rather than into it. For the binary classifier, MSP = ∞ is scored as non-robust and non-positive: the threshold rule MSP ≥ 2 requires a finite value of at least 2, so MSP = ∞ does not trigger it; the ROC score maps MSP = ∞ to −999 , placing it at the “most fragile” end of the score axis. Consequently, the 81.5% of τ = 0 .3 replicates with MSP = ∞ are classified as negatives by the MSP ≥ 2 rule (correctly, since overshoot indicates no falsifying configuration exists), and the FPR of 0.010 reports only the 2/200 finite-MSP replicates that exceed the threshold. Sign reversals are not currently considered null-compatible; extending N (S) to include them is a natural direction for future work. 31 Table 11: False positive rate at τ = 0 .3 (200 replicates). Confounding overshoot makes dispersion-based rules unreliable; MSP thresholds are substantially more precise. Rule FPR at τ = 0 .3
+
+share_sig_any > 0.5 1.000 
+
+share_sig_pos > 0.2 0.935 
+
+share_null_compat < 0.2 0.895 
+
+share_sig_any > 0.9 0.860 
+
+MSP ≥ 1 (finite) 0.185 
+
+MSP ≥ 2 0.010 
+
+share_sig_pos > 0.5 0.000 (zero power) 
+
+SCA joint test. The SCA joint test [28] permutes treatment labels and asks whether the observed specification curve is extreme relative to the null distribution, a valid test of the joint null hypothesis that all specifications are consistent with no effect. We implement two variants using P = 300 permutations per replicate ( 80 replicates per τ ): SCA-pos (share of configs with ˆτ > 0) and SCA-median (median ˆτ ). Both observed and permuted statistics use point estimates, ensuring valid permutation p-values. Table 12: SCA joint test rejection rates ( α = 0 .05 ) and MSP summary ( 80 replicates per τ ,
+
+P = 300 permutations). The SCA test asks “is the curve inconsistent with the null?”; MSP asks “how far to the nearest configuration in N (S)?” 
+
+τ P (MSP = ∞) med(MSP | finite) SCA-pos reject SCA-med reject 0.0 0.075 0 0.000 0.000 0.3 0.738 1 0.000 0.000 0.7 0.037 1 0.000 0.025 1.5 0.100 2 0.000 1.000 
+
+The two approaches answer different questions and are therefore complementary rather than competing. In our implementation, the SCA procedure is a permutation-based joint test on point-estimate summaries of the specification curve: it asks whether the curve looks globally extreme relative to a permutation reference. MSP is not a test but a metric. Its value lies in the additional structure it provides: how close the result is to being overturned and the configuration that achieves MSP. Table 12 shows that the SCA summaries are much coarser in this design. SCA-pos never rejects. SCA-median rejects only in the strongest regime ( τ = 1 .5) and only rarely at τ = 0 .7 (2.5%). By contrast, MSP separates all four regimes and identifies the nearest admissible falsification. 
+
+Bootstrap sensitivity check. MSP is computed from CIs, so its values depend on the number of bootstrap resamples B. We verify stability by rerunning the comparison exper-iment with B = 300 (versus B = 100 in the main analysis), using identical seeds, sample sizes, and replicate counts. 32 0.0 0.2 0.4 0.6 0.8 1.0 
+
+False Positive Rate 
+
+(τ ∈ {0.0, 0.3} declared as 'robust')      
+
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> True Positive Rate
+> (τ ∈ {0.7, 1.5} declared as 'robust')
+> ROC: MSP vs specification-curve summaries
+> Task: classify 'robustly present effect' (τ≥0.7) vs 'null/weak/misleading' (τ≤0.3)
+> Random
+> MSP (AUC=0.941)
+> share_sig_pos (AUC=0.889)
+> share_sig_any (↑ inflated at τ=0.3) (AUC=0.236)
+> share_null_compat (AUC=0.236)
+> dispersion (sanity check) (AUC=0.515)
+
+Figure 2: ROC curves for MSP and threshold-based baseline summaries in the binary deci-sion task. MSP dominates the alternatives, while share_significant_any is anti-informative because the overshoot regime at τ = 0 .3 produces many significant specifications in the wrong direction. The qualitative pattern is identical across both settings (Table 13). P (MSP = ∞) differs by at most 0.025 in absolute terms. Median finite MSP is unchanged in all four regimes. Dispersion is unaffected by B by construction. These comparisons confirm that the main findings are not an artefact of bootstrap granularity. All results in the paper use percentile bootstrap intervals, held fixed across specifications to isolate the geometry of the specification space rather than differences in interval construction. We therefore do not claim CI-method invariance. Instead, Table 13 shows that the main patterns are stable to materially finer bootstrap granularity. 
+
+MSP– α sensitivity curve. The set of specifications whose CIs contain zero depends on the confidence level 1 − α:
+
+Fα = {s ∈ S : 0 ∈ CI 1−α(ˆ τ (s)) }, MSP( α) = min 
+
+> s∈Fα
+
+∥s∥0.
+
+33 Table 13: Bootstrap sensitivity: P (MSP = ∞) and median MSP (finite) at B = 100 versus 
+
+B = 300 . Dispersion is identical by construction (it does not involve CIs). 
+
+P (MSP = ∞) median MSP (finite) 
+
+τ B = 100 B = 300 B = 100 B = 300 
+
+0.0 0.085 0.060 0 00.3 0.815 0.810 1 10.7 0.025 0.010 1 11.5 0.080 0.090 2 2Because a smaller α yields a wider interval, α1 < α 2 implies Fα1 ⊇ Fα2 , so MSP( α) is weakly non-decreasing in α. The curve summarises how falsification complexity changes with inference strictness: a flat curve indicates structural fragility or structural robustness (depending on the level), while a steep curve indicates statistical fragility, robustness that is sensitive to CI width rather than specification geometry. We compute the MSP– α curve on the LaLonde NSW–CPS illustration by bootstrapping once ( B = 200 ) and re-thresholding the stored per-configuration bootstrap distributions at each α in a grid. No re-bootstrapping is needed. Table 14: MSP– α sensitivity curve on the LaLonde NSW–CPS illustration ( K = 5 , 32 con-figurations, B = 200 ). The 32-configuration count arises from adding an outcome-scale axis (raw vs. log earnings) to the K = 4 main-text space; the main-text LaLonde illustration (Section 4.1) uses the raw-earnings K = 4 subset (16 configurations). 
+
+α 1 − α MSP( α) configs with CI containing zero 0.005 0.995 1 17 0.01 0.99 1 16 0.02 0.98 1 14 0.05 0.95 1 10 0.10 0.90 1 10 0.15 0.85 2 70.20 0.80 2 60.30 0.70 2 60.40 0.60 2 60.50 0.50 2 6Table 14 shows that the curve is flat at MSP = 1 for α ≤ 0.10 and rises to 2 at α ≥ 0.15 ,where it remains stable through α = 0 .50 . This indicates that fragility in this illustration is primarily structural: the specification space contains a nearby configuration in N (S)
+
+regardless of inference strictness. The transition at α ≈ 0.15 reflects the point at which the single-axis configuration loses the property that its CI contains zero under narrower intervals, pushing MSP upward by one step. Two interpretive caveats apply. First, the MSP– α curve is not a significance curve or a 34 p-value function; it traces combinatorial robustness across inference levels. Second, because the LaLonde specification space mixes raw and log outcome scales, the curve should ideally be computed within a fixed estimand scale (as recommended in the main text). The values above use the full pooled grid for illustration. 
+
+Variable-width greedy lower-bound pass rates (Propositions 4 and 5). For each replicate in the empirical illustrations and the K = 10 synthetic experiment, we run the greedy prefix of Proposition 4 on the effective shifts ek = ∆ ck − δk, then check whether the resulting configuration satisfies the lower-bound condition ˆτ (sg) ≥ − c(sg). A pass means greedy gives the exact MSP (Proposition 4); a fail means the greedy candidate is infeasible and branch-and-bound is invoked to recover the exact solution. Table 15: Variable-width greedy lower-bound pass rate. In additive regimes greedy is exact in every replicate; in the interaction-heavy regime branch-and-bound recovers MSP in all failing cases. setting replicates greedy exact B&B exact mean ρ
+
+LaLonde NSW–CPS (obs., raw scale, K = 4 ) 1 1.000 — 1.641 Card–Krueger DiD ( K = 4 ) 1 1.000 — 0.038 ML pipeline (UCI Adult, K = 4 ) 1 1.000 — 1.317 sim. additive + constant width ( K = 10 ) 80 1.000 1.000 0.782 sim. additive + variable width ( K = 10 ) 80 1.000 1.000 0.817 sim. interaction + variable width ( K = 10 ) 80 0.725 1.000 0.830 Table 15 is consistent with the theory. Greedy is exact in every empirical example: LaLonde ( ρ = 1 .641 , outside Proposition 5’s sufficient condition but lower-bound check passes), Card–Krueger ( ρ = 0 .038 , well within the automatic-feasibility regime), and the ML pipeline ( ρ = 1 .317 , lower-bound passes). This illustrates that Proposition 5 is a sufficient 
+
+condition for automatic feasibility; greedy can remain exact outside it, as the lower-bound check in Proposition 4 directly verifies. In the K = 10 simulations, greedy is exact in every additive replicate regardless of whether CI widths are constant or variable. In the interaction-heavy regime, 27.5% of replicates fail; in every such case branch-and-bound recovers the exact MSP, confirming that the post-hoc lower-bound check cleanly separates the safe cases from those requiring search. 
+
+Practical guidance. In applications, the specification space should be auditable rather than opportunistic. When possible, axes should be prespecified and tied to ordinary ana-lyst degrees of freedom that are substantively defensible ex ante, such as estimator class, covariate adjustment, functional form, overlap handling, or outcome transformation. We recommend specification spaces that keep the estimand fixed across axes and make each axis correspond to one defensible analytic move. When outcome scale or encoding choices change the estimand or distort Hamming distance, results should be faceted or the space should be redesigned rather than folded into a single MSP summary. The space should exclude clearly dominated axes and axes introduced post hoc to inflate or depress MSP. A practical 35 standard is to report the rationale and admissible levels for each axis, ideally in an appendix or pre-analysis plan. In practice, weights should be treated as a reporting device rather than as a hidden tuning knob. Reasonable choices include expert elicitation about which analyst moves are substantively larger, analyst-time or implementation-cost proxies, or simple consensus con-ventions agreed in advance within a research team. We therefore recommend reporting unweighted MSP together with one or more transparently justified weighted versions, plus a short sensitivity check over plausible weight ranges when weights are contestable. 
+
+Reproducibility, assets, and impacts. The anonymized repository linked in the submis-sion contains the experiment scripts, pinned Python requirements, generated CSV outputs, and build instructions. The main entry point is experiment/run_paper_experiments.py ;by default it uses paper-specific seeds, one worker, and fixed BLAS/OpenMP thread counts for deterministic execution within the pinned environment. All experiments were run on an Apple M2 (8-core CPU, 16 GB unified memory) with no GPU acceleration. The com-plete pipeline—LaLonde illustrations, permutation calibration ( P = 200 ), and all simulation blocks (up to 200 replicates per τ )—finishes in under one hour wall-clock time. Smoke-test modes (reduced replicates and permutations) are available for quick dependency checks. The empirical illustrations use public benchmark data: LaLonde/NSW earnings data as distributed through standard public sources, the Card–Krueger minimum-wage data, and the UCI Adult dataset accessed through OpenML/scikit-learn. We cite the original data sources in the paper and include scripts that document how each dataset is obtained or parsed. No new human-subjects data, scraped dataset, or model artifact is released. 
+
+Broader impacts. MSP is a methodological tool for empirical causal inference. Its pri-mary societal benefit is improving the transparency and auditability of causal claims in policy-relevant research: by reporting the minimum number of coordinated analyst-decision changes needed to overturn a conclusion, researchers and readers can assess whether a result rests on genuine robustness or on an unexplored region of the specification space. This is especially relevant in high-stakes domains such as economics, medicine, and public policy, where the same dataset is often analyzed under different defensible choices and conclusions can be contested. A potential negative use is selective reporting: an analyst could construct a narrow spec-ification space designed to maximize MSP, creating the appearance of robustness without genuine insensitivity. To guard against this, MSP should be reported alongside a transparent, prespecified description of the axes and their justification. Another risk is over-interpreting large MSP values in observational settings as causal certificates; the paper is explicit that permutation calibration is only valid under sharp-null randomization. Responsible use re-quires acknowledging both the conditional nature of the metric and the limits of the declared specification space. 36

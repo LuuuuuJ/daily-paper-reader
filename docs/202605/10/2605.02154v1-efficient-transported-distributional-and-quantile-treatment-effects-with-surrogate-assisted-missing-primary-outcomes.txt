@@ -1,0 +1,2121 @@
+Title: Efficient Transported Distributional and Quantile Treatment Effects with Surrogate-Assisted Missing Primary Outcomes
+
+URL Source: https://arxiv.org/pdf/2605.02154v1
+
+Published Time: Tue, 05 May 2026 01:32:16 GMT
+
+Number of Pages: 41
+
+Markdown Content:
+# Efficient Transported Distributional and Quantile Treatment Effects with Surrogate-Assisted Missing Primary Outcomes 
+
+Pengyun Wang Data Science Institute, The University of Chicago 
+
+Working manuscript. Comments welcome. This version: May 5, 2026 
+
+Abstract 
+
+We study target-population distributional and quantile treatment effects when a source study observes treatment and post-treatment surrogates for all source units but observes a long-run primary outcome only for a validation subset, while the target population contributes only baseline covariates. The target estimands are transported counterfactual distribution functions 
+
+ψa(y) = P (Y a ≤ y | R = 0) , their quantiles qa(τ ), and the quantile treatment effect ∆( τ ) = 
+
+q1(τ ) − q0(τ ). The surrogate is not treated as a replacement endpoint and no Prentice-type surrogacy condition is imposed. Instead, the surrogate is used only to improve efficiency under missing-at-random primary-outcome sampling. We derive the nonparametric efficient influence function, which has three orthogonal components corresponding to target covariate sampling, the source surrogate process, and missing primary outcomes. This yields a closed-form cross-fitted one-step estimator after nuisance estimation. We establish identification, the canonical gradient, exact drift identities, ratio-level robustness, pointwise and uniform asymptotic linearity for transported CDFs, Bahadur representations for quantiles under explicit local inverse-map conditions, high-level multiplier-bootstrap simultaneous bands under explicit estimated-process and density conditions, and quantile-specific efficiency gains from observing surrogates. We also give lower-level nuisance-rate verification for a deliberately restricted class of analyzable bounded finite-dimensional or finite-rank implementations based on sieve ridge regression, ridge logistic regression, calibrated density-ratio estimation, finite-rank kernel ridge regression, and isotonic projection under explicit grid, eigenvalue, source, and entropy conditions. 
+
+Keywords: causal inference; transportability; surrogate outcomes; missing data; distributional treatment effects; quantile treatment effects; efficient influence functions; doubly robust estimation; kernel ridge regression; entropy balancing. 
+
+# 1 Introduction 
+
+Long-run primary outcomes are often expensive, delayed, or observable only after linkage to admin-istrative records, whereas short-run surrogate outcomes can be measured broadly. In a job-training study, for instance, treatment assignment, baseline covariates, program participation, and short-run earnings may be available for all source-study participants, while long-run earnings are observed only for a validation subset. Separately, a policymaker may have a large target-population covariate sample and wish to know how deploying the intervention would affect the long-run outcome dis-tribution in that target population. Average treatment effects may be insufficient: an intervention can improve the lower tail while leaving the median or upper tail nearly unchanged. 1
+
+> arXiv:2605.02154v1 [stat.ME] 4 May 2026
+
+We consider independent observations 
+
+O = ( R, X, R (A, S, M, M Y )) ,
+
+where R = 1 indexes a source study and R = 0 indexes the target covariate sample. In the source, 
+
+A ∈ { 0, 1} is treatment, S is a post-treatment surrogate observed for all source units, Y is the long-run primary outcome, and M indicates whether Y is observed. In the target, only X is observed. The target quantities are 
+
+ψa(y) = P (Y a ≤ y | R = 0) , qa(τ ) = inf {y : ψa(y) ≥ τ }, ∆( τ ) = q1(τ ) − q0(τ ).
+
+This paper has four theoretical contributions. First, we identify the transported treatment-specific CDF by combining conditional transportability of the treatment-specific surrogate-primary-outcome process with missing-at-random validation sampling of the primary outcome. Second, we derive the canonical gradient of this observed-data functional. The gradient has three orthogonal residual components: a target-covariate component, a source-surrogate-process component, and a primary-outcome-validation component. Third, the resulting one-step estimator satisfies an exact drift identity, yielding ratio-level robustness and product-rate conditions for nuisance estimation. Fourth, we show how the distributional theory induces pointwise and uniform quantile inference and a quantile-specific efficiency-gain formula for observing surrogates. The surrogate is used as auxiliary information; it is not treated as a replacement endpoint and no Prentice-type surrogacy condition is imposed. The main practical object is the closed-form one-step estimator in Definition 4.3. Given nuisance estimates, it is only a sample average. A finite-grid monotone projection and quantile inversion com-plete the procedure. The proposed implementation is deliberately analyzable: the theory verifies a specific class of bounded finite-dimensional or finite-rank nuisance learners, including finite-rank kernel ridge or ridge-linear regressions, ridge logistic regressions, calibrated density-ratio estima-tors such as entropy balancing under an exponential-tilt model, and isotonic projection. These subproblems are normal-equation based or convex, but the lower-level verification is not a claim about arbitrary flexible convex learners. The paper is organized as follows. Section 2 reviews the related literature. Section 3 fixes notation, the observed-data structure, and the estimands. Section 4 gives identification, efficient influence functions, one-step estimation, uniform inference, low-level nuisance verification, and efficiency-gain results. Section 5 outlines simulation designs. Proofs are collected in the Appendix. 
+
+# 2 Related Literature 
+
+Surrogates, validation samples, and long-run outcomes. Classical surrogate-endpoint work asks when short-run variables can replace the primary outcome, often through conditions such as statistical surrogacy, principal surrogacy, or candidate-principal-surrogate criteria (Prentice, 1989; Buyse and Molenberghs, 1998; Frangakis and Rubin, 2002; Gilbert and Hudgens, 2008; Vander-Weele, 2013). Modern long-term causal inference also uses surrogate or proxy information to connect short-run experiments with long-run outcomes (Athey et al., 2025; Chen and Ritzwoller, 2023; Imbens et al., 2025). In contrast, our estimand remains the long-run primary outcome distri-bution. The surrogate is not an endpoint replacement and is not required to mediate the treatment effect. Our closest precursor is Kallus and Mao (2025), who study semiparametric efficiency for average treatment effects with limited primary outcomes and abundant surrogates. We extend this line from first moments to transported counterfactual CDFs and quantiles, and we characterize quantile-specific efficiency gains. 2Quantile, distributional, and missing-data causal inference. Classical quantile regression and distributional treatment-effect analysis provide the statistical background for QTE inference (Koenker and Bassett, 1978; Abadie et al., 2002; Chernozhukov and Hansen, 2005; Chernozhukov et al., 2010, 2013). Efficient quantile treatment effect estimation under unconfoundedness was de-veloped by Firpo (2007); extensions include unconditional QTE under endogeneity (Frölich and Melly, 2013), efficient quantile estimation in missing-data models (Díaz, 2017), and localized debi-ased machine learning for QTEs and related estimands (Kallus et al., 2024). Distributional causal inference beyond means is also closely related to semiparametric counterfactual density estimation (Kennedy et al., 2023). Our paper uses a full-CDF and growing-grid route rather than the LDML localization route: the contribution is not localization, but the canonical-gradient and inference theory for a two-population surrogate-assisted validation-outcome model. 
+
+Semi-supervised inference and data fusion. Semi-supervised inference has developed effi-ciency gains from unlabeled covariate samples in regression and causal-effect problems (Chakrabortty and Cai, 2018; Chakrabortty and Dai, 2024; Chakrabortty et al., 2022). Data-fusion methods for QTEs combine validation and auxiliary data under different missingness or confounding structures (Zhang and Zhu, 2025). These works are important neighboring problems, but our target sam-ple is a target population covariate sample rather than merely a larger unlabeled sample from the same population, and our source sample contains post-treatment surrogates and validation-sampled primary outcomes. The target is the transported distribution P (Y a ≤ y | R = 0) , not a source-population QTE. 
+
+Transportability and target-population inference. Generalizability and transportability methods adjust for differences between the study population and a target population, mostly for average or other first-moment causal measures (Cole and Stuart, 2010; Dahabreh et al., 2019; Tao and Fu, 2019; Lee et al., 2022; Boughdiri et al., 2025). The weighting ideas used in this literature are closely connected to propensity-score and semiparametric efficiency results for treatment-effect estimation (Rosenbaum and Rubin, 1983; Hahn, 1998; Hirano et al., 2003). Our work is different in two respects. First, the target is a counterfactual distribution and its quantile function, so infer-ence must pass through an inverse-CDF map. Second, source outcomes are not fully observed and post-treatment surrogates enter the efficiency calculation. The density-ratio and target-covariate component in our canonical gradient are therefore coupled with surrogate and validation-outcome residuals. 
+
+Semiparametric efficiency and orthogonal estimation. The technical tools build on semi-parametric efficiency theory for missing and coarsened data (Robins et al., 1994; Robins and Rot-nitzky, 1995; Newey, 1994; Bang and Robins, 2005; van der Laan and Robins, 2003; Tsiatis, 2006), double/debiased machine learning and cross-fitting (Belloni et al., 2017; Chernozhukov et al., 2018), and empirical-process theory for both Donsker and high-dimensional suprema (van der Vaart and Wellner, 1996; Chernozhukov et al., 2014). Our exact drift identity is the analogue of an orthog-onality calculation for the transported CDF functional; it gives product-rate sufficient conditions for nuisance learning and explains the ratio-level robustness of the estimator. 33 Notation, Observed Data, and Estimands 
+
+All random variables are defined on a common probability space. The observed-data law is P and expectation under P is E. For r ∈ { 0, 1}, let 
+
+πr = P (R = r), Er{h(X)} = E{h(X) | R = r},
+
+let Pr denote the conditional law given R = r, and let PX,r denote the law of X conditional on 
+
+R = r. For any integrable function f , write Prf = E(f | R = r) and P f = Ef . For source conditional expectations, all conditioning events are implicitly intersected with R = 1 unless R is explicitly displayed. For a sample O1, . . . , O n, write nr = ∑ni=1 1(Ri = r) and define 
+
+Pn,r f = 1
+
+nr
+
+> ∑
+> i:Ri=r
+
+f (Oi), r = 0 , 1.
+
+The unconditional empirical mean is Pnf = n−1 ∑ni=1 f (Oi). Norms ∥f ∥Q, 2 are L2(Q) norms. We write ∥h∥1a, 2 for the L2 norm under the law of (X, S ) conditional on (R = 1 , A = a).
+
+Definition 3.1 (Observed data) . The observed sigma-field is generated by 
+
+O = ( R, X, R (A, S, M, M Y )) ,
+
+where R ∈ { 0, 1}, X ∈ X , A ∈ { 0, 1}, S ∈ S , M ∈ { 0, 1}, and Y ∈ R. Equivalently, when R = 0 
+
+only X is observed; when R = 1 , A, S, M are observed and Y is observed if and only if M = 1 .Symbols A, S, M, Y may be assigned arbitrary placeholder values when they are unobserved; all formulas multiply them by the relevant observation indicators and hence depend only on the observed sigma-field. 
+
+Definition 3.2 (Potential outcomes and target estimands) . Following the potential-outcomes con-vention for defining causal effects as comparisons across interventions on the same units (Rubin, 1978, 2005), for a ∈ { 0, 1}, let (Sa, Y a) be the potential surrogate and primary outcome under treatment a. The target counterfactual distribution function, target counterfactual quantile, and target QTE are 
+
+ψa(y) = P (Y a ≤ y | R = 0) , qa(τ ) = inf {y : ψa(y) ≥ τ }, ∆( τ ) = q1(τ ) − q0(τ ).
+
+The distributional treatment effect is ψ1(y) − ψ0(y).
+
+Definition 3.3 (Nuisance functions) . For a ∈ { 0, 1} and y ∈ R, define 
+
+ma(y, x, s ) = P (Y ≤ y | R = 1 , A = a, X = x, S = s, M = 1) ,ga(y, x ) = E{ma(y, X, S ) | R = 1 , A = a, X = x},ea(x) = P (A = a | R = 1 , X = x),ρa(x, s ) = P (M = 1 | R = 1 , A = a, X = x, S = s).
+
+If PX, 0 ≪ PX, 1, define 
+
+ω(x) = dP X, 0
+
+dP X, 1
+
+(x).
+
+Let Zy = 1(Y ≤ y). The nuisance collection is η = ( m, g, e, ρ, ω ).
+
+44 Theory: Identification, Efficiency, and Inference 
+
+The theory proceeds in four steps. First, the causal and sampling assumptions reduce the target counterfactual CDF to a regression functional of the observed-data law. Second, the canonical gradient of this functional is derived under the observed-data model. Third, the same gradient motivates a cross-fitted one-step estimator and gives the asymptotic expansion needed for CDF and quantile inference. Fourth, the high-level nuisance conditions are connected to specific bounded convex or finite-rank implementations, and the role of observing the surrogate is quantified through an efficiency comparison. 
+
+4.1 Identification Assumptions 
+
+The first issue is identification of ψa(y) from the two-sample observed-data law. The assumptions below separate the required restrictions by their roles. Assumption 4.1 links the source factual data to potential outcomes. Assumption 4.2 justifies using the validation subset to learn the conditional law of Y given (X, S, A ). Assumption 4.3 moves the treatment-specific law of (Sa, Y a) from the source population to the target population conditional on X. Assumption 4.4 ensures that all conditional regressions and reweighting operations appearing later are well defined. 
+
+Assumption 4.1 (Consistency and source exchangeability) . For source units, S = SA and Y =
+
+Y A. For each a ∈ { 0, 1},
+
+(Sa, Y a) ⊥ A | X, R = 1 .
+
+This condition is automatic in a randomized source trial, possibly after conditioning on design strata included in X.
+
+Assumption 4.1 is only a source-study condition. It does not require the source and target covariate distributions to be the same, and it does not impose any surrogate-endpoint condition. Its role is to let the treatment-specific source arm with A = a stand in for the corresponding potential-outcome law among source units with the same X, using the same conditional-exchangeability logic underlying propensity-score adjustment (Rosenbaum and Rubin, 1983). 
+
+Assumption 4.2 (Primary-outcome missing at random) . For each a ∈ { 0, 1}, in the source factual arm, 
+
+M ⊥ Y a | R = 1 , A = a, X, S a.
+
+Equivalently, by consistency, the conditional law of the factual primary outcome Y among source units with A = a does not depend on M after conditioning on (X, S ):
+
+Y ⊥ M | R = 1 , A = a, X, S. 
+
+Thus primary-outcome labeling may depend on treatment, baseline covariates, and the post-treatment surrogate, but not on the unobserved primary outcome after conditioning on these variables. 
+
+Given Assumption 4.1, the remaining source-study complication is that Y is only observed when 
+
+M = 1 . Assumption 4.2 states that, after conditioning on (X, S ) within the factual arm A = a,the validation subset has the same conditional primary-outcome law as the full source arm. This is why the regression ma(y, x, s ) in Definition 3.3 is defined using M = 1 but can still represent the full source-arm conditional distribution. 
+
+Assumption 4.3 (Conditional transportability) . For each a ∈ { 0, 1},
+
+(Sa, Y a) | X, R = 0 d
+
+= ( Sa, Y a) | X, R = 1 .
+
+5Assumption 4.3 is the bridge from the source study to the target population. It allows PX, 0
+
+and PX, 1 to differ; that difference is handled by the density ratio ω. The restriction is instead on the conditional treatment-specific law given X, which is the object transported across populations. 
+
+Assumption 4.4 (Positivity and boundedness) . There exists ϵ > 0 such that π0, π 1 ≥ ϵ, PX, 0 ≪
+
+PX, 1, ω(X) ≤ ϵ−1 PX, 1-almost surely, 
+
+ea(X) ≥ ϵ P (· | R = 1) -almost surely ,
+
+and 
+
+ρa(X, S ) ≥ ϵ P (· | R = 1 , A = a)-almost surely .
+
+The conditional distribution functions ma and ga take values in [0 , 1] .
+
+With these conditions in place, the target CDF can be expressed without unobserved potential outcomes. The proof follows a single conditioning chain: start from the target law of X, invoke conditional transportability, use source exchangeability to condition on A = a, use missing-at-random sampling to replace the unobserved primary-outcome law by the validated regression ma,and finally integrate out S to obtain ga.
+
+Proposition 4.1 (Identification) . Under Assumptions 4.1–4.4, for each a ∈ { 0, 1} and y ∈ R,
+
+ψa(y) = E0{ga(y, X )}.
+
+Equivalently, 
+
+ψa(y) = E 
+
+> {
+
+1(R = 0) 
+
+π0
+
+ga(y, X )
+
+> }
+
+= E1{ω(X)ga(y, X )}.
+
+Proposition 4.1 is the point at which the causal problem becomes an observed-data functional. The representation E0{ga(y, X )} emphasizes that the final averaging is over the target covariate distribution, while the equivalent representation E1{ω(X)ga(y, X )} shows how the same quantity can be written as a source-population weighted expectation. The next subsection studies the efficient influence function for this identified functional. 
+
+4.2 Efficient Influence Functions and Drift Identities 
+
+The efficient influence function is written in a form that mirrors the three pieces of information used for identification: target covariates, source surrogates, and validated primary outcomes. This decomposition is also useful for estimation because each residual term will later become a correction term in the one-step estimator. 
+
+Definition 4.1 (Efficient influence function candidate) . For fixed a ∈ { 0, 1} and y ∈ R, define 
+
+ϕya(O) = 1(R = 0) 
+
+π0
+
+{ga(y, X ) − ψa(y)}
+
++ 1(R = 1) ω(X)1(A = a)
+
+π1ea(X) {ma(y, X, S ) − ga(y, X )}
+
++ 1(R = 1) ω(X)1(A = a)Mπ1ea(X)ρa(X, S ) {Zy − ma(y, X, S )}. (1) 6The first line of ϕya is the fluctuation from sampling target covariates. The second line is the source surrogate-process residual ma − ga after reweighting the source arm to the target covariate law. The third line is the validation-outcome residual Zy − ma among units with observed primary outcomes. Each line is centered with respect to the conditioning information of the corresponding data-generating component, which is why the decomposition is orthogonal in the nonparametric observed-data model. 
+
+Theorem 4.1 (Canonical gradient for the transported observed-data CDF) . Let 
+
+Ψya(P ) = EP {ga,P (y, X ) | R = 0 },
+
+where ga,P is the conditional surrogate-integrated regression induced by the observed-data law P in Definition 3.3. Under the nonparametric observed-data model induced by the factorization 
+
+p(o) = pR(0) pX|R(x | 0) , r = 0 ,p(o) = pR(1) pX|R(x | 1) pA|X,R (a | x, 1) pS|A,X,R (s | a, x, 1) 
+
+× pM |A,X,S,R (m | a, x, s, 1) {pY |M,A,X,S,R (y | 1, a, x, s, 1) }m, r = 1 ,
+
+and the positivity part of Assumption 4.4, the function ϕya in (1) is the canonical gradient of the observed-data functional Ψya(P ). Under Assumptions 4.1–4.4, Proposition 4.1 gives Ψya(P ) = ψa(y),so the same function is the efficient influence function for the causal transported CDF. Conse-quently, the semiparametric efficiency bound for estimating ψa(y) is 
+
+Va(y) = E{[ϕya(O)] 2}.
+
+The same canonical gradient and bound obtain in submodels in which ea or ρa is known by design. 
+
+Theorem 4.1 confirms that the candidate in Definition 4.1 is not merely an estimating equation but the canonical gradient. The calculation follows the standard pathwise-differentiability and tangent-space approach to semiparametric efficiency (Newey, 1994; Robins and Rotnitzky, 1995; Tsiatis, 2006). Thus any regular estimator of ψa(y) must have asymptotic variance at least Va(y),and a one-step estimator with this leading influence function is semiparametrically efficient at fixed y. The statement that the gradient is unchanged when ea or ρa is known reflects the same conditional centering: the displayed gradient is already orthogonal to the corresponding treatment and validation-sampling score directions. 
+
+Corollary 4.1 (Mean-outcome analogue and relation to surrogate ATE) . Define 
+
+μa = E0{μSa (X)}, μSa (x) = E{˜μa(X, S ) | R = 1 , A = a, X = x},
+
+where ˜μa(x, s ) = E(Y | R = 1 , A = a, X = x, S = s, M = 1) . Assume in addition that the displayed influence function below is square-integrable; equivalently, the target, surrogate-process, and validation-outcome residual terms below have finite second moments under the corresponding weighted laws. Under Assumptions 4.1–4.4 and this square-integrability condition, the efficient influence function for the transported mean μa in the present two-sample transport model is 
+
+ϕμa (O) = 1(R = 0) 
+
+π0
+
+{μSa (X) − μa} + 1(R = 1) ω(X)1(A = a)
+
+π1ea(X) {˜μa(X, S ) − μSa (X)}
+
++ 1(R = 1) ω(X)1(A = a)Mπ1ea(X)ρa(X, S ) {Y − ˜μa(X, S )}.
+
+7Thus the efficient influence function for the transported ATE μ1 − μ0 is ϕμ1 − ϕμ0 . If PX, 0 = PX, 1,then ω = 1 and the residual decomposition has the same baseline, surrogate-process, and validation-outcome structure as the surrogate-assisted ATE canonical gradient of Kallus and Mao (2025). It is not literally the same gradient unless the two-sample transport design is collapsed to the corresponding single-population observation model; under that additional collapse, with M identified with the primary-outcome labeling indicator, the displayed armwise gradient reduces exactly to the reference armwise surrogate-assisted ATE gradient. 
+
+Corollary 4.1 is a consistency check against the mean-outcome literature. Replacing Zy by Y
+
+preserves the same target, surrogate, and validation residual structure. The CDF theory, how-ever, is more than a pointwise mean result because quantile inference requires passing the whole distributional estimator through an inverse-CDF map. 
+
+Assumption 4.5 (Quantile regularity) . For each a ∈ { 0, 1}, ψa is continuously differentiable on an open neighborhood of {qa(τ ) : τ ∈ T } , where T ⊂ (0 , 1) is compact and the relevant quantiles lie away from boundary points of that neighborhood. Let fa(y) = ∂yψa(y). There exists cf > 0 such that 
+
+inf  
+
+> a∈{ 0,1}
+
+inf   
+
+> τ∈T
+
+fa(qa(τ )) ≥ cf .
+
+Assumption 4.5 supplies the local invertibility needed to convert CDF perturbations into quan-tile perturbations. The lower bound on fa(qa(τ )) rules out flat portions of the target CDF on the quantile region, so first-order errors in ψa translate stably into first-order errors in qa.
+
+Corollary 4.2 (Efficient influence functions for quantiles and QTEs) . Under Assumptions 4.1–4.5, the efficient influence function for qa(τ ) is 
+
+ϕqa,τ (O) = − ϕqa(τ ) 
+
+> a
+
+(O)
+
+fa(qa(τ )) .
+
+The efficient influence function for ∆( τ ) is 
+
+ϕ∆,τ (O) = − ϕq1(τ )1 (O)
+
+f1(q1(τ )) + ϕq0(τ )0 (O)
+
+f0(q0(τ )) .
+
+The corresponding efficiency bound is E{ϕ2∆,τ (O)}.
+
+The efficient influence function for the QTE is obtained by evaluating the arm-specific CDF influence functions at the arm-specific target quantiles and scaling by the corresponding target densities. This is why later QTE inference requires both a good CDF expansion and control of the local inverse map. The next step is to understand what happens when the nuisance functions in the CDF signal are replaced by estimates. 
+
+Definition 4.2 (Candidate signal and drift notation) . Let ¯η = ( ¯ m, ¯g, ¯e, ¯ρ, ¯ω) be a candidate nuisance collection satisfying the same positivity bounds as Assumption 4.4. Define 
+
+Ψya(¯ η) = E0{¯ga(y, X )}
+
++ E1 
+
+> [
+
+¯ω(X)1(A = a)¯ea(X) { ¯ma(y, X, S ) − ¯ga(y, X )}
+
+> ]
+
++ E1 
+
+> [
+
+¯ω(X)1(A = a)M
+
+¯ea(X)¯ ρa(X, S ) {Zy − ¯ma(y, X, S )}
+
+> ]
+
+.
+
+8Let 
+
+¯wa(x) = ¯ ω(x) ea(x)¯ea(x) , ¯ra(x, s ) = ρa(x, s )¯ρa(x, s ) ,
+
+and let Hah(x) = E{h(X, S ) | R = 1 , A = a, X = x}. The symbol ¯wa is a ratio-level weight and is deliberately not denoted by qa to avoid conflict with quantiles. 
+
+Definition 4.2 records the population version of the one-step signal evaluated at an arbitrary candidate nuisance collection. The quantities ¯wa and ¯ra collect the ratio-level errors in the source-to-target and validation weights. Writing the drift in terms of these ratios keeps the robustness statement tied to the actual weighted signal used by the estimator. 
+
+Proposition 4.2 (Exact drift identity and ratio-level robustness) . Under Assumptions 4.1–4.4, for any candidate ¯η in Definition 4.2, 
+
+Ψya(¯ η) − ψa(y) = E1 [{ω(X) − ¯wa(X)}{ ¯ga(y, X ) − ga(y, X )}]+ E1 [ ¯ wa(X)Ha {[1 − ¯ra(X, S )][ ¯ ma(y, X, S ) − ma(y, X, S )] } (X)] . (2) 
+
+Consequently, Ψya(¯ η) = ψa(y) if either ( ¯ ma, ¯ga) = ( ma, g a) or ( ¯ wa, ¯ra) = ( ω, 1) almost surely. If ¯wa
+
+is uniformly bounded, then for a constant C depending only on positivity bounds, 
+
+|Ψya(¯ η) − ψa(y)| ≤ C ∥ ¯wa − ω∥PX, 1,2 ∥¯ga(y, ·) − ga(y, ·)∥PX, 1,2
+
++ C ∥¯ra − 1∥1a, 2 ∥ ¯ma(y, ·, ·) − ma(y, ·, ·)∥1a, 2 .
+
+Proposition 4.2 is an exact identity rather than an asymptotic expansion. It shows that first-order bias disappears when the outcome regressions are correct or when the ratio-level weights are correct, and otherwise is controlled by products of nuisance errors. This identity is the source of the product-rate conditions imposed below and is the transported-CDF analogue of orthogonal estimating equations used in augmented inverse-probability, doubly robust, and debiased estimation (Robins et al., 1994; Bang and Robins, 2005; Chernozhukov et al., 2018). 
+
+4.3 Closed-Form One-Step Estimation 
+
+The estimator is the empirical analogue of the identified functional plus the two residual corrections appearing in the efficient influence function. Cross-fitting is used only to separate nuisance training from evaluation of the estimating signal; the final estimator is still a closed-form sample average once the nuisance functions have been fitted. 
+
+Definition 4.3 (Cross-fitted one-step CDF and quantile estimators) . Let I1, . . . , IK be a random partition of {1, . . . , n }, with fixed K. For each fold k, estimate η using observations outside Ik;denote the estimate by ̂ η(−k). For each observation i ∈ I k, write the fold-specific nuisance evaluation as ̂ ηi =̂ η(−k). Define the cross-fitted CDF estimator ̂
+
+ψa(y) = Pn, 0̂ ga,i (y, X i)+ Pn, 1 
+
+> [̂
+
+ωi(Xi)1(Ai = a)̂
+
+ea,i (Xi) {̂ ma,i (y, X i, S i) −̂ ga,i (y, X i)}
+
+> ]
+
++ Pn, 1 
+
+> [̂
+
+ωi(Xi)1(Ai = a)Mî
+
+ea,i (Xi)̂ ρa,i (Xi, S i) {1(Yi ≤ y) −̂ ma,i (y, X i, S i)}
+
+> ]
+
+. (3) 9For theory, let ̂ Fa be a nondecreasing version of ̂ ψa on a compact outcome interval Y satisfying the first-order conditions stated below; the raw estimator may be used if it is already nondecreasing. Define ̂
+
+qa(τ ) = inf {y ∈ Y :̂ Fa(y) ≥ τ },̂ ∆( τ ) = ̂ q1(τ ) −̂ q0(τ ).
+
+For computation, ̂ Fa may be obtained from the growing-grid and isotonic procedures in Definitions 4.4 and 4.6. A fixed grid is only a numerical summary unless its discretization error is negligible for the inferential scale under consideration. 
+
+The three lines in (3) correspond respectively to target covariate averaging, the source surrogate residual correction, and the validation-outcome residual correction. The monotone version ̂ Fa is introduced because quantile inversion requires a distribution function, while the first-order theory only requires that the monotonicity correction be asymptotically negligible at the relevant scale. 
+
+Definition 4.4 (Convex implementation) . A fully analyzable implementation uses the following nuisance learners. (i) ma(y, x, s ) is estimated among R = 1 , A = a, M = 1 units by ridge logistic regression for 
+
+1(Y ≤ y), or by finite-rank kernel ridge regression (KRR) followed by clipping to [0 , 1] .(ii) ga(y, x ) is estimated among R = 1, A = a units by regressing a cross-fitted version of ̂
+
+ma(y, X, S ) on X using ridge-linear regression or finite-rank KRR. (iii) ea(x) is known in a randomized trial; otherwise it is estimated among R = 1 units by ridge logistic regression. (iv) ρa(x, s ) is estimated among R = 1 , A = a units by ridge logistic regression for M .(v) ω(x) = dP X, 0/dP X, 1 is estimated either by a calibrated ridge logistic classifier or by entropy balancing. If a classifier estimates p0(x) = P (R = 0 | X = x) on the training sample for fold 
+
+k, the fold-specific density-ratio estimate is ̂
+
+ω(−k)(x) = ̂ p(−k)0 (x)1 −̂ p(−k)0 (x)̂
+
+π(−k)1̂
+
+π(−k)0
+
+,
+
+truncated to the positivity interval and normalized on the training source sample so that 
+
+P(−k) 
+
+> n, 1̂
+
+ω(−k) = 1 . This fold-specific normalization preserves cross-fitting independence. En-tropy balancing estimates source weights by 
+
+min 
+
+> wi≥0
+> ∑
+> i:Ri=1
+
+wi log wi subject to ∑
+
+> i:Ri=1
+
+wi = 1 , ∑
+
+> i:Ri=1
+
+wibX (Xi) = 1
+
+n0
+
+> ∑
+> i:Ri=0
+
+bX (Xi),
+
+and sets ̂ ω(−k)(Xi) = n(−k)1 wi on the training source sample, with an exponential-tilt interpo-lation for new x when needed; all balancing constraints are imposed using only the training observations for the relevant fold. (vi) On a growing grid Yn, monotonicity is enforced by isotonic projection 
+
+(̂Fa(y1,n ), . . . , ̂ Fa(yJn,n )) = arg min  
+
+> 0≤f1≤···≤ fJn ≤1
+> Jn∑
+> j=1
+
+{̂ ψa(yj,n ) − fj }2.
+
+10 Definition 4.4 gives one deliberately restricted implementation path. The high-level results below do not require these particular learners, but this list makes clear which nuisance-fitting procedures are later verified by low-level rate calculations. The calibrated density-ratio and entropy-balancing option is the transport-weight analogue of survey calibration, empirical likelihood, and covariate-balancing propensity-score ideas (Deville and Särndal, 1992; Qin and Lawless, 1994; Imai and Ratkovic, 2014). 
+
+Proposition 4.3 (Closed-form and convex structure) . Given nuisance estimates, (3) is a closed-form sample average. Under Definition 4.4, every nuisance subproblem is either a ridge/KRR normal-equation problem or a convex optimization problem; the CDF monotonicity correction is a convex projection computable by the pool-adjacent-violators algorithm; and quantile inversion over a grid is a deterministic search. No nonconvex optimization is required. 
+
+Proposition 4.3 separates the computational claim from the statistical claim. Statistical va-lidity still depends on whether the fitted nuisance functions make the drift and empirical-process perturbation small enough. The remaining results in this subsection state those requirements first at a fixed threshold and then uniformly over y.
+
+Definition 4.5 (Uniform signal classes) . For a nuisance collection η and fixed a, define the un-centered one-step signal indexed by y ∈ Y as 
+
+Γya(O; η) = 1(R = 0) 
+
+π0
+
+ga(y, X )+ 1(R = 1) ω(X)1(A = a)
+
+π1ea(X) {ma(y, X, S ) − ga(y, X )}
+
++ 1(R = 1) ω(X)1(A = a)Mπ1ea(X)ρa(X, S ) {1(Y ≤ y) − ma(y, X, S )}.
+
+Then E{Γya(O; η)} = ψa(y) and ϕya(O) = Γ ya(O; η) − ψa(y). Let ̂ Γya,k denote the same signal with fold-specific nuisance estimates trained outside fold k and with πr replaced by the population value; random-denominator corrections are handled separately by Lemma B.1. For later bootstrap nota-tion, define the cross-fitted plug-in centered CDF influence function by ̂
+
+ϕya(Oi) = ̂ Γya,k (i)(Oi) −̂ ψa(y),
+
+where k(i) is the fold containing observation i.
+
+The notation Γya packages the uncentered one-step signal so that ϕya is simply its centered oracle version. This is convenient for asymptotic analysis because the estimator can be decomposed into an oracle empirical process, a population drift, and a nuisance-estimation empirical-process remainder. 
+
+Assumption 4.6 (High-level nuisance rates for fixed y). For fixed (a, y ) and each fold, the nuisance estimates satisfy the positivity bounds in Assumption 4.4 with probability tending to one and 
+
+∥̂ ω e a/̂ ea − ω∥PX, 1,2 ∥̂ga(y, ·) − ga(y, ·)∥PX, 1,2
+
++ ∥ρa/̂ρa − 1∥1a, 2 ∥̂ma(y, ·, ·) − ma(y, ·, ·)∥1a, 2 = op(n−1/2), (4) 
+
+and the fold-specific one-step signal satisfies 
+
+> ∥∥∥̂
+
+Γya − Γya 
+
+> ∥∥∥P, 2
+
+= op(1) .
+
+11 Assumption 4.6 is the fixed-threshold version of the requirements suggested by Proposition 4.2. The product condition controls the population drift, while L2(P ) convergence of the fitted signal controls the cross-fitted empirical-process perturbation. 
+
+Theorem 4.2 (Asymptotic linearity and efficiency for fixed y). Under Assumptions 4.1–4.4 and 4.6, for fixed (a, y ),
+
+√n{̂ ψa(y) − ψa(y)} = 1
+
+√n
+
+> n∑
+> i=1
+
+ϕya(Oi) + op(1) .
+
+Consequently, √n{̂ ψa(y) − ψa(y)} ⇝ N {0, V a(y)},
+
+and ̂ ψa(y) attains the semiparametric efficiency bound in Theorem 4.1. 
+
+Theorem 4.2 gives the fixed-y CDF expansion with the efficient influence function from Theorem 4.1. To obtain quantile inference, the expansion must hold locally around the true quantile and the inverse-CDF operation must be stable, as in classical and semiparametric QTE arguments (Koenker and Bassett, 1978; Firpo, 2007). 
+
+Assumption 4.7 (Local inverse-map conditions for pointwise quantiles) . Fix τ ∈ T and let qa =
+
+qa(τ ). For each a ∈ { 0, 1},̂ Fa is nondecreasing on a neighborhood Na of qa,̂ qa(τ ) ∈ N a with probability tending to one, and 
+
+sup 
+
+> y∈N a
+
+|̂ Fa(y) − ψa(y)| = op(1) .
+
+Moreover, 
+
+sup 
+
+> y∈N a
+> ∣∣∣̂
+
+Fa(y) − ψa(y) − Pnϕya 
+
+> ∣∣∣
+
+= op(n−1/2).
+
+The function ψa is differentiable at qa with derivative fa(qa) > 0. In addition, the local empirical process is asymptotically equicontinuous at the true quantile: for every deterministic sequence δn ↓
+
+0,
+
+sup 
+
+> |y−qa|≤ δn, y ∈N a
+
+|Pn(ϕya − ϕqa 
+
+> a
+
+)| = op(n−1/2).
+
+A sufficient primitive condition for the last display is that {ϕya : y ∈ N a} is locally P -Donsker and 
+
+∥ϕya − ϕqa 
+
+> a
+
+∥P, 2 → 0 as y → qa.
+
+Assumption 4.7 states exactly what is needed for pointwise inversion. It combines local mono-tonicity of the estimated CDF, a local linear expansion of ̂ Fa, a positive derivative of ψa at the target quantile, and a local empirical-process continuity condition for ϕya.
+
+Corollary 4.3 (Pointwise Bahadur representation and QTE inference) . Under Assumptions 4.1– 4.4 and 4.7, for fixed τ ∈ T ,
+
+√n{̂ qa(τ ) − qa(τ )} = − 1
+
+√n
+
+> n∑
+> i=1
+
+ϕqa(τ ) 
+
+> a
+
+(Oi)
+
+fa(qa(τ )) + op(1) .
+
+If Assumption 4.7 holds for a = 0 , 1, then 
+
+√n{̂∆( τ ) − ∆( τ )} = 1
+
+√n
+
+> n∑
+> i=1
+
+ϕ∆,τ (Oi) + op(1) ,
+
+and hence √n{̂ ∆( τ ) − ∆( τ )} ⇝ N {0, σ 2∆(τ )}, σ2∆(τ ) = E{ϕ2∆,τ (O)}.
+
+12 Corollary 4.3 is a pointwise Bahadur representation. It is enough for a fixed quantile level, but not for simultaneous CDF or QTE bands. The next assumptions strengthen the fixed-y expansion to a uniform expansion on Y, in line with distributional-effect inference based on full counterfactual processes (Chernozhukov et al., 2013). 
+
+Assumption 4.8 (Uniform oracle process regularity) . Let Y ⊂ R be compact. For each a ∈ { 0, 1}:(i) The functions y 7 → ma(y, x, s ) and y 7 → ga(y, x ) are distribution functions for all (x, s ) and 
+
+x, respectively, and are uniformly continuous in y in L2:
+
+sup 
+
+> |u−v|≤ h
+
+∥ma(u) − ma(v)∥1a, 2 + sup 
+
+> |u−v|≤ h
+
+∥ga(u) − ga(v)∥PX, 1,2 → 0.
+
+(ii) The density ratio, treatment propensity, and labeling propensity are bounded as in Assumption 4.4. (iii) The oracle influence-function class Φa = {ϕya : y ∈ Y} is pointwise measurable and P -Donsker with a bounded envelope. Its covariance semimetric is continuous in y.A sufficient primitive condition for (iii) is that the nuisance paths in (i) are contained in bounded one-dimensional VC-subgraph or bounded-variation subgraph classes after multiplication by the bounded weights in (1) .
+
+Assumption 4.8 concerns the oracle influence-function class, before nuisance estimation. It is a regularity condition on the target process itself: the conditional CDF paths must vary continuously in y, and the resulting influence-function class must admit a functional central limit theorem on Y.
+
+Lemma 4.1 (Oracle CDF empirical process) . Under Assumption 4.8, 
+
+√n(Pn − P )ϕ· 
+
+> a
+
+⇝ Ga in ℓ∞(Y),
+
+where Ga is a tight mean-zero Gaussian process with covariance 
+
+Cov {Ga(y), Ga(y′)} = E{ϕya(O)ϕy′ 
+
+> a
+
+(O)}.
+
+Lemma 4.1 supplies the limiting Gaussian process that would be obtained if the nuisance func-tions were known. The role of the next assumption is to ensure that replacing the oracle signal by the cross-fitted estimated signal does not change this first-order process. 
+
+Assumption 4.9 (Uniform nuisance rates and realized-class entropy) . For each a and each fold, with probability tending to one, the estimated nuisance functions satisfy the same positivity and boundedness bounds as the true nuisance functions. Define 
+
+rw,a,n = ∥̂ω e a/̂ ea − ω∥PX, 1,2 ,rg,a,n = sup 
+
+> y∈Y
+
+∥̂ga(y, ·) − ga(y, ·)∥PX, 1,2 ,rρrat ,a,n = ∥ρa/̂ ρa − 1∥1a, 2 ,rm,a,n = sup 
+
+> y∈Y
+
+∥̂ma(y, ·, ·) − ma(y, ·, ·)∥1a, 2 .
+
+The rates obey 
+
+rw,a,n rg,a,n + rρrat ,a,n rm,a,n = op(n−1/2).
+
+13 Moreover, 
+
+sup 
+
+> y∈Y
+
+∥∥∥̂ Γya,k − Γya
+
+∥∥∥P, 2 = op(1) ,
+
+uniformly over folds k. Let ̂
+
+Ga,k = {̂Γya,k − Γya : y ∈ Y} .
+
+Conditional on the training folds, with probability tending to one, ̂ Ga,k is pointwise measurable and has a measurable envelope ̂ Ga,k satisfying ∥̂ Ga,k ∥∞ = Op(1) . There exist deterministic sequences 
+
+δa,n ↓ 0, Va,n ≥ 1, and Aa,n ≥ e such that, with probability tending to one, 
+
+sup  
+
+> f∈
+
+̂ Ga,k 
+
+∥f ∥P, 2 ≤ δa,n ,
+
+sup 
+
+> Q
+
+log N {ϵ∥̂ Ga,k ∥Q, 2,̂ Ga,k , L 2(Q)} ≤ Va,n log( Aa,n /ϵ ), 0 < ϵ ≤ 1,
+
+and 
+
+δa,n 
+
+√
+
+Va,n log( Aa,n /δ a,n ) + Va,n log( Aa,n /δ a,n )
+
+√n = o(1) .
+
+Finally, the fold-specific random-denominator classes also satisfy the entropy conditions of Lemma B.2. Specifically, with ̂
+
+Gy
+
+> 0,a,k
+
+(O) = ̂ ga,k (y, X ),
+
+and ̂
+
+Gy
+
+> 1,a,k
+
+(O) = ̂ ωk(X)1(A = a)̂
+
+ea,k (X) {̂ ma,k (y, X, S ) −̂ ga,k (y, X )}
+
++̂ ωk(X)1(A = a)M̂
+
+ea,k (X)̂ ρa,k (X, S ) {1(Y ≤ y) −̂ ma,k (y, X, S )},
+
+the classes {̂ Gy 
+
+> 0,a,k
+
+: y ∈ Y} and {̂ Gy 
+
+> 1,a,k
+
+: y ∈ Y} obey Lemma B.2 for r = 0 and r = 1 , respectively, with uniformly bounded envelopes. The same is required for the corresponding oracle denominator classes. This additional condition is only used to replace conditional empirical means Pn,r by unconditional empirical means with known πr uniformly in y. This condition contains the fixed-polynomial-entropy case as the special case Va,n = O(1) and Aa,n = O(1) , but it also allows finite-dimensional sieve classes whose entropy dimension grows slowly with n.
+
+Assumption 4.9 has three parts. The first is the uniform product-rate drift condition. The second requires the estimated one-step signal to approach the oracle signal uniformly in L2(P ).The third controls the entropy of the realized perturbation classes so that cross-fitting can turn 
+
+L2(P ) convergence into a uniform empirical-process remainder of order op(n−1/2).
+
+Lemma 4.2 (Cross-fitted small empirical process) . Let ̂ Gk be a fold-specific random function class independent of the evaluation fold conditional on the training folds. Suppose that, with probability tending to one, it is pointwise measurable, has envelope ̂ Gk with ∥̂Gk∥∞ = Op(1) , satisfies 
+
+sup  
+
+> f∈
+
+̂ Gk
+
+∥f ∥P, 2 ≤ δn,
+
+and 
+
+sup 
+
+> Q
+
+log N {ϵ∥̂ Gk∥Q, 2,̂ Gk, L 2(Q)} ≤ Vn log( An/ϵ ), 0 < ϵ ≤ 1,
+
+14 for deterministic sequences δn ↓ 0, Vn ≥ 1, An ≥ e satisfying 
+
+δn
+
+> √
+
+Vn log( An/δ n) + Vn log( An/δ n)
+
+√n = o(1) .
+
+Then 
+
+sup   
+
+> f∈̂Gk
+
+|(Pn,k − P )f | = op(n−1/2)
+
+for each fixed number of folds, where Pn,k = |I k|−1 ∑ 
+
+> i∈I k
+
+δOi denotes the empirical measure over the evaluation fold. The same conclusion holds for Pn after averaging over a fixed number of folds. 
+
+Lemma 4.2 is the empirical-process device that makes the preceding assumption operational. Conditional on the training folds, the nuisance estimates are fixed relative to the evaluation fold, so the size and entropy of the perturbation class determine whether the fitted-signal empirical process is negligible uniformly in y.
+
+Proposition 4.4 (Uniform asymptotic linearity of the CDF estimator) . Under Assumptions 4.1– 4.4, 4.8, and 4.9, 
+
+sup 
+
+> y∈Y
+> ∣∣∣̂
+
+ψa(y) − ψa(y) − Pnϕya 
+
+> ∣∣∣
+
+= op(n−1/2).
+
+Proposition 4.4 is the uniform analogue of Theorem 4.2. It states that, over the whole compact outcome interval Y, the estimated CDF behaves like the empirical mean of the oracle efficient influence function. 
+
+Theorem 4.3 (Uniform CDF inference) . If the conditions of Proposition 4.4 hold for a fixed arm 
+
+a, then √n{̂ψa − ψa} ⇝ Ga in ℓ∞(Y),
+
+where Ga is the Gaussian process in Lemma 4.1. If the same conditions hold jointly for a = 0 , 1,then, for the distributional treatment effect, 
+
+√n{(̂ ψ1 −̂ ψ0) − (ψ1 − ψ0)} ⇝ G1 − G0 in ℓ∞(Y),
+
+with the covariance induced by the joint influence functions (ϕy
+
+> 1
+
+, ϕ y′ 
+
+> 0
+
+).
+
+Theorem 4.3 converts the uniform linearization into weak convergence of the CDF process and the distributional treatment-effect process. Once this process convergence is available, quantile-process convergence follows by the same inverse-CDF argument used pointwise, but now uniformly over T .
+
+Corollary 4.4 (Uniform quantile and QTE inference) . Suppose the conditions of Theorem 4.3 hold for a = 0 , 1, Assumption 4.5 holds, and {qa(τ ) : τ ∈ T } ⊂ Y . Suppose ̂ Fa is a nondecreasing version of ̂ ψa satisfying 
+
+sup 
+
+> y∈Y
+
+|̂Fa(y) −̂ ψa(y)| = op(n−1/2).
+
+Then √n{̂ qa − qa} ⇝ − Ga(qa(·)) 
+
+fa(qa(·)) in ℓ∞(T ),
+
+and √n{̂∆ − ∆} ⇝ − G1(q1(·)) 
+
+f1(q1(·)) + G0(q0(·)) 
+
+f0(q0(·)) in ℓ∞(T ).
+
+For a growing-grid implementation, the same conclusion holds if the grid and projection conditions of Proposition 4.5 hold. 
+
+15 Corollary 4.4 is the main simultaneous-inference result for the QTE curve. Wald-type simulta-neous bands require an estimated version of the QTE influence function and, therefore, estimates of the local density factors appearing in Corollary 4.2. The next result states these requirements at a high level. 
+
+Corollary 4.5 (High-level multiplier bootstrap simultaneous bands) . Under the conditions of Corollary 4.4, suppose additionally that the following high-level estimated-process conditions hold. Define ̂
+
+ϕ∆,τ (Oi) = −̂ ϕ̂   
+
+> q1(τ)1
+
+(Oi)̂
+
+f1{̂q1(τ )} +̂ ϕ̂   
+
+> q0(τ)0
+
+(Oi)̂
+
+f0{̂q0(τ )} ,
+
+where ̂ ϕya is the plug-in centered CDF influence function in Definition 4.5. The estimated QTE influence-function class ̂
+
+Φ∆ = {̂ϕ∆,τ : τ ∈ T } 
+
+is pointwise measurable with probability tending to one and has a uniformly bounded envelope. Conditional on the data, ̂ Φ∆ satisfies a VC-type entropy bound of the form 
+
+sup 
+
+> Q
+
+log N {ϵ∥̂ G∆∥Q, 2,̂ Φ∆, L 2(Q)} ≤ V∆,n log( A∆,n /ϵ ), 0 < ϵ ≤ 1,
+
+for a measurable envelope ̂ G∆ with ∥̂G∆∥∞ = Op(1) and deterministic sequences obeying the cor-responding multiplier maximal-inequality requirement 
+
+sup  
+
+> τ∈T
+
+∥̂ϕ∆,τ − ϕ∆,τ ∥P, 2 = op(1) .
+
+Assume the estimated density factors satisfy inf a,τ ̂ fa{̂ qa(τ )} ≥ cf /2 with probability tending to one and 
+
+sup  
+
+> a,τ ∈T
+> ∣∣∣̂
+
+fa{̂qa(τ )} − fa{qa(τ )} 
+
+> ∣∣∣
+
+= op(1) .
+
+Let ξ1, . . . , ξ n be i.i.d. multipliers with mean zero, variance one, and finite exponential moment, independent of the data. Then, conditionally on the data, 
+
+Z∗
+
+> n
+
+(τ ) = 1
+
+√n
+
+> n∑
+> i=1
+
+ξi{̂ϕ∆,τ (Oi) − Pn̂ ϕ∆,τ }
+
+converges weakly in probability in ℓ∞(T ) to the limiting QTE Gaussian process in Corollary 4.4. If the distribution of the supremum norm of the limiting process is continuous at its (1 − α) quan-tile, bootstrap critical values give asymptotically valid simultaneous confidence bands for ∆( τ ) on 
+
+T . Alternatively, one may invert valid multiplier CDF bands; that route avoids explicit density estimation but targets bands constructed through the inverse-map operation rather than Wald-type QTE bands. 
+
+The multiplier-bootstrap statement deliberately separates process approximation from den-sity estimation. It gives valid simultaneous Wald-type QTE bands when the estimated influence-function class is close to the oracle class, using the same type of Gaussian and multiplier approxi-mation logic used for suprema of empirical processes (Chernozhukov et al., 2014). The alternative inversion of CDF bands avoids explicit density estimation but produces bands through the inverse-map operation rather than through a direct Wald expansion for ∆( τ ).16 Definition 4.6 (Growing-grid implementation) . Let Yn = {y1,n < · · · < y Jn,n } ⊂ Y be a deter-ministic grid with mesh 
+
+hn = sup 
+
+> y∈Y
+
+min 
+
+> 1≤j≤Jn
+
+|y − yj,n |.
+
+The raw grid estimator linearly interpolates ̂ ψa(yj,n ) between adjacent grid points. Quantile in-version is applied to a nondecreasing version ̂ Fa,n , obtained either because the raw interpolant is already nondecreasing or by isotonic projection on the grid followed by interpolation. For root-n
+
+quantile inference we require hn = o(n−1/2) or another condition implying that interpolation and discretization errors are o(n−1/2) on the relevant quantile region, and we require the monotonicity correction to be first-order negligible as stated in Proposition 4.5. 
+
+The preceding process statements are written for a continuum of outcome thresholds. In com-putation, the CDF is evaluated on a grid and then interpolated or projected. Definition 4.6 records the condition under which this numerical representation is fine enough for root-n quantile inference. 
+
+Proposition 4.5 (Grid approximation and isotonic projection) . Assume ψa is continuously dif-ferentiable on Y with derivative bounded above by Cf and bounded below by cf > 0 on the quantile region. Let ˜ψa,n be the linear interpolant of the unprojected grid values ̂ ψa(yj,n ). Suppose 
+
+max 
+
+> 1≤j≤Jn
+> ∣∣∣̂
+
+ψa(yj,n ) − ψa(yj,n ) − Pnϕyj,n  
+
+> a
+> ∣∣∣
+
+= op(n−1/2),
+
+sup 
+
+> |u−v|≤ hn
+
+|Pn(ϕua − ϕva)| = op(n−1/2), hn = o(n−1/2).
+
+Then 
+
+sup 
+
+> y∈Y
+> ∣∣∣ ˜
+
+ψa,n (y) − ψa(y) − Pnϕya 
+
+> ∣∣∣
+
+= op(n−1/2).
+
+Let ̂ Fa,n be a nondecreasing version of ˜ψa,n on the quantile region, for example the isotonic projection on the grid followed by interpolation, and suppose 
+
+sup 
+
+> y∈Y q
+
+|̂Fa,n (y) − ˜ψa,n (y)| = op(n−1/2)
+
+for a compact interval Yq ⊂ Y containing {qa(τ ) : τ ∈ T } in its interior. Then the generalized inverse of ̂ Fa,n satisfies the pointwise and uniform inverse-map limits in Corollary 4.3 and Corollary 4.4. On a fixed grid with strictly increasing true grid values, isotonic projection is asymptotically inactive. On a growing grid, the displayed projection-distance condition is required; the expansion of the raw interpolant alone does not imply monotonicity. In all cases, isotonic projection is a convex nonexpansive Euclidean projection and is a finite-sample stabilizer. 
+
+Proposition 4.5 explains why the grid and isotonic projection steps do not alter the leading asymptotic distribution when their approximation errors are below the root-n scale. This completes the high-level inference theory. The next subsection gives sufficient lower-level conditions for the nuisance-rate and entropy assumptions used above. 
+
+4.4 Lower-Level Nuisance-Rate Verification 
+
+The preceding results are stated in terms of high-level product rates and realized-class entropy. This subsection verifies those conditions for a restricted class of estimators whose behavior can be controlled directly. The point is not to cover all possible machine-learning algorithms, but to show 17 that the required rates are attainable under transparent approximation, dimension, and regular-ity conditions, paralleling nonparametric and series-estimation theory as well as high-dimensional orthogonal-estimation analyses (Stone, 1980, 1985; Newey, 1997; Belloni et al., 2017; Chernozhukov et al., 2018). 
+
+Definition 4.7 (Verified convex finite-dimensional nuisance learners) . Let bX,n : X → RdX,n and 
+
+bU,n : X ×S → RdU,n be bounded feature maps, with U = ( X, S ). A verified convex finite-dimensional implementation is one of the following specific implementations; the theorem below does not cover arbitrary flexible convex learners: (i) ma(y, x, s ) is estimated over R = 1 , A = a, M = 1 by ridge logistic regression for 1(Y ≤ y) or by ridge least squares/KRR in bU,n (x, s ) followed by clipping to [0 , 1] ;(ii) ga(y, x ) is estimated over R = 1 , A = a by ridge least squares/KRR in bX,n (x) using cross-fitted ̂ ma(y, X, S ) as the response; (iii) ea(x) is known by design or estimated by ridge logistic regression in bX,n (x);(iv) ρa(x, s ) is estimated by ridge logistic regression in bU,n (x, s );(v) ω(x) is estimated either by a ridge logistic source-target classifier in bX,n (x) or by entropy balancing over bX,n (x) under the exponential-tilt density-ratio model and regularity conditions stated in Assumption 4.10. When ga is fit with generated responses ̂ ma(y, X i, S i), nested cross-fitting means that the source training sample used for the second-stage ga regression is split into inner folds and each generated response is obtained from an ma estimator trained without observation i. Thus the second-stage regression noise is conditionally independent of the observation on which the generated response is evaluated. All empirical risks are normalized as sample averages and use ridge penalties λn∥θ∥22/2.
+
+Definition 4.7 fixes the class of finite-dimensional procedures to which the subsequent rate theorem applies. The generated-regressor step for ga is treated explicitly because ga is learned from estimates of ma rather than from directly observed responses. 
+
+Assumption 4.10 (Convex sieve regularity) . For the learners in Definition 4.7, assume: (i) ∥bX,n (X)∥2 ≤ C√dX,n and ∥bU,n (U )∥2 ≤ C√dU,n almost surely, and the corresponding popu-lation Gram or logistic Hessian matrices have eigenvalues bounded above and below by positive constants uniformly in n and y ∈ Y . Ridge penalties are strictly positive when needed for nu-merical uniqueness; if an empirical convex problem has multiple minimizers, any minimizer with the same fitted values on the relevant design span may be used. (ii) The population minimizers of the working risks are unique in the relevant fitted-function met-ric, and the empirical minimizers lie in the corresponding local neighborhoods with probability tending to one. (iii) The best sieve approximations to ma, ga, ea, ρa, and ω have L2 errors am,n , ag,n , ae,n , aρ,n ,and aω,n , respectively, uniformly over a and y ∈ Y where applicable. (iv) The coefficient vectors of the best approximations have Euclidean norms bounded by Bn, and 
+
+λnBn = o(rn) for the relevant rate rn below. (v) dX,n log n/n → 0, dU,n log n/n → 0, and the empirical Hessians are uniformly consistent on neighborhoods of the best approximating parameters. 
+
+18 (vi) For continuum Y, the maps y 7 → ma(y, ·) and y 7 → ga(y, ·) are uniformly Lipschitz in L2, and all y-indexed regressions are implemented on a grid with mesh hn and linear interpolation. For a fixed finite grid, set hn = 0 .(vii) If entropy balancing is used for ω, the true or pseudo-true density ratio lies in an exponential-tilt sieve ωθ,n (x) = c(θ) exp {θ⊤bX,n (x)} up to approximation error aω,n , the normalizing constant c(θ) is chosen so that E1ωθ,n (X) = 1 , the coefficient norm is bounded by Bn, and the population Jacobian of the calibration moments has eigenvalues bounded above and below by positive constants. The same bounded-feature and entropy-growth conditions used for the other finite-dimensional sieves apply to this class when it is evaluated at new x values. 
+
+Assumption 4.10 supplies the usual ingredients for finite-dimensional convex M-estimation: bounded features, stable population curvature, controlled approximation error, and manageable growth of feature dimension and threshold grid size. The entropy-balancing clause gives an analo-gous local identification condition for estimating ω through calibration. 
+
+Lemma 4.3 (Uniform convex M-estimation rate) . Let ̂ θy minimize a ridge-penalized convex empiri-cal risk indexed by y ∈ Y n, and let θ⋆y be the corresponding population minimizer. Under Assumption 4.10, 
+
+sup 
+
+> y∈Y n
+
+∥̂ θy − θ⋆y ∥2 = Op
+
+> √
+
+dn + log( eJ n)
+
+n + λnBn 
+
+> 
+
+,
+
+where dn is the relevant feature dimension and Jn = |Y n|; if Jn = 1 , the term is interpreted as √dn/n . The same rate holds for the induced L2 fitted-function error, plus the sieve approxima-tion error. For continuum Y, an additional interpolation error of order hn is incurred under the Lipschitz condition. 
+
+Lemma 4.3 is the basic rate statement used repeatedly for the nuisance functions. It gives a uniform coefficient and fitted-function rate over the grid Yn, with interpolation error added when the target is a continuum of thresholds. 
+
+Theorem 4.4 (Uniform rates for convex sieve implementation) . Suppose Assumptions 4.4 and 4.10 hold and the two-stage estimator of ga uses the nested cross-fitting scheme in Definition 4.7, so each generated response used in the second-stage risk is trained without that observation and without the outer evaluation fold. Define 
+
+rm,n = am,n +
+
+> √
+
+dU,n + log( eJ n)
+
+n + hn,re,n = ae,n +
+
+> √
+
+dX,n 
+
+n ,rρ,n = aρ,n +
+
+> √
+
+dU,n 
+
+n ,rω,n = aω,n +
+
+> √
+
+dX,n 
+
+n ,rg,n = ag,n + rm,n +
+
+> √
+
+dX,n + log( eJ n)
+
+n + hn.
+
+19 Then the convex sieve learners satisfy, uniformly over a and y ∈ Y where applicable, 
+
+sup 
+
+> y∈Y
+
+∥̂ma(y) − ma(y)∥1a, 2 = Op(rm,n ),
+
+sup 
+
+> y∈Y
+
+∥̂ ga(y) − ga(y)∥PX, 1,2 = Op(rg,n ),
+
+∥̂ea − ea∥PX, 1,2 = Op(re,n ),
+
+∥̂ ρa − ρa∥1a, 2 = Op(rρ,n ),
+
+∥̂ω − ω∥PX, 1,2 = Op(rω,n ).
+
+Moreover, if fitted propensities and density ratios are truncated to the positivity interval and each fold-specific ̂ ω(−k) is normalized by P(−k)
+
+> n, 1
+
+̂ ω(−k) = 1 , then 
+
+rw,a,n = Op(rω,n + re,n ),rρrat ,a,n = Op(rρ,n ).
+
+Theorem 4.4 translates the generic convex M-estimation rate into rates for ma, ga, ea, ρa, and 
+
+ω. The rate for ga includes the first-stage error from estimating ma, reflecting the nested structure of the surrogate-integrated regression. 
+
+Corollary 4.6 (Sufficient low-level product-rate and entropy conditions) . Under the conditions of Theorem 4.4, define 
+
+Dn = dX,n + dU,n + log( eJ n), rΓ,n = rm,n + rg,n + re,n + rρ,n + rω,n .
+
+Assumption 4.9 holds if 
+
+(rω,n + re,n )rg,n + rρ,n rm,n = o(n−1/2),rΓ,n 
+
+√Dn log n + Dn log n
+
+√n = o(1) ,
+
+and the grid/interpolation error is included in rΓ,n . In particular, if ea, ρa, and ω are known by design or estimated at n−1/2 rate and rm,n +rg,n = o(1) with (rm,n +rg,n )√Dn log n+Dn log n/ √n =
+
+o(1) , then the product-rate and perturbation-process conditions hold. If all nuisance functions have a common rate rn and Dn is bounded, the familiar sufficient condition is rn = o(n−1/4); if Dn → ∞ ,the additional displayed growing-entropy condition is required. 
+
+Corollary 4.6 is the bridge back to Assumption 4.9. It shows that the high-level drift and empirical-process conditions can be checked by combining approximation errors, feature dimensions, and the outcome-grid size. When the dimension is fixed, the product-rate condition reduces to the familiar fourth-root requirement; when the dimension grows, entropy growth must also be controlled. 
+
+Assumption 4.11 (Uniform RKHS-KRR regularity) . For each KRR regression nuisance, the kernel is bounded and measurable, the response is bounded, and the target regression functions 
+
+fy indexed by y ∈ Y belong uniformly to the source class R(T r) of the kernel integral operator 
+
+T with radius bounded by a constant. Here T is the integral operator under the covariate law relevant to the particular regression problem; separate instances are used for ma under the law of 
+
+(X, S ) | R = 1 , A = a, M = 1 and for ga under the law of X | R = 1 , A = a. The effective dimension satisfies 
+
+N (λ) = tr {T (T + λI )−1} ≤ Cλ −α, α ∈ (0 , 1] .
+
+The map y 7 → fy is Lipschitz in L2(P ) and in the RKHS interpolation norm used by the source condition. KRR is fit on a grid Yn and linearly interpolated, with regularization λn ≍ n−1/(2 r+α).
+
+20 Assumption 4.11 gives an alternative route for regression-type nuisance functions when kernel ridge regression is used. The source condition and effective-dimension bound determine the regres-sion rate, while the Lipschitz condition in y makes the grid-based implementation compatible with the uniform CDF theory. 
+
+Theorem 4.5 (Uniform RKHS-KRR rate verification for regression nuisances) . Under Assumption 4.11, suppose the effective sample size for a KRR regression nuisance is Neff and Neff /n is bounded away from zero with probability tending to one. This applies to the regression-type nuisances ma
+
+and ga under Assumption 4.4, with nested cross-fitting for the generated response in ga. Then 
+
+sup 
+
+> y∈Y
+
+∥̂fy − fy∥P, 2 = Op
+
+> (
+
+N −r/ (2 r+α)eff 
+
+> √
+
+log( eJ n) + hn
+
+> )
+
+.
+
+Consequently, this theorem verifies the regression L2 rates for m and g. If m and g are estimated by KRR at rate rK,n = n−r/ (2 r+α)√log( eJ n) + hn and the nuisance rates for (e, ρ, ω ) are separately verified as se,n , s ρ,n , s ω,n by logistic, calibration, or density-ratio arguments, then the product-rate part of Assumption 4.9 holds whenever 
+
+(sω,n + se,n )rK,n + sρ,n rK,n = o(n−1/2).
+
+The perturbation-process part of Assumption 4.9 additionally requires the entropy-growth condition in Corollary 4.6, with rΓ,n formed from rK,n and the separately verified rates. If (e, ρ, ω ) are parametric or known and the KRR classes have bounded entropy dimension, any rK,n = o(1) suffices for the product term. If all nuisances have a common KRR-type rate rK,n and the corresponding density-ratio/classification rates are separately justified, a sufficient smoothness condition for the product term is r/ (2 r + α) > 1/4 up to logarithmic and grid-mesh factors. 
+
+Theorem 4.5 verifies the regression-rate part of the nuisance conditions for KRR. It does not by itself verify density-ratio, treatment, or validation propensity estimation; those components must still be justified by the corresponding classifier, calibration, or propensity-rate arguments. 
+
+4.5 Surrogate Efficiency Gains 
+
+The preceding results establish efficiency of the surrogate-assisted estimator in the observed-data model. This subsection asks a narrower comparison question: when is observing S among units with missing Y more informative than a benchmark that does not observe those surrogates? To make this comparison meaningful, both procedures must identify the same target functional under a common model. A comparison with a procedure that does not observe S on units with missing Y requires a common identifying model. Without further restrictions, if M depends on S, then dropping S
+
+from the missing-outcome units changes the observed-data model and may destroy identification. Therefore the following assumption is used only for the benchmark comparison. 
+
+Assumption 4.12 (Surrogate-ignorable labeling for the no-surrogate benchmark) . For each a ∈{0, 1},
+
+ρa(X, S ) = ρ0
+
+> a
+
+(X) = P (M = 1 | R = 1 , A = a, X ).
+
+Assumption 4.12 is not needed for the main identification or efficiency results. It is imposed only so that the no-surrogate benchmark remains identifiable after dropping S for units with M = 0 .When validation depends on S, the benchmark and the surrogate-assisted model no longer represent the same observed-data problem. 21 Definition 4.8 (No-surrogate benchmark) . Under Assumption 4.12, define the benchmark observed-data model in which S is not observed for source units with M = 0 . Let 
+
+gnos  
+
+> a
+
+(y, x ) = P (Y ≤ y | R = 1 , A = a, X = x, M = 1) .
+
+Then gnos  
+
+> a
+
+(y, x ) = ga(y, x ) under Assumption 4.12. The benchmark efficient influence function is 
+
+ϕya, 0(O) = 1(R = 0) 
+
+π0
+
+{ga(y, X ) − ψa(y)} + 1(R = 1) ω(X)1(A = a)Mπ1ea(X)ρ0
+
+> a
+
+(X) {Zy − ga(y, X )}.
+
+Let Va, 0(y) = E{[ϕya, 0(O)] 2}.
+
+Definition 4.8 gives the influence function for the benchmark model. Compared with Definition 4.1, the benchmark cannot use the residual ma − ga among source units with missing Y because 
+
+S is unavailable there. The variance comparison therefore isolates the information contributed by observing the surrogate on those otherwise unlabeled source units. 
+
+Theorem 4.6 (Distributional efficiency gain from observing surrogates) . Suppose Assumptions 4.1, 4.2, 4.3, 4.4, and 4.12 hold. Then 
+
+Va, 0(y) − Va(y) = 1
+
+π1
+
+E1 
+
+> [
+
+ω2(X)
+
+ea(X)1 − ρ0
+
+> a
+
+(X)
+
+ρ0
+
+> a
+
+(X) V{ma(y, X, S ) | R = 1 , A = a, X }
+
+> ]
+
+≥ 0.
+
+The inequality is strict whenever the displayed conditional variance is positive on a set with positive 
+
+PX, 1 probability and ρ0
+
+> a
+
+(X) < 1 on that set. 
+
+Theorem 4.6 shows that the gain is nonnegative and is driven by the conditional variation of 
+
+ma(y, X, S ) given (X, A = a, R = 1) . Thus S improves efficiency at threshold y exactly to the extent that it predicts the threshold outcome after conditioning on X, and the gain is larger when validation is scarcer through the factor (1 − ρ0
+
+> a
+
+)/ρ 0
+
+> a
+
+.
+
+Corollary 4.7 (Quantile-specific efficiency gain) . Under the assumptions of Theorem 4.6 and Assumption 4.5, the efficiency gain for estimating qa(τ ) from observing S is 
+
+Va, 0(qa(τ )) − Va(qa(τ )) 
+
+{fa(qa(τ )) }2 .
+
+The gain for the QTE ∆( τ ) is 1∑
+
+> a=0
+
+Va, 0(qa(τ )) − Va(qa(τ )) 
+
+{fa(qa(τ )) }2 .
+
+Thus a surrogate may substantially improve inference at one quantile and provide little gain at another. 
+
+Corollary 4.7 transfers the CDF-level variance reduction to quantiles through the inverse-CDF derivative. The same surrogate can therefore yield different gains at different quantiles, because both the predictive content of ma(qa(τ ), X, S ) and the density factor fa(qa(τ )) may vary with τ .22 5 Simulation Studies 
+
+5.1 Design of Simulation Studies 
+
+The simulation study is designed to evaluate the finite-sample behavior of the target-population distributional and quantile treatment-effect estimators developed in Section 4. The design follows the observed-data structure introduced above: each observation belongs either to a source study or to a target population, the target sample contributes baseline covariates only, and the source sample contributes treatment, surrogate, validation, and, when validated, the primary outcome. The data-generating laws satisfy Assumptions 4.1–4.4: treatment is randomized in the source study for the main experiment, validation is missing at random given (A, X, S ), the treatment-specific law of 
+
+(Sa, Y a) given X is transportable, and the source-to-target density ratio is bounded. We generate comparable source and target sample sizes by drawing R from a Bernoulli dis-tribution with equal source and target probabilities. In the source population, X has a product distribution on a bounded support. In the target population, the law of X is an exponential tilt of the source law, so that the density ratio ω(x) = dP X, 0/dP X, 1(x) is known in closed form. This construction gives a controlled but nontrivial transport problem: methods that average over the source covariate law estimate the wrong population quantity, while transported estimators must learn or exploit ω.For each treatment arm, the surrogate process is generated from 
+
+Sa = ha(X) + εS , εS ∼ N (0 , ΣS ),
+
+where ha contains nonlinear components of X. Conditional on (X, S a), the primary potential outcome follows a Gaussian regression model whose mean is linear in the surrogate, 
+
+Y a = νa(X) + λS β⊤ 
+
+> a
+
+Sa + σa(X)εY , εY ∼ N (0 , 1) .
+
+The validation indicator is generated from a logistic MAR mechanism, 
+
+M | R = 1 , A = a, X = x, S = s ∼ Bernoulli {ρa(x, s )},
+
+with the intercept calibrated to yield a prespecified validation fraction. The numerical constants are fixed across replications and are supplied in the replication code; the manuscript emphasizes the structural features needed to interpret the experiment. Because ρa depends on the post-treatment surrogate, this is a general MAR design rather than an outcome-missingness design depending only on (A, X ).This specification separates two tasks that are central to the proposed estimator. The condi-tional law of Y given (X, S, A ) is intentionally learnable, so that ma(y, X, S ) can be estimated from the validated source units. At the same time, the marginal regression ga(y, X ) = E{ma(y, X, S ) |
+
+R = 1 , A = a, X } is nonlinear because the surrogate process is nonlinear. A transported plug-in estimator that relies only on a low-dimensional regression for ga is therefore vulnerable to persistent approximation bias, whereas the proposed one-step estimator can use the source surrogate residual 
+
+ma − ga and the validation residual 1(Y ≤ y) − ma to correct this bias. The true target CDFs, quantiles, and QTEs are computed using a large independent target Monte Carlo sample and the closed-form conditional CDFs implied by the Gaussian primary-outcome model. All feasible estimators use sample splitting with K = 5 folds. The nuisance functions are fit by stable ridge and logistic working regressions with truncation of propensity and density-ratio estimates. We report Monte Carlo bias, MSE, RMSE, and, for one-step estima-tors with implemented influence-function standard errors, pointwise coverage and interval length. Unless otherwise stated, results are based on BMC = 500 replications and pointwise quantiles 
+
+τ ∈ { 0.25 , 0.50 , 0.75 }.23 Experiment 1: pointwise finite-sample behavior under transport and surrogate-dependent validation. The first experiment is the main stress test for the proposed surrogate-assisted trans-ported one-step estimator. It combines source-target covariate shift, surrogate-dependent valida-tion, and a nonlinear surrogate process. The estimand is the transported QTE ∆( τ ) = q1(τ )−q0(τ )
+
+at τ ∈ { 0.25 , 0.50 , 0.75 }. The source treatment is randomized, so the experiment focuses on the transport, surrogate, and missing-primary-outcome components rather than on confounding by treatment assignment. We compare five estimators. SA is the proposed cross-fitted surrogate-assisted one-step estima-tor. Oracle is the same one-step estimating equation evaluated with the true nuisance functions and is included only as an infeasible benchmark. IPW is a validation-only transported inverse-probability weighted estimator that uses only units with observed primary outcomes. Plugin is the transported regression plug-in estimator based on ̂ ga(y, X ) but without the one-step residual cor-rections. Source is a negative control that replaces the target covariate law by the source covariate law. The main table uses n = 2000 ; a larger-n replication with n = 4000 is reported in Appendix Table A.1. The second experiment isolates the efficiency-gain claim in Theorem 4.6 and Corollary 4.7. We impose ζM = 0 , so ρa(X, S ) = ρ0
+
+> a
+
+(X) and the no-surrogate benchmark in Definition 4.8 is valid. We fix c = 0 .4 and use the randomized source design e1(X) = 1 /2. We vary surrogate predictiveness and primary-outcome validation scarcity over 
+
+λS ∈ { 0, 0.5, 1.0}, ¯ρ ∈ { 0.15 , 0.30 , 0.60 },
+
+with n = 4000 in the main table and n ∈ { 2000 , 8000 } in supplementary tables. The proposed estimator is compared with a no-surrogate estimator that does not use S among units with M = 0 , a validation-only IPW estimator, an oracle surrogate-assisted one-step estimator, and a full-primary-outcome oracle benchmark obtained by setting M ≡ 1. The primary summary is the empirical variance ratio ̂
+
+VMC {̂ ∆NoS (τ )}̂
+
+VMC {̂ ∆SA (τ )} ,
+
+together with the corresponding average interval-length ratio and the theoretical ratio computed from the oracle influence-function variances. The theory predicts that the gain is approximately zero when λS = 0 , increases with λS , and increases as ¯ρ decreases. We also report the arm-specific empirical analogue of 
+
+1
+
+π1
+
+E1 
+
+> [
+
+ω2(X)
+
+ea(X)1 − ρ0
+
+> a
+
+(X)
+
+ρ0
+
+> a
+
+(X) V{ma(y, X, S ) | R = 1 , A = a, X }
+
+> ]
+
+at y = qa(τ ) to check whether the observed variance reduction follows the quantile-specific efficiency-gain formula rather than merely reflecting incidental finite-sample differences between estimators. The third experiment studies the role of the target covariate law and the density-ratio component in the efficient influence function. We fix λS = 0 .7, ¯ρ = 0 .30 , and ζM = 1 , and vary the transport-shift parameter 
+
+c ∈ { 0, 0.4, 0.8, 1.2}.
+
+Both randomized and observational treatment assignment mechanisms are considered. The pro-posed estimator with estimated ̂ ω is compared with the same estimator using the true density ratio, the source-population negative control, and the validation-only transported IPW estimator. This experiment verifies Proposition 4.1 and Theorem 4.1 in a setting where the source and target CDFs differ. When c = 0 , the source and target covariate laws coincide and the source-population negative 24 control should be nearly unbiased for the target estimand. As c increases, the source-population estimator should show systematic bias for ∆( τ ), while the proposed transported estimator should remain approximately unbiased if the density-ratio and regression learners are adequate. We report the effective source sample size induced by the fitted density ratio, 
+
+ESS ω = 
+
+> (∑
+> i:Ri=1 ̂
+
+ω(Xi) 
+
+> )2
+> ∑
+> i:Ri=1 ̂
+
+ω2(Xi) ,
+
+as a finite-sample overlap diagnostic. We also report oracle-ω and estimated-ω results separately, so that degradation due to severe transport shift can be attributed either to intrinsic overlap loss or to density-ratio estimation error. The fourth experiment evaluates the uniform-in-y and uniform-in-τ claims in Proposition 4.4, Theorem 4.3, Corollary 4.4, Corollary 4.5, and Proposition 4.5. We use the same baseline pa-rameters as Experiment 1, namely c = 0 .4, λS = 0 .7, ¯ρ = 0 .30 , and ζM = 1 , and consider 
+
+n ∈ { 2000 , 4000 , 8000 }. We compare three outcome grids: a coarse fixed grid with J = 51 , a moderate fixed grid with J = 101 , and the growing grid Jn = ⌈4n0.6⌉. For each grid, we compute the raw one-step CDF estimates, the isotonic projections, the interpolated quantile functions, and the QTE curve on T = {0.10 , 0.11 , . . . , 0.90 }. Pointwise intervals use the estimated QTE influence function ̂
+
+ϕ∆,τ (O) = −̂ ϕ̂   
+
+> q1(τ)1
+
+(O)̂
+
+f1{̂ q1(τ )} +̂ ϕ̂   
+
+> q0(τ)0
+
+(O)̂
+
+f0{̂ q0(τ )} ,
+
+and simultaneous Wald-type QTE bands use multiplier bootstrap draws 
+
+Z∗
+
+> n
+
+(τ ) = 1
+
+√n
+
+> n∑
+> i=1
+
+ξi
+
+> {̂
+
+ϕ∆,τ (Oi) − Pn̂ ϕ∆,τ 
+
+> }
+
+, ξi iid 
+
+∼ N (0 , 1) ,
+
+with Bboot = 999 multiplier repetitions. We also compute inverted CDF bands as a density-free robustness check. The reported quantities are simultaneous coverage over T , average band width, 
+
+sup τ ∈T |̂∆( τ ) − ∆( τ )|, the isotonic projection distance 
+
+diso = max  
+
+> a∈{ 0,1}
+
+sup 
+
+> y∈Y n
+
+|̂Fa(y) −̂ ψa(y)|,
+
+and the scaled diagnostic √n d iso . The growing-grid design should support the root-n quantile approximation, whereas fixed coarse grids are included to demonstrate the numerical and inferential consequences of using a grid whose discretization error is not controlled at the scale required by Proposition 4.5. 
+
+5.2 Results of Simulation Studies 
+
+Experiment 1: pointwise finite-sample behavior under transport and surrogate-dependent validation. Table 1 reports the main finite-sample results for Experiment 1. Across all three quantiles, SA is the best feasible point estimator among the methods compared. Relative to IPW, SA reduces MSE by 60.0%, 64.9%, and 84.9% at τ = 0 .25 , 0.50 , 0.75 , respectively. Relative to the transported plug-in estimator, the corresponding reductions are 66.1%, 81.9%, and 75.3%. The source-population negative control is also substantially biased, confirming that the target covariate law is material in this design. The oracle rows show the performance of the infeasible benchmark and should be read as a reference point rather than as a competing method. 25 Table 1: Experiment 1: finite-sample performance for transported QTE esti-mation, n = 2000 
+
+τ ∆0(τ ) Method Bias MSE RMSE Coverage CI length 0.25 -3.884 IPW -0.073 3.907 SA ↓60.0% 1.976 0.706 4.655 0.25 -3.884 Oracle -0.163 1.364 1.168 0.780 3.471 0.25 -3.884 Plugin 1.961 4.599 SA ↓66.1% 2.144 — —0.25 -3.884 SA 0.023 1.561 1.249 0.770 3.460 
+
+0.25 -3.884 Source 1.757 3.270 SA ↓52.3% 1.808 — —0.50 -0.940 IPW 0.037 4.773 SA ↓64.9% 2.185 0.754 6.376 0.50 -0.940 Oracle -0.080 1.053 1.026 0.802 2.858 0.50 -0.940 Plugin 2.931 9.275 SA ↓81.9% 3.046 — —0.50 -0.940 SA 0.215 1.675 1.294 0.762 3.521 
+
+0.50 -0.940 Source 2.875 8.483 SA ↓80.3% 2.913 — —0.75 3.150 IPW -0.104 13.398 SA ↓84.9% 3.660 0.788 9.962 0.75 3.150 Oracle -0.030 0.678 0.824 0.816 2.289 0.75 3.150 Plugin 2.777 8.157 SA ↓75.3% 2.856 — —0.75 3.150 SA 0.129 2.017 1.420 0.744 3.453 
+
+0.75 3.150 Source 2.832 8.173 SA ↓75.3% 2.859 — —       
+
+> Notes. Results are based on BMC = 500 Monte Carlo replications. ∆0(τ)is the Monte Carlo truth for the transported QTE. Bias is
+
+̂ ∆ − ∆0(τ ); MSE is E{(̂ ∆ − ∆0)2}; RMSE is √MSE .Coverage and CI length refer to nominal 95% Wald intervals based on the implemented influence-function standard error and are reported for one-step estimators. Plugin and Source are point-estimation baselines, so interval metrics are not reported. Oracle uses true nuisance functions and is infeasible. For IPW, Plugin, and Source, the superscript next to MSE reports     
+
+> 100 ×(1 −MSE SA /MSE method ); larger values indicate larger MSE reduction by SA.
+
+The main pattern is stable across the three parts of the distribution. IPW is most affected in the upper tail, where the validation-only strategy has much larger variance. Plugin and Source have smaller Monte Carlo variation but large systematic biases, reflecting approximation error in the transported regression and the failure to target the target covariate law, respectively. SA combines the low-bias behavior of the one-step correction with materially smaller MSE than the feasible baselines. Appendix Table A.1 shows that the same ordering persists at n = 4000 , with SA continuing to dominate IPW, Plugin, and Source in MSE at every reported quantile. 
+
+# 6 Discussion and Scope 
+
+The method uses the surrogate as auxiliary information rather than as a replacement endpoint. It does not require the surrogate to mediate the treatment effect. The identifying assumptions are missing at random for the primary outcome and conditional transportability of the treatment-specific surrogate-primary outcome process. The core theoretical contribution is the three-layer canonical gradient, together with the exact drift identity and the quantile-specific efficiency-gain formula. The computational contribution is that, after nuisance fitting, the estimator is a closed-form one-step update and the recommended nuisance subproblems can be implemented with convex or normal-equation procedures. 26 A Proofs for Identification and Efficient Influence Functions 
+
+Proof of Proposition 4.1. Fix a and y. By the definition of the target estimand and iterated ex-pectation, 
+
+ψa(y) = E{P (Y a ≤ y | X, R = 0) | R = 0 }.
+
+By Assumption 4.3, 
+
+P (Y a ≤ y | X, R = 0) = P (Y a ≤ y | X, R = 1) .
+
+Conditioning on Sa gives 
+
+P (Y a ≤ y | X, R = 1) = E{P (Y a ≤ y | X, S a, R = 1) | X, R = 1 }.
+
+By Assumption 4.1, (Sa, Y a) ⊥ A | X, R = 1 , and by consistency, among source units with A = a,
+
+(S, Y ) = ( Sa, Y a). Hence 
+
+Sa | X, R = 1 d
+
+= S | X, A = a, R = 1 ,
+
+and 
+
+P (Y a ≤ y | X, S a = s, R = 1) = P (Y ≤ y | X, S = s, A = a, R = 1) .
+
+By Assumption 4.2, 
+
+P (Y ≤ y | X, S = s, A = a, R = 1) = P (Y ≤ y | X, S = s, A = a, R = 1 , M = 1) = ma(y, X, s ).
+
+Combining these displays yields 
+
+P (Y a ≤ y | X, R = 0) = E{ma(y, X, S ) | X, A = a, R = 1 } = ga(y, X ).
+
+Taking expectation over X | R = 0 proves ψa(y) = E0{ga(y, X )}. The unconditional representation with 1(R = 0) /π 0 is immediate. The source representation follows from dP X, 0 = ωdP X, 1.
+
+Proof of Theorem 4.1. Fix a and y and suppress these indices where doing so is harmless. The proof is for the observed-data functional Ψya(P ) = EP {gP (y, X ) | R = 0 }; Proposition 4.1 then maps it to the causal estimand. The argument is the usual observed-data tangent-space calculation for a pathwise differentiable functional (Newey, 1994; Robins and Rotnitzky, 1995; Tsiatis, 2006). Consider any regular parametric submodel Pε through P with score ℓ(O) at ε = 0 . The observed-data score has the orthogonal decomposition 
+
+ℓ = ℓR + 1(R = 0) ℓX, 0 + 1(R = 1) {ℓX, 1 + ℓA + ℓS + ℓM + M ℓ Y },
+
+where each conditional score has mean zero given its conditioning variables. Thus the observed-data tangent space is the orthogonal direct sum of the closed linear spans generated by these score components. The pathwise derivative of 
+
+Ψε = E0,ε {gε(X)}, gε(x) = Eε{mε(X, S ) | R = 1 , A = a, X = x},
+
+with mε(x, s ) = Eε(Zy | R = 1 , A = a, X = x, S = s, M = 1) has three nonzero components. First, perturbing PX|R=0 gives 
+
+˙ΨX0 = E 
+
+> [
+
+1(R = 0) 
+
+π0
+
+{g(X) − Ψ}ℓ(O)
+
+> ]
+
+.
+
+27 The score ℓR for the marginal law of R contributes zero because Ψ is conditional on R = 0 , and the centered form above is orthogonal to ℓR.Second, perturbing the conditional law PS|R=1 ,A =a,X gives 
+
+˙ΨS = E0 [E{(m(X, S ) − g(X)) ℓS | R = 1 , A = a, X }]= E 
+
+> [
+
+1(R = 1) ω(X)1(A = a)
+
+π1ea(X) {m(X, S ) − g(X)}ℓ(O)
+
+> ]
+
+,
+
+where the second equality follows by changing measure from X | R = 0 to X | R = 1 using ω
+
+and by reweighting the event A = a within the source. The representing function lies in the closed tangent subspace for S | R = 1 , A, X and is orthogonal to the source X and treatment tangent spaces because its conditional mean given (R = 1 , A, X ) is zero. Third, perturbing PY |R=1 ,A =a,X,S,M =1 gives 
+
+˙ΨY = E0 [E{E[( Zy − m(X, S )) ℓY | R = 1 , A = a, X, S, M = 1] | R = 1 , A = a, X }]= E 
+
+> [
+
+1(R = 1) ω(X)1(A = a)Mπ1ea(X)ρa(X, S ) {Zy − m(X, S )}ℓ(O)
+
+> ]
+
+.
+
+This representing function belongs to the closed tangent subspace for the validated primary-outcome law and is orthogonal to the missingness tangent space because its conditional mean given (R =1, A, X, S, M ) is zero. The remaining tangent components have zero derivative and zero projection. Perturbing PX|R=1 
+
+alone changes neither the target conditional law PX|R=0 nor the conditional regressions entering g;its possible appearance through the Radon–Nikodym derivative is already only a representation of the change of measure and cancels in the pathwise derivative. Perturbing PA|X,R =1 or PM |A,X,S,R =1 
+
+changes neither g(x) nor m(x, s ) as conditional distributions; the displayed representer is orthog-onal to these score spaces because the surrogate and outcome residuals have the corresponding conditional means zero. Adding the three derivative representers yields E{ϕya(O)ℓ(O)} for every score ℓ in the nonpara-metric observed-data tangent space. The three summands are mutually orthogonal closed-subspace components, and Eϕ ya = 0 by iterated expectation. Hence ϕya is the canonical gradient and its variance is the efficiency bound. In a submodel in which ea is known, the tangent component for A | X, R = 1 is removed; in a submodel in which ρa is known, the tangent component for 
+
+M | A, X, S, R = 1 is removed. Since ϕya is already orthogonal to both components, its projection onto the smaller tangent space is unchanged. This proves the invariance of the canonical gradient and bound under known treatment or missingness mechanisms. 
+
+Proof of Corollary 4.1. The proof is identical to the proof of Theorem 4.1 with the threshold out-come Zy = 1(Y ≤ y) replaced by the integrable primary outcome Y . The pathwise derivative through the target covariate law gives the first term, the derivative through the source surrogate law gives the second term, and the derivative through the validated primary-outcome law gives the third term. These three terms lie in mutually orthogonal tangent components and are mean zero, so their sum is the canonical gradient. Taking the difference between a = 1 and a = 0 gives the transported ATE gradient. When PX, 0 = PX, 1, ω = 1 , so the two source residual terms match the surrogate-process and validation-outcome residuals appearing in the surrogate-assisted ATE gradient of Kallus and Mao (2025), with M playing the role of their primary-outcome observation indicator. The target-covariate term in the present formula is still generated by the two-sample transport design. If that design is further collapsed to a single-population model in which the covariate law is observed 28 from the same population as the source study, the first term becomes the usual baseline regression component and the displayed gradient is exactly the armwise surrogate-assisted ATE canonical gradient in the reference model. This proves both the transported mean result and the stated precise relation to the reference paper. 
+
+Proof of Corollary 4.2. For fixed a, the quantile functional is the inverse map qa(τ ) = ψ−1 
+
+> a
+
+(τ ).This is the same inverse-map step used in semiparametric quantile and QTE inference (Koenker and Bassett, 1978; Firpo, 2007; Chernozhukov et al., 2013). Under Assumption 4.5, the inverse map is Hadamard differentiable tangentially to continuous functions (van der Vaart, 1998), with derivative 
+
+h 7 → − h(qa(τ )) 
+
+fa(qa(τ )) .
+
+Applying this derivative to the CDF influence function in Theorem 4.1 gives the displayed influence function for qa(τ ). The QTE is the difference between the two treatment-specific quantiles, so linearity yields the displayed influence function for ∆( τ ).
+
+Proof of Proposition 4.2. Fix a, y . By iterated expectation and Definition 4.2, 
+
+Ψya(¯ η) = E0{¯ga(y, X )}
+
++ E1 [ ¯ wa(X)Ha{ ¯ma(y, X, S ) − ¯ga(y, X )}(X)] + E1 [ ¯ wa(X)Ha{¯ra(X, S )[ ma(y, X, S ) − ¯ma(y, X, S )] }(X)] .
+
+Also ψa(y) = E0{ga(y, X )} = E1{ω(X)ga(y, X )} and ga = Hama. Let ∆g = ¯ ga − ga and ∆m =¯ma − ma. Then 
+
+Ha( ¯ ma − ¯ga) = Ha∆m − ∆g, Ha{¯ra(ma − ¯ma)} = −Ha(¯ ra∆m).
+
+Substitution yields 
+
+Ψya(¯ η) − ψa(y) = E1{ω(X)∆ g(y, X )} + E1{ ¯wa(X)[ Ha∆m(X) − ∆g(y, X ) − Ha(¯ ra∆m)( X)] }
+
+= E1{[ω(X) − ¯wa(X)]∆ g(y, X )} + E1{ ¯wa(X)Ha[(1 − ¯ra)∆ m]( X)},
+
+which proves (2). The two robustness statements are immediate. The norm bound follows by Cauchy–Schwarz, Jensen’s inequality for Ha, and boundedness of ¯wa.
+
+# B Proofs for Estimation and Inference 
+
+Lemma B.1 (Random-denominator empirical expansion) . Let F be square-integrable with PrF =
+
+E(F | R = r). Then 
+
+Pn,r F − PrF = Pn 
+
+> [
+
+1(R = r)
+
+πr
+
+{F − PrF }
+
+> ]
+
++ op(n−1/2).
+
+If F =̂ F is cross-fitted and 
+
+> ∥∥∥̂
+
+F − F 
+
+> ∥∥∥P, 2
+
+= op(1) , the same expansion holds with F replaced by ̂ F
+
+up to an additional op(n−1/2) term. 
+
+29 Proof of Lemma B.1. Write ˆπr = Pn1(R = r). Then Pn,r F = Pn{1(R = r)F }/ˆπr. A first-order Taylor expansion of (u, v ) 7 → u/v at (πrPrF, π r) gives 
+
+Pn,r F − PrF = 1
+
+πr
+
+Pn{1(R = r)F } − PrFπr
+
+Pn{1(R = r)} + op(n−1/2)= Pn
+
+[ 1(R = r)
+
+πr
+
+{F − PrF }
+
+]
+
++ op(n−1/2).
+
+For cross-fitted ̂ F , decompose ̂ F = F + ( ̂ F − F ). Conditional on the training folds, Chebyshev’s inequality gives 
+
+Pn
+
+[ 1(R = r)
+
+πr
+
+{(̂F − F ) − Pr(̂ F − F )}
+
+]
+
+= Op{n−1/2 ∥∥∥̂ F − F
+
+∥∥∥P, 2} = op(n−1/2).
+
+The Taylor remainder is unchanged because ˆπr − πr = Op(n−1/2) and 
+
+∥∥∥̂ F − F
+
+∥∥∥P, 2 = op(1) .
+
+Lemma B.2 (Uniform random-denominator expansion) . Let ̂ Fk = {̂Fy : y ∈ Y} be a fold-specific class independent of the evaluation fold conditional on the training data. Suppose that, with prob-ability tending to one, it is pointwise measurable, has envelope ̂ Fe,k with ∥̂Fe,k ∥∞ = Op(1) , and satisfies 
+
+sup 
+
+> Q
+
+log N {ϵ∥̂ Fe,k ∥Q, 2,̂ Fk, L 2(Q)} ≤ Vn log( An/ϵ ), 0 < ϵ ≤ 1,
+
+for deterministic Vn ≥ 1 and An ≥ e, with 
+
+Vn log An
+
+√n = O(1) .
+
+Then, for r ∈ { 0, 1},
+
+sup 
+
+> y∈Y
+
+∣∣∣∣Pn,r ̂ Fy − Pr̂ Fy − Pn
+
+[ 1(R = r)
+
+πr
+
+{̂Fy − Pr̂ Fy}
+
+]∣ ∣∣∣ = op(n−1/2)
+
+provided either 
+
+sup 
+
+> y∈Y
+
+∣∣∣Pn
+
+[
+
+1(R = r){̂ Fy − Pr̂ Fy}
+
+]∣ ∣∣ = op(1) ,
+
+or, more primitively, 
+
+sup 
+
+> y∈Y
+
+|Pr̂ Fy| = Op(1) and Vn log An
+
+n = o(1) .
+
+The same statement holds for finite sums of such fold-specific classes over a fixed number of cross-fitting folds. The bounded-envelope condition may be replaced by an appropriate higher-moment tail condition together with the corresponding maximal inequality. Proof of Lemma B.2. Write ˆπr = Pn1(R = r), μy = Pr̂ Fy, and 
+
+Ay = Pn{1(R = r)( ̂ Fy − μy)}.
+
+Then Pn{1(R = r)̂ Fy} = Ay + μy ˆπr, and hence the ratio identity is exact: 
+
+Pn,r ̂ Fy − Pr̂ Fy − Pn
+
+[ 1(R = r)
+
+πr
+
+{̂Fy − Pr̂ Fy}
+
+]
+
+= Ay
+
+( 1ˆπr
+
+− 1
+
+πr
+
+)
+
+.
+
+30 Since ˆπr − πr = Op(n−1/2) and πr is bounded away from zero, it suffices to prove sup y |Ay| = op(1) .This is assumed in the first route. Under the primitive entropy route, conditional on the training data, the centered class {1(R = r)( ̂Fy − Pr̂ Fy) : y ∈ Y} has the same entropy order and a bounded envelope with probability tending to one. The maximal inequality for VC-type classes gives 
+
+E
+
+> [
+
+sup 
+
+> y
+
+|(Pn − P ){1(R = r)( ̂ Fy − Pr̂ Fy)}| | training 
+
+> ]
+
+≲
+
+> √
+
+Vn log An
+
+n + Vn log An
+
+n ,
+
+up to envelope constants, which is op(1) when Vn log An = o(n). The centered class has mean zero by definition, so the left-hand side controls sup y |Ay|. Therefore sup y |Ay| = op(1) and the displayed expansion follows. Averaging over a fixed number of folds preserves the order. 
+
+Proof of Proposition 4.3. Given nuisance estimates, (3) is a finite sum of observed quantities. For the implementation class in Definition 4.4, and for the finite-dimensional version in Definition 4.7, ridge least squares and finite-rank KRR solve normal equations; ridge logistic regression minimizes a convex negative log-likelihood plus a convex quadratic penalty; and entropy balancing under the stated exponential-tilt calibration model has a convex entropy objective with linear constraints. The isotonic step is Euclidean projection onto a closed convex cone intersected with a box, and quantile inversion over a finite grid is an order operation. Thus the recommended implementation uses only closed-form or convex subproblems. This proposition does not assert convexity or rate validity for arbitrary flexible learners outside Definition 4.7. 
+
+Proof of Theorem 4.2. Fix a, y and suppress them from notation. Let 
+
+B(O) = ω(X)1(A = a)
+
+ea(X) {m(y, X, S ) − g(y, X )} + ω(X)1(A = a)Mea(X)ρa(X, S ) {Zy − m(y, X, S )},
+
+so that E1B = 0 . Let ̂ B be the same expression with estimated nuisances. The estimator is ̂
+
+ψ = Pn, 0̂ g + Pn, 1̂ B. Add and subtract oracle terms: ̂
+
+ψ − ψ = ( Pn, 0g − E0g) + Pn, 1B + Dn + Sn,
+
+where Dn = E0̂ g + E1̂ B − ψ and 
+
+Sn = ( Pn, 0 − E0)( ̂g − g) + ( Pn, 1 − E1)( ̂ B − B).
+
+Proposition 4.2 and (4) imply Dn = op(n−1/2). By cross-fitting, conditional on training folds, the evaluation-fold empirical processes are independent of nuisance estimates. Conditional Chebyshev’s inequality and the L2 signal convergence in Assumption 4.6 give Sn = op(n−1/2), with Lemma B.1 handling random denominators. Therefore ̂
+
+ψ − ψ = ( Pn, 0g − E0g) + Pn, 1B + op(n−1/2).
+
+Applying Lemma B.1 to the first term and to the source term, noting E1B = 0 , gives ̂
+
+ψ − ψ = Pn 
+
+> [
+
+1(R = 0) 
+
+π0
+
+{g(X) − ψ} + 1(R = 1) 
+
+π1
+
+B(O)
+
+> ]
+
++ op(n−1/2).
+
+The bracketed term is exactly ϕya(O). Multiplication by √n gives the expansion. The central limit theorem applies because the influence function is square-integrable under positivity and bounded-ness. Efficiency follows from Theorem 4.1. 31 Proof of Corollary 4.3. Fix a and write q = qa(τ ),̂ q =̂ qa(τ ), and f = fa(q). The local uniform consistency in Assumption 4.7 and the positivity of f imply ̂ q − q = op(1) by the usual bracketing argument: for each fixed ε > 0 small enough that q ± ε ∈ N a, differentiability gives ψa(q − ε) < τ < ψa(q + ε), and the same inequalities hold with ψa replaced by ̂ Fa with probability tending to one. It remains to identify the first-order term. Since Pnϕqa = Op(n−1/2), for fixed t > 0 define 
+
+yn, ± = q − Pnϕqa
+
+f ± t
+
+√n .
+
+These points lie in Na with probability tending to one. By differentiability of ψa at q and by the local empirical-process equicontinuity in Assumption 4.7, ̂
+
+Fa(yn, ±) − τ = ψa(yn, ±) − ψa(q) + Pnϕyn, ± 
+
+> a
+
++ op(n−1/2)= f (yn, ± − q) + Pnϕqa + op(n−1/2)= ± f t 
+
+√n + op(n−1/2).
+
+Hence, with probability tending to one, ̂ Fa(yn, −) ≤ τ ≤̂ Fa(yn, +) for all sufficiently large t after an arbitrarily small enlargement of t. Monotonicity of ̂ Fa and the generalized-inverse definition therefore give ̂
+
+q = q − Pnϕqa
+
+f + op(n−1/2).
+
+Multiplying by √n gives the first assertion. Subtracting the representations for a = 1 and a = 0 
+
+gives the QTE representation. The central limit theorem applies to the square-integrable influence function ϕ∆,τ .
+
+Proof of Lemma 4.1. Assumption 4.8(iii) states that Φa is pointwise measurable and P -Donsker with a bounded envelope. The functional central limit theorem for Donsker classes therefore gives the displayed convergence. The covariance formula is the covariance of the limiting isonormal process applied to the class Φa. Tightness and sample-path continuity with respect to the covariance semimetric follow from the Donsker property and the assumed covariance continuity. 
+
+Proof of Lemma 4.2. Condition on the training folds. The class is then fixed relative to the evalu-ation fold. A standard maximal inequality for classes with entropy log N (ϵ∥G∥Q, 2, G, L 2(Q)) ≤
+
+Vn log( An/ϵ ) and L2(P ) radius δn, as in empirical-process treatments of VC-type classes and growing-complexity suprema (van der Vaart and Wellner, 1996; Chernozhukov et al., 2014), gives 
+
+E 
+
+> 
+
+sup   
+
+> f∈̂Gk
+> ∣∣
+
+√n(Pn,k − P )f ∣∣ | training  
+
+> 
+
+≲ δn
+
+> √
+
+Vn log( An/δ n) + Vn log( An/δ n)
+
+√n ,
+
+up to constants depending only on the envelope bound. The displayed entropy-growth condition makes the right-hand side o(1) . Markov’s inequality yields 
+
+sup   
+
+> f∈̂Gk
+> ∣∣
+
+√n(Pn,k − P )f ∣∣ = op(1) ,
+
+and division by √n proves the claim. Averaging over a fixed number of folds preserves the order. 32 Proof of Proposition 4.4. Fix a. Write the estimator as a fold average. For a generic fold, decom-pose uniformly in y:̂
+
+ψa(y) − ψa(y) = ( Pn − P )ϕya + Dn(y) + En(y) + op(n−1/2),
+
+where the random-denominator remainder is op(n−1/2) uniformly by Lemma B.2, 
+
+Dn(y) = E{̂ Γya,k (O)} − E{Γya(O)}
+
+is the drift, and En(y) = ( Pn − P ){̂ Γya,k − Γya} is the empirical-process perturbation. Proposition 4.2 gives, uniformly over y ∈ Y ,
+
+|Dn(y)| ≤ Cr w,a,n rg,a,n + Cr ρrat ,a,n rm,a,n = op(n−1/2).
+
+The class of perturbations satisfies Lemma 4.2 by Assumption 4.9, so sup y∈Y |En(y)| = op(n−1/2).Combining these bounds over the fixed number of folds proves the uniform expansion. 
+
+Proof of Theorem 4.3. By Proposition 4.4, 
+
+√n{̂ψa − ψa} = √n(Pn − P )ϕ· 
+
+> a
+
++ op(1) 
+
+in ℓ∞(Y). Lemma 4.1 gives weak convergence of the leading empirical process to Ga. The distribu-tional treatment effect statement follows by applying the same argument jointly to the vector class 
+
+{(ϕy
+
+> 1
+
+, ϕ y′ 
+
+> 0
+
+) : y, y ′ ∈ Y} and using the continuous mapping theorem for subtraction. 
+
+Proof of Corollary 4.4. By Theorem 4.3 and the assumed op(n−1/2) distance between ̂ Fa and ̂ ψa,
+
+√n(̂ Fa − ψa) ⇝ Ga in ℓ∞(Y).
+
+Assumption 4.5 implies that the inverse-CDF map is Hadamard differentiable uniformly on the compact set T at ψa, tangentially to continuous functions, with derivative 
+
+h 7 → − h{qa(·)}/f a{qa(·)}.
+
+The functional delta method gives the quantile-process limit. The QTE limit follows by subtract-ing the two treatment-specific quantile limits. The final statement follows from Proposition 4.5, which supplies the required op(n−1/2) replacement of the continuum estimator by the growing-grid interpolated and, when permitted, projected estimator. 
+
+Proof of Corollary 4.5. This is a high-level estimated-process result. Let Φ∆ = {ϕ∆,τ : τ ∈ T } be the oracle QTE influence-function class. Corollary 4.4 identifies the weak limit of n−1/2 ∑ 
+
+> i
+
+ϕ∆,τ (Oi).By Assumption 4.8 and the continuity and bounded-away-from-zero density condition, Φ∆ is P -Donsker with a square-integrable envelope. The multiplier theorem is applied to the empirically centered versions of these classes; centering by Pn only adds data-dependent constants and preserves the stated entropy and envelope orders. The stated conditions on ̂ Φ∆ give two ingredients. First, 
+
+sup  
+
+> τ∈T
+
+∥̂ϕ∆,τ − ϕ∆,τ ∥P, 2 = op(1) ,
+
+including the effect of replacing qa, f a, and nuisance functions by estimates. Second, conditional on the data, ̂ Φ∆ has a VC-type entropy bound and bounded envelope of the same order as the 33 oracle class. The conditional multiplier maximal inequality applied to the centered difference class therefore yields 
+
+sup  
+
+> τ∈T
+> ∣∣∣∣∣
+
+1
+
+√n
+
+> n∑
+> i=1
+
+ξi
+
+> [
+
+{̂ ϕ∆,τ (Oi) − Pn̂ ϕ∆,τ } − { ϕ∆,τ (Oi) − Pnϕ∆,τ } 
+
+> ]∣∣∣∣∣
+
+= op(1) 
+
+conditionally in probability. The multiplier central limit theorem for the centered oracle Donsker class gives conditional weak convergence of 
+
+1
+
+√n
+
+> n∑
+> i=1
+
+ξi{ϕ∆,τ (Oi) − Pnϕ∆,τ }
+
+to the same Gaussian limit as the original empirical process. Combining the two displays gives conditional weak convergence of Z∗ 
+
+> n
+
+in ℓ∞(T ). The continuous mapping theorem transfers conver-gence to the supremum norm, and continuity of the limiting supremum distribution at its (1 − α)
+
+quantile gives the stated simultaneous band validity. 
+
+Proof of Proposition 4.5. Let Inψa be the linear interpolant of the true grid values ψa(yj,n ). Since 
+
+ψa is continuously differentiable with bounded derivative, sup y∈Y |Inψa(y) − ψa(y)| = O(hn) = 
+
+o(n−1/2). Let In(Pnϕa) be the linear interpolant of the empirical-process grid values. The assumed local empirical modulus implies 
+
+sup 
+
+> y∈Y
+
+|In(Pnϕa)( y) − Pnϕya| = op(n−1/2).
+
+For any y between adjacent grid points, linear interpolation expresses ˜ψa,n (y)−Inψa(y)−In(Pnϕa)( y)
+
+as the same convex combination of the two endpoint remainders; hence its supremum is bounded by the maximum grid remainder. Combining these three bounds gives the displayed uniform expansion on Y.If ̂ Fa,n is a nondecreasing version satisfying sup y∈Y q |̂ Fa,n (y) − ˜ψa,n (y)| = op(n−1/2), the same expansion holds for ̂ Fa,n on Yq. The inverse-map limits then follow from the pointwise and uniform Bahadur arguments used in Corollaries 4.3 and 4.4, since fa is bounded away from zero on the quantile region. On a fixed grid with strictly increasing true grid values, let c = min j {ψa(yj+1 ) − ψa(yj )} > 0.If max j |̂ψa(yj ) − ψa(yj )| < c/ 2, then the unprojected grid estimator is already increasing and the isotonic projection is inactive. On a growing grid, adjacent true increments can be smaller than the stochastic grid error, so monotonicity of the raw interpolant need not follow from the first display alone. For any grid, isotonic regression is Euclidean projection onto a closed convex cone intersected with a box, so it is nonexpansive in Euclidean norm. If the projection distance is op(n−1/2) in sup norm on the quantile region, adding the projection changes neither the CDF expansion nor the inverse-CDF expansion at first order. 
+
+# C Proofs for Lower-Level Nuisance-Rate Verification 
+
+Proof of Lemma 4.3. For each y, write the empirical objective as Mn,y (θ) + λn∥θ∥22/2 and the population objective as My(θ). The argument is a finite-dimensional sieve M-estimation calculation of the same type used for nonparametric and series estimators (Stone, 1980, 1985; Newey, 1997). The first-order condition and a Taylor expansion around θ⋆y give 
+
+0 = ∇Mn,y (θ⋆y ) + ̂ Hn,y (̂θy − θ⋆y ) + λn̂ θy,
+
+34 where ̂ Hn,y is an empirical Hessian along the segment from θ⋆y to ̂ θy. Uniform positive definiteness implies λmin (̂Hn,y ) > c/ 2 with probability tending to one, uniformly in y, because the empirical Hessians are uniformly consistent. For a fixed y, the score vector is an average of bounded mean-zero dn-vectors, so its Euclidean norm is Op(√dn/n ). A union bound over Jn grid points and Bernstein’s inequality add the maximal term Op(√log( eJ n)/n ). Thus 
+
+sup 
+
+> y∈Y n
+
+∥∇ Mn,y (θ⋆y ) − ∇ My(θ⋆y )∥2 = Op
+
+> √
+
+dn + log( eJ n)
+
+n 
+
+> 
+
+.
+
+Since ∇My(θ⋆y ) = 0 and ∥θ⋆y ∥2 ≤ Bn, the penalty contributes O(λnBn). Inverting the Hessian gives the coefficient rate. The uniform upper eigenvalue bound on the population Gram matrix converts coefficient error into L2 fitted-function error with only a constant-factor loss. The sieve approximation error is added by the triangle inequality, and Lipschitz interpolation adds O(hn) for continuum Y.
+
+Proof of Theorem 4.4. Apply Lemma 4.3 to each nuisance regression. For ma, the relevant dimen-sion is dU,n and the index set is Yn, giving rm,n . Under positivity, the validation subsample size for R = 1 , A = a, M = 1 is proportional to n with probability tending to one, so the denominator 
+
+n may be used in the rate up to constants. For ea, there is no y index and the relevant dimension is dX,n , giving re,n . For ρa, the dimension is dU,n and there is no y index, giving rρ,n .For ω, the calibrated ridge logistic source-target classifier is a convex M-estimation problem in dimension dX,n ; the calibration formulation follows the same moment-balancing logic as survey calibration and empirical likelihood (Deville and Särndal, 1992; Qin and Lawless, 1994; Imai and Ratkovic, 2014); the transformation from ̂ p0(x) to ̂ ω(x) is Lipschitz on the positivity region after truncation and normalization, so the same finite-dimensional M-estimation argument gives rω,n 
+
+when the classifier model has approximation error aω,n . Under entropy balancing, Assumption 4.10 restricts the density ratio to the stated exponential-tilt sieve. The convex dual has moment equation 
+
+Pn, 1{ωθ(X)bX,n (X)} − Pn, 0bX,n (X) = 0 
+
+with normalization Pn, 1ωθ = 1 . The population moment vanishes at the true or pseudo-true tilt parameter up to approximation error aω,n , the empirical moment is Op(
+
+> √
+
+dX,n /n ), and the Jacobian is the covariance matrix of bX,n under the tilted source law, nonsingular by Assumption 4.10. Taylor expansion and boundedness of the exponential-tilt map on the coefficient neighborhood give the same rate for the tilt parameter and hence for ̂ ω in L2(PX, 1) when evaluated at new x values. For ga, nested cross-fitting makes the generated response independent of the second-stage eval-uation fold conditional on the first-stage training data. Decompose ̂
+
+ga − ga = ( ̂ga − ĝma ) + ( ĝma − ga),
+
+where ĝma (y, x ) = E{̂ ma(y, X, S ) | R = 1 , A = a, X = x}. The first term is the second-stage ridge regression error and has rate ag,n +
+
+> √
+
+(dX,n + log( eJ n)) /n + hn. The second term is bounded by the first-stage error because conditional expectation is an L2 contraction: 
+
+sup 
+
+> y
+
+∥ĝma (y) − ga(y)∥PX, 1,2 ≤ sup 
+
+> y
+
+∥̂ma(y) − ma(y)∥1a, 2 = Op(rm,n ).
+
+This proves the stated rg,n rate. Truncation to the positivity interval is nonexpansive up to con-stants, and the maps (ω, e ) 7 → ωe a/e and ρ 7 → ρ/ ̂ρ are Lipschitz on the positivity region, so 
+
+rw,a,n = Op(rω,n + re,n ) and rρrat ,a,n = Op(rρ,n ).35 Proof of Corollary 4.6. Theorem 4.4 gives the nuisance rates entering the drift bound in Proposition 4.2; substituting the displayed product condition gives an op(n−1/2) drift uniformly in y. The one-step signal is a finite algebraic combination of bounded links applied to the sieve fits and the threshold class {1(Y ≤ y) : y ∈ Y n}, followed by interpolation. Its local perturbation class has entropy dimension of order Dn = dX,n + dU,n + log( eJ n) and L2(P ) radius of order rΓ,n . Hence the entropy-growth condition in Assumption 4.9 follows from 
+
+rΓ,n 
+
+> √
+
+Dn log n + Dn log n/ √n = o(1) .
+
+The special cases follow by substituting the corresponding rates. When Dn is bounded this re-duces to the usual fixed-entropy DML requirement; when Dn grows, the additional entropy-growth condition is necessary and is not implied by product rates alone. 
+
+Proof of Theorem 4.5. For a fixed y, standard KRR theory under a source condition and effective-dimension bound (Caponnetto and De Vito, 2007) yields 
+
+∥̂fy,λ − fy∥P, 2 = Op
+
+> 
+
+λr +
+
+> √
+
+N (λ)
+
+Neff  
+
+> 
+
+.
+
+The first term is the Tikhonov regularization bias and the second is the stochastic term. Applying this bound on the grid Yn and taking a union bound over Jn grid points gives the additional factor 
+
+> √
+
+log( eJ n) in the stochastic term. With λn ≍ N −1/(2 r+α)eff and N (λ) ≤ Cλ −α, the bias and stochastic terms balance at order N −r/ (2 r+α)eff 
+
+> √
+
+log( eJ n), up to constants. Since Neff /n is bounded away from zero with probability tending to one, this is equivalent to the displayed rate. The Lipschitz condition in y and linear interpolation add hn. Clipping probability regressions is nonexpansive in L2 and hence preserves rates for regression-type probability targets. The product-rate statement follows by substituting the KRR rates for m and g into Proposition 4.2 and using the separately verified rates for (e, ρ, ω ). The theorem deliberately does not assert that an arbitrary KRR regression automatically estimates the density ratio ω; a classifier, calibration, or density-ratio loss must separately justify sω,n . The remaining assertions are algebraic consequences of the product-rate display and the entropy-growth requirement stated in Corollary 4.6. 
+
+# D Proofs for Efficiency-Gain Results 
+
+Proof of Theorem 4.6. Suppress a, y and write ρ(X) = ρ0
+
+> a
+
+(X) under Assumption 4.12. Conditional on (R = 1 , A = a, X ), define 
+
+D = ma(y, X, S ) − ga(y, X ), ε = Zy − ma(y, X, S ).
+
+Then E(D | R = 1 , A = a, X ) = 0 , E(ε | R = 1 , A = a, X, S, M = 1) = 0 , and E(Dε | R = 1 , A =
+
+a, X ) = 0 .The source component of the surrogate-assisted efficient influence function is 
+
+CS = ω(X)1(A = a)
+
+π1ea(X)
+
+> {
+
+D + Mρ(X) ε
+
+> }
+
+.
+
+The source component of the no-surrogate benchmark efficient influence function is 
+
+C0 = ω(X)1(A = a)
+
+π1ea(X)
+
+Mρ(X) (D + ε).
+
+36 The target-covariate components of ϕya and ϕya, 0 are identical, and the source components have conditional mean zero given X. Hence the variance difference is the integrated difference between the conditional variances of C0 and CS .Conditional on (R = 1 , A = a, X ),
+
+E
+
+> [(
+
+D + Mρ ε
+
+> )2∣∣∣∣∣
+
+X, A = a, R = 1 
+
+> ]
+
+= V(D | X, A = a, R = 1) + 1
+
+ρ E{V(Zy | X, S, A = a, R = 1) | X, A = a, R = 1 },E 
+
+> [{
+
+Mρ (D + ε)
+
+> }2∣∣∣∣∣
+
+X, A = a, R = 1 
+
+> ]
+
+= 1
+
+ρ V(D | X, A = a, R = 1) + 1
+
+ρ E{V(Zy | X, S, A = a, R = 1) | X, A = a, R = 1 }.
+
+Their difference is (ρ−1 − 1) V(D | X, A = a, R = 1) . Multiplying by the squared outer weight and integrating over (X, A ) among source units gives 
+
+Va, 0(y) − Va(y) = 1
+
+π1
+
+E1 
+
+> [
+
+ω2(X)
+
+ea(X)1 − ρ0
+
+> a
+
+(X)
+
+ρ0
+
+> a
+
+(X) V{ma(y, X, S ) | R = 1 , A = a, X }
+
+> ]
+
+.
+
+Nonnegativity and strictness follow immediately. 
+
+Proof of Corollary 4.7. By Corollary 4.2, the efficiency bound for qa(τ ) is the CDF efficiency bound at qa(τ ) divided by f 2 
+
+> a
+
+(qa(τ )) . Applying Theorem 4.6 at y = qa(τ ) proves the first claim. For the QTE, the target-covariate component is unchanged by observing S, while the treatment-specific source components for a = 0 and a = 1 have disjoint treatment support and conditional mean zero. Thus the variance reduction for the QTE equals the sum of the two treatment-specific quantile variance reductions. 
+
+# E More Results of Simulation Studies 
+
+E.1 Experiment 1 with n = 4000 
+
+Table A.1 repeats Experiment 1 with n = 4000 . The larger sample reduces MSE for the one-step estimators and preserves the same qualitative conclusion as the main table: SA remains the strongest feasible point estimator across all reported quantiles, while IPW remains more variable and Plugin and Source remain biased. 37 Table A.1: Supplementary finite-sample performance for transported QTE estimation, n = 4000 
+
+τ ∆0(τ ) Method Bias MSE RMSE Coverage CI length 0.25 -3.884 IPW 0.121 1.645 SA ↓52.8% 1.283 0.794 3.706 0.25 -3.884 Oracle -0.003 0.676 0.822 0.822 2.473 0.25 -3.884 Plugin 1.914 4.020 SA ↓80.7% 2.005 — —0.25 -3.884 SA 0.141 0.776 0.881 0.800 2.508 
+
+0.25 -3.884 Source 1.761 3.191 SA ↓75.7% 1.786 — —0.50 -0.940 IPW 0.119 2.428 SA ↓67.4% 1.558 0.822 5.144 0.50 -0.940 Oracle -0.066 0.505 0.710 0.808 2.130 0.50 -0.940 Plugin 2.897 8.736 SA ↓90.9% 2.956 — —0.50 -0.940 SA 0.185 0.792 0.890 0.808 2.647 
+
+0.50 -0.940 Source 2.870 8.335 SA ↓90.5% 2.887 — —0.75 3.150 IPW 0.105 6.503 SA ↓83.9% 2.550 0.858 7.897 0.75 3.150 Oracle -0.028 0.416 0.645 0.814 1.709 0.75 3.150 Plugin 2.785 7.992 SA ↓86.9% 2.827 — —0.75 3.150 SA 0.241 1.045 1.022 0.782 2.650 
+
+0.75 3.150 Source 2.827 8.077 SA ↓87.1% 2.842 — —  
+
+> Notes. See Table 1. The superscript next to MSE again reports the percentage MSE reduction achieved by SA relative to the corresponding feasible baseline.
+
+38 References 
+
+Athey, S., Chetty, R., Imbens, G. W., and Kang, H. (2025). The surrogate index: Combining short-term proxies to estimate long-term treatment effects more rapidly and precisely. The Review of Economic Studies , rdaf087. Bang, H. and Robins, J. M. (2005). Doubly robust estimation in missing data and causal inference models. Biometrics , 61:962–973. Boughdiri, A., Berenfeld, C., Josse, J., and Scornet, E. (2025). A unified framework for the transportability of population-level causal measures. arXiv:2505.13104. Buyse, M. and Molenberghs, G. (1998). Criteria for the validation of surrogate endpoints in ran-domized experiments. Biometrics , 54:1014–1029. Chakrabortty, A. and Cai, T. (2018). Efficient and adaptive linear regression in semi-supervised settings. The Annals of Statistics , 46:1541–1572. Chakrabortty, A., Dai, G., and Carroll, R. J. (2022). Semi-supervised quantile estimation: Robust and efficient inference in high dimensional settings. arXiv:2201.10208. Chakrabortty, A. and Dai, G. (2024). A general framework for treatment effect estimation in semi-supervised and high dimensional settings. arXiv:2201.00468. Chen, J. and Ritzwoller, D. M. (2023). Semiparametric estimation of long-term treatment effects. 
+
+Journal of Econometrics , 237:105545. Cole, S. R. and Stuart, E. A. (2010). Generalizing evidence from randomized clinical trials to target populations: The ACTG 320 trial. American Journal of Epidemiology , 172:107–115. Dahabreh, I. J., Robertson, S. E., Tchetgen Tchetgen, E. J., Stuart, E. A., and Hernán, M. A. (2019). Generalizing causal inferences from individuals in randomized trials to all trial-eligible individuals. Biometrics , 75:685–694. Deville, J.-C. and Särndal, C.-E. (1992). Calibration estimators in survey sampling. Journal of the American Statistical Association , 87:376–382. Frangakis, C. E. and Rubin, D. B. (2002). Principal stratification in causal inference. Biometrics ,58:21–29. Frölich, M. and Melly, B. (2013). Unconditional quantile treatment effects under endogeneity. 
+
+Journal of Business & Economic Statistics , 31:346–357. Gilbert, P. B. and Hudgens, M. G. (2008). Evaluating candidate principal surrogate endpoints. 
+
+Biometrics , 64:1146–1154. Hahn, J. (1998). On the role of the propensity score in efficient semiparametric estimation of average treatment effects. Econometrica , 66:315–331. Hirano, K., Imbens, G. W., and Ridder, G. (2003). Efficient estimation of average treatment effects using the estimated propensity score. Econometrica , 71:1161–1189. Imai, K. and Ratkovic, M. (2014). Covariate balancing propensity score. Journal of the Royal Statistical Society: Series B , 76:243–263. 39 Imbens, G., Kallus, N., Mao, X., and Wang, Y. (2025). Long-term causal inference under persistent confounding via data combination. Journal of the Royal Statistical Society: Series B , 87:362–388. Kennedy, E. H., Balakrishnan, S., and Wasserman, L. (2023). Semiparametric counterfactual density estimation. Biometrika , 110:875–896. Koenker, R. and Bassett, G. (1978). Regression quantiles. Econometrica , 46:33–50. Lee, D., Yang, S., and Wang, X. (2022). Doubly robust estimators for generalizing treatment effects on survival outcomes from randomized controlled trials to a target population. Journal of Causal Inference , 10:415–440. Newey, W. K. (1994). The asymptotic variance of semiparametric estimators. Econometrica ,62:1349–1382. Newey, W. K. (1997). Convergence rates and asymptotic normality for series estimators. Journal of Econometrics , 79:147–168. Prentice, R. L. (1989). Surrogate endpoints in clinical trials: Definition and operational criteria. 
+
+Statistics in Medicine , 8:431–440. Qin, J. and Lawless, J. (1994). Empirical likelihood and general estimating equations. The Annals of Statistics , 22:300–325. Rosenbaum, P. R. and Rubin, D. B. (1983). The central role of the propensity score in observational studies for causal effects. Biometrika , 70:41–55. Rubin, D. B. (1978). Bayesian inference for causal effects: The role of randomization. The Annals of Statistics , 6:34–58. Rubin, D. B. (2005). Causal inference using potential outcomes: Design, modeling, decisions. 
+
+Journal of the American Statistical Association , 100:322–331. Stone, C. J. (1980). Optimal rates of convergence for nonparametric estimators. The Annals of Statistics , 8:1348–1360. Stone, C. J. (1985). Additive regression and other nonparametric models. The Annals of Statistics ,13:689–705. Tao, Y. and Fu, H. (2019). Doubly robust estimation of the weighted average treatment effect for a target population. Statistics in Medicine , 38:315–325. VanderWeele, T. J. (2013). Surrogate measures and consistent surrogates. Biometrics , 69:561–565. Zhang, Y. and Zhu, Z. (2025). A data fusion method for quantile treatment effects. Statistica Sinica , 35:981–1002. Abadie, A., Angrist, J., and Imbens, G. (2002). Instrumental variables estimates of the effect of subsidized training on the quantiles of trainee earnings. Econometrica , 70:91–117. Belloni, A., Chernozhukov, V., Fernández-Val, I., and Hansen, C. (2017). Program evaluation and causal inference with high-dimensional data. Econometrica , 85:233–298. Caponnetto, A. and De Vito, E. (2007). Optimal rates for the regularized least-squares algorithm. 
+
+Foundations of Computational Mathematics , 7:331–368. 40 Chernozhukov, V. and Hansen, C. (2005). An IV model of quantile treatment effects. Econometrica ,73:245–261. Chernozhukov, V., Fernández-Val, I., and Galichon, A. (2010). Quantile and probability curves without crossing. Econometrica , 78:1093–1125. Chernozhukov, V., Fernández-Val, I., and Melly, B. (2013). Inference on counterfactual distribu-tions. Econometrica , 81:2205–2268. Chernozhukov, V., Chetverikov, D., and Kato, K. (2014). Gaussian approximation of suprema of empirical processes. The Annals of Statistics , 42:1564–1597. Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W., and Robins, J. (2018). Double/debiased machine learning for treatment and structural parameters. The Econometrics Journal , 21:C1–C68. Díaz, I. (2017). Efficient estimation of quantiles in missing data models. Journal of Statistical Planning and Inference , 190:39–51. Firpo, S. (2007). Efficient semiparametric estimation of quantile treatment effects. Econometrica ,75:259–276. Kallus, N. and Mao, X. (2025). On the role of surrogates in the efficient estimation of treatment effects with limited outcome data. Journal of the Royal Statistical Society: Series B , 87:480–509. Kallus, N., Mao, X., and Uehara, M. (2024). Localized debiased machine learning: Efficient infer-ence on quantile treatment effects and beyond. Journal of Machine Learning Research , 25:1–59. Robins, J. M., Rotnitzky, A., and Zhao, L. P. (1994). Estimation of regression coefficients when some regressors are not always observed. Journal of the American Statistical Association , 89:846– 866. Robins, J. M. and Rotnitzky, A. (1995). Semiparametric efficiency in multivariate regression models with missing data. Journal of the American Statistical Association , 90:122–129. Tsiatis, A. A. (2006). Semiparametric Theory and Missing Data . Springer. van der Laan, M. J. and Robins, J. M. (2003). Unified Methods for Censored Longitudinal Data and Causality . Springer. van der Vaart, A. W. (1998). Asymptotic Statistics . Cambridge University Press. van der Vaart, A. W. and Wellner, J. A. (1996). Weak Convergence and Empirical Processes .Springer. 41
