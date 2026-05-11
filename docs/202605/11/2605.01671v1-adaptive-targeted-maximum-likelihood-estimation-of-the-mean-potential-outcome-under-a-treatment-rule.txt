@@ -1,0 +1,1062 @@
+Title: Adaptive Targeted Maximum Likelihood Estimation of the Mean Potential Outcome under a Treatment Rule
+
+URL Source: https://arxiv.org/pdf/2605.01671v1
+
+Published Time: Tue, 05 May 2026 00:55:59 GMT
+
+Number of Pages: 27
+
+Markdown Content:
+# Adaptive Targeted Maximum Likelihood Estimation of the Mean Potential Outcome under a Treatment Rule 
+
+## Yichen Xu 1 and Mark J. van der Laan 11Division of Biostatistics, University of California, Berkeley, yichen xu@berkeley.edu, laan@berkeley.edu 
+
+Abstract 
+
+Estimating the mean counterfactual outcome under a treatment rule is a central problem in causal inference and policy evaluation. Standard estimators, including inverse probability weighting (IPW), augmented IPW (AIPW), and targeted maximum likelihood estimation (TMLE), can become unstable under practical positivity violations because their targeting or weighting steps depend on inverse propen-sity scores. We propose an adaptive targeted maximum likelihood estimation (A-TMLE) framework that uses a data-adaptive working model for the conditional average treatment effect (CATE). This working model induces a projected policy-value parameter, which coincides with the nonparametric mean poten-tial outcome when the CATE is well represented by the adaptive basis. We derive the efficient influence function for the projected parameter and characterize its second-order remainder. We also introduce a regularized TMLE that targets the nonparametric policy value using a stabilized targeting covariate obtained by projecting the standard TMLE clever covariate onto the score space induced by the CATE working model. We quantify the first-order plug-in bias of regularized TMLE relative to the nonpara-metric target. The resulting targeting steps avoid direct inverse propensity score weighting, improving stability under limited overlap. In simulations, A-TMLE and regularized TMLE achieve lower mean squared error and improved coverage compared with IPW, AIPW, and standard TMLE under practical positivity violations, while remaining competitive when treatment overlap is strong. A real-data appli-cation to the Right Heart Catheterization study illustrates that the adaptive estimators produce stable policy-value estimates with substantially shorter confidence intervals than IPW and AIPW. 
+
+# 1 Introduction 
+
+A central goal in personalized medicine and causal decision making is to identify treatment strategies that optimize patient outcomes. Such strategies are commonly formalized as dynamic treatment regimes or in-dividualized treatment rules, which map patient characteristics or evolving treatment histories to treatment decisions Murphy [2003]. The performance of a treatment rule is typically summarized by the mean coun-terfactual outcome under the rule, representing the expected outcome that would be observed if the entire population were treated according to that strategy. Estimation and inference for this value parameter have been widely studied in the causal inference and biostatistics literature. Early work focused on learning op-timal treatment regimes from longitudinal data using potential outcome frameworks and sequential decision methods Murphy [2003]. More recent developments have emphasized semiparametric approaches that avoid 1
+
+> arXiv:2605.01671v1 [stat.ME] 3 May 2026
+
+restrictive parametric assumptions, including targeted learning methods for estimating the mean outcome under optimal dynamic treatment rules and for conducting statistical inference in large nonparametric models van der Laan and Luedtke [2015]. Extensions of this framework have addressed settings with additional con-straints, such as limited treatment resources, and have developed efficient estimators for the value of optimal individualized treatment rules Luedtke and van der Laan [2016]. In longitudinal studies with time-varying treatments, estimation of counterfactual mean outcomes often relies on representations of the longitudinal g-formula together with doubly robust or sequentially doubly robust estimators that remain consistent when either outcome models or treatment mechanisms are correctly specified Luedtke et al. [2018], Tran et al. [2019]. Parallel developments in statistics and machine learning have focused on directly learning optimal individualized treatment rules by framing the problem as a weighted classification task, leading to methods such as outcome weighted learning and its extensions based on residual weighting Zhao et al. [2012], Zhou et al. [2017]. Together, these approaches provide complementary tools for estimating and evaluating treat-ment strategies and for understanding the population mean outcomes that would result under alternative intervention rules. In many applications, treatment strategies must be evaluated using observational data, where treatment assignment is determined by clinical practice, patient characteristics, or system-level factors rather than ran-domized allocation. While randomized controlled trials provide strong internal validity, observational studies often leverage larger and more heterogeneous populations and reflect real-world clinical settings. However, the absence of randomization requires additional assumptions to identify causal quantities such as the mean counterfactual outcome under a treatment rule. In particular, identification and estimation generally rely on models for either the outcome regression, as in g-computation Robins [1986], or the treatment mechanism through propensity score–based approaches Hern´ an and Robins [2016]. Many commonly used estimators, including inverse probability weighting and doubly robust procedures such as targeted maximum likelihood estimation van der Laan and Rose [2011], depend critically on the positivity assumption. Formally, if g(a | W ) = P (A = a | W ) denotes the treatment mechanism, positivity requires 0 < g (a |
+
+W ) < 1 for all treatment levels a and covariate values W with positive probability. This condition ensures that all treatment options under consideration are sufficiently represented in the observed data so that the mean counterfactual outcome under a treatment rule can be identified and estimated. Violations of positivity can arise either structurally, when certain treatments are impossible for a subgroup, or practically, when treatment assignment is theoretically possible but rarely observed in finite samples. Practical violations are common in high-dimensional or highly stratified settings and may lead to unstable estimators, for example through extreme inverse propensity weights 1 /g (A | W ) that inflate variance and introduce finite-sample bias Crump et al. [2006, 2009]. Various strategies have been proposed to mitigate these issues, including truncation of estimated propensity scores, restricting analyses to regions of sufficient overlap, or using alternative weighting schemes that emphasize covariate regions with better treatment overlap Cole and Hern´ an [2008], Zhou et al. [2020]. Targeted Maximum Likelihood Estimation (TMLE) van der Laan and Rubin [2006], van der Laan and Rose [2011, 2018], Gruber and Laan [2012] is a general semiparametric framework for estimating causal parameters by combining flexible machine learning estimation of nuisance functions with a targeted updating step based on the efficient influence function, yielding estimators that are doubly robust and asymptotically efficient Smith et al. [2023]. A substantial body of work has focused on improving the stability of TMLE when estimating average treatment effects in the presence of practical positivity violations, where small estimated treatment probabilities lead to unstable inverse probability weights and highly variable clever covariates. For 2example, truncation of inverse probability weights has been proposed to control variance and mean squared error Gruber et al. [2022], Xu et al. [2026], while recent adaptive targeted learning approaches project the target parameter onto data-adaptive working models using relaxed highly adaptive lasso structures Benkeser and Van Der Laan [2016], van der Laan et al. [2023, 2025]. Other contributions address inference and variance estimation, such as plug-in and targeted bootstrap procedures designed to correct underestimation of efficient influence function–based variance estimators Tran et al. [2023]. Beyond the average treatment effect, the targeted learning framework also provides estimators for sequential decision problems and dynamic treatment regimes through longitudinal TMLE (L-TMLE), which estimates the mean counterfactual outcome under static or dynamic treatment rules van der Laan and Rose [2011, 2018]. Despite these methodological advances, the impact of practical positivity violations on TMLE-type estimators for policy evaluation—that is, estimation of the mean counterfactual outcome under a treatment rule—has received comparatively less systematic investigation. In this article, we study estimation of the mean potential outcome under a fixed treatment rule d in a point-treatment setting, with particular focus on practical positivity violations. Rather than targeting the fully nonparametric parameter E[Y d] directly, we develop a semiparametric projection framework induced by a working model for the conditional average treatment effect (CATE). Specifically, we use the highly adaptive lasso (HAL) to construct a data-adaptive basis for the CATE and define a projected policy-value parameter that coincides with E[Y d] when the CATE is contained in the working model. Based on this formulation, we propose A-TMLE, which estimates the projected parameter without using inverse propen-sity score weights, and regularized TMLE, which targets the nonparametric policy value using a stabilized outcome-targeting step based on a projected clever covariate. We derive the efficient influence function (EIF) for the projected parameter and characterize its second-order remainder. We also show that the regularized TMLE clever covariate is the L2-projection of the standard TMLE clever covariate onto the tangent space induced by the CATE working model, and quantify the first-order plug-in bias of regularized TMLE relative to the nonparametric target. For inference, we construct Wald confidence intervals using influence-function-based standard errors. Through simulations across sample sizes and treatment policies, we show that the proposed A-TMLE and regularized TMLE estimators achieve lower mean squared error and improved cover-age compared with standard TMLE, augmented inverse probability weighting (AIPW) Robins et al. [1994], and inverse probability weighting (IPW) Horvitz and Thompson [1952] under practical positivity violations, while remaining competitive when treatment overlap is strong. 
+
+# 2 Semi-parametric model and efficient influence function 
+
+## 2.1 Problem formulation 
+
+We consider the point treatment setting O = ( W, A, Y ), where O denotes an observation, W is the vector of covariates, A is the treatment indicator, and Y is the outcome. For a treatment rule d(W ), our goal is to estimate the counterfactual mean outcome 
+
+E[Y d] = EW [E[Y | A = d(W ), W ]] .
+
+This parameter can be expressed using an orthogonal decomposition as 
+
+E [E[Y | W ] + ( d(W ) − ¯g(W )) ( E[Y | A = 1 , W ] − E[Y | A = 0 , W ])] ,
+
+3where ¯ g(W ) = P (A = 1 | W ) denotes the propensity score and E[Y | A = 1 , W ]−E[Y | A = 0 , W ] represents the conditional average treatment effect (CATE) Heckman et al. [1997]. We estimate the CATE component using a data-adaptive working model, specifically the highly adaptive lasso (HAL) Benkeser and Van Der Laan [2016]. Let ϕn(W ) denote a collection of basis functions and β the corresponding coefficient vector. Under this working model, the projected target parameter is defined as Ψn(P0) = EP0
+
+EP0 (Y |W ) + ( d(W ) − g0(W )) β⊤ 
+
+> 0
+
+ϕn(W ) .
+
+Correspondingly, the working model for the parameter can be written as ˜Q(P ) = EP
+
+EP (Y | W ) + ( d(W ) − ¯g(P )( W )) β(P )⊤ϕ(W ) ,
+
+where ϕ(W ) denotes the basis functions and β(P ) the coefficients defining the projection onto their span. One can obtain β(P ) by 
+
+β(P ) = arg min  
+
+> β
+
+EP
+
+{B(P )( W ) − β⊤ϕ(W )}2 ¯gP (W ){1 − ¯gP (W )} .
+
+We next derive the efficient influence function (EIF) of β(P ) and of the projected policy-value parameter. Notice that the proposed A-TMLE estimator does not involve the inverse of the propensity score, which is required by commonly used methods such as TMLE, AIPW, and IPW. As a result, it is inherently more robust to practical positivity violations, where the propensity score may approach zero and lead to unstable inverse probability weights. 
+
+## 2.2 The EIF of β(P )
+
+We now derive the EIF of β(P ), which will also help characterize the EIF of the more general projected parameters. The parameter β(P ) is defined as the solution of the estimating equation 
+
+U (β, P, B (P ), ¯gP ) = 0 ,
+
+where 
+
+U (β, P, B (P ), g ) = EP
+
+ϕ(W ) B(P )( W ) − β⊤ϕ(W )¯g(W )(1 − ¯g(W )) .
+
+Let Σ( P ) = EP
+
+ϕ(W )ϕ(W )⊤ ¯g(W )(1 − ¯g(W ))  .
+
+The EIF of B(P )( w) is given by 
+
+DB() ,w,P = I(A = 1 , W = w)¯g(W )p(W ) (Y − ¯Q(A, W )) − I(A = 0 , W = w)(1 − ¯g(W )) p(W ) (Y − ¯Q(A, W )) = 2A − 1
+
+g(A | W )
+
+I(W = w)
+
+p(W ) (Y − ¯Q(A, W )) .
+
+4Let Dβ() ,P denote the EIF of β(P ). Differentiating the estimating equation yields Σ( P )Dβ() ,P = ϕ(W ) B(P ) − β⊤ϕ(W )¯g(W )(1 − ¯g(W )) + ( A − ¯g(W )) ϕ(W ) B(P ) − β⊤ϕ(W )(1 − 2¯ g(W )) + 2A − 1
+
+g(A | W ) (Y − ¯Q(A, W )) ϕ(W )¯ g(W )(1 − ¯g(W )) . (1) 
+
+## 2.3 The EIF of the projection parameter Ψn(P0) for E[Y d].
+
+We now derive the EIF of the projected parameter corresponding to the mean counterfactual outcome E[Y d]. Consider the projection representation ˜QW (P ) = EP
+
+EP (Y | W ) + ( d(W ) − ¯gP (W )) β(P )⊤ϕ(W ) . (2) The parameter depends on P through three components: the mean outcome EP Y , the projection coef-ficient β(P ), and the treatment mechanism ¯ gP (W ). The EIF therefore contains contributions from each of these components. Since EP [EP (Y | W )] = EP Y , the contribution from the mean outcome is 
+
+Y − EP Y. 
+
+The second component, EP [d(W )β(P )⊤ϕ(W )], depends on P only through β(P ), yielding the contribu-tion 
+
+D⊤ 
+
+> β() ,P
+
+(O) EP [d(W )ϕ(W )] .
+
+Finally, the term EP [¯ gP (W )β(P )⊤ϕ(W )] contributes an additional component through the EIF of ¯ gP (W ). Let 
+
+D¯g() ,w,P (O) = I(W = w)
+
+p(W ) (A − ¯gP (W )) denote the EIF of ¯ gP (w). Combining these contributions yields the EIF of ˜QW (P ): 
+
+D ˜QW () ,P = ( Y − EP Y ) + D⊤ 
+
+> β() ,P
+
+(O) EP{(d(W ) − ¯gP (W )) ϕ(W )}
+
++ ( d(W ) − ¯gP (W )) β(P )⊤ϕ(W )
+
+− EP
+
+(d(W ) − ¯gP (W )) β(P )⊤ϕ(W )
+
+− (A − ¯gP (W )) β(P )⊤ϕ(W ). (3) 53 Adaptive TMLE and regularized TMLE 
+
+## 3.1 Methods 
+
+A-TMLE Based on the EIF derived in Section 2, we introduce the A-TMLE estimator for the projected policy-value parameter induced by the CATE working model. The original nonparametric target is 
+
+EP [Y d] = EP {Q(d(W ), W )}.
+
+Using the decomposition 
+
+Q(d(W ), W ) = EP [Y | W ] + {d(W ) − ¯g(W )}B(P )( W ),
+
+where 
+
+B(P )( W ) = EP [Y | A = 1 , W ] − EP [Y | A = 0 , W ],
+
+we define the projected parameter over the data adaptive working model Mn
+
+ΨΠ(P ) = EP
+
+EP (Y |W ) + {d(W ) − ¯g(W )}β(P )⊤ϕ(W ) .
+
+When 
+
+B(P )( W ) = β(P )⊤ϕ(W ),
+
+the projected parameter coincides with the nonparametric policy value EP [Y d]. To see why no separate g-targeting step is needed under the exact CATE working model, decompose 
+
+Y − EP Y = {Y − EP [Y | A, W ]} + {EP [Y | A, W ] − EP [Y | W ]} + {EP [Y | W ] − EP Y }. (4) Writing 
+
+EP [Y | A, W ] = Q(0 , W ) + Aτ P (W ), τP (W ) = EP [Y | A = 1 , W ] − EP [Y | A = 0 , W ],
+
+we have 
+
+EP [Y | A, W ] − EP [Y | W ] = Q(0 , W ) + Aτ P (W ) − { Q(0 , W ) + ¯ g(W )τP (W )}
+
+= ( A − ¯g(W )) τP (W ).
+
+Combining this term with the EIF component 
+
+−(A − ¯g(W )) β(P )⊤ϕ(W )gives (A − ¯g(W )) {τP (W ) − β(P )⊤ϕ(W )}.
+
+Thus, if the CATE working model is exact, this treatment-score component vanishes. The remaining part of the decomposition is 
+
+{Y − EP [Y | A, W ]} + {EP [Y | W ] − EP Y }.
+
+6The first term is the outcome-residual component; the second is a mean-zero function of W only and does not involve an unknown nuisance contrast to be targeted by a treatment or outcome fluctuation. Under the projected model, the EIF term involving Dβ() ,P also has mean zero. Consequently, under the projected CATE model, the Dβ() ,P component does not contribute to the first-order expansion. This yields the A-TMLE plug-in estimator: we use HAL to construct the adaptive basis {ϕn} for the working model, use relaxed HAL to estimate β, and plug the estimated nuisance quantities into ˆΨA-TMLE = Pn
+
+h
+
+Y + {d(W ) − ˆg(W )} ˆβ⊤ϕn(W )
+
+i
+
+.
+
+Regularized TMLE A-TMLE targets the projected policy-value parameter. Regularized TMLE instead targets the original nonparametric policy value using a regularized clever covariate. This covariate is obtained by projecting the nonparametric TMLE clever covariate onto the score space spanned by the CATE working model. Because regularized TMLE targets the original policy-value parameter rather than the projected parameter, its initial outcome regression may be any user-specified estimator of Q0(A, W ) = E0(Y | A, W ). In contrast, A-TMLE requires the initial fit to be represented in the semiparametric form induced by the CATE working model. To derive the outcome-targeting clever covariate, consider the outcome-residual component of the EIF for β(P ) in (1). The relevant term is 2A − 1
+
+g(A | W ) {Y − ¯Q(A, W )}ϕ(W )¯ g(W ){1 − ¯g(W )}.
+
+When A = 0, this equals 
+
+−¯g(W ){Y − ¯Q(0 , W )}ϕ(W ) = ( A − ¯g(W )) {Y − ¯Q(A, W )}ϕ(W ),
+
+and when A = 1, this equals 
+
+{1 − ¯g(W )}{ Y − ¯Q(1 , W )}ϕ(W ) = ( A − ¯g(W )) {Y − ¯Q(A, W )}ϕ(W ).
+
+Thus, for both A values, we have 2A − 1
+
+g(A | W ) {Y − ¯Q(A, W )}ϕ(W )¯ g(W ){1 − ¯g(W )} = ( A − ¯g(W )) {Y − ¯Q(A, W )}ϕ(W ).
+
+Substituting this representation into the projected EIF gives the additional outcome-residual contribution 
+
+EP [{d(W ) − ¯g(W )}ϕ(W )] ⊤Σ( P )−1(A − ¯g(W )) ϕ(W ){Y − ¯Q(A, W )},
+
+where Σ( P ) = EP [ϕ(W )ϕ(W )⊤ ¯g(W ){1 − ¯g(W )}].
+
+Therefore, the regularized TMLE fluctuation covariate is 
+
+HReg (A, W ) = EP [{d(W ) − ¯g(W )}ϕ(W )] ⊤Σ( P )−1(A − ¯g(W )) ϕ(W ).
+
+7Together with the direct outcome-residual direction in (4), the coefficient multiplying the residual Y −
+
+¯Q(A, W ) in the projected EIF is 1 + HReg (A, W ).
+
+In the fluctuation step, we include only the centered component HReg (A, W ), since the leading 1 corresponds to the first term in (4). The next section formalizes this interpretation by showing that 1 + HReg (A, W ) is the L2-projection of the standard TMLE outcome-residual multiplier onto the affine space induced by the CATE working model, and equivalently that HReg (A, W ) is the projection of the centered multiplier. In implementation, we replace population quantities by empirical estimates: ˆHReg (A, W ) = Pn[{d(W ) − ˆg(W )}ϕn(W )] ⊤ ˆΣ−1(A − ˆg(W )) ϕn(W ),
+
+where ˆΣ = Pn[ϕn(W )ϕn(W )⊤ ˆg(W ){1 − ˆg(W )}].
+
+We then target the working outcome regression 
+
+Q0(A, W ) = ˆ m(W ) + ( A − ˆg(W ))ˆ τ (W )using ˆHReg (A, W ), yielding Q⋆n(A, W ). The regularized TMLE plug-in estimator is ˆΨReg = PnQ⋆n(d(W ), W ).
+
+The A-TMLE and regularized TMLE procedures are summarized in Algorithm 1. 
+
+## 3.2 Asymptotic Behavior of A-TMLE and regularized TMLE 
+
+We first characterize the second-order remainder for the projected parameter in A-TMLE. For this theoretical analysis, we work with an oracle version of the CATE working model. The term “oracle” means that the basis functions are treated as fixed and sufficiently rich to represent the true CATE, rather than being selected adaptively from the observed data. Let M0 denote this oracle working model, defined by the span of a fixed basis ϕ(W ). Under M0, the true CATE satisfies 
+
+B0(W ) = EP0 [Y | A = 1 , W ] − EP0 [Y | A = 0 , W ] = β⊤ 
+
+> 0
+
+ϕ(W ).
+
+The corresponding projected parameter is ΨM0 (P ) = EP [Y ] + EP
+
+(d(W ) − ¯g(W )) β(P )⊤ϕ(W ) .
+
+When the oracle CATE representation holds, this projected parameter coincides with the nonparametric policy value EP [Y d] at P0. The oracle model M0 should be distinguished from the finite data-adaptive working model Mn used by the estimator: Mn is generated by the estimated basis ϕn(W ), whereas M0
+
+is an idealized fixed-basis model used to study the asymptotic remainder. The following theorem quantifies how nuisance estimation error propagates into the von Mises remainder for this projected parameter. 8Algorithm 1 A-TMLE and regularized TMLE under a CATE working model 
+
+Input: Data {(Wi, A i, Y i)}ni=1 , treatment rule d(W )
+
+1. Nuisance estimation Fit ˆ g(W ) = P (A = 1 | W ) and ˆQ(A, W ) = E[Y | A, W ] using Super Learner. 
+
+2. Initial lasso CATE fit Construct pseudo-outcome 
+
+Zi = Yi − ˆm(Wi)
+
+Ai − ˆg(Wi)with weights ( Ai − ˆg(Wi)) 2, and fit lasso HAL to obtain ˆτlasso (W ) = ˆβ⊤
+
+> lasso
+
+ϕ(W ).
+
+3. Relaxed HAL CATE fit for A-TMLE Refit on the selected basis ϕ(W ) using relaxed HAL to obtain ˆτrelax (W ) = ˆβ⊤
+
+> relax
+
+ϕ(W ).
+
+4. Clever covariate for Q-targeting For regularized TMLE, define 
+
+HReg (A, W ) = Pn{(d(W ) − ˆg(W )) ϕ(W )}⊤ ˆΣ−1(A − ˆg(W )) ϕ(W ),
+
+where ˆΣ = Pn[ϕ(W )ϕ(W )⊤ ˆg(W ){1 − ˆg(W )}].
+
+5. Targeting For regularized TMLE, target the initial outcome regression ˆQ(A, W ) using HReg (A, W )to obtain Q⋆.
+
+6. Plug-in estimators 
+
+ˆΨA-TMLE = Pn [Y + ( d(W ) − ˆg(W ))ˆ τrelax (W )] .
+
+ˆΨReg = Pn [Q⋆(d(W ), W )] .
+
+7. Inference Construct Wald confidence intervals using the projected EIF, the regularized EIF, or the standard TMLE influence function. 
+
+Theorem 3.1 (Second-order remainder characterization) . Consider the projected parameter 
+
+ΨM0 (P ) = EP [Y ] + EP [( d(W ) − ¯g(W )) β(P )⊤ϕ(W )] .
+
+Let g(W ) = P (A = 1 | W ) denote the treatment mechanism and 
+
+B(P )( W ) = EP [Y | A = 1 , W ] − EP [Y | A = 0 , W ]
+
+denote the conditional average treatment effect. Assume the oracle working model 
+
+B0(W ) = β⊤ 
+
+> 0
+
+ϕ(W )
+
+holds. Then the von Mises expansion satisfies 
+
+ΨM0 (P ) − ΨM0 (P0) = ( P − P0)DP0 + R2(P, P 0),
+
+9where the remainder R2 admits the decomposition 
+
+R2 = R2,1 + R2,2 + R2,3,
+
+with 
+
+R2,1 = oP
+
+ ∥B0 − β⊤ 
+
+> 0
+
+ϕ∥ ∥ ¯g0 − ¯g∥2 ,R2,2 = oP (∥¯g0 − ¯g∥ ∥ β − β0∥) + oP
+
+ ∥β − β0∥2 ,
+
+and 
+
+R2,3 = oP (∥¯g − ¯g0∥ ∥ β − β0∥) .
+
+Consequently, 
+
+|R2| ≲ ∥B0 − β⊤ 
+
+> 0
+
+ϕ∥ ∥ ¯g − ¯g0∥2 + ∥β − β0∥ ∥ ¯g − ¯g0∥ + ∥β − β0∥2.
+
+This remainder bound highlights the adaptive structure of the estimator. Under the oracle CATE model, the leading terms depend on the product of the treatment-mechanism error and the projection-coefficient error, together with quadratic terms in the projection error. Hence, asymptotic linearity follows when these products are sufficiently small. In particular, the estimator does not require inverse propensity score clever covariates to remove first-order bias in the projected model; instead, the bias is governed by the accuracy of ¯g and the projected CATE coefficient β.Next, we show that the clever covariate used by regularized TMLE is a projection of the usual nonpara-metric clever covariate for the policy value EP [Y d]. This result explains why the regularized TMLE update can be viewed as a stable version of the standard TMLE targeting step: it preserves the outcome-targeting direction but replaces the inverse-propensity-weighted clever covariate by its projection onto the tangent space induced by the CATE working model. 
+
+Theorem 3.2 (Projected clever covariate) . Let ¯g(W ) = P (A = 1 | W ) and 
+
+g(A | W ) = A¯g(W ) + (1 − A){1 − ¯g(W )}.
+
+Define 
+
+q(W ) = d(W ) − ¯g(W ), w(W ) = ¯ g(W ){1 − ¯g(W )},
+
+and assume positivity, 0 < ¯g(W ) < 1 almost surely. Let the nonparametric clever covariate for 
+
+Ψ( P ) = EP [Y d]
+
+be 
+
+HNP (A, W ) = 1{A = d(W )}
+
+g(A | W ) .
+
+Let ϕn(W ) ∈ RKn and define 
+
+Φn = u(W ) = ϕn(W )⊤α : α ∈ RKn .
+
+Consider the affine class 
+
+An = {1 + ( A − ¯g(W )) u(W ) : u ∈ Φn} ⊂ L2(PA,W ).
+
+10 Let 
+
+Σn = EP
+
+w(W )ϕn(W )ϕn(W )⊤ .
+
+If Σn is invertible, then the L2(PA,W ) projection of HNP onto An is 
+
+ΠAn HNP (A, W ) = 1 + ( A − ¯g(W )) ϕn(W )⊤Σ−1 
+
+> n
+
+EP [ϕn(W ){d(W ) − ¯g(W )}] .
+
+Equivalently, 
+
+ΠAn HNP (A, W ) = 1 + 2A − 1
+
+g(A | W ) w(W )ϕn(W )⊤Σ−1 
+
+> n
+
+EP [ϕn(W ){d(W ) − ¯g(W )}] .
+
+Consequently, the centered treatment-score component used as the regularized TMLE fluctuation covariate is the projection of HNP − 1 onto 
+
+Tn = {(A − ¯g(W )) u(W ) : u ∈ Φn} ,
+
+namely 
+
+HReg ,n (A, W ) = ( A − ¯g(W )) ϕn(W )⊤Σ−1 
+
+> n
+
+EP [ϕn(W ){d(W ) − ¯g(W )}] .
+
+If ∪nΦn is dense in L2(P, w ), then 
+
+ΠAn HNP → HNP in L2(PA,W ),
+
+and the centered projection converges to HNP − 1.
+
+The theorem separates the standard TMLE clever covariate into two pieces. The leading constant 1 corresponds to the direct outcome-residual component in the EIF, while the centered component HNP − 1is the treatment-score component. Regularized TMLE targets only the projected centered component. The result above shows that this projected component is exactly the L2(PA,W ) projection of the nonparametric direction onto the working tangent space. Thus, as the adaptive basis becomes rich, the projected update approaches the standard TMLE update, while avoiding direct inverse propensity score weights in finite samples. Finally, we quantify the first-order plug-in bias of regularized TMLE when it is interpreted as an estimator for the full nonparametric policy value EP [Y d]. This is distinct from the oracle projected-parameter analysis above. Regularized TMLE targets the projected EIF, while the nonparametric target has its own EIF. The following proposition shows that the discrepancy is negligible when the projected EIF approximates the nonparametric EIF sufficiently well and the nuisance estimators converge faster than n−1/4.
+
+Proposition 3.3 (First-order plug-in bias of regularized TMLE for the nonparametric target) . Let η =(Q, g ), η0 = ( Q0, g 0), and let 
+
+ˆη = ( Q∗
+
+> n
+
+, g n),
+
+where Q∗ 
+
+> n
+
+denotes the targeted outcome regression produced by the regularized TMLE fluctuation step. The corresponding regularized TMLE plug-in estimator is 
+
+ˆΨReg = PnQ∗
+
+> n
+
+(d(W ), W ).
+
+Let D∗ 
+
+> Ψ,η
+
+be the nonparametric EIF for Ψ( P ) = EP [Y d], and let ˜DΨ(Π) ,η be the projected EIF targeted by 
+
+11 regularized TMLE. Define 
+
+∆η = D∗ 
+
+> Ψ,η
+
+− ˜DΨ(Π) ,η .
+
+Suppose the regularized TMLE targeting step solves 
+
+Pn ˜DΨ(Π) ,ˆη = 0 .
+
+Let 
+
+rQ = ∥Q∗ 
+
+> n
+
+− Q0∥L2(P0), rg = ∥gn − g0∥L2(P0),
+
+and let δn denote the L2(P0) approximation size of the projected EIF relative to the nonparametric EIF. Assume that, in a neighborhood of η0,
+
+∥∆(Q1,g ) − ∆(Q2,g )∥L2(P0) ≲ δn∥Q1 − Q2∥L2(P0)
+
+and 
+
+∥∆(Q,g 1) − ∆(Q,g 2)∥L2(P0) ≲ δn∥g1 − g2∥L2(P0).
+
+Then, under standard empirical process regularity, 
+
+PnD∗ 
+
+> Ψ,ˆη
+
+= oP (n−1/2) + OP (δnrQ) + OP (δnrg ).
+
+In particular, if 
+
+rQ = oP (n−1/4), rg = oP (n−1/4), δn = oP (n−1/4),
+
+then 
+
+PnD∗ 
+
+> Ψ,ˆη
+
+= oP (n−1/2).
+
+Thus, the first-order plug-in bias of the regularized TMLE plug-in estimator for the nonparametric target is asymptotically negligible whenever the projected EIF approximation and the nuisance estimators all converge faster than n−1/4.
+
+The proposition gives the rate-level justification for using regularized TMLE as an approximation to standard TMLE targeting. Since regularized TMLE solves the projected EIF equation exactly, its remaining first-order bias for the nonparametric target is controlled by the difference between the projected EIF and the full nonparametric EIF. If this difference is oP (n−1/4), and if Q∗ 
+
+> n
+
+and gn also converge at oP (n−1/4)rates, then the first-order plug-in bias is oP (n−1/2). Thus, regularized TMLE can be asymptotically aligned with the nonparametric target while retaining the finite-sample stability of the projected clever covariate. 
+
+# 4 Simulation 
+
+## 4.1 Simulation settings 
+
+We conducted a Monte Carlo study to evaluate the finite-sample performance of the proposed estimators under varying degrees of treatment overlap. For each replicate we generated independent observations 
+
+Oi = ( Wi, A i, Y i) for i = 1 , . . . , n , where W = ( W1, W 2, W 3, W 4) are baseline covariates, A ∈ { 0, 1} is a binary treatment indicator, and Y is a continuous outcome. 12 Covariates were generated independently as Wj ∼ Uniform( −1, 1) for j = 1 , . . . , 4. Treatment assignment followed the logistic model 
+
+g0(W ) = expit 
+
+
+
+κpos 
+
+ W1 + sin(4 W1) + W2 + cos(4 W2) + W3 + sin(4 W3) + W4 + cos(4 W4)
+
+,
+
+with A ∼ Bernoulli( g0(W )). The parameter κpos controls the degree of overlap in treatment assignment. We consider κpos = 0 .1, corresponding to strong overlap with no practical positivity concerns, and κpos = 2, which produces regions of near-deterministic treatment and thus practical positivity violations. The baseline outcome regression and conditional treatment effect were defined as 
+
+μ0(W ) = sin(4 W1) + sin(4 W2) + sin(4 W3) + sin(4 W4) + cos(4 W2),B0(W ) = 1 + W1 + |W2| + cos(4 W3) + W4.
+
+The observed outcome was generated as 
+
+Y ∼ N (μ0(W ) + AB 0(W ), 0.52).
+
+We evaluated three deterministic treatment policies 
+
+dp(W ) = 1{W2 > c p},
+
+with thresholds c1 = −0.5, c2 = 0, and c3 = 0 .5. For each policy the target parameter is the mean counterfactual outcome Ψ( P ) = E[Y dp ].
+
+For each configuration we generated 500 Monte Carlo datasets with sample sizes n ∈ { 200 , 500 , 1000 }.The nuisance functions ¯ g(W ) = P (A = 1 | W ) and ¯Q(A, W ) = E[Y | A, W ] were estimated using Super Learner implemented in the sl3 framework with cross-validated risk minimization. The learner library consisted of multivariate adaptive regression splines, generalized additive models, random forests, and gradient boosting trees. Estimated propensity scores were truncated below bn = 5 /(√n log n) to stabilize inverse probability weights. The projected CATE ˆ τ (W ) = ˆβ⊤ϕ(W ) was estimated using the HAL-based procedure described in Algorithm 1. We report results for the proposed A-TMLE and regularized TMLE estimators introduced in Algorithm 1. For comparison we also include standard targeted maximum likelihood estimation (TMLE), augmented inverse probability weighting (AIPW), and inverse probability weighting (IPW). Performance was evaluated using Monte Carlo bias, variance, mean squared error, and empirical coverage of 95% confidence intervals. 
+
+## 4.2 Simulation Results 
+
+Mean squared error. Tables 1 and 2 report the Monte Carlo mean squared error (MSE) across sample sizes under practical positivity violations and strong overlap, respectively. Under practical positivity viola-tions (Table 1), A-TMLE and regularized TMLE achieve the lowest MSE across all sample sizes and perform nearly identically. At n = 200, the mean MSEs are 0 .02845 for A-TMLE and 0 .02857 for regularized TMLE, compared with 0 .03335 for AIPW, 0 .03636 for TMLE, and 0 .05640 for IPW. The improvement persists as 13 Mean MSE Worst MSE Estimator 200 500 1000 200 500 1000 AIPW 0.03335 0.01841 0.01157 0.04528 0.02664 0.01339 IPW 0.05640 0.04110 0.03397 0.07321 0.05397 0.04743 A-TMLE 0.02845 0.01200 0.00757 0.03000 0.01305 0.00938 Regularized TMLE 0.02857 0.01190 0.00754 0.03017 0.01288 0.00931 TMLE 0.03636 0.01826 0.01182 0.03969 0.02450 0.01550 Table 1: Mean and worst Monte Carlo MSE under practical positivity violations across sample sizes n =200 , 500 , 1000. Results are averaged over three policies and 500 simulation replicates. Mean MSE Worst MSE Estimator 200 500 1000 200 500 1000 AIPW 0.02360 0.00865 0.00386 0.02590 0.00990 0.00429 IPW 0.04167 0.01414 0.00594 0.04946 0.01617 0.00710 A-TMLE 0.02176 0.00829 0.00378 0.02414 0.00940 0.00434 Regularized TMLE 0.02159 0.00834 0.00380 0.02397 0.00945 0.00436 TMLE 0.02185 0.00839 0.00382 0.02398 0.00962 0.00425 Table 2: Mean and worst Monte Carlo MSE without practical positivity violations across sample sizes 
+
+n = 200 , 500 , 1000. Results are averaged over three policies and 500 simulation replicates. sample size increases: at n = 1000, the mean MSEs are 0 .00757 for A-TMLE and 0 .00754 for regularized TMLE, compared with 0 .01157 for AIPW, 0 .01182 for TMLE, and 0 .03397 for IPW. A similar pattern holds for the worst-case MSE across policies; for example, at n = 500, the worst-case MSEs are 0 .01305 for A-TMLE and 0 .01288 for regularized TMLE, compared with 0 .02664 for AIPW, 0 .02450 for TMLE, and 0.05397 for IPW. When practical positivity violations are absent (Table 2), performance differences are smaller. A-TMLE and regularized TMLE remain competitive with standard TMLE and AIPW, while continuing to outperform IPW. For example, at n = 500, the mean MSEs are 0 .00829 for A-TMLE and 0 .00834 for regularized TMLE, compared with 0 .00839 for TMLE, 0 .00865 for AIPW, and 0 .01414 for IPW. Overall, these results suggest that the adaptive projection and regularized targeting strategies are most beneficial under limited overlap, while incurring little cost when overlap is strong. Oracle coverage Estimated CI coverage (self / regular) Estimator 200 500 1000 200 500 1000 AIPW 0.9053 0.9033 0.9283 0.9033 0.8553 0.9149 IPW 0.8127 0.7913 0.8089 0.8360 0.7460 0.8194 A-TMLE 0.9553 0.9553 0.9397 0.9073 / 0.9273 0.9100 / 0.9307 0.8997 / 0.9769 Regularized TMLE 0.9533 0.9527 0.9403 0.9060 / 0.9220 0.9120 / 0.9327 0.8997 / 0.9769 TMLE 0.9327 0.9280 0.9394 0.8893 0.8547 0.9023 Table 3: Coverage under positivity violations. Oracle uses the true sampling distribution; estimated coverage uses influence-function-based CIs (self vs. regular). 
+
+Coverage. Coverage results are reported in Tables 3 and 4. Oracle coverage evaluates nominal 95% inter-vals using the true sampling distribution, while estimated coverage uses influence-function-based standard 14 Oracle coverage Estimated CI coverage (self / regular) Estimator 200 500 1000 200 500 1000 AIPW 0.9533 0.9420 0.9400 0.9640 0.9587 0.9720 IPW 0.9427 0.9400 0.9413 0.9753 0.9720 0.9833 A-TMLE 0.9540 0.9520 0.9440 0.9453 / 0.9700 0.9407 / 0.9667 0.9540 / 0.9733 Regularized TMLE 0.9540 0.9493 0.9440 0.9467 / 0.9700 0.9420 / 0.9653 0.9533 / 0.9727 TMLE 0.9573 0.9427 0.9420 0.9700 0.9647 0.9753 Table 4: Coverage without positivity violations (oracle vs. estimated CI coverage). errors. Under practical positivity violations (Table 3), A-TMLE and regularized TMLE have oracle coverage closest to the nominal level and better than the competing estimators. At n = 200, oracle coverage is 0 .9553 for A-TMLE and 0 .9533 for regularized TMLE, compared with 0 .9053 for AIPW, 0 .9327 for TMLE, and 0.8127 for IPW. Similar patterns hold for n = 500, where A-TMLE and regularized TMLE have oracle coverage 0 .9553 and 0 .9527, respectively, while IPW, AIPW, and TMLE undercover more substantially. When confidence intervals are constructed using the projected EIF for A-TMLE and the regularized EIF for regularized TMLE, coverage remains comparable to standard TMLE under positivity violations, but can still be below nominal in finite samples. For example, at n = 500, the projected/regularized EIF-based coverage is 0 .9100 for A-TMLE and 0 .9120 for regularized TMLE, compared with 0 .8547 for TMLE and 0.8553 for AIPW. Using the standard TMLE influence function for inference provides a more conservative and stable choice for the adaptive estimators. At n = 500, this increases coverage to 0 .9307 for A-TMLE and 0 .9327 for regularized TMLE. This use of the standard TMLE influence function is also supported by the projected clever covariate result above: as the adaptive basis becomes sufficiently rich, the regularized targeting direction approximates the standard TMLE direction while avoiding extreme inverse-propensity-weighted covariates in finite samples. Without practical positivity violations (Table 4), all doubly robust estimators have oracle coverage close to 0 .95. In this regime, A-TMLE and regularized TMLE remain comparable to TMLE and AIPW. Esti-mated coverage based on the projected EIF for A-TMLE and the regularized EIF for regularized TMLE is close to nominal, while regular-TMLE-based intervals are somewhat more conservative. Thus, the adaptive estimators preserve reliable inference under strong overlap and offer improved stability under limited over-lap. Combined with their lower MSE, these results suggest that A-TMLE and regularized TMLE provide a favorable bias–variance and inference tradeoff in the presence of practical positivity violations. Policy 1 Policy 2 Policy 3 Estimator |Bias | |Bias |/SE |Bias | |Bias |/SE |Bias | |Bias |/SE IPW 0.208 1.206 0.028 0.156 0.204 1.363 AIPW 0.138 0.851 0.091 0.569 0.043 0.315 TMLE init 0.251 1.625 0.131 0.837 0.006 0.040 TMLE 0.067 0.408 0.062 0.340 0.083 0.460 A-TMLE 0.016 0.094 0.005 0.028 0.0004 0.003 Regularized TMLE 0.010 0.062 0.002 0.013 0.003 0.018 Table 5: Absolute bias and bias-to-SE ratios at n = 200 under positivity violations. 15 Policy-specific bias analysis. Beyond the aggregated performance reported above, we examine estimator behavior at the level of individual policies. Table 5 reports the absolute bias and the bias-to-standard-error ratio for each estimator across the three policies at n = 200 under practical positivity violations. The bias-to-standard-error ratio provides a scale-free diagnostic of the magnitude of bias relative to sampling variability. Bias is most pronounced for Policy 1, where IPW and the initial TMLE estimator have bias-to-SE ratios of 1.206 and 1 .625, respectively. A-TMLE and regularized TMLE substantially reduce this bias. For Policy 1, the absolute bias decreases from 0 .208 for IPW, 0 .138 for AIPW, and 0 .067 for TMLE to 0 .016 for A-TMLE and 0 .010 for regularized TMLE. The corresponding bias-to-SE ratios decrease to 0 .094 for A-TMLE and 0 .062 for regularized TMLE. Similar reductions are observed for Policies 2 and 3. These results indicate that both the projected A-TMLE estimator and the regularized TMLE update can substantially reduce finite-sample bias under practical positivity violations, with regularized TMLE often producing a slightly smaller bias while remaining very close to A-TMLE in MSE and coverage. 
+
+# 5 Real data application 
+
+We applied the proposed methods to the Right Heart Catheterization (RHC) study, an observational study of critically ill patients originally analyzed by Connors et al. [1996]. Right heart catheterization is a di-agnostic procedure used to directly measure cardiac function in critically ill patients. In this dataset, the treatment indicator records whether RHC was applied within 24 hours of admission, and the outcome records 30-day survival. We used survival as the outcome, defined as Y = 1 − death , and used swang1 as the bi-nary treatment. After removing observations with missing treatment or outcome values, we constructed the covariate vector W from baseline variables after excluding treatment, outcome, follow-up survival, and prognosis variables. The treatment mechanism ˆ g(W ) and outcome regression ˆQ(A, W ) were estimated us-ing Super Learner, and the CATE working model was estimated using the relaxed HAL-based procedure described above. We evaluated deterministic treatment rules based on the APACHE score aps1 , a measure of baseline illness severity. For cutoffs c ranging over the middle 80% of the empirical aps1 distribution, we considered policies of the form 
+
+dc(W ) = 1{APS1 > c }.
+
+Thus, patients with APACHE score above the cutoff are assigned to receive RHC, while those below the cutoff are assigned not to receive RHC. For each cutoff, we estimated the mean survival under the rule using IPW, AIPW, A-TMLE, and regularized TMLE. Figure 1 presents the estimated policy values and confidence interval lengths across the APS1 cutoff grid. The A-TMLE and regularized TMLE estimates are close, with regularized TMLE generally shifting A-TMLE slightly toward AIPW. For example, at cutoff c = 30, the estimated survival probabilities were 0.331 for IPW, 0 .341 for AIPW, 0 .337 for A-TMLE, and 0 .338 for regularized TMLE. At cutoff c = 58 .33, the corresponding estimates were 0 .363, 0 .355, 0 .350, and 0 .352. The confidence interval lengths show a clearer separation: at c = 30, the lengths were 0 .0589 for IPW, 0 .0424 for AIPW, 0 .0339 for A-TMLE, and 0 .0339 for regularized TMLE; at c = 58 .33, they were 0 .0423, 0 .0330, 0 .0248, and 0 .0248. Overall, A-TMLE and regularized TMLE have nearly identical interval lengths, both consistently below those of IPW and AIPW, while regularized TMLE slightly adjusts the A-TMLE point estimate toward the AIPW direction. 16 0.33 0.34 0.35 0.36 0.37              
+
+> 30 40 50 60 70 80
+> APS1 cutoff
+> Estimated policy value
+> IPW
+> AIPW
+> A−TMLE
+> Regularized−TMLE 0.03 0.04 0.05 0.06
+> 30 40 50 60 70 80
+> APS1 cutoff
+> Confidence interval length
+> IPW AIPW A−TMLE Regularized−TMLE
+
+Figure 1: Real-data analysis of the RHC study. Estimated mean survival and influence-function-based confidence interval lengths are shown across deterministic treatment rules of the form dc(W ) = 1{APS1 > c },where c ranges over the middle 80% of the empirical APS1 distribution. Results are shown for IPW, AIPW, A-TMLE, and Regularized-TMLE. 
+
+# 6 Discussion 
+
+In this work, we developed an adaptive targeted maximum likelihood estimation (A-TMLE) framework for policy-value estimation under practical positivity violations. The proposed approach replaces unstable inverse-propensity-weighted targeting directions with projected directions induced by a data-adaptive CATE working model. The resulting estimators are designed to improve stability under limited overlap, while reg-ularized TMLE further uses an outcome-targeting step to reduce first-order plug-in bias when the projected parameter is used as an approximation to the full nonparametric target E[Y d]. Across simulations and the RHC data application, the adaptive estimators showed improved finite-sample stability relative to IPW, AIPW, and standard TMLE in settings with practical positivity concerns. Several limitations remain. First, the primary A-TMLE estimand is a projected policy-value parameter rather than the unrestricted nonparametric policy value, except when the CATE is well represented by the working model. Thus, interpretation depends on the quality of the CATE projection. Although regularized TMLE can reduce plug-in bias toward the nonparametric target, its theoretical justification requires the projected EIF to approximate the nonparametric EIF sufficiently well. Second, the finite-sample performance depends on the choice of adaptive basis, the relaxed HAL fit, and regularization. More systematic procedures for selecting the projection dimension or controlling the approximation–variance tradeoff would strengthen practical implementation. Third, inference remains an important issue: our simulations suggest that standard TMLE influence-function-based intervals can improve coverage, but a more complete theory for variance estimation under data-adaptive projection is needed. Future work should extend this framework to longitudinal treatment settings with time-varying covariates and dynamic treatment regimes. In such problems, practical positivity violations can be substantially more severe because treatment probabilities accumulate over time, making stable projected targeting especially useful. Another direction is to develop data-adaptive criteria for choosing the CATE working model and for deciding when the projected target is close enough to the nonparametric policy value. Finally, bootstrap or higher-order inference procedures may further improve uncertainty quantification for adaptive projection-based TMLE estimators. 17 References 
+
+David Benkeser and Mark Van Der Laan. The highly adaptive lasso estimator. In 2016 IEEE International Conference on Data Science and Advanced Analytics (DSAA) , pages 689–696, 2016. doi: 10.1109/DSAA. 2016.93. Stephen R. Cole and Miguel A. Hern´ an. Constructing inverse probability weights for marginal structural models. American Journal of Epidemiology , 168(6):656–664, Sep 15 2008. doi: 10.1093/aje/kwn164. Epub 2008 Aug 5. Jr Connors, Alfred F., Theodore Speroff, Neal V. Dawson, Charles Thomas, Jr Harrell, Frank E., Douglas Wagner, Norman Desbiens, Lee Goldman, Albert W. Wu, Robert M. Califf, Jr Fulkerson, William J., Humberto Vidaillet, Steven Broste, Paul Bellamy, Joanne Lynn, and William A. Knaus. The effectiveness of right heart catheterization in the initial care of critically iii patients. JAMA , 276(11):889–897, 09 1996. ISSN 0098-7484. doi: 10.1001/jama.1996.03540110043030. URL https://doi.org/10.1001/jama.1996. 03540110043030 .Richard Crump, V. Hotz, Guido Imbens, and Oscar Mitnik. Moving the goalposts: Addressing limited overlap in estimation of average treatment effects by changing the estimand. SSRN Electronic Journal ,10 2006. doi: 10.2139/ssrn.937912. Richard K. Crump, V. Joseph Hotz, Guido W. Imbens, and Oscar A. Mitnik. Dealing with limited overlap in estimation of average treatment effects. Biometrika , 96(1):187–199, 01 2009. ISSN 0006-3444. doi: 10.1093/biomet/asn055. URL https://doi.org/10.1093/biomet/asn055 .Susan Gruber and Mark van der Laan. tmle: An r package for targeted maximum likelihood estima-tion. Journal of Statistical Software , 51(13):1–35, 2012. doi: 10.18637/jss.v051.i13. URL https: //www.jstatsoft.org/index.php/jss/article/view/v051i13 .Susan Gruber, Rachael V Phillips, Hana Lee, and Mark J van der Laan. Data-adaptive selection of the propensity score truncation level for inverse-probability–weighted and targeted maximum likelihood es-timators of marginal point treatment effects. American Journal of Epidemiology , 191(9):1640–1651, 05 2022. ISSN 0002-9262. doi: 10.1093/aje/kwac087. URL https://doi.org/10.1093/aje/kwac087 .James J. Heckman, Hidehiko Ichimura, and Petra E. Todd. Matching as an econometric evaluation estimator: Evidence from evaluating a job training programme. The Review of Economic Studies , 64(4):605–654, 10 1997. ISSN 0034-6527. doi: 10.2307/2971733. URL https://doi.org/10.2307/2971733 .Miguel A. Hern´ an and James M. Robins. Using big data to emulate a target trial when a randomized trial is not available. American Journal of Epidemiology , 183(8):758–764, 03 2016. ISSN 0002-9262. doi: 10.1093/aje/kwv254. URL https://doi.org/10.1093/aje/kwv254 .D. G. Horvitz and D. J. Thompson. A generalization of sampling without replacement from a finite universe. 
+
+Journal of the American Statistical Association , 47(260):663–685, 1952. doi: 10.1080/01621459.1952. 10483446. URL https://doi.org/10.1080/01621459.1952.10483446 .Alexander R. Luedtke and Mark J. van der Laan. Optimal individualized treatments in resource-limited settings. The International Journal of Biostatistics , 12(1):283–303, 2016. doi: doi:10.1515/ijb-2015-0007. URL https://doi.org/10.1515/ijb-2015-0007 .18 Alexander R. Luedtke, Oleg Sofrygin, Mark J. van der Laan, and Marco Carone. Sequential double robustness in right-censored longitudinal models, 2018. URL https://arxiv.org/abs/1705.02459 .S. A. Murphy. Optimal dynamic treatment regimes. Journal of the Royal Statistical Society Series B: Statistical Methodology , 65(2):331–355, 04 2003. ISSN 1369-7412. doi: 10.1111/1467-9868.00389. URL 
+
+https://doi.org/10.1111/1467-9868.00389 .James Robins. A new approach to causal inference in mortality studies with a sustained exposure period—application to control of the healthy worker survivor effect. Mathematical Modelling , 7(9): 1393–1512, 1986. ISSN 0270-0255. doi: https://doi.org/10.1016/0270-0255(86)90088-6. URL https: //www.sciencedirect.com/science/article/pii/0270025586900886 .James M. Robins, Andrea Rotnitzky, and Lue Ping Zhao. Estimation of regression coefficients when some regressors are not always observed. Journal of the American Statistical Association , 89(427):846–866, 1994. doi: 10.1080/01621459.1994.10476818. URL https://doi.org/10.1080/01621459.1994.10476818 .Matthew Smith, Rachael Phillips, Miguel Luque-Fernandez, and Camille Maringe. Application of targeted maximum likelihood estimation in public health and epidemiological studies: a systematic review. Annals of Epidemiology , 86, 06 2023. doi: 10.1016/j.annepidem.2023.06.004. Linh Tran, Constantine T. Yiannoutsos, Kara Wools-Kaloustian, Abraham Siika, Mark J. van der Laan, and Maya L. Petersen. Double robust efficient estimators of longitudinal treatment effects: Comparative performance in simulations and a case study. The International Journal of Biostatistics , 15(2), 2019. doi: 10.1515/ijb-2017-0054. Linh Tran, Maya Petersen, Joshua Schwab, and Mark J. van der Laan. Robust variance estimation and inference for causal effect estimation. Journal of Causal Inference , 11(1):20210067, 2023. doi: doi:10. 1515/jci-2021-0067. URL https://doi.org/10.1515/jci-2021-0067 .Lars van der Laan, Marco Carone, Alex Luedtke, and Mark van der Laan. Adaptive debiased machine learning using data-driven model selection techniques, 2023. URL https://arxiv.org/abs/2307.12544 .Mark van der Laan, Sky Qiu, Jens Magelund Tarp, and Lars van der Laan. Adaptive-tmle for the average treatment effect based on randomized controlled trial augmented with real-world data, 2025. URL https: //arxiv.org/abs/2405.07186 .Mark J. van der Laan and Alexander R. Luedtke. Targeted learning of the mean outcome under an optimal dynamic treatment rule. Journal of Causal Inference , 3(1):61–95, 2015. doi: doi:10.1515/jci-2013-0022. URL https://doi.org/10.1515/jci-2013-0022 .Mark J. van der Laan and Sherri Rose. Targeted Learning: Causal Inference for Observational and Experi-mental Data . Springer Series in Statistics. Springer New York, NY, New York, NY, 1 edition, 2011. ISBN 978-1-4419-9781-4. doi: 10.1007/978-1-4419-9782-1. Mark J. van der Laan and Sherri Rose. Targeted Learning in Data Science: Causal Inference for Complex Longitudinal Studies . Springer Series in Statistics. Springer Cham, 2018. ISBN 978-3-319-65303-7. doi: 10.1007/978-3-319-65304-4. URL https://doi.org/10.1007/978-3-319-65304-4 .19 Mark J. van der Laan and Daniel Rubin. Targeted maximum likelihood learning. The International Journal of Biostatistics , 2(1), 2006. doi: doi:10.2202/1557-4679.1043. URL https://doi.org/10.2202/1557-4679. 1043 .Yichen Xu, Susan Gruber, and Mark J. van der Laan. Investigating targeting strategies and truncation in tmle for the average treatment effect under practical positivity violations, 2026. URL https://arxiv. org/abs/2604.20059 .Yingqi Zhao, Donglin Zeng, A. John Rush, and Michael R. Kosorok. Estimating individualized treatment rules using outcome weighted learning. Journal of the American Statistical Association , 107(499):1106– 1118, 2012. doi: 10.1080/01621459.2012.695674. Xin Zhou, Nicole Mayer-Hamblett, Umer Khan, and Michael R. Kosorok. Residual weighted learning for estimating individualized treatment rules. Journal of the American Statistical Association , 112(517): 169–187, 2017. doi: 10.1080/01621459.2015.1093947. URL https://doi.org/10.1080/01621459.2015. 1093947 . PMID: 28943682. Yunan Zhou, R. A. Matsouaka, and Laine Thomas. Propensity score weighting under limited overlap and model misspecification. Statistical Methods in Medical Research , 29(12):3721–3756, Dec 2020. doi: 10. 1177/0962280220940334. Epub 2020 Jul 21. 20 Theoretical Analysis 
+
+Proof for Theorem 3.1. For notational simplicity, write Ψ( P ) for Ψ M0 (P ) throughout this proof. The canon-ical gradient of the projected parameter is 
+
+D ˜Q1,P = ( Y − EP Y ) + D⊤ 
+
+> β() ,P
+
+(O)EP {(d(W ) − ¯g(W )) ϕ(W )}
+
++ ( d(W ) − ¯g(P )( W )) β(P )⊤ϕ(W )
+
+− EP (d(W ) − ¯g(P )( W )) β(P )⊤ϕ(W )
+
+− (A − ¯g(P )( W )) β(P )⊤ϕ(W ).
+
+where 
+
+Dβ() ,P = Σ −1ϕ(B(P ) − β⊤ϕ)¯ g(1 − ¯g)+ ( A − ¯g(W )) ϕ(W )( B(P ) − β⊤ϕ)(1 − 2¯ g(W )) + 2A − 1
+
+g(A | W ) (Y − ¯Q(A, W )) ϕ(W )¯ g(1 − ¯g) .
+
+Here Σ( P ) = EP ϕϕ ⊤ ¯g(1 − ¯g), B(P ) = EP [Y |A = 1 , W ] − EP [Y |A = 0 , W ].
+
+We use the representation 
+
+P0D ˜Q1 = Ψ( P0) − Ψ( P ) + R2.
+
+Since EP [Y − EP Y ] = 0, the component EP [Y ] separates out. Furthermore, the term (d(W ) − ¯g(W )) β(P )⊤ϕ(W ) − EP (d(W ) − ¯g(P )( W )) β(P )⊤ϕ(W )is straightforward to handle. We therefore define Ψ( g, β, Q W ) = EP (d(W ) − ¯g(P )) β(P )⊤ϕ(W ).
+
+Define 
+
+Dg,β, ¯Q,Q W = D⊤ 
+
+> β() ,P
+
+(O)EP {(d(W ) − ¯g(W )) ϕ(W )}− (A − ¯g(P )( W )) β(P )⊤ϕ(W )+ ( d(W ) − ¯g(P )( W )) β(P )⊤ϕ(W )
+
+− EP (d(W ) − ¯g(P )( W )) β(P )⊤ϕ(W ).
+
+21 Using a telescoping decomposition, 
+
+P0Dg,β, ¯Q,Q W = P0
+
+ Dg,β, ¯Q,Q W − Dg0,β 0, ¯Q,Q W, 0
+
+
+
+= P0
+
+ Dg,β 0, ¯Q0,Q W, 0 − Dg0,β 0, ¯Q0,Q W, 0
+
+
+
++ P0
+
+ Dg,β, ¯Q0,Q W, 0 − Dg,β 0, ¯Q0,Q W, 0
+
+
+
++ P0
+
+ Dg,β, ¯Q,Q W, 0 − Dg,β, ¯Q0,Q W, 0
+
+
+
++ P0
+
+ Dg,β, ¯Q,Q W − Dg,β, ¯Q,Q W, 0
+
+.
+
+This corresponds to the canonical gradient of the parameter Ψ( g, β, Q W ) = EP (d(W ) − ¯g(P )) β(P )⊤ϕ(W ).
+
+First term. 
+
+P0
+
+ Dg,β 0, ¯Q0,Q W, 0 − Dg0,β 0, ¯Q0,Q W, 0
+
+ = P0
+
+ D⊤
+
+β0,g, ¯Q0,Q W, 0 − D⊤
+
+β0,g 0, ¯Q0,Q W, 0
+
+
+
+× E0(d(W ) − ¯g(W )) ϕ(W )+ β⊤
+
+0 E0(¯ g − ¯g0)ϕ. 
+
+Note that Ψ( g0, β 0, Q W, 0) − Ψ( g, β 0, Q W, 0) = E0(¯ g − ¯g0)β⊤
+
+0 ϕ. 
+
+Moreover, Σ(¯ g, Q W, 0)P0Dβ0,g, ¯Q0,Q W, 0 = EP0 {ϕ(B0 − β⊤
+
+0 ϕ)(¯ g(1 − ¯g) − ¯g0(1 − ¯g0)) + (¯ g0 − ¯g)ϕ(B0 − β⊤
+
+0 ϕ)(1 − 2¯ g)}
+
+= EP0 ϕ(B0 − β⊤
+
+0 ϕ)(¯ g0 − ¯g)2.
+
+The first equality follows from the score equation 
+
+EP0 ϕ(B0 − β⊤
+
+0 ϕ)¯ g0(1 − ¯g0) = 0 .
+
+Thus 
+
+P0
+
+ Dg,β 0, ¯Q0,Q W, 0 − Dg0,β 0, ¯Q0,Q W, 0
+
+ = Ψ( g0, β 0, Q W, 0) − Ψ( g, β 0, Q W, 0) + R2,1.R2,1 = oP (∥B0 − β⊤
+
+0 ϕ∥∥ ¯g0 − ¯g∥2)
+
+Second term. 
+
+22 P0
+
+ Dg,β, ¯Q0,Q W, 0 − Dg,β 0, ¯Q0,Q W, 0
+
+ = P0
+
+ D⊤  
+
+> β,g, ¯Q0,Q W, 0
+
+− D⊤ 
+
+> β0,g, ¯Q0,Q W, 0
+
+
+
+× EP (d(W ) − ¯g(W )) ϕ(W )
+
+− P0(¯ g0 − ¯g)( β − β0)⊤ϕ(W ).
+
+Using 
+
+P0
+
+ Dβ,g, ¯Q0,Q W, 0 − β0 + β = R2(β, β 0),
+
+which is second order since 
+
+P0Dβ,g 0, ¯Q0,Q W, 0 − β0 + β = Σ −10 E0
+
+ϕ(B(P0) − β⊤ 
+
+> 0
+
+ϕ)¯ g0(1 − ¯g0) = 0 ,
+
+we obtain 
+
+P0
+
+ Dg,β, ¯Q0,Q W, 0 − Dg,β 0, ¯Q0,Q W, 0
+
+ = Ψ( g, β 0, Q W, 0) − Ψ( g, β, Q W, 0) + R2,2.R2,2 = oP (∥¯g0 − ¯g∥∥ β − β0)∥) + oP (∥β − β0∥2)
+
+Third term. 
+
+P0Dg0,β 0, ¯Q,Q W, 0 = Σ( P0)−1P0
+
+ϕ(B − β⊤ 
+
+> 0
+
+ϕ)¯ g0(1 − ¯g0)+   A 
+
+> ¯g0
+
+− 1−A
+
+> 1−¯g0
+
+( ¯Q0 − ¯Q)ϕ¯g0(1 − ¯g0) .
+
+This simplifies to 
+
+E0(B0 − B)ϕ¯g0(1 − ¯g0),
+
+which vanishes under the working model B0 = β⊤ 
+
+> 0
+
+ϕ. Hence 
+
+R2,3 = oP (∥¯g − ¯g0∥∥ β − β0∥).
+
+Fourth term. 
+
+P0
+
+ Dg,β, ¯Q,Q W − Dg,β, ¯Q,Q W, 0
+
+ = Ψ( g, β, Q W, 0) − Ψ( g, β, Q W ).
+
+23 Summing the telescoping decomposition, 
+
+P0Dg,β, ¯Q,Q W = Ψ( g0, β 0, Q W, 0) − Ψ( g, β 0, Q W, 0)+ Ψ( g, β 0, Q W, 0) − Ψ( g, β, Q W, 0)+ Ψ( g, β, Q W, 0) − Ψ( g, β, Q W ) + R2
+
+= Ψ( g0, β 0, ¯Q0, Q W, 0) − Ψ( g, β, ¯Q, Q W ) + R2.
+
+Combining with the canonical gradient of EP [Y ], which is Y − EP [Y ], we obtain 
+
+P0D ¯Q1,P = Ψ( P0) − Ψ( P ) + R2.
+
+Finally, 
+
+R2 = R2,1 + R2,2 + R2,3
+
+=  P0Dβ,g,Q W, 0 − β0 + β⊤E0(d − ¯g)ϕ
+
++ ( β0 − β)⊤E0(¯ g0 − ¯g)ϕ(W ) + oP (∥¯g − ¯g0∥∥ β − β0∥)= oP (∥β − β0∥2) + oP (∥¯g − ¯g0∥∥ β − β0∥)
+
+Proof for Theorem 3.2. First note that 
+
+HNP (A, W ) = 1 + ( A − ¯g(W )) q(W )
+
+w(W ) .
+
+Indeed, if A = 1, then (A − ¯g(W )) q(W )
+
+w(W ) = (1 − ¯g(W )) q(W )¯g(W ){1 − ¯g(W )} = q(W )¯g(W ) ,
+
+while if A = 0, then (A − ¯g(W )) q(W )
+
+w(W ) = −¯g(W ) q(W )¯g(W ){1 − ¯g(W )} = − q(W )1 − ¯g(W ) .
+
+Therefore (A − ¯g(W )) q(W )
+
+w(W ) = 2A − 1
+
+g(A | W ) q(W ),
+
+and hence 
+
+HNP (A, W ) = 1 + 2A − 1
+
+g(A | W ) {d(W ) − ¯g(W )}.
+
+Now take any element hα ∈ A n of the form 
+
+hα(A, W ) = 1 + ( A − ¯g(W )) ϕn(W )⊤α. 
+
+Then 
+
+HNP (A, W ) − hα(A, W ) = ( A − ¯g(W )) 
+
+ q(W )
+
+w(W ) − ϕn(W )⊤α
+
+
+
+.
+
+24 Thus 
+
+∥HNP − hα∥2  
+
+> L2(P)
+
+= EP
+
+"
+
+(A − ¯g(W )) 2
+
+ q(W )
+
+w(W ) − ϕn(W )⊤α
+
+2#
+
+= EP
+
+"
+
+EP {(A − ¯g(W )) 2 | W }
+
+ q(W )
+
+w(W ) − ϕn(W )⊤α
+
+2#
+
+= EP
+
+"
+
+w(W )
+
+ q(W )
+
+w(W ) − ϕn(W )⊤α
+
+2#
+
+.
+
+Therefore the projection of HNP onto An is equivalent to the weighted projection of q(W )/w (W ) onto Φ n
+
+under the inner product 
+
+⟨u, v ⟩w = EP [u(W )v(W )w(W )] .
+
+The normal equations for this weighted least-squares problem are 
+
+EP
+
+
+
+w(W )ϕn(W )
+
+ q(W )
+
+w(W ) − ϕn(W )⊤α
+
+ 
+
+= 0 .
+
+Equivalently, 
+
+EP [ϕn(W )q(W )] = EP [w(W )ϕn(W )ϕn(W )⊤]α = Σ nα. 
+
+If Σ n is invertible, then 
+
+α∗ = Σ −1 
+
+> n
+
+EP [ϕn(W )q(W )] .
+
+Substituting this coefficient into hα gives ΠAn HNP (A, W ) = 1 + ( A − ¯g(W )) ϕn(W )⊤Σ−1 
+
+> n
+
+EP [ϕn(W )q(W )] .
+
+Since q(W ) = d(W ) − ¯g(W ), this is ΠAn HNP (A, W ) = 1 + ( A − ¯g(W )) ϕn(W )⊤Σ−1 
+
+> n
+
+EP [ϕn(W ){d(W ) − ¯g(W )}] .
+
+Using 
+
+A − ¯g(W ) = 2A − 1
+
+g(A | W ) w(W ),
+
+we also obtain ΠAn HNP (A, W ) = 1 + 2A − 1
+
+g(A | W ) w(W )ϕn(W )⊤Σ−1 
+
+> n
+
+EP [ϕn(W ){d(W ) − ¯g(W )}] .
+
+It remains to verify orthogonality. Let 
+
+Rn(A, W ) = HNP (A, W ) − ΠAn HNP (A, W ).
+
+Then 
+
+Rn(A, W ) = ( A − ¯g(W )) 
+
+ q(W )
+
+w(W ) − ϕn(W )⊤α∗
+
+
+
+.
+
+25 For any γ ∈ RKn ,
+
+Rn, (A − ¯g(W )) ϕn(W )⊤γ L2(P )
+
+= EP
+
+
+
+w(W )
+
+ q(W )
+
+w(W ) − ϕn(W )⊤α∗
+
+
+
+ϕn(W )⊤γ
+
+
+
+= 0 ,
+
+by the weighted normal equations. Hence the displayed expression is the orthogonal projection. Finally, the constant “1” in HNP is already represented in the EIF through the explicit outcome-residual component. Therefore the fluctuation step only needs the centered treatment-score component, 
+
+HNP (A, W ) − 1 = ( A − ¯g(W )) d(W ) − ¯g(W )
+
+w(W ) .
+
+Projecting this component onto 
+
+Tn = {(A − ¯g(W )) u(W ) : u ∈ Φn}
+
+gives 
+
+HReg ,n (A, W ) = ( A − ¯g(W )) ϕn(W )⊤Σ−1 
+
+> n
+
+EP [ϕn(W ){d(W ) − ¯g(W )}] .
+
+If ∪nΦn is dense in L2(P, w ), the weighted projection of q/w onto Φ n converges to q/w , which implies the stated L2(PA,W ) convergence. 
+
+Proof for Proposition 3.3. Since regularized TMLE targets the projected EIF, 
+
+Pn ˜DΨ(Π) ,ˆη = 0 .
+
+Therefore 
+
+PnD∗ 
+
+> Ψ,ˆη
+
+= Pn
+
+n
+
+D∗ 
+
+> Ψ,ˆη
+
+− ˜DΨ(Π) ,ˆη
+
+o
+
+= Pn∆ˆη .
+
+Decompose 
+
+Pn∆ˆη = ( Pn − P0)∆ ˆη
+
++ P0{∆(Q∗ 
+
+> n,g n)
+
+− ∆(Q0,g n)}
+
++ P0{∆(Q0,g n) − ∆(Q0,g 0)}
+
++ P0∆η0 .
+
+The last term is zero because both D∗ 
+
+> Ψ,η 0
+
+and ˜DΨ(Π) ,η 0 are mean-zero at the truth. Under standard empirical process regularity, (Pn − P0)∆ ˆη = oP (n−1/2).
+
+For the first deterministic term, Cauchy–Schwarz gives 
+
+P0{∆(Q∗ 
+
+> n,g n)
+
+− ∆(Q0,g n)} ≤ ∥ ∆(Q∗ 
+
+> n,g n)
+
+− ∆(Q0,g n)∥L2(P0) ≲ δnrQ.
+
+Similarly, 
+
+P0{∆(Q0,g n) − ∆(Q0,g 0)} ≤ ∥ ∆(Q0,g n) − ∆(Q0,g 0)∥L2(P0) ≲ δnrg .
+
+26 Combining the bounds yields 
+
+PnD∗ 
+
+> Ψ,ˆη
+
+= oP (n−1/2) + OP (δnrQ) + OP (δnrg ).
+
+If rQ = oP (n−1/4), rg = oP (n−1/4), and δn = oP (n−1/4), then 
+
+δnrQ = oP (n−1/2), δnrg = oP (n−1/2),
+
+and therefore 
+
+PnD∗ 
+
+> Ψ,ˆη
+
+= oP (n−1/2).
+
+27
