@@ -1,0 +1,2668 @@
+Title: Transporting treatment effects by calibrating large-scale observational outcomes
+
+URL Source: https://arxiv.org/pdf/2605.07285v1
+
+Published Time: Mon, 11 May 2026 00:44:00 GMT
+
+Number of Pages: 37
+
+Markdown Content:
+# Transporting treatment effects by calibrating large-scale observational outcomes 
+
+## Harrison H. Li, Department of Mathematics, Harvey Mudd College 
+
+Abstract 
+
+A high-quality experimental dataset is typically much smaller than a corresponding observational dataset. In this regime, we propose an estimation and inference method for a transported treatment effect when there are imperfect and possibly biased mea-surements of the outcome of interest in the observational dataset. First, we estimate the conditional average treatment effect (CATE) by using ordinary least squares to cal-ibrate a treatment-control contrast in the observational outcome to the experimental data. Then, our estimator is the sample average of this estimated CATE over the obser-vational dataset. Unlike existing methods, our inference remains asymptotically valid without positivity (overlap) between the two datasets. When the calibration regres-sion is well specified, our estimator is consistent for the transported average treatment effect. Otherwise, it converges to a projection estimand. As long as the observational dataset size grows sufficiently quickly relative to the experimental dataset size, our estimator achieves a notion of semiparametric efficiency proposed in recent work on semi-supervised learning for the projection estimand. We illustrate the precision and stability of our methodology compared to existing proposals for transporting average treatment effects under various degrees of positivity violations using numerical simu-lations and a data example that incorporates field experiments and satellite images to estimate an aggregate effect of crop rotation on maize (corn) yields over a large area of the Midwestern United States. 
+
+# 1 Introduction 
+
+Randomized experiments are often conducted on subjects that differ greatly from the pop-ulation of interest. This creates a problem of external validity, underscoring the need for methods to transport treatment effect estimates from the experimental population to a new target population defined by an auxiliary dataset (Degtiar and Rose, 2023). Standard methods for causal transportation are based on two identifying assumptions: mean exchangeability and positivity (also known as overlap). Mean exchangeability assumes that the conditional means of the unobserved potential outcomes given observed covariates are the same between the experimental and target populations (Dahabreh et al., 2020), and positivity requires the support of the covariate distribution in the target population to be contained within that of the experimental population. In other words, conditional on the covariates for an observation sampled uniformly at random from the superpopulation cor-responding to the union of the experimental and observational datasets, its probability of 1
+
+> arXiv:2605.07285v1 [stat.ME] 8 May 2026
+
+being from the experimental dataset — also known as its sampling propensity — needs to be bounded away from zero. Due to the curse of dimensionality, violations of positivity are likely when the experimental dataset is small and/or the covariate dimension is even moderate (D’Amour et al., 2021). This is a highly relevant concern given that experimenta-tion is often expensive, greatly limiting the sample size, and that it is often not feasible to randomize treatment on the specific target population of interest. As a motivating example, Kluger et al. (2022) sought to understand the causal effects of maize-soybean crop rotation on maize (corn) yields across a study region of interest in the Midwestern United States. The authors compiled a limited number of multi-year controlled field experiments of crop rotation across the study region, though unfortunately, their scope did not fully cover the study region. For instance, there were no available experiments at all in Indiana and Michigan (Fig. 1). To address this, the authors supplemented the experimental data with much more abundant satellite estimates of crop yields covering the entire study region. Specifically, they fit a causal forest (Wager and Athey, 2018) using these satellite yield estimates as the outcome to estimate the conditional average treatment effect (CATE) of crop rotation as a function of location, year, and weather and soil covariates. Since these CATE estimates may be biased due to unobserved confounders and potential systematic errors in the satellite-based yield estimates, they were calibrated via linear regression using the limited experimental dataset. We propose taking a simple average of these calibrated treatment effect estimates over the covariates in the observational dataset to estimate an aggregate transported treatment effect. This avoids the need to perform inverse propensity weighting and thus remains stable even under severe positivity violations. While this procedure may seem naive, we show it is both theoretically principled and empirically performant in the common setting with limited experimental data and plentiful observational data. Specifically, when the size of the exper-imental dataset grows sufficiently slowly relative to the size of the observational dataset, the procedure enables valid asymptotic inference for a new estimand that remains identified in the absence of positivity. Under mean exchangeability, this estimand is precisely equal to the standard transported ATE for the target population when treatment effect heterogene-ity estimates in the large observational dataset can be effectively calibrated using the small experimental dataset via a parametric correction. By contrast, popular existing proposals for alternative estimands in the face of positivity violations systematically downweight ob-servations in the target population with covariate values that are unlikely (or impossible) to occur in the experimental dataset. 
+
+## 1.1 Related work 
+
+For comprehensive reviews of recent work on causal generalization and transportation as well as related data fusion tasks, we refer the reader to Colnet et al. (2024) and Rosenman (2025). Here we briefly discuss some related work that addresses our setting with highly unbalanced datasets (i.e., a much smaller experimental dataset compared to the observational datasets) and/or positivity violations. One important line of work has sought modifications to inverse propensity weighting to make it less sensitive to positivity violations, without changing the estimand of interest. Many of these proposals work in the setting of estimating the ATE from a single uncon-2Figure 1: A map from Fig. 1 of Kluger et al. (2022) showing the 11 locations with available data from crop rotation field experiments (letters), along with colored dots showing the loca-tions and average number of extreme degree days (EDD) of extensive satellite observations spanning the region of interest. founded observational dataset (rather than causal transportation), in which case positivity corresponds to overlapping supports of the covariate distributions of the treated and un-treated subjects. The ideas can be readily adapted to the causal transportation problem; here we summarize them using the language of causal transportation. For example, balanc-ing weights (Li et al., 2018; Ben-Michael et al., 2021; Josey et al., 2022) and Riesz regres-sion (Chernozhukov et al., 2021, 2022; Lee and Schuler, 2025) have been proposed to make inverse propensity weights more stable. When outcome data is available in the observational dataset, as in our setting, a predictive model can be learned from the external dataset to attempt to explain some of the outcome variance in the main dataset, thereby increasing the precision of inverse propensity weighting estimators under both design-based (Gagnon-Bartsch et al., 2023) and superpopulation-based (Huang et al., 2023; Liao et al., 2025) frameworks. Another recent idea (proposed specifically for causal transportation) is to use a “collaborative” propensity score that is a univariate function of the outcome regression function in place of the actual propensity score which is a function of all covariates (Rudolph et al., 2025). This mitigates the extent to which the curse of dimensionality exacerbates positivity violations. All of the above approaches, however, are designed to address minor or practical positiv-ity violations rather than population level positivity violations. Fundamentally, the average causal effect in the target population is no longer identified when positivity does not hold in the population, making it is necessary to change the estimand, as we do in the present work. Existing proposals for estimands from the ATE literature in the absence of positivity trim and/or downweight observations with extreme propensities either explicitly (Crump et al., 2009; Li et al., 2019; Khan and Ugander, 2024; Huang, 2025) or implicitly through modifica-tions to balancing weights (Barnard et al., 2025). In this spirit, Parikh et al. (2025) propose a 3decision-tree based algorithm for causal transportation to dynamically learn a subpopulation with sufficiently high sampling propensities (as well as low outcome variance), and report an ATE on this subpopulation. While the use of decision trees ensures this subpopulation is interpretable, the proposed algorithm still requires population-level positivity, and the resulting inference procedure currently does not account for the complex uncertainty intro-duced by learning the subpopulation in a data-dependent way. By contrast, we rely on the existence of an external observational dataset to target an alternative estimand that is not data-dependent and maintains the scientific interest of equally weighting all covariate obser-vations in the target population when the calibration is correctly specified, while maintaining interpetability as a weighted average treatment effect with a misspecified calibration. The problem of transferring information learned from a small dataset to a much larger dataset has also been extensively studied outside causal inference. Indeed, it is the central problem of semi-supervised learning, also recently referred to as “prediction-powered infer-ence.” In that literature, the small dataset is labeled with both covariates and the outcome of interest while the large dataset is unlabeled, containing just covariates, and the goal is to use the unlabeled data to improve estimation of some feature of the outcome distribution, such as the mean. There has been significant attention to the asymptotic regime where the ratio of the sample size of the labeled dataset to that of the unlabeled dataset approaches zero, though mostly under the assumption that the covariate distribution is the same be-tween the labeled and unlabeled datasets (Zhang et al., 2019; Zhang and Bradic, 2022; Song et al., 2024; Angelopoulos et al., 2023a,b; Zrnic and Cand` es, 2024; Xu et al., 2025), in which case positivity is not a concern. However, more recently there has been rising interest in the case where there is unknown covariate shift and “decaying positivity” as the sample sizes grow (Zhang et al., 2023; Su et al., 2024; Testa et al., 2025). While the methods in these works still require some degree of positivity as they aim to target the original estimand, they uncover valuable theoretical insights by specifying precise positivity assumptions needed in a non-standard regime for inverse propensity weighted methods to enable valid asymptotic inference. We find in our simulations and data example, however, that such theoretical guarantees can be delicate in practice. We also mention some related work to improve the efficiency of causal estimators via data fusion by making structural, low-dimensional parametric assumptions linking multiple datasets (Kallus et al., 2018; Li, 2024; Yang et al., 2024; Li et al., 2025; Guan et al., 2025; Wu et al., 2025). A key distinction of the present work is that we fully investigate the behavior of our estimator when such assumptions are not satisfied. The remainder of this paper is structured as follows. Section 2 mathematically specifies the setting of interest and studies the estimand ¯ τ targeted by our proposed estimation and inference procedure, which is described in detail in Section 3. We provide a careful discussion of semiparametric efficiency in Section 4, showing that our procedure attains the efficiency bound for our estimand ¯ τ under an asymptotic regime where the size of the observational dataset grows more quickly than the size of the experimental dataset. We validate the performance of our methodology using a numerical simulation and data example based on the crop rotation dataset used by Kluger et al. (2022) in Section 5. Finally, Section 6 concludes. 42 An alternative estimand 
+
+Our formal setup assumes observing experimental samples {(Di, X i)}ni=1 , that are indepen-dent and identically distributed (i.i.d.) alongside i.i.d. observational triples {(Yi, Z i, X i)}n+Ni=n+1 
+
+independent of the experimental data. Here, Xi ∈ X ⊆ Rp is a vector of observed covariates, 
+
+Di is an experimental observation of the treatment effect, Yi is the observational outcome of interest, and Zi is a binary treatment indicator in the observational dataset. In the crop rotation example from Section 1, Di is the yield in a rotated field minus the yield in a paired adjoining field that was not rotated, Xi is a vector of location, year, weather, and soil covariates (observed in both the experimental and observational datasets), Yi is the satellite-based yield estimate, and Zi is an indicator of whether the field underwent crop rotation. Throughout, we let frct and fobs denote the densities (with respect to some common dom-inating measure λ) for the distributions of the covariates Xi in the experiment and in the observational dataset, respectively. Subscripts rct and obs on probabilities and expectations indicate they are to be taken under the distributions specified by the densities frct and fobs ,respectively. We assume throughout that fobs dominates frct :
+
+Assumption 1. frct (x) = 0 for λ-almost all x ∈ X such that fobs (x) = 0. Assuming that treatment is assigned independently of the outcomes Yi given the co-variates Xi, we can extend all of our results to experiments where treatment and control observations are not paired (i.e., the experimental dataset has observations of ( Yi, Z i) in place of Di) by setting 
+
+Di = ZiYi
+
+e(Xi) − (1 − Zi)Yi
+
+1 − e(Xi)where 
+
+e(x) = Pr rct (Z = 1 | X = x)is the propensity score in the experimental dataset (typically constant, and known since it is controlled by the experimenter). We would like to estimate the ATE in the target population defined by the observational dataset. Under the mean exchangeability assumption that Erct [D | X] = Eobs [D | X] (note 
+
+D is not observed in the observational dataset, so this is untestable), this ideal estimand is identified as 
+
+τ = Eobs [μ(X)] where 
+
+μ(x) = Erct [D | X = x]is the CATE. The “transported ATE” τ averages the CATE μ(x) from the experimental dataset over the covariate distribution of the observational dataset. The estimand τ , however, is only identified under positivity: 
+
+Assumption 2 (Positivity) . fobs (x) = 0 for λ-almost all x ∈ X such that frct (x) = 0. When Assumption 2 does not hold, for any x where fobs (x) > 0 but frct (x) = 0, μ(x)is not well-defined, and so τ is not well-defined. To rectify this, we target an alternative estimand ¯τ = Eobs [¯ μ(X)] , ¯μ(·) = arg min  
+
+> f∈F
+
+Erct [( D − f (X)) 2] = arg min  
+
+> f∈F
+
+Erct [( μ(X) − f (X)) 2] (1) 5where for a known basis expansion ψ : R → Rp,
+
+F = {x 7 → β⊤ψ(∆( x)) , β ∈ Rp}
+
+is the set of all linear transformations of x 7 → ψ(∆( x)) for ∆( x) = Eobs [Y | X = x, Z = 1] − Eobs [Y | X = x, Z = 0] .
+
+the “treatment-control contrast” in the observational dataset. We do not assume ∆ = μ due to the possibility of unobserved confounding and/or other potential sources of bias, such as systematic errors in the satellite estimates of yield for the crop rotation dataset. Note that every function in F has domain that must include all x in the support of fobs , since ∆( x)is defined for all such x. Hence, the estimands ¯ μ(·) and ¯ τ remain well-defined even when Assumption 2 does not hold. In lieu of averaging the true CATE μ(·) over the observational covariate distribution, the estimand ¯ τ averages ¯ μ(·), the best approximation in mean square (with respect to the experimental covariate distribution specified by the density frct ) to μ within the function class F. Concretely, if ψ(x) = (1 , x )⊤, then the function ¯ μ(·) can be interpreted as the limiting prediction function learned by a simple linear regression of Di onto ∆( Xi) as the experimental sample size n grows, and the estimand ¯ τ is simply the average of the predictions from this regression over the target population. It is useful to note that if the components of ψ(∆( X)) are not linearly dependent w.p.1. in the RCT, then the first-order conditions for ¯ μ imply ¯μ(x) = ψ(∆( x)) ⊤ ¯β, ¯β =  Erct [ψ(∆( X)) ψ(∆( X)) ⊤]−1 Erct [μ(X)ψ(∆( X))] . (2) Proposition 1 provides one justification for the estimand ¯ τ : under positivity, it is a weighted average of the CATE over the observational dataset. 
+
+Proposition 1. Assume that 1 ∈ ψ(·) and Assumptions 1 and 2 hold with 
+
+Pr rct (c⊤ψ(∆( X)) = 0) < 1, ∀c ∈ Rp \ { 0}.
+
+Then there exists w(·) with Eobs [w(X)] = 1 such that 
+
+¯τ = Eobs [w(X)μ(X)] .
+
+Proof. Let Λ( x) = frct (x)/f obs (x) and note that 
+
+Eobs 
+
+μ(X)  1 − Λ( X) · [μ(X) − ¯μ(X)] · ψ(∆( X)) ⊤γ 
+
+= ¯ τ + Eobs [μ(X) − ¯μ(X)] − (Eobs [Λ( X) · μ(X) · (μ(X) − ¯μ(X)) · ψ(∆( X))]) ⊤ γ. 
+
+for all γ ∈ Rp. It follows that if γ satisfies 
+
+b⊤γ = Eobs [μ(X) − ¯μ(X)] , b = Eobs [Λ( X) · μ(X) · (μ(X) − ¯μ(X)) ψ(∆( X))] (3) then ¯ τ = Eobs [w(X)μ(X)] for 
+
+w(x) = 1 − Λ( x) · (μ(x) − ¯μ(x)) · ψ(∆( x)) ⊤γ, (4) 6As the first-order conditions defining ¯ μ(·) ensure that 
+
+Erct [( μ(X) − ¯μ(X)) ψ(∆( X))] = 0 , (5) we have 0 = ( Erct [( μ(X) − ¯μ(X)) · ψ(∆( X))]) ⊤ γ = ( Eobs [Λ( X) · (μ(X) − ¯μ(X)) · ψ(∆( X))]) ⊤ γ
+
+and hence Eobs [w(X)] = 1. Thus, we have completed the proof so long as there exists γ satisfying (3). So long as 
+
+b̸ = 0, there will be a ( p − 1)-dimensional affine subspace of parameters γ ∈ Rp satisfying the equality constraint (3). In the case that b = 0, since 1 ∈ ψ(·) (i.e., ψ(·) contains an intercept term) we must have 0 = Eobs [Λ( X) · μ(X) · (μ(X) − ¯μ(X))] = Erct [μ(X) · (μ(X) − ¯μ(X))] = Erct [( μ(X) − ¯μ(X)) 2]where the last equality follows by the first order conditions (5). Hence b = 0 implies μ(X) = ¯μ(X) w.p.1. in the RCT, which further implies μ(X) = ¯ μ(X) w.p.1. in the observational dataset since ¯ μ is uniquely defined by (2) when no components of ψ(∆( X)) are linearly dependent w.p.1. in the RCT. Thus, in the case b = 0, Proposition 1 holds simply with 
+
+w(x) = 1, i.e., in that case ¯ τ = τ .As shown in the proof of Proposition 1 above, the weights on the CATE defining ¯ τ
+
+typically depend on the sampling propensity. This is common in the literature on estimating the ATE in a single unconfounded observational study under positivity violations; a leading example is given by the “overlap” weights proportional to e(x)(1 − e(x)), which can be estimated with minimal variance among all propensity weighted-averages of CATEs (Li et al., 2018, 2019; Wang et al., 2025). It is easy to see from Proposition 1 that our estimand ¯ τ
+
+inherits a desirable property of these propensity-weighted average treatment effects in the causal transportation setting: it reduces to the unweighted average treatment effect τ when the (sampling) propensity is constant, i.e., frct (·) = fobs (·), so that there is no covariate shift between the observational and experimental datasets. To see this, note that the first order conditions for ¯ μ given by (5) imply Erct [μ(X)] = Erct [¯ μ(X)] when 1 ∈ ψ(·). Thus, when additionally frct (·) = fobs (·), we have ¯τ = Eobs [¯ μ(X)] = Erct [¯ μ(X)] = Erct [μ(X)] = Eobs [μ(X)] = τ. 
+
+Like any WATE, ¯ τ is also evidently equal to τ when the CATE μ(·) is constant. By construction, there is an additional reasonable condition under which ¯ τ = τ : when the CATE μ(·) can be calibrated via a low-dimensional parametric correction of the observational conditional mean contrast ∆( ·), i.e., μ ∈ F so that ¯ μ = μ.
+
+# 3 Estimation and inference 
+
+Our proposed estimation and inference procedure for the estimand ¯ τ is simple and intuitive: 71. Partition the set of observational indices {n + 1 , . . . , n + N } randomly and as evenly as possible into K folds I1, . . . , IK
+
+2. Compute cross-fit estimates ˆ∆(−1) (·), . . . , ˆ∆(−K)(·) of the treatment-control contrast ∆( ·) in the observational dataset, where ˆ∆(−k)(·) is computed by applying a CATE learner to all samples in the observational dataset outside fold k = 1 , . . . , K . Then let ˆ∆( ·) = K−1 PKk=1 ˆ∆(−k)(·). 3. Compute estimates ˆ ¯μ(·) = ˆ¯β⊤ψ( ˆ∆( ·)) and ˆ ¯μ(−k)(·) = ˆ¯β⊤ψ( ˆ∆(−k)(·)) , k = 1 , . . . , K of ¯μ(·) where ˆ¯β estimates ¯β in (2) by predicting Di from ψ( ˆ∆( Xi)) in the experimental dataset using ordinary least squares 4. Average the out-of-fold estimates of ¯ μ evaluated at the covariates in the observational dataset: ˆ¯τ = 1
+
+N
+
+> K
+
+X
+
+> k=1
+
+X
+
+> i∈I k
+
+ˆ¯μ(−k)(Xi). (6) 5. Return ˆ ¯τ along with the confidence interval ˆ ¯τ ± z1−α/ 2
+
+q ˆVn,N where ˆVn,N = ˆ a⊤
+
+> n,N
+
+1
+
+n2
+
+> n
+
+X
+
+> i=1
+
+ˆri ˆr⊤
+
+> i
+
+!
+
+ˆan,N + 1
+
+N 2
+
+> K
+
+X
+
+> k=1
+
+X
+
+> i∈I k
+
+(ˆ ¯μ(−k)(Xi) − ˆ¯τ )2 (7) and z1−α/ 2 is the 1 − α/ 2 quantile of the standard normal distribution with ˆan,N = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ψ( ˆ∆( Xi)) ψ( ˆ∆( Xi)) ⊤
+
+!−1
+
+× 1
+
+N
+
+> K
+
+X
+
+> k=1
+
+X
+
+> i∈I k
+
+ψ( ˆ∆(−k)(Xi)) and ˆri = ( Di − ˆ¯μ(Xi)) ψ( ˆ∆( Xi)) , i = 1 , . . . , n 
+
+The above estimation steps introduce three sources of error into the final point estimate ˆ¯τ : the observational contrast estimation error from estimating ∆ in step 2, the calibration error from estimating ¯β in the OLS regression in step 3, and the observational sampling error 
+
+from the sample average approximating the population expectation in step 4. The variance estimate (7) for the final confidence interval only estimates the calibration error and ignores the other two sources of error. Intuitively, this is asymptotically plausible as n, N → ∞ 
+
+with N ≫ n, i.e., the size of experimental dataset is asymptotically negligible relative to the size of the observational dataset as both grow. This is because the calibration error scales inversely with n while the other two error sources scale inversely with N .Doing a more careful analysis, under regularity assumptions, the calibration error should be on the order of n−1/2 by standard linear regression theory. The observational sampling error is of order N −1/2 which is negligible compared to the calibration error as long as N ≫ n.Finally, the observational contrast estimation error will decay more slowly than N −1/2 if ∆ is estimated nonparametrically. The attainable nonparametric contrast error rate generally 8depends on the smoothness of ∆ and/or the attainable rates for estimating the nuisance functions mz (x) = Eobs [Y | X = x, Z = z], z = 0 , 1. As a concrete example, if X has compact support in the observational dataset, the observational propensity score r(x) = 
+
+Eobs [Z | X = x] lies in [ ϵ, 1 − ϵ] with probability 1 for some ϵ > 0, and m0 and m1 are c` adl` ag with finite sectional variation norm, then using the highly adaptive LASSO (Benkeser and Van Der Laan, 2016) to estimate m0(·) and m1(·) separately and then taking their difference to estimate ∆( ·) should achieve a rate no slower than N −1/3 under some additional mild regularity conditions. Faster rates could be achieved with various smoothness assumptions on ∆( ·) (Kennedy, 2023). In any case, for first-order asymptotic validity of our inference we require the nonparametric estimation error for ∆ to decay more quickly than n−1/2 so that the observational contrast estimation error is negligible compared to the calibration error. Our proposal to use cross-fitting follows the literature on double/debiased machine learn-ing (Chernozhukov et al., 2018) to avoid needing to impose Donsker conditions on ∆( ·) and the corresponding estimates ˆ∆( ·). Letting ∥f ∥q, rct =  R  
+
+> X
+
+|f |q(x)frct (x)dλ (x)1/q denote the 
+
+Lq norm of any function f on X with Erct [|f (X)|q] < ∞ (and analogously defining ∥f ∥q, obs ), Theorem 1 below formalizes all the necessary conditions for our estimator ˆ ¯τ to be n1/2-consistent for ¯ τ and asymptotically normal, enabling asymptotically valid inference with our proposed confidence intervals. 
+
+Theorem 1. Suppose Assumption 1 holds, E[|D|2] < ∞, Erct [ψ(∆( X)) ψ(∆( X)) ⊤] is in-vertible, and n, N → ∞ with n/N = o(1) . Additionally, suppose that the cross-fit estimates 
+
+ˆ∆(−1) (·), . . . , ˆ∆(−k)(·) of ∆( ·) satisfy the rate conditions 
+
+|ψj ◦ ˆ∆ − ψj ◦ ∆∥2,rct + ∥ψj ◦ ˆ∆(−k) − ψj ◦ ∆∥2,obs = op(n−1/2), j = 1 , . . . , p, k = 1 , . . . , K. 
+
+(8) 
+
+Then √n(ˆ ¯τ − ¯τ ) d
+
+→ N (0 , Σ) 
+
+where for ¯α =  Erct [ψ(∆( X)) ψ(∆( X)) ⊤]−1 Eobs [ψ(∆( X))] we define 
+
+Σ = ¯ α⊤Erct 
+
+(D − ¯μ(X)) 2ψ(∆( X)) ψ(∆( X)) ⊤ ¯α. 
+
+If additionally ∥ψj ◦ ˆ∆ − ψj ◦ ∆∥2+ ϵ, rct = op(1) for some ϵ > 0 and all j = 1 , . . . , p with 
+
+Erct [|D|4] < ∞, Erct [∥ψ(∆( X)) ∥k] < ∞ for all k < ∞ and ψ( ˆ∆( X)) having finite moments of all orders in the RCT with probability tending to 1, meaning that 
+
+lim inf Pr 
+
+Z 
+
+ψ( ˆ∆( x)) k
+
+frct (x)dλ (x) < ∞ for all k < ∞
+
+
+
+= 1 , (9) 
+
+then the confidence interval covers asymptotically: 
+
+lim inf Pr 
+
+
+
+ˆ¯τ − z1−α/ 2
+
+q
+
+ˆVn,N ⩽ τ ⩽ ˆ¯τ + z1−α/ 2
+
+q
+
+ˆVn,N 
+
+
+
+⩾ 1 − α, ∀α ∈ (0 , 1) .
+
+In the crop rotation data, we have n < N 1/2. In this case, the rate condition ∥ ˆ∆ −
+
+∆∥2,obs = op(n−1/2) is satisfied as long as ∆ can be estimated at a root mean square rate faster than op(N −1/4). This is the standard double machine learning rate, and immediately implies (8) if ψ(z) = (1 , z )⊤.94 Semiparametric efficiency 
+
+Much of the related work on causal transportation has worked under a “nested” trial frame-work where the experimental and observational datasets are viewed as i.i.d. samples from a single combined population, instead of as independent samples from two different pop-ulations. This enables the application of semiparametric efficiency theory to evaluate the optimality of proposed estimators. To study the efficiency properties of our proposed esti-mator ˆ ¯τ , we now re-formulate our setting in the nested trial framework. We refer the reader to Colnet et al. (2024) for a more comprehensive treatment of the distinction between the nested and non-nested perspectives. Consider the single “fused” dataset {Wi = ( Qi, X i, Y i)}Mi=1 of size M = n + N that concatenates the experimental and observational datasets. Here, Di in the experimental dataset is renamed to Yi (cf. Li (2024)) and Qi = 2 for all observations i = 1 , . . . , n originally in the experimental dataset while Qi ≡ Zi ∈ { 0, 1} for all observations i = n + 1 , . . . , n + N
+
+originally in the observational dataset. Then, for example, the conditional distribution of 
+
+Y given Q = 2 under the nested framework can be viewed as equivalent to the marginal distribution of D in the experiment under our non-nested framework from the previous sections. More generally, the distribution of the experimental (resp. observational) dataset is reinterpreted as a conditional distribution given Q = 2 (resp. Q̸ = 2). For instance, ∆( x) = m1(x) − m0(x); mq(x) = E[Y | Q = q], q = 0 , 1, 2, (10) while the asymptotic variance Σ from (9) can be reinterpreted as Σ = ¯ α⊤E (Y − ¯μ(X)) 2ψ(∆( X)) ψ(∆( X)) ⊤ | Q = 2  ¯α (11) for ¯α =  E[ψ(∆( X)) ψ(∆( X)) ⊤ | Q = 2] −1 E[ψ(∆( X)) | Q̸ = 2] , (12) and we write the likelihood ratio from the proof of Proposition 1 as Λ( x) = fX|Q=2 (x)
+
+fX|Q̸=2 (x) (13) where fX|Q=2 (x) ≡ frct (x) and fX|Q̸=2 (x) ≡ fobs (x) are conditional densities of X given 
+
+Q = 2 (resp. Q̸ = 2). Additionally, we have the observational propensity score 
+
+r(x) = Pr( Q = 1 | X = x, Q ̸ = 2) . (14) We now derive and state the semiparametric efficiency bound for our projected estimand ¯τ under the nested formulation of our setup with the single fused dataset {(Qi, X i, Y i)}Mi=1 
+
+and M → ∞ . The estimand is ¯τ = E[¯ μ(X) | Q̸ = 2] , ¯μ = arg min  
+
+> f∈F
+
+E[( Y −f (X)) 2 | Q = 2] = arg min  
+
+> f∈F
+
+E[1(Q = 2)( Y −f (X)) 2].
+
+Assuming that Pr( c⊤ψ(∆( X)) = 0 | Q = 2) = 0 , ∀c ∈ Rp \ { 0} (15) 10 (the nested analogue of the linear independence condition in Proposition 1), we can write ¯μ(x) = ψ(∆( x)) ⊤ ¯β, ¯τ = E[ψ(∆( X)) | Q̸ = 2] ⊤ ¯β (16) where ¯β =  E[ψ(∆( X)) ψ(∆( X)) ⊤ | Q = 2] −1 E [Y ψ (∆( X)) | Q = 2] is the nested analogue of (2). Then, we let 
+
+ρq = Pr( Q = q), q = 0 , 1, 2, (17) and follow Zhang et al. (2023) and Kallus and Mao (2025) in examining the behavior of our efficiency bound as ρ2 → 0 as M → ∞ but the conditional distribution of W = ( Q, X, Y )given 1(Q = 2) remains constant. In words, this is the asymptotic regime where the dis-tributions within each dataset remain constant while the ratio of the experimental sample size to the observational sample size vanishes. This accounts for our nonstandard setting with the experimental dataset being small compared to the observational dataset. Our main result is that in this regime, the semiparametric efficiency bound — assuming it is finite — approaches the asymptotic variance Σ of our proposed outcome regression estimator ˆ ¯τ .Thus, when the conditions of Theorem 1 are satisfied, our estimator ˆ ¯τ is efficient for ¯ τ .
+
+Theorem 2. Suppose {Wi = ( Qi, X i, Y i)}Mi=1 are i.i.d. with the support of Qi being {0, 1, 2},equation (15) holds, and ψ(·) is continuously differentiable on X with gradient ˙ψ(·). Then the efficient influence function (as M → ∞ ) for the estimand ¯τ in (16) is 
+
+ψ(w; ¯ τ , η ) = 1(q̸ = 2) 1 − ρ2
+
+(¯ μ(x) − ¯τ + ι(w; η)κ(x; η)) + 1(q = 2) 
+
+ρ2
+
+(y − ¯μ(x))¯ α⊤ψ(∆( x)) 
+
+where η consists of the nuisance functions and parameters defined in equations (10) – (17) 
+
+and w = ( q, x, y ) with 
+
+ι(w; η) = 1(q = 1) 
+
+r(x) (y − m1(x)) − 1(q = 0) 1 − r(x) (y − m0(x)) , and 
+
+κ(x; η) = ˙ψ(∆( x)) ⊤ ¯β + Λ( x)¯ α⊤
+
+
+
+m2(x) ˙ψ(∆( x)) −
+
+h
+
+ψ(∆( x)) ˙ψ(∆( x)) ⊤ + ˙ψ(∆( x)) ψ(∆( x)) ⊤
+
+i ¯β. 
+
+Hence, the semiparametric efficiency bound is Veff = E[ψ2(W ; ¯ τ , η )] . If Veff < ∞, then as 
+
+M → ∞ with ρ2 → 0 while the conditional distribution of (Q, X, Y ) given 1(Q = 2) remains constant, we have ρ2Veff → Σ for Σ as in (11) .
+
+It is instructive to contrast the efficiency bound for ¯ τ , derived in Theorem 2, with the efficiency bound for the transported average treatment effect τ , given in Li et al. (2023) and other references. An important quantity in the efficiency bound for τ is the experimental sampling propensity score π(x) = Pr( Q = 2 | X = x). By Bayes’ rule, we write 
+
+π(x) = fX|Q=2 (x)Pr( Q = 2) 
+
+fX|Q=2 (x)Pr( Q = 2) + fX|Q̸=2 (x)Pr( Q̸ = 2) = ρ2Λ( x)
+
+ρ2Λ( x) + (1 − ρ2). (18) The efficiency bound for τ is infinite if E[π(X)−1 | Q̸ = 2] = ∞. By (18), this means we can only hope to have a finite efficiency bound for τ if E[Λ( X)−1 | Q̸ = 2] < ∞. This requires a 11 strong form of positivity (Assumption 2). By contrast, the only term depending on Λ( ·) in the efficient influence function ψ for ¯ τ derived in Theorem 2 is 
+
+1(q̸ = 2) (1 − ρ2) ι(w; η)κ(x; η)which has finite squared expectation if we assume ψ(∆( X)), ˙ψ(∆( X)), and Y have finite moments of all orders in the observational dataset and Λ( X) (not Λ( X)−1) has a finite moment of order strictly greater than 2. We note that prior works (Newey, 1994; Chernozhukov et al., 2021; Hirshberg and Wager, 2021) have studied semiparametric efficient estimation for projection estimands of the form ¯θ = E[m(W, ¯γ)] , ¯γ(·) = arg min 
+
+> γ∈Γ
+
+E[ℓ(W, γ )] (19) in a general supervised learning setting with i.i.d. observations {Wi = ( Yi, R i)}Mi=1 , where 
+
+ℓ(·, ·) is some loss function and Γ is any function collection that is linear and closed with respect to the Hilbert space HR of all square integrable functions of R. In our setting, taking R = ( Q, X ), the estimand ¯θ = (1 − ρ2)¯ τ takes the form (19) with ¯ γ = ¯ μ, ℓ(W, ¯γ) = 
+
+1(Q = 2)( Y − ¯γ(X)) 2, Γ = F, and m(W, ¯γ) = 1(Q̸ = 2)¯ γ(X). Then the cited works give the efficiency bound for ¯θ, which can be easily converted into an efficiency bound for ¯ τ =¯θ/ (1 − ρ2) (Appendix B). However, these efficiency bounds are based on the assumption that the function class Γ is known. In our setting, this is equivalent to ∆( ·) being known. It turns out that the efficiency bound for ¯ τ when ∆( ·) is known is generally smaller than the bound 
+
+Veff in Theorem 2. A similar result was shown recently by Wang et al. (2025) for estimating general weighted average treatment effects with weights depending on the propensity score. However, the difference between the efficiency bound for ¯ τ when ∆( ·) is known and the bound when ∆( ·) must be estimated tends to zero as ρ2 → 0, analogous to what Kallus and Mao (2025) found in the context of semi-supervised learning with surrogate outcomes. This formalizes our intuition that when the observational dataset is much larger than the experimental dataset, we can ignore the observational contrast estimation error. Nonetheless, our novel efficiency bound Veff and corresponding efficient influence function from Theorem 2 are useful for constructing an efficient one-step or targeted maximum likelihood estimator for ¯ τ when ρ2̸ → 0 and ∆( ·) is not known. We do not work through the details here, focusing instead on our simpler outcome regression estimator ˆ ¯τ which is asymptotically equivalent (under the conditions of Theorem 1) in the regime of interest with ρ2 → 0. 
+
+# 5 Numerical studies 
+
+Through numerical studies on two sets of simulated data-generating processes and one real dataset combining field experiments and satellite-based crop yield estimates to estimate the impact of crop rotation on maize yields, we illustrate the numerical performance of our proposed estimator ˆ ¯τ (and our corresponding confidence intervals) relative to two alternatives in the causal transportation literature. The alternative estimators are: 12 1. The augmented inverse propensity of sampling weighting (AIPSW) estimator, given by ˆτaipsw = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+nN (Di − ˆμ(Xi))ˆ qn,N (Xi) + 1
+
+N
+
+> n+N
+
+X
+
+> i=n+1
+
+ˆμ(Xi) (20) where ˆ qn,N (x) estimates the odds qn,N (x) that a randomly selected observation with 
+
+X = x in the combined observational and experimental dataset is in the observational dataset: 
+
+qn,N (x) = Nnfobs (x)
+
+frct (x) .
+
+See Colnet et al. (2024) for an extensive discussion of the AIPSW estimator. 2. The collaborative estimator of Rudolph et al. (2025), given by ˆτcollab = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+nN
+
+
+
+(Di − ˆμ(Xi))ˆ gn,N (Xi) + ˆqn,N (Xi)1 + ˆ qn,N (Xi)(ˆ μ(Xi) − ˆkn,N (Xi)) 
+
+
+
++ 1
+
+N
+
+> n+N
+
+X
+
+> i=n+1
+
+ˆqn,N (Xi)ˆ μ(Xi) + ˆkn,N (Xi)1 + ˆ qn,N (Xi) (21) where ˆ gn,N and ˆkn,N estimate the functions 
+
+gn,N (x) = Nnf μ
+
+> obs
+
+(μ(x)) 
+
+f μ
+
+> rct
+
+(μ(x)) and kn,N (x) = E[μ(X) | gn,N (X) = gn,N (x)] ,
+
+respectively, where f μ 
+
+> rct
+
+and f μ 
+
+> obs
+
+are the densities of μ(X) in the experimental and observational datasets, respectively. For intuition, note that gn,N (x) corresponds to the odds that a randomly selected observation with CATE μ(X) = μ(x) in the combined observational and experimental dataset is in the observational dataset. The AIPSW estimator is well known to be regular and semiparametric efficient for es-timating the transported average treatment effect τ under positivity. The collaborative estimator is designed to improve upon the precision of AIPSW when the covariates are multivariate by replacing the scaled likelihood ratio qn,N with the univariate sampling odds propensity gn,N , and projecting out some of the residual variance in μ onto k. However, the collaborative estimator is no longer regular because gn,N and kn,N are conditional expecta-tions given nuisance functions that must be estimated. Asymptotic 95% confidence intervals for τ based on the estimators ˆ τaipsw and ˆ τcollab (valid under sufficiently strong positivity conditions) are given by ˆτaipsw ± z0.975 
+
+q
+
+ˆVaipsw , ˆτcollab ± z0.975 
+
+q
+
+ˆVcollab 
+
+where the variance estimates ˆVaipsw and ˆVcollab are computed using the estimated influence 13 functions: ˆVaipsw = 1
+
+N 2
+
+> n
+
+X
+
+> i=1
+
+ˆq2 
+
+> n,N
+
+(Xi)( Di − ˆμ(Xi)) 2 +
+
+> n+N
+
+X
+
+> i=n+1
+
+(ˆ μ(Xi) − ˆτaipsw )2
+
+!
+
+ˆVcollab = 1
+
+N 2
+
+> n
+
+X
+
+> i=1
+
+
+
+ˆgn,N (Xi)( Di − ˆμ(Xi)) + ˆqn,N (Xi)1 + ˆ qn,N (Xi)(ˆ μ(Xi) − ˆkn,N (Xi)) 
+
+2
+
++ 1
+
+N 2
+
+> n+N
+
+X
+
+> i=n+1
+
+ˆqn,N (Xi)ˆ μ(Xi) + ˆkn,N (Xi)1 + ˆ qn,N (Xi) − ˆτcollab 
+
+!2
+
+Throughout our numerical studies, we implement our proposed outcome regression es-timator ˆ ¯τ using the simple basis expansion ψ(∆( x)) = (1 , ∆( x)) ⊤. Appendix C provides details on how all nuisance functions are estimated for all of the numerical studies. Code to fully reproduce the numerical simulations in Sections 5.1 and 5.2 is publicly available at https://github.com/hli90722/calibrating_large_scale_observations . For sim-plicity, in this section we use the notation of our original non-nested setup introduced in Section 2, rather than the notation of the nested trial framework introduced in Section 4. 
+
+## 5.1 Univariate covariate simulation 
+
+We begin by examining a data generating process based on the simulation study of Kallus et al. (2018) with a single univariate covariate X. That study considers a clear positivity violation: in the experimental dataset, X is uniformly distributed on the interval ( −1, 1), whereas in the observational dataset, X follows a standard normal distribution. In such a setting, existing causal transportation estimators like ˆ τaipsw and ˆ τcollab that do not allow for any extrapolation would fail due to the inability to identify μ(x) for x outside ( −1, 1). Thus, we instead consider a data generating process where positivity holds, but there is potentially significant covariate shift between the experimental and observational datasets. Specifically, we let the covariate X in the experimental dataset follow a normal distribution with mean 
+
+−θ and variance 1 − θ, and vary θ ∈ { 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7}; evidently higher values of θ correspond to greater covariate shift. All other aspects of the data-generating process — including the standard normal distribution for X in the observational dataset — are unchanged from Kallus et al. (2018). Translating their setting into our notation, we have observational contrast ∆( x) = 0 .75 x2 + 3 x + 1 and true CATE μ(x) = ∆( x) − x, and the observational treatment assignments Zi are generated by fair coin flips independently of the covariates Xi. We fix the experimental and observational sample sizes at n = 100 and 
+
+N = 10 , 000, respectively. Fig. 2 shows that the collaborative and AIPSW estimators exhibit similar empirical mean squared errors (MSE) across all values of θ. This is unsurprising since the covariate is uni-variate and thus the collaborative estimator does not provide any dimensionality reduction advantages. For the smallest values of θ, where the observational and experimental covari-ate distributions are similar, our outcome regression estimator ˆ ¯τ performs similarly to the AIPSW and collaborative estimators. As covariate shift increases, however, the outcome regression estimator ˆ ¯τ shows increasing improvement over the AIPSW and collaborative es-timators. Indeed, for θ = 0 .7, the MSE of ˆ ¯τ (for estimating our estimand ¯ τ ) is about 87% 14 Figure 2: The height of each bar corresponds to the estimated mean squared error (MSE) of an estimator from the simulation study of Section 5.1, based on 1000 simulations. Each panel corresponds to a different value of the parameter θ, which quantifies the degree of covariate shift between the experimental and observational datasets. The estimators ˆ τaipsw and ˆ τcollab 
+
+are compared to the true transported average treatment effect τ while the estimator ˆ ¯τ is compared to the projected treatment effect ¯ τ . The shaded part of each bar corresponds to the estimated variance while the unshaded part of each bar corresponds to the estimated squared bias. lower than the MSE of the AIPSW and collaborative estimators (for estimating the trans-ported ATE τ ). Additionally, for the larger values of θ, we observe non-negligible bias (for the transported ATE τ ) in the AIPSW and collaborative estimators while the bias in our outcome regression estimator (for our projection estimand ¯ τ ) remains sufficiently negligible as to be invisible in Fig. 2. The quality of inference for τ using the AIPSW and collaborative estimators also degrades sharply as θ increases (Table 1). By contrast, the empirical coverage of the asymptotic 95% confidence intervals based on ˆ ¯τ (for the estimand ¯ τ ) stays in the range of about 92%-93% for all values of θ, whereas the coverage for the other two intervals (for the estimand τ )degrades steadily. Indeed, when θ ⩾ 0.5, oracle variants of the AIPSW and collaborative estimators (that know the true nuisance functions) have infinite variance, so the correspond-ing confidence intervals for τ are no longer asymptotically justified, though it is clear from our simulations that the intervals’ coverage breaks down for smaller values of θ, even in this rather benign simulation setting with a single covariate. 15 Table 1: The empirical coverage probabilities (left) and mean widths (right) for the nomi-nal 95% confidence intervals considered in the simulation study of Section 5.1, across 1000 simulations. 
+
+θ ˆ¯τ ˆτaipsw ˆτcollab 
+
+0 92.8% 90.3% 90.2% 0.1 92.6% 89.4% 88.9% 0.2 92.7% 87.7% 88.3% 0.3 92.2% 84.1% 85.1% 0.4 92.1% 75.8% 78.1% 0.5 91.6% 63.2% 66.9% 0.6 91.9% 48.3% 51.6% 0.7 92.1% 32.7% 36.3% 
+
+θ ˆ¯τ ˆτaipsw ˆτcollab 
+
+0 0.461 0.425 0.425 0.1 0.462 0.424 0.425 0.2 0.474 0.427 0.431 0.3 0.502 0.433 0.444 0.4 0.552 0.445 0.466 0.5 0.636 0.462 0.492 0.6 0.772 0.474 0.515 0.7 0.994 0.471 0.530 Equation (4) specifies a collection of weight functions w(·), indexed by a parameter γ
+
+such that ¯ τ = Eobs [w(X)μ(X)] with Eobs [w(X)] = 1. To gain intuition about these weights, in Fig. 3 we plot one such weight function for each value of θ. Specifically, we take 
+
+γ = Eobs [μ(X) − ¯μ(X)] 
+
+b⊤A−1b · A−1b (22) where 
+
+A = Erct [Λ( X)( μ(X) − ¯μ(X)) 2ψ(∆( X)) ψ(∆( X)) ⊤]and b is as in (3). This choice minimizes Var obs (w(X)) among all possible choices of γ satisfy-ing (3). We observe that the weights are bounded within (0 , 2) for x ∈ [−4, 4] across all values of θ, and indeed bounded within (0 .75 , 1.25) when θ ⩽ 0.5, supporting the intepretability of the estimand ¯ τ in these simulation scenarios. 
+
+## 5.2 Multivariate covariate simulation 
+
+Table 2: Same as Table 1 but for the multivariate covariate simulations in Section 5.2 
+
+η σ20 ˆ¯τ ˆτaipsw ˆτcollab 
+
+0 1 94.9% 91.9% 91.9% 0 2 94.9% 81.8% 89.9% 0.5 1 92.5% 88.3% 80.3% 0.5 2 90.8% 69.8% 76.4% 
+
+η σ20 ˆ¯τ ˆτaipsw ˆτcollab 
+
+0 1 0.402 1.06 0.417 0 2 0.406 0.396 0.419 0.5 1 0.611 1.257 0.476 0.5 2 0.616 0.453 0.486 We now simulate four data generating processes (scenarios) with d = 10 covariates. For all scenarios, we have ∆( x) = expit(0 .5x1)expit(1 − 0.5x2)
+
+Eobs [Y | X = x, Z = 0] = sin( x1) + cos( x2) + sin(2 x1) cos(2 x2) + 0 .5
+
+> d
+
+X
+
+> i=1
+
+xi
+
+16 Figure 3: For each value of θ studied in the simulations from Section 5.1, a plot of the weight function w(·) in (4) with γ given by (22). and observational propensity score Pr obs (Z = 1 | X = x) = Φ 
+
+2x2 − x1
+
+5
+
+
+
+,
+
+where expit( x) = exp( x)(1 + exp( x)) −1 and Φ( ·) is the cumulative distribution function corresponding to the standard normal distribution. We set 
+
+μ(x) = 0 .5 + 0 .5∆( x) + η(x1 + 1)( x2 + 1) and have i.i.d. normally distributed covariates in the observational dataset with mean 0 and variance σ20 . The four scenarios correspond to all combinations of ( η, σ 20 ) in {0, 0.5} × { 1, 2}.The covariates in the experimental dataset are i.i.d. normally distributed random variables with mean 0.5 and variance 1 for all scenarios. As in Section 5.1, we fix the experimental and observational sample sizes at n = 100 and N = 10 , 000, respectively. 17 Figure 4: Same as Fig. 2, but for the multivariate covariate simulations in Section 5.2 In all scenarios, our point estimator ˆ ¯τ exhibits the lowest MSE while the AIPSW es-timator ˆ τaipsw exhibits the largest MSE (Fig. 4). Perhaps counterintuitively, the AIPSW estimator shows a substantially higher MSE in the scenarios where σ20 = 1 than in those where σ20 = 2, even though the positivity violation is more severe in the latter case. How-ever, the collaborative estimator does not show the same pattern, suggesting the explanation for this phenomenon lies in instability of nuisance estimation resulting from the curse of di-mensionality. In the two simulation scenarios with η = 0, our linear regression calibration procedure is well-specified for the CATE and so τ = ¯ τ ≈ 0.678. When η = 0 .5, the estimands differ significantly (with τ ≈ 1.18 and ¯ τ ≈ 1.79). Table 2 shows that inference for τ (based on either the AIPSW or collaborative estimators) is considerably less reliable than our inference for ¯ τ , especially when σ20 = 2 (in which case the AIPSW and collaborative estimators have infinite asymptotic variance). Our CI’s based on ˆ ¯τ also exhibit some degree of empirical undercoverage in the misspecified scenarios ( η = 0 .5), though in the well specified scenarios (η = 0) they essentially achieve the nominal 95% coverage unlike the other CI’s. 
+
+## 5.3 Crop rotation example 
+
+We now turn our attention to the dataset compiled by Kluger et al. (2022) to estimate the effect of soybean rotation on maize yields over a large agriculturally productive region of the Midwestern United States, given by the extent of the colored points in Fig. 1. The dataset contains 611 completely randomized blocked experiments conducted across 89 (lo-18 cation, year) pairs under various growing conditions during the years 2000–2016, sourced from Abendroth et al. (2017) and Bowles et al. (2020). These are supplemented by about 1.31 million maize satellite-based yield estimates from the Scalable Crop Yield Mapper across different years at 174 , 869 distinct locations (plotted in Fig. 1). For each experiment, the difference in average yields between the fields that grew soybeans in the prior year (i.e., were rotated) and the fields that grew maize in the prior year (i.e., were not rotated) was recorded. We hereafter refer to this difference as the “yield differential”; recall it corresponds to the variable Di in our notation. A collection of covariates including year, latitude, longitude, and various weather and soil variables is available for all experiments and all satellite-based observations. See Table 1 of Kluger et al. (2022) for more details. Additionally, Section 2.1 of that paper provides additional information about the dataset. We run 100 simulations. Each simulation involves constructing a synthetic experimental dataset and a synthetic observational dataset by randomly sampling 10% of the observations (without replacement) from the full experimental and observational datasets, respectively. We compute each of the three estimators ˆ τaipsw , ˆ τcollab , and ˆ ¯τ (and the corresponding con-fidence intervals) using these synthetic datasets. The true values of the estimands τ and ¯ τ
+
+are taken to be the values of the estimators ˆ τaipsw and ˆ ¯τ , respectively, on the full dataset. They happen to be quite similar: we have τ = 0 .905 and ¯ τ = 0 .906, respectively. It is clear from Fig. 5 that the AIPSW estimator is extremely unstable, with values spanning several orders of magnitude across the simulations. This is not surprising given the clear positivity violation from the uneven spatial coverage of the experimental sites (Fig. 1). The collaborative estimator fares quite a bit better, but the outcome regression ˆ ¯τ is clearly much less variable and much more stable still (see Table 3). This is perhaps unsurprising given the clear positivity violations. Table 3: The squared bias and variance of the three estimators across the 100 simulations from the crop rotation dataset described in Section 5.3, along with the empirical coverage rates and mean widths of the corresponding asymptotic 95% confidence intervals. ˆτaipsw ˆτcollab ˆ¯τ
+
+Squared bias 4.43 × 10 3 0.0259 0.00917 Variance 4.15 × 10 5 0.397 0.0630 Coverage 98% 93% 96% Mean CI width 269 1.49 0.985 
+
+# 6 Conclusion 
+
+We have proposed a method for transporting treatment effects in a setting with a small experimental dataset and a large observational dataset that has biased and/or noisy out-comes. The key idea is to model treatment effect heterogeneity as a linear combination of a low dimensional basis expansion of a treatment-control contrast that can be readily learned from the large observational dataset. When this modeling assumption holds, we are able to consistently estimate the transported average treatment effect with a straightforward es-timation procedure. If the modeling assumption does not hold, our procedure consistently 19 Figure 5: Histograms of the three estimators across the 100 simulations from the crop rotation dataset described in Section 5.3. The black vertical dashed lines show the values of the true estimand — the transported ATE τ ≈ 0.905 for the estimators ˆ τaipsw and ˆ τcollab , and the projected ATE ¯ τ ≈ 0.906 for the estimator ˆ ¯τ .estimates a transported estimand ¯ τ that can be interpreted as a weighted average treatment effect under positivity, analogous to the literature on estimating average treatment effects from a single unconfounded observational dataset under positivity violations. Crucially, the estimand ¯ τ remains identified without positivity. Under regularity conditions, our proposed estimator achieves the efficiency bound for the transported estimand ¯ τ when the observational dataset’s size grows sufficiently quickly relative to the experimental dataset’s size. Most crucially for the practitioner, the estimator does not require estimating any inverse propensity scores or weights, either directly or indi-rectly. Instead, it only requires estimating the treatment-control contrast by applying any flexible machine learning method for the CATE to the large observational dataset, followed by applying ordinary least squares to the small experimental dataset. Our methodology assumes independent and identically distributed observations. This assumption forms the basis for our use of ordinary least squares for calibrating the observa-tional dataset to the experimental dataset, and the resulting characterization of the limiting estimand ¯ τ as well as the proposed asymptotic inference methodology. This is not necessar-ily realistic in settings like the crop rotation dataset of Section 5.3, where there are likely 20 positive correlations in the outcomes between data points from the same location and/or year that cannot be explained by observed covariates. To account for this, Kluger et al. (2022) included random effects for year and site in their regressions calibrating the observa-tional dataset to the experimental one. It would be informative to carefully study inference and the limiting estimand for our estimator (or propose alternative estimators) under such alternative calibration procedures. 
+
+# 7 Acknowledgments 
+
+The author thanks Dan Kluger and David Lobell for sharing the experimental and obser-vational dataset that inspired this work and forms the basis for the numerical study of Section 5.3. He is also grateful to Art Owen for early feedback on some of the ideas in this manuscript. 
+
+# References 
+
+L. Abendroth, D. E. Herzmann, G. Chighladze, E. J. Kladivko, M. J. Helmers, L. Bowling, M. Castellano, R. M. Cruse, W. A. Dick, N. R. Fausey, et al. Sustainable corn cap research data (usda-nifa award no. 2011-68002-30190). 2017. A. N. Angelopoulos, S. Bates, C. Fannjiang, M. I. Jordan, and T. Zrnic. Prediction-powered inference. Science , 382(6671):669–674, 2023a. A. N. Angelopoulos, J. C. Duchi, and T. Zrnic. PPI++: Efficient prediction-powered infer-ence. arXiv preprint arXiv:2311.01453 , 2023b. M. Barnard, J. D. Huling, and J. Wolfson. Partially retargeted balancing weights for causal effect estimation under positivity violations, 2025. URL https://arxiv.org/abs/2510. 22072 .E. Ben-Michael, A. Feller, D. A. Hirshberg, and J. R. Zubizarreta. The balancing act in causal inference. arXiv preprint arXiv:2110.14831 , 2021. D. Benkeser and M. Van Der Laan. The highly adaptive lasso estimator. In 2016 IEEE international conference on data science and advanced analytics (DSAA) , pages 689–696. IEEE, 2016. P. J. Bickel, C. A. Klaassen, Y. Ritov, and J. A. Wellner. Efficient and Adaptive Estimation for Semiparametric Models , volume 4. Springer, 1993. T. M. Bowles, M. Mooshammer, Y. Socolar, F. Calder´ on, M. A. Cavigelli, S. W. Culman, W. Deen, C. F. Drury, A. G. y Garcia, A. C. Gaudin, et al. Long-term evidence shows that crop-rotation diversification increases agricultural resilience to adverse growing conditions in north america. One Earth , 2(3):284–293, 2020. L. Breiman. Random forests. Machine learning , 45(1):5–32, 2001. 21 V. Chernozhukov, D. Chetverikov, M. Demirer, E. Duflo, C. Hansen, W. Newey, and J. Robins. Double/debiased machine learning for treatment and structural parameters, 2018. V. Chernozhukov, W. K. Newey, V. Quintas-Martinez, and V. Syrgkanis. Automatic debiased machine learning via Riesz regression. arXiv preprint arXiv:2104.14737 , 2021. V. Chernozhukov, W. Newey, V. M. Quintas-Martınez, and V. Syrgkanis. RieszNet and ForestRiesz: Automatic debiased machine learning with neural nets and random forests. In International Conference on Machine Learning , pages 3901–3914. PMLR, 2022. B. Colnet, I. Mayer, G. Chen, A. Dieng, R. Li, G. Varoquaux, J.-P. Vert, J. Josse, and S. Yang. Causal inference methods for combining randomized trials and observational studies: a review. Statistical Science , 39(1):165–191, 2024. C. Cortes and V. Vapnik. Support-vector networks. Machine Learning , 20(3):273–297, 1995. R. K. Crump, V. J. Hotz, G. W. Imbens, and O. A. Mitnik. Dealing with limited overlap in estimation of average treatment effects. Biometrika , 96(1):187–199, 2009. I. J. Dahabreh, S. E. Robertson, J. A. Steingrimsson, E. A. Stuart, and M. A. Hernan. Extending inferences from a randomized trial to a new target population. Statistics in Medicine , 39(14):1999–2014, 2020. I. Degtiar and S. Rose. A review of generalizability and transportability. Annual Review of Statistics and its Application , 10(1):501–524, 2023. A. D’Amour, P. Ding, A. Feller, L. Lei, and J. Sekhon. Overlap in observational studies with high-dimensional covariates. Journal of Econometrics , 221(2):644–654, 2021. J. H. Friedman. Multivariate adaptive regression splines. The Annals of Statistics , 19(1): 1–67, 1991. J. A. Gagnon-Bartsch, A. C. Sales, E. Wu, A. F. Botelho, J. A. Erickson, L. W. Miratrix, and N. T. Heffernan. Precise unbiased estimation in randomized experiments using auxiliary observational data. Journal of Causal Inference , 11(1):20220011, 2023. A. Guan, M. Reitsma, R. Sahoo, J. Salomon, and S. Wager. Data fusion for high-resolution estimation. arXiv preprint arXiv:2508.14858 , 2025. D. A. Hirshberg and S. Wager. Augmented minimax linear estimation. The Annals of Statistics , 49(6):3206–3227, 2021. M. Huang. Overlap violations in external validity: Application to ugandan cash transfer programs. The Annals of Applied Statistics , 19(1):351–370, 2025. M. Huang, N. Egami, E. Hartman, and L. Miratrix. Leveraging population outcomes to improve the generalization of experimental results: Application to the JTPA study. The Annals of Applied Statistics , 17(3):2139–2164, 2023. 22 K. P. Josey, F. Yang, D. Ghosh, and S. Raghavan. A calibration approach to transportability and data-fusion with observational data. Statistics in medicine , 41(23):4511–4531, 2022. N. Kallus and X. Mao. On the role of surrogates in the efficient estimation of treatment effects with limited outcome data. Journal of the Royal Statistical Society Series B: Statistical Methodology , 87(2):480–509, 2025. N. Kallus, A. M. Puli, and U. Shalit. Removing hidden confounding by experimental ground-ing. Advances in neural information processing systems , 31, 2018. E. H. Kennedy. Towards optimal doubly robust estimation of heterogeneous causal effects. 
+
+Electronic Journal of Statistics , 17(2):3008–3049, 2023. E. H. Kennedy. Semiparametric doubly robust targeted double machine learning: a review. 
+
+Handbook of Statistical Methods for Precision Medicine , pages 207–236, 2024. S. Khan and J. Ugander. Doubly-robust and heteroscedasticity-aware sample trimming for causal inference. Biometrika , page asae053, 2024. D. M. Kluger, A. B. Owen, and D. B. Lobell. Combining randomized field experiments with observational satellite data to assess the benefits of crop rotations on yields. Environmental Research Letters , 17(4):044066, 2022. K. J. Lee and A. Schuler. RieszBoost: Gradient boosting for Riesz regression. arXiv preprint arXiv:2501.04871 , 2025. F. Li, K. L. Morgan, and A. M. Zaslavsky. Balancing covariates via propensity score weight-ing. Journal of the American Statistical Association , 113(521):390–400, 2018. F. Li, L. E. Thomas, and F. Li. Addressing extreme propensity scores via the overlap weights. 
+
+American Journal of Epidemiology , 188(1):250–257, 2019. F. Li, H. Hong, and E. A. Stuart. A note on semiparametric efficient generalization of causal effects from randomized trials to target populations. Communications in Statistics-Theory and Methods , 52(16):5767–5798, 2023. H. H. Li. Efficient estimation and data fusion under general semiparametric restrictions on outcome mean functions. arXiv preprint arXiv:2406.06941 , 2024. S. Li, P. B. Gilbert, R. Duan, and A. Luedtke. Data fusion using weakly aligned sources. 
+
+Journal of the American Statistical Association , pages 1–11, 2025. L. D. Liao, E. Højbjerre-Frandsen, A. E. Hubbard, and A. Schuler. Prognostic adjustment with efficient estimators to unbiasedly leverage historical data in randomized trials. The International Journal of Biostatistics , 21(1):1–15, 2025. W. K. Newey. The asymptotic variance of semiparametric estimators. Econometrica: Journal of the Econometric Society , pages 1349–1382, 1994. 23 H. Parikh, R. K. Ross, E. Stuart, and K. E. Rudolph. Who are we missing?: a principled approach to characterizing the underrepresented population. Journal of the American Statistical Association , 120(551):1414–1423, 2025. E. Polley, E. LeDell, C. Kennedy, and M. van der Laan. SuperLearner: Super Learner Pre-diction , 2024. URL https://CRAN.R-project.org/package=SuperLearner . R package version 2.0-29. E. T. Rosenman. Methods for combining observational and experimental causal estimates: A review. Wiley Interdisciplinary Reviews: Computational Statistics , 17(2):e70027, 2025. K. E. Rudolph, N. T. Williams, E. A. Stuart, and I. D&Iacute;AZ. Improving efficiency in transporting average treatment effects. Biometrika , page asaf027, Apr. 2025. ISSN 1464-3510. doi: 10.1093/biomet/asaf027. URL https://doi.org/10.1093/biomet/asaf027 .S. Song, Y. Lin, and Y. Zhou. A general M-estimation theory in semi-supervised framework. 
+
+Journal of the American Statistical Association , 119(546):1065–1075, 2024. J. Su, S. Zhang, and Y. Zhou. Solving the missing at random problem in semi-supervised learning: An inverse probability weighting method. Stat , 13(3):e707, 2024. L. Testa, Q. Xu, J. Lei, and K. Roeder. Semiparametric semi-supervised learning for general targets under distribution shift and decaying overlap. arXiv preprint arXiv:2505.06452 ,2025. J. Tibshirani, S. Athey, E. Sverdrup, and S. Wager. grf: Generalized Random Forests , 2026. URL https://CRAN.R-project.org/package=grf . R package version 2.6.1. R. Tibshirani. Regression shrinkage and selection via the lasso. Journal of the Royal Statis-tical Society Series B: Statistical Methodology , 58(1):267–288, 1996. A. W. van der Vaart. Asymptotic statistics , volume 3. Cambridge University Press, 2000. S. Wager and S. Athey. Estimation and inference of heterogeneous treatment effects using random forests. Journal of the American Statistical Association , 113(523):1228–1242, 2018. Y. Wang, Y. Liu, and S. Yang. Rate doubly robust estimation for weighted average treatment effects, 2025. URL https://arxiv.org/abs/2509.14502 .S. Wood. Generalized Additive Models: An Introduction with R . Chapman and Hall/CRC, 2 edition, 2017. P. Wu, S. Luo, and Z. Geng. On the comparative analysis of average treatment effects estimation via data combination. Journal of the American Statistical Association , pages 1–12, 2025. Z. Xu, D. Witten, and A. Shojaie. A unified framework for semiparametrically efficient semi-supervised learning. arXiv preprint arXiv:2502.17741 , 2025. 24 S. Yang, S. Liu, D. Zeng, and X. Wang. Data fusion methods for the heterogeneity of treatment effect and confounding function. Bernoulli , 2024. A. Zhang, L. D. Brown, and T. T. Cai. Semi-supervised inference: General theory and estimation of means. The Annals of Statistics , 47(5):2538–2566, 2019. Y. Zhang and J. Bradic. High-dimensional semi-supervised learning: in search of optimal inference of the mean. Biometrika , 109(2):387–403, 2022. Y. Zhang, A. Chakrabortty, and J. Bradic. Double robust semi-supervised inference for the mean: selection bias under mar labeling with decaying overlap. Information and Inference: A Journal of the IMA , 12(3):2066–2159, 2023. T. Zrnic and E. J. Cand` es. Cross-prediction-powered inference. Proceedings of the National Academy of Sciences , 121(15):e2322083121, 2024. 
+
+# A Proofs 
+
+## A.1 Proof of Theorem 1 
+
+Throughout the proof we write 
+
+ψi ≡ ψ(∆( Xi)) , i = 1 , . . . , n + N
+
+ˆψi ≡ ψ( ˆ∆( Xi)) , i = 1 , . . . , n 
+
+ˆψ(−k) 
+
+> i
+
+≡ ψ( ˆ∆(−k)(Xi)) , i ∈ I k, k = 1 , . . . , K 
+
+for brevity. We note that 
+
+√n(ˆ ¯τ − ¯τ ) = 
+
+√nN
+
+> K
+
+X
+
+> k=1
+
+X
+
+> i∈I k
+
+ ˆ¯β⊤ ˆψ(−k) 
+
+> i
+
+− ¯β⊤ψi
+
+
+
++
+
+√nN
+
+> n+N
+
+X
+
+> i=n+1
+
+(¯ μ(Xi) − ¯τ )where ¯β is given by (2) since Erct [ψ(∆( X)) ψ(∆( X)) ⊤] is invertible. The rate conditions (8) imply Eobs [∥ψ(∆( X)) ∥22] < ∞ and hence Eobs [¯ μ(X)2] < ∞, so 
+
+√nN
+
+> n+N
+
+X
+
+> i=n+1
+
+(¯ μ(Xi) − ¯τ ) = √n · 1
+
+N
+
+> n+N
+
+X
+
+> i=n+1
+
+(¯ μ(Xi) − ¯τ ) = √n · Op(N −1/2) = op(1) and it suffices to show that 
+
+√nN
+
+> K
+
+X
+
+> k=1
+
+X
+
+> i∈I k
+
+ ˆ¯β⊤ ˆψ(−k) 
+
+> i
+
+− ¯β⊤ψi
+
+ d
+
+→ N (0 , Σ) .
+
+To that end, we write 
+
+√nN
+
+> K
+
+X
+
+> k=1
+
+X
+
+> i∈I k
+
+ ˆ¯β⊤ ˆψ(−k) 
+
+> i
+
+− ¯β⊤ψi
+
+
+
+= √n( ˆ¯β − ¯β)⊤ · 1
+
+N
+
+> K
+
+X
+
+> k=1
+
+X
+
+> i∈I k
+
+ˆψ(−k) 
+
+> i
+
++
+
+√nN
+
+> K
+
+X
+
+> k=1
+
+X
+
+> i∈I k
+
+¯β⊤
+
+ ˆψ(−k) 
+
+> i
+
+− ψi
+
+
+
+.
+
+25 First, we examine the behavior of √n( ˆ¯β − ¯β). We have that ˆ¯β = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ˆψi ˆψ⊤
+
+> i
+
+!−1
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Di ˆψi
+
+!
+
+.
+
+and so 
+
+√n( ˆ¯β − ¯β) = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ˆψi ˆψ⊤
+
+> i
+
+!−1
+
+| {z }
+
+> ˆAn,N
+
+× 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+
+
+Di − ˆψ⊤ 
+
+> i
+
+¯β
+
+ ˆψi
+
+!| {z }
+
+> ˆbn,N
+
+.
+
+We can split the RHS into several terms: 
+
+√n( ˆ¯β − ¯β) = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ψiψ⊤
+
+> i
+
+!−1
+
+| {z }
+
+> An
+
+× 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ Di − ψ⊤ 
+
+> i
+
+¯β ψi
+
+!| {z }
+
+> bn
+
++( ˆAn,N − An)bn + ˆAn,N (ˆbn,N − bn).
+
+By the law of large numbers and the central limit theorem 
+
+An =  Erct [ψ(∆( X)) ψ(∆( X)) ⊤]−1 + op(1) 
+
+bnd
+
+→ N  0, Erct [( D − ¯μ(X)) 2ψ(∆( X)) ψ(∆( X)) ⊤]
+
+(note that Erct [( D−ψ(∆( X)) ⊤ ¯β)ψ(∆( X))] = Erct [( D−¯μ(X)) ψ(∆( X))] = 0 by the first-order conditions defining ¯ μ(·) = ψ(∆( ·)) ⊤ ¯β). We conclude 
+
+Anbnd
+
+→N 
+
+
+
+0,  Erct [ψ(∆( X)) ψ(∆( X)) ⊤]−1 Erct [( D − ¯μ(X)) 2ψ(∆( X)) ψ(∆( X)) ⊤]
+
+ Erct [ψ(∆( X)) ψ(∆( X)) ⊤]−1
+
+.
+
+Next, we note that ˆA−1 
+
+> n,N
+
+− A−1 
+
+> n
+
+= 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ˆψi
+
+h ˆψi − ψi
+
+i⊤
+
++ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+h ˆψi − ψi
+
+i
+
+ψ⊤
+
+> i
+
+Letting ψi,j denote the j-th component of ψi (and similarly defining ˆψi,j ) as the j-th com-ponent of ˆψi), for each 1 ⩽ j, j ′ ⩽ p we have 
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ψi,j 
+
+h ˆψi,j ′ − ψi,j ′
+
+i
+
+⩽
+
+vuut 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ψ2
+
+> i,j
+
+vuut 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+h ˆψi,j ′ − ψi,j ′
+
+i2
+
+= Op(1) · op(n−1/2) = op(1) where the inequality above follows by Cauchy-Schwarz, and the op(n−1/2) estimate follows from the rate condition (8) and Lemma 4 of Li (2024) (which applies since ˆ∆( ·) is independent of all of the experimental observations). By an identical argument 
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ˆψi,j 
+
+h ˆψi,j ′ − ψi,j ′
+
+i
+
+= op(n−1/2) = op(1) (23) 26 as well. We conclude ˆA−1 
+
+> n,N
+
+− A−1 
+
+> n
+
+= op(1) and hence ˆAn,N − An = op(1) and ( ˆAn,N − An)bn =
+
+op(1). Finally, we write ˆbn,N − bn = 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+[ψi − ˆψi]⊤ ¯β · ˆψi + ( Di − ψ⊤ 
+
+> i
+
+¯β)( ˆψi − ψi).
+
+By (23) we know that 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ˆψi[ψi − ˆψi]⊤ ¯β = op(1) .
+
+Additionally 
+
+dn,j := 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ Di − ψ⊤ 
+
+> i
+
+¯β  ˆψi,j − ψi,j 
+
+
+
+satisfies 
+
+|dn,j | ⩽ √n ·
+
+vuut 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ Di − ψ⊤ 
+
+> i
+
+¯β2
+
+vuut 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ ˆψi,j − ψi,j 
+
+2
+
+= op(1) for all j = 1 , . . . , p by Cauchy-Schwarz, the rate condition (8), and Lemma 4 of Li (2024) once again. Hence we can conclude ˆbn,N − bn = op(1) and so ˆAn,N (ˆbn,N − bn) = ( An + op(1))( ˆbn,N − bn) = op(1) as well. This shows that 
+
+√n( ˆ¯β − ¯β) = Anbn + op(1) 
+
+> d
+
+→ N 
+
+
+
+0,  Erct [ψ(∆( X)) ψ(∆( X)) ⊤]−1
+
+Erct [( D − ¯μ(X)) 2ψ(∆( X)) ψ(∆( X)) ⊤]  Erct [ψ(∆( X)) ψ(∆( X)) ⊤]−1
+
+.
+
+(24) Next, we note that for each k = 1 , . . . , K and j = 1 , . . . , p , we have 1
+
+|I k|
+
+X
+
+> i∈I k
+
+ˆψ(−k) 
+
+> i,j
+
+− ψi,j ⩽
+
+s 1
+
+|I k|
+
+X
+
+> i∈I k
+
+ ˆψ(−k) 
+
+> i,j
+
+− ψi,j 
+
+2
+
+by Jensen’s inequality = op(n−1/2) by Lemma 4 of Li (2024) (25) and hence 1
+
+|I k|
+
+X
+
+> i∈I k
+
+¯β⊤
+
+ ˆψ(−k) 
+
+> i,j
+
+− ψi,j 
+
+
+
+= op(n−1/2)as well. With |I k| = O(N ) for each fold k = 1 , . . . , K we conclude that 
+
+√nN
+
+> K
+
+X
+
+> k=1
+
+X
+
+> i∈I k
+
+¯β⊤
+
+ ˆψ(−k) 
+
+> i,j
+
+− ψi,j 
+
+
+
+=
+
+> K
+
+X
+
+> k=1
+
+|I k|
+
+N ·√n
+
+|I k|
+
+X
+
+> i∈I k
+
+¯β⊤
+
+ ˆψ(−k) 
+
+> i,j
+
+− ψi,j 
+
+
+
+= op(1) 27 and so in fact 
+
+√nN
+
+> K
+
+X
+
+> k=1
+
+X
+
+> i∈I k
+
+ ˆ¯β⊤ ˆψ(−k) 
+
+> i
+
+− ¯β⊤ψi
+
+
+
+= √n( ˆ¯β − ¯β)⊤ · 1
+
+N
+
+> K
+
+X
+
+> k=1
+
+X
+
+> i∈I k
+
+ˆψ(−k) 
+
+> i
+
++ op(1) 
+
+> d
+
+→ N (0 , Σ) where the final convergence uses (24) along with the fact that 1
+
+N
+
+> K
+
+X
+
+> k=1
+
+X
+
+> i∈I k
+
+ˆψ(−k) 
+
+> i
+
+= Eobs [ψ(∆( X))] + op(1) (26) by the law of large numbers and (25). To prove asymptotic validity of the confidence interval, it suffices to show that 
+
+n ˆVn,N = Σ + op(1) .
+
+To that end, we first show that 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ˆri ˆr⊤ 
+
+> i
+
+= Erct 
+
+(D − ¯μ(X)) 2ψ(∆( X)) ψ(∆( X)) ⊤ + op(1) . (27) Since 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+(Di − ¯μ(Xi)) 2ψiψ⊤ 
+
+> i
+
+= Erct 
+
+(D − ¯μ(X)) 2ψ(∆( X)) ψ(∆( X)) ⊤ + op(1) by the law of large numbers, it suffices to show that 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ˆri ˆr⊤ 
+
+> i
+
+− (Di − ¯μ(Xi)) 2ψiψ⊤ 
+
+> i
+
+= op(1) . (28) To do so, we fix 1 ⩽ j, j ′ ⩽ p and write 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ Di − ˆ¯μ(Xi)2 ˆψi,j ˆψi,j ′ − (Di − ¯μ(Xi)) 2ψi,j ψi,j ′ = tn + un
+
+where 
+
+tn = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ 2Di − ¯μ(Xi) − ˆ¯μ(Xi)   ¯μ(Xi) − ˆ¯μ(Xi) ψi,j ψi,j ′
+
+= 2 · 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+(Di − ¯μ(Xi))  ¯μ(Xi) − ˆ¯μ(Xi) ψi,j ψi,j ′ + 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ ¯μ(Xi) − ˆ¯μ(Xi)2 ψi,j ψi,j ′
+
+un = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ Di − ˆ¯μ(Xi)2  ˆψi,j ˆψi,j ′ − ψi,j ψi,j ′
+
+
+
+28 and show that tn + un = op(1). To bound the first term of tn, we apply Cauchy-Schwarz and then H¨ older’s inequality: 
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+(Di − ¯μ(Xi))  ¯μ(Xi) − ˆ¯μ(Xi) ψi,j ψi,j ′
+
+⩽ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+(Di − ¯μ(Xi)) 2
+
+!12
+
+× 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ ¯μ(Xi) − ˆ¯μ(Xi)2 ψ2 
+
+> i,j
+
+ψ2
+
+> i,j ′
+
+!12
+
+⩽ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+(Di − ¯μ(Xi)) 2
+
+!12
+
+× 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ˆ¯μ(Xi) − ¯μ(Xi) 2+ ϵ
+
+! 12+ ϵ
+
+× 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+|ψi,j |2q|| ψi,j ′ |2q
+
+! 12q
+
+where q := 1 + 2 /ϵ satisfies 22 + ϵ + 1
+
+q = 1 .
+
+Evidently 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+(Di − ¯μ(Xi)) 2 = Op(1) since Di and ¯ μ(Xi) are both square integrable while 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+|ψi,j |k|| ψi,j ′ |k = Op(1) , ∀k < ∞ (29) by the assumption that ψj (∆( X)) and ψj′ (∆( X)) have finite moments of all orders in the RCT. Thus, 
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+(Di − ¯μ(Xi))  ¯μ(Xi) − ˆ¯μ(Xi) ψi,j ψi,j ′ = Op(1) × 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ˆ¯μ(Xi) − ¯μ(Xi) 2+ ϵ
+
+! 12+ ϵ
+
+We bound 
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ˆψ⊤ 
+
+> i
+
+ˆ¯β − ψ⊤ 
+
+> i
+
+¯β 2+ ϵ
+
+! 12+ ϵ
+
+⩽ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+( ˆψi − ψi)⊤ ˆ¯β 2+ ϵ
+
+! 12+ ϵ
+
++ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+( ˆ¯β − ¯β)⊤ψi
+
+> 2+ ϵ
+
+! 12+ ϵ
+
+⩽
+
+> p
+
+X
+
+> ˜j=1
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+( ˆψi, ˜j − ψi, ˜j ) ˆ¯β˜j
+
+> 2+ ϵ
+
+! 12+ ϵ
+
++ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+( ˆ¯β˜j − ¯β˜j )ψi, ˜j
+
+> 2+ ϵ
+
+! 12+ ϵ
+
+by Minkowski’s inequality. Evidently for each ˜ j = 1 , . . . , p we have 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+( ˆψi, ˜j − ψi, ˜j ) ˆ¯β˜j
+
+> 2+ ϵ
+
+= | ˆ¯β˜j |2+ ϵ · 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ˆψi, ˜j − ψi, ˜j
+
+> 2+ ϵ
+
+= Op(1) · op(1) = op(1) since ∥ψ˜j ◦ ˆ∆ − ψ˜j ◦ ∆∥2+ ϵ, rct = op(1), and similarly 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+( ˆ¯β˜j − ¯β˜j )ψi, ˜j
+
+> 2+ ϵ
+
+= ˆ¯β˜j − ¯β˜j
+
+> 2+ ϵ
+
+· 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ψi, ˜j 
+
+> 2+ ϵ
+
+= Op(n− 12 ·(2+ ϵ)) · Op(1) = op(1) 29 by (24). We conclude that 
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ˆ¯μ(Xi) − ¯μ(Xi) 2+ ϵ
+
+! 12+ ϵ
+
+= 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ˆψ⊤ 
+
+> i
+
+ˆ¯β − ψ⊤ 
+
+> i
+
+¯β 2+ ϵ
+
+! 12+ ϵ
+
+= op(1) (30) and so in fact 
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+(Di − ¯μ(Xi))  ¯μ(Xi) − ˆ¯μ(Xi) ψi, ˜j ψi, ˜j′ = Op(1) × op(1) = op(1) .
+
+For the second term of tn, we have 
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+(¯ μ(Xi) − ˆ¯μ(Xi)) 2ψi,j ψi,j ′ ⩽ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ˆ¯μ(Xi) − ¯μ(Xi) 2+ ϵ
+
+! 22+ ϵ
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+|ψi,j |q|ψi,j ′ |q
+
+!1
+
+> q
+
+= op(1) · Op(1) = op(1) by H¨ older’s inequality, (29), and (30). Thus, we have shown tn = op(1). To show un = op(1), by Cauchy-Schwarz 
+
+|un| ⩽ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+|Di − ˆ¯μ(Xi)|4
+
+!1/2
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ˆψi,j ˆψi,j ′ − ψi,j ψi,j ′
+
+> 2
+
+!1/2
+
+.
+
+By Minkowski 
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+|Di − ˆ¯μ(Xi)|4
+
+!1/4
+
+⩽ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+D4
+
+> i
+
+!1/4
+
++ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ψ( ˆ∆( Xi)) ⊤ ˆ¯β 4
+
+!1/4
+
+⩽ Op(1) + ∥ ˆ¯β∥2
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ψ( ˆ∆( Xi)) 42
+
+!1/4
+
+= Op(1) using the fact that Erct [|D|4] < ∞ and that (9) holds with k = 4. Another application of Minkowski shows that 
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ˆψi,j ˆψi,j ′ − ψi,j ψi,j ′
+
+> 2
+
+!1/2
+
+⩽ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+( ˆψi,j − ψi,j ) ˆψi,j ′
+
+> 2
+
+!1/2
+
++ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ψi,j ( ˆψi,j ′ − ψi,j ′ ) 2
+
+!1/2
+
+Then we use H¨ older’s inequality to bound 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ψi,j ( ˆψi,j ′ − ψi,j ′ ) 2
+
+⩽ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ˆψi,j ′ − ψi,j ′
+
+> 2+ ϵ
+
+! 22+ ϵ
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+|ψi,j |2q
+
+!1
+
+> q
+
+= op(1) · Op(1) = op(1) 30 where the rate estimates hold by the assumptions that 
+
+∥ψj′ ◦ ˆ∆ − ψj′ ◦ ∆∥2+ ϵ, rct = op(1) and Erct [∥ψ(∆( X)) ∥2q] < ∞. By an identical argument, except using (9) with k = 2 q in place of the assumption Erct [∥ψ(∆( X)) ∥2q] < ∞, we have 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+( ˆψi,j − ψi,j ) ˆψi,j ′
+
+> 2
+
+⩽ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ˆψi,j − ψi,j 
+
+> 2+ ϵ
+
+! 22+ ϵ
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ˆψi,j ′
+
+> 2q
+
+!1
+
+> q
+
+= op(1) · Op(1) = op(1) .
+
+We conclude that in fact un = op(1), and so we have shown (28) and thus (27). Now we write 
+
+n ˆVn,N = ˆ a⊤
+
+> n,N
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ˆri ˆr⊤
+
+> i
+
+!
+
+ˆan,N + nN · 1
+
+N
+
+> K
+
+X
+
+> k=1
+
+X
+
+> i∈I k
+
+ ˆ¯μ(−k)(Xi) − ˆ¯τ 2
+
+to see that in light of (27), to conclude the proof it suffices to show that ˆan,N = ¯ α + op(1) and 1
+
+N
+
+> K
+
+X
+
+> k=1
+
+X
+
+> i∈I k
+
+ ˆ¯μ(−k)(Xi) − ˆ¯τ 2 = Op(1) .
+
+But the statement that ˆ an,N = ¯ α + op(1) follows immediately from (26) and the fact that ˆAn,N = An + op(1) =  Erct 
+
+ψ(∆( X)) ψ(∆( X)) ⊤ −1 + op(1) as shown in the first part of this proof. Finally, the assertion 1
+
+N
+
+> K
+
+X
+
+> k=1
+
+X
+
+> i∈I k
+
+ ˆ¯μ(−k)(Xi) − ˆ¯τ 2 = Op(1) is apparent since 1
+
+|I k|
+
+X
+
+> i∈I k
+
+ ˆμ(−k)(Xi)2
+
+has finite expectation for all k = 1 , . . . , K by assumption. 
+
+## A.2 Proof of Theorem 2 
+
+In the setting of Theorem 2, there are no structural restrictions on the distribution of 
+
+Wi = ( Qi, X i, Y i), i.e., we have a fully nonparametric model. Then the corresponding semiparametric tangent space is equal to H0 
+
+> W
+
+, the set of all mean zero, square-integrable functions of W = ( Q, X, Y ) under the true data generating distribution P ∗ (Bickel et al., 1993; Kennedy, 2024). Hence, for the proof of the efficiency bound it suffices to show that 
+
+∂ ¯τ (0) 
+
+∂θ = E [ψ(W ; ¯ τ , η )s(W ; 0)] (31) 31 for all smooth parametric submodels {Pθ | θ ∈ Θ} with corresponding score s(w; θ), where for each θ ∈ Θ, ¯ τ (θ) denotes the value of the parameter ¯ τ under the distribution Pθ. Fol-lowing standard texts on semiparametric theory (Bickel et al., 1993; van der Vaart, 2000), a parametric submodel {Pθ | θ ∈ Θ} is a collection of distributions Pθ indexed by θ in an open interval Θ containing 0 such that P0 = P ∗, the true data-generating process. Above and throughout this proof, for brevity we use the notation 
+
+∂F (a)
+
+∂θ ≡ ∂∂θ F (θ) θ=a
+
+.
+
+for any function F .We fix an arbitrary parametric submodel, which contains densities of the form 
+
+p(w; θ) = f (q; θ)g(x | q; θ)h(y | x, q ; θ)where w = ( q, x, y ) and f , g, and h are the density of Q, the conditional density of X given 
+
+Q, and the conditional density of Y given ( X, Q ), respectively with respect to measures λQ,
+
+λX|Q, and λY |QX , respectively. Then ¯τ (θ) = 
+
+R 1(q̸ = 2) ψ(∆( x; θ)) f (q; θ)g(x | q; θ)d(λQ × λX|Q)( q, x )1 − f (2; θ)
+
+⊤
+
+¯β(θ),
+
+∆( x; θ) = 
+
+Z
+
+y [h(y | x, 1; θ) − h(y | x, 0; θ)] dλ Y |QX (y),
+
+¯β(θ) = 
+
+Z 
+
+g(x | 2; θ)ψ(∆( x; θ)) ψ(∆( x; θ)) ⊤dλ X|Q(x)
+
+−1
+
+×
+
+Z 
+
+g(x | 2; θ)h(y | x, 2; θ)yψ (∆( x; θ)) d(λX|Q × λY |QX )( x, y )
+
+
+
+.
+
+It follows by the product rule that 
+
+∂ ¯τ (0) 
+
+∂θ = ( E[ψ(∆( X)) | Q̸ = 2]) ⊤ ∂ ¯β(0) 
+
+∂θ 
+
++
+
+ ∂∂θ 
+
+R 1(q̸ = 2) f (q; 0) g(x | q; 0) ψ(∆( x; 0)) d(λQ × λX|Q)( q, x )1 − f (2; 0) 
+
+ ⊤
+
+¯β
+
+where above and hereafter in this proof, all expectations are with respect to the true data-generating distribution P0.Differentiating under the integral sign, we get 
+
+∂ ¯β(0) 
+
+∂θ =  E ψ(∆( X)) ψ(∆( X)) ⊤ | Q = 2  −1 (B1 + B2 − B3 − B4)32 for 
+
+B1 = E
+
+h
+
+Y D gh (X, Y | 2) ψ(∆( X)) Q = 2 
+
+i
+
+B2 = E
+
+
+
+Y ∂∆( X; 0) 
+
+∂θ ˙ψ(∆( X)) Q = 2 
+
+
+
+B3 = E
+
+∂ log g(X | 2; 0) 
+
+∂θ ψ(∆( X)) ψ(∆( X)) ⊤ ¯β Q = 2 
+
+
+
+B4 = E
+
+∂∆( X; 0) 
+
+∂θ 
+
+
+
+ψ(∆( X)) ˙ψ(∆( X)) ⊤ + ˙ψ(∆( X)) ψ(∆( X)) ⊤
+
+ ¯β Q = 2 
+
+
+
+where we let 
+
+Dgh (X, Y | q) = ∂ log g(X | q; 0) 
+
+∂θ + ∂ log h(Y | X, q ; 0) 
+
+∂θ , q = 0 , 1, 2.
+
+On the other hand, 
+
+∂∂θ 
+
+R 1(q̸ = 2) f (q; 0) g(x | q; 0) ψ(∆( x; 0)) d(λQ × λX|Q)( q, x )1 − f (2; 0) 
+
+
+
+= A1 + A2 + A3
+
+for 
+
+A1 = E
+
+ ∂ log f (Q; 0) 
+
+∂θ + ∂ log g(X | Q; 0) 
+
+∂θ 
+
+
+
+ψ(∆( X)) Q̸ = 2 
+
+
+
+A2 = E
+
+∂∆( X; 0) 
+
+∂θ ˙ψ(∆( X)) Q̸ = 2 
+
+
+
+A3 = ρ2
+
+1 − ρ2
+
+∂ log f (2; 0) 
+
+∂θ E
+
+h
+
+ψ(∆( X)) Q̸ = 2 
+
+i
+
+.
+
+Thus, to show (31) it suffices to prove that 
+
+E[ψ(W ; ¯ τ , η )s(W ; 0)] = ¯ α⊤(B1 + B2 − B3 − B4) + ( A1 + A2 + A3)⊤ ¯β. 
+
+where 
+
+s(w; 0) = ∂ log f (q; 0) 
+
+∂θ + Dgh (x, y | q).
+
+is the score function corresponding to the parametric submodel at θ = 0. To that end, we write ψ(w; ¯ τ , η ) = ψ1(w; ¯ τ , η ) + ψ2(w; ¯ τ , η ) where 
+
+ψ1(w; ¯ τ , η ) = 1(q̸ = 2) 1 − ρ2
+
+(¯ μ(x) − ¯τ + ι(w; η)κ(x; η)) , and 
+
+ψ2(w; ¯ τ , η ) = 1(q = 2) 
+
+ρ2
+
+(y − ¯μ(x))¯ α⊤ψ(∆( x)) .
+
+The first-order conditions for ¯ μ imply that 
+
+E[ψ2(W ; ¯ τ , η )] = 0 33 and so 
+
+E
+
+
+
+ψ2(W ; ¯ τ , η )∂ log f (q; 0) 
+
+∂θ 
+
+
+
+= E
+
+
+
+ψ2(W ; ¯ τ , η )∂ log f (2; 0) 
+
+∂θ 
+
+
+
+= ∂ log f (2; 0) 
+
+∂θ E [ψ2(W ; ¯ τ , η )] = 0 .
+
+Thus 
+
+E [ψ2(W ; ¯ τ , η )s(W ; 0)] = E
+
+1(Q = 2) 
+
+ρ2
+
+(Y − ¯μ(X))¯ α⊤ψ(∆( X)) Dgh (X, Y | 2) 
+
+
+
+= ¯ α⊤ (E [Y D gh (X, Y | 2) ψ(∆( X)) | Q = 2] − E [¯ μ(X)Dgh (X, Y | 2) ψ(∆( X)) | Q = 2]) = ¯ α⊤(B1 − B3)and the final equality uses the fact that 
+
+E
+
+
+
+F (X, Q )∂ log h(Y | X, Q ; 0) 
+
+∂θ 
+
+
+
+= 0 (32) for any square integrable function F , applied to F (x, q ) = 1(q = 2)¯ μ(x)ψ(∆( x)). Next, we have 
+
+E[ψ1(W ; ¯ τ , η )s(W ; 0)] = E
+
+1(Q̸ = 2) 1 − ρ2
+
+(¯ μ(X) − ¯τ )Df g (Q, X )
+
+
+
++E
+
+ι(W ; η)κ(X; η)1 − ρ2
+
+∂ log h(Y | X, Q ; 0) 
+
+∂θ 
+
+
+
+where some terms cancel by (32) and observing by conditioning on ( X, Q ) that both 
+
+E
+
+ι(W ; η)κ(X; η)1 − ρ2
+
+∂ log f (Q; 0) 
+
+∂θ 
+
+
+
+=
+
+> 1
+
+X
+
+> q=0
+
+∂ log f (q; 0) 
+
+∂θ E
+
+ κ(X; η)1(Q = q)(r(X) − (1 − q))(1 − ρ2)(Y − mq(X)) 
+
+
+
+= 0 + 0 = 0 and 
+
+E
+
+ι(W ; η)κ(X; η)1 − ρ2
+
+∂ log g(X | Q; 0) 
+
+∂θ 
+
+
+
+=
+
+> 1
+
+X
+
+> q=0
+
+E
+
+ κ(X; η)1(Q = q)(r(X) − (1 − q))(1 − ρ2)
+
+∂ log g(X | Q; 0) 
+
+∂θ (Y − mq(X)) 
+
+
+
+= 0 + 0 = 0 .
+
+We further compute 
+
+E
+
+1(Q̸ = 2) 1 − ρ2
+
+(¯ μ(X) − ¯τ )Df g (Q, X )
+
+
+
+= ( E[Df g (Q, X )ψ(∆( X)) | Q̸ = 2]) ⊤ ¯β − E
+
+∂ log f (Q; 0) 
+
+∂θ Q̸ = 2 
+
+
+
+(E[ψ(∆( X)) | Q̸ = 2]) ⊤ ¯β
+
+= ( E[Df g (Q, X )ψ(∆( X)) | Q̸ = 2]) ⊤ ¯β + ρ2
+
+1 − ρ2
+
+∂ log f (2; 0) 
+
+∂θ (E[ψ(∆( X)) | Q̸ = 2]) ⊤ ¯β
+
+= ( A1 + A3)⊤ ¯β
+
+34 where the second equality follows by the law of total expectation since 0 = E
+
+∂ log f (Q; 0) 
+
+∂θ 
+
+
+
+= (1 − ρ2)E
+
+∂ log f (Q; 0) 
+
+∂θ Q̸ = 2 
+
+
+
++ ρ2
+
+∂∂θ log f (2; 0) .
+
+Finally, 
+
+E
+
+ι(W ; η)κ(X; η)1 − ρ2
+
+∂ log h(Y | X, Q ; 0) 
+
+∂θ 
+
+
+
+= E
+
+ Y
+
+1 − ρ2
+
+1(Q = 1) 
+
+r(X) − 1(Q = 0) 1 − r(X)
+
+
+
+κ(X; η)∂ log h(Y | X, Q ; 0) 
+
+∂θ 
+
+
+
+= E
+
+
+
+(1 − ρ2)−1
+
+1(Q = 1) 
+
+r(X) − 1(Q = 0) 1 − r(X)
+
+
+
+κ(X; η)E
+
+
+
+Y ∂ log h(Y | X, Q, 0) 
+
+∂θ X, Q 
+
+ 
+
+= (1 − ρ2)−11X
+
+> q=0
+
+E
+
+ Pr( Q = q | X)
+
+r(X) − (1 − q)κ(X; η)∂ R yh (y | X, q ; 0) dλ Y |QX (y)
+
+∂θ 
+
+
+
+= (1 − ρ2)−1E
+
+
+
+Pr( Q̸ = 2 | X)κ(X; η)∂∆( X; 0) 
+
+∂θ 
+
+
+
+= E
+
+∂∆( X; 0) 
+
+∂θ 
+
+ ˙ψ(∆( X)) ⊤ ¯β + Λ( X)m2(X)¯ α⊤ ˙ψ(∆( X)) 
+
+
+
+Q̸ = 2 
+
+
+
+− E
+
+∂∆( X; 0) 
+
+∂θ Λ( X)¯ α⊤
+
+h
+
+ψ(∆( X)) ˙ψ(∆( X)) ⊤ + ˙ψ(∆( X)) ψ(∆( X)) ⊤
+
+i ¯β Q̸ = 2 
+
+
+
+= A⊤ 
+
+> 2
+
+¯β + ¯ α⊤(B2 − B4)where the first equality follows from (32) applied to the functions F (x, q ) = mr (x)1(Q=r)κ(x;η)(r(x)−q)(1 −ρ2)
+
+for r = 0 , 1, and the fourth equality follows from observing that Pr( Q = q | X) = Pr( Q = q | X, Q ̸ = 2) P (Q̸ = 2 | X) = ( r(X)−(1 −q)) P (Q̸ = 2 | X)( −1) q+1 .
+
+We conclude that indeed 
+
+E[ψ(W ; ¯ τ , η )s(W ; 0)] = E[ψ1(W ; ¯ τ , η )s(W, 0)] + E[ψ2(W ; ¯ τ , η )s(W, 0)] = ¯ α⊤(B1 + B2 − B3 − B4) + ( A1 + A2 + A3)⊤ ¯β
+
+which concludes the proof of (31). It remains to show that whenever the efficiency bound Veff is finite, ρ2Veff → Σ as M → ∞ 
+
+with ρ2 → 0 while the conditional distribution of W = ( Q, X, Y ) given 1(Q = 2) remains constant. To see this, we write 
+
+Veff = (1 − ρ2)−1E (¯ μ(X) − ¯τ ι (W ; η)κ(X; η)) 2 | Q̸ = 2 
+
++ ρ−12 E (Y − ¯μ(X)) 2 ¯α⊤ψ(∆( X)) ψ(∆( X)) ⊤ ¯α | Q = 2 
+
+The assumption Veff < ∞ implies 0 < ρ 2 < 1 and both conditional expectations 
+
+E1 ≡ E (¯ μ(X) − ¯τ ι (W ; η)κ(X; η)) 2 | Q̸ = 2  and 
+
+E2 ≡ E (Y − ¯μ(X)) 2 ¯α⊤ψ(∆( X)) ψ(∆( X)) ⊤ ¯α | Q = 2 
+
+35 are finite. These conditional expectations E1 and E2 remain fixed in our asymptotics. Then as desired, evidently 
+
+ρ2Veff = ρ2
+
+1 − ρ2
+
+E1 + E2 → E2 = Σ as M → ∞ and ρ2 → 0. 
+
+# B Efficiency bound for ¯τ when ∆( ·) is known 
+
+Here we present the semiparametric efficiency bound (under the nested formulation of our setting introduced in Section 4) for our estimand ¯ τ when the treatment-control contrast ∆( ·)is known. As discussed in Section 4, prior work on efficient estimation of projection estimands gives the semiparametric efficiency bound for the estimand ¯θ = (1 − ρ2)¯ τ = E[1(Q̸ = 2)¯ τ ]when ∆( ·) is known as a special case. In particular, from Proposition 4 of Newey (1994), we see that the efficient influence function (EIF) for ¯θ, evaluated at a generic observation 
+
+w = ( q, x, y ), is 
+
+ψ¯θ(w) = 1(q̸ = 2)¯ μ(x) − ¯θ + 1(q = 2)(1 − ρ2)¯ α⊤ψ(∆( x)))( y − ¯μ(x)) 
+
+ρ2
+
+when ∆( ·) is known, where ¯ α is given by (12). Then to get the EIF ψ¯τ (·) of ¯ τ = (1 − ρ2)−1 ¯θ
+
+with ∆( ·) known, we recall that the EIF for 1 − ρ2 = E[1(Q̸ = 2)] is simply 
+
+ψ1−ρ2 (w) = 1(q̸ = 2) − (1 − ρ2) = ρ2 − 1(q = 2) .
+
+Then using the properties of influence functions as derivatives (e.g., Theorems 20.8 and 20.9 of van der Vaart (2000) or Kennedy (2024)), we can apply the quotient rule to conclude 
+
+ψ¯τ (w) = (1 − ρ2)ψ¯θ(w) − ¯θψ 1−ρ2 (w)(1 − ρ2)2 = 1(q̸ = 2) 1 − ρ2
+
+(¯ μ(x) − ¯τ ) + 1(q = 2) 
+
+ρ2
+
+(y − ¯μ(x))¯ α⊤ψ(∆( x)) .
+
+(33) Note that this differs from the EIF in the case ∆ must be estimated (Theorem 2) by the omission of the term 1(q̸ = 2) 1 − ρ2
+
+ι(w; η)κ(x; η).
+
+From (33), the efficiency bound (when ∆ is known) is 
+
+E[ψ¯τ (W )2] = E[(¯ μ(X) − ¯τ )2 | Q̸ = 2] (1 − ρ2) + E[( Y − ¯μ(X)) 2 ¯α⊤ψ(∆( X)) ψ(∆( X)) ⊤ ¯α | Q = 2] 
+
+ρ2
+
+.
+
+Assuming this is finite, we observe that as M → ∞ with ρ2 → 0 and the distribution of (Q, X, Y ) given 1(Q = 2) remaining constant, we have 
+
+ρ2E[ψ¯τ (W )2] → E[( Y − ¯μ(X)) 2 ¯α⊤ψ(∆( X)) ψ(∆( X)) ⊤ ¯α | Q = 2] = Σ .
+
+In conjunction with Theorem 2, this shows the claim at the end of Section 4 that in this asymptotic regime, the need to estimate ∆( ·) does not affect the efficiency bound. 36 C Nuisance function estimation for numerical studies 
+
+For the simulation study in Section 5.1 with a one-dimensional covariate, we estimate the observational treatment-control contrast ∆( ·) by applying the DR-learner (Kennedy, 2023) to the observational dataset, with generalized additive models (GAMs) as implemented by the 
+
+gam function in the mgcv package in R (Wood, 2017) as base learners and the observational propensity score 
+
+r(x) = Pr obs (Z = 1 | X = x)estimated using a GAM with logit link. For all of our GAM fits, we use the default behav-ior for a “smooth” term s() in the gam function (thin-plate regression splines with degrees of freedom chosen automatically via restricted maximum likelihood). For the AIPSW and collaborative estimators, we estimate the CATE μ(·) using the super learner (Polley et al., 2024) with L1-penalized linear regression (Tibshirani, 1996), multivariate adaptive regres-sion splines (Friedman, 1991), random forests (Breiman, 2001), and support vector ma-chines (Cortes and Vapnik, 1995) as the component learners, with the observations {Di}ni=1 
+
+as the response. We incorporate the prognostic adjustment idea of Liao et al. (2025) to im-prove learning of the CATE μ(·) from the small experimental dataset by including both X
+
+and our estimates ˆ∆( X) of the treatment contrast ∆( X) as predictors in the super learner. The odds ratio qn,N for the AIPSW estimator is estimated by fitting a GAM with logit link to the combined experimental and observational dataset, with the response variable being the binary indicator of whether the observation is in the experimental dataset. The odds ratio gn,N for the collaborative estimator is estimated in the same way, except with ˆ μ(Xi) as the single predictor (instead of Xi). Finally, the nuisance function kn,N (·) for the collabora-tive estimator is estimated by fitting a GAM (with identity link) to predict ˆ μ(Xi) from the estimates ˆ gn,N (Xi). Since X is univariate, we do not use cross-fitting for any of our nuisance function estimates for the simulations in Section 5.1. In particular, we set K = 1 in the algorithm described at the start of Section 3. For the simulations with ten covariates in Section 5.2, we learn ∆( ·) using a causal forest, as implemented by the causal forest function with default hyperparameters in the grf 
+
+package in R (Tibshirani et al., 2026). To compute the estimates ˆ∆( Xi) in the observational dataset (observations i = n + 1 , . . . , n + N ), we use the out-of-bag predictions in lieu of cross-fit predictions. The odds ratio qn,N (·) for the AIPSW estimator is estimated using logistic regression (with additive terms for all 10 covariates), as advocated in the semi-supervised learning literature (Zhang et al., 2023). The remaining nuisance functions μ(·), gn,N (·), and 
+
+kn,N (·) for the AIPSW and collaborative estimators are estimated in the same way as for the univariate simulations in Section 5.1, except that for μ(·) we now implement cross-fitting with K = 5 folds due to the dimensionality of the covariate space relative to the experimental dataset size n = 100. Finally, for the simulations based on the crop rotation data in Section 5.3, we also estimate ∆( ·) using a causal forest (though with only 200 trees to speed up the computation time). We estimate the odds ratio qn,N for the AIPSW estimator using L1-penalized logistic regression with potential predictors including linear terms for all covariates as well as interactions up to order two between latitude and longitude. The remaining nuisance functions are estimated in the same way as for the multivariate simulations, as described in the preceding paragraph. 37
