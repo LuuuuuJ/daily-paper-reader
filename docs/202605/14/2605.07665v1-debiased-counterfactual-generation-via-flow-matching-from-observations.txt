@@ -1,0 +1,3896 @@
+Title: Debiased Counterfactual Generation via Flow Matching from Observations
+
+URL Source: https://arxiv.org/pdf/2605.07665v1
+
+Published Time: Mon, 11 May 2026 01:27:39 GMT
+
+Number of Pages: 45
+
+Markdown Content:
+# Debiased Counterfactual Generation via Flow Matching from Observations 
+
+Hugh Dance 
+
+Gatsby Computational Neuroscience Unit University College London 
+
+Johnny Xi 
+
+Department of Statistics University of British Columbia 
+
+Peter Orbanz 
+
+Gatsby Computational Neuroscience Unit University College London 
+
+Benjamin Bloem-Reddy 
+
+Department of Statistics University of British Columbia 
+
+## Abstract 
+
+Estimating counterfactual distributions under interventions is central to treatment risk assessment and counterfactual generation tasks. Existing approaches model the counterfactual distribution as a standalone generative target, without exploit-ing its relationship to the observational data. In this work, we show that under standard assumptions, observational and counterfactual outcome distributions are tightly linked: they have identical support and tail behavior, remain statistically close under weak confounding, and share any features of high-dimensional out-comes which are invariant to confounders. These properties motivate learning counterfactual distributions not from scratch, but via a deconfounding flow from the observational distribution. We formulate this problem via flow-matching and derive a semiparametrically efficient estimator based on a novel efficient influence function correction. We subsequently extend our estimator to target minimal-energy flows in high-dimensions, which we show can be especially simple targets between observational and counterfactual distributions. In experiments, deconfounding flows outperform existing debiased counterfactual distribution estimators, while also mitigating known failure modes of flow-based methods. 
+
+## 1 Introduction 
+
+Estimating how the distribution of an outcome Y would change under a hypothetical intervention on a binary variable A is a central problem in causal inference. In economic policy analysis, for example, A may represent eligibility for a policy or program participation, and one may ask how the distribution of incomes Y would change if the whole population were assigned A = a (DiNardo et al., 1996; Firpo et al., 2009; Chernozhukov et al., 2013). In generative modeling, analogous counterfactual questions arise when sampling high-dimensional outputs Y with a specified semantic attribute A = a, while preventing generated samples from inheriting dataset-specific correlations with nuisance attributes X that may harm controllability or representational fairness (Xu et al., 2018; Choi et al., 2020; Bianchi et al., 2023). Such counterfactual distributions of outcomes are challenging to estimate, as one usually has access only to confounded or otherwise biased observational samples. An emerging framework addresses this problem by using causal identification theory and semiparametric debiasing techniques to adapt generative models to train on observational data, while preserving asymptotic efficiency and consistency under general conditions (Kennedy et al., 2023; Melnychuk et al., 2023; Martinez-Taboada and Kennedy, 2024; Luedtke and Fukumizu, 2025). Such approaches have proven effective, but so far treat the counterfactual distribution as an unstructured generative target, relying on generic model classes that do not adapt to the geometry of the observed data. 
+
+> Preprint.
+> arXiv:2605.07665v1 [stat.ML] 8 May 2026
+
+Figure 1: Top: CelebA samples from distribution PY |Sex=Female , which over-represents 
+
+HairColor = Blonde . Bottom: the same samples after transporting toward the counterfactual distribution PY (Female) of images with Sex = Female with the population distribution of HairColor .By flowing from PY |Sex=Female , one need only learn structured edits rather than learn the distribution from scratch, resulting in improved sample quality and distributional accuracy (see Figure 4, left). In this work, we take a different modeling strategy: rather than using the observational distribution purely as a source of training data for counterfactual distributions, we use it as the starting point for the model itself. Our approach is motivated by the fact that the target counterfactual distribution, 
+
+PY (a), and the observational conditional distribution, PY |A=a, can both be represented as mixtures of the same conditional outcome distributions—differing only in their covariate mixing distributions. As we later show, this induces identical support and tail behavior under standard positivity assumptions, statistical closeness under weak confounding, and shared feature-embeddings for any features which are invariant to variation in confounders or nuisance variables X. Accordingly, rather than modeling 
+
+PY (a) from scratch, we propose to learn a “deconfounding flow” fa that transports PY |A=a to PY (a),which we instantiate via flow matching (Lipman et al., 2023). While our idea is conceptually simple, it creates challenges for efficient estimation. Unlike previous counterfactual generative estimators, our learning objective depends on the data distribution through the model itself. This requires us to derive a new efficient influence function for debiased estimation, and to non-trivially extend the standard efficiency results to handle V-processes. Despite this, through careful estimator design, our method is similarly practical to implement as previous debiased methods. As we show theoretically and empirically, learning a transport from PY |A=a can mitigate known learning difficulties in flow-based models that arise from mismatched support, tail behavior, or multimodality of the base distribution. Our approach is also very effective for high-dimensional images Y , where X may be a confounder or spurious correlate of A that affects only structured aspects of the image, such as color, texture, or lighting, while leaving semantic content intact. In cases where one wishes to generate samples with a specified attribute A = a while removing any spurious association with X, a deconfounding flow can reuse the observed sample structure and learn only the edits needed to rebalance the distribution of X, rather than synthesizing Y from scratch. Figure 1 illustrates this for an image-rebalancing task on CelebA, where A = Sex and X = HairColor .Taken together, we make the following contributions: 1. We characterize several structural similarities between PY (a) and PY |A=a under standard identifying assumptions: identical support and tail behavior, statistical closeness under weak or smooth confounding, and preservation of confounder-invariant features. 2. We derive a debiased flow-matching estimator for learning "deconfounding flows" (D EC FM) from PY |A=a to PY (a) based on a novel influence function correction, and establish semi-parametric efficiency and double-robustness using non-trivial extensions of existing results. 3. We extend our estimator to target optimal-transport flows in higher dimensions, allowing our method to better exploit similarities between conditional and counterfactual distributions. 4. We demonstrate improved performance over existing methods on synthetic and real causal benchmarks, including high-dimensional image generation tasks. 
+
+## 2 Background and Related Work 
+
+Basic Assumptions and Notation. Unless otherwise stated, all measurable spaces are standard Borel. For a random variable X, let PX denote its law and supp (PX ) its support. For a measurable map f , we write f#PX for the push-forward law of f (X). We write PY |X=x for the regular conditional law of Y given X = x, and abbreviate PY |X=x to PY |x when unambiguous. 22.1 Counterfactual Distributions under Binary Interventions 
+
+Let A ∈ { 0, 1} be a binary variable of interest such that PA(a) > 0 for each a ∈ { 0, 1}, X ∈ X ⊆ 
+
+Rd observed covariates, Y ∈ Y ⊆ Rp an outcome, and PX,A,Y denote their joint observational distribution. In this work, we are interested in estimating the counterfactual distribution of outcomes 
+
+Y that would arise under a regime that fixes A = a while keeping the distribution of X unchanged. 
+
+In the classical causal setting, A is a treatment (e.g., medication), X are pre-treatment confounders, and one is interested in the distribution of potential outcomes Y (a) that would arise if the whole population were assigned A = a. Under the usual assumptions of (i) consistency: Y = Y (A); (ii) conditional exchangeability: Y (a) ⊥⊥ A | X; and (iii) positivity: ∃ϵ > 0 : P(A = · | X = x) ≥
+
+ϵ, PX -a.e., this distribution is identified by the formula (Rubin, 2005) 
+
+PY (a)(·) = R PY |X=x,A =a(·) dPX (x). (1) The same distribution also arises in generative settings where Y is a high-dimensional output (e.g., an image), A is a semantic attribute to control, and X is a correlated nuisance attribute. In such cases the causal relation between X and A may not always be clear, and/or X may not capture all confounders, but one may still want to ensure generated samples under A = a do not inherit any empirical association with X, either to reduce spurious dataset correlations or for representational fairness (e.g., when X is a sensitive attribute) (Choi et al., 2020). For clarity, we define PY (a) by (1) and refer to it as the counterfactual distribution throughout, while noting that in some generative settings it is better interpreted as the distribution of outcomes under a counterfactual regime where 
+
+PA,X is replaced by δa ⊗ PX , while preserving PY |X,A , rather than under a causal intervention on A.
+
+2.2 Existing Methods for Counterfactual Distribution Estimation 
+
+A straightforward plug-in approach to learning the counterfactual distribution is to estimate PY |X,A 
+
+and PX from observational data with flexible models, then obtain PY (a) via (1) (Kocaoglu et al., 2018; Pawlowski et al., 2020; Sanchez-Martin et al., 2021; Sanchez and Tsaftaris, 2022; Javaloy et al., 2023; Dance and Bloem-Reddy, 2025). However, this approach can inherit bias from estimating 
+
+PY |X,A , which may be substantial when X is high-dimensional. Another classical strategy is inverse-propensity weighting (IPW), which reweights observed outcomes by the inverse of the propensity score πa(x) := P(A = a|X = x). However, IPW is known to be sensitive to weak overlap (Crump et al., 2009), which can lead to poor practical performance. It also does not yield a generative model for the counterfactual distribution. More recently, a line of work has used techniques from semiparametric theory to directly target generative models for PY (a) (Kennedy et al., 2023; Melnychuk et al., 2023; Martinez-Taboada and Kennedy, 2024; Luedtke and Fukumizu, 2025). The basic idea is to specify a generative model class {Pθa : θa ∈ Θ} and define the target parameter as the projection of PY (a) onto this class via a discrepancy D. This yields a first-order optimality condition of the form 
+
+m(θa, 0) := E[E[g(Y ; θa, 0) | A = a, X ]] = 0 ,
+
+where g is typically the gradient of the chosen loss. Based on semiparametric theory, this moment condition is estimated using its efficient influence function (EIF). The resulting estimator for m uses both an outcome nuisance, ˆPY |A,X , and a propensity nuisance, ˆπa(x). However, unlike plug-in or IPW estimators, the estimator is consistent if either nuisance estimator converges (i.e., is “doubly robust”) and can achieve the asymptotic semiparametric efficiency bound (Kennedy et al., 2023). As such, this framework provides the current state-of-the-art for efficient, generative counterfactual distribution estimation. Further details on this framework and implementations are in Section A.1. 
+
+## 3 Deconfounding Flows from Observational to Counterfactual Distributions 
+
+Rather than modeling the counterfactual distribution “from scratch”, the central idea in this work is to learn counterfactual distributions (targets) via a “deconfounding” flow fa from the observed conditional distribution (source), 
+
+PY (a) = ( fa)#PY |a.
+
+The key observation underlying this approach is that both PY (a) and PY |a are mixtures over the same family of conditional outcome distributions, with their mixing weights differing only through the 30.0 0.5 1.0                              
+
+> Covariates
+> p(X)
+> p(XA= 1)
+> p(XA= 0)
+> 0246
+> Heavy right-tailed
+> 1.0 0.5 0.0 0.5 1.0
+> Split Support Manifold-valued
+> p(YA= 1)
+> p(Y(1))
+> f:p(YA= 1) p(Y(1))
+> g:(0, 1) p(Y(1))
+> 0510 15
+> y
+> 0
+> 5
+> 10
+> 15
+> 1.0 0.5 0.0 0.5 1.0
+> y
+> 1.0
+> 0.5
+> 0.0
+> 0.5
+> 1.0
+
+Figure 2: Top: illustrative examples of different conditional and counterfactual distributions 
+
+(PY |A=1 , PY (1) ). Although covariate overlap is weak (top left), PY |A=1 and PY (1) share the same support and tails (as predicted by Theorem 3.1), and are statistically much closer than the covariate mixing distributions (as predicted by (2) ). Bottom: the optimal transport maps between these distributions are more regular and closer to the identity map than transport from N (0 , 1) (there is no bijective flow from N2(0 , I ) in the simplex-valued case). degree of dependence between X and A:
+
+PY (a)(·) = R PY |X=x,A =a(·) dPX (x), PY |a(·) = R PY |X=x,A =a(·) dPX|a(x) .
+
+As we detail below, this common structure induces several shared properties and statistical similarities between source and target, with direct implications for the simplicity of deconfounding transports. 
+
+3.1 Shared Tails and Support Under Positivity 
+
+We start by establishing basic properties shared by the source and target distributions under the usual positivity assumption in causal inference, and that are beneficial for learning flows between them. 
+
+Theorem 3.1 (Shared Support and Tail Class) . Assume ∃ϵ > 0 such that πa(x) ≥ ϵ for all a ∈ { 0, 1},
+
+PX -a.e. Then, PY (a) and PY |a share the same support and tail-class: for each a ∈ { 0, 1},1. supp (PY (a)) = supp (PY |A=a)
+
+2. For any measurable s : Y → R+, E[s(Y (a))] < ∞ ⇐⇒ E[s(Y ) | A = a] < ∞.
+
+Shared support and tails are important properties to share in the context of flow-based learning, as they are precisely the properties that popular flow-based methods using smooth diffeomorphisms from a fixed base distribution struggle or are unable to adapt. In particular, it is known that no Lipschitz transport can generate heavier tails than its base distribution (Jaini et al., 2020), no continuous transport can split mass into disconnected support components, and no invertible transport can map between distributions supported on sets of different dimension. Since these properties need not be adapted when flowing between PY |a and PY (a), learning a deconfounding flow can therefore avoid mis-specification limitations of standard flow-based methods, including those used for counterfactual distributions (Melnychuk et al., 2023; Luedtke and Fukumizu, 2025). Figure 2 illustrates several toy examples where these geometric constraints impede transporting from 
+
+N (0 , I ), but not from PY |a.
+
+3.2 Statistical Similarity Under Mild/Smooth Confounding 
+
+The statistical distance between PY |a and PY (a) can also be bounded by a notion of confounding strength. In particular, since PY |a and PY (a) are mixtures of the same components, their Total Variation (TV) distance can be bounded using the Dobrushin Inequality (Dobrushin, 1956), 
+
+TV( PY (a), PY |a) ≤ sup x,x ′∈X TV( PY |x,a , PY |x′,a ) · TV( PX , PX|a). (2) Thus, the discrepancy between PY (a) and PY |A=a is small whenever either the association between A
+
+and X is weak, or the conditional outcome law varies little with X within the stratum A = a. Since each TV term is at most one, the product bound is also no larger than either component individually. This contraction is illustrated in Figure 2, where the outcome distributions are substantially closer than their covariate mixing distributions. Under stronger regularity, we can also bound the size of the quadratic-cost optimal transport map (Santambrogio, 2015) between these distributions. 4Theorem 3.2 (Brenier Map Displacement) . Fix a ∈ { 0, 1}. Assume: (i) PY |a is absolutely continuous on Rp; and (ii) W2
+
+ PY |x,a , PY |x′,a 
+
+ ≤ La ∥x − x′∥2, for every x, x ′ ∈ X . Then the (quadratic cost) Brenier map fa transporting PY |a to PY (a) exists and satisfies 
+
+∥fa − id ∥L2(PY |a) ≤ La W2
+
+ PX , PX|a
+
+ . (3) Thus, under W2-Lipschitz outcome variation, covariate shift directly controls the size of the optimal deconfounding transport. If PX and PX|A=a are close, or the conditional outcome law varies slowly with X, then fa is near-identity. At a high level, estimating simpler functions is statistically easier than estimating complicated ones. This motivates targeting low-energy or optimal-transport deconfounding flows, as developed in Section 4.3. 
+
+3.3 Shared Confounder-Invariant Features 
+
+The shared mixture structure can also preserve important features of Y that are insensitive to confounders X. Let ϕ : Y → Z be a measurable feature map. We say that ϕ(Y ) is confounder-invariant in arm a if 
+
+ϕ#PY |X=x,A =a = Qa PX -a.e. x. 
+
+For example, in the image-based settings discussed above, X may affect nuisance visual attributes such as color, texture, lighting, or background, while leaving much of the image geometry unchanged. In this case, ϕ encodes invariant structure—for instance, object shape, pose, identity, edge placement, or class-relevant semantic content. The following result formalizes that every confounder-invariant feature has the same distribution under PY |A=a and PY (a), and under transportability assumptions, there is a transport between them that preserves this feature pointwise. 
+
+Theorem 3.3 (Feature-preserving deconfounding) . Fix a ∈ { 0, 1} and let ϕ : Y → Z be measurable and confounder-invariant. Then 
+
+ϕ#PY (a) = ϕ#PY |A=a = Qa
+
+Moreover, if there exist a jointly measurable family of maps {Tz : Y → Y | z ∈ Z} such that 
+
+(Tz )#PY |A=a,ϕ (Y )= z = PY (a)|ϕ(Y (a))= z for Qa-a.e. z, then there is a map fa : Y → Y such that 
+
+(fa)#PY |A=a = PY (a) and ϕ(fa(Y )) = ϕ(Y ) PY |A=a-a.s. 
+
+One implication of this result is that when confounders or nuisance attributes X affect only certain aspects of an image-based outcome, a deconfounding flow can in principle correct the correlated attributes while preserving shared image-level structure or content. Thus the learning problem is closer to structured editing than generation from scratch. As we later show in experiments, deconfounding flows perform especially well in such settings, even with simple model architectures. 
+
+## 4 Debiased Flow-Matching for Deconfounding Flows 
+
+Having laid out the theoretical motivation for deconfounding flows fa from PY |a to PY (a), we now derive an efficient estimator of such a transport using observational data (Xi, A i, Y i)ni=1 ∼iid P,via flow matching (Lipman et al., 2023). In what follows, we specify the model parameterization and population objective, derive a debiased estimator for the gradient of the objective, and prove statistical efficiency. The key distinction from previous debiased generative estimators is that our target functional for estimation depends on the data through the model itself, via the flow base. This requires us to derive a new efficient influence function correction for debiasing, and to establish new results that extend the technical devices used to prove statistical efficiency. 
+
+4.1 Velocity Parameterization and Flow-Matching Objective 
+
+Following standard flow-matching, we model the deconfounding flow fa as the time-1 solution of an ODE with velocity field vθa : Y × [0 , 1] → Y parameterized by θa ∈ Rp,
+
+dy t = vθa (yt, t )dt, t ∈ [0 , 1] , f θa (y) := y + R 10 vθa (yt, t ) dt, y0 = y. 
+
+The target velocity field is the minimizer of the usual conditional flow-matching objective, 
+
+La(θa) := E
+
+h
+
+vθa (ϕt(Y0, Y 1), t ) − ∂tϕt(Y0, Y 1) 2i
+
+. (4) 5Here Y0 ∼ PY |a, Y1 ∼ PY (a), t ∼ Unif(0 , 1) , and ϕt(y0, y 1) = y0(1 − t) + y1(t) is a linear interpolation path between y0, y 1 with time derivative ∂tϕt(y0, y 1) = y1 − y0. Minimizing (4) is known to target a velocity v∗ whose induced flow transports PY |a to PY (a), thus providing a natural, likelihood-free objective for deconfounding flows. 
+
+4.2 Debiased Estimation via Novel EIF Correction 
+
+We now derive a debiased estimator of the gradient of (4) for optimization, using the semiparametric estimation framework discussed in Section 2 and Section A.1. Under (1) , the gradient of (4) can be expressed as the moment functional 
+
+ma(θa, P) = EP[EP[gθa (Y ) | A = a, X ]] , (5) where gθa is an integral of the flow-matching loss score under the source PY |a,
+
+gθa (y) := R rθa (y, ˜y) PY |a(d˜y), rθa (y, ˜y) := R 10 ∇θa ∥vθa (ϕt(y, ˜y), t ) − ∂tϕt(y, ˜y)∥2 dt. 
+
+A naive plug-in estimator for (5) first estimates μθa (x) := E[gθa (Y ) | A = a, X = x] and averages 
+
+ˆμθa (Xi) over the empirical covariate distribution. To remove the resulting first-order bias in this estimator that arises from estimation of μθa , we instead use the usual one-step correction via an estimator of the efficient influence function (EIF) φθa of m(θa, ·). The resulting estimator is 
+
+ˆm(θa) = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+
+
+ˆμθa (a, X i) + ˆ φθa,a (Xi, A i, Y i)
+
+
+
+. (6) In previous debiased generative estimators, gθ is not a functional of the data distribution P, and so the EIF φθa takes the usual “AIPW” form given in Section A.1. However, in our case gθa depends on P
+
+through PY |a. Thus, the EIF takes a different form and needs to be derived from scratch. 
+
+Theorem 4.1 (EIF for Deconfounded Flow-Matching) . Let μθa (x) = E[gθa (Y ) | A = a, X = x]
+
+and χθa (y) := E[E[rθa (Y, y ) | A = a, X ]] . Then, under the overlap and integrability conditions in Assumption D.10 in Section D, the EIF for ma(θa) is 
+
+φθa (˜ x, ˜a, ˜y) = 1{˜a=a}
+
+πa(˜ x)
+
+ gθa(˜ y) − μθa(˜ x) + μθa(˜ x) − ma(θa) + 1{˜a=a}
+
+PA(a)
+
+ χθa(˜ y)−E[χθa(Y )|A = a]
+
+The first two terms are the usual EIF correction when gθa is fixed; the final χθa -terms are new and account for the dependence on the estimated base distribution PY |A=a.
+
+A Practical Estimator for Optimization The standard approach to estimating (6) is to (i) estimate 
+
+μθa and the components of φθa on one half of the data, and (ii) substitute these estimators into (6) and sum over the other half of the data. Naively, this would require repeatedly estimating several 
+
+θa-dependent nuisance components during optimization. We avoid this by outsourcing all estimation to the distributions ˆπa, ˆPY |A,X , ˆPA, ˆPY |a which do not depend on θa, and then estimating ˆPA, ˆPY |a
+
+via the empirical measures on the same data used to evaluate (6). In this case, by constructing 
+
+ˆgθa (y) := R rθa (y, ˜y) ˆPY |A=a(d˜y), ˆμθa (x) := R ˆgθa (y) ˆPY |A=a,X =x(dy ),
+
+the resulting one-step estimator (6) simplifies to 
+
+ˆm(θa) := 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+" 1{Ai=a}
+
+ˆπa(Xi)
+
+Z
+
+rθa (Yi, ˜y)ˆPY |a(d˜y) + 
+
+
+
+1− 1{Ai=a}
+
+ˆπa(Xi)
+
+Z
+
+rθa (ˆ y, ˜y) ˆPY |a,x (dˆy)ˆPY |a(d˜y)
+
+#
+
+The benefit of outsourcing estimation to components independent of θa is that ˆm(θa) can be approxi-mated for any θa using Monte Carlo with minibatches of samples from ˆPY |A=a,X and ˆPY |A=a, and hence can be used for stochastic gradient descent (see Algorithm 2 in Section C). The benefit of using the evaluation fold for ˆPA and ˆPY |A=a is that the additional χθa -type nuisance terms appearing in the full EIF cancel empirically, and so do not need estimating in practice. 6Efficiency of Estimator By using the same data for estimating ˆPA and ˆPY |A=a and evaluating the moment, one cannot use the usual sample-splitting arguments for statistical efficiency of debiased estimators under fully non-parametric nuisance models (e.g., Kennedy, 2024). However, because 
+
+ˆPA and ˆPY |A=a are empirical measures, we can rewrite the estimator as a collection of V-processes. By carefully extending the usual proof techniques to handle such processes (see Section D.1), in Theorem D.14 we recover the usual asymptotic expansion, 
+
+ˆm(θa) − m(θa) = OP(n−1/2) + OP
+
+ n− 12 (∥ˆπa − πa∥L2(PX ) + ∆ 1) + ∥ˆπa − πa∥L2(PX )∆1
+
+ ,
+
+where ∆1 := ∥W1
+
+ ˆPY |a,x , PY |a,x 
+
+∥L2(PX ), and the leading term is from the mean-zero empirical average of the EIF. Hence, our estimator retains the usual double robustness and efficiency properties: it is consistent if either ˆπa or ˆPY |A=a,X is consistent while the other is bounded, and attains the semiparametric efficiency bound whenever ∥ˆπa − πa∥L2(PX )∆1 = oP(n−1/2).
+
+Nuisance Model Estimation In the spirit of deconfounding flows, we estimate ˆPY |a,x via a flow from PY |a, using standard flow-matching for conditional distributions. Although PY |a,x and PY |a do not necessarily share the same structural similarities analyzed in Section 3, they do share the same tails and support whenever these properties of PY |a,x are not affected by x, and are closer in distance than the supremum term of the Dobrushin bound in Section 3.2. The propensity model ˆπa can be estimated with any probabilistic classifier. Further details on nuisance estimation are in Section B. 
+
+4.3 Extension for Targeting OT Flows In Higher Dimensions 
+
+In one dimension ( Y ⊂ R), the population objective (4) targets the velocity v∗ whose induced time-1 flow coincides with the quadratic cost OT map fa studied in Section 3.2. Moreover, its kinetic energy 
+
+E(v∗) corresponds to the transport cost, 
+
+E(v∗) := R 10
+
+R ∥vt(y)∥2 Pt(dy ) dt = ∥fa − id ∥2 
+
+> L2(PY|a)
+
+.
+
+This energy is minimal among all velocities with flows that transport P0 := PY |a to P1 := PY (a).Thus, a “near-identity” deconfounding OT flow (e.g., under structured or mild confounding) implies a “near-zero” velocity, and regularity properties of fa are known to directly carry over to v∗. For example, if fa is bi-Lipschitz, then ft is bi-Lipschitz and vt is Lipschitz (Ambrosio et al., 2005). In higher dimensions, however, this equivalence only holds when replacing the independent coupling 
+
+PY |a ⊗ PY (a) in (4) by the OT coupling γ between PY |a and PY (a).
+
+Lγa (θa) := E 
+
+> (Y0,Y 1)∼γ
+
+vθa (ϕ(Y0, Y 1), t ) − ∂tϕ(Y0, Y 1) 2 (7) Therefore, we extend the estimator of Section 4.2 to target such OT flows in higher dimensions, as an additional implementation option. To do so, we write the coupling γ that defines (7) as PY (a) ⊗ γ0|1,with γ0|1 the conditional distribution of Y0 | Y1. For any fixed γ0|1, we derive a debiased estimator of 
+
+∇θa Lγa (θa) using the equivalent EIF, resulting in an analogous gradient estimator for optimization, 
+
+ˆm(θa) := 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+" 1{Ai=a}
+
+ˆπa(Xi)
+
+Z
+
+rθa(Yi, ˜y)γ0|1(d˜y|Yi)+ 
+
+
+
+1− 1{Ai=a}
+
+ˆπa(Xi)
+
+Z
+
+rθa(ˆ y, ˜y)γ0|1(d˜y|ˆy)ˆPY |a,x (dˆy)
+
+#
+
+The independent-coupling estimator of Section 4.2 is recovered by taking γ0|1(· | y) = ˆPY |a.Here we instead propose to estimate γ0|1 via an entropic-OT coupling between ˆPY |a and a plug-in estimate of PY (a), recomputed on minibatches using Sinkhorn’s algorithm (Tong et al., 2023). To reduce sensitivity to plug-in misspecification, one can optionally tilt samples from ˆPY (a) to match doubly-robust moment estimates. Details are in Section B and Algorithm 3. Estimating the OT coupling introduces an additional source of statistical error not corrected at first order by the fixed-γ EIF correction. Bias-correcting OT couplings is not well-understood and left to future work. However, in exchange, we get a simpler geometric target: straighter, lower-energy paths and near-identity flows under mild confounding. In high-dimensional experiments, we find this estimator improves distributional accuracy, demonstrating that the trade-off is worthwhile. 75 Experiments 
+
+We now implement deconfounding flows (D EC FM) in several experiments and causal benchmarks. Design and implementation details for all experiments are in Section B. 
+
+5.1 Observational vs. Gaussian Base Distribution under Different Outcome Geometries 
+
+Outcomes ↓ / Base → PY |a N (0 , I )
+
+Gaussian 0.15 ± 0.05 0.13 ± 0.05 
+
+Inverse Gamma 0.71 ± 0.32 1.04 ± 0.46 Mixture of Uniform 0.04 ± 0.01 0.08 ± 0.01 
+
+Table 1: W1 error (mean ± sd, 50 trials) in esti-mated PY (a) via flow from PY |a versus N (0 , I ).
+
+Experiment We start with a simple ablation of the effect of flowing from PY |a compared to flowing from a fixed N (0 , I ) base distribution under different outcome geometries. We draw covariates X ∼ Unif[0 , 1] , treatment A | X ∼
+
+Bern  σ(5( X − 0.5)) , and then Y ∼ PY |X,A 
+
+using: (i) a simple conditional Gaussian with covariate-dependent mean, where the Gaussian base is well matched to the target distribution; (ii) an inverse-Gamma distribution with covariate-dependent tails, which do not match those of the Gaussian base; and (iii) a mixture of uniform distributions with disconnected support, which is also mis-matched to the Gaussian base. For both flows we use the debiased estimator of Section 4.2 (instantiated via Algorithm 2 in Section C) on 
+
+n = 1000 samples from each design, and in all cases parameterize the velocity using a MLP. 
+
+Results Table 1 shows estimated performance in the Wasserstein-1 metric (averaged over a ∈{0, 1}) from 50 trials. In the unimodal Gaussian setting, flowing from PY |a does not degrade performance when the N (0 , I ) base is well-suited. In contrast, for the heavy-tailed and split-support outcomes, we see a substantial improvement in flowing from PY |a, as predicted in Section 3. 
+
+5.2 Counterfactual Distribution Estimation on Causal Benchmarks                                                                             
+
+> Dataset →ACIC 401k TWINS ACIC16
+> Outcomes →Gaussian SplitSupport HeavyTails Challenge KDE 0.14 ±0.01 0.50 ±0.01 0.28 ±0.02 0.73 ±0.14 TSE 0.07 ±0.02 0.26 ±0.06 2.75 ±1.82 0.46 ±0.38 INF 0.10 ±0.03 0.06 ±0.07 0.42 ±0.05 0.50 ±0.11 DRMKSD 0.18 ±0.01 0.08 ±0.04 0.34 ±0.07 1.04 ±0.68 DoubleGen 0.05 ±0.02 0.07 ±0.01 0.36 ±0.14 0.62 ±0.24
+> DecFM 0.05 ±0.02 0.04 ±0.01 0.25 ±0.08 0.35 ±0.15
+
+Table 2: Average W1 error on causal benchmarks. Results are mean ± sd over 10 trials. 
+
+Experiment We next compare de-confounding flows to a range of state-of-the-art debiased estimators for counterfactual distributions (see Sections A.1 and B.1.2), across causal benchmark datasets with dif-ferent outcome properties. Specif-ically, we consider three datasets with real covariates X and treatment 
+
+A: TWINS (Louizos et al., 2017), 401(k) (Engen and Gale, 2000), and ACIC 2019 (Atlantic Causal Inference Conference, 2019). We synthetically generate outcomes using different outcome mechanisms per each dataset (Gaussian, SplitSupport, HeavyTails) described in Section B. We also consider 10 ACIC 2016 challenge datasets (Dorie et al., 2019), where true potential outcomes are provided. 
+
+Results Table 2 reports the mean ± standard deviation Wasserstein-1 distance between the learned and true counterfactual distributions, averaged over 10 random seeds for the synthetic outcome experiments and across the 10 ACIC 2016 challenge datasets. Overall, deconfounding flows (DecFM) achieve the best average performance across the considered designs, with competing methods oc-casionally matching but not exceeding its accuracy, and the largest gains occurring under more challenging outcome geometries. Note that DoubleGen (Luedtke and Fukumizu, 2025) was im-plemented with flow-matching, and so enables us to isolate that in 3/4 cases, our performance improvement is a consequence of using deconfounding flows specifically, rather than simply due to flow-matching outperforming other modeling approaches. 
+
+5.3 Deconfounding Generation Biases in ColorMNIST Experiment We next analyze deconfounding flows in a fully controlled image-deconfounding task using ColorMNIST, where PX,A,Y is known by construction. We generate n = 20 ,000 images from two digit classes, A ∈ { 1, 6}, with uniformly varying foreground colour X = R/ (R + B)
+
+along the red–blue axis. Confounding is induced by drawing A conditional on colour according to 
+
+P(A = 6 | X = x) = σ(w(x − 1/2)) , where w is varied to control confounding strength. We aim to generate samples from the counterfactual distribution PY (a), i.e. images with digit a under the color 80 1 2 3 4 5                   
+
+> Confounding strength w
+> 0.005
+> 0.010
+> 0.015
+> 0.020
+> SW2
+> GaussianFM
+> DecFM-I
+> DecFM-EOT
+> width=16
+> width=32
+> 5.0 2.5 0.0 2.5 5.0
+> X= logit( R/( R+B))
+> 0.00
+> 0.05
+> 0.10
+> 0.15
+> 0.20
+> 0.25
+> 0.30
+> Density
+> P(X(0))
+> P(X(1))
+> P(X)t= 0.00 t= 0.20 t= 0.40 t= 0.60 t= 0.80 t= 1.00
+> Confounding
+> No confounding
+
+Figure 3: ColorMNIST . Left: Avg SW 2(PY (a), Pˆθa ) over 3 seeds vs. confounding strength for deconfounding flows (Ind + EOT coupling) and flow-matching from N (0 , I ), for different U-Net widths. Middle: Learned color distributions ˆPX(0) and ˆPX(1) by DecFM-EOT vs. true P(X), under strongest confounding design ( w = 5 ). Right: Same DecFM-EOT sample trajectory under high (top) and no (bottom) confounding. 
+
+a Method SW2 (base) SW2 (target) 
+
+0
+
+Gaussian-FM 0.575 ± 0.016 0.126 ± 0.004 DecFM-I 0.066 ± 0.005 0.035 ± 0.001 DecFM-EOT 0.066 ± 0.005 0.032 ± 0.002 
+
+1
+
+Gaussian-FM 0.547 ± 0.002 0.149 ± 0.007 DecFM-I 0.059 ± 0.004 0.036 ± 0.007 DecFM-EOT 0.059 ± 0.004 0.035 ± 0.004 t = 0 t = 0.25 t = 0.5 t = 0.75 t = 1 t = 0 t = 0.25 t = 0.5 t = 0.75 t = 1 
+
+Figure 4: CelebA attribute rebalancing . Left: Mean ± SD Sliced Wasserstein–2 results over 3 seeds. SW2 (base) = distance from the flow source distribution to the target distribution, SW2 (target) = distance after applying the learned flow. Right: trajectories from DecFM-EOT. distribution PX . We implement deconfounding flows with the independent coupling (DecFM-I) and EOT coupling (DecFM-EOT) using U-Net velocity fields of two widths (Ronneberger et al., 2015) and compare against equivalent flows estimated from N (0 , I ) with the usual independent coupling. 
+
+Results Figure 3 (left) shows SW2 error against the true counterfactual distribution (averaged over three seeds and both arms), for varying confounding strength and architecture. Both deconfounding flows outperformed Gaussian-base flow matching across confounding strengths and U-Net widths, consistent with the fact that they start from images with the correct digit structure and only need to adjust colour. The EOT extension also improved performance overall, consistent with the simpler trajectories it induces (in Section A.2 we further investigate OT versus independent coupling on a 2d synthetic problem). In the strongest-confounding setting, Figure 3 (middle) shows that pixel-estimated colour distributions are rebalanced toward PX , while Figure 3 (right) shows that the learned flow preserves image fidelity and makes little modification when no confounding is present. 
+
+5.4 Attribute Rebalancing on CelebA Experiment We evaluate deconfounding flows on CelebA as a realistic, high-dimensional counter-factual image-rebalancing task, where the aim is to generate images with semantic attribute A = a
+
+under a regime in which a correlated visual attribute X follows its population distribution PX , rather than its group-specific distribution PX|A=a. We instantiate this problem on CelebA with A = Sex 
+
+and X = HairColor , using hair colour as a visually salient but comparatively low-stakes attribute for evaluation. We construct a training set with a strong association between A and X by sampling images without replacement from the four (A, X ) cells according to prescribed proportions (i.e., 
+
+P(A = 1 |X = 1) = 0 .1, P(A = 1 |X = 0) = 0 .6, P(X = 1) = 0 .3), yielding n ≈ 20 ,000 training images due to the limiting size of the smallest cell. 
+
+Results As Figure 4 shows, deconfounding flows substantially improve over Gaussian flow match-ing, with the EOT-coupled variant performing best. Before applying the flow, PY |A=a is already a much better image-space source than Gaussian noise (SW2 (base)), despite having the wrong hair-colour mixture. Applying DecFM then further reduces SW2 by roughly 40 –50% , showing that the flow learns a meaningful rebalancing beyond simply starting from a favourable source. Qualitatively, the selected trajectories demonstrate structured hair-colour edits while preserving much of the original image content (see Figure 1 for more examples). 96 Discussion of Impact, Limitations and Future Work 
+
+Societal Impact Beyond the methodological benefits established in this paper, deconfounding flows may also have positive societal impact by helping mitigate harmful generative biases, for example by rebalancing generated samples with respect to sensitive or socially salient attributes. As with all generative methods, there is also potential for misuse, for example by producing misleading or manipulated synthetic content, and so the usual safeguards, provenance tools, and deployment constraints required for generative models remain necessary here. 
+
+Limitations and Future Work Deconfounding flows inherit the usual limitations of observational causal inference methods such as relying on no-unobserved confounding, positivity, and sufficiently accurate nuisance estimation. The benefits of deconfounding flows also depend on PY |A=a being a useful geometric anchor for PY (a); despite shared support, tails, and closeness under structured confounding, challenging transports may remain under weak overlap and/or highly variable outcome mechanisms. Future work could develop diagnostics for this regime, and also characterize the extent to which distributional similarities hold in other causal regimes such as under the front-door criterion. 
+
+## References 
+
+Aliprantis, C. D. and Border, K. C. (2006). Infinite dimensional analysis: a hitchhiker’s guide .Springer. Ambrosio, L., Gigli, N., and Savaré, G. (2005). Gradient flows: in metric spaces and in the space of probability measures . Springer. Atlantic Causal Inference Conference (2019). ACIC 2019 data challenge. Data challenge benchmark. Bianchi, F., Kalluri, P., Durmus, E., Ladhak, F., Cheng, M., Nozza, D., Hashimoto, T., Jurafsky, D., Zou, J., and Caliskan, A. (2023). Easily accessible text-to-image generation amplifies demographic stereotypes at large scale. In Proceedings of the 2023 ACM conference on fairness, accountability, and transparency , pages 1493–1504. Chernozhukov, V., Fernández-Val, I., and Melly, B. (2013). Inference on counterfactual distributions. 
+
+Econometrica , 81(6):2205–2268. Choi, K., Grover, A., Singh, T., Shu, R., and Ermon, S. (2020). Fair generative modeling via weak supervision. In International Conference on Machine Learning , pages 1887–1898. PMLR. Crump, R. K., Hotz, V. J., Imbens, G. W., and Mitnik, O. A. (2009). Dealing with limited overlap in estimation of average treatment effects. Biometrika , 96(1):187–199. Dance, H. and Bloem-Reddy, B. (2025). Counterfactual cocycles: A framework for robust and coherent counterfactual transports. arXiv preprint arXiv:2405.13844 .DiNardo, J., Fortin, N. M., and Lemieux, T. (1996). Labor market institutions and the distribution of wages, 1973–1992: A semiparametric approach. Econometrica , 64(5):1001–1044. Dobrushin, R. L. (1956). Central limit theorem for nonstationary Markov chains. I. Theory of Probability & Its Applications , 1(1):65–80. Dorie, V., Hill, J., Shalit, U., Scott, M., and Cervone, D. (2019). Automated versus do-it-yourself methods for causal inference: Lessons learned from a data analysis competition. Engen, E. M. and Gale, W. (2000). The effects of 401 (k) plans on household wealth: Differences across earnings groups. Firpo, S., Fortin, N. M., and Lemieux, T. (2009). Unconditional quantile regressions. Econometrica ,77(3):953–973. Guan, Y., Balasubramanian, K., and Ma, S. (2025). Mirror flow matching with heavy-tailed priors for generative modeling on convex domains. arXiv preprint arXiv:2510.08929 .Jaini, P., Kobyzev, I., Yu, Y., and Brubaker, M. (2020). Tails of Lipschitz triangular flows. In 
+
+International Conference on Machine Learning , pages 4673–4681. PMLR. 10 Javaloy, A., Sánchez-Martín, P., and Valera, I. (2023). Causal normalizing flows: from theory to practice. Advances in Neural Information Processing Systems , 36:58833–58864. Kennedy, E. H. (2024). Semiparametric doubly robust targeted double machine learning: a review. 
+
+Handbook of Statistical Methods for Precision Medicine , pages 207–236. Kennedy, E. H., Balakrishnan, S., and Wasserman, L. (2023). Semiparametric counterfactual density estimation. Biometrika , 110(4):875–896. Kim, K., Kim, J., and Kennedy, E. H. (2018). Causal effects based on distributional distances. arXiv preprint arXiv:1806.02935 .Kocaoglu, M., Snyder, C., Dimakis, A. G., and Vishwanath, S. (2018). CausalGAN: Learning causal implicit generative models with adversarial training. In International Conference on Learning Representations .Lipman, Y., Chen, R. T., Ben-Hamu, H., Nickel, M., and Le, M. (2023). Flow matching for generative modeling. In 11th International Conference on Learning Representations, ICLR 2023 .Louizos, C., Shalit, U., Mooij, J. M., Sontag, D., Zemel, R., and Welling, M. (2017). Causal effect inference with deep latent-variable models. Advances in neural information processing systems ,30. Luedtke, A. and Fukumizu, K. (2025). Doublegen: Debiased generative modeling of counterfactuals. 
+
+arXiv preprint arXiv:2509.16842 .Martinez-Taboada, D. and Kennedy, E. (2024). Counterfactual density estimation using kernel stein discrepancies. In ICLR 2024 .Melnychuk, V., Frauen, D., and Feuerriegel, S. (2023). Normalizing flows for interventional density estimation. In ICML 2023 .Pawlowski, N., Coelho de Castro, D., and Glocker, B. (2020). Deep structural causal models for tractable counterfactual inference. Advances in neural information processing systems , 33:857–869. Perez, E., Strub, F., De Vries, H., Dumoulin, V., and Courville, A. (2018). Film: Visual reasoning with a general conditioning layer. In Proceedings of the AAAI conference on artificial intelligence ,volume 32. Ronneberger, O., Fischer, P., and Brox, T. (2015). U-net: Convolutional networks for biomedical image segmentation. In International Conference on Medical image computing and computer-assisted intervention , pages 234–241. Springer. Rubin, D. B. (2005). Causal inference using potential outcomes: Design, modeling, decisions. 
+
+Journal of the American statistical Association , 100(469):322–331. Sanchez, P. and Tsaftaris, S. A. (2022). Diffusion causal models for counterfactual estimation. In 
+
+Causal Learning and Reasoning 2022 .Sanchez-Martin, P., Rateike, M., and Valera, I. (2021). Vaca: Design of variational graph autoencoders for interventional and counterfactual queries. arXiv preprint arXiv:2110.14690 .Santambrogio, F. (2015). Optimal Transport for Applied Mathematicians: Calculus of Variations, PDEs, and Modeling . Springer International Publishing. Tong, A., Fatras, K., Malkin, N., Huguet, G., Zhang, Y., Rector-Brooks, J., Wolf, G., and Bengio, Y. (2023). Improving and generalizing flow-based generative models with minibatch optimal transport. arXiv preprint arXiv:2302.00482 .Xu, D., Yuan, S., Zhang, L., and Wu, X. (2018). FairGAN: Fairness-aware generative adversarial networks. In 2018 IEEE international conference on big data (big data) , pages 570–575. IEEE. 11 A Additional Background 
+
+A.1 Background on Debiased Estimation of Counterfactual Distributions                                             
+
+> Method Model Class Discrepancy DMoment Function gθNuisance Outcome μ
+> Kennedy et al. (2023) Exponential family KL divergence −∂θlog pθ(y)Score regression Kennedy et al. (2023) Truncated series L2density error ∂θpθ(y)Basis regression Melnychuk et al. (2023) Normalizing flows KL divergence −∂θlog pθ(y)Normalizing Flow Martinez-Taboada and Kennedy (2024) Energy-based models Kernel Stein Tpθf(y)RKHS regression Luedtke and Fukumizu (2025) Continuous flows Flow matching Ety t,y 0,t |y[∇θvθ(yt, t )⊤ vθ(yt, t )−u⋆(y0, y )]Continuous flow
+
+Table 3: Different generative estimators of counterfactual distributions via debiased estimation of moment equations. Recent literature has combined generative modeling with tools from semiparametric debiased estima-tion Kennedy (2024). The starting point is to specify a generative model class 
+
+M := {Pθa : θa ∈ Θ},
+
+and define the target parameter θa, 0 as the projection of the true distribution PY (a) onto this class via a discrepancy D:
+
+θa, 0 ∈ arg min  
+
+> θa∈Θ
+
+D  PY (a), Pθa
+
+ . (8) By choosing D such that 
+
+arg min  
+
+> θa∈Θ
+
+D  PY (a), Pθa
+
+ = arg min  
+
+> θa∈Θ
+
+E [ℓ(Y (a); θa)] 
+
+for a suitable loss ℓ, first-order optimality of θa, 0 yields a population estimating equation 
+
+m(θa, 0) := E gθa, 0 (Y (a))  = 0 , gθa (y) := ∇θa ℓ(y; θa).
+
+For example, when D is the Kullback–Leibler divergence, g(θa, y ) = −∂θa log pθa (y), where pθa
+
+denotes the density of Pθa . Table 3 summarizes the model classes, discrepancies, and induced moment functions used in the literature. We note that while the recent flow-matching and score matching estimators used in this framework are not gradients of divergences, they can still be characterized as first-order optimality conditions, giving rise to equivalent moment conditions. From here, one uses semiparametric theory to derive efficient estimators for θa, 0. The basic idea is to write ma(θa) as a functional of the observational distribution P := PY,A,X ,
+
+m(θa, P) = EP [EP [gθa (Y ) | A = a, X ]] ,
+
+Assuming pathwise differentiability of m, one can take a first-order von Mises expansion around estimator ˆP,
+
+m(θa, P) = m(θa, ˆP) + 
+
+Z
+
+φa(o) d(P − ˆP)( o) + R2(ˆP, P).
+
+Here o := ( x, a, y ), φθa,a is called the efficient influence function (EIF) of m(θa, ·) and R2 is a second-order remainder term. The EIF is the unique, mean-zero function with minimum asymptotic variance that characterizes the first-order sensitivity of m(θa, ·) to perturbations of P Kennedy (2024). Operationally, it captures the leading (first-order) error incurred when approximating m(θa, P) by 
+
+m(θa, ˆP). In the present setting, the EIF takes the explicit augmented inverse propensity weighted (AIPW) form 
+
+φa(X, A, Y ) = 1{A = a}
+
+πa(X)
+
+ g(θa, Y ) − μθa (a, X ) + μθa (a, X ) − ma(θa),
+
+where πa(X) = P(A = a | X) and μθa (a, X ) = E[g(θa, Y ) | A = a, X ] are called ‘nuisance models’. Using this expansion, one constructs a ‘debiased’ estimator for m(θa, P) in two steps. (i) form the plug-in estimator 
+
+ˆmPI (θa) := 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ˆμθa (a, X i),
+
+12 using an estimator ˆμθa for μθa , and (ii) remove its first-order bias by adding an empirical approxima-tion of the EIF term, using the nuisance estimators ˆμθa and ˆπa. This yields the so-called “one-step’ or “doubly-robust” estimator 
+
+ˆmDR (θa) := ˆ mPI (θa) + 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ˆφθa,a (Xi, A i, Y i) (9) In practice, one finds the target parameter that solves ˆmDR (θa) = 0 either in closed form (when available) Kennedy et al. (2023), or by minimizing an antiderivative of ˆmDR Melnychuk et al. (2023); Martinez-Taboada and Kennedy (2024); Luedtke and Fukumizu (2025). For statistical efficiency reasons, one usually trains ˆμ and ˆπ on a separate fold of data than (Xi, A i, Y i)ni=1 , or uses “cross-fitting” estimators which combine multiple sample split estimators to make use of the full data for nuisance training and moment evaluation. 
+
+Fast Rates, Efficiency, and Double Robustness of the Debiased Estimator The naive plug-in estimator ˆmPI (θa) = n−1 P 
+
+> i
+
+ˆμθa (a, X i) inherits its convergence rate directly from the nuisance estimator ˆμθa , and is therefore typically limited by the accuracy with which μθa can be estimated. In contrast, the estimation error of the debiased (or doubly-robust) estimator ˆmDR (θa) admits an expansion with a second-order remainder, whose leading term depends on the product of the estimation errors of the nuisance models ˆμθa and ˆπa. As a consequence, under standard regularity conditions (e.g. Donsker classes) or under cross-fitting, 
+
+ˆmDR (θa) − ma(θa) = Op (∥ˆμθa − μθa ∥ ∥ ˆπa − πa∥) ,
+
+up to empirical process terms of order n−1/2.This structure yields two important properties. First, if both nuisance estimators converge at rates faster than O(n−1/4), the remainder term is op(n−1/2), and the resulting estimator is known to achieve √n-consistency and semiparametric efficiency Kennedy (2024). Second, the estimator is 
+
+doubly robust in the sense that consistency of ˆmDR (θa) only requires one of the nuisance models 
+
+ˆμθa or ˆπa to be consistently estimated. 
+
+A.2 Additional Ablation of Independent vs OT Coupling Independent coupling Minibatch EOT coupling    
+
+> PYA= 1 PY(1)
+
+Figure 5: Deconfounding flow trajectories learned using independent coupling estimator (left) and mini-batch EOT coupling estimator (right) for a mixture-of-Gaussians outcome under weak confounding. Here we examine the relative performance of our independent and Minibatch EOT es-timators for deconfounding flows, in a two-dimensional synthetic design where we can control both the confounding strength and out-come multimodality. Covariates are drawn as X ∼ N (0 , I 2), treatment is assigned ac-cording to A ∼ Bernoulli( σ(ω⊤X)) , and out-comes are generated as Y = X + ξ, where 
+
+ξ ∼ 12 N (0 , σ 2) + 12 N (μ, σ 2) for varying 
+
+μ ∈ { 0, 5}. Note that while there is no causal effect of A on Y , learning the counterfactual distribution PY (a) still requires deconfound-ing since PX̸ = PX|a.
+
+Results Figure 6 shows the effect of the cou-pling choice on distributional accuracy (SW2, sliced Wasserstein-2) across different confounding strength ( ∥ω∥), noise settings, and velocity architectures (from 10 trials of n = 1000 observational samples per trial). In the unimodal Gaussian setting, differences between coupling strategies are relatively modest once a sufficiently expressive MLP model is used for the velocity. However, the OT coupling is more robust to model capacity: even a much smaller architecture (width=4) achieves performance comparable to wider models (width=64), suggesting that OT induces simpler transport paths that are easier to fit by the estimator. In contrast, for the multimodal mixture-of-Gaussians outcome, the independent cou-pling exhibits a pronounced degradation in performance compared to the OT cou-pling, and this gap is not fully addressed by using the larger capacity model. 13 0 2 4 6 8 10           
+
+> Confounding Strength
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> SW2 avg. over  a {0, 1}  PY(a)= Gaussian
+> 0246810
+> Confounding Strength
+> PY(a)= MoG
+> DoFM-EOT (w=4) DoFM-EOT (w=64) DoFM-I (w=4) DoFM-I (w=64)
+
+Figure 6: Coupling ablation. SW 2 error (mean ± sd) as a function of confounding strength for Gaussian (left) and multimodal (right) outcomes. W = Velocity MLP width. This agrees with the trajectory visualizations in Figure 5, which show the independent coupling produces highly curved transport paths, a consequence of its known trajectory bias toward the mean (Guan et al., 2025). In contrast, the OT coupling produces straight paths, which are therefore much easier to fit by the estimator. Over-all, this experiment highlights clear benefits of directly targeting minimal-energy deconfounding flows. 
+
+## B Experiment and Implementation Details 
+
+Compute resources. Non-image experiments were run on a single-GPU and took minutes per seed. Image experiments were run as single-GPU jobs on an HPC cluster; compatible GPU types available on the cluster included NVIDIA RTX 4500/A4500-class GPUs, RTX 4000 Ada GPUs, A100s, L40S GPUs, H100s, and H200s. ColorMNIST and CelebA runs required several GPU-hours per seed depending on U-Net width and whether minibatch EOT was used. The reported experiments did not require multi-node or large-scale distributed training. 
+
+Existing assets and licenses. All datasets used in this paper are existing research benchmarks and are used only for research evaluation. ColorMNIST is derived from MNIST, whose dataset license is Creative Commons Attribution–ShareAlike 3.0. CelebA is used under its non-commercial research terms; we do not redistribute CelebA images, derived image data, or pretrained image generators.We also use ACIC challenge data (Dorie et al., 2019; Atlantic Causal Inference Conference, 2019), 401(k) (Engen and Gale, 2000), and TWINS (Louizos et al., 2017) through their standard public benchmark constructions. For benchmark distributions where no explicit dataset license is provided by the source distribution, we follow the published research-use conventions, credit the original sources, and do not redistribute the underlying datasets. 
+
+B.1 Implementation Details B.1.1 (DecFM) Deconfounding Flows 
+
+In this section, we provide the details on implementation of our method. 
+
+Plug-in estimation of ˆPY |X,A via conditional flow matching. As a nuisance component of our method, we estimate the conditional outcome distribution PY |X,A using a plug-in conditional flow-matching model. Specifically, we learn a conditional transport that maps the empirical treatment-conditional distribution ˆPY |A=a to PY |X=x,A =a, for (x, a ) ∈ X × A .Concretely, we parameterize a single time-dependent velocity field 
+
+vη : Y × [0 , 1] × X × A → Y ,
+
+which takes the treatment indicator A as part of the conditioning context, and define the neural ODE 
+
+ddt yt = vη (yt, t, x, a ), y0 ∼ ˆPY |A=a.
+
+For fixed (x, a ), the corresponding time-1 flow map induces a conditional distribution ˆPY |X=x,A =a.Training is performed using standard conditional flow matching Lipman et al. (2023). That is, given observational samples {(Xi, A i, Y i)}ni=1 , we optimize the plug-in conditional flow-matching objective 
+
+Lplug -in (η) = ˆE
+
+h
+
+vη (Yt, t, X, A ) − u⋆ 2i
+
+,
+
+14 where the empirical expectation is taken over minibatches constructed as follows. For each observed datapoint (Xi, A i, Y i) in a minibatch, we draw an independent base sample by resampling an outcome from the same treatment arm as Yi
+
+˜Yi ∼ ˆPY |A=Ai .
+
+We then sample an interpolation time t ∼ Unif(0 , 1) and form the linear interpolation 
+
+Yt,i := (1 − t) ˜Yi + tY i, u⋆i := Yi − ˜Yi.
+
+The procedure is summarized in Algorithm 1. After training, samples ˆY ∼ ˆPY |X=x,A =a are obtained by drawing ˜Y ∼ ˆPY |A=a and numerically integrating the ODE from t = 0 to 1 under context (x, a ). This conditional model is used solely as a plug-in nuisance estimator within our debiased and doubly robust estimator for the deconfounding flow. 
+
+Propensity Score Estimation In all experiments except CelebA, propensity scores πa(x) = P(A =
+
+a | X = x) are estimated using random forests. We fix the minimum number of samples per leaf node to one, and select the maximum tree depth by cross–validation on the training data, from the grid 
+
+[1 , 3, 5, 10] . In CelebA, as X ∈ { 0, 1} is binary, we just use the empirical estimator of the propensity score. 
+
+Sample Splitting for Nuisance Models The semiparametric efficiency results in Section 4.2 require that nuisance models (e.g., propensity scores and conditional outcome models) be trained on data that are independent of the samples used in the empirical averages defining the estimating equations. This can be achieved by sample splitting, where the dataset is partitioned into disjoint folds, with nuisance models trained on one fold and evaluated on another. In practice, this requirement can be relaxed using standard cross-fitting techniques. In the present setting, cross-fitting amounts to pre-estimating a collection of nuisance models { ˆm(k)}Kk=1 , each trained on a different data fold, and evaluating each sample using the model corresponding to the fold in which that sample was not used for training. During stochastic optimization with minibatches, each data point is passed through its associated nuisance model according to its fold assignment. In our experiments, we follow this principle as follows. In the outcome geometry ablation we train nuisance models on a separate hold-out sample of size n and fix them throughout training, ensuring independence between nuisance estimation and the empirical estimating equations. In the causal benchmarks, we use two-fold cross-fitting. In the image-based experiments, we do not apply sample splitting or cross-fitting in order to reduce computational cost and maximize sample efficiency. As a result, the corresponding results should be interpreted as empirical performance evaluations rather than guarantees of semiparametric efficiency. 
+
+Parameter Sharing Across Treatment Arms For notational clarity, the theoretical development in the main text treats the deconfounding flow and its associated velocity field separately for each treatment level a ∈ { 0, 1}. In practice, however, we implement a single parameterized velocity field 
+
+vθ : Y × [0 , 1] × { 0, 1} → Y ,
+
+which takes the treatment indicator a ∈ { 0, 1} as an additional input and is shared across treatment arms. The arm-specific velocities are then recovered as vθ,a (y, t ) := vθ (y, t, a ).This parameter-sharing strategy reduces variance and computational cost by allowing statistical strength to be shared across arms, and is natural in settings where the geometric structure of the outcome space is largely common across treatments. Importantly, this modeling choice does not restrict expressiveness: since a is provided as an explicit input, the shared network can represent distinct velocity fields for each treatment level. Our efficiency results apply to each arm-specific velocity vθ,a , and parameter sharing should therefore be viewed as a practical architectural choice rather than an additional modeling assumption. 
+
+Details on Minibatch EOT Implementation Recall in Section 4.3 our debiased gradient estimator is written in terms of a conditional entropic coupling γε
+
+> 0|1
+
+(· | y), which defines, for each query point 15 y, a conditional distribution over base samples ˜y:
+
+ˆm(θa) := 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+"
+
+1{Ai = a}
+
+ˆπa(Xi)
+
+Z
+
+rθa (Yi, ˜y) γ0|1(d˜y|Yi) + 
+
+
+
+1 − 1{Ai = a}
+
+ˆπa(Xi)
+
+Z Z 
+
+rθa (ˆ y, ˜y) γ0|1(d˜y|ˆy)ˆPY |a,x (dˆy)
+
+#
+
+Here we briefly show how we derived this estimator and describe how the conditional coupling is approximated in practice using minibatch entropic optimal transport, at each iteration of gradient descent. 
+
+Derivation Fix a ∈ { 0, 1} and a (possibly entropic) coupling γε between PY |A=a (base) and PY (a)
+
+(target), and write its disintegration as γε(d˜y, dy ) = γε
+
+> 0|1
+
+(d˜y | y) PY (a)(dy ). Using the per-pair score 
+
+rθa (·, ·) defined in Section 4.2, define 
+
+gγθa (y) := 
+
+Z
+
+rθa (y, ˜y) γε
+
+> 0|1
+
+(d˜y | y), m(θa) := Egγθa (Y (a))  .
+
+Under the definition of PY (a) in (1) , m(θa) admits the representation m(θa) = E[μθa (X)] with 
+
+μθa (x) := Egγθa (Y ) | A = a, X = x. Treating γε 
+
+> 0|1
+
+as fixed, the efficient influence function for 
+
+m(θa) (as a functional of the observational law) is the standard AIPW form 
+
+ϕγθa,a (X, A, Y ) = 1{A = a}
+
+πa(X)
+
+
+
+gγθa (Y ) − μθa (X)
+
+
+
++ μθa (X) − m(θa).
+
+From here, replacing πa and μθa with nuisance estimators and empirically averaging ϕγθa,a recovers the gradient estimator above. 
+
+Practical Approximation Fix a treatment arm a and a minibatch of size B. Let S := { ˆYi,k }B,M i=1 ,k =1 
+
+denote plug-in samples drawn from ˆPY |Xi,A =a, and let T := { ˜Yj }Bj=1 denote base samples drawn from ˆPY |A=a.For each set of such minibatches drawn during an iteration of gradient descent, we estimate the entropic OT coupling between S and T with quadratic cost c(y, y ′) = ∥y − y′∥2 and regularization parameter ε > 0, by running K iterations of Sinkhorn’s algorithm. The resulting coupling has the form 
+
+ˆγε(ℓ, j ) ∝ aℓ exp − ∥ ˆYℓ − ˜Yj ∥2
+
+ε + vj
+
+!
+
+,
+
+where {vj }Bj=1 are the target dual potentials obtained by Sinkhorn iterations, and {aℓ} are source weights defined below. In practice, we compute only the target dual potentials vj , which suffice to define the conditional distribution. Given the dual potentials, the conditional coupling appearing in the loss is approximated via the standard entropic out-of-sample extension 
+
+ˆγε
+
+> 0|1
+
+( ˜Yj | y) ∝ exp vj − ∥y − ˜Yj ∥2
+
+ε
+
+!
+
+,
+
+from which a single base draw ˜Y is (re)-sampled for each query point y. Note that the out-of-sample extension is tractable because we only use the extension in the conditioning direction . In particular, the dual potentials are never required for new conditioning points y, and by restricting the left-hand side of ˆγε
+
+> 0|1
+
+( ˜Yj | y) to base samples { ˜Yj } that were used to construct the minibatch coupling, the conditional distribution depends only on the target duals {vj }, which are already available from the Sinkhorn iterations. As a result, the conditional coupling can be viewed as inducing a data-dependent re-ordering of the base minibatch, where the effective pairing between ˜Yj and a query y depends on the term of the loss being evaluated. This procedure is applied both to observed outcomes Yi and to plug-in samples ˆYi,k 
+
+when evaluating the inner functional hθ (y) = E ˜Y |y [ℓθ (y, ˜Y )] .
+
+16 Exponential tilting. When using minibatch entropic optimal transport, the coupling γε is computed from samples drawn from a plug–in estimate of the counterfactual distribution ˆPY (a), which in the above implementation is constructed via a nuisance model for PY |A,X . If this plug–in model is misspecified, the induced empirical coupling may allocate mass to regions of Y that are incompatible with the moment condition defining m(θa). In particular, because the coupling itself now depends on 
+
+ˆPY (a), the usual double–robustness property of the debiased estimator—consistency under correct specification of either the propensity or outcome model—no longer holds in general once the coupling is treated as data–dependent. To reduce sensitivity to this dependence, one can optionally apply an exponential tilting (or exponen-tial reweighting) scheme to a fixed reservoir of plug–in samples {ˆyj }Mj=1 ∼ ˆPY (a) prior to computing the entropic coupling. Specifically, we define a tilted empirical measure 
+
+ˆPtilt   
+
+> Y(a)
+
+:= 
+
+> M
+
+X
+
+> j=1
+
+wj δˆyj , wj (λ) := exp {λ⊤s(ˆ yj )}
+
+PMℓ=1 exp {λ⊤s(ˆ yℓ)} ,
+
+where s(·) denotes a chosen collection of moment features. The tilt parameter λ is selected once, prior to flow training, so that the weighted empirical moments of the reservoir approximately match the corresponding moments estimated via the doubly robust estimating equations, 
+
+> M
+
+X
+
+> j=1
+
+wj (λ) s(ˆ yj ) ≈ ˆEDR [s(Y (a))] .
+
+The resulting tilted empirical distribution is then used as the target marginal when computing the minibatch entropic coupling γε. Algorithm 4 in Section C summarizes the procedure. In an additional coupling ablation experiment we ran in Section A.2, we choose m = 128 random moments 
+
+s(y) = cos( W y + b), where the rows of W ∈ R128 ×dim( Y ) are drawn independently from a mean– zero Gaussian distribution and b ∈ [0 , 2π]128 is drawn uniformly at random). We do not apply exponential tilting on ColorMNIST/CelebA for computational reasons. 
+
+Architectural and Training Details We distinguish between non–image and image–based experi-ments. 
+
+Non–image based Architectures. For all non–image experiments, both the plug–in conditional flow and the deconfounding (target) flow use identical velocity network architectures unless explicitly varied in ablations. Each velocity field is parameterized by a multilayer perceptron with one hidden layer of width 64 , using SiLU activations. The time variable t is concatenated directly to the input, and no positional encoding is used in low–dimensional settings. Models are trained for 1000 epochs using minibatches of size 512 and the Adam optimizer with learn-ing rate 10 −3 and default hyperparameters. No learning rate schedules or additional regularization are applied unless stated otherwise. For experiments involving minibatch entropic optimal transport, we use 50 Sinkhorn iterations per optimization step and a fixed entropic regularization parameter 
+
+ε = 0 .1.
+
+Image-based architectures. For image-based experiments, velocity fields are parameterized using a U-Net architecture with skip connections. The base channel width is denoted by c.The plug–in conditional flow used to estimate ˆPY |X,A uses a U-Net that conditions on covariates 
+
+X, the treatment indicator A, and time t ∈ [0 , 1] . The encoder consists of four convolutional blocks with channel dimensions (c, 2c, 4c, 8c), where each block applies two 3 × 3 convolutions with SiLU activations, and downsampling is performed using 2 × 2 max pooling between blocks. The decoder mirrors the encoder using transposed convolutions for upsampling. At each decoder stage, the upsampled feature map is concatenated with the corresponding encoder skip connection and a time embedding, resulting in channel dimensions (12 c, 6c, 3c) at successive resolutions. A final 1 × 1
+
+convolution maps the decoder output to the velocity field. Conditioning on A is implemented via class-conditional normalization layers, while conditioning on 
+
+X is incorporated through feature-wise linear modulation (FiLM) layers (Perez et al., 2018) applied to intermediate feature maps. Time is encoded using sinusoidal embeddings followed by learned linear projections, with separate embeddings of dimensions (c, 2c, 4c) injected at the corresponding 17 decoder resolutions. The resulting plug–in velocity field has the form 
+
+vη : Y × [0 , 1] × X × A → Y .
+
+The deconfounding target flow uses the same U-Net backbone and time-conditioning scheme, but omits conditioning on X. In our shared-arm implementation, the target model conditions only on the treatment indicator A and time t, resulting in a velocity field of the form 
+
+vθ : Y × [0 , 1] × A → Y .
+
+Across all image-based experiments, we use SiLU activations throughout. In ColorMNIST we vary the base channel width c ∈ { 8, 16 , 32 } as part of the experimental design, in CelebA we use fixed 
+
+c = 64 . Models are trained using the Adam optimizer with learning rate 10 −4 and minibatches of size 128 for ColorMNIST and 64 for CelebA. For entropic optimal transport, we use 20 Sinkhorn iterations per optimization step for ColorMNIST and 10 for CelebA, with the entropic regularization parameter ε set to 0.1 times the empirical standard deviation of the minibatch cost matrix. We ran on ColorMNIST for 1000 epochs, and CelebA for 500 epochs. To avoid overfitting, during training we inject the base samples from PY |A=a with N (0 , σ 2) Gaussian noise with σ = 0 .1.
+
+B.1.2 Baselines KDE (AIPW density estimator) Kim et al. (2018). We implement the augmented inverse– probability–weighted (AIPW) kernel density estimator as follows. In particular, let Kh(u) = 
+
+h−1K(u/h ) denote the Gaussian kernel with bandwidth h. The doubly robust (AIPW) estimator of the smoothed counterfactual density pY (a) at y is 
+
+ˆpAIPW   
+
+> Y(a)
+
+(y) = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+"
+
+1{Ai = a}
+
+ˆπa(Xi)
+
+n
+
+Kh(Yi − y) − ˆma(y | Xi)
+
+o
+
++ ˆ ma(y | Xi)
+
+#
+
+,
+
+where ˆπa(x) is the estimated propensity score and 
+
+ˆma(y | x) := EˆpY |X=x,A =a [Kh(Y − y)] 
+
+is a plug–in estimate of the conditional smoothed density obtained from the outcome regression model. We use the following implementation choices and hyperparameters: (i) The kernel bandwidth is selected using the median heuristic, separately within each treatment arm. (ii) Outcome regression and propensity score models are estimated using random forests, trained identically to DecFM, including cross–validation over maximum tree depth. (iii) Two–fold cross–fitting is used to ensure independence between nuisance estimation and evaluation. (iv) Wasserstein–1 distances are computed by numerical integration of the estimated density. 
+
+TSE (Truncated Series Estimator) Kennedy et al. (2023). We implement the Truncated series estimator (TSE) for counterfactual density estimation, following the doubly robust construction described in Kennedy et al. (2023). The counterfactual density is approximated by expanding it in an orthonormal cosine basis on a bounded interval. Let [ymin , y max ] denote the maximum and minimum outcome in the observational set, and define the scaled outcome 
+
+˜Y := min {max {Y, y min }, y max } − ymin 
+
+ymax − ymin 
+
+∈ [0 , 1] .
+
+We use the cosine basis 
+
+ϕj (˜ y) = √2 cos( πj ˜y), j = 1 , . . . , d, 
+
+with d = 20 basis functions. The counterfactual density is represented as 
+
+pY (a)(y) ≈
+
+> d
+
+X
+
+> j=1
+
+θa,j ϕj (˜ y),
+
+where the coefficients θa,j = E[ϕj ( ˜Y (a))] are estimated using a doubly robust estimating equation. Specifically, for each basis coefficient we use the AIPW estimator 
+
+ˆθa,j = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+"
+
+1{Ai = a}
+
+ˆπa(Xi)
+
+
+
+ϕj ( ˜Yi) − ˆμa,j (Xi)
+
+
+
++ ˆ μa,j (Xi)
+
+#
+
+,
+
+18 where ˆπa is the estimated propensity score and ˆμa,j (x) = E[ϕj ( ˜Y ) | X = x, A = a] is estimated via outcome regression. The estimated density ˆpY (a) is obtained by combining the estimated coefficients {ˆθa,j }dj=1 .Wasserstein–1 distances are computed by numerical integration of the resulting density. In all experiments, propensity scores and outcome regressions are estimated using random forests with the same hyperparameter grid as DecFM, and two–fold cross–fitting is used to ensure independence between nuisance estimation and evaluation. 
+
+Interventional Normalizing Flows (INFs) Melnychuk et al. (2023). We implement Interventional Normalizing Flows following Melnychuk et al. (2023), which directly model the counterfactual distribution PY (a) via a normalizing flow trained using a KL–divergence–based estimating objective. For each treatment arm a ∈ { 0, 1}, the target interventional distribution is parameterized by a neural autoregressive flow and trained by minimizing an empirical KL divergence between the model density and the distribution implied by the identifying moment condition in Melnychuk et al. (2023). The target flow architecture is fixed across experiments and consists of a fully connected network with a single hidden layer of width 64 .INFs additionally employ nuisance models for treatment assignment and outcome modeling. These are implemented as two fully connected networks, where the propensity network produces a 9–dimensional embedding of the covariates that is used as input to the outcome model. The architectures of these nuisance networks are selected by cross–validation over hidden layer widths {16 , 32 , 64 }
+
+and depths {1, 2}.In line with the original INFs methodology, we do not apply sample splitting or cross–fitting. For evaluation, we draw 10 ,000 samples from each fitted interventional model and compute Wasserstein–1 distances empirically using these samples. 
+
+DR-MKSD Martinez-Taboada and Kennedy (2024). We implement the doubly robust kernel Stein discrepancy (DR-MKSD) estimator of Martinez-Taboada and Kennedy (2024), which estimates the counterfactual distribution PY (a) via an energy-based model trained to satisfy a Stein moment condition. The target distribution is parameterized as an energy-based model (EBM) with energy function given by a fully connected neural network with a single hidden layer of width 64 and SiLU activations. Model parameters are estimated by minimizing the empirical kernel Stein discrepancy. Optimization details are identical to DecFM. The estimator relies on nuisance models for both the propensity score and the conditional outcome. Propensity scores are estimated using random forests, trained identically to those used for DecFM, including cross-validation over tree depth. The outcome regression is estimated using kernel ridge regression in an RKHS, with the regularization parameter selected by cross-validation over a grid of 
+
+10 values logarithmically spaced between 10 −3 and 10 −1.We use two-fold cross-fitting to ensure independence between nuisance estimation and evaluation. Wasserstein–1 distances are computed by drawing n = 10 , 000 samples from the fitted energy-based model via the Unadjusted Langevin Algorithm and estimating the distance empirically. 
+
+DoubleGen Luedtke and Fukumizu (2025) We implement the flow-matching variant of Double-Gen using our own estimator and architectural/training details but with a Gaussian base. Concretely, DoubleGen uses the same velocity architecture, optimizer, training epochs, nuisance models, and cross-fitting scheme as DecFM, but replaces the empirical observational base PY |A=a by a standard Gaussian base. 
+
+B.2 Experimental Designs B.2.1 Synthetic 1d Outcome Designs 
+
+In Section 5.1 we consider three one–dimensional outcome designs with a continuous confounder 
+
+X ∈ [0 , 1] , a binary treatment A ∈ { 0, 1}, and scalar outcome Y ∈ R. Across all designs, 19 confounding is induced through the treatment assignment mechanism 
+
+A | X = x ∼ Bernoulli( π(x)) , π(x) = σ 5( x − 12 )
+
+where σ(·) is the logistic sigmoid. 
+
+Gaussian outcome. In the Gaussian design, outcomes are conditionally normal: 
+
+Y | X = x, A = a ∼ N (10 x + a, σ 2),
+
+with σ = 1 unless stated otherwise. This setting serves as a baseline with matched support and light tails, for which Gaussian base distributions are well-aligned with the target geometry. 
+
+Inverse–Gamma outcome (heavy tails). To study the effect of tail mismatch, we consider a heavy–tailed outcome model: 
+
+Y | X = x, A = a ∼ InverseGamma( α(x), β (x, a )) , α(x) = 10 −8.5x, β(x, a ) = a+1+10 x. 
+
+Here, treatment affects scale but not tail index, while confounding through X induces substantial heteroskedasticity and heavy tails in both observational and interventional distributions. 
+
+Uniform mixture (split support). To isolate support mismatch, we consider a bimodal outcome distribution with disconnected support: 
+
+Y | X = x, A = a = a + U, 
+
+where U is drawn from a symmetric mixture of uniforms 
+
+U ∼ 12 Unif[ −β(x), −α(x)] + 12 Unif[ α(x), β (x)] ,
+
+with 
+
+α(x) = 1 − ε(cx + 1) , β(x) = 1 + ε(cx + 1) .
+
+In this design, the two support components are separated by a gap around zero, whose width depends on X. We use the parameterization c = 100 , ϵ = 0 .001 .
+
+B.2.2 Synthetic 2d Mixture of Normals 
+
+In Section A.2 we consider an additional two–dimensional synthetic design with continuous covariates 
+
+X ∈ R2, binary treatment A ∈ { 0, 1}, and outcome Y ∈ R2. The design is constructed to induce geometric confounding through a linear projection of X, while allowing control over multimodality and support separation in the outcome space. Covariates are drawn as 
+
+X ∼ N (0 , I 2).
+
+Treatment assignment follows a logistic propensity model 
+
+A | X = x ∼ Bernoulli  σ(γ w ⊤x) ,
+
+where w = (1 , −1) /√2 is a fixed confounding direction and γ > 0 controls the strength of confounding. In all experiments, we vary γ to interpolate between weak and strong confounding regimes. Outcomes are generated as 
+
+Y = X + ε, 
+
+so that there is no average or distributional treatment effect. The observed outcome is given by 
+
+Y = Y (A).The noise term ε induces a bimodal mixture structure: 
+
+ε =
+
+η, with probability 12 ,
+
+(δ, δ ) + η, with probability 12 , η ∼ N (0 , σ 2I2),
+
+where δ > 0 controls the separation between mixture components and σ controls within–component variance. In our experiments, we fix σ = 0 .2 and vary δ (referred to as the mixture width ) to control the degree of support separation. 20 B.2.3 Causal Benchmarks 
+
+In Section 5.2 we evaluate our method on a collection of standard causal benchmark datasets, combining both fully synthetic and semi–synthetic designs. 
+
+ACIC 2016 Challenge datasets. We consider 10 datasets from the ACIC 2016 Causal Inference Challenge, each of which provides observational data generated from a known structural causal model with heterogeneous treatment effects and complex confounding. For each dataset, we construct our own random train–test split of the available data, using 70% of the samples for training and 30% for evaluation. All models are trained exclusively on the training split, and performance is reported on the held–out test split. 
+
+Semi–synthetic benchmarks (ACIC 2019, 401(k), and Twins). For the ACIC 2019, 401(k), and Twins datasets, we adopt a semi–synthetic construction. In each case, we begin from a real observational dataset with covariates X and treatment assignment A, and then generate potential outcomes using one of the outcome–generation mechanisms used in Section 5.1 (In Table 2, SplitSup-port = Mixture of Uniform, HeavyTail = InverseGamma). This allows us to evaluate distributional counterfactual estimators under different outcome geometries while preserving realistic covariate and treatment structures. For these datasets, we randomly split the data into 70% training and 30% test sets. All nuisance models and deconfounding flows are trained on the training split, and evaluation is performed on the held–out test split. 
+
+Strengthening confounding via feature selection. To ensure challenging confounding regimes, we construct a low–dimensional summary ϕ(X) of the covariates by ranking features according to their marginal Wasserstein–1 distance between treated and untreated groups. Specifically, for each covariate Xj , we compute a confounding score 
+
+sj = W 1 P(Xj | A = 1) , P(Xj | A = 0) .
+
+Covariates with larger sj exhibit stronger distributional separation between treatment groups and are therefore more strongly confounded with A. We retain the top K = 5 covariates with the largest scores and define ϕ(X) as their normalized sum, 
+
+ϕ(X) := 1⊤X/ √K. 
+
+Outcomes are then generated using the mechanisms described in Section 5.1, with ϕ(X) replacing the original one–dimensional covariate. However, all covariates are used when training the models .
+
+Twins dataset. For the Twins dataset, we follow the treatment assignment construction of Louizos et al. (2017). We first form an observational dataset by selecting one twin at random from each same–sex twin pair and restricting attention to low–birthweight pairs. Treatment assignment is then generated according to a logistic model depending on gestational age, 
+
+A ∼ Bernoulli( σ(whz)) ,
+
+where z denotes a standardized gestational age covariate and wh is a randomly drawn slope parameter. 
+
+B.2.4 Image Generation: ColorMNIST 
+
+In Section 5.3 We consider an image–based debiasing task constructed from the MNIST dataset, following a foreground–color confounding design. The goal is to estimate counterfactual image distributions in the presence of strong confounding between treatment assignment and a visual attribute. 
+
+Data generation. We restrict attention to two digit classes (d0, d 1) = (1 , 6) and construct RGB im-ages by recoloring grayscale MNIST digits. Each image is generated from a latent scalar confounder 
+
+X ∈ [0 , 1] , drawn uniformly. Treatment assignment follows a logistic propensity model 
+
+A | X = x ∼ Bernoulli  σ w(x − 12 ) ,
+
+where w > 0 controls the strength of confounding. 21 Conditional on (X, A ), the observed image Y is generated by selecting a digit from class dA and recoloring its foreground using an RGB mapping that depends on X. Foreground recoloring is implemented via a soft mask derived from the grayscale digit intensity. Let S ∈ [0 , 1] 28 ×28 denote the original MNIST digit. We define a foreground mask 
+
+M = σ k(S − τ ),
+
+where σ(·) is the logistic sigmoid and (τ, k ) control the foreground–background separation. Given a foreground RGB color cfg (X) ∈ [0 , 1] 3 and a fixed background color cbg , the recolored image is constructed pixelwise as 
+
+Y = M ⊙ (cfg (X) S) + (1 − M ) ⊙ cbg .
+
+In our experiments, the foreground color varies smoothly with the confounder according to 
+
+cfg (X) = ( X, α, 1 − X),
+
+with fixed α ∈ [0 , 1] and constant background color cbg . This construction induces a nonlinear (approximately logistic) distribution over the relative red–blue intensity ratio, creating a strong but smooth association between color, treatment assignment, and digit class. 
+
+Evaluation setting. Models are trained on n = 20 ,000 observational samples (X, A, Y ). To evaluate counterfactual performance, we generate 5000 reference samples from each interventional distribution PY (a) by fixing the digit class to da and resampling X independently from its marginal distribution. The foreground colors are then assigned using the same X-dependent recoloring rule as in the observational data, so that reference images preserve the latent color variation induced by X
+
+while removing treatment-selection bias. We compare generated and reference samples using sliced Wasserstein–2 distance, averaged over a ∈ { 0, 1} and over three random seeds. 
+
+B.3 Image Generation: CelebA Data Generation. We use CelebA as a high-dimensional attribute-rebalancing benchmark. Images are taken from the aligned CelebA release, center-cropped, resized to 64 × 64 , converted to RGB tensors, and normalized to [−1, 1] . We set A = Male , so that A = 1 denotes male and A = 0 denotes female, and set X = Blond _Hair . To make X a clean binary hair-colour attribute, we restrict to images with exactly one of Blond _Hair or Brown _Hair active, and remove images labelled with 
+
+Black _Hair , Gray _Hair , Bald , or Wearing _Hat . Thus, in this experiment X = 1 denotes blond hair and X = 0 denotes brown hair. We construct a controlled observational sample from the cleaned train and validation splits of CelebA. Specifically, we combine the official train and validation splits into a single cleaned pool, form the four (A, X ) cell pools, and then sample observed and reference images without replacement from these cells. The observed sample has size nobs = 20 ,000 and is sampled to satisfy 
+
+P(X = 1) = 0 .3, P(A = 1 | X = 0) = 0 .6, P(A = 1 | X = 1) = 0 .1.
+
+Equivalently, the target cell proportions for the observational sample are 
+
+X = 0 X = 1 
+
+A = 0 0.28 0.27 
+
+A = 1 0.42 0.03 
+
+up to integer rounding. This induces a strong association between sex and hair colour: females are over-represented among blond examples, while males are under-represented. 
+
+Evaluation setting. For evaluation, we construct disjoint reference samples for each intervention arm. For each a ∈ { 0, 1}, the reference set contains nref = 2 ,000 held-out images sampled from the same cleaned pool with A = a fixed and 
+
+Pref (X = 1 | A = a) = 0 .3.
+
+Thus the reference distribution for arm a preserves within-cell CelebA image variation but replaces the group-specific hair-colour distribution PX|A=a by the population target PX . Observed and reference indices are sampled disjointly within each (A, X ) cell. We report sliced Wasserstein–2 distances between generated samples and these reference distributions, as well as the corresponding distance between the observational base PY |A=a and the reference target. Results in Figure 4 are reported as mean ± sample standard deviation over three random seeds. 22 B.4 Additional Figures t = 0.00 t = 0.14 t = 0.29 t = 0.43 t = 0.57 t = 0.71 t = 0.86 t = 1.00 
+
+Figure 7: Additional sampled ColorMNIST trajectories from DecFM-EOT. 23 Figure 8: 200 Generated Samples with Sex = Female from DecFM-EOT on CelebA 
+
+Figure 9: 200 Generated Samples with Sex = Male from DecFM-EOT on CelebA 24 C Algorithms 
+
+Algorithm 1: Plug-in conditional flow matching nuisance for ˆPY |X,A 
+
+Require: Observational data D = {(Xi, A i, Y i)}ni=1 ; velocity network vη (y, t, x, a ); optimizer OPT; number of iterations T ; minibatch size B 
+
+> 1
+
+Partition indices by treatment arm: Ia := {i ∈ [n] : Ai = a} for a ∈ { 0, 1} 
+
+> 2
+
+for k = 1 , . . . , T do  
+
+> 3
+
+Sample a minibatch of indices B ⊂ [n] with |B| = B 
+
+> 4
+
+Form batch tensors {(xi, a i, y i)}i∈B  
+
+> 5
+
+foreach i ∈ B do  
+
+> 6
+
+Sample j ∼ Unif( Iai ) independently  
+
+> 7
+
+Sample ˜yi ∼ ˆPY |A=ai 
+
+> 8
+
+Sample times ti
+
+> iid
+
+∼ Unif(0 , 1) for i ∈ B  
+
+> 9
+
+Compute interpolates yt,i ← (1 − ti)˜ yi + tiyi 
+
+> 10
+
+Compute targets u⋆i ← yi − ˜yi 
+
+> 11
+
+Compute loss 
+
+bLplug -in (η) = 1
+
+B
+
+X
+
+> i∈B
+
+vη (yt,i , t i, x i, a i) − u⋆i 
+
+> 2
+> 12
+
+Update parameters η ← OPT 
+
+
+
+η, ∇η bLplug -in (η)
+
+ 
+
+> 13
+
+Return vη
+
+Algorithm 2: I-Do-FM: Debiased Flow Matching with Independent Coupling 
+
+Require: Observational data {(Xi, A i, Y i)}ni=1 ; propensity estimator ˆπ; plug-in conditional sampler ˆPY |X,A ; velocity field vθ ; minibatch size B; outer MC size M (plug-in draws); base MC size M0; optimizer OPT; iterations T . 
+
+> 1
+
+Construct empirical bases ˆPY |A=a for a ∈ { 0, 1}. 
+
+> 2
+
+for t = 1 , . . . , T do  
+
+> 3
+
+Sample minibatch indices B ⊂ { 1, . . . , n } with |B| = B. 
+
+> 4
+
+Extract batch (Xb, A b, Y b)b∈B . 
+
+> 5
+
+Sample interpolation times τbiid 
+
+∼ Unif(0 , 1) for b ∈ B . 
+
+> 6
+
+for each arm a ∈ { 0, 1} do  
+
+> 7
+
+Let Ba := {b ∈ B : Ab = a} and Ba := |B a|; continue if Ba = 0 . 
+
+> 8
+
+for each b ∈ B a do  
+
+> 9
+
+Draw base samples ˜Yb, 1: M0
+
+> iid
+
+∼ ˆPY |A=a. 
+
+> 10
+
+Draw plug-in samples ˆYb, 1: Miid 
+
+∼ ˆPY |X=Xb,A =a. 
+
+> 11
+
+Set IPW weight wb ← 1{Ab = a}/ˆπa(Xb). 
+
+> 12
+
+Accumulate DR loss for arm a ∈ { 0, 1}:
+
+bLa(θ) = 1
+
+Ba
+
+X
+
+> b∈B a
+
+1
+
+M0
+
+> M0
+
+X
+
+> m′=1
+
+"
+
+wb ℓθ
+
+ Yb, ˜Yb,m ′ ; τb
+
+ + 1 − wb
+
+M
+
+> M
+
+X
+
+> m=1
+
+ℓθ
+
+  ˆYb,m , ˜Yb,m ′ ; τb
+
+#
+
+. 
+
+> 13
+
+Set bL(θ) ← P 
+
+> a∈{ 0,1}
+
+bLa(θ). 
+
+> 14
+
+Update parameters θ ← OPT 
+
+
+
+θ, ∇θ bL(θ)
+
+
+
+. 
+
+> 15
+
+Return θ
+
+25 Algorithm 3: DR Flow Matching with Minibatch Entropic OT Conditionals (Do-FM-EOT) 
+
+Require: Data D = {(Xi, A i, Y i)}ni=1 ; propensity model ˆπ(x); plug-in conditional sampler 
+
+ˆPY |X,A ; base sampler ˆPY |A; velocity model vθ ; pairwise FM loss ℓθ (y, ˜y); minibatch size B; plug-in outer MC size M ; OT plug-in subsample size K ≤ M ; Sinkhorn reg. ε
+
+and iters S; OPT.  
+
+> 1
+
+for each training iteration do  
+
+> 2
+
+Sample indices B ⊂ [n] with |B| = B and form batch (X, A, Y ). 
+
+> 3
+
+for arm a ∈ { 0, 1} do  
+
+> 4
+
+Let Ba := {i ∈ B : Ai = a} and Ba := |B a|; continue if Ba = 0 . 
+
+> 5
+
+Draw base samples ˜Y base ∼ ˆPY |A=a of size Ba (target set T ) 
+
+> 6
+
+Draw plug-in samples ˆYi,k ∼ ˆPY |X=Xi,A =a for each i ∈ B a, k = 1 , . . . , M  
+
+> 7
+
+Flatten ˆYflat := { ˆYi,k }i∈B a,k ≤M (size BaM ) 
+
+> 8
+
+Subsample K columns per i to form ˆYOT (size Ns = BaK) (source set S)
+
+// (Optional) compute exponential-tilt source weights aℓ on S 
+
+> 9
+
+if tilting enabled then  
+
+> 10
+
+Compute features g( ˆYOT ) and logits rℓ := ˆλ⊤ 
+
+> a
+
+g( ˆYOT ,ℓ ) 
+
+> 11
+
+Set source weights aℓ ← softmax( r)ℓ (sum to 1) 
+
+> 12
+
+else  
+
+> 13
+
+Set aℓ ← 1/N s for ℓ = 1 , . . . , N s
+
+// Weighted Sinkhorn: source= S (weights a), target= T (uniform)  
+
+> 14
+
+Compute target duals v ← SinkhornDualTarget( S, T , a, ε, S ) (v ∈ RBa )
+
+// Use the conditional ˆγε
+
+> 0|1
+
+(· | y) to draw base points  
+
+> 15
+
+Draw ˜Y obs  
+
+> i
+
+∼ ˆγε
+
+> 0|1
+
+(· | Yi) for each i ∈ B a 
+
+> 16
+
+Draw ˜Y hat  
+
+> i,k
+
+∼ ˆγε
+
+> 0|1
+
+(· | ˆYi,k ) for all i ∈ B a, k ≤ M 
+
+> 17
+
+Compute ℓobs ,i ← ℓθ (Yi, ˜Y obs  
+
+> i
+
+) for i ∈ B a 
+
+> 18
+
+Compute ℓhat ,i ← 1
+
+> M
+
+PMk=1 ℓθ ( ˆYi,k , ˜Y hat  
+
+> i,k
+
+) for i ∈ B a 
+
+> 19
+
+Set IPW weights wi ← 1{Ai = a}/ˆπa(Xi) for i ∈ B a 
+
+> 20
+
+Accumulate DR loss contribution 
+
+bLa(θ) ← 1
+
+Ba
+
+X
+
+> i∈B a
+
+
+
+ℓhat ,i + wi
+
+ ℓobs ,i − ℓhat ,i 
+
+
+
+. 
+
+> 21
+
+Set bL(θ) ← P 
+
+> a∈{ 0,1}
+
+bLa(θ) and update θ ← OPT (θ, ∇θ bL(θ)) . 
+
+> 22
+
+Return θ
+
+26 Algorithm 4: Exponential Tilting of Plug–in Counterfactual Samples 
+
+Require: Observational data {(Xi, A i, Y i)}ni=1 ; treatment a; plug–in sampler for ˆPY (a);moment map s(·); propensity model ˆπa; nuisance outcome model ˆμ; reservoir size M ;regularization λreg  
+
+> 1
+
+Draw a global plug–in reservoir {ˆyj }Mj=1 ∼ ˆPY (a) 
+
+> 2
+
+Compute moment features Gj ← s(ˆ yj ) for j = 1 , . . . , M  
+
+> 3
+
+Estimate doubly robust target moments 
+
+ˆma ← 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+h
+
+s( ˆYi(a)) + 1{Ai = a}
+
+ˆπa(Xi)
+
+ s(Yi) − s( ˆYi(a)) i 
+
+> 4
+
+Solve for tilting parameter 
+
+ˆλ ∈ arg min 
+
+> λ
+> M
+
+X
+
+> j=1
+
+wj (λ) Gj − ˆma
+
+> 22
+
++ λreg ∥λ∥22, wj (λ) = exp( λ⊤Gj )
+
+P 
+
+> ℓ
+
+exp( λ⊤Gℓ) 
+
+> 5
+
+Form tilted empirical distribution 
+
+ˆPtilt   
+
+> Y(a)
+
+:= 
+
+> M
+
+X
+
+> j=1
+
+wj (ˆλ) δˆyj 
+
+> 6
+
+Use ˆPtilt   
+
+> Y(a)
+
+as the target marginal when computing the minibatch entropic OT coupling γε
+
+27 D Mathematical Appendix 
+
+D.1 Technical Lemmas D.1.1 Lemmas for Theorems in Section 3 Lemma D.1 (Bounded RN Derivative) . Assume ∃ϵ > 0 such that πa(x) := P(A = a|X = x) ≥
+
+ϵ ∀a ∈ { 0, 1}, PX -a.e. Fix a ∈ { 0, 1} and write ra(x) := P(A = a)/π a(X). Then PY (a) ∼ PY |a
+
+and, for PY |a-a.e. y, the Radon-Nikodym derivative ga(y) := dPY (a)  
+
+> dPY|a
+
+(y) exists and satisfies 
+
+ga(y) = E [ra(X) | A = a, Y = y] (10) 
+
+P(A = a)1 − ε ≤ ga(y) ≤ P(A = a)
+
+ε for PY |a-a.e. y. (11) 
+
+Proof. Let B ∈ B (X) be measurable. By the law of total probability, 
+
+P(X ∈ B, A = a) = 
+
+Z
+
+> B
+
+πa(x) PX (dx ), P(A = a) = 
+
+Z
+
+> X
+
+πa(x) PX (dx ).
+
+If PX (B) = 0 , then P(X ∈ B, A = a) = 0 hence PX|a(B) = 0 , so PX|a ≪ PX .Conversely, suppose PX|a(B) = 0 . Then P(X ∈ B, A = a) = 0 , i.e. R 
+
+> B
+
+πa(x) PX (dx ) = 0 . Since 
+
+πa(x) ≥ ε > 0 PX -a.s., this implies PX (B) = 0 . Hence PX ≪ PX|a. Therefore PX ∼ PX|a.Moreover, for PX -a.e. x,
+
+dPX|a
+
+dPX
+
+(x) = πa(x)
+
+P(A = a) and ra(x) := dPX
+
+dPX|a
+
+(x) = P(A = a)
+
+πa(x) .
+
+By overlap, ra(x) is essentially bounded: 
+
+P(A = a)1 − ε ≤ ra(x) ≤ P(A = a)
+
+ε for PX|a-a.e. x.Let h : Y → R be bounded measurable. Using the representation from (1) , PY (a)(·) =R PY |X=x,A =a(·) PX (dx ), Tonelli/Fubini yields 
+
+Z
+
+h(y) PY (a)(dy ) = 
+
+Z
+
+> X
+
+Z
+
+> Y
+
+h(y) PY |X=x,A =a(dy ) PX (dx )=
+
+Z
+
+> X
+
+Z
+
+> Y
+
+h(y) PY |X=x,A =a(dy ) ra(x) PX|a(dx )=
+
+Z
+
+> X×Y
+
+h(y) ra(x) PX,Y |A=a(dx, dy )=
+
+Z
+
+> Y
+
+h(y)
+
+Z 
+
+> X
+
+ra(x) PX|Y =y,A =a(dx )
+
+
+
+PY |a(dy )=
+
+Z
+
+> Y
+
+h(y) E[ra(X) | A = a, Y = y] PY |a(dy ).
+
+Since h was arbitrary, the Radon–Nikodym theorem gives PY (a) ≪ PY |a and 
+
+dPY (a)
+
+dPY |a
+
+(y) = E[ra(X) | A = a, Y = y] = E
+
+ P(A = a)
+
+P(A = a | X) A = a, Y = y
+
+
+
+for PY |a-a.e. y.By our earlier result, ra(X) ∈
+
+h P(A=a)1−ε , P(A=a)
+
+> ε
+
+i
+
+a.s. Conditioning preserves bounds, hence for 
+
+PY |a-a.e. y,
+
+P(A = a)1 − ε ≤ E[ra(X) | A = a, Y = y] ≤ P(A = a)
+
+ε .
+
+28 Define ˜ra(x) := dPX|a 
+
+> dPX
+
+(x) = πa(x) 
+
+> P(A=a)
+
+, which is strictly positive PX -a.s. (indeed ˜ra(x) ≥ ε/ P(A =
+
+a)). Repeat the calculation in Step 2 but now start from 
+
+Z
+
+h(y) PY |a(dy ) = 
+
+Z
+
+> X
+
+Z
+
+> Y
+
+h(y) PY |X=x,A =a(dy ) PX|a(dx )
+
+and substitute PX|a(dx ) = ˜ ra(x) PX (dx ). This yields 
+
+Z
+
+h(y) PY |a(dy ) = 
+
+Z
+
+> Y
+
+h(y) E[˜ ra(X) | Y (a) = y] PY (a)(dy ),
+
+so PY |a ≪ PY (a). (Here E[· | Y (a) = y] is well-defined on standard Borel spaces.) Therefore 
+
+PY (a) ∼ PY |a.
+
+D.1.2 Lemmas for Theorems in Section 4 Lemma D.2 (AIPW for counterfactual mean of a scalar outcome, Kennedy (2024)) . Let P0 be the true data distribution and suppose the target PY (a) is defined by (1) . Assume overlap, i.e., there exists 
+
+ϵ > 0 such that 
+
+πa(X) := P0(A = a | X) ≥ ϵ P0-a.s. Then, the efficient influence function of the functional T (P0) = EP0 [Y (a)] , at P0 is 
+
+φT (O) = 1{A = a}
+
+πa(X)
+
+ Y − ζ(X) + ζ(X) − T (P0),
+
+where ζ(x) = EP0 [Y | X = x, A = a] and πa(x) = P0(A = a | X = x).
+
+Lemma D.3 (AIPW for stratum mean, Kennedy (2024)) . Let P0 be the true distribution and let 
+
+T (P0) = EP0 [Y | A = a],
+
+with scalar Y and pa = P0(A = a) > 0. Then the efficient influence function of T at P0 is 
+
+φT (O) = 1{A = a}
+
+pa
+
+ Y − EP0 [Y | A = a].
+
+Lemma D.4 (EIF for a two-measure product functional) . Let (Y, A) be a measurable space and let 
+
+k : Y × Y → R be measurable. Fix a pair (P1,0, P2,0) ∈ P (Y) × P (Y) and define, for (P1, P2) in a neighbourhood of (P1,0, P2,0),
+
+T (P1, P2) := 
+
+Z Z 
+
+k(y, y ′) P1(dy ) P2(dy ′).
+
+Assume that, at P1,0 and P2,0, the linear functionals P 7 → R ϕ(y) P(dy ) are regular and pathwise differentiable for any measurable ϕ satisfying R ϕ2 dP1,0 < ∞ or R ϕ2 dP2,0 < ∞, respectively. Define the partial integrals 
+
+ϕ1(y) := 
+
+Z
+
+k(y, y ′) P2,0(dy ′), ϕ2(y′) := 
+
+Z
+
+k(y, y ′) P1,0(dy ).
+
+Then T is regular and pathwise differentiable at (P1,0, P2,0), with efficient influence function 
+
+φT = φΛ1 + φΛ2 ,
+
+where φΛ1 is the EIF of the functional P1 7 → R ϕ1 dP1 at P1,0 and φΛ2 is the EIF of the functional 
+
+P2 7 → R ϕ2 dP2 at P2,0.Proof. Recall that the efficient influence function φT of a regular functional T at a distribution P0 is the (unique) mean-zero function satisfying 
+
+ddε ε=0 
+
+T (Pε) = E[φT (O) s(O)] 
+
+for every regular parametric submodel {Pε} through P0 with score s(O). We establish the result by applying this pathwise derivative characterization to the product functional 
+
+T (P1, P2) = 
+
+Z Z 
+
+k(y, y ′) P1(dy ) P2(dy ′).
+
+29 Fix a true pair (P1,0, P2,0) and let {(P1,ε , P2,ε )} be a regular parametric submodel through (P1,0, P2,0)
+
+at ε = 0 , with score s(O). Write Tε := T (P1,ε , P2,ε ). Then 
+
+Tε =
+
+Z
+
+ϕ1,ε (y) P1,ε (dy ), ϕ1,ε (y) := 
+
+Z
+
+k(y, y ′) P2,ε (dy ′).
+
+Differentiating at ε = 0 and applying the chain rule yields 
+
+ddε ε=0 
+
+Tε = ddε ε=0 
+
+Z
+
+ϕ1(y) P1,ε (dy ) + ddε ε=0 
+
+Z
+
+ϕ1,ε (y) P1,0(dy ),
+
+where 
+
+ϕ1(y) := 
+
+Z
+
+k(y, y ′) P2,0(dy ′).
+
+The first term corresponds to perturbing P1 while holding P2 fixed. By the assumed pathwise differentiability of linear functionals at P1,0, it equals 
+
+E[φΛ1 (O) s(O)] ,
+
+where φΛ1 is the EIF of the functional P1 7 → R ϕ1 dP1 at P1,0.The second term corresponds to perturbing P2 while holding P1 fixed. Writing 
+
+ϕ2(y′) := 
+
+Z
+
+k(y, y ′) P1,0(dy ),
+
+and using pathwise differentiability at P2,0, this term equals 
+
+E[φΛ2 (O) s(O)] ,
+
+where φΛ2 is the EIF of the functional P2 7 → R ϕ2 dP2 at P2,0.Summing the two contributions yields 
+
+ddε ε=0 
+
+Tε = E[( φΛ1 + φΛ2 )( O) s(O)] ,
+
+which identifies φT = φΛ1 + φΛ2 as the efficient influence function of T at (P1,0, P2,0).
+
+Lemma D.5 (Empirical mean of independent random function (scalar/vector)) . Fix n ∈ N, let 
+
+{Zi}ni=1 be i.i.d. with distribution P , and let Sn ∈ S n another random variable such that Tn := 
+
+σ(Sn) is independent from σ({Zi}ni=1 ). Let ψn : Sn × Z → Rd be a measurable function, and assume that E[∥ψn(Sn, Z )∥22 | T n] < ∞ almost surely. Define Pn := n−1 Pni=1 δZi . Then 
+
+∥(Pn − P )ψn(Sn, • )∥2 = OP
+
+ ∥ψn∥L2(P)
+
+√n
+
+
+
+,
+
+Proof. Write 
+
+(Pn − P )ψn(Sn, • ) = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+
+
+ψn(Sn, Z i) − P ψ n(Sn, • )
+
+
+
+,
+
+where Sn ∈ S n is Tn-measurable and P ψ n(Sn, • ) := E[ψn(Sn, Z ) | T n] ∈ Rd.Define Ui := ψn(Sn, Z i) − P ψ n(Sn, • ). Observe that E[Pnψn(Sn, • ) | T n] = E[ψn(Sn, Z ) |Tn] = P ψ n(Sn, • ), so that E[( Pn − P )ψn(Sn, • )] = 0 . Moreover, {Ui}ni=1 are conditionally i.i.d. given Tn. Hence 
+
+E
+
+h
+
+∥(Pn − P )ψn(Sn, • )∥22 Tn
+
+i
+
+= E
+
+ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Ui
+
+> 22
+
+Tn
+
+ = 1
+
+n2
+
+> n
+
+X
+
+> i=1
+
+E ∥Ui∥22 Tn
+
+ = 1
+
+n E ∥U1∥22 Tn
+
+ .
+
+Moreover, 
+
+E ∥U1∥22 Tn
+
+ = E ∥ψn(Sn, Z ) − E[ψn(Sn, Z ) | T n]∥22 Tn
+
+ = Var (ψn(Sn, Z ) | T n) ,
+
+30 and since Var (V | T ) ≤ E[∥V ∥22 | T ] ≤ E[∥V ∥22] for any square-integrable V ,Var (ψn(Sn, Z ) | T n) ≤ E ∥ψn(Sn, Z )∥22 Tn
+
+ ≤ E ∥ψn(Sn, Z )∥22
+
+ = ∥ψn∥L2(P) .
+
+Now, fix M > 0 and set t := M ∥ψn∥L2(P) 
+
+> √n
+
+. By the conditional Markov (Chebyshev) inequality applied to the nonnegative random variable ∥(Pn − P )ψn(Sn, • )∥2, we have 
+
+P  ∥(Pn − P )ψn(Sn, • )∥22 > t 2 Tn
+
+ ≤ E[∥(Pn − P )ψn(Sn, • )∥22 | T n]
+
+t2 ≤ 1
+
+M 2 .
+
+Taking expectations over T yields the unconditional bound 
+
+P
+
+
+
+∥(Pn − P )ψn(Sn, • )∥2 > M ∥ψn∥L2(P)
+
+√n
+
+
+
+≤ 1
+
+M 2 ,
+
+which implies ∥(Pn − P )ψn(Sn, • )∥2 = OP
+
+ ∥ψn∥L2(P)/√n.
+
+Lemma D.6 (Second-order V-statistic with an independent random kernel (vector-valued)) . Let 
+
+{Zi}ni=1 be i.i.d. from P, and let T be a σ-algebra independent of {Zi}ni=1 . Let kn : Z × Z → 
+
+Rd be a measurable kernel that is T -measurable (hence fixed conditional on T ), and assume 
+
+E[∥kn(Z1, Z 2)∥22] < ∞ almost surely and E[∥kn(Z1, Z 1)∥22] < ∞ almost surely. Define Pn := 
+
+n−1 Pni=1 δZi and the (vector-valued) V-statistic 
+
+Vn(kn) := P⊗2 
+
+> n
+
+kn = 1
+
+n2
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+kn(Zi, Z j ) ∈ Rd.
+
+Then, 
+
+Vn(kn) − P⊗2kn 2 = Op
+
+ ∥kn∥L2(P⊗2)
+
+√n
+
+
+
+, ∥kn∥2 
+
+> L2(P⊗2)
+
+:= P⊗2[∥kn∥22].
+
+Moreover, if kn is first-order degenerate (conditional on T ), i.e. 
+
+E[kn(z, Z ′) | T ] = P⊗2kn and E[kn(Z′, z ) | T ] = P⊗2kn for all z, 
+
+then the improved rate holds: 
+
+Vn(kn) − P⊗2kn 2 = Op
+
+ ∥kn∥L2(P⊗2)
+
+n
+
+
+
+.
+
+Proof. We work conditionally on T throughout. Since kn is T -measurable, all objects defined from 
+
+kn below are deterministic given T , while {Zi}ni=1 remain i.i.d. from P conditional on T . For readability we keep the index n explicit. Let θn := P⊗2kn ∈ Rd and define the first-order projections 
+
+kn, 1(z) := E[kn(z, Z ′)] − θn, kn, 2(z) := E[kn(Z′, z )] − θn,
+
+and the degenerate remainder 
+
+˜kn(z, z ′) := kn(z, z ′) − θn − kn, 1(z) − kn, 2(z′).
+
+Note that E[˜kn(z, Z ′)] = 0 for all z and E[˜kn(Z, z ′)] = 0 for all z′ (as vector equalities), where all expectations are under P (and conditional on T if desired). Expanding kn = θn + kn, 1 + kn, 2 + ˜kn yields the decomposition 
+
+Vn(kn) − θn = Pnkn, 1
+
+| {z } 
+
+> An
+
++ Pnkn, 2
+
+| {z } 
+
+> Bn
+
++ P⊗2 
+
+> n
+
+˜kn
+
+| {z } 
+
+> Cn
+
+,
+
+where An, B n, C n ∈ Rd.31 L2 bounds for An and Bn. Conditional on T , kn, 1 is deterministic and Zi are i.i.d., hence 
+
+E ∥An∥22 T  = E
+
+ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ kn, 1(Zi) − Pkn, 1
+
+ 22
+
+T
+
+ = 1
+
+n E ∥kn, 1(Z)∥22 T  ,
+
+where we used Pkn, 1 = 0 and the standard identity E∥ Pni=1 Ui∥22 = n E∥U1∥22 for i.i.d. mean-zero vectors. Likewise, 
+
+E ∥Bn∥22 T  = 1
+
+n E ∥kn, 2(Z)∥22 T  .
+
+By Jensen and ∥u − v∥22 ≤ 2( ∥u∥22 + ∥v∥22), for each z,
+
+∥kn, 1(z)∥22 = ∥E[kn(z, Z ′)] − θn∥22
+
+≤ 2∥E[kn(z, Z ′)] ∥22 + 2 ∥θn∥22
+
+≤ 2E[∥kn(z, Z ′)∥22] + 2 E[∥kn(Z, Z ′)∥22].
+
+Taking expectation over z ∼ P (conditional on T ) yields 
+
+E ∥kn, 1(Z)∥22 T  ≤ 4 P⊗2[∥kn∥22], E ∥kn, 2(Z)∥22 T  ≤ 4 P⊗2[∥kn∥22].
+
+Hence, 
+
+E ∥An∥22 T  ≤ 4
+
+n P⊗2[∥kn∥22], E ∥Bn∥22 T  ≤ 4
+
+n P⊗2[∥kn∥22].L2 bound for Cn. Split Cn into off-diagonal and diagonal parts: 
+
+Cn = 1
+
+n2
+
+X
+
+> i̸=j
+
+˜kn(Zi, Z j ) + 1
+
+n2
+
+> n
+
+X
+
+> i=1
+
+˜kn(Zi, Z i) =: Cn, off + Cn, diag .
+
+For the diagonal term, by Jensen, 
+
+E ∥Cn, diag ∥22 T  ≤ 1
+
+n4 n E
+
+h
+
+∥˜kn(Z, Z )∥22 T
+
+i
+
+= 1
+
+n3 E
+
+h
+
+∥˜kn(Z, Z )∥22 T
+
+i
+
+.
+
+Using ∥u1 + · · · + um∥22 ≤ m Pmℓ=1 ∥uℓ∥22 on ˜kn(Z, Z ) = kn(Z, Z ) − θn − kn, 1(Z) − kn, 2(Z)
+
+gives 
+
+∥˜kn(Z, Z )∥22 ≤ 4
+
+
+
+∥kn(Z, Z )∥22 + ∥θn∥22 + ∥kn, 1(Z)∥22 + ∥kn, 2(Z)∥22
+
+
+
+.
+
+Taking conditional expectations and using ∥θn∥22 = ∥E[kn(Z, Z ′)] ∥22 ≤ P⊗2[∥kn∥22] together with the previous bounds on kn, 1, k n, 2 yields 
+
+E
+
+h
+
+∥˜kn(Z, Z )∥22 T
+
+i
+
+≤ c
+
+
+
+E[∥kn(Z, Z )∥22] + P⊗2[∥kn∥22]
+
+
+
+for a universal constant c > 0. By the diagonal integrability assumption, the right-hand side is finite almost surely so 
+
+E ∥Cn, diag ∥22 T  = O(n−3),
+
+which is negligible at the n−1 scale. For the off-diagonal term, degeneracy implies that for i̸ = j,
+
+E[˜kn(Zi, Z j ) | Zi, T ] = 0 and E[˜kn(Zi, Z j ) | Zj , T ] = 0 .
+
+A second-moment expansion shows only index-pairings with (p, q ) = ( i, j ) or (p, q ) = ( j, i )
+
+contribute, hence 
+
+E ∥Cn, off ∥22 T  ≤ 2
+
+n4 n(n − 1) E
+
+h
+
+∥˜kn(Z1, Z 2)∥22 T
+
+i
+
+≤ 2
+
+n2 E
+
+h
+
+∥˜kn(Z1, Z 2)∥22 T
+
+i
+
+.
+
+Finally, since ˜kn = kn − θn − kn, 1 − kn, 2, the same 4-sum inequality and the bounds above yield 
+
+E
+
+h
+
+∥˜kn(Z1, Z 2)∥22 T
+
+i
+
+≤ c′ P⊗2[∥kn∥22]
+
+32 for a universal constant c′ > 0. Hence 
+
+E ∥Cn, off ∥22 T  ≤ 2c′
+
+n2 P⊗2[∥kn∥22], E ∥Cn∥22 T  ≤ ˜cn2 P⊗2[∥kn∥22],
+
+for a universal constant ˜c > 0.Using ∥u + v + w∥22 ≤ 3( ∥u∥22 + ∥v∥22 + ∥w∥22) we get 
+
+E ∥Vn(kn) − θn∥22 T  ≤ 3E[∥An∥22 | T ] + 3 E[∥Bn∥22 | T ] + 3 E[∥Cn∥22 | T ]
+
+≤ 12 
+
+n P⊗2[∥kn∥22] + O(n−2) .
+
+Fix M > 0 and set t := M ∥kn∥L2(P⊗2)/√n. Applying conditional Markov to the nonnegative random variable ∥Vn(kn) − P⊗2kn∥22 gives 
+
+P  ∥Vn(kn) − P⊗2kn∥2 > t T  = P  ∥Vn(kn) − P⊗2kn∥22 > t 2 T 
+
+≤ E[∥Vn(kn) − P⊗2kn∥22 | T ]
+
+t2
+
+≤ 12 
+
+M 2 .
+
+Taking expectations over T yields the unconditional bound 
+
+P
+
+
+
+∥Vn(kn) − P⊗2kn∥2 > M ∥kn∥L2(P⊗2)
+
+√n
+
+
+
+≤ 12 
+
+M 2 ,
+
+which implies 
+
+∥Vn(kn) − P⊗2kn∥2 = Op
+
+ ∥kn∥L2(P⊗2)
+
+√n
+
+
+
+.
+
+Degenerate case. Assume now that kn is first-order degenerate conditional on T , i.e. E[kn(z, Z ′) |T ] = θn and E[kn(Z′, z ) | T ] = θn for all z. Then kn, 1 ≡ 0 and kn, 2 ≡ 0, so An = Bn ≡ 0 and 
+
+Vn(kn) − θn = Cn = P⊗2 
+
+> n
+
+˜kn.
+
+The bounds above already give 
+
+E ∥Cn∥22 T  ≤ ˜cn2 P⊗2[∥kn∥22].
+
+Fix M > 0 and set t := M ∥kn∥L2(P⊗2)/n . Applying conditional Markov to ∥Cn∥22 yields 
+
+P  ∥Vn(kn) − P⊗2kn∥2 > t T  ≤ ˜cM 2 .
+
+Taking expectations over T gives 
+
+∥Vn(kn) − P⊗2kn∥2 = Op
+
+ ∥kn∥L2(P⊗2)
+
+n
+
+
+
+,
+
+as claimed. 
+
+Lemma D.7 (Empirical Process Decomposition for Conditional Distribution Plugin) . Fix a with 
+
+pa := P(A = a) > 0. Let O = ( X, A, Y ) and let {Oi}ni=1 be i.i.d. from P. Define Pn := 
+
+n−1 Pni=1 δOi , ˆpa := Pn[1{A = a}], and the empirical conditional measure 
+
+ˆPY |A=a[g] := Pn[1{A = a} g(Y )] ˆpa
+
+, PY |a[g] := P[1{A = a} g(Y )] 
+
+pa
+
+.
+
+Let ψ : O × Y → R be measurable and let ˆψ : O × Y → R be measurable and Tn-measurable (e.g. obtained by cross-fitting). Define ∆ := ˆψ − ψ and assume ψ, ∆ ∈ L2(P ⊗ PY |a). Lastly, define the partial expectations of ˆψ, ψ ,
+
+ˆφ(O) := ˆPY |A=a
+
+ ˆψ(O, ·), φ(O) := PY |a
+
+ψ(O, ·).
+
+Then, the following holds 
+
+(Pn − P)( ˆ φ − φ) = Op
+
+ ∥∆∥L2(P⊗PY |a)
+
+√n
+
+
+
+. (12) 33 Proof. Let Tn := σ({Oi : i ∈ I tr }) be the σ-algebra generated by the training fold. All statements below are conditional on Tn. In particular, ˆψ (hence ∆ := ˆψ − ψ) is Tn-measurable and therefore fixed given Tn, while the evaluation observations remain i.i.d. from P conditional on Tn.To start, note for each O that 
+
+ˆφ(O) − φ(O) = ˆPY |A=a
+
+ψ(O, ·) + ∆( O, ·) − PY |a
+
+ψ(O, ·)
+
+= PY |a
+
+∆( O, ·)| {z }
+
+> H∆(O)
+
++  ˆPY |A=a − PY |a
+
+ ψ(O, ·)| {z } 
+
+> Tψ(O)
+
++  ˆPY |A=a − PY |a
+
+ ∆( O, ·)| {z }
+
+> T∆(( O)
+
+.H∆. For the first term H∆, by Jensen’s inequality we have 
+
+∥H∆∥2 
+
+> L2(P)
+
+= E
+
+"Z 
+
+∆( O, ˜y) PY |a(d˜y)
+
+2#
+
+≤ E
+
+Z 
+
+∆( O, ˜y)2 PY |a(d˜y)
+
+
+
+= ∥∆∥2
+
+> L2(Q)
+
+.
+
+Applying Lemma D.5 conditional on Tn with ψn = H∆ (which is Tn-measurable and hence fixed given Tn) gives 
+
+(Pn − P)H∆ = Op
+
+ ∥H∆∥L2(P)
+
+√n
+
+
+
+= Op
+
+ ∥∆∥L2(Q)
+
+√n
+
+
+
+,
+
+where Q := P ⊗ PY |a.
+
+Tψ . Define the centered kernel ¯ψ,
+
+¯ψ(o, y ) := ψ(o, y ) − PY |a
+
+ψ(o, ·), PY |a
+
+ ¯ψ(o, ·) = 0 ∀o, 
+
+and note that we can write 
+
+Tψ (o) =  ˆPY |A=a − PY |a
+
+ ψ(o, ·) = ˆPY |A=a
+
+ ¯ψ(o, ·) = 1ˆpa
+
+Pn
+
+ 1{A = a} ¯ψ(o, Y )
+
+where ˆpa := Pn[1{A = a}]. Since 1{A = a} ∈ L2(P) and pa := P(A = a) > 0,
+
+ˆpa − pa = ( Pn − P)1{A = a} = Op(n−1/2), and hence 1ˆpa
+
+= Op(1) .
+
+Therefore it suffices to bound 
+
+(Pn − P)
+
+h
+
+o 7 → Pn
+
+ 1{A = a} ¯ψ(o, Y ) i
+
+.
+
+Define the kernel k : O × O → R by 
+
+k(o, o ′) := 1{a′ = a} ¯ψ(o, y ′), o = ( x, a, y ), o ′ = ( x′, a ′, y ′).
+
+Then 
+
+(Pn − P)Tψ = 1ˆpa
+
+
+
+(Pn − P) ⊗ Pn
+
+
+
+k. 
+
+Adding and subtracting P in the second argument gives 
+
+
+
+(Pn − P) ⊗ Pn
+
+
+
+k =
+
+
+
+(Pn − P) ⊗ (Pn − P)
+
+
+
+k +
+
+
+
+(Pn − P) ⊗ P
+
+
+
+k. 
+
+The second term vanishes since, for every fixed o,
+
+E[k(o, O ′)] = E 1{A′ = a} ¯ψ(o, Y ′) = pa E  ¯ψ(o, Y ′) | A′ = a = pa PY |a
+
+ ¯ψ(o, ·) = 0 .
+
+Hence 
+
+(Pn − P) ⊗ Pn
+
+
+
+k =
+
+
+
+(Pn − P) ⊗ (Pn − P)
+
+
+
+k. 
+
+Define 
+
+k2(o′) := E[k(O, o ′)] , ˜k(o, o ′) := k(o, o ′) − k2(o′).
+
+34 Then ˜k is first-order degenerate in both arguments: 
+
+E[˜k(o, O ′)] = E[k(o, O ′)] − E[k2(O′)] = 0 , E[˜k(O, o ′)] = E[k(O, o ′)] − k2(o′) = 0 .
+
+Moreover, since k2 depends only on the second argument and (Pn − P)[1] = 0 ,
+
+
+
+(Pn − P) ⊗ (Pn − P)
+
+
+
+k2 = ( Pn − P)[1] · (Pn − P)[ k2] = 0 ,
+
+and therefore 
+
+(Pn − P) ⊗ (Pn − P)
+
+
+
+k =
+
+
+
+(Pn − P) ⊗ (Pn − P)
+
+˜k. 
+
+Since ˜k ∈ L2(P⊗2) and is first-order degenerate in both arguments, we have 
+
+
+
+(Pn − P) ⊗ (Pn − P)
+
+˜k =
+
+
+
+P⊗2 
+
+> n
+
+− P⊗2˜k
+
+Thus, the degenerate case of Lemma D.6 (applied conditionally on Tn) yields 
+
+
+
+(Pn − P) ⊗ (Pn − P)
+
+˜k = Op
+
+∥˜k∥L2(P⊗2)
+
+n
+
+!
+
+.
+
+Consequently, 
+
+(Pn − P)Tψ = 1ˆpa
+
+Op
+
+∥˜k∥L2(P⊗2)
+
+n
+
+!
+
+.
+
+We have 
+
+∥k∥2 
+
+> L2(P⊗2)
+
+= E1{A′ = a} ¯ψ(O, Y ′)2
+
+= pa E ¯ψ(O, Y )2 | A = a
+
+≤ pa Eψ(O, Y )2 | A = a = pa ∥ψ∥2
+
+> L2(Q)
+
+,
+
+where Q := P ⊗ PY |a. Moreover, by Jensen’s inequality, 
+
+∥k2∥2 
+
+> L2(P)
+
+= E
+
+h E[k(O, O ′)] 2i
+
+≤ E E[k(O, O ′)2] = ∥k∥2
+
+> L2(P⊗2)
+
+.
+
+Using ∥u − v∥22 ≤ 2( ∥u∥22 + ∥v∥22),
+
+∥˜k∥L2(P⊗2) = ∥k − k2∥L2(P⊗2) ≲ ∥k∥L2(P⊗2) ≲ ∥ψ∥L2(Q).
+
+Combining the above bounds and using 1/ˆpa = Op(1) ,
+
+(Pn − P)Tψ = Op
+
+ ∥ψ∥L2(Q)
+
+n
+
+
+
+.T∆. The argument for T∆ is identical with ψ replaced by ∆ throughout, yielding T∆ =
+
+Op
+
+ ∥∆∥L2(Q)
+
+> n
+
+
+
+.Putting the bounds together, 
+
+(Pn − P)( ˆ φ − φ) = Op
+
+ ∥∆∥L2(Q)
+
+√n
+
+
+
++ Op
+
+ 1
+
+n
+
+
+
+,
+
+and since ∥∆∥L2(Q) = Op(1) by assumption, the n−1 term is asymptotically negligible, yielding the claimed rate. 35 D.2 Main Results D.2.1 Proofs for Theorems in Section 3 
+
+Proof of Theorem 3.1 . For the proof of (i) (equal support), note that by the positivity assumption, the mixing laws PX and PX|a are mutually absolutely continuous (see Lemma D.1). Therefore, both Radon-Nikodym derivatives exist and are given by 
+
+dPX
+
+dPX|a
+
+(x) = P(A = a)
+
+P(A = a | X = x) =: ra(x) ∈ (0 , ∞)
+
+Now, note that for any measurable B ∈ B (Rp) we can write 
+
+PY (a)(B) = 
+
+Z
+
+P(Y ∈ B | A = a, X = x) PX (dx )
+
+PY |a(B) = 
+
+Z
+
+P(Y ∈ B | A = a, X = x) PX|a(dx ).
+
+By Lemma D.1, the equivalence of the mixing distributions implies PY (a) ≪ PY |a and PY |a ≪ PY (a)
+
+with dPY (a)
+
+dPY |a
+
+(y) = E ra(X) A = a, Y = y =: ga(y) ∈ (0 , ∞) PY |a-a.s. Equivalence of measures implies equality of supports: supp (PY (a)) = supp (PY |a).For the proof of (ii) (matching tail class), fix a measurable φ : Y → [0 , ∞] and set h(x) := E[φ(Y ) |
+
+A = a, X = x] ∈ [0 , ∞]. Using the definition of ra, we have 
+
+E[φ(Y (a))] = 
+
+Z
+
+h(x) ra(x) PX|a(dx ).
+
+Under the strong positivity assumption ∃ ε > 0 such that ε ≤ P(A = a | X = x) PX -almost everywhere and for all a ∈ { 0, 1}. Thus, the Radon–Nikodým derivative admits the bounds 
+
+P(A = a) ≤ ra(x) ≤ P(A = a)
+
+ε for PX|a-a.e. x. 
+
+Hence, for every nonnegative h,
+
+P(A = a)
+
+Z
+
+h d PX|a ≤
+
+Z
+
+h d PX ≤ P(A = a)
+
+ε
+
+Z
+
+h d PX|a.
+
+Applying this to h(x) = E[φ(Y ) | A = a, X = x] gives 
+
+P(A = a) E[φ(Y ) | A = a] ≤ E[φ(Y (a))] ≤ P(A = a)
+
+ε E[φ(Y ) | A = a].
+
+In particular, 
+
+E[φ(Y (a))] < ∞ ⇐⇒ E[φ(Y ) | A = a] < ∞.
+
+Remark D.8 . If only positivity is assumed, the lower bound on ra remains valid and the above inequalities yield the one-sided implications 
+
+E[φ(Y ) | A = a] = ∞ ⇒ E[φ(Y (a))] = ∞, E[φ(Y (a))] < ∞ ⇒ E[φ(Y ) | A = a] < ∞.
+
+Thus the two distributions share the same tail class under overlap, and at least one-sided integrability under mere positivity. 
+
+Proof of Theorem 3.2 . Recall the mixture representations from the main text, 
+
+PY (a)(B) = 
+
+Z
+
+> X
+
+Ka(x, B ) PX (dx ),
+
+PY |a(B) = 
+
+Z
+
+> X
+
+Ka(x, B ) PX|a(dx ),
+
+36 where Ka(x, ·) := P(Y ∈ · | X = x, A = a). Write μ := PX and ν := PX|a, so that PY (a) = μK a
+
+and PY |a = νK a.We first bound the Wasserstein-2 distance between these two distributions. For each (x, x ′) ∈ X × X ,let πx,x ′ be an optimal coupling between Ka(x, ·) and Ka(x′, ·) for the quadratic cost ∥y − y′∥22, i.e. 
+
+πx,x ′ ∈ Γ Ka(x, ·), K a(x′, ·),
+
+Z
+
+> Y×Y
+
+∥y − y′∥22 πx,x ′ (dy, dy ′) = W 22
+
+ Ka(x, ·), K a(x′, ·).
+
+Such optimal couplings exist under the finite second-moment conditions implicit in the W2-Lipschitz assumption. Since the spaces are standard Borel and Ka is a probability kernel, we may choose 
+
+(x, x ′) 7 → πx,x ′ to be a measurable optimal-coupling kernel by standard measurable-selection arguments (e.g. Aliprantis and Border, 2006). Now fix any coupling γ ∈ Γ( μ, ν ) on X × X . Define a measure Π on Rp × Rp by mixing πx,x ′
+
+along γ:
+
+Π( C) := 
+
+Z
+
+> X ×X
+
+πx,x ′ (C) γ(dx, dx ′), C ∈ B (Rp × Rp).
+
+Since πx,x ′ has marginals Ka(x, ·) and Ka(x′, ·), and γ has marginals μ and ν, Π has marginals 
+
+μK a and νK a. Hence Π ∈ Γ( μK a, νK a).By Tonelli’s theorem, 
+
+Z
+
+> Y×Y
+
+∥y − y′∥22 Π( dy, dy ′) = 
+
+Z
+
+> X ×X
+
+Z 
+
+> Y×Y
+
+∥y − y′∥22 πx,x ′ (dy, dy ′)
+
+
+
+γ(dx, dx ′)=
+
+Z
+
+> X ×X
+
+W 22
+
+ Ka(x, ·), K a(x′, ·) γ(dx, dx ′).
+
+By the assumed W2-Lipschitz regularity of the conditional outcome distributions, 
+
+W2
+
+ Ka(x, ·), K a(x′, ·) ≤ La ∥x − x′∥2,
+
+and hence Z
+
+> Y×Y
+
+∥y − y′∥22 Π( dy, dy ′) ≤ L2
+
+> a
+
+Z
+
+> X ×X
+
+∥x − x′∥22 γ(dx, dx ′).
+
+Taking the infimum over all γ ∈ Γ( μ, ν ) yields 
+
+W 22
+
+ PY (a), PY |a
+
+ ≤ L2 
+
+> a
+
+W 22
+
+ PX , PX|a
+
+.
+
+Since PY |a is absolutely continuous on Rp, Brenier’s theorem guarantees the existence of a PY |a-a.e. unique quadratic-cost optimal transport map fa : Rp → Rp transporting PY |a to PY (a). Moreover, since fa is optimal, 
+
+∥fa − id ∥2  
+
+> L2(PY|a)
+
+= W 22
+
+ PY |a, PY (a)
+
+.
+
+Combining this identity with the previous bound and taking square roots gives 
+
+∥fa − id ∥L2(PY |a) ≤ La W2
+
+ PX , PX|a
+
+,
+
+which concludes the proof. 
+
+Proof of Theorem 3.3 . For convenience, define Ka(x, ·) := PY |X=x,A =a(·). for each a ∈ { 0, 1}.Recall from the main text that the counterfactual and observational conditional laws admit the mixture representations 
+
+PY (a)(·) = 
+
+Z
+
+Ka(x, ·) dPX (x), PY |A=a(·) = 
+
+Z
+
+Ka(x, ·) dPX|A=a(x).
+
+Since pa := P(A = a) > 0, we have PX|A=a ≪ PX . Hence the assumed confounder-invariance condition 
+
+ϕ#Ka(x, ·) = Qa PX -a.e. x
+
+also holds PX|A=a-a.e. 37 Let B ∈ B (Z) (the Borel σ-algebra of Z). The first part of the result holds by simple evaluation of the pushforwards. In particular: 
+
+ϕ#PY (a)(B) = PY (a)(ϕ−1(B)) =
+
+Z
+
+Ka(x, ϕ −1(B)) dPX (x)=
+
+Z
+
+Qa(B) dPX (x) = Qa(B),
+
+and 
+
+ϕ#PY |A=a(B) = PY |A=a(ϕ−1(B)) =
+
+Z
+
+Ka(x, ϕ −1(B)) dPX|A=a(x)=
+
+Z
+
+Qa(B) dPX|A=a(x) = Qa(B),
+
+which immediately implies that ϕ#PY (a) = ϕ#PY |A=a = Qa.
+
+It remains to prove the feature-preserving transport claim. For notational convenience in this part, define μ0 := PY |A=a and μ1 := PY (a). We have just shown that ϕ#μ0 = ϕ#μ1 = Qa. Since all spaces are standard Borel, we can disintegrate these distributions along the value of the feature map 
+
+ϕ as 
+
+μ0(dy ) = 
+
+Z
+
+μ0,z (dy ) Qa(dz ), μ1(dy ) = 
+
+Z
+
+μ1,z (dy ) Qa(dz ),
+
+where μ0,z = PY |A=a,ϕ (Y )= z and μ1,z = PY (a)|ϕ(Y (a))= z . By the defining property of conditional laws given ϕ(Y ), these versions may be chosen to be supported on the corresponding fibers: 
+
+μ0,z (ϕ−1(z)) = 1 , μ1,z (ϕ−1(z)) = 1 , Qa-a.e. z. 
+
+In other words, after conditioning on the event ϕ(Y ) = z, the remaining variation in Y lies entirely within the fiber ϕ−1(z) = {y : ϕ(y) = z}.Now, recall that by assumption, there exists a measurable family of maps {Tz : Y → Y | z ∈ Z} ,
+
+such that, for Qa-a.e. z, (Tz )#μ0,z = μ1,z . Since μ1,z is supported on ϕ−1(z), this also implies 
+
+ϕ(Tz (y)) = z μ0,z -a.e. y, Qa-a.e. z. 
+
+Now, define fa(y) := Tϕ(y)(y), with an arbitrary measurable definition on any null set where the above conditional maps are not specified. By the assumed joint measurability of the family z 7 → Tz ,the map fa is measurable. To verify the pushforward property, let h : Y → R be bounded and measurable. Using disintegration, 
+
+Z
+
+h(fa(y)) μ0(dy ) = 
+
+Z Z
+
+h(Tz (y)) μ0,z (dy ) Qa(dz )=
+
+Z Z
+
+h(y′) μ1,z (dy ′) Qa(dz )=
+
+Z
+
+h(y′) μ1(dy ′).
+
+Hence (fa)#μ0 = μ1, which by definition is the same as (fa)#PY |A=a = PY (a).
+
+Finally, since μ0,z is supported on ϕ−1(z) and Tz (y) ∈ ϕ−1(z) for μ0,z -a.e. y, we have 
+
+μ0{y : ϕ(fa(y)) ̸ = ϕ(y)} =
+
+Z
+
+μ0,z {y : ϕ(Tz (y)) ̸ = z} Qa(dz ) = 0 .
+
+Therefore ϕ(fa(Y )) = ϕ(Y ), PY |A=a-a.s., which proves the claim. 
+
+D.2.2 Assumptions for Theorems and Proofs in Section 4 Notation, Definitions and Assumptions 
+
+38 Definition D.9 (Standing Objects for EIF analysis) . , Fix a treatment level a ∈ { 0, 1} and a parameter 
+
+θa ∈ Θ. Throughout the results in this section, we use the following notation. • O := ( X, A, Y ) ∼ P denotes a generic observational draw. • For O ∼ P, we denote the shorthand P(f ) := E[f (O)] for any measurable f .• D1 = ( Oi)ni=1 ∼ P and D2 = ( ˜Oi)ni=1 ∼ P are two independent datasets of i.i.d. observa-tions. • PY |a denotes the true conditional outcome law, and ˆPY |A=a := n−1
+
+> a
+
+P 
+
+> i:Ai=a
+
+δYi its empir-ical analogue on D1.• pa := P(A = a) and ˆpa denotes its estimator using D1
+
+• πa(x) := P(A = a | X = x) and ˆπa denotes its estimator using D2.• rθa : Y × Y → R denotes the score kernel associated with the moment condition m(θa, P)
+
+(cf. Section 4.2 of the main text). • ha,θ a (x, ˜y) := E [rθa (Y, ˜y) | A = a, X = x], and ˆha,θ a its estimator using D2.• μhθa (x) := E[hθa (x, Y ) | A = a], and ˆμˆhθa 
+
+(x) := R ˆha,θ a (x, ˜y) ˆPY |A=a(d˜y).• χθa (y) := E [ha,θ a (X, y )] = R ha,θ a (x, y ) PX (dx ) and ˆχθa (y) := ˆPX
+
+hˆha,θ a (·, y )
+
+i
+
+the corresponding plug-in estimator, where ˆPX is the empirical distribution of {Xi} on D1.• m(θa, P) := E [χθa (Y ) | A = a] = R χθa (y) PY |a(dy ) is the moment condition and 
+
+m(θa, ˆP) := R ˆχθa (y) ˆPY |A=a(dy ) = ˆPY |A=a [ ˆ χθa ] is its plug-in estimator. • ψ1,θ a (O, y ) := 1{A=a}
+
+> πa(X)
+
+
+
+rθa (Y, y ) − ha,θ a (X, y )
+
+
+
++ ha,θ a (X, y ) − PX [ha,θ a (·, y )] is the EIF of E[rθa (Y (a), y )] and ˆψ1,θ a its plug-in estimator using ˆπa, ˆha,θ a and ˆPX .• Define ψ2,θ a (O, y ) := 1{A=a} 
+
+> pa
+
+(χθa (Y ) − χθa (y)) and ψ2,θ a its plug-in estimator using 
+
+ˆPX and ˆpa.• Define ψθa := ψ1,θ a + ψ2,θ a and ˆψθa := ˆψ1,θ a + ˆψ2,θ a .• φθa : o 7 → PY |a[ψθa (o, ·)] is the EIF of m(θa, P) under P and ˆφθa : o 7 → ˆPY |a[ ˆψθa (o, ·)] is its plug-in estimator. • ˆmDR (θa) := m(θa, ˆP) + Pn [ ˆ φθa ] , is the one-step estimator, where Pn is the empirical distribution on D1.For our asymptotic estimation results, we work under the following conditions. 
+
+Assumption D.10 (EIF Regularity Conditions) .
+
+1. Overlap and stable inversion. There exists ϵ > 0 such that πa(X) ≥ ϵ almost surely. Moreover, the estimator ˆπa is clipped so that ˆπa(X) ≥ ϵ/ 2 almost surely. 2. Nondegenerate treatment mass. pa > 0 and ˆpa := Pn[1{A = a}] →p pa.3. Fold independence (cross-fitting). (ˆ pa, ˆPY |a) are estimated using D1 (evaluation fold). 
+
+(ˆ πa, ˆha,θ a , ˆPX ) are estimated using D2 (nuisance fold). 4. Square integrability. The nuisances satisfy ha,θ a , ˆha,θ a ∈ L2(PX ⊗ PY ) ∩ L2(PX,Y ) and the score function satisfies rθa (y, y ′) ∈ L2(PY ⊗ PY ) ∩ L2(PY,Y ) for all θa ∈ Θ.
+
+Remark D.11 . The above assumptions imply that ψθa , ˆψθa ∈ L2(P ⊗ PY |a) w.p.1, and φθa , ˆφθa ∈
+
+L2(P) w.p.1. 39 D.2.3 EIF of Moment Condition Theorem D.12 (Efficient influence function for the deconfounding flow-matching moment; formal version of Theorem 4.1) . Fix a ∈ { 0, 1} and θa ∈ Θ. Suppose Assumption D.10(1) and D.10(4) holds. Then the moment functional m(θa, P) defined in Theorem D.9 is regular and pathwise differentiable at P, with efficient influence function 
+
+φθa (O) = PY |a[ψθa (O, ·)] = 
+
+Z
+
+ψθa (O, y ) PY |a(dy ),
+
+where ψθa = ψ1,θ a + ψ2,θ a and ψ1,θ a , ψ 2,θ a are as in Theorem D.9. Equivalently, 
+
+φθa (O) = 
+
+Z
+
+ψ1,θ a (O, y ) PY |a(dy ) + 
+
+Z
+
+ψ2,θ a (O, y ) PY |a(dy ).
+
+Proof of Theorem 4.1. Fix a and suppress the subscript a on θ for readability. Now, recall that under the definition of PY (a) in (1) 
+
+ma(θ) = ∇θ La(θ) = E [E [gθ (Y ) | A = a, X ]] = E gθ
+
+ Y (a) , gθ (y) := 
+
+Z
+
+rθ (y, ˜y) PY |a(d˜y).
+
+To derive the EIF, it is helpful to write ma(θ) as a functional of both the counterfactual marginal 
+
+PY (a) and the conditional observational law PY |a. Specifically, define the functional 
+
+Tθ (P1, P2) := 
+
+Z Z 
+
+rθ (y, ˜y) P1(dy ) P2(d˜y), (P1, P2) ∈ P (Y) × P (Y),
+
+and note that for P1 = PY (a) and P2 = PY |a, we have ma(θ) = Tθ
+
+ PY (a), PY |a
+
+. Along any regular parametric submodel {Pε} of the observed-data law P, define the induced measures 
+
+P1,ε := PY (a)(Pε), P2,ε := PY |a(Pε),
+
+and write ma(θ; ε) := Tθ (P1,ε , P2,ε ). By the functional chain rule and Lemma D.4, 
+
+ddε ε=0 
+
+ma(θ; ε) = ddε ε=0 
+
+Tθ (P1,ε , P2,0) + ddε ε=0 
+
+Tθ (P1,0, P2,ε ),
+
+where P1,0 = PY (a) and P2,0 = PY |a.By a simple application of the chain-rule for EIFs (see Lemma D.4), the EIF of ma(θ) is given by the sum of the EIF of T (·, PY |a) for fixed PY |a and the EIF of T (PY (a), ·) for fixed PY (a). Thus, the EIF of ma(θ) is given by the sum of the EIF of T (·, PY |a) for fixed PY |a and the EIF of T (PY (a), ·)
+
+for a fixed PY (a). To recover these EIFs, we introduce the linear functionals 
+
+Λ1(PY (a)) = 
+
+Z
+
+gθ (y) PY (a)(dy ) = E[gθ (Y (a))] Λ2(PY |A=a) = 
+
+Z
+
+χθ (˜ y) PY |a(d˜y) = E[χθ (Y ) | A = a].
+
+where χθ (˜ y) := R rθ (y, ˜y) PY (a)(dy ). Note that, for any probability measures P1, P2 ∈ P (Y),
+
+Tθ (P1, PY |a) = Λ 1(P1), Tθ (PY (a), P2) = Λ 2(P2),
+
+The first functional Λ1(PY (a)) = E[gθ (Y (a))] is a counterfactual mean of the vector-valued outcome 
+
+gθ (Y ). Its efficient influence function is therefore given by the standard AIPW expression for a counterfactual mean (e.g., Kennedy (2024)), 
+
+φΛ1(PY (a))(O) = 1{A = a}
+
+πa(X)
+
+ gθ (Y ) − μθ (X) + μθ (X) − E[gθ (Y (a))] .
+
+The second functional Λ2(PY |a) = E[χθ (Y ) | A = a] is a stratum mean of the scalar outcome 
+
+χθ (Y ). Its efficient influence function is therefore (e.g., Kennedy (2024)) 
+
+φΛ2(PY |a)(O) = 1{A = a}
+
+pa
+
+
+
+χθ (Y ) − E[χθ (Y ) | A = a]
+
+
+
+, pa := P(A = a).
+
+40 As mentioned above, by the chain rule (Lemma D.4), the efficient influence function of ma(θ) = 
+
+Tθ (PY (a), PY |a) is the sum of these two components. Using that E[gθ (Y (a))] = ma(θ) and 
+
+E[μθ (X)] = E[gθ (Y (a))] , we obtain 
+
+φθ,a (O) = 1{A = a}
+
+pa
+
+
+
+χθ (Y )−E[χθ (Y ) | A = a]
+
+
+
++ 1{A = a}
+
+πa(X)
+
+ gθ (Y )−μθ (X)+μθ (X)−E[μθ (X)] ,
+
+which is the expression stated in Theorem 4.1. 
+
+D.2.4 Asymptotic Analysis of Debiased (One-Step) Estimator in Section 4.2 Theorem D.13 (Asymptotic expansion and efficiency of the one-step estimator) . Under Assump-tion D.10, the following expansion holds: 
+
+ˆmDR (θa) − m(θa, P) = ( Pn − P)φθa (·; P)| {z }
+
+> =: T1
+
++ ( Pn − P) ˆφθa,1 − φθa,1(·; P)| {z }
+
+> =: T2
+
++Rn(θa), (13) 
+
+where the von Mises remainder satisfies 
+
+Rn(θa) = Op
+
+
+
+∥ˆπa − πa∥L2(PX ) ∥ˆha,θ a − ha,θ a ∥L2(PX ⊗PY |a)
+
+
+
+. (14) 
+
+and the empirical process drift term T2 satisfies 
+
+T2 = Op
+
+∥ˆha,θ a − ha,θ a ∥L2(PX ⊗PY |a) + ∥ˆπa − πa∥L2(PX )
+
+√n
+
+!
+
+, (15) 
+
+Proof. Since all analysis is for a fixed a, θ a, in what follows we suppress the dependence of all quantities on these objects notationally. To start, note that by the definition of the one-step estimator ˆm we can write 
+
+m(P) − ˆm = m(P) − m(ˆP) − Pn( ˆ φ)= m(P) − m(ˆP) − Pn( ˆ φ1) − Pn( ˆ φ2) (16) Now, first note that Pn( ˆ φ2) = 0 . To see this, recall that ˆφ2 : o 7 → ˆPY |A=a[ ˆψ2(o, ·)] , where 
+
+ˆψ2(o′, y ) = 1{a′=a}
+
+> ˆpa
+
+  ˆχ(y′) − ˆχ(y). Therefore, 
+
+Pn( ˆ φ2) = Pn
+
+
+
+ˆPY |A=a
+
+ 1{A = a}
+
+ˆpa
+
+  ˆχ(Y ) − ˆχ(·) 
+
+.
+
+By Fubini’s theorem and the definition of ˆPY |A=a,
+
+Pn( ˆ φ2) = ˆPY |A=a
+
+ 1ˆpa
+
+Pn [1{A = a} ˆχ(Y )] − 1ˆpa
+
+Pn[1{A = a}] ˆ χ(y)
+
+
+
+.
+
+But Pn[1{A = a}] = ˆ pa and ˆPY |A=a[ ˆ χ] = 1ˆpa Pn[1{A = a} ˆχ(Y )] . Hence the two terms cancel exactly. Now, adding and subtracting P( ˆ φ1) and (Pn − P)( φ1 + φ2) to (16) we get 
+
+ˆm − m(P) = ( Pn − P)( φ1 + φ2)
+
+| {z }
+
+> =: T1
+
++ ( Pn − P)( ˆ φ1 − φ1)
+
+| {z }
+
+> =: T2
+
++R2
+
+where 
+
+R2 := m(ˆP) + P( ˆ φ1) − m(ˆP) − (Pn − P)( φ2)
+
+We now analyze each term. 
+
+Empirical Process Term T2
+
+41 For o′ = ( x′, a ′, y ′) ∈ X × A × Y and y ∈ Y , define 
+
+∆( o′, y ) := ˆψ1(o′, y ) − ψ1(o′, y ).
+
+All statements below are conditional on the training fold. In particular, ˆh and ˆπ (and hence ˆψ1 and 
+
+∆) are deterministic, while all expectations are taken with respect to the true law P.By the square–integrability assumptions in Theorem D.10, we may apply the sample–splitting empirical–process bound established in Theorem D.7 (Appendix D.1), which yields 
+
+(Pn − P)( ˆ φ − φ) = Op
+
+ E R ∥∆( O, y )∥2 PY |a(dy ) 1/2
+
+√n
+
+!
+
+. (17) It therefore suffices to bound the L2(P ⊗ PY |a) norm of ∆ in terms of the nuisance estimation errors. For O = ( X, A, Y ) and y ∈ Y , we have the exact decomposition 
+
+∆( O, y ) = 
+
+ 1{A = a}
+
+ˆπ(X)
+
+ r(Y, y ) − ˆh(X, y ) + ˆh(X, y )
+
+
+
+−
+
+ 1{A = a}
+
+π(X)
+
+ r(Y, y ) − h(X, y ) + h(X, y )
+
+
+
+=  ˆh(X, y ) − h(X, y )| {z }
+
+> =: Dh(X,y )
+
++ 1{A = a}
+
+ 1ˆπ(X) − 1
+
+π(X)
+
+  r(Y, y ) − h(X, y )| {z } 
+
+> =: Dπ(O,y )
+
+− 1{A = a} 1ˆπ(X)
+
+ ˆh(X, y ) − h(X, y )| {z }
+
+> =: Dπh (O,y )
+
+.
+
+By Assumption D.10(i), ˆπ is clipped so that ˆπ(X) ≥ ϵ/ 2 almost surely. Consequently, 
+
+1ˆπ(X) ≤ 2
+
+ϵ , 1ˆπ(X) − 1
+
+π(X) ≤ 2
+
+ϵ2 ∥ˆπ(X) − π(X)∥ a.s. Using ∥u + v + w∥2 ≤ 3( ∥u∥2 + ∥v∥2 + ∥w∥2), we obtain 
+
+E
+
+Z 
+
+∥∆( O, y )∥2 PY |a(dy )
+
+
+
+≤ 3 X
+
+> ⋆∈{ h,π,πh }
+
+E
+
+Z 
+
+∥D⋆(O, y )∥2 PY |a(dy )
+
+
+
+. (18) We bound each term in turn. First, by definition we have 
+
+E
+
+Z 
+
+∥Dh(X, y )∥2 PY |a(dy )
+
+
+
+= ∥ˆh − h∥2  
+
+> L2(PX⊗PY|a)
+
+. (19) Second, using the uniform bound on 1/ˆπ,
+
+E
+
+Z 
+
+∥Dπh (O, y )∥2 PY |a(dy )
+
+
+
+≤ 4
+
+ϵ2 ∥ˆh − h∥2  
+
+> L2(PX⊗PY|a)
+
+. (20) Finally, for the propensity term, note that 
+
+∥r(Y, y ) − h(X, y )∥2 ≤ 2∥r(Y, y )∥2 + 2 ∥h(X, y )∥2,
+
+and therefore 
+
+E
+
+Z 
+
+∥Dπ (O, y )∥2 PY |a(dy )
+
+
+
+≤ 8
+
+ϵ4 E
+
+
+
+∥ˆπ(X) − π(X)∥21{A = a}
+
+Z  ∥r(Y, y )∥2 + ∥h(X, y )∥2 PY |a(dy )
+
+
+
+(21) 
+
+≤ Cr ∥ˆπ − π∥2 
+
+> L2(PX)
+
+,
+
+42 for a finite constant Cr depending only on ϵ and the second moments of r and h, where the last step uses Cauchy–Schwarz and Assumption D.10(iv). Substituting (19), (20), and (21) into (18) yields 
+
+E
+
+Z 
+
+∥∆( O, y )∥2 PY |a(dy )
+
+
+
+≤ C1 ∥ˆh − h∥2   
+
+> L2(PX⊗PY|a)
+
++ C2 ∥ˆπ − π∥2 
+
+> L2(PX)
+
+,
+
+for finite constants C1, C 2. Taking square roots gives 
+
+
+
+E
+
+Z 
+
+∥∆( O, y )∥2 PY |a(dy )
+
+ 1/2
+
+≤ C′ 
+
+> 1
+
+∥ˆh − h∥L2(PX ⊗PY |a) + C′ 
+
+> 2
+
+∥ˆπ − π∥L2(PX ). (22) Combining (17) and (22) yields 
+
+(Pn − P)( ˆ φ − φ) = Op
+
+∥ˆh − h∥L2(PX ⊗PY |a) + ∥ˆπ − π∥L2(PX )
+
+√n
+
+!
+
+,
+
+which proves the stated bound for T2.
+
+Part II: Remainder R2 We now control the remainder term, 
+
+R2 := m(ˆP) − m(P) + P( ˆ φ1) − (Pn − P)( φ2),
+
+From the definition of ˆψ1 in Theorem D.9, we can express this term as 
+
+ˆφ1(O) = 1{A = a}
+
+ˆπ(X)
+
+ ˆg(Y ) − ˆμˆh(X) + ˆ μˆh(X) − m(ˆP).
+
+where ˆμˆh(x) := ˆPY |A=a[ˆh(x, ·)] and ˆg(y) = ˆPY |a(r(y, ·)) .Taking the expectation of ˆφ1 under the true law P, we get 
+
+P( ˆ φ1) = P
+
+h π
+
+ˆπ
+
+ ˆμh − ˆμˆh
+
+i
+
++ P[ˆ μˆh] − m(ˆP),
+
+where ˆμh(x) := ˆPY |A=a[h(x, ·)] .Substituting this into the definition of R2 we get 
+
+R2 = P
+
+h π
+
+ˆπ (ˆ μh − ˆμˆh)
+
+i
+
++ P[ˆ μˆh − μh] − (Pn − P)( φ2)
+
+Adding and subtracting P[ˆ μh] isolates (i) the usual doubly-robust remainder around the random target 
+
+μˆh and (ii) a drift due to replacing PY |a by ˆPY |a:
+
+R2 = P
+
+ ˆπ − π
+
+ˆπ (ˆ μˆh − ˆμh)
+
+| {z }
+
+> B1
+
++ P(ˆ μh − μh) − (Pn − P)( φ2)
+
+| {z }
+
+> B2
+
+.
+
+II(a) Product term B1 Define 
+
+w(x) := ˆπ(x) − π(x)ˆπ(x) , ∆h(x, y ) := ˆh(x, y ) − h(x, y ).
+
+By definition of ˆμh and ˆμˆh,
+
+ˆμˆh(x) − μˆh(x) = 
+
+Z
+
+∆h(x, y ) ˆPY |A=a(dy ).
+
+Substituting into the remainder yields the exact product measure form 
+
+P
+
+ ˆπ − π
+
+ˆπ (ˆ μˆh − ˆμh)
+
+
+
+= ( PX ⊗ ˆPY |A=a)[ w ∆h].
+
+Adding and subtracting (PX ⊗ PY |a)[ w∆h] gives 
+
+(PX ⊗ ˆPY |A=a)[ w∆h] = ( PX ⊗ PY |a)[ w∆h]
+
+| {z }
+
+> C1
+
++ ( PX ⊗ (ˆPY |A=a − PY |a))[ w∆h]
+
+| {z }
+
+> C2
+
+. (23) 43 II(a).1 Population term C1 By Cauchy–Schwarz, the first term can be bounded by 
+
+(PX ⊗ PY |a)[ w∆h] ≤ ∥ w∥L2(PX ) ∥∆h∥L2(PX ⊗PY |a).
+
+To bound ∥w∥L2(PX ), note that by overlap (A1) there exists π > 0 such that ˆπ(x) ≥ ϵ/ 2 almost surely. Conditioning on this measure-one event lets us write 
+
+∥w∥L2(PX ) ≤ 2
+
+c ∥ˆπ − π∥L2(PX ). (24) Combining the above bounds yields 
+
+(PX ⊗ PY |a)[ w∆h] ≤ 2
+
+c ∥ˆπ − π∥L2(PX ) ∥ˆh − h∥L2(PX ⊗PY |a)
+
+In particular, 
+
+C1 = Op
+
+
+
+∥ˆπ − π∥L2(PX ) ∥ˆh − h∥L2(PX ⊗PY |a)
+
+
+
+II(a).2 Stochastic base term C2 Define the (training-fold measurable) function 
+
+F (˜ y) := Ew(X)∆ h(X, ˜y) = PX [w(·)∆ h(·, ˜y)] .
+
+Substituting this definition of C2 and applying Fubini’s Theorem, we get 
+
+C2 = ( PX ⊗ (ˆPY |A=a − PY |a))[ w∆h] = ( ˆPY |A=a − PY |a)F
+
+= 1ˆpa
+
+(Pn − P)1aF 
+
+= 1
+
+pa
+
+(Pn − P)1aF  +
+
+ 1ˆpa
+
+− 1
+
+pa
+
+
+
+P1aF ,
+
+where the second last equality used the identities ˆPY |A=a[F ] = Pn[1aF ]ˆpa , PY |a[F ] = P[1aF ] 
+
+> pa
+
+. and the last equality used 1/ˆpa = 1 /p a + (1 /ˆpa − 1/p a).To control the first term, note that, conditional on the training fold, 1{A = a}F (Y ) is a fixed square-integrable function. Indeed, for each fixed ˜y, Cauchy–Schwarz in L2(PX ) yields 
+
+∥F (˜ y)∥ =
+
+Z
+
+w(x)∆ h(x, ˜y) PX (dx ) ≤ ∥ w∥L2(PX ) ∥∆h(·, ˜y)∥L2(PX ).
+
+Squaring and integrating with respect to ˜y ∼ PY |a gives 
+
+∥F ∥2  
+
+> L2(PY|a)
+
+=
+
+Z
+
+∥F (˜ y)∥2 PY |a(d˜y) ≤ ∥ w∥2  
+
+> L2(PX)
+
+∥∆h∥2  
+
+> L2(PX⊗PY|a)
+
+, (25) Since ∥F ∥L2 ≥ ∥ 1aF ∥L2 , we can apply Theorem D.5, to bound (Pn − P)1aF  asymptotically as 
+
+(Pn − P)1aF  = Op
+
+ ∥1{A = a}F (Y )∥L2(P)
+
+√n
+
+
+
+= Op
+
+ ∥F ∥L2(PY |a)
+
+√n
+
+
+
+.
+
+It remains to control the correction term involving (1 /ˆpa − 1/p a). Since P[1aF ] = pa PY |a[F ] and 
+
+(1 /ˆpa − 1/p a) = Op(n−1/2), by Jensen’s equality we obtain 
+
+ 1ˆpa
+
+− 1
+
+pa
+
+
+
+P1aF  ≤
+
+ 1ˆpa
+
+− 1
+
+pa
+
+
+
+PY |a[F ] ≤
+
+ 1ˆpa
+
+− 1
+
+pa
+
+
+
+∥F ∥L2(PY |a)
+
+By the Central Limit Theorem ˆpa − pa = Op(n−1/2) and 1/ˆpa = Op(1) , so (1 /ˆpa − 1/p a) = 
+
+Op(n−1/2) (the latter follows from 1 
+
+> x
+
+− 1 
+
+> y
+
+= 1 
+
+> xy
+
+(x − y)). As a consequence we obtain 
+
+ 1ˆpa
+
+− 1
+
+pa
+
+
+
+P[1aF ] = Op
+
+ ∥F ∥L2(PY |a)
+
+√n
+
+
+
+.
+
+Summing the Op bounds for both terms and applying the inequalities in (25) and (24) gives 
+
+C2 = Op
+
+∥ˆπ − π∥L2(PX ) ∥ˆh − h∥L2(PX ⊗PY |a)
+
+√n
+
+!
+
+Putting this together with C1, we get 
+
+B1 = Op
+
+
+
+∥ˆπ − π∥L2(PX ) ∥ˆh − h∥L2(PX ⊗PY |a)
+
+
+
+44 II(b): Drift term B2. Applying Fubini/Tonelli, we can write the first part of the drift term as 
+
+P(ˆ μh − μh) = PX
+
+hˆPY |A=a
+
+h(X, ·) − PY |a
+
+h(X, ·)i
+
+= ˆPY |A=a
+
+PX [h(·, ·)]  − PY |a
+
+PX [h(·, ·)] 
+
+= ˆPY |A=a[g] − PY |a[g]. (26) Now, by definition Theorem D.9, 
+
+φ2(O) = 1{A = a}
+
+pa
+
+
+
+χ(Y ) − PY |a[χ]
+
+
+
+, P[φ2] = 0 .
+
+Hence 
+
+(Pn − P)( φ2) = Pn(φ2)= 1
+
+pa
+
+
+
+Pn[1{A = a}χ(Y )] − Pn[1{A = a}] PY |a[χ]
+
+
+
+= ˆpa
+
+pa
+
+ˆPY |A=a[χ] − ˆpa
+
+pa
+
+PY |a[χ].
+
+Usign these definitions we get 
+
+B2 = P(ˆ μh − μh) − (Pn − P)( φ2) = 
+
+
+
+1 − ˆpa
+
+pa
+
+ ˆPY |A=a[χ] − PY |a[χ]
+
+= − ˆpa − pa
+
+pa
+
+ ˆPY |A=a[χ] − PY |a[χ].
+
+Now, by the CLT for the mean of A and conditional mean of Y , we have ˆpa − pa = Op(n−1/2) and 
+
+ˆPY |A=a[χ] − PY |a[χ] = Op(n−1/2) (since χ ∈ L2(PY |a)). Therefore, 
+
+P(ˆ μh − μh) − (Pn − P)( φ2) = Op(n−1). (B2.4) Putting this together with B1 yields the stated result for R2 and completes the proof. 
+
+Corollary D.14 (Efficiency bound in the main text) . Suppose the conditions of Theorem D.13 hold. In addition, assume that for each θa ∈ Θ the score kernel rθa is uniformly Lipschitz in its first argument, i.e. there exists L < ∞ such that for all ˜y ∈ Y and all probability measures P1, P2 ∈ P (Y),
+
+Z
+
+rθa (y, ˜y) P1(dy ) −
+
+Z
+
+rθa (y, ˜y) P2(dy ) ≤ L W 1(P1, P2).
+
+Then the one-step estimator satisfies 
+
+ˆmDR (θa) − m(θa) = Op(n− 12 ) + Op
+
+
+
+n− 12
+
+ ∥ˆπa − πa∥L2(PX ) + ∆ 1
+
+ + ∥ˆπa − πa∥L2(PX ) ∆1
+
+
+
+.
+
+where ∆1 := W1
+
+ ˆPY |a,X , PY |a,X 
+
+ 
+
+> L2(PX)
+
+.
+
+Proof. By the assumed Lipschitz property of rθa , for all x and ˜y,
+
+ˆha,θ a (x, ˜y) − ha,θ a (x, ˜y) ≤ L W 1
+
+ ˆPY |a,X =x, PY |a,X =x
+
+.
+
+Squaring both sides and integrating with respect to PX ⊗ PY |a yields 
+
+∥ˆha,θ a − ha,θ a ∥L2(PX ⊗PY |a) ≤ L∆1
+
+The result then follows by substituting this bound into the expansion of Theorem D.13. 45

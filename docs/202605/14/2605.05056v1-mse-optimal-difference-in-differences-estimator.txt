@@ -1,0 +1,386 @@
+Title: MSE-Optimal Difference-in-Differences Estimator
+
+URL Source: https://arxiv.org/pdf/2605.05056v1
+
+Published Time: Thu, 07 May 2026 01:12:18 GMT
+
+Number of Pages: 19
+
+Markdown Content:
+# MSE-Optimal Difference-in-Differences Estimator ∗
+
+## Yamato Igarashi †
+
+## May 7, 2026 
+
+Abstract 
+
+This paper develops a difference-in-differences (DiD) estimation method that selects the optimal length of pre-trends by minimizing the mean squared error (MSE). Con-ventional DiD regression models, such as the two-way fixed effects model or the event study model, may suffer from accuracy and validity concerns. If the sample size is small, the estimator may have a larger variance. Also, pre-tests often lack power to detect vi-olations of the parallel trends assumption as Roth (2022) highlights. By focusing on the bias and variance tradeoff, the proposed method derives the MSE-optimal estimator from the optimal length of pre-trends. Simulation results and an empirical application demonstrate the practical applicability of the proposed method. 
+
+Keywords: Difference-in-Differences, Pre-trends, Mean Squared Error  
+
+> ∗
+
+I sincerely appreciate Chishio Furukawa for his generous guidance and advice. I also thank Shosei Sakaguchi for insightful comments. All errors are my own. The replication package for this paper is available at https://github.com/yamato5810/MSE-Optimal Difference-in-Differences Estimator  
+
+> †
+
+Graduate School of Economics, The University of Tokyo. igarashi-yamato-by@g.ecc.u-tokyo.ac.jp. 
+
+1
+
+> arXiv:2605.05056v1 [econ.EM] 6 May 2026
+
+# 1 Introduction 
+
+Difference-in-differences (DiD) is a widely used method in economics for estimating causal effects. One of the well-known studies that implemented DiD is Card and Krueger (1994), which studies the effect of the minimum wage increase in New Jersey. Recently, there have been many theoretical advances in DiD methods enabling researchers to estimate treatment effect in a wide range of settings. In practice, DiD is usually implemented via two regression models: the two-way fixed effects (TWFE) model and the event study model. Aside from the problem of staggered treatment timing, those models have several problems. One of the problems is that precise estimation is difficult when the sample size is small. Event study plots, which are commonly used to present event study estimates, tend to have wider confidence intervals particularly when the number of observations is small. This can be viewed as a variance problem. Another problem is that the pre-trends test is not always effective (Roth, 2022). Even though there may be a potential bias between the treatment and control groups, the pre-trends test cannot detect it. This can be viewed as a bias problem. To address these problems, this paper proposes an MSE-optimal approach to difference-in-differences estimation. The framework is the following. When longer pre-trends are included, the estimator tends to have a smaller variance. At the same time, the estimator may be biased if there is a potential bias between the treatment and control groups. On the other hand, the estimator tends to have a larger variance when only a shorter pre-trends are included. Also, the estimator is likely to be less biased. Using the bias and variance tradeoff, this method derives the MSE-optimal estimator by choosing the optimal length of the pre-trends. I illustrate this method through simulations and an empirical application. The results show that the proposed method performs well in terms of MSE relative to conventional methods. Several studies examine pre-trends in the DiD setting. Roth (2022) shows that the con-ventional pre-trends tests often have low power and that depending on such tests can distort estimation and inference. Rambachan and Roth (2023) propose robust inference procedures that allow for possible violations of the parallel trends assumption. My paper takes the possi-bility of such bias seriously and proposes a procedure that minimizes the MSE of the estimator by explicitly balancing the bias and variance. Egami and Yamauchi (2023) show how multi-ple pre-treatment periods can improve DID estimation and propose double DID, which can be more efficient and rely on weaker assumptions than the conventional DID. My paper also focuses on the role of pre-treatment periods in DiD estimation, by viewing the length of the pre-trends as a choice variable in estimation. Ishimaru (2026) studies treatment effect estima-tion in panel data without relying on the parallel trends assumption and proposes alternative conditions for identifying the average treatment effect on the treated. By contrast, my paper 2works within a DiD framework in which deviations from parallel trends are assumed to be limited, so that the resulting distortion can be interpreted as a bias and incorporated into the MSE criterion. The bias-variance tradeoff is also fundamental in the selection of the optimal bandwidth in regression discontinuity design (RDD) (Imbens and Kalyanaraman, 2012; Calonico, Cattaneo, and Titiunik, 2014). A wider bandwidth includes more observations in estimation, which generally lowers variance. At the same time, however, observations farther from the cutoff may be less informative about the local treatment effect at the threshold, so a wider bandwidth may induce greater bias. Conversely, a narrower bandwidth focuses on observations closer to the cutoff, thereby reducing potential bias because the identifying assumptions are more plausible. However, fewer observations are available; therefore the estimator typically has higher variance. Thus, the bandwidth choice in RDD is naturally characterized as a bias-variance tradeoff. This paper applies a similar idea to the DiD setting: extending the pre-treatment period may improve precision, but it may also increase bias because the conventional pre-trends test may fail to detect the bias. The rest of the paper is organized as follows: In the next section, I describe the canonical DiD models as baseline DiD models. In Section 3, I show the proposed model and explain the implementations in the static and dynamic treatment effect cases. Then, I illustrate the model with simulations in Section 4. I also apply the model to the empirical example in Section 5, and I conclude in Section 6. 
+
+# 2 Baseline 
+
+This section describes the standard DiD framework as compared with the model this paper proposes. Section 2 .1 is about the basic 2 × 2 design and some key assumptions. Section 2.2 explains the two-way fixed effects model which is a commonly used regression model for static treatment effect. Section 2 .3 illustrates the event study model which is a commonly used regression model for dynamic treatment effect. 
+
+## 2.1 Canonical Difference-in-differences 
+
+The simplest DiD setting is a 2 ×2 (2 groups (treatment group vs control group) and 2 periods (pre-treatment vs post-treatment)) design. There have been many advances related to DiD methods even in recent years (see, e.g. Baker, Larcker, and Wang (2022), Baker, Callaway, Cunningham, Goodman-Bacon, and Sant’Anna (in press) and Roth, Sant’Anna, Bilinski, and Poe (2023) for a review) and those newer methods differ technically from one another, but they fundamentally depend on the same idea. Therefore, I begin with the simplest 2 ×2 design 3and specify some important assumptions. The notation used in this paper is as follows. Yi,t denotes an outcome of individual i
+
+and time t. Di,t indicates whether or not the individual i receives treatment in period t.
+
+Yi,t (Di,t = 1) = Yi,t (1) represents the potential outcome of Y if the individual i receives a treatment at period t, and Yi,t (Di,t = 0) = Yi,t (0) represents the potential outcome of Y if the individual i does not receive a treatment at period t. Lastly, let t∗ 
+
+> i
+
+be the time just before the individual i receives a treatment. Hereafter, t∗ 
+
+> i
+
+is set to −1 unless specified otherwise. One common target parameter of DiD is the average treatment effect on the treated (ATT). In the 2 × 2 design, the ATT can be expressed as 
+
+τ ≡ E[Yi, 1(1) − Yi, 1(0) |Di = 1] To obtain this ATT, the following three assumptions - Assumption 1: Parallel Trends, Assumption 2: No Anticipation and Assumption 3: No Spillover - are crucial. 
+
+Assumption 1. Parallel Trends 
+
+E[Yi,t (0) − Yi,t −1(0) |Di = 1] = E[Yi,t (0) − Yi,t −1(0) |Di = 0] Assumption 1 states the average changes in outcomes are the same for the treatment group and the control group if both groups do not receive the treatment. 
+
+Assumption 2. No Anticipation 
+
+Yi,t = Yi,t (0) for all t ≤ t∗ and i with Di = 1 Assumption 2 is an assumption that implies the treatment does not affect any actions before the treatment timing. This assumption can be interpreted as a situation that no one could know whether or not they would receive a treatment. 
+
+Assumption 3. No Spillover 1
+
+∀j̸ = i, Y i,t (Di, D j ) = Yi,t (Di, D ′ 
+
+> j
+
+) for all Dj and D′
+
+> j
+
+Assumption 3 states an individual’s outcome is not affected by the treatment status of others. Under these assumptions, ATT in the 2 × 2 setting can be transformed into the following equation. 
+
+> 1Although this paper maintains the No Spillover assumption, recent work has developed DiD methods that explicitly account for spillover effects; see Butts (2023) and Fiorini, Lee, and Pfeifer (2024).
+
+4τ = E[Yi, 1(1) − Yi, 1(0) |Di = 1] = E[Yi, 1(1) − Yi, 0(0) |Di = 1] − E[Yi, 1(0) − Yi, 0(0) |Di = 0] (1) = E[Yi, 1 − Yi, 0|Di = 1] − E[Yi, 1 − Yi, 0|Di = 0] The above discussion presents the 2 ×2 DiD framework. I extend the 2 ×2 DiD framework to a more general setting with multiple individuals observed over multiple time periods, focusing in particular on the extension from two periods to many periods. Throughout the analysis, I maintain Assumptions 2 and 3. 
+
+## 2.2 Two-Way Fixed Effects 
+
+In practice, researchers typically estimate the ATT in a DiD framework using regression-based methods. One of the most commonly used specifications is the two-way fixed effects (TWFE) model. The TWFE specification without covariates is given by: 
+
+Yit = μi + θt + βD it + εit (2) where μi is an individual fixed effect and θt is a time fixed effect. Then, the coefficient β
+
+represents the ATT. This model is suitable when the treatment effect is “static” (e.g. Figure A.2 A). If the treatment effect is constant across post-treatment periods, a time-invariant β
+
+is appropriate. Although the TWFE model had been used widely in empirical research, this model has a problem with staggered treatment timing (Goodman-Bacon, 2021; Callaway and Sant’Anna, 2021; de Chaisemartin and d’Haultfoeuille, 2020, 2023). This paper assumes a treatment occurs at the same time for all individuals, but it might be possible to extend to staggered treatment timing. 
+
+## 2.3 Event Study 
+
+Another model to derive a DiD estimator is the event study model. This model is suitable when the treatment effect is “dynamic” (e.g. Figure A.2 B). The event study model without covariates can be written as: 
+
+Yit = μi + θt + ∑ 
+
+> l̸=−1
+
+βl1{t − t∗ 
+
+> i
+
+= l} + εit (3) where μi and θt are the same as the TWFE model. The difference is the third term, which makes it possible to estimate the dynamic treatment effect. When the treatment effect is dynamic, βl must be time-variant to capture the change in the treatment effect. This paper 5does not address this issue, but staggered treatment causes a problem in the event study model similarly to the TWFE model (Sun and Abraham, 2021). 
+
+# 3 Model 
+
+This section describes the model this paper proposes. I first clarify the idea of the proposed model in Section 3 .1. Then, I illustrate two cases depending on the type of treatment effect (static and dynamic) in Section 3 .2 and 3 .3. 
+
+## 3.1 Model Overview 
+
+The main idea of this paper is to construct the MSE-optimal DiD estimator by changing the length of pre-trends. I first explain why it is appropriate to consider the MSE-minimizing approach in this context. In general, estimators including DiD estimators have smaller stan-dard errors when the sample size is large. This means a DiD estimator would be more precise if the pre-trends are longer. At first glance, longer pre-trends may seem preferable to shorter ones. However, longer pre-trends might bias the estimator unintentionally. In DiD studies, it is common to check the parallel trends assumption by examining whether or not pre-treatment estimates are statistically close to zero using 95% confidence intervals (CI), but such a pre-trends test may fail to detect bias (Roth, 2022). Therefore, it is possible that the estimator is biased. In particular, if there are longer potentially nonparallel pre-trends, the bias would be larger. Hence, longer pre-trends might have a smaller variance and a larger bias, and shorter pre-trends might have a larger variance and a smaller bias. It can be said that there is a bias and variance tradeoff. Note that MSE is expressed as the following: MSE = Bias 2 + Variance (4) I define the optimal choice as the one that minimizes the MSE. min MSE = min (Bias 2 + Variance ) (5) This is why it is possible to incorporate the MSE-minimizing approach into the DiD framework by changing the length of pre-trends. To analyze the proposed procedure more precisely, I consider an oracle benchmark. Let 
+
+L = {0, 1, . . . , L } denote the set of candidate length of pre-trends. Also, let ℓ ∈ L denote the length of pre-trends and ℓpost (≥ 1) denote the length of post-treatment periods, which is fixed in this setting. In this benchmark, I consider the TWFE specification in (2), and the target parameter is β. For each ℓ ∈ L , let ˆβℓ denote the DiD estimator constructed with pre-treatment length ℓ. I impose the following two assumptions. 6Assumption 4. Assume that deviations from parallel trends in the pre-treatment periods follow a linear form, γℓ .
+
+Assumption 5. Assume that the variance of the candidate estimators is finite. 
+
+Then, the following proposition holds. 
+
+Proposition 1. Suppose that the deviations from parallel trends in the pre-treatment periods satisfy Assumption 4 and the variance of the candidate estimators satisfies Assumption 5. Also, suppose that the candidate set L = {0, 1, . . . , L } is finite. Then, there exists an MSE-optimal DiD estimator ˆβ∗.Proof. For each ℓ ∈ L , the MSE of ˆβℓ is MSE ( ˆβℓ
+
+) = Bias ( ˆβℓ
+
+)2 + Var ( ˆβℓ
+
+)
+
+=
+
+( γℓ ℓ + ℓpost 
+
+)2
+
++ Var ( ˆβℓ
+
+) (< ∞)Then, the optimal length of pre-trends ℓ∗ is 
+
+ℓ∗ = arg min 
+
+> ℓ∈L
+
+MSE ( ˆβℓ
+
+) = arg min 
+
+> ℓ∈L
+
+(( γℓ ℓ + ℓpost 
+
+)2
+
++ Var ( ˆβℓ
+
+))
+
+and the MSE-optimal DiD estimator ˆβ∗ is ˆβ∗ = ˆβℓ∗
+
+This oracle rule is not feasible in practice because the true bias and variance are generally un-known. However, it serves as a theoretical benchmark for the feasible selection rule developed below. In the feasible implementation, the variance is approximated using the squared standard error of the estimate. On the other hand, the true bias is unobserved in practice. I therefore use the estimator with pre-treatment length 0 as a benchmark. Specifically, I define the approximated bias for the estimator with pre-treatment length ℓ as bias pre-trends length= ℓ ≡ estimate pre-trends length= ℓ − estimate pre-trends length=0 
+
+7Figure 1: Bias-variance tradeoff  
+
+> Notes: This figure explains the image of the bias and variance tradeoff generated by changing the length of pre-trends. The variance is larger when the pre-treatment period is shorter. On the other hand, the bias is smaller when the pre-treatment period is shorter. An opposite relationship holds when the pre-treatment period is longer. Then the optimal length of pre-trends would be obtained when the MSE (= Bias 2+Variance) is minimized.
+
+## 3.2 Static Treatment Effect Estimation 
+
+I consider the MSE-minimizing approach in the case of a static treatment effect. In this case, the TWFE model is often used as I mentioned in the previous section. Therefore, I incorporate the MSE-minimizing approach into the TWFE model. Figure 2 shows the changes of the outcome with pre-trends length 9 , 4, and 0. When the length of pre-trends is 9, more observations are available to estimate β in (2). Hence, the variance of the estimate would be smaller. However, pre-trends are not completely parallel and this would bias the estimate. When the length of pre-trends is 0, there are fewer observations to estimate β in (2). Thus, the variance of the estimate would be larger. On the other hand, there are no pre-trends that would induce bias in the estimate. When the length of pre-trends is 4, there is a moderate number of observations to estimate β in (2). Namely, the variance of the estimate would be moderate. Also, there is an intermediate length of pre-trends that would cause the estimate to be biased. By calculating the variance and the bias of each length of pre-trends, the optimal length of pre-trends and the MSE-optimal TWFE estimator can be obtained. 8Figure 2: Different pre-trends length with static treatment effect  
+
+> Notes: In the left figure, the length of the pre-trends is 9. The estimate of the TWFE model with this length of pre-trends might have smaller variance and larger bias. In the middle figure, the length of the pre-trends is 4. The estimate of the TWFE model with this length of pre-trends might have moderate variance and bias. In the right figure, the length of the pre-trends is 0. The estimate from the TWFE model with this length of pre-trends might be larger variance and smaller bias.
+
+## 3.3 Dynamic Treatment Effect Estimation 
+
+I next consider the MSE-minimizing approach in the case of dynamic treatment effect. Let 
+
+βℓ denote a coefficient for the treatment effect in the ℓth period after the treatment, and suppose that this coefficient is the parameter of interest. The goal is to minimize the MSE of the estimator for βℓ. Although the basic idea is the same as in the static treatment effect case, an additional step is required in the dynamic setting before changing the length of pre-trends. The estimator of the conventional event study model (3) for the treatment effect in the ℓth period after the treatment can be written as follows: ˆβℓ = 1
+
+∑Ni=1 1{Di = 1 }
+
+∑
+
+> Di=1
+
+(Yi,t ∗  
+
+> i+ℓ
+
+− Yi,t ∗ 
+
+> i
+
+) − 1
+
+∑Ni=1 1{Di = 0 }
+
+∑
+
+> Di=0
+
+(Yi,t ∗  
+
+> i+ℓ
+
+− Yi,t ∗ 
+
+> i
+
+) (6) This means the estimator ˆβℓ is not affected by the values of Yi,t other than Yi,t ∗ 
+
+> i+ℓ
+
+, Y i,t ∗ 
+
+> i
+
+. Hence, changing the length of pre-trends does not affect the bias and variance of the estimator ˆβℓ.Therefore, I propose the following modified model (7) when the treatment effect is dynamic. 
+
+Yit = μi + θt + ∑
+
+> ℓ≥0
+
+βℓ1{t − t∗ 
+
+> i
+
+= ℓ} + εit (7) Then, the estimator of this modified model (7) for the treatment effect in the ℓth period after the treatment can be written as follows: 9ˆβmℓ = 1
+
+∑Ni=1 1{Di = 1 }
+
+∑
+
+> Di=1
+
+(Yi,t ∗  
+
+> i+ℓ
+
+− Yi, (t≤t∗ 
+
+> i)
+
+) − 1
+
+∑Ni=1 1{Di = 0 }
+
+∑
+
+> Di=0
+
+(Yi,t ∗  
+
+> i+ℓ
+
+− Yi, (t≤t∗ 
+
+> i)
+
+)(8) Compared with the conventional event-study model, this modified specification does not include the pre-treatment coefficients βℓ for ℓ ≤ − 2. As a result, more observations can be used to estimate the post-treatment coefficients βℓ, which may reduce the variance relative to the conventional event-study model (3). However, because the modified specification does not estimate coefficients for pre-treatment periods, the conventional pre-trends test cannot be conducted within this model itself. For this reason, the use of the modified specification is justified when the data have already passed the conventional pre-trends test under the conventional event-study model (3). A similar approach can then be applied as in the TWFE case. When the pre-treatment period is longer, the estimator tends to have a smaller variance because more observations are used in the estimation. However, the estimator may also be more biased, since the model imposes the parallel trends assumption between the treatment and control groups over a longer pre-treatment window. By contrast, when the pre-treatment period is shorter, the estimator tends to have a larger variance because fewer observations are available. At the same time, the potential bias may be smaller, because the model relies on the parallel trends assumption over a narrower pre-treatment window. By minimizing the MSE of the estimator, the optimal length can be selected, yielding the MSE-optimal event-study estimator. 
+
+# 4 Simulation 
+
+In this section, I conduct two simulations to illustrate the proposed model. I first illustrate the case of the static treatment effect in Section 4 .1. I then explain the dynamic treatment effect case in Section 4 .2. 
+
+## 4.1 Static Treatment Effect Estimation 
+
+This simulation applies the method in Section 3.2 to simulated data with fundamentally non-parallel trends between the treatment and the control groups. The simulated data are generated according to the following setup: 
+
+Yit = μi + θit + βD it + εit 
+
+where 
+
+{
+
+μtreatment = 100 
+
+μcontrol = −100 , θ it =
+
+{
+
+11 t if t < 0 ∧ i ∈ control 10 t otherwise , β = 100 , ε it ∼ N (0 , 50) 10 Both the treatment group and the control group are set to have 50 individuals and t ∈ [−10 , 10]. The trends of each group are shown in Figure B.3. The results are reported in Table 1. The bias tends to increase when the pre-trends extend over a longer period. At the same time, the variance tends to get smaller. The MSE is minimized when the pre-trends length is 3, which is the optimal pre-trends length. The MSE-optimal TWFE estimate is 95 .449 (6 .076). The conventional TWFE model does not change the pre-trends length; therefore, the conventional TWFE model estimate is 91 .570 (4 .577). Compared with this estimate, the MSE-optimal estimate is less biased but it has a larger variance. Table 1: List of the estimates by each length of pre-trends 
+
+Length of Pre-trends MSE Bias Squared Variance Coefficient SE 0 124.367 0.000 124.367 100.292 11.152 1 77.355 6.675 70.681 102.876 8.407 2 68.960 15.870 53.091 96.309 7.286 3 60.372 23.456 36.916 95.449 6.076 4 81.921 48.350 33.571 93.339 5.794 5 76.763 44.352 32.411 93.633 5.693 6 84.406 56.812 27.594 92.755 5.253 7 108.727 84.194 24.534 91.117 4.953 8 115.393 92.359 23.033 90.682 4.799 9 97.023 76.076 20.947 91.570 4.577 
+
+> Notes: Each row represents the (estimated) values of MSE, bias squared, variance, coefficient, and SE with each length of pre-trends. The MSE is minimized when the pre-trends length is 3 (the shaded row).
+
+## 4.2 Dynamic Treatment Effect Estimation 
+
+The next simulation considers a dynamic treatment effect. This simulation applies the method in Section 3.3 to different simulated data which also have fundamentally non-parallel trends between the treatment and the control groups. The simulated data are generated according to the following setup: 
+
+Yit = μi + θit + ∑ 
+
+> l̸=−1
+
+βl1{t − t∗ 
+
+> i
+
+= l} + εit 
+
+where 
+
+{
+
+μtreatment = 100 
+
+μcontrol = −100 , θ it =
+
+{
+
+7t if t < 0 ∧ i ∈ control 10 t otherwise , β l = 6 l, ε it ∼ N (0 , 50) 11 In the same way as the simulation in Section 4 .1, both the treatment group and the control group are set to have 50 individuals and t ∈ [−10 , 10]. The trends of each group are shown in Figure B.4. Suppose that the target parameter is β5. Note that the model to estimate is model (7). The results are reported in Table 2. The bias of the estimates changes nonmonotonically but it seems to get larger when the pre-trends extend over a longer period. The variance tends to get smaller as the pre-trends become longer. The MSE is minimized when the pre-trends length is 6, which is the optimal pre-trends length. The MSE-optimal event study estimate is 50 .943 (22 .021). Table 2: List of the estimates by each length of pre-trends Target parameter = β5
+
+Length of Pre-trends MSE Bias Squared Variance Coefficient SE 0 1017.981 0.000 1017.981 47.099 31.906 1 676.540 51.938 624.602 54.306 24.992 2 645.241 89.283 555.958 56.548 23.579 3 508.401 18.735 489.665 51.428 22.128 4 525.972 7.822 518.150 49.896 22.763 5 504.936 25.067 479.870 52.106 21.906 6 499.688 14.774 484.914 50.943 22.021 7 526.362 60.236 466.126 54.860 21.590 8 600.299 133.914 466.385 58.671 21.596 9 727.893 269.806 458.088 63.525 21.403 
+
+> Notes: Each row represents the (estimated) values of MSE, bias squared, variance, coefficient, and SE with each length of pre-trends. The MSE is minimized when the pre-trends length is 6 (the shaded row).
+
+12 Figure 3: Event study plots with different models 
+
+> Notes:  These figures represent the event study plots with three models:  (A) the traditional event study model (3), (B) the modified event study model (7) with the full length of pre-trends, (C) the MSE-optimal event study model. The black points are the point estimates and the vertical lines are the 95% confidence intervals. The triangle points are the true values of the simulation.
+
+13 I compare the results with the conventional event study model. Figure 3 (A) represents the event study plot of the conventional event study model (3). It barely passes the pre-trends test, but the estimates have larger variances. Next, I apply the modified model (7). Figure 3 (B) shows the event study plot of the modified event study model (7) with the full length of pre-trends. Owing to the increase of the sample size for the estimation, the estimates have smaller variances. However, imposing the parallel trends assumption on pre-treatment periods for the two groups introduces bias into the estimates. Lastly, Figure 3 (C) shows the event study plot of the MSE-optimal event study model. The estimates have smaller variances compared with the traditional event study model (3) and are less biased compared with the modified event study model (7) with the full length of pre-trends. 
+
+# 5 Empirical Application 
+
+I apply the MSE-optimal DiD model to the setting of Fitzpatrick and Lovenheim (2014). This research studies the effect of the Early Retirement Incentives (ERI) program in Illinois in 1993 on student achievement. They estimate regressions of the following form: 
+
+Y sigt =β0 + β1(T eachers ≥ 15) ig × P ost t + β2Teachers ig × P ost t
+
++ γXit + δig + ϕtg + εsigt 
+
+(9) where Y sigt is the standardized test score in grade g for subject s in school i and year t. The variable T eachers ≥ 15 is the average number of teachers in a given grade with at least 15 years of experience pre-1994. T eachers is the average total number of teachers in a grade and school in the pre-ERI period, and P ost is an indicator variable equal to 1 for school years after 1993. The vector X contains the set of school-by-year demographic variables. δig is school-by-grade fixed effects, and ϕtg is grade-by-year fixed effects. In one analysis, they estimate the effect of the ERI program on the Math test score using a conventional event study model based on the regression (9). The results are shown in the left panel of Figure 4. It passes the pre-trends test but the confidence intervals are relatively wide. In other words, the variances of the estimates are large. Suppose that the target parameter is the 1997 coefficient because the effect of the ERI program on student achievement may arise with a delay. Then, the results of the MSE-optimal event study model are reported in Table 3. Based on the calculation, MSE is minimized when the length of the pre-trends is 3. Therefore, the MSE-optimal event study plot is shown in the right panel of the Figure 4. 14 Figure 4: Event Study Estimates of the Effect of the Early Retirement Incentives (ERI) Program on Student Math Test Scores 
+
+> Notes: This figure explains the effect of ERI program on math test scores. It shows both point estimates and 95% confidence intervals. The left plot, based on the conventional event study model, is the equivalent to the plot in Fitzpatrick and Lovenheim (2014). The right plot is based on MSE-optimal event study model. The target parameter is the 1997 coefficient and the MSE of this parameter is minimized.
+
+Table 3: List of the estimates by each length of pre-trends 
+
+Length of Pre-trends MSE Bias Squared Variance Coefficient SE 0 0.0000250 0.0000000 0.0000250 0.00982 0.00500 1 0.0000266 0.0000004 0.0000262 0.00917 0.00512 2 0.0000247 0.0000004 0.0000243 0.01042 0.00493 3 0.0000245 0.0000011 0.0000234 0.01086 0.00484 
+
+> Notes: This table shows the result of the MSE-optimal event study model. The target parameter is the 1997 coefficient. Each row represents the (estimated) values of MSE, bias squared, variance, coefficient, and SE with each length of pre-trends. The MSE is minimized when the pre-trends length is 3 (the shaded row).
+
+# 6 Conclusion 
+
+This paper proposes an MSE-optimal approach to difference-in-differences estimation. Con-ventional DiD designs (TWFE model, event study model) may suffer from either high variance or substantial bias. The proposed model changes the length of pre-trends and finds the opti-mal one that minimizes the MSE of the estimator. I illustrate the method using simulations and an empirical application. As future work, it might be possible to apply this method to a staggered treatment setting. 15 References 
+
+Baker, A. C., Callaway, B., Cunningham, S., Goodman-Bacon, A., and Sant’Anna, P. H. (in press). Difference-in-differences designs: A practitioner’s guide. Journal of Economic Literature .Baker, A. C., Larcker, D. F., and Wang, C. C. (2022). How much should we trust staggered difference-in-differences estimates? Journal of Financial Economics , 144 (2), 370-395. Butts, K. (2023). Difference-in-differences estimation with spatial spillovers. https://arxiv .org/abs/2105.03737 
+
+Callaway, B., and Sant’Anna, P. H. (2021). Difference-in-differences with multiple time periods. Journal of Econometrics , 225 (2), 200-230. Calonico, S., Cattaneo, M. D., and Titiunik, R. (2014). Robust nonparametric confidence intervals for regression-discontinuity designs. Econometrica , 82 (6), 2295-2326. Card, D., and Krueger, A. B. (1994). Minimum wages and employment: A case study of the fast-food industry in new jersey and pennsylvania. American Economic Review , 84 (4), 772-793. de Chaisemartin, C., and d’Haultfoeuille, X. (2020). Two-way fixed effects estimators with heterogeneous treatment effects. American Economic Review , 110 (9), 2964-2996. de Chaisemartin, C., and d’Haultfoeuille, X. (2023). Two-way fixed effects and differences-in-differences with heterogeneous treatment effects: A survey. The Econometrics Journal ,
+
+26 (3), C1-C30. Egami, N., and Yamauchi, S. (2023). Using multiple pretreatment periods to improve difference-in-differences and staggered adoption designs. Political Analysis , 31 (2), 195-212. Fiorini, M., Lee, W., and Pfeifer, G. (2024). A simple approach to staggered difference-in-differences in the presence of spillovers. CESifo Working Paper No.11011. https:// ssrn.com/abstract=4772584 
+
+Fitzpatrick, M. D., and Lovenheim, M. F. (2014). Early retirement incentives and student achievement. American Economic Journal: Economic Policy , 6 (3), 120-154. Fitzpatrick, M. D., and Lovenheim, M. F. (2019). Replication data for: Early retirement incentives and student achievement. American Economic Association [publisher], Inter-university Consortium for Political and Social Research [distributor]. https://doi.org/ 10.3886/E114865V1 
+
+Goodman-Bacon, A. (2021). Difference-in-differences with variation in treatment timing. 
+
+Journal of Econometrics , 225 (2), 254-277. Hansen, B. (2022). Econometrics . Princeton University Press. Imbens, G., and Kalyanaraman, K. (2012). Optimal bandwidth choice for the regression 16 discontinuity estimator. The Review of Economic Studies , 79 (3), 933-959. Ishimaru, S. (2026). Estimating treatment effects in panel data without parallel trends. 
+
+https://arxiv.org/abs/2601.08281 
+
+Rambachan, A., and Roth, J. (2023). A more credible approach to parallel trends. The Review of Economic Studies , 90 (5), 2555-2591. Roth, J. (2022). Pretest with caution: Event-study estimates after testing for parallel trends. 
+
+American Economic Review: Insights , 4 (3), 305-322. Roth, J., Sant’Anna, P. H., Bilinski, A., and Poe, J. (2023). What’s trending in difference-in-differences? a synthesis of the recent econometrics literature. Journal of Econometrics ,
+
+235 (2), 2218-2244. Sun, L., and Abraham, S. (2021). Estimating dynamic treatment effects in event studies with heterogeneous treatment effects. Journal of Econometrics , 225 (2), 175-199. 
+
+# AppendixA Figures for Baseline DiD Models 
+
+In Section 2 .1, I formulate the simplest 2 × 2 DiD setting, and Figure A.1 illustrates how the ATT is identified in this framework. In Sections 2 .2 and 2 .3, I introduce two commonly used DiD specifications: the TWFE model and the event-study model. The TWFE specifica-tion is appropriate when the treatment effect is static, whereas the event-study specification is appropriate when the treatment effect is dynamic. Figure A.2 illustrates the difference between these two cases. 17 Figure A.1: 2 × 2 DiD Design 
+
+Notes: This figure overviews the changes of outcomes with both the treatment group (red line) and the control group (blue line). The dashed red line shows the counterfactual outcome of the treatment group without a treatment. The difference between the red line and the red dashed line represents the ATT. 
+
+Figure A.2: DiD with static and dynamic treatment effects 
+
+Notes: The figures explain the changes of outcomes with both the treatment group (red line) and the control group (blue line). In the left figure, the treatment effect is constant across post-treatment periods, that is, the treatment effect is static. In the right figure, the treatment effect varies across post-treatment periods, that is, the treatment effect is dynamic. 
+
+18 AppendixB Additional Figures of Simulation 
+
+The following two figures are the overviews of the simulation data in Section 4 .1 and 4 .2. 
+
+Figure B.3: Trends of the 2 groups with static treatment effect 
+
+Note: This figure represents the trends of the mean values of the two groups: the treatment group (red line) and the control group (blue line). The treatment effect is static, i.e., time-invariant. 
+
+Figure B.4: Trends of the 2 groups with dynamic treatment effect 
+
+Note: This figure represents the trends of the mean values of the two groups: the treatment group (red line) and the control group (blue line). The treatment effect is dynamic, i.e., time-variant. 
+
+19
