@@ -1,0 +1,3075 @@
+Title: Sample size and power calculations for causal inference with time-to-event outcomes
+
+URL Source: https://arxiv.org/pdf/2605.10088v1
+
+Published Time: Tue, 12 May 2026 02:14:03 GMT
+
+Number of Pages: 37
+
+Markdown Content:
+# Sample size and power calculations for causal inference with time-to-event outcomes 
+
+## Chengxin Yang 1, Bo Liu 2, and Fan Li ∗21Department of Biostatistics and Bioinformatics, Duke University 
+
+> 2
+
+## Department of Statistical Science, Duke University 
+
+## Abstract 
+
+This paper develops power and sample size formulas for causal inference with time-to-event outcomes. The target estimand is the marginal hazard ratio: the coefficient of a marginal structural Cox proportional hazard model with treatment as the only predictor. We extend the robust sandwich variance theory and derive the analytical form of the asymptotic variance for the inverse probability weighted partial likelihood estimator. Building on this, we derive a new sample size formula valid at any prespecified effect size, applicable to both randomized trials and observational studies. For randomized trials, the formula requires only the canonical inputs of treatment proportion, effect size, and event rate. The new formula corrects the mischaracterization of classic log-rank-based formulas. For observational studies, one additional input suffices: an overlap coefficient summarizing covariate similarity between comparison groups. We further develop a variance inflation approach applicable to all propensity score balancing weights, anchored to the corrected baseline variance. 
+
+Keywords : Cox model; inverse probability weighting; marginal hazard ratio; observational studies; variance inflation factor 
+
+> ∗Corresponding author (Fan Li, fl35@duke.edu). The authors gratefully acknowledge Jay Lusk, Fan Li (Yale), Laine Thomas, Jing Ning, Steve Cole for helpful comments.
+
+1
+
+> arXiv:2605.10088v1 [stat.ME] 11 May 2026
+
+# 1 Introduction 
+
+The design of a randomized trial routinely requires power and sample size calculations, which rely on quantifying the variance of the chosen test statistic to ensure sufficient statistical power for detecting an anticipated treatment effect (Chow et al., 2017). A distinctive feature of power analysis is the common absence of individual data; investigators must work with, at best, a few summary quantities. Time-to-event outcomes are ubiquitous in medical research. The Cox proportional hazards model (Cox, 1972) is the most widely used method for their analysis, with the hazard ratio as the primary estimand. Power analysis for the hazard ratio has traditionally been based on the log-rank test, for which Freedman (1982) and Schoenfeld (1983) established foundational formulas, both assuming away random censoring. A known limitation shared by this class of methods, including later extension to complex designs (Lakatos, 1988), is that they are derived under a null effect. Therefore, they systematically miscalculate the required sample size when the effect is not zero (Lee, 2026). However, the magnitude of this miscalculation has not been analytically quantified. When randomized trials are not feasible, researchers have increasingly used observational data to emulate a target trial. Sample size calculations are also critical in the design of observational studies. Specifically, in prospective studies, recruiting participants is usually time-consuming and costly; therefore, investigators must determine the minimum sample size to achieve the target power before the study begins. Even in retrospective studies with existing data, power analysis is still crucial for understanding the scope of data required and guide data selection in the design stage. For example, commercial population health databases often charge users costs based on the size of the data; a pre-study power calculation is then essential for study planning with limited resources. Moreover, the same data source is often used for investigating multiple hypotheses, e.g. effects on secondary outcomes in clinical research. In these cases, power analysis can help researchers decide the scope of their investigation and the number of hypotheses they can test simultaneously. The central challenge to causal inference with observational data is confounding; adjusting for confounders inflates variances of the estimated effects, increasing the sample size required to achieve the same power. However, confounding makes it much more challenging to develop a principled power analysis for observational studies than for randomized trials. Existing approaches broadly fall into two families. The first quantifies the variance inflation relative to the targeted randomized trial (Hsieh and Lavori, 2000; Scosyrev and Glimm, 2019; Austin, 2021; Shook-Sa and Hudgens, 2022), but generally requires individual data that are rarely available at the design stage. The second simulates individual data matched to pre-specified summary statistics (Mukherjee et al., 2003; Qin, 2024), but usually relies on ad hoc data-generating models. For non-survival outcomes, Liu et al. (2026) proposed a third approach: deriving the sample size formula by reducing the asymptotic variance of a consistent estimator under mild modeling assumptions on the propensity score and outcome. Their formula requires, in addition to the standard inputs in a randomized trial, two parameters that quantify the confounder-treatment and confounder-outcome association. Censoring of time-to-event outcomes create additional challenges for the above approaches. Variance 2inflation approaches, in addition, inherit a baseline problem from randomized trials: the log-rank formulas underlying these methods are derived under a null effect and can severely misquantify the variance under non-zero effects or imbalanced designs (Scosyrev and Glimm, 2019). Moreover, existing methods (Hsieh and Lavori, 2000; Scosyrev and Glimm, 2019) target at the conditional hazard ratio, which does not carry a causal interpretation due to the non-collapsibility of hazard ratio (Hernán, 2010). For causal inference, an appropriate estimand is the marginal hazard ratio, defined as the coefficient of a structural Cox model with treatment as the only predictor (Martinussen et al., 2020; Fay and Li, 2024), which must be estimated via the weighted partial likelihood with robust sandwich variance (Hernán et al., 2000). Extending the analytical approach of Liu et al. (2026) to this setting is demanding: the asymptotic theory of the weighted Cox model is substantially more involved, and establishing a tractable variance expression requires new theoretical development. This paper develops a unified analytical method for power and sample size calculations for the marginal hazard ratio with time-to-event outcomes, applicable to both randomized trials and observational studies. We first derive the closed-form robust asymptotic variance of the weighted partial likelihood estimator, extending Lin and Wei (1989) and Lin (2000) (Section 2). Building on this, we derive an analytical sample size formula with inverse probability weights that is valid at any prespecified effect size. For randomized trials, the formula corrects for classic log-rank formulas, requiring only the canonical inputs of treatment proportion, effect size, and event rates, and yields conservative sample sizes under mild conditions (Section 3). For observational studies, one additional input suffices: the overlap coefficient of Liu et al. (2026), which characterizes the propensity score distribution without requiring individual data (Section 4). We further develop a variance inflation approach applicable to any weighting scheme, anchored to the corrected baseline variance. We confirm the performance of our formulas through extensive numerical studies (Section 5). 
+
+# 2 Variance of the weighted marginal Cox model 
+
+## 2.1 Setup and the marginal Cox model 
+
+Consider a study with a right-censored time-to-event outcome of units indexed by i = 1 , . . . , n and any maximum follow-up time t† < ∞ such that t ∈ [0 , t †]. For causal inference, we adopt the potential outcome framework. Let Zi ∈ { 0, 1} denote the treatment indicator, Ti(z) the potential time of event of interest under treatment z, Ci the random censoring time, and Xi baseline covariates. Throughout, z = 1 for treatment and 0 for control. Following Lin and Wei (1989), each unit i is an i.i.d. draw from a common population distribution over (Ti(0) , T i(1) , C i, Z i, X i). Let r = Pr (Zi = 1) be the treatment proportion . We further denote T ∗ 
+
+> i
+
+the factual event time, Ti = min {T ∗ 
+
+> i
+
+, C i, t †} the observed time, and δi = I(T ∗ 
+
+> i
+
+= Ti) the event indicator; δi = 1 if event and 0 if censored. The at-risk process is Yi(t) = I(Ti ≥ t); Yi(t) = 1 if unit i
+
+has not experienced any event or censoring by time t. The risk set at t is R(t) = {i : Yi(t) = 1 }. Denote 
+
+Gz (t) = Pr (Ci ≥ t|Zi = z) the random censoring distribution and dz = Pr (δi = 1 |Zi = z) the observed event 
+
+3rate of arm z; this implies the combined event rate d = Pr (δi = 1) = rd 1 + (1 − r)d0. Equivalently, the 
+
+censoring rate of arm z is 1 − dz , and the combined is 1 − d. The observed data is therefore a collection of n
+
+i.i.d. tuples {Vi}ni=1 , where Vi = ( Ti, δ i, Z i, X i) follows a common distribution. Throughout, all expectations are taken over Vi unless otherwise stated. Denote the marginal potential survival, hazard, and cumulative hazard functions under treatment z by 
+
+Fz (t) = Pr (Ti(z) ≥ t), λz (t) = −(log Fz (t)) ′, and Λz (t) = R t 
+
+> 0
+
+λz (u)du , respectively. The marginal Cox model maintains the proportional hazard assumption (PH) that λ1(t)/λ 0(t) is constant with respect to t, imposing the following marginal structural model on T (z) (z = 0 , 1): 
+
+λ1(t) = λ0(t) exp( τ ), (1) where exp (τ ) is the causal estimand—the marginal hazard ratio between the treatment and control groups. Model (1) excludes all covariates and serves as a working model for defining the estimand rather than a data-generating model. Regardless of whether Model (1) holds exactly, exp (τ ) is a well-defined population-level time-averaged hazard ratio over the study period. For detailed discussion, see Xu and O’Quigley (2000), Martinussen et al. (2020), and Fay and Li (2024). In observational studies, directly fitting Model (1) to the observed data generally leads to biased estimates of τ because of confounding. In addition, it cannot be fitted as a multivariate Cox model with covariates due to the non-collapsibility of the hazard ratio, which jeopardizes the causal interpretation of τ (Hernán, 2010). Instead, Model (1) is fitted with weights (Hernán et al., 2000). To this end, let e(x) = Pr (Z = 1 |X = x) be the propensity score (Rosenbaum and Rubin, 1983). In randomized trials, ei = e(Xi) ≡ r; in observational studies, ei is unknown and varies across i. Let 
+
+w(z, x ) = w(Z = z, X = x) be a weight function and wi = w(Zi, X i) the weight for unit i.We maintain three standard identification assumptions for τ : (A1) SUTVA or consistency, T ∗ 
+
+> i
+
+= ZiTi(1) + (1 − Zi)Ti(0) ; (A2) unconfoundedness, {Ti(0) , T i(1) } ⊥ Zi | Xi; (A3) overlap (positivity), 0 < e (Xi) < 1 for all i. In addition, we make an assumption on the censoring mechanism: 
+
+Assumption. (A4) Arm-specific independent censoring: {Ti(0) , T i(1) , X i} ⊥ Ci | Zi.
+
+Under Assumptions A1-A4, a consistent estimator of τ is bτn, the solution to the weighted Cox partial likelihood estimating equation (Cox, 1975; Lin and Wei, 1989; Binder, 1992): 
+
+Un(τ ) = 
+
+> n
+
+X
+
+> i=1
+
+ψ∗ 
+
+> i
+
+(τ ) = 0 , ψ∗ 
+
+> i
+
+(τ ) = wiδi
+
+"
+
+Zi −
+
+P 
+
+> l∈R i
+
+wl exp( τ Z l)Zl
+
+P 
+
+> l∈R i
+
+wl exp( τ Z l)
+
+#
+
+. (2) The weight wi depends on the target population. For the observed (combined) population, wi is the inverse probability weight, normalized within each group: wi = rZ i/e i + (1 − r)(1 − Zi)/(1 − ei). Li et al. (2018) proposed the unified class of balancing weights that generalizes wi to other target populations. Denote τ0 the true marginal log hazard ratio of the target population, and V the asymptotic variance of 
+
+bτn. Standard calculations show that, for a one-sided level-α Wald hypothesis test of the effect size τ0, the 4minimal sample size of units to reach power β is 
+
+N = ( z1−α + zβ )2V /τ 20 , (3) where zc is the c-quantile of the standard normal distribution. This shows that the power calculation hinges on correct estimation of the asymptotic variance V .
+
+## 2.2 Asymptotic variance of bτn
+
+Estimating V , the asymptotic variance of bτn, is particularly challenging because it needs to be robust to model misspecification: Model (1) is rarely the data-generating process, so variance estimators based solely on the empirical partial score ψ∗ 
+
+> i
+
+(τ ) are not applicable (Andersen and Gill, 1982). Lin and Wei (1989) proposed a sandwich variance estimator robust to model misspecification for the unweighted Cox model. Binder (1992) extended it to survey settings with known sampling weight, taking the form [Pni=1 ψ∗ 
+
+> i
+
+(τ )] −2[Pni=1 η∗ 
+
+> i
+
+(τ )2],where η∗ 
+
+> i
+
+(τ ) is the weighted empirical influence function. Because power analysis is conducted at the design stage prior to data collection, our central task is to approximate V using only a few expected summary quantities. This requires an analytical expression of 
+
+V , which would reveal under what population-level assumptions V reduces to a tractable function of these summary inputs. Deriving such an expression, however, is nontrivial: Binder’s sandwich estimator is built on empirical score and influence functions that are not i.i.d., because each unit’s contribution depends on all other units through the risk set. As a result, V cannot be expressed as a closed-form function of ψ∗ 
+
+> i
+
+(τ )
+
+and η∗ 
+
+> i
+
+(τ ) or their moments. Lin (2000) built a rigorous asymptotic theory of Binder (1992) but expressed 
+
+V as a probability limit rather than analytically. Further extensions appear in Tian et al. (2005); Breslow and Wellner (2007); Zhang and Schaubel (2012); Mao et al. (2018); Hajage et al. (2018); Shu et al. (2021). However, none provided an analytical expression for V in the weighted setting. Therefore, we derive this expression in Theorem 1. For the setup, following Lin and Wei (1989), we define for k ∈ { 0, 1, 2}:
+
+S∗ 
+
+> k
+
+(τ, t ) = n−1
+
+> n
+
+X
+
+> j=1
+
+wj Yj (t) exp( τ Z j )Zkj , sk(τ, t ) = E wj Yj (t) exp( τ Z j )Zkj
+
+ , (4) as the empirical and population weighted risk-set averages, respectively, with weight wj exp (τ Z j ). Note that ψ∗ 
+
+> i
+
+(τ, T i) = wiδi[Zi − S∗ 
+
+> 1
+
+(τ, T i)/S ∗ 
+
+> 0
+
+(τ, T i)] , and sk(τ, t ) is deterministic in τ and t. When k = 0 , s0(τ, t )
+
+represents the weighted average of the full risk set at time t; when k = 1 , s1(τ, t ) is its analogue within the treated arm. The ratio s1/s 0 is the weighted proportion of treated in the risk set; we define it and its empirical counterpart as: 
+
+π∗
+
+> n
+
+(τ, t ) = S∗ 
+
+> 1
+
+(τ, t )
+
+S∗ 
+
+> 0
+
+(τ, t ) , π(τ, t ) = s1(τ, t )
+
+s0(τ, t ) . (5) We maintain the following standard regularity conditions throughout: (R1) Andersen-Gill conditions A–D in Andersen and Gill (1982), adjusted for weighted partial likelihood; (R2) regular weights: E[w2 
+
+> i
+
+] < ∞.5Theorem 1 is as follows, with proof in Appendix A.1. 
+
+Theorem 1. Under regularity conditions, √n(bτn − τ0) is asymptotically normal with mean 0 and variance 
+
+V = A(τ0)−2B(τ0), where A(τ0) = E[ψi(τ0)] , B(τ0) = E[η2 
+
+> i
+
+(τ0)] , and 
+
+ψi(τ0) = wiδi
+
+s2(τ0, T i)/s 0(τ0, T i) − π2(τ0, T i) ,ηi(τ0) = wiδi[Zi − π(τ0, T i)] − wi exp( τ0Zi)
+
+Z Ti
+
+> 0
+
+[Zi − π(τ0, t )] dΛ0(t).
+
+Remark 1. The functions ψi(τ0) and ηi(τ0) are population-level influence functions depending only on the unit i, and are therefore i.i.d. across units, in contrast to their empirical counterparts ψ∗ 
+
+> i
+
+and η∗ 
+
+> i
+
+, which involve the full risk set. Theorem 1 extends Lin and Wei (1989): setting wi ≡ 1 recovers their asymptotic variance exactly. 
+
+Remark 2. Theorem 1 imposes no restrictions on w beyond measurability with respect to σ(Z, X ) and the regularity conditions. In particular, it accommodates all propensity score weights, including inverse probability, overlap, and the treated population weights. 
+
+## 2.3 Asymptotic variance with inverse probability weights 
+
+This section focuses on VIPW , where w is the normalized inverse probability weight. Theorem 1 reveals that computing V requires the full trajectory of π(τ0, t ) over the study period, which further depends on the marginal survival functions and arm-specific censoring distributions. These are unknown prior to data collection and cannot be determined by limited summary inputs. Therefore, assumptions on time-dependent behaviors of π(τ0, t ) are necessary for sample size calculation. We impose the following assumption. 
+
+Assumption. (A5) Proportional risk-set: π(τ0, t ) ≡ π(τ0, 0) for all t ∈ [0 , t †].
+
+Let Fz (t|Xi) = Pr (Ti(z) ≥ t | Xi) be the conditional survival function under treatment z. Theorem 2 shows that VIPW reduces to a closed-form expression in a few summary inputs alone and serves as the umbrella result for this paper. Corollaries 1 and 2 tailor the result to randomized trials and observational studies, respectively. All the proofs are given in Appendix A.2. 
+
+Theorem 2. Under assumption (A5) , VIPW = eVIPW + ϵ, where 
+
+eVIPW =
+
+ λ1 + λ0
+
+d
+
+2 
+
+r2λ20d1 E
+
+ 1
+
+ei
+
+
+
++ (1 − r)2λ21d0 E
+
+ 11 − ei
+
+ 
+
+,
+
+where 
+
+λ1 = [ r/ (1 − r)] 1/2 exp( τ0/2) , λ0 = 1 /λ 1.
+
+The residual ϵ is a signed linear functional of Cz (t) = Cov [Fz (t|Xi), w z (Xi)] , and its closed-form expression is given in the proof. Remark 3. The quantity π(τ0, t ), defined in Equation (5) , is the weighted proportion of treated units in the risk set at time t. Under the marginal Cox model (1) , it varies in t through [F0(t)] exp( τ0)−1, G0(t), and 6G1(t); see Appendix A.2. Assumption A5 anchors π(τ0, t ) at t = 0 . Because F (0) = G(0) = 1 , we have 
+
+π(τ0, 0) = λ1/(λ1 + λ0), fully determined by the design-stage inputs (r, τ 0). This assumption is implicitly invoked by the log-rank formulas of Freedman (1982) and Schoenfeld (1983), which assume τ0 = 0 and no random censoring, under which π(τ0, t ) is time-invariant and reduces to π(τ0, 0) .The proportional risk-set assumption is the only principled design-stage choice. Specifying π(τ0, t ) for 
+
+t > 0 requires knowledge of F (t) and G(t), which are the objects the study is designed to estimate and has yet to produce. Any design-stage value assigned to π(τ0, t ) at t > 0 is therefore an extrapolation, and truly knowing these trajectories would render the study itself unnecessary. Among all time points in the study period, t = 0 is the unique point at which π(τ0, t ) is determined by design-stage information alone, and A5 anchors to this principled specification. Moreover, anchoring to t = 0 is practically favorable. Under mild conditions on the treatment proportion and F0(t†), the control survival at the end of follow-up, eVIPW 
+
+tends to overestimate the true variance VIPW , providing extra robustness against uncertainty in design-stage inputs. This is formally established for randomized trials in Appendix A.2 and supported by simulations for observational studies. 
+
+# 3 Sample size calculation in randomized trials 
+
+In a randomized trial, ei ≡ r for all i and all propensity score balancing weights reduce to wi ≡ 1; therefore, 
+
+E[1 /e i] = 1 /r and E[1 /(1 − ei)] = 1 /(1 − r). Theorem 2 is thus applicable, and we denote the corresponding variance as VRCT . Moreover, Cz (t) ≡ 0 for z = 0 , 1, giving an exact ϵ = 0 . Then the following corollary is immediate. 
+
+Corollary 1 (Randomized trials) . For a randomized controlled trial, it holds 
+
+VRCT = eVRCT = ( λ1 + λ0)2 rλ 20d1 + (1 − r)λ21d0
+
+  d2. (6) 
+
+Remark 4. Under equal censoring rates across arms that d1 = d0 = d, eVRCT reduces to 
+
+eVRCT = ( λ1 + λ0)2 rλ 20 + (1 − r)λ21
+
+  d. (7) 
+
+Remark 5. The variance eVRCT invokes no distributional assumptions. In contrast, Lachin (1981) and Lachin and Foulkes (1986) derived sample size formulas assuming exponential survival times, which is subject to misspecification. It also creates a design-analysis mismatch when trials are not analyzed via the exponential model. Lakatos (1988) relaxed proportional hazards but required complex time-varying inputs, which impose a considerable design-stage burden and produce sample sizes sensitive to their specification (Phadnis and Mayo, 2021). The variance eVRCT is derived with the M-estimation theory (Tsiatis, 2006) and is valid for any postulated 
+
+τ0. This contrasts with the widely adopted formulas of Schoenfeld (1983) and Freedman (1982), both of which are derived from the log-rank statistic under the null effect. Schoenfeld (1983) provided the canonical 7formula for the required number of events , eVSchoen = 1 /[r(1 − r)] , with no dependence on τ0. Freedman (1982) proposed an alternative, eVFreed = eVSchoen · [τ0{1 − r + r exp( τ0)}/{1 − exp( τ0)}]2, which partially adjusts for non-null effect by evaluating the mean of the log-rank statistic at τ0, while retaining its variance under the null; as a result, the correction becomes inadequate as |τ0| grows. Beyond the null-effect derivation, both formulas target the log-rank test that only addresses the existence of a difference in survival functions between arms, while practical analyses often require estimating the hazard ratio as the inferential goal, which relies on the Wald test on bτn. Proposition 1 formalizes the discrepancy among these formulas under a balanced design; for comparison, following the setting of the log-rank formulas, we consider formula (7) and multiply eVRCT by 
+
+d so it also yields the required number of events. 
+
+Proposition 1. For a balanced randomized trial ( r = 1 /2), 
+
+eVRCT / eVFreed = 2 cosh( τ0)[cosh( τ0) − 1] /τ 20 ≥ 1, (8) 
+
+eVRCT / eVSchoen = cosh( τ0)[cosh( τ0) + 1] /2 ≥ 1, (9) 
+
+with eVRCT ≥ eVFreed ≥ eVSchoen , where cosh( τ0) = ( eτ0 + e−τ0 )/2, and equality throughout if and only if τ0 = 0 .
+
+Proposition 1 reveals that, under a balanced design, the log-rank formulas underestimate the required number of events relative to the proposed formula, more so as |τ0| increases. Freedman improves only modestly over Schoenfeld: for hazard ratios of 0.8, 0.6, and 0.4, the proposed eVRCT requires 1.04 , 1.21 , and 
+
+1.78 times as many events as Schoenfeld’s, and 1.03 , 1.16 , and 1.55 times Freedman’s. Therefore, both may be underpowered at practical effect sizes. Under imbalanced designs, for example an enriched treated arm, eVSchoen is symmetric in r about 1/2, taking the same value at r and 1 − r, while the true variance is asymmetric at non-null effects; the ordering between eVRCT and eVSchoen is also undetermined. As a result, Schoenfeld can either underpower trials or lead to unnecessary over-enrollment. We examine this bidirectional pitfall numerically in Section 5. In practice, users of power analysis usually desire the number of units rather than events, which depends on the censoring structure. The formulas of Schoenfeld and Freedman both assume away censoring, and their extensions to censored outcomes do not account for censoring rates that may differ across arms. In contrast, our proposed Formula (6) adapts to arm-specific censoring with distinct inputs, and under equal rates across arms, reduces to formula (7) requiring the single input d. Moreover, the proposed and Schoenfeld formulas both rely on observed event rates as inputs, directly available from prior study summaries. In contrast, Freedman requires the marginal arm-specific survival probabilities at the end of follow-up and a separate censoring rate exclusively from random censoring. In general, these presuppose a full survival analysis of prior randomized data with sufficient follow-up that is impossible at the design stage. The modest improvement of Freedman over Schoenfeld, therefore, can come at a cost of higher burden of inputs from users. 84 Sample size calculation in observational studies 
+
+## 4.1 Analytical formula with inverse probability weights 
+
+In observational studies, ei is unknown and varies across units. Theorem 2 therefore requires the propensity score distribution, which is rarely available before data collection. We address this by adopting the approach of Liu et al. (2026), which characterizes the distribution of ei through two summary inputs: (i) the treatment proportion r, and (ii) the overlap coefficient ϕ, defined as the Bhattacharyya coefficient of the propensity score distribution between the two arms, ϕ := R 10
+
+pf1(u)f0(u)du, where fz (u) is the density of ei|Zi = z for 
+
+z = 0 , 1. Larger ϕ indicates better covariate overlap, and ϕ = 1 in randomized trials. Under a logistic model for propensity scores, Liu et al. (2026) showed that e(x) is well approximated by a Beta distribution Beta (a, b ): the linear combination of covariates is approximately normal by the Lyapunov central limit theorem, so ei follows a logit-normal distribution, which is in turn closely approximated by a Beta distribution. The parameters (a, b ) are uniquely determined by the user-specified inputs (r, ϕ ), by solving the equations: 
+
+r = aa + b , ϕ = Γ( a + 0 .5) 
+
+a1/2Γ( a)Γ( b + 0 .5) 
+
+b1/2Γ( b) . (10) The mapping from (r, ϕ ) ∈ (0 , 1) 2 to (a, b ) ∈ (0 , ∞)2 is bijective, with ϕ monotonically increasing in both a and 
+
+b for any fixed r. The overlap coefficient ϕ is highly concentrated in (0 .8, 1) ; Liu et al. (2026) recommended a rule of thumb ϕ < 0.8, [0 .8, 0.9) , [0 .9, 0.95) , ≥ 0.95 for very poor, poor, moderate, and good overlap, respectively. Theorem 2 requires the inverse propensity scores to have finite mean for a finite asymptotic variance, a condition inherent to the inverse probability weighted estimator rather than a restriction of the Beta approximation. Under e(x) ∼ Beta (a, b ), this is equivalent to a, b > 1. For r ∈ { 0.1, 0.3, 0.5}, the minimum ϕ
+
+guaranteeing a, b > 1 is approximately {0.88 , 0.84 , 0.80 }, so more balanced designs tolerate poorer overlap before this condition is violated. Substituting ei ∼ Beta( a, b ) into Theorem 2 yields the following corollary. 
+
+Corollary 2 (Observational studies) . Under a logistic working model for the propensity scores with e(x) ∼
+
+Beta( a, b ), if a, b > 1, then VIPW = eVobs + ϵ, where 
+
+eVobs =
+
+ λ1 + λ0
+
+d
+
+2 
+
+r2λ20d1
+
+a + b − 1
+
+a − 1 + (1 − r)2λ21d0
+
+a + b − 1
+
+b − 1
+
+
+
+, (11) 
+
+and ϵ is the residual from Theorem 2. It holds that ϵ → 0 as ϕ → 1.Remark 6. Theorem 1 is derived with true weights w, so eVobs does not include the uncertainty in estimating the propensity score. While variance estimation in the analysis stage should generally incorporate this uncertainty, doing so in the design stage, however, would greatly complicate eVobs and require individual data that are rarely available. Moreover, treating the estimated propensities as fixed for inverse probability weights would overestimate the true variance, yielding a conservative sample size (Henmi and Eguchi, 2004; 9Shu et al., 2021), which is desirable for power analysis. We verified this in numerical studies of Section 5 (omitted for brevity), echoing Liu et al. (2026) in non-survival context. The residual ϵ arises from confounding, and its sign and magnitude are study-specific. At the design stage, we use eVobs as the default working variance for sample size calculation. We establish explicit closed-form bounds on |ϵ| in Appendix A.2; an estimate of F0(t†) further tightens the bounds but is not required. These bounds support a sensitivity assessment of the required sample size. Investigators are best positioned to conduct it, informed by subject-matter knowledge of the study cohort and the treatment selection mechanism. 
+
+## 4.2 Variance inflation of general balancing weights 
+
+Inverse probability weights correspond to a target population that is represented by the entire study sample and are sensitive to extreme propensities in the lack of overlap between groups. In real-world observational studies, the scientific question often concerns different target populations. For example, the overlap population consists of patients in clinical equipoise and the treated population consists of only units who receive the intervention. In these cases, alternative weights are adopted; therefore, we extend the results in previous sections to the general class of propensity score balancing weights of Li et al. (2018), where wi = Ziw1(ei) + (1 − Zi)w0(ei)
+
+for arm-specific weight functions wz , z = 0 , 1, and denote the asymptotic variance of bτn by Vw. Besides the inverse probability weight, balancing weights include two other common weights as special cases: (i) overlap weight, {w1 = 1 − e(x), w 0 = e(x)}, targeting at estimands on the overlap population (ATO); (ii) the treated weights, {w1 = 1 , w 0 = e(x)/(1 − e(x)) }, targeting at estimands on the treated population (ATT). In randomized trials, all weighting schemes reduce to wi ≡ 1; in observational studies, different weighting schemes may lead to markedly different target populations and causal estimates. For general balancing weights, establishing a closed-form decomposition of Vw parallel to Theorem 2 requires an additional assumption specific to the weight function and confounding structure of the study, which inverse probability weights satisfy automatically; see Appendix A.3 for details. Therefore, we develop an alternative variance inflation approach that is applicable to all balancing weights, requiring no assumptions beyond those in Section 4. The variance inflation factor for a weight function w is defined as: 
+
+κw := Vw/ eVRCT , (12) so that the required sample size is κwNRCT , where NRCT = ( z1−α + zβ )2 eVRCT /τ 20 is the baseline trial sample size from Corollary 1. Existing variance inflation methods for survival outcomes anchor their baseline to the log-rank null variance (Hsieh and Lavori, 2000; Hsieh et al., 2003), which can substantially misquantify the true variance (Scosyrev and Glimm, 2019). Anchoring to eVRCT corrects it, so that κw isolates the variance inflation attributable solely to the weights. This also aligns the design formula with the analysis, as the common inferential goal is a Wald test on the estimated hazard ratio beyond a log-rank test. Moreover, these methods require individual-level pilot data to estimate the variance inflation, which are usually not available 10 at the design stage and may not be representative of the target population. We approximate κw by κDE , the population limit of the design effect KDE (Kish, 1965): 
+
+KDE =
+
+ 1
+
+n1
+
++ 1
+
+n0
+
+−1" P 
+
+> i
+
+Ziw2
+
+> i
+
+(P 
+
+> i
+
+Ziwi)2 +
+
+P
+
+> i
+
+(1 − Zi)w2
+
+> i
+
+(P
+
+> i
+
+(1 − Zi)wi)2
+
+#
+
+, (13) where n1 and n0 = n − n1 are the treatment and control group sizes, and κDE := plim n→∞ KDE . Recent works propose to use κDE as a measure of variance inflation in propensity score weighting (Zhou et al., 2020; Austin, 2021), but all require individual weights to evaluate κDE . We address this problem by adopting the Beta approximation of the propensity score in Section 4.1, which allows evaluating κDE based solely on two summary inputs (r, ϕ ) for any given weighting scheme. Under the normalized inverse probability weights, κw has an analytical expression eVobs / eVRCT based on equations (6) and (11) ; this provides a closed-form benchmark for assessing κDE . Proposition 2 formalizes their relationship. 
+
+Proposition 2. Under the normalized inverse probability weights and the Beta approximation e(x) ∼ Beta (a, b )
+
+with a, b > 1:(i) For all balanced designs ( r = 1 /2), κDE = eVobs / eVRCT ;(ii) For all imbalanced designs ( r̸ = 1 /2), |κDE − eVobs / eVRCT | → 0 as ϕ → 1.
+
+Proposition 2 shows that, under all balanced designs, κDE is exactly the true variance ratio; otherwise, κDE 
+
+always converges to the true ratio as the covariate overlap increases. The results hold regardless of other inputs. Kish (1995) recognized the potential of extending KDE to regression coefficients but the literature has not formalized the theoretical link. Proposition 2 established this connection for the weighted partial likelihood estimator under inverse probability weights. This supports the use of κDE as a working approximation to κw
+
+for general balancing weights, where no analytical benchmark is available. We provide a Monte Carlo algorithm to estimate κDE by exploiting the Beta approximation of propensity scores and the factorization of p(ei, Z i, w i) = p(ei)p(Zi|ei)p(wi|Zi, e i).
+
+Algorithm 1. Monte Carlo estimation of κDE 
+
+Input : treatment proportion r, overlap coefficient ϕ, weighting function wz (e).1. Sample ei ∼ Beta( a, b ), where (a, b ) are computed from (r, ϕ ) via bisection from equation (10); 2. Sample Zi ∼ Bernoulli( ei);3. Compute wi = Ziw1(ei) + (1 − Zi)w0(ei) based on the sampled Zi and ei;4. Repeat Steps 1–3 for a large number of iterations n; substitute {(Zi, w i)}ni=1 into KDE in equation (13) to obtain κDE .11 5 Simulations 
+
+## 5.1 Synthetic Data 
+
+5.1.1 Simulation design 
+
+Adopting the simulation design in Cheng et al. (2022), we simulate a superpopulation of M = 1 , 000 , 000 
+
+units. Covariates X1, X2, and X3 are jointly normal with mean zero, marginal variance one, and pairwise correlation 0.5; X4, X5, and X6 are independent Bernoulli (0 .5) draws. The true propensity score follows the logistic model e(X) = expit (β0 + cXβ ), where β = (0 .2, 0.3, −0.3, −0.2, −0.3, 0.2) ⊤ and c controls the covariate overlap between the two arms. We draw Z ∼ Bernoulli (e(X)) . The potential event time T (z)
+
+follows the conditional hazard λz (t|X) = ( k/s )( t/s )k−1 exp (αz + Xθ ), with Weibull shape k = 1 .2 and scale 
+
+s = 3 producing a time-increasing hazard, and θ = ( −0.4, −0.2, 0.1, 0.1, 0.2, −0.3) ⊤. The factual event time is 
+
+T ∗ = ZT (1) + (1 − Z)T (0) . For each weighting scheme w, we tune α for the target τw, solved from estimating equation (2) on the superpopulation; we consider marginal hazard ratios exp (τw) ∈ { 0.4, 0.6, 0.8}, which we refer to as large, moderate, and small effects, respectively. We set the end of follow-up time t† so that 20% 
+
+of the superpopulation units would survive to the end under control without censoring. We generate the random censoring time in each arm independently as C|Z = z ∼ Exponential (νz ), with νz tuned to the target rate. The observed time is T = min {T ∗, C, t †} with event indicator δ = I(T ∗ = T ). We consider two random censoring scenarios: 20% in the treated arm only and 0% in both arms; we present the former for primary results and the latter in Appendix B. For each configuration, we compute the required sample size N by substituting the relevant variance formula into equation (3) . We then randomly draw N units from the M units, stratified by Z in randomized trials and unstratified in observation studies, and repeat for B = 10 , 000 replicates. In each replicate, we compute the estimate ˆτN , with w ≡ 1 for randomized trials and weights estimated from a logistic propensity score model for observational studies. We fix the target power at 0.8 and significance level at 0.05 . We conduct a one-sided Wald hypothesis test using the empirical variance of ˆτN in all B replicates, and report the proportion of rejections as the empirical power. For randomized trials, we set c = 0 and β0 = logit (r) so that ei ≡ r, and consider r ∈ { 1/3, 1/2, 2/3} to represent common allocations 2: 1, 1 :1, and 1 : 2, and treatment enrichment; this further covers multi-arm designs for pairwise comparisons, for example, allocations of 1: 1: 1 and 1:2 :2, corresponding to control proportions of 
+
+1/3 and 1/5, respectively. We evaluate the formulas in Section 3: the proposed eVRCT , Schoenfeld’s eVSchoen ,and Freedman’s eVFreed . Both the proposed and Schoenfeld formulas require only the observed event rate d,though the proposed formula can be tailored to arm-specific random censoring by replacing d with d1 and 
+
+d0. In contrast, the Freedman formula requires the potential survival probability F0(t†) and the random censoring rate Pr (C < T ∗|C < t †), which we compute from the superpopulation potential survival curves and censoring distribution. 12 For observational studies, we fix r = 1 /2 and vary ϕ ∈ { 0.99 , 0.96 , 0.93 , 0.90 , 0.87 , 0.85 , 0.83 } by calibrating 
+
+c and β0. We consider normalized inverse probability, overlap, and treated weights, with τw calibrated separately for each scheme. We present the primary results under exp (τw) = 0 .6, with remaining results in Appendix B. For the inverse probability weight, we compare the proposed eVobs with Hsieh and Lavori (2000), which inflates Schoenfeld’s null variance by 1/(1 − R2), where R2 is the coefficient of determination from regressing Z on X. We do not extend to Freedman’s variance because it requires potential marginal survivals of the anticipated cohort, impractical in observational settings. We derive an approximated R2
+
+from (r, ϕ ) via the Beta approximation e(X) ∼ Beta (a, b ), under which R2 = V[e(X)] /V[Z] = 1 /(a + b + 1) ,yielding eVHL = eVSchoen · [1 + 1 /(a + b)] . Thus, both methods are evaluated without individual-level data. For overlap and treated weights, we implement Algorithm 1. We exclude Scosyrev and Glimm (2019) from the comparison, because they require fitting a Cox model on individual-level data. 
+
+5.1.2 Results: Randomized trials 
+
+Table 1: Sample size and empirical power of the proposed, Schoenfeld, and Freedman formulas in randomized trials with 20% random censoring in the treated arm.                                                                 
+
+> Marginal hazard ratio Proposed Schoenfeld Freedman NPower NPower NPower
+> Treatment proportion = 1 /3
+> 0.4 95 .916 50 .671 77 .852 0.6 199 .841 150 .742 190 .818 0.8 811 .809 757 .768 839 .820
+> Treatment proportion = 1 /2
+> 0.4 67 .862 49 .754 59 .826 0.6 156 .818 142 .791 155 .820 0.8 707 .801 701 .800 731 .807
+> Treatment proportion = 2 /3
+> 0.4 57 .807 61 .828 56 .796 0.6 152 .799 171 .830 159 .796 0.8 781 .814 825 .824 805 .817
+
+Table 1 reports results under arm-specific random censoring. Across the scenarios considered, the proposed formula achieves the nominal power of 0.8, confirming that it adequately quantifies the variance of the partial likelihood estimator at any postulated effect. In contrast, the Schoenfeld formula underpowers at the largest effect under the balanced design, and falls below and above the nominal target at r = 1 /3 and r = 2 /3,respectively, consistent with the theoretical result in Section 3. This bidirectional pitfall persists across effect sizes considered: at each imbalanced design, Schoenfeld always requires the smallest or largest sample sizes. As beneficial treatments are sometimes allocated to an enriched treated arm, this can result in over-enrollment. The Freedman formula attains empirical power comparable to the proposed formula but requires different inputs from the proposed and Schoenfeld formulas. The three formulas converge in empirical power as the effect goes to null under a balanced design, consistent with Proposition 1. Similar patterns hold without 13 random censoring in Appendix B, while the proposed formula adapts to arm-specific censoring through the observed event rates. The proposed formula falls mildly above the target power mainly when a beneficial treatment is assigned to a smaller arm, because the risk-set ratio is anchored at the start of follow-up, as discussed in Section 2.3. The setting where such conservativeness is most pronounced, however, is less common in practice, given that markedly beneficial treatments are typically not assigned to the smaller arm. In other limited cases where mild excess exists, it provides a safe margin against the uncertainty in design-stage inputs without overinflating the required sample size. Schoenfeld’s deviation differs in nature, because it is undetermined in direction and incidental to the particular study, not foreseeable at the design stage. 
+
+5.1.3 Results: Observational studies 
+
+Table 2: Sample size and empirical power based on the proposed method for a marginal hazard ratio of 0.6 in the observed (ATE), overlap (ATO) and treated (ATT) population, respectively, of observational studies with a balanced design and 20% random censoring in the treated arm, with varying degrees of overlap. For ATE, the Hsieh & Lavori method is compared, whereas no alternative method is available for ATO and ATT.                                                                    
+
+> ATE ATO ATT Proposed Hsieh & Lavori
+> ϕNPower NPower NPower NPower 0.99 157 .831 145 .809 157 .832 161 .820 0.96 167 .833 154 .805 165 .839 182 .791 0.93 182 .821 163 .786 173 .834 212 .786 0.90 206 .832 172 .757 182 .826 261 .790 0.87 246 .855 182 .733 192 .825 326 .807 0.85 295 .876 189 .719 198 .816 411 .827 0.83 386 .912 196 .691 205 .815 541 .878
+
+Table 2 reports results of observational studies at a marginal hazard ratio of 0.6 under balanced design and random censoring. For the observed population (ATE), the proposed method achieves the nominal target of 0.8 across the overlap coefficients evaluated. By contrast, Hsieh and Lavori systematically underpowers, with the shortfall widening as ϕ decreases. Their method inflates Schoenfeld’s variance by a factor derived for the conditional hazard ratio, and therefore, not only inherits the baseline variance problem under non-null effects but also mismatches the marginal causal estimand. As overlap deteriorates, their variance inflation becomes increasing inadequate for the marginal Cox model. Since individual-level data are rarely available at the design stage, we evaluate both methods using the Beta approximation, facilitating a fair comparison under the same inputs possible in practice. For overlap and treated weights where no analytical variance formula is available, the proposed method consistently attains the nominal power. This empirically supports the design effect as a working approximation of the variance inflation factor for general balancing weights, extending its validity beyond the inverse probability weights in Proposition 2. The required sample size follows a consistent ordering across target populations: the overlap, observed, and treated, from smallest to largest. They diverge as overlap deteriorates, 14 reflecting differences in robustness across the weighting schemes to extreme propensities. The inverse probability and treated weights both place large weights on units with extreme propensities, whereas overlap weights downweight them and thus remain efficient under poor overlap. While the target population is primarily determined by the scientific question, this ordering provides a practical reference when investigators face constraints on the feasible sample size under anticipated poor overlap. Similar patterns hold under alternative effect sizes and in the absence of random censoring in Appendix B. For the observed population, the proposed method consistently achieves empirical power slightly above the nominal target, with larger excess at the poorest overlap considered, because we treat estimated propensities as fixed (Section 2). This is favorable in observational studies, because it provides a safe margin against not only the uncertainty in design-stage inputs, but more importantly, the variance residual due to confounding (Section 4.1). It is challenging, in general, to determine the structure and magnitude of confounding at the design stage. The proposed method is assessed without requiring any knowledge on confounding, and Table 2 confirms its robustness when researchers lack such information. Similar margins persist under overlap weights. 
+
+## 5.2 Real-world data calibrated simulation 
+
+To complement the synthetic study in Section 5.1, we further evaluate the proposed methods on two real-world studies, a randomized trial and an observational study. We treat each study cohort as the superpopulation and resample from it, paralleling the synthetic-data design. For each cohort of size M , we calculate the required sample size N using cohort-level summaries, draw N patients from the M with replacement (stratified by arm for randomized trials and unstratified for observational studies), and conduct a Wald hypothesis testing with the estimated marginal hazard ratio and robust variance. We repeat across B = 10 , 000 replicates and report the rejection proportion as the empirical power. These simulations are nonparametric in that we invoke no parametric data-generating model. Their purpose is not to re-analyze the existing studies or perform post-hoc power calculations, but to validate the proposed methods in real-world settings under unknown data generation and potential violations to assumptions and approximations invoked throughout. 
+
+5.2.1 A randomized trial: colon cancer 
+
+We use the landmark trial of Moertel et al. (1990) on adjuvant therapy of resected colon carcinoma. We restrict to the comparison between surgery-only (control) and fluorouracil plus levamisole after surgery (treatment), resulting in a full cohort of M = 619 patients (control, 315 ; treatment, 304 ). Following Moertel et al. (1990), we use death as the endpoint and consider a hypothetical trial with 3.5-year follow-up. We obtain the marginal hazard ratio of 0.685 from the full cohort and treat it as the target effect size, which represents a moderate effect typical of clinical trials. We consider r ∈ { 1/3, 1/2, 2/3} and a one-sided test against the null τ0 ≥ 0. We compute the observed event rate of each arm as input for the proposed and Schoenfeld formulas. For Freedman, we instead fit a Kaplan-Meier curve to obtain the marginal survival 15 under control at 3.5 years and compute the random censoring rate of the full cohort as inputs. Table 3: Sample size and empirical power of the proposed, Schoenfeld, and Freedman formulas for the colon trial, across treatment proportions r.                          
+
+> Proposed Schoenfeld Freedman
+> rNPower NPower NPower
+> 1/3644 .830 536 .770 615 .814
+> 1/2525 .814 502 .794 509 .800
+> 2/3539 .798 596 .824 530 .789
+
+Table 3 reports results on the colon trial. The proposed formula attains empirical power at or slightly above the nominal target across all treatment allocations, paralleling Section 5.1.2 and confirming its robustness in real data. By contrast, the Schoenfeld formula underpowers at r = 1 /3 and falls above the nominal target at 
+
+r = 2 /3, replicating the bidirectional pitfall under imbalanced designs. The Freedman formula yields required sample size and empirical power comparable to the proposed, but requires a Kaplan-Meier analysis on prior individual-level data, which our proposed and Schoenfeld formulas avoid. 
+
+5.2.2 An observational study: right heart catheterization 
+
+We use the publicly available benchmark observational data in Connors et al. (1996), which evaluates the causal effect of right heart catheterization, a diagnostic procedure among hospitalized critically ill patients. The treatment is whether or not the patient received right heart catheterization and the outcome is the time-to-death up to 180 days after admission. The data contain 5, 735 patients, each with the treatment indicator, survival outcome (event indicator and time), and 72 covariates; we follow Hirano and Imbens (2001) on covariate selection for the propensity score model. The original cohort exhibits substantially poor overlap between the two arms. To make the simulation more representative of common observational settings, we trim to patients whose estimated propensities fall in [0 .05 , 0.95] , retaining M = 5 , 393 patients, 2, 175 treated and 3, 218 controls; we regard the trimmed cohort as the full cohort. We re-estimate the propensities on the full cohort and calculate the overlap coefficient of ϕ = 0 .861 empirically. We further calculate the marginal hazard ratios of the observed, overlap, and treated populations, respectively, by fitting a weighted marginal Cox model with estimated propensities; we take them as the target effects. We also calculate the observed event rates of the two arms. We then design a hypothetical observational study on a similar population to detect the target effects, with a two-sided test against the null τw = 0 . Following Section 5.1.1, we calculate the required sample size N
+
+using (r, ϕ ), event rates, and target effect obtained from the full cohort. We evaluate the proposed and Hsieh & Lavori’s methods for the observed population, and the proposed for the overlap and treated populations. The proposed approach attains empirical power above the nominal target for the observed population (0.892 , N = 3 , 940 ), and at the target for the overlap ( 0.794 , N = 2 , 081 ) and treated ( 0.796 , N = 4 , 892 )populations. By contrast, Hsieh & Lavori’s method considerably underpowers ( 0.716 , N = 2 , 588 ). As 16 elaborated in Section 5.1.3, neither its baseline variance nor the variance inflation factor aligns with the marginal causal estimand. For inverse probability weights, the proposed working variance is conservative, consistent with the synthetic-data results at comparable overlap. For overlap and treated weights, the proposed method attains the nominal target precisely. This strongly supports the design effect as a working approximation of the variance inflation factor for general balancing weights in real-world settings, extending the theoretical justification in Proposition 2. 
+
+# 6 Discussion 
+
+This paper develops unified power and sample size formulas for causal inference with time-to-event outcomes. We focus on the hazard ratio of the Cox model as it is the dominant estimand for survival analysis in medical research. In randomized experiments, our formula corrects the log-rank formulas at non-null effects with only the canonical inputs, and can further adjust for arm-specific censoring rates; in observational studies, one additional input characterizing covariate overlap suffices, extending Liu et al. (2026) to survival outcomes. We further extend to general balancing weights using the design effect as the variance inflation factor. We provide an online calculator at https://pspower.netlify.app to implement the proposed formulas. Investigators who anticipate severe non-proportional hazards or prefer reporting on the survival scale may turn to alternative estimands, such as the restricted mean survival time and survival probability at fixed time points (Zhang and Schaubel, 2012; Mao et al., 2018; Cheng et al., 2022). These estimands rely on their own asymptotic theory and often parametric models, and studies should be planned with design tools dedicated to the planned analysis to avoid design-analysis mismatch. Our formulas complement design tools tailored to these estimands. The proposed method can be extended to several directions. In multi-arm or factorial trials with a shared control arm, the formula applies to each pairwise comparison without modification (Zhao et al., 2026). When competing events are present, the method applies directly if the question concerns the cause-specific hazard, which reduces to a Cox model on the cause-specific event indicator; the subdistribution hazard would require analyzing the variance under the redefined risk set, parallel to the proposed method. We can also extend to clustered studies by introducing a cluster design effect to evaluate variance inflation due to within-cluster correlation, and is applicable to both cluster-randomized trials and observational studies. In the latter case, the interaction between variance inflation due to clustering and weighting would require careful investigation. 
+
+# 7 Data Availability Statement 
+
+The colon cancer trial data are publicly available in the R package survival on CRAN ( https://cran. r-project.org/web/packages/survival/index.html ). The right heart catheterization data are publicly available from the Vanderbilt Biostatistics Datasets repository ( https://hbiostat.org/data/repo/rhc ). 17 Appendix A. Technical Proofs 
+
+## A.1 Theorem 1 
+
+In this section, we prove Theorem 1: main proof (A.1.2), lemmas (A.1.3), and relations to Lin and Wei (1989) (A.1.4). 
+
+A.1.1 Regularity coditions 
+
+Following Section 2, we define S∗ 
+
+> k
+
+(τ, t ) and sk(τ, t ), k ∈ { 0, 1, 2}, as the empirical and population weighted risk-set averages: 
+
+S∗ 
+
+> k
+
+(τ, t ) = n−1
+
+> n
+
+X
+
+> j=1
+
+wj Yj (t) exp( τ Z j )Zkj , k ∈ { 0, 1, 2}, sk(τ, t ) = E wj Yj (t) exp( τ Z j )Zkj
+
+ ,
+
+where the expectation is over a generic unit j from the population distribution, and therefore sk(τ, t ) is a deterministic function of t and τ . Furthermore, we define the empirical and population risk-set ratios: 
+
+π∗
+
+> n
+
+(τ, t ) = S∗ 
+
+> 1
+
+(τ, t )
+
+S∗ 
+
+> 0
+
+(τ, t ) , π(τ, t ) = s1(τ, t )
+
+s0(τ, t ) .
+
+We maintain the following regularity conditions throughout: (R1) Andersen-Gill type: conditions A–D in Andersen and Gill (1982). Specifically, conditions A (finite interval) and C (Lindeberg) remain unchanged. Conditions B (asymptotic stability) and D (asymptotic regularity conditions) are imposed on the redefined S∗ 
+
+> k
+
+(τ, t ) and sk(τ, t ) which include the weight w, while fully retain their forms. (R2) Regular weights: E[w2 
+
+> i
+
+] < ∞.
+
+A.1.2 Proof of Theorem 1 
+
+Proof of Theorem 1. The estimator bτn solves the partial likelihood estimating equation: 
+
+Un(τ ) = 
+
+> n
+
+X
+
+> i=1
+
+ψ∗ 
+
+> i
+
+(τ ) = 0 , ψ∗ 
+
+> i
+
+(τ ) = wiδi
+
+
+
+Zi − S∗ 
+
+> 1
+
+(τ, T i)
+
+S∗ 
+
+> 0
+
+(τ, T i)
+
+
+
+(14) Under the regularity conditions and invoke the continuous mapping theorem under sup-norm over the corresponding space, 
+
+sup 
+
+> t, τ
+
+|S∗ 
+
+> k
+
+(τ, t ) − sk(τ, t )| p
+
+−→ 0, sup 
+
+> t,τ
+
+|π∗
+
+> n
+
+(τ, t ) − π(τ, t )| p
+
+−→ 0,
+
+where t ∈ [0 , t †] with t† < ∞ and τ ∈ B where B is some neighborhood of τ0.The empirical partial score ψ∗ 
+
+> i
+
+(τ0) can be decomposed as 
+
+ψ∗ 
+
+> i
+
+(τ0) = wiδi [Zi − π(τ0, T i)] − wiδi [R∗
+
+> n
+
+(τ0, T i) − π(τ0, T i)] ,
+
+and therefore n−1/2Un(τ0) can be written as 
+
+1
+
+√n Un(τ0) = 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+wiδi [Zi − π(τ0, T i)] 
+
+| {z }
+
+> Term I
+
+− 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+wiδi [π∗
+
+> n
+
+(τ0, T i) − π(τ0, T i)] 
+
+| {z }
+
+> Term II
+
+(15) Notice that Term I is a sum of i.i.d. mean-zero random variables because each summand depends only on 18 unit i. Apply first-order expansion around (s1(τ0, t ), s 0(τ0, t )) to π∗
+
+> n
+
+(τ0, T i):
+
+π∗
+
+> n
+
+(τ0, t ) = π(τ0, t ) + 1
+
+s0(τ0, t )
+
+ S∗ 
+
+> 1
+
+(τ0, t )
+
+n − s1(τ0, t )
+
+
+
+− s1(τ0, t )
+
+s20(τ0, t )
+
+ S∗ 
+
+> 0
+
+(τ0, t )
+
+n − s0(τ0, t )
+
+
+
++ op
+
+where the remainder is op(n−1/2) uniformly in t.Denote S∗ 
+
+> k
+
+(τ0, t ) − sk(τ0, t ) = n−1 Pnj=1 ξj,k (t), ξj,k (t) = wj Yj (t) exp (τ0Zj )Zkj − sk(τ0, t ). By definition, 
+
+E[ξj,k (t)] = 0 and ξj,k (t) depends only on unit j. Substituting the expansion and ξj,k (t) into Term II: Term II = 1
+
+n√n
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+wiδi
+
+s0(τ0, T i) [ξj, 1(Ti) − π(τ0, T i)ξj, 0(Ti)] + op(1) .
+
+Notice that Yj (Ti) = I(Tj ≥ Ti) and ξj, 1(t) − π(τ0, t )ξj, 0(t) = wj Yj (t) exp (τ0Zj )[ Zj − π(τ0, t )] for all t. Plug them into Term II and exchange the order of summation: Term II = 1
+
+n√n
+
+> n
+
+X
+
+> j=1
+> n
+
+X
+
+> i=1
+
+wiδi · wj exp( τ0Zj )I(Ti ≤ Tj )[ Zj − π(τ0, T i)] 
+
+s0(τ0, T i) + op(1) .
+
+The above Term II is in the form of n−3/2 P 
+
+> i,j
+
+h(Vi, V j ), and asymptotically equivalent to a scaled second-order U-statistic with asymmetric kernel h; each diagonal term h(Vi, V i) is Op(1) under regularity conditions and therefore their sum scaled by n−3/2 is op(1) . A symmetric reconstruction of the kernel by eh =[h(vi, v j ) + h(vj , v i)] /2 further yields Term II = Hn + op(1) , Hn = 1
+
+n√n
+
+> n
+
+X
+
+> i̸=j
+
+eh(Vi, V j ). (16) By Lemma 2, we decompose Hn into a first-order projection and a degenerate remainder: 
+
+Hn = 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+wi exp( τ0Zi)
+
+Z Ti
+
+> 0
+
+[Zi − π(τ0, t )] dΛ0(t) + op(1) . (17) Substituting equation (17) into equation (16) and then (15) yields 
+
+1
+
+√n Un(τ0) = 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ηi(τ0) + op(1) , (18) where ηi(τ0) is the population-level influence function: 
+
+ηi(τ0) = wiδi[Zi − π(τ0, T i)] − wi exp( τ0Zi)
+
+Z Ti
+
+> 0
+
+[Zi − π(τ0, t )] dΛ0(t). (19) Both π(τ0, t ) and Λ0(t) are deterministic functions of t so ηi(τ0) depends only on unit i, and thus {ηi(τ0)}ni=1 
+
+are i.i.d. See Lemma 3 for E[ηi(τ0)] = 0 , ensuring consistency of bτn to τ0.To derive the asymptotic distribution of bτn, expand the estimating equation (14) around τ0:
+
+0 = Un(bτn) = Un(τ0) + U ′
+
+> n
+
+(eτ )( bτn − τ0), (20) where eτ is in (bτn, τ 0) and guaranteed by the mean value theorem. The derivative is: 
+
+U ′
+
+> n
+
+(τ ) = ∂∂τ 
+
+> n
+
+X
+
+> i=1
+
+ψ∗ 
+
+> i
+
+(τ ) = −
+
+> n
+
+X
+
+> i=1
+
+wiδi
+
+"
+
+S∗ 
+
+> 2
+
+(τ, T i)
+
+S∗ 
+
+> 0
+
+(τ, T i) −
+
+ S∗ 
+
+> 1
+
+(τ, T i)
+
+S∗ 
+
+> 0
+
+(τ, T i)
+
+2#
+
+,
+
+because ∂S ∗ 
+
+> k
+
+/∂τ = S∗ 
+
+> k+1
+
+and ∂ψ ∗ 
+
+> i
+
+(τ )/∂τ = −wiδi · [∂(S∗ 
+
+> 1
+
+/S ∗ 
+
+> 0
+
+)/∂τ ]. The bracketed term, S∗ 
+
+> 2
+
+/S ∗ 
+
+> 0
+
+− (S∗ 
+
+> 1
+
+/S ∗ 
+
+> 0
+
+) ⊗
+
+(S∗ 
+
+> 1
+
+/S ∗ 
+
+> 0
+
+), which reduces to S∗ 
+
+> 2
+
+/S ∗ 
+
+> 0
+
+− (S∗ 
+
+> 1
+
+/S ∗ 
+
+> 0
+
+)2 with binary univariate covariate Zj , evaluated at any time Ti,is the weighted sample variance of Zj with weights wj Yj (Ti) exp (τ0Zj )/S ∗ 
+
+> 0
+
+(τ0, T i). By regularity conditions, it is almost surely positive, ensuring a unique solution to estimating equation (14) . By uniform law of large 19 number (ULLN), 
+
+1
+
+n U ′
+
+> n
+
+(eτ ) p
+
+−→ − A(τ0), A(τ0) = E
+
+
+
+wiδi
+
+ s2(τ0, T i)
+
+s0(τ0, T i) − π2(τ0, T i)
+
+ 
+
+> 0. (21) Rearrange equation (18) by (20) and apply CLT to the sum of ηi(τ0); then with equation (21) and Slutsky’s theorem: 
+
+√n(bτn − τ0) = 
+
+
+
+− 1
+
+n U ′
+
+> n
+
+(eτ )
+
+−1
+
+· 1
+
+√n Un(τ0) d
+
+−→ N (0 , V ), (22) where V = A(τ0)−2B(τ0) and B(τ0) = E[η2 
+
+> i
+
+(τ0)] , establishing Theorem 1. 
+
+A.1.3 Lemmas and proofs Lemma 1. Under the Cox model with intensity process ωi(t) = Yi(t)λ0(t) exp (τ0Zi) for unit i, where λ0(t)
+
+is the baseline hazard. Then, for any bounded Borel-measurable function f : [0 , t †] → R that does not depend on any random attribute of unit i other than through its argument t:
+
+E[wiδif (Ti)] = 
+
+Z ∞
+
+> 0
+
+f (t) s0(τ0, t )dΛ0(t), (23) 
+
+Proof of Lemma 1. The intensity process under a Cox model is defined by Equation (2.1) of Andersen and Gill (1982). Since Ni(t) = I(Ti ≤ t, δ i = 1) jumps exactly once at Ti when δi = 1 , the Lebesgue-Stieltjes integral picks up this single jump and therefore: 
+
+wiδif (Ti) = 
+
+Z t†
+
+> 0
+
+wif (t)dN i(t).
+
+Following Andersen and Gill (1982) Equation (2.2), define the compensator Ai of Ni under the Cox intensity 
+
+ωi(t) as 
+
+Ai(t) = 
+
+Z t
+
+> 0
+
+Yi(u)λ0(u) exp( τ0Zi)du, 
+
+which is continuous in t and Mi(t) := Ni(t) − Ai(t) is a local square-integrable martingale (Andersen and Gill (1982); Fleming and Harrington (1997) Theorem 2.3.1), and hence ⟨Mi, M i⟩ = Ai (Fleming and Harrington (1997), Theorem 2.5.2). Substituting dN i = dA i + dM i yields 
+
+Z t†
+
+> 0
+
+wif (t) dN i(t) = 
+
+Z t†
+
+> 0
+
+wif (t) dA i(t) + 
+
+Z t†
+
+> 0
+
+wif (t)dM i(t). (24) Set Hi(t) = wif (t) and it is Ft-predictable (since wi is F0-measurable and f (t) is a function of t), where Ft is the σ-algebra at time t from the filtration; F0 = σ(X, Z ) and it governs the baseline observables. Therefore, by Fleming and Harrington (1997) Theorem 2.4.4: 
+
+E
+
+Z t†
+
+> 0
+
+H2 
+
+> i
+
+d⟨Mi, M i⟩ = E
+
+Z t†
+
+> 0
+
+w2 
+
+> i
+
+f 2(t) Yi(t)λ0(t) exp( τ0Zi)dt ≤ w2 
+
+> i
+
+∥f ∥2 
+
+> ∞
+
+exp( |τ0|)Λ 0(t†) < ∞,
+
+and therefore, 
+
+E
+
+"Z t†
+
+> 0
+
+wif (t) dM i(t)
+
+#
+
+= 0 .
+
+Substituting to equation (24) yields 
+
+wiδif (Ti) = 
+
+Z t†
+
+> 0
+
+wif (t) dN i(t) = 
+
+Z t†
+
+> 0
+
+wif (t)Yi(t)λ0(t) exp( τ0Zi)dt. 
+
+20 Notice that the integrand is absolute-integrable and therefore Fubini’s theorem applies: 
+
+E [wiδif (Ti)] = 
+
+Z t†
+
+> 0
+
+f (t) E[wiYi(t) exp( τ0Zi)] 
+
+| {z }
+
+> =s0(τ0,t )
+
+λ0(t) dt =
+
+Z t†
+
+> 0
+
+f (t)s0(τ0, t )dΛ0(t) (25) Since Yi(t) = I(Ti ≥ t) = 0 and dN i(t) = dA i(t) = 0 for all t > t †, so the upper limit of integrals with respect to Ni, Ai, and Mi can equivalently be written as ∞. We will use t† and ∞ exchangeably henceforth. 
+
+Remark 7 (Conditional version of Lemma 1) . Lemma 1 can extend to the conditional probability measure 
+
+P (· | Qi), for any Qi that is measurable with respect to some G ⊆ F 0. For example, Qi can be Zi, Xi, wi, or any measurable function thereof. Under P (· | Qi), any G-measurable quantity equals its realized value almost surely, and is hence a constant. Lemma 1 under P (· | Qi) is stated as: for any function f (t) in Lemma 1, 
+
+E[wiδif (Ti) | Qi] = 
+
+Z ∞
+
+> 0
+
+f (t)E [wiYi(t) exp( τ0Zi) | Qi] dΛ0(t),
+
+where the expectation is taken over Vi|Qi. This holds because after conditioning on Qi, wi remains F0-measurable and thus Hi(t) = wif (t) is still Ft-predictable. Therefore, all theorems invoked during the proof of Lemma 1 carry over to P (· | Qi) automatically. 
+
+Lemma 2. For the scaled U-statistic Hn = n−3/2 Pni̸=j eh(Vi, V j ), where 
+
+eh(Vi, V j ) = [ h(Vi, V j ) + h(Vj , V i)] /2,h(Vi, V j ) = wiδi · wj exp( τ0Zj ) · I(Ti ≤ Tj )[ Zj − π(τ0, T i)] /s 0(τ0, T i),
+
+it holds that 
+
+Hn = 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+wi exp( τ0Zi)
+
+Z Ti
+
+> 0
+
+[Zi − π(τ0, t )] dΛ0(t) + op(1) .
+
+Proof of Lemma 2. Rewrite the scaled U-statistic Hn as: 
+
+Hn = n−3/2 X
+
+> i̸=j
+
+˜h(Vi, V j ) = 
+
+√n(n − 1) 
+
+n eHn, eHn = 1
+
+ n
+
+> 2
+
+ X
+
+> i<j
+
+eh(Vi, V j ), (26) where eHn is a standard U-statistic with symmetric kernel eh. Notice that Vi and Vj are two independent draws of generic units from the population P , and eh is a bivariate function of them. Since wi and wj are regular and s0(τ0, T i) is bounded away from zero, so E[eh2] < ∞.Let Ei indicate fixing a Vj and taking expectation over an independent generic draw of Vi from P , and vice versa for Ej . Denote θ = E[h(Vi, V j )] where the expectation is taken over (Vi, V j ), and define the i-projection 
+
+h(i)1 and j-projection h(j)1 :
+
+h(i)1 (Vi) = Ej [h(Vi, V j )] − θ, h(j)1 (Vj ) = Ei[h(Vi, V j )] − θ. 
+
+Again, both h(i)1 and h(j)1 are univariate functions of a generic unit rather than defined for a specific unit. The superscripts (i) and (j) only indicate over which argument of the bivariate kernel the expectation is taken. Evaluate θ, h(i)1 (Vi), and h(j)1 (Vj ):
+
+θ = E[h(Vi, V j )] = Ei [Ej {h(Vi, V j )|Vi}]= Ei
+
+ wiδi
+
+s0(τ0, T i) · Ej {wj exp( τ0Zj )I(Tj ≥ Ti)( Zj − π(τ0, T i)) }
+
+
+
+= Ei
+
+ wiδi
+
+s0(τ0, T i) · { s1(τ0, T i) − π(τ0, T i)s0(τ0, T i)}
+
+
+
+= Ei
+
+ wiδi
+
+s0(τ0, T i) · 0
+
+
+
+= 0 
+
+21 h(i)1 (Vi) = Ej
+
+ wiδi · wj exp( τ0Zj )I(Tj ≥ Ti)[ Zj − π(τ0, T i)] 
+
+s0(τ0, T i)
+
+
+
+− θ
+
+= wiδi
+
+s0(τ0, T i) · Ej [wj exp( τ0Zj )Yj (Ti)( Zj − π(τ0, T i))] − 0= wiδi
+
+s0(τ0, T i) · [s1(τ0, T i) − s0(τ0, T i)π(τ0, T i)] = 0 
+
+h(j)1 (Vj ) = Ei
+
+ wiδi · wj exp( τ0Zj )I(Tj ≥ Ti)[ Zj − π(τ0, T i)] 
+
+s0(τ0, T i)
+
+
+
+− θ
+
+= wj exp( τ0Zj )Ei
+
+ wiδi · I(Tj ≥ Ti)[ Zj − π(τ0, T i)] 
+
+s0(τ0, T i)
+
+
+
+− 0= wj exp( τ0Zj )
+
+Z ∞
+
+> 0
+
+I(Tj ≥ t)[ Zj − π(τ0, t )] 
+
+s0(τ0, t ) s0(τ0, t )dΛ0(t)= wj exp( τ0Zj )
+
+Z Tj
+
+> 0
+
+[Zj − π(τ0, t )] dΛ0(t),
+
+where the last equation holds by Lemma 1. Notice that eθ = E[eh(Vi, V j )] = 0 because θ = 0 . Following Vaart (1998) Chapter 12, define the first-order projection of eh as eh1(Vi) = Ej [eh(Vi, V j )] , and see that 
+
+eh1(Vi) = Ej
+
+ h(Vi, V j ) + h(Vj , V i)2
+
+
+
+= h(i)1 (Vi) + h(j)1 (Vi)2 = h(j)1 (Vi)2 ,
+
+where the last equation is due to h(i)1 (Vi) = 0 . Further use Vaart (1998) Theorem 12.3, 
+
+√n
+
+ eHn − bHn
+
+
+
+= op(1) , eHn = Op(n−1/2),
+
+where bHn = 2 n−1 Pni=1 eh1(Vi) and therefore 
+
+√n eHn = 2
+
+√n
+
+> n
+
+X
+
+> i=1
+
+eh1(Vi) + op(1) = 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+h(j)1 (Vi) + op(1) , 1
+
+√n eHn = Op(n−1) = op(1) . (27) Substituting equation (27) to (26) leads to 
+
+Hn = (n − 1) 
+
+n
+
+√n eHn = √n eHn − 1
+
+√n eHn = 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+h(j)1 (Vi) + op(1) .
+
+Plugging in the expression of h(j)1 (Vi) leads to 
+
+Hn = 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+wi exp( τ0Zi)
+
+Z Ti
+
+> 0
+
+[Zi − π(τ0, t )] dΛ0(t) + op(1) .
+
+Lemma 3. The population influence function ηi(τ ) is mean-zero at the truth τ0. Namely, E[ηi(τ0)] = 0 
+
+where ηi(τ0) = wiδi[Zi − π(τ0, T i)] − wi exp( τ0Zi) R Ti 
+
+> 0
+
+[Zi − π(τ0, t )] dΛ0(t).Proof of Lemma 3. 
+
+E[ηi(τ0)] = E [wiδi{Zi − π(τ0, T i)}]
+
+| {z }
+
+> Term I
+
++ E
+
+"
+
+wi exp( τ0Zi)
+
+Z Ti
+
+> 0
+
+[Zi − π(τ0, t )] dΛ0(t)
+
+#| {z }
+
+> Term II
+
+.
+
+22 Notice that Term I contains Zi, a random attribute of unit i, so Lemma 1 is not directly applicable. Decompose it as E[wiδiZi] − E[wiδiπ(τ0, T i)] . For E[wiδiZi], conditioning on Zi:
+
+E[wiδiZi] = E [E[wiδiZi | Zi]] = E [Zi · E[wiδi | Zi]] , (28) where the inner and outer expectations are taken over Vi|Zi and Zi, respectively. Appling the conditional Lemma 1 (Remark 7) with P (· | Zi) and f ≡ 1 yields, 
+
+E[wiδi | Zi] = 
+
+Z ∞
+
+> 0
+
+E[wiYi(t) exp( τ0Zi) | Zi]dΛ0(t). (29) Substituting (29) into (28), and see that Zi is fixed under E[·| Zi] and does not depend on t:
+
+E[wiδiZi] = E
+
+Z ∞
+
+> 0
+
+E[ZiwiYi(t) exp( τ0Zi) | Zi]dΛ0(t)
+
+
+
+.
+
+and then applies Fubini: 
+
+E[wiδiZi] = 
+
+Z ∞
+
+> 0
+
+E [E{ZiwiYi(t) exp( τ0Zi) | Zi}] dΛ0(t) = 
+
+Z ∞
+
+> 0
+
+s1(τ0, t )dΛ0(t). (30) For E[wiδiπ(τ0, T i)] , directly apply Lemma 1 with f (t) = π(τ0, t ):
+
+E[wiδiπ(τ0, T i)] = 
+
+Z ∞
+
+> 0
+
+π(τ0, t )s0(τ0, t )dΛ0(t) = 
+
+Z ∞
+
+> 0
+
+s1(τ0, t )dΛ0(t). (31) Combining (30) and (31) yields Term I being zero. For term II, Term II = E
+
+"
+
+wi exp( τ0Zi)
+
+Z Ti
+
+> 0
+
+[Zi − π(τ0, t )] dΛ0(t)
+
+#
+
+= E
+
+Z ∞
+
+> 0
+
+wi exp( τ0Zi)Yi(t)[ Zi − π(τ0, t )] dΛ0(t)
+
+
+
+=
+
+Z ∞
+
+> 0
+
+[E{wi exp( τ0Zi)Yi(t)Zi}
+
+| {z }
+
+> =s1(τ0,t )
+
+−π(τ0, t ) E{wi exp( τ0Zi)Yi(t)}
+
+| {z }
+
+> =s0(τ0,t )
+
+]dΛ0(t)=
+
+Z ∞
+
+> 0
+
+[s1(τ0, t ) − π(τ0, t )s0(τ0, t )] dΛ0(t) = 0 .
+
+Since both Terms I and II are zero-valued, E[ηi(τ0)] = 0 .
+
+A.1.4 Relations to the Asymptotic Variance in Lin and Wei (1989) 
+
+The asymptotic variance of Lin and Wei (1989) is a special case of Theorem 1 by adopting wi = w(Zi, X i) ≡ 1.Notice that under wi ≡ 1, our S∗ 
+
+> k
+
+(τ, t ) and sk(τ, t ) reduce to S(r)(τ, t ) and s(r)(τ, t ) defined in Lin and Wei (1989). They also defined s(0) (t) = λ0(t)E[Yi(t) exp (τ0Zi)] = λ0(t)s0(τ0, t ). Applying Lemma 1 with 
+
+f (t) = s2(τ0, t )/s 0(τ0, t ) − π2(τ0, t ) to equation (21): 
+
+A(τ0) = E
+
+
+
+wiδi
+
+ s2(τ0, T i)
+
+s0(τ0, T i) − π2(τ0, T i)
+
+ 
+
+=
+
+Z ∞
+
+> 0
+
+ s2(τ0, t )
+
+s0(τ0, t ) − π2(τ0, t )
+
+
+
+s0(τ0, t )dΛ0(t)=
+
+Z ∞
+
+> 0
+
+"
+
+s(2) (τ0, t )
+
+s(0) (τ0, t ) −
+
+ s(1) (τ0, t )
+
+s(0) (τ0, t )
+
+2#
+
+s(0) (t) dt. 
+
+Lin and Wei (1989) defined F (t) = E[Pni=1 Ni(t)/n ] and expressed ηi by Lebesgue-Stieltjes intergrals againt F (t). Notice that {Ni(t)}ni=1 at any t are i.i.d and therefore F (t) = E[Ni(t)] . Apply Lemma 1 to 23 E[Ni(t)] = E[δi I(Ti ≤ t)] with f (Ti) = I(Ti ≤ t):
+
+E[Ni(t)] = 
+
+Z ∞
+
+> 0
+
+I(u ≤ t) s0(τ0, u ) dΛ0(u) = 
+
+Z t
+
+> 0
+
+s0(τ0, u ) dΛ0(u),
+
+and therefore dF (t) = s0(τ0, t ) dΛ0(t). Notice that 
+
+δi[Zi − π(τ0, T i)] = 
+
+Z ∞
+
+> 0
+
+
+
+Zi − s1(τ0, t )
+
+s0(τ0, t )
+
+
+
+dN i(t) = 
+
+Z ∞
+
+> 0
+
+
+
+Zi − s(1) (τ0, t )
+
+s(0) (τ0, t )
+
+
+
+dN i(t)
+
+since Ni(t) jumps exactly once at Ti when δi = 1 . In addition, 
+
+exp( τ0Zi)
+
+Z Ti
+
+> 0
+
+[Zi − π(τ0, t )] dΛ0(t) = 
+
+Z ∞
+
+> 0
+
+Yi(t) exp( τ0Zi)
+
+s0(τ0, t )
+
+
+
+Zi − s1(τ0, t )
+
+s0(τ0, t )
+
+
+
+s0(τ0, t ) dΛ0(t)=
+
+Z ∞
+
+> 0
+
+Yi(t) exp( τ0Zi)
+
+s(0) (τ0, t )
+
+
+
+Zi − s(1) (τ0, t )
+
+s(0) (τ0, t )
+
+
+
+s(0) (τ0, t ) dF (t),
+
+and therefore 
+
+B(τ0) = 
+
+Z ∞
+
+> 0
+
+
+
+Zi − s(1) (τ0, t )
+
+s(0) (τ0, t )
+
+
+
+dN i(t) −
+
+Z ∞
+
+> 0
+
+Yi(t) exp( τ0Zi)
+
+s(0) (τ0, t )
+
+
+
+Zi − s(1) (τ0, t )
+
+s(0) (τ0, t )
+
+
+
+s(0) (τ0, t )dF (t).
+
+The above A(τ0), B(τ0), and V = A−2(τ0)B(τ0) are exactly the ones in Lin and Wei (1989). 
+
+## A.2 Theorem 2 
+
+In this section, we prove Theorem 2 and its associated lemmas and propositions: main proof (A.2.1), lemmas (A.2.2), propositions and corollaries (A.2.3), bounds for ϵ (A.2.4), and conservativeness of proportional risk-set (A.2.5). Let Ci denote the censoring time, Gz (t) = Pr (Ci ≥ t|Zi = z) the censoring distribution, Fz (t|Xi) = Pr (Ti(z) ≥ t | Xi) the conditional survival probability, and dz = Pr (δi = 1 |Zi = z) the event rate of arm z; z = 0 , 1. Under this setting, Ci is from all causes, 1 − dz is the censoring rate of arm z, and 
+
+dz = Pr( T ∗ 
+
+> i
+
+≤ Ci|Z = z) equivalently. 
+
+A.2.1 Proof of Theorem 2 
+
+Proof of Theorem 2. Under assumption A5, by Lemmas 4 and 5, respectively, 
+
+A(τ0) = rd 1 + (1 − r)d0
+
+(λ1 + λ0)2 ,B(τ0) = 1(λ1 + λ0)2
+
+
+
+d1r2λ20E
+
+ 1
+
+ei
+
+
+
++ d0(1 − r)2λ21E
+
+ 11 − ei
+
+ 
+
++ Bϵ(τ0),
+
+where d = rd 1 + (1 − r)d0. Therefore, by VIPW = A(τ0)−2B(τ0),
+
+VIPW =
+
+ λ1 + λ0
+
+d
+
+2 
+
+d1r2λ20E
+
+ 1
+
+ei
+
+
+
++ d0(1 − r)2λ21E
+
+ 11 − ei
+
+ 
+
++ ϵ, 
+
+where ϵ = A(τ0)−2Bϵ(τ0). Further plugging in Bϵ(τ0) from Lemma 5 completes the proof. 
+
+A.2.2 Lemmas Lemma 4 (Reduction of A(τ0)). Under the proportional risk-set assumption A5, 
+
+A(τ0) = E
+
+
+
+wiδi
+
+ s2(τ0, T i)
+
+s0(τ0, T i) − π2(τ0, T i)
+
+ 
+
+= rd 1 + (1 − r)d0
+
+(λ1 + λ0)2 .
+
+24 Proof of Lemma 4. Recall that sk(τ, t ) = E[wj Yj (t) exp (τ Z j )Zkj ] for k = 0 , 1, 2. Since Zi is binary, Z2 
+
+> i
+
+= Zi
+
+holds exactly, thus s2(τ0, t ) = s1(τ0, t ). Therefore, A(τ0) simplifies as 
+
+A(τ0) = E [wiδi · π(τ0, T i)(1 − π(τ0, T i))] .
+
+Applying Lemma 1 with f (t) = π(τ0, t )(1 − π(τ0, t )) further yields 
+
+A(τ0) = 
+
+Z ∞
+
+> 0
+
+π(τ0, t )(1 − π(τ0, t )) · s0(τ0, t )dΛ0(t) (32) Condition on (Zi, X i) and sum over Zi ∈ { 0, 1} with weights Pr( Zi = z | Xi) = ezi (1 − ei)1−z :
+
+s0(τ0, t ) = E
+
+ X
+
+> z∈{ 0,1}
+
+Pr( Zi = z | Xi) · wz,i · eτ0z · E[Yi(t) | Zi = z, X i]
+
+ , (33) where the inner and outer expectations are with respect to Vi|(Xi, Z i) and Xi, respectively; w1,i = r/e i and 
+
+w0,i = (1 − r)/(1 − ei) are the normalized inverse probability weights at Zi = z. Recall the assumptions A1 (SUTVA: T ∗ 
+
+> i
+
+= ZiTi(1) + (1 − Zi)Ti(0) ), A2 (unconfoundedness: Ti(z) ⊥ Zi | Xi) and A4 (arm-specific independent censoring: Ci ⊥ { Ti(0) , T i(1) , X i} | Zi): 
+
+E[Yi(t) | Zi = z, X i] = Pr( T ∗ 
+
+> i
+
+≥ t | Zi = z, X i) · Gz (t|Xi) = Pr( Ti(z) ≥ t | Xi) · Gz (t), (34) where the first equation holds because Yi(t) = I( min (T ∗ 
+
+> i
+
+, C i) ≥ t) = I(T ∗ 
+
+> i
+
+≥ t)I(Ci ≥ t), A1, and A4, and the second equation holds because A2. Plugging back to (33) yields 
+
+s0(τ0, t ) = E [re τ0 F1(t|Xi)G1(t) + (1 − r)F0(t|Xi)G0(t)] = re τ0 F1(t)G1(t) + (1 − r)F0(t)G0(t),
+
+where the expectation is over Xi. Similarly, 
+
+s1(τ0, t ) = E [re τ0 F1(t|Xi)G1(t) + 0] = re τ0 F1(t)G1(t).
+
+Combining the expressions of s1(τ0, t ) and s0(τ0, t ) above: 
+
+π(τ0, t ) = s1(τ0, t )
+
+s0(τ0, t ) = re τ0 F1(t)G1(t)
+
+re τ0 F1(t)G1(t) + (1 − r)F0(t)G0(t) (35) Under the marginal Cox model with λz (t) = λ0(t) exp (τ0z), the survival function satisfies Fz (t) = exp (− R t 
+
+> 0
+
+λz (u)du ) = exp (−eτ0z Λ0(t)) , and thus F1(t) = exp (−eτ0 Λ0(t)) = [ F0(t)] eτ0
+
+. Therefore, the ratio of population risk-set average π(τ0, t ) can be written as 
+
+π(τ0, t ) = re τ0 [F0(t)] eτ0 −1G1(t)
+
+re τ0 [F0(t)] eτ0 −1G1(t) + (1 − r)G0(t) , (36) where the time-vary components are [F0(t)] eτ0 −1 and Gz (t). Notice that Fz (0) = Gz (0) = 1 . Under the assumption A5, π(τ0, t ) ≡ π(τ0, 0) =: ¯ π, and therefore 
+
+π(τ0, t ) ≡ ¯π = re τ0
+
+re τ0 + (1 − r) , ¯π = λ1
+
+λ1 + λ0
+
+, 1 − ¯π = λ0
+
+λ1 + λ0
+
+(37) Substituting (37) into (32) yields 
+
+A(τ0) = 1(λ1 + λ0)2
+
+Z ∞
+
+> 0
+
+s0(τ0, t )dΛ0(t). (38) By Lemma 1, the integral R ∞ 
+
+> 0
+
+s0(τ0, t )dΛ0(t) = E[wiδi]. By conditioning on (Zi, X i),
+
+E[wiδi] = E [wi · E{I(T ∗ 
+
+> i
+
+≤ Ci) | Zi, X i}] = E [wi · Pr( T ∗ 
+
+> i
+
+≤ Ci | Zi, X i)] ,
+
+25 where the outer expectation is over (Zi, X i). Summing over Zi ∈ { 0, 1} with weights ei and then take expectation over Xi yields 
+
+E[wiδi] = E
+
+
+
+ei
+
+rei
+
+Pr( T ∗ 
+
+> i
+
+≤ Ci | Zi = 1 , X i) + (1 − ei) 1 − r
+
+1 − ei
+
+Pr( T ∗ 
+
+> i
+
+≤ Ci | Zi = 0 , X i)
+
+
+
+= rd 1 + (1 − r)d0,
+
+where E [Pr( T ∗ 
+
+> i
+
+≤ Ci | Zi = z, X i)] = Pr( T ∗ 
+
+> i
+
+≤ Ci | Zi = z) = dz . Substitute into (38): 
+
+A(τ0) = rd 1 + (1 − r)d0
+
+(λ1 + λ0)2 ,
+
+which establishes Lemma 4. 
+
+Lemma 5 (Reduction of B(τ0)). Under the the proportional risk-set assumption A5: 
+
+B(τ0) = 1(λ1 + λ0)2
+
+
+
+r2λ20d1E
+
+ 1
+
+ei
+
+
+
++ (1 − r)2λ21d0E
+
+ 11 − ei
+
+ 
+
++ Bϵ(τ0)
+
+Bϵ(τ0) = 1(λ1 + λ0)2
+
+
+
+eτ0 rλ 20
+
+Z ∞
+
+> 0
+
+C1(t)G1(t)dΛ0(t) + (1 − r)λ21
+
+Z ∞
+
+> 0
+
+C0(t)G0(t)dΛ0(t)
+
+
+
+,
+
+where Cz (t) = Cov( Fz (t|Xi), w z,i ) for t ∈ [0 , t †].Proof of Lemma 5. Recall Lemma 1 that Ai(t) = R t 
+
+> 0
+
+Yi(u)λ0(u) exp (τ0Zi)du and Mi(t) := Ni(t)−Ai(t) is a lo-cal square-integrable martingale. In Section A.1.4, we also showed that δi(Zi−π(τ0, T i)) = R ∞ 
+
+> 0
+
+(Zi − π(τ0, t )) dN i(t).Therefore, substituting dM i(t) = dN i(t) − dA i(t) = dN i(t) − Yi(t)eτ0Zi dΛ0(t) into ηi(τ0) yields 
+
+ηi(τ0) = wi
+
+Z ∞
+
+> 0
+
+(Zi − π(τ0, t )) dN i(t) −
+
+Z ∞
+
+> 0
+
+(Zi − π(τ0, t )) Yi(t)eτ0Zi dΛ0(t)
+
+
+
+= wi
+
+Z ∞
+
+> 0
+
+(Zi − π(τ0, t )) dM i(t) (39) By Fleming and Harrington (1997) Theorem 2.5.1, ⟨Mi, M i⟩ = Ai, where ⟨Mi, M i⟩ is the unique predictable quadratic variation of Mi. Further invoking their Theorem 2.4.4 yields 
+
+E[η2 
+
+> i
+
+(τ0)] = E
+
+"
+
+w2
+
+> i
+
+Z ∞
+
+> 0
+
+(Zi − π(τ0, t )) dM i(t)
+
+2#
+
+= E
+
+
+
+w2
+
+> i
+
+Z ∞
+
+> 0
+
+(Zi − π(τ0, t )) 2 dA i(t)
+
+
+
+. (40) Substituting dA i(t) into equation (40) and apply A5 and Fubini, 
+
+B(τ0) = E
+
+
+
+w2
+
+> i
+
+Z ∞
+
+> 0
+
+(Zi − π(τ0, t )) 2 Yi(t)eτ0Zi dΛ0(t)
+
+
+
+=
+
+Z ∞
+
+> 0
+
+E
+
+h
+
+w2 
+
+> i
+
+(Zi − ¯π)2 Yi(t)eτ0Zi
+
+i
+
+dΛ0(t). (41) For the integrand, condition on (Zi, X i) and see that wi = w(Zi, X i) is determined thereof: 
+
+E
+
+h
+
+w2 
+
+> i
+
+(Zi − ¯π)2 Yi(t)eτ0Zi
+
+i
+
+= E
+
+h
+
+w2 
+
+> i
+
+(Zi − ¯π)2 eτ0Zi E{Yi(t) | Zi, X i}
+
+i
+
+. (42) In Lemma 4 we showed E[Yi(t) | Zi = z, X i] = Fz (t|Xi)Gz (t). Similarly, sum over Zi ∈ { 0, 1} and take expectation over Xi,Eq. (42) = r(1 − ¯π)2eτ0 G1(t) · E [F1(t|Xi)w1,i ] + (1 − r)¯ π2G0(t) · E [F0(t|Xi)w0,i ]
+
+Notice that E [Fz (t|Xi)wz,i ] = Fz (t)E[wz,i ] + Cov (Fz (t|Xi), w z,i ), and substituting into equation above yields the following expression of integrand (42): Eq. (42) = r(1 − ¯π)2eτ0 F1(t)G1(t)E [w1,i ] + (1 − r)¯ π2F0(t)G0(t)E [w0,i ] + 
+
+26 r(1 − ¯π)2eτ0 C1(t)G1(t) + (1 − r)¯ π2C0(t)G0(t)
+
+where Cz (t) = Cov( Fz (t|Xi), w z,i ). Plugging expression above into equations (41) and (42): 
+
+B(τ0) = BF (τ0) + Bϵ(τ0), (43) where 
+
+BF (τ0) = r(1 − ¯π)2eτ0 E [w1,i ]
+
+Z ∞
+
+> 0
+
+F1(t)G1(t)dΛ0(t) + (1 − r)¯ π2E [w0,i ]
+
+Z ∞
+
+> 0
+
+F0(t)G0(t)dΛ0(t)
+
+Bϵ(τ0) = r(1 − ¯π)2eτ0
+
+Z ∞
+
+> 0
+
+C1(t)G1(t)dΛ0(t) + (1 − r)¯ π2
+
+Z ∞
+
+> 0
+
+C0(t)G0(t)dΛ0(t),
+
+and further by equation (37), 
+
+(1 − ¯π)2 = λ20
+
+(λ1 + λ0)2 , ¯π2 = λ21
+
+(λ1 + λ0)2 . (44) Plugging in (1 − ¯π)2 and ¯π2 into Bϵ(τ0) yields 
+
+Bϵ(τ0) = 1(λ1 + λ0)2
+
+
+
+eτ0 rλ 20
+
+Z ∞
+
+> 0
+
+C1(t)G1(t)dΛ0(t) + (1 − r)λ21
+
+Z ∞
+
+> 0
+
+C0(t)G0(t)dΛ0(t)
+
+
+
+(45) To evaluate R ∞ 
+
+> 0
+
+Fz (t)Gz (t)dΛ0(t), notice that dz = E[Pr (Ti(z) ≤ Ci|Zi = z, X i)] by A1 (SUTVA), where the expectation is taken over Xi. Therefore, 
+
+dz = E
+
+Z ∞
+
+> 0
+
+fz (t|Xi)Gz (t)dt 
+
+
+
+=
+
+Z ∞
+
+> 0
+
+fz (t)Gz (t)dt. 
+
+Under the marginal Cox model Fz (t) = exp( −eτ0z Λ0(t)) , so fz (t) = eτ0z Fz (t)λ0(t), and thus 
+
+Z ∞
+
+> 0
+
+F1(t)G1(t)dΛ0(t) = d1e−τ0 ,
+
+Z ∞
+
+> 0
+
+F0(t)G0(t)dΛ0(t) = d0. (46) Plugging into BF (τ0) yields 
+
+BF (τ0) = r2(1 − ¯π)2eτ0 E
+
+ 1
+
+ei
+
+
+
+· d1e−τ0 + (1 − r)2 ¯π2E
+
+ 11 − ei
+
+
+
+· d0
+
+= 1(λ1 + λ0)2
+
+
+
+d1r2λ20E
+
+ 1
+
+ei
+
+
+
++ d0(1 − r)2λ21E
+
+ 11 − ei
+
+ 
+
+, (47) which finishes the proof of Lemma 5. 
+
+A.2.3 Propositions and corollaries 
+
+Proof of Corollary 1. In randomized trials, E[1 /e i] = 1 /r and E[1 /(1 − ei)] = 1 /(1 − r); ϵ = 0 because 
+
+Cz (t) = Cov( Fz (t|Xi), w z (Xi)) ≡ 0. Plugging into Theorem 2 completes the proof. 
+
+Proof of Proposition 1. Following the setting of Schoenfeld formula that d = d1 = d0, under which it produces the required of events, our proposed formula at the event scale is 
+
+eVRCT = d · (λ1 + λ0)2[rλ 20 + (1 − r)λ21]/d = ( λ1 + λ0)2[rλ 20 + (1 − r)λ21], (48) Under r = 1 /2, it further reduces to eVRCT = ( λ1 + λ0)2(λ21 + λ20)/2. Furthermore, 
+
+λ1 = exp( τ0/2) , (λ1 + λ0)2 = 2[cosh( τ0) + 1] , λ21 + λ20 = 2 cosh( τ0).
+
+27 And thus eVRCT = 2 cosh( τ0)[cosh( τ0) + 1] . Similarly, 
+
+eVSchoen = 4 , eVFreed = [ τ0{1 + exp( τ0)}/{1 − exp( τ0)}]2 = τ 20 coth 2(τ0/2) .
+
+Therefore, eVRCT / eVSchoen = cosh( τ0)[cosh( τ0) + 1] /2 ≥ 1 immediately. Furthermore, 
+
+eVRCT / eVFreed = 2 cosh( τ0)[cosh( τ0) + 1] 
+
+τ 20 coth 2(τ0/2) = 2 cosh( τ0)[cosh( τ0) − 1] /τ 20 ,
+
+and by cosh (τ0) − 1 = 2 sinh 2(τ0/2) ≥ τ 20 /2 and cosh (τ0) ≥ 1, with equalities if and only if τ0 = 0 , we establish 
+
+eVRCT / eVFreed ≥ τ 20 /τ 20 = 1 .
+
+Proof of Corollary 2. Plugging E[1 /e i] = ( a + b − 1) /(a − 1) and E[1 /(1 − ei)] = ( a + b − 1) /(b − 1) into Theorem 2 established eVobs . For ϵ → 0 as ϕ → 1 see Section A.2.4. 
+
+Proof of Proposition 2. The design effect can be rewritten as 
+
+KDE = n1
+
+n · n0
+
+n ·
+
+ n−1 P 
+
+> i
+
+Ziw2
+
+> i
+
+(n−1 P 
+
+> i
+
+Ziwi)2 + n−1 P
+
+> i
+
+(1 − Zi)w2
+
+> i
+
+(n−1 P
+
+> i
+
+(1 − Zi)wi)2
+
+
+
+, (49) where n = n1 + n0. Define the random vector ξi := ( Zi, Z iwi, Z iw2 
+
+> i
+
+, (1 − Zi)wi, (1 − Zi)w2 
+
+> i
+
+); {ξi}ni=1 are i.i.d. across i. Under regular weights, all elements have finite moment, so by multivariate WLLN, n−1 P ξip
+
+−→ E[ξi]
+
+jointly. Then by continuous mapping theorem, 
+
+KDE 
+
+> p
+
+−→ κDE = r(1 − r)
+
+ E[Ziw2 
+
+> i
+
+](E[Ziwi]) 2 + E[(1 − Zi)w2 
+
+> i
+
+](E[(1 − Zi)wi]) 2
+
+
+
+. (50) Under the normalized inverse probability weights wi = rZ i/e i + (1 − r)(1 − Zi)/(1 − ei),
+
+E[Ziwi] = rE[Zi/e i] = rE[E{Zi|ei}/e i] = rE[ei/e i] = r
+
+E[Ziw2 
+
+> i
+
+] = r2E[Zi/e 2 
+
+> i
+
+] = r2E[E{Zi|ei}/e 2 
+
+> i
+
+] = r2E[1 /e i] = r2(a + b − 1) /(a − 1) ,
+
+E[(1 − Zi)wi] = (1 − r)E[(1 − Zi)/(1 − ei)] = 1 − r, 
+
+E[(1 − Zi)w2 
+
+> i
+
+] = (1 − r)2E[(1 − Zi)/(1 − ei)2] = (1 − r)2(a + b − 1) /(b − 1) ,
+
+subject to a, b > 1. Substituting into equation (50) leads to 
+
+κDE = r(1 − r)( a + b − 1) 
+
+ 1
+
+a − 1 + 1
+
+b − 1
+
+
+
+. (51) Standard algebra shows 
+
+eVobs / eVRCT = a + b − 1
+
+S
+
+ r2λ20d1
+
+a − 1 + (1 − r)2λ21d0
+
+b − 1
+
+
+
+, (52) where S = rλ 20d1 + (1 − r)λ21d0. Similarly, 
+
+κDE = a + b − 1
+
+S
+
+ r(1 − r)Sa − 1 + r(1 − r)Sb − 1
+
+
+
+,
+
+and substracting yields 
+
+κDE − eVobs / eVRCT = a + b − 1
+
+S
+
+ r(1 − r)S − r2λ20d1
+
+a − 1 + r(1 − r)S − (1 − r)2λ21d0
+
+b − 1
+
+
+
+= (a + b − 1) DS
+
+ ra − 1 − 1 − rb − 1
+
+
+
+,
+
+28 where D = (1 − r)2λ21d0 − r2λ20d1. Further plug in λ1 and λ0 and rearrange, 
+
+κDE − eVobs / eVRCT = r(1 − r)(1 − 2r)( a + b − 1)[ d0 exp( τ0) − d1 exp( −τ0)] (a − 1)( b − 1) S . (53) Therefore, at balanced designs (r = 1 /2) , κDE − eVobs / eVRCT = 0 ; at imbalanced designs ( r̸ = 1 /2), since the denominator dominates as a, b → ∞ under r = a/ (a + b), therefore κDE − eVobs / eVRCT → 0 as ϕ → 1, regardless of d1, d0, and τ0 as their factor as constants. 
+
+A.2.4 Bounds for the ϵ in Theorem 2 
+
+In this section, we establish bounds on ϵ from Theorem 2 with weights w1,i = r/e i and w0,i = (1 − r)/(1 − ei).Define ρz := sup 
+
+> t∈[0 ,t †]
+
+|cor( Fz (t|Xi), w z,i )|, z = 0 , 1, then |ϵ| ≤ M1,
+
+M1 = π(λ1 + λ0)2
+
+2d2
+
+
+
+ρ1rλ 20
+
+q
+
+V[w1,i ] + ρ0(1 − r)λ21
+
+q
+
+V[w0,i ]
+
+
+
+.
+
+If further assume a γ = F0(t†) such that γ > 0, i.e., a non-zero potential control survival at the end of follow-up, then |ϵ| ≤ min {M1, M 2, M 3, M 4}, where 
+
+M2 = − (λ1 + λ0)2 log γ
+
+2d2
+
+
+
+ρ1rλ 20 exp( τ0)
+
+q
+
+V[w1,i ] + ρ0(1 − r)λ21
+
+q
+
+V[w0,i ]
+
+
+
+M3 = (λ1 + λ0)2√− log γ
+
+√d3
+
+
+
+ρ1rλ 20 exp( τ0
+
+2 )
+
+q
+
+V[w1,i ] + ρ0(1 − r)λ21
+
+q
+
+V[w0,i ]
+
+
+
+M4 = (λ1 + λ0)2√− log γ
+
+√2d2
+
+
+
+ρ1rλ 20 exp( τ0
+
+2 )
+
+q
+
+V[w1,i ] + ρ0(1 − r)λ21
+
+q
+
+V[w0,i ]
+
+
+
+.
+
+In practice, ρz and the optional γ are specified with domain knowledge; V[wz,i ] is determined by (r, ϕ ) under 
+
+ei ∼ Beta( a, b ), with analytical expressions given in the proof below. 
+
+Proof. Recall that 
+
+ϵ =
+
+ λ1 + λ0
+
+d
+
+2 
+
+rλ 20 exp( τ0)
+
+Z ∞
+
+> 0
+
+C1(t)G1(t)dΛ0(t) + (1 − r)λ21
+
+Z ∞
+
+> 0
+
+C0(t)G1(t)dΛ0(t)
+
+
+
+,
+
+where the integral R ∞ 
+
+> 0
+
+Cz (t)Gz (t)dΛ0(t) involves the joint distribution (Ti(z), Z i, X i), which is only es-timable after the data collection. We therefore bound it with ρz . Notice that cor (Fz (t|Xi), w z,i ) = 
+
+Cz (t)/pV[Fz (t|Xi)] V[wz,i ], where Cz (t) = Cov( Fz (t|Xi), w z,i ). Thus, 
+
+Cz (t) ≤ ρz
+
+pV[Fz (t|Xi)] 
+
+q
+
+V[wz,i ].
+
+Since Fz (t|Xi) ∈ [0 , 1] , so Fz (t|Xi)2 ≤ Fz (t|Xi), and hence 
+
+V[Fz (t|Xi)] = E[Fz (t|Xi)2] − E[Fz (t|Xi)] 2 ≤ E[Fz (t|Xi)] − E[Fz (t|Xi)] 2 = Fz (t)[1 − Fz (t)] .
+
+Additionally, since ρz and V[wz,i ] are time-invariant, therefore 
+
+Z ∞
+
+> 0
+
+Cz (t)Gz (t)dΛ0(t) ≤ ρz
+
+q
+
+V[wz,i ]
+
+Z ∞
+
+> 0
+
+pFz (t)[1 − Fz (t)] Gz (t)dΛ0(t). (54) We first evaluate three integrals: R ∞ 
+
+> 0
+
+Fz (t)[1 −Fz (t)] dΛ0(t), R ∞
+
+> 0
+
+pFz (t)[1 − Fz (t)] dΛ0(t), and R ∞ 
+
+> 0
+
+Gz (t)dΛ0(t).For the first one, Fz (t) = exp( −eτ0z Λ0(t)) under Cox model, and therefore 
+
+Z ∞
+
+> 0
+
+Fz (t)[1 − Fz (t)] dΛ0(t) = 
+
+Z ∞
+
+> 0
+
+[exp( −eτ0z u) − exp( −2eτ0z u)] du = exp( −τ0z)/2, (55) 29 where the first equation is by substituting u = Λ 0(t), and the second equation is by 
+
+Z ∞
+
+> 0
+
+[exp( −eτ0z u) − exp( −2eτ0z u)] du = exp( −τ0z)
+
+Z ∞
+
+> 0
+
+[exp( −s) − exp( −2s)] ds, 
+
+where s = eτ0z u and thus ds = exp( τ0z)du , and R ∞ 
+
+> 0
+
+[exp( −s) − exp( −2s)] ds = 1 /2.For the second integral, 
+
+Z ∞
+
+> 0
+
+pFz (t)[1 − Fz (t)] dΛ0(t) = exp( −τ0z)
+
+Z ∞
+
+> 0
+
+pexp( −s) − exp( −2s)ds = π
+
+2 exp( −τ0z), (56) where the second equation is by v = exp( −s), and hence 
+
+Z ∞
+
+> 0
+
+pexp( −s) − exp( −2s)ds =
+
+Z 10
+
+p(1 − v)/vdv = 2 
+
+Z π/ 20
+
+cos 2 θ dθ = π/ 2.
+
+For the third integral, recall that Gz (t) = Pr( Ci ≥ t|Zi = z), and thus 
+
+Z ∞
+
+> 0
+
+Gz (t)dΛ0(t) = 
+
+Z ∞
+
+> 0
+
+E [I(t ≤ Ci)|Zi = z] dΛ0(t) = E [Λ 0(Ci)|Zi = z] . (57) Now we bound the right hand side of equation (54). The first bound M1 is from Gz (t) ≤ 1:
+
+Z ∞
+
+> 0
+
+pFz (t)[1 − Fz (t)] Gz (t)dΛ0(t) ≤
+
+Z ∞
+
+> 0
+
+pFz (t)[1 − Fz (t)] dΛ0(t) = π
+
+2 exp( −τ0z)
+
+and therefore (54) is further bounded as 
+
+Z ∞
+
+> 0
+
+Cz (t)Gz (t)dΛ0(t) ≤ π
+
+2 exp( −τ0z)ρz
+
+q
+
+V[wz,i ],
+
+which yields 
+
+|ϵ| ≤ π(λ1 + λ0)2
+
+2d2
+
+
+
+ρ1rλ 20
+
+q
+
+V[w1,i ] + ρ0(1 − r)λ21
+
+q
+
+V[w0,i ]
+
+
+
+:= M1 (58) If further assume γ = F0(t†) > 0, then it is possible to further tighten M1 based on the given γ. Specifically, by Gz (t) ≤ 1 and equation (57), 
+
+Z ∞
+
+> 0
+
+Gz (t)dΛ0(t) = E [Λ 0(Ci)|Zi = z] ≤
+
+Z t†
+
+> 0
+
+dΛ0(t) = Λ 0(t†) = − log γ. (59) Then, the second bound M2 is given by observing pFz (t)[1 − Fz (t)] ≤ 1/2:
+
+Z ∞
+
+> 0
+
+pFz (t)[1 − Fz (t)] Gz (t)dΛ0(t) ≤ 12
+
+Z ∞
+
+> 0
+
+Gz (t)dΛ0(t) ≤ − 12 log γ, 
+
+which combined with equation (54) yields 
+
+|ϵ| ≤ − (λ1 + λ0)2 log γ
+
+2d2
+
+
+
+ρ1rλ 20 exp( τ0)
+
+q
+
+V[w1,i ] + ρ0(1 − r)λ21
+
+q
+
+V[w0,i ]
+
+
+
+:= M2 (60) The third bound M3 is obatined by first applying the Cauchy–Schwarz inequality: 
+
+Z ∞
+
+> 0
+
+pFz (t)[1 − Fz (t)] Gz (t)dΛ0(t) ≤
+
+sZ ∞
+
+> 0
+
+Fz (t)[1 − Fz (t)] Gz (t)dΛ0(t)
+
+sZ ∞
+
+> 0
+
+Gz (t)dΛ0(t),
+
+and then by Fz (t)[1 − Fz (t)] ≤ Fz (t), equation (46) in Lemma 5, and equation (59), 
+
+Z ∞
+
+> 0
+
+pFz (t)[1 − Fz (t)] Gz (t)dΛ0(t) ≤ pd exp( −τ0z)p− log γ, 
+
+30 which combined with (54) yields 
+
+|ϵ| ≤ (λ1 + λ0)2√− log γ
+
+√d3
+
+
+
+ρ1rλ 20 exp( τ0
+
+2 )
+
+q
+
+V[w1,i ] + ρ0(1 − r)λ21
+
+q
+
+V[w0,i ]
+
+
+
+:= M3 (61) The last bound M4 is obtained by applying another Cauchy–Schwarz inequality: 
+
+Z ∞
+
+> 0
+
+pFz (t)[1 − Fz (t)] Gz (t)dΛ0(t) ≤
+
+sZ ∞
+
+> 0
+
+Fz (t)[1 − Fz (t)] dΛ0(t)
+
+sZ ∞
+
+> 0
+
+Gz (t)2 dΛ0(t),
+
+and then by equation (55) and Gz (t)2 ≤ Gz (t),
+
+Z ∞
+
+> 0
+
+pFz (t)[1 − Fz (t)] Gz (t)dΛ0(t) ≤ pexp( −τ0z)/2p− log γ, 
+
+which combined with equation (54) yields 
+
+|ϵ| ≤ (λ1 + λ0)2√− log γ
+
+√2d2
+
+
+
+ρ1rλ 20 exp( τ0
+
+2 )
+
+q
+
+V[w1,i ] + ρ0(1 − r)λ21
+
+q
+
+V[w0,i ]
+
+
+
+:= M4 (62) In summary, |ϵ| ≤ M1; if additionally assume a γ > 0, then |ϵ| ≤ min {M1, M 2, M 3, M 4}. Under 
+
+ei ∼ Beta( a, b ), we further have 
+
+V[w1,i ] = r2b(a + b − 1) (a − 1) 2(a − 2) , V[w0,i ] = (1 − r)2a(a + b − 1) (b − 1) 2(b − 2) . (63) Hence the bounds are computable with the standard inputs (r, ϕ ).When ϕ → 1, a, b → ∞ and r = a/ (a + b). Therefore, plug in b = a(1 − r)/r into V[w1,i ] and a = br/ (1 − r)
+
+into V[w0,i ], and then take a → ∞ and b → ∞ respectively would yield V[wz,i ] → 0 because the denominator dominates. Since this implies M1 → 0 as ϕ → 1, therefore ϵ → 0 as ϕ → 1.
+
+A.2.5 Conservativeness of A5 in randomized trials 
+
+Recall that V = A−2B and eVRCT = eA−2 eB, where eA and eB are from Lemmas 4 and 5 under assumption A5 proportional risk-set. For randomized trials, Bϵ from Lemma 5 is zero, and therefore, a sufficient condition for eVRCT ≥ V is that eA ≤ A and eB ≥ B.To satisfy eA ≤ A, from equations (32), (37), and (38), it is equivalent to 
+
+eA − A =
+
+Z ∞
+
+> 0
+
+[¯ π(1 − ¯π) − π(t)(1 − π(t))] s0(τ0, t )dΛ0(t) ≤ 0.
+
+Denote f (π) = π(1 − π), then a stronger sufficient condition for eA ≤ A is that f ( ¯π) ≤ f (π) for all t; as 
+
+f (π) = π(1 − π) peaks at π = 1 /2, this is not universally satisfied because the trajectory of π(t) depends on r, τ0, and censoring structure Gz (t), z = 0 , 1. However, when G1(t) = G0(t), a clean condition can be established under r < 1/2 and τ0 < 0 (or r > 1/2 and τ0 > 0 by symmetry). Under this setting, Gz (t) cancels in f (π), and f ( ¯π) ≤ f (π) is equivalent to |π − 1/2| ≤ | ¯π − 1/2|, which solves as π ∈ [ ¯π, 1 − ¯π]; in addition, 
+
+π(τ0, t ) is monotonically increasing in t since it increases in [F0(t)] eτ0 −1, which also increases in t. Therefore, to satisfy π(τ0, t ) ∈ [¯ π, 1 − ¯π], the minimal F0(t), denoted as γ, is solved by 
+
+π(τ0, t ) ≤ 1 − ¯π ⇐⇒ r exp( τ0)γexp( τ0)−1
+
+r exp( τ0)γexp( τ0)−1 + (1 − r) ≤ 1 − ¯π, 
+
+which solves to 
+
+γ ≥
+
+ 1 − rr exp( τ0)
+
+2/[exp( τ0)−1] 
+
+. (64) 31 To satisfy eB ≥ B under the same setting as A, from equation (41), 
+
+eB − B =
+
+Z ∞
+
+> 0
+
+E
+
+h
+
+w2 
+
+> i
+
+(Zi − ¯π)2 Yi(t)eτ0Zi
+
+i
+
+dΛ0(t) −
+
+Z ∞
+
+> 0
+
+E
+
+h
+
+w2 
+
+> i
+
+(Zi − π(t)) 2 Yi(t)eτ0Zi
+
+i
+
+dΛ0(t)= −
+
+Z ∞
+
+> 0
+
+E w2 
+
+> i
+
+Yi(t)eτ0Zi (¯ π − π(t)) (2 Zi − ¯π − π(t))  dΛ0(t)= −
+
+Z ∞
+
+> 0
+
+(¯ π − π(t)) · 2E w2 
+
+> i
+
+Yi(t)Zieτ0Zi − (¯ π + π(t)) E w2 
+
+> i
+
+Yi(t)eτ0Zi  dΛ0(t)= −
+
+Z ∞
+
+> 0
+
+Q(t) · (¯ π − π(t)) · 2 ¯Zw(t) − (¯ π + π(t))  dΛ0(t),
+
+where Q(t) := E w2 
+
+> i
+
+Yi(t) exp( τ0Zi) and ¯Zw(t) := E w2 
+
+> i
+
+Yi(t) exp( τ0Zi)Zi
+
+ /Q (t). In randomized trials, 
+
+wi ≡ 1, so ¯Zw(t) reduces to π(τ0, t ). We have shown that π(τ0, t ) monotonically increases in t, and thus 
+
+¯π − π(t) ≤ 0; also Q(t) ≥ 0. Therefore, eB − B ≥ 0 is equivalent to ¯Zw(t) = π(t) ≥ ( ¯π + π(t)) /2, which further reduces to π(t) ≥ ¯π, and is always satisfied. In conclusion, when G1(t) = G0(t), a sufficient condition for eVRCT ≥ V is: r < 1/2, τ0 < 0, and equation (64) ; similar conditions hold for r > 1/2, τ0 > 0 by symmetry. The γ in (64) is equivalently the marginal potential survival probability under control at the end of follow-up. For r = 1 /2, at exp (τ0) ∈ { 0.8, 0.6, 0.4},equation (64) solves to γ ≥ { 5% , 8% , 11% }; for r = 1 /3 at the same exp (τ0), (64) solves to γ ≥ { 0% , 0% , 0% }.
+
+## A.3 Asymptotic variance reduction under general weights 
+
+For general weights wi = Ziw1(ei) + (1 − Zi)w0(ei), in general, there is no clean reduction of Vw =
+
+Aw(τ0)−2Bw(τ0) under A5 only. This is because a residual due to confounding remains in the A matrix, which vanishes under inverse probability weights by its structure. Specifically, under A5 proportional risk-set, it holds that 
+
+Aw(τ0) = Aw,F + Aw,ϵ (τ0),
+
+where for inverse probability weights, Aw,ϵ (τ0) = 0 , but not necessary for general weights. To see the reason, following the proof of Lemma 4, and denote μz = E[ezi (1 − ei)1−z wz (ei)] ,
+
+s1(τ0, t ) = eτ0 E [eiw1(ei)F1(t|Xi)G1(t)] ,s0(τ0, t ) = s1(τ0, t ) + E [(1 − ei)w0(ei)F0(t|Xi)G0(t)] ,
+
+By the decomposition E[ezi (1 − ei)1−z wz (ei)Fz (t|Xi)Gz (t)] = μz Fz (t) + Cμw,z (t) for z = 0 , 1,
+
+s1(τ0, t ) = eτ0 [μ1F1(t) + Cμw, 1(t)] G1(t), s0(τ0, t ) = s1(τ0, t ) + μ0F0(t) + Cμw, 0(t) G0(t),
+
+and see that Cμw,z (t) is the additional remainder for general weights, and reduces to zero under inverse probability weights, but not necessary for general weights. The terms involving Cμw,z (t) carry over to 
+
+R ∞ 
+
+> 0
+
+s0(τ0, t )dΛ0(t) and induce Aw,ϵ (τ0).32 Appendix B. Additional Simulation Results 
+
+## B.1 Randomized trials, synthetic data 
+
+Table 4 provides results under no random censoring of the simulation in Section 5.1.2. Table 4: Sample size and empirical power of the proposed, Schoenfeld, and Freedman formulas in randomized trials with no random censoring. 
+
+Marginal hazard ratio Proposed Schoenfeld Freedman N Power N Power N Power 
+
+Treatment proportion = 1 /3
+
+0.4 101 .947 48 .685 72 .858 0.6 208 .884 144 .751 177 .829 0.8 829 .854 721 .789 783 .811 
+
+Treatment proportion = 1 /2
+
+0.4 68 .900 47 .765 53 .811 0.6 152 .837 134 .805 140 .808 0.8 669 .807 651 .793 658 .805 
+
+Treatment proportion = 2 /3
+
+0.4 53 .805 57 .825 48 .778 0.6 137 .791 157 .822 138 .764 0.8 679 .775 745 .801 698 .785 
+
+## B.2 Observational studies, synthetic data 
+
+Tables 5 and 6 provide results at additional effect sizes and under no random censoring, respectively, of the simulation in Section 5.1.3. Table 5: Sample size and empirical power of the proposed and Hsieh & Lavori (observed population only) methods in observational studies with balanced design and 20% random censoring in the treated arm, across degrees of overlap and marginal hazard ratios. 
+
+Combined Overlap Treated Proposed Hsieh & Lavori 
+
+ϕ N Power N Power N Power N Power 
+
+Marginal hazard ratio = 0 .4
+
+0.99 67 .847 50 .693 67 .859 68 .818 0.96 70 .818 53 .682 69 .842 76 .808 0.93 76 .801 56 .655 72 .843 88 .799 0.90 85 .817 59 .641 75 .816 108 .830 0.87 101 .836 62 .634 79 .817 134 .841 0.85 121 .870 65 .619 82 .833 168 .877 0.83 157 .917 67 .628 84 .823 222 .921 
+
+Marginal hazard ratio = 0 .8
+
+0.99 718 .845 715 .849 717 .853 732 .843 0.96 767 .847 756 .840 756 .837 836 .805 0.93 840 .854 801 .839 797 .844 978 .777 0.90 951 .859 847 .811 842 .835 1208 .794 0.87 1142 .846 895 .768 889 .845 1512 .805 0.85 1366 .886 928 .772 921 .834 1910 .816 0.83 1797 .918 965 .733 955 .831 2519 .877 
+
+33 Table 6: Sample size and empirical power of the proposed and Hsieh & Lavori (observed population only) methods in observational studies with balanced design and no random censoring, across degrees of overlap and marginal hazard ratios. 
+
+Combined Overlap Treated Proposed Hsieh & Lavori 
+
+ϕ N Power N Power N Power N Power 
+
+Marginal hazard ratio = 0 .4
+
+0.99 67 .879 48 .718 67 .884 69 .839 0.96 71 .848 50 .689 70 .878 77 .829 0.93 77 .844 53 .664 73 .865 89 .832 0.90 86 .855 57 .668 76 .853 109 .848 0.87 103 .870 60 .657 80 .851 136 .865 0.85 122 .892 62 .646 83 .858 171 .893 0.83 160 .941 64 .637 86 .851 225 .931 
+
+Marginal hazard ratio = 0 .6
+
+0.99 154 .864 137 .816 153 .867 157 .835 0.96 164 .858 145 .805 161 .849 178 .795 0.93 179 .849 154 .795 170 .852 208 .785 0.90 202 .843 163 .753 178 .838 256 .796 0.87 242 .863 173 .736 188 .836 320 .803 0.85 289 .888 179 .703 195 .842 403 .836 0.83 379 .925 186 .690 201 .836 531 .883 
+
+Marginal hazard ratio = 0 .8
+
+0.99 680 .850 665 .848 679 .848 694 .848 0.96 729 .864 706 .846 717 .857 794 .809 0.93 799 .848 748 .828 758 .851 930 .792 0.90 906 .853 793 .812 800 .842 1149 .780 0.87 1089 .861 839 .772 846 .834 1439 .783 0.85 1303 .884 871 .746 878 .832 1818 .813 0.83 1713 .919 904 .715 911 .843 2400 .845 
+
+34 References 
+
+Andersen, P. K. and R. D. Gill (1982). Cox’s regression model for counting processes: A large sample study. 
+
+The Annals of Statistics 10 (4), 1100–1120. Austin, P. C. (2021). Informing power and sample size calculations when using inverse probability of treatment weighting using the propensity score. Statistics in Medicine 40 (27), 6150–6163. Binder, D. A. (1992). Fitting cox’s proportional hazards models from survey data. Biometrika 79 (1), 139–147. Breslow, N. E. and J. A. Wellner (2007). Weighted likelihood for semiparametric models and two-phase stratified samples, with application to cox regression. Scandinavian Journal of Statistics 34 (1), 86–102. Cheng, C., F. Li, L. E. Thomas, and F. Li (2022, 03). Addressing extreme propensity scores in estimating counterfactual survival functions via the overlap weights. American Journal of Epidemiology 191 (6), 1140–1151. Chow, S.-C., J. Shao, H. Wang, and Y. Lokhnygina (2017). Sample size calculations in clinical research .chapman and hall/CRC. Connors, A. F., T. Speroff, N. V. Dawson, C. Thomas, F. E. Harrell, D. Wagner, N. Desbiens, L. Goldman, A. W. Wu, R. M. Califf, W. J. Fulkerson, H. Vidaillet, S. Broste, P. Bellamy, J. Lynn, and W. A. Knaus (1996). The effectiveness of right heart catheterization in the initial care of critically ill patients. Journal of the American Medical Association 276 (11), 889–897. Cox, D. R. (1972). Regression models and life-tables. Journal of the Royal Statistical Society: Series B (Methodological) 34 (2), 187–202. Cox, D. R. (1975). Partial likelihood. Biometrika 62 (2), 269–276. Fay, M. P. and F. Li (2024). Causal interpretation of the hazard ratio in randomized clinical trials. Clinical Trials 21 (5), 623–635. Fleming, T. R. and D. P. Harrington (1997). Counting processes and survival analysis . John Wiley & Sons. Freedman, L. S. (1982). Tables of the number of patients required in clinical trials using the log-rank test. 
+
+Biometrics 38 (2), 301–310. Hajage, D., G. Chauvet, L. Belin, A. Lafourcade, F. Tubach, and Y. De Rycke (2018). Closed-form variance estimator for weighted propensity score estimators with survival outcome. Biometrical Journal 60 (6), 1151–1163. Henmi, M. and S. Eguchi (2004). A paradox concerning nuisance parameters and projected estimating functions. Biometrika 91 (4), 929–941. Hernán, M. A. (2010). The hazards of hazard ratios. Epidemiology 21 (1), 13. 35 Hernán, M. Á., B. Brumback, and J. M. Robins (2000). Marginal structural models to estimate the causal effect of zidovudine on the survival of hiv-positive men. Epidemiology 11 (5), 561–570. Hirano, K. and G. W. Imbens (2001). Estimation of causal effects using propensity score weighting: An application to data on right heart catheterization. Health Services and Outcomes research methodology 2 (3), 259–278. Hsieh, F., P. W. Lavori, H. J. Cohen, and J. R. Feussner (2003). An overview of variance inflation factors for sample-size calculation. Evaluation & the Health Professions 26 (3), 239–257. Hsieh, F. Y. and P. W. Lavori (2000). Sample-size calculations for the cox proportional hazards regression model with nonbinary covariates. Controlled Clinical Trials 21 (6), 552–560. Kish, L. (1965). Survey sampling . Wiley. Kish, L. (1995). Methods for design effects. Journal of official Statistics 11 (1), 55. Lachin, J. M. (1981). Introduction to sample size determination and power analysis for clinical trials. 
+
+Controlled Clinical Trials 2 (2), 93–113. Lachin, J. M. and M. A. Foulkes (1986). Evaluation of sample size and power for analyses of survival with allowance for nonuniform patient entry, losses to follow-up, noncompliance, and stratification. Biometrics ,507–519. Lakatos, E. (1988). Sample sizes based on the log-rank statistic in complex clinical trials. Biometrics , 229–241. Lee, S. Y. (2026). Asymptotic validity of schoenfeld’s sample size formula for the cox proportional hazards model via thewald test approach. Statistical Method in Medical Research , 1–14. Li, F., K. L. Morgan, and A. M. Zaslavsky (2018). Balancing covariates via propensity score weighting. 
+
+Journal of the American Statistical Association 113 (521), 390–400. Lin, D. (2000, 03). On fitting cox’s proportional hazards models to survey data. Biometrika 87 (1), 37–47. Lin, D. Y. and L.-J. Wei (1989). The robust inference for the cox proportional hazards model. Journal of the American statistical Association 84 (408), 1074–1078. Liu, B., C. Yang, and F. Li (2026). Sample size and power calculations for causal inference in observational studies. Annals of Statistics , forthcoming. Mao, H., L. Li, W. Yang, and Y. Shen (2018). On the propensity score weighting analysis with survival outcome: Estimands, estimation, and inference. Statistics in medicine 37 (26), 3745–3763. Martinussen, T., S. Vansteelandt, and P. K. Andersen (2020). Subtleties in the interpretation of hazard contrasts. Lifetime Data Analysis 26 (4), 833–855. Moertel, C. G., T. R. Fleming, J. S. Macdonald, D. G. Haller, J. A. Laurie, P. J. Goodman, J. S. Ungerleider, W. A. Emerson, D. C. Tormey, J. H. Glick, M. H. Veeder, and J. A. Mailliard (1990). Levamisole and fluorouracil for adjuvant therapy of resected colon carcinoma. New England Journal of Medicine 322 (6), 352–358. 36 Mukherjee, S., P. Tamayo, S. Rogers, R. Rifkin, A. Engle, C. Campbell, T. R. Golub, and J. P. Mesirov (2003). Estimating dataset size requirements for classifying dna microarray data. Journal of computational biology 10 (2), 119–142. Phadnis, M. A. and M. S. Mayo (2021). Sample size calculation for two-arm trials with time-to-event endpoint for nonproportional hazards using the concept of relative time when inference is built on comparing weibull distributions. Biometrical Journal 63 (7), 1406–1433. Qin, X. (2024). Sample size and power calculations for causal mediation analysis: a tutorial and shiny app. 
+
+Behavior Research Methods 56 (3), 1738–1769. Rosenbaum, P. R. and D. B. Rubin (1983). The central role of the propensity score in observational studies for causal effects. Biometrika 70 (1), 41–55. Schoenfeld, D. A. (1983). Sample-size formula for the proportional-hazards regression model. Biometrics ,499–503. Scosyrev, E. and E. Glimm (2019). Power analysis for multivariable cox regression models. Statistics in medicine 38 (1), 88–99. Shook-Sa, B. E. and M. G. Hudgens (2022). Power and sample size for observational studies of point exposure effects. Biometrics 78 (1), 388–398. Shu, D., J. G. Young, S. Toh, and R. Wang (2021). Variance estimation in inverse probability weighted cox models. Biometrics 77 (3), 1101–1117. Tian, L., D. Zucker, and L. J. Wei (2005). On the cox model with time-varying regression coefficients. Journal of the American Statistical Association 100 (469), 172–183. Tsiatis, A. A. (2006). Semiparametric theory and missing data . Springer. Vaart, A. W. v. d. (1998). Asymptotic Statistics . Cambridge Series in Statistical and Probabilistic Mathematics. Cambridge University Press. Xu, R. and J. O’Quigley (2000, 12). Estimating average regression effect under non-proportional hazards. 
+
+Biostatistics 1 (4), 423–439. Zhang, M. and D. E. Schaubel (2012). Double-robust semiparametric estimator for differences in restricted mean lifetimes in observational studies. Biometrics 68 (4), 999–1009. Zhao, Z., C. Yang, and F. Li (2026). Propensity score weighted cox regression for survival outcomes in observational studies with multiple or factorial treatments. arXiv preprint arXiv:2601.22572 .Zhou, Y., R. A. Matsouaka, and L. Thomas (2020). Propensity score weighting under limited overlap and model misspecification. Statistical methods in medical research 29 (12), 3721–3756. 37
