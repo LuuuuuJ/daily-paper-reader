@@ -1,0 +1,929 @@
+Title: IV-ICL: Bounding Causal Effects with Instrumental Variables via In-Context Learning
+
+URL Source: https://arxiv.org/pdf/2605.12924v1
+
+Published Time: Thu, 14 May 2026 00:32:34 GMT
+
+Number of Pages: 22
+
+Markdown Content:
+# IV-ICL: Bounding Causal Effects with Instrumental Variables via In-Context Learning 
+
+Vahid Balazadeh ∗12 Hamidreza Kamkari 3 Medha Barath 1
+
+Ricardo Silva 4 Rahul G. Krishnan 12 1 University of Toronto 2 Vector Institute 3 MIT CSAIL 4 University College London 
+
+## Abstract 
+
+The instrumental-variables (IV) setting is standard for partial identification of causal effects when unobserved confounding makes point identification impos-sible. Existing approaches face methodological bottlenecks: closed-form bound estimands are required—e.g., Balke-Pearl equations in binary IV—and even when available, designing accurate estimators requires manual effort tailored to each estimand. While direct Bayesian inference of the causal effects, instead of the bounds, circumvents these challenges, it is often computationally intensive and suffers from high prior sensitivity or under-dispersed posteriors. As a remedy, we introduce IV-ICL, an amortized Bayesian in-context learning method that learns the marginal posterior distribution of the causal effects directly and derives bounds as its quantiles. Unlike standard variational inference that optimizes exclusive KL divergence, amortized Bayesian inference minimizes the expected inclusive KL, a mass-covering objective. We empirically observe that optimizing inclusive KL can recover the entire identified set across diverse data-generating processes, while exclusive-KL (e.g. with variational inference) of the same Bayesian formulation collapses onto a single mode and fails to cover the identified set. We evaluate IV-ICL on synthetic and semi-synthetic IV benchmarks and show it produces intervals that are more reliably valid and more informative compared to efficient semi-parametric, Bayesian, and plug-in baselines, at 20 –500 × lower inference time. Beyond methodology, we propose a procedure to convert randomized controlled trials into IV benchmarks with provably preserved ground-truth causal effects that enables a more realistic evaluation of partial-identification methods. 
+
+## 1 Introduction 
+
+Estimating causal effects from observational data is often based on untestable assumptions about the data-generating process (DGP) [ 47 , 26 ]. The most common assumption of no unobserved confounding, that all non-causal paths between the treatment and the outcome are blocked by observed variables [ 52 , 62 ], rarely holds in practice, e.g., in randomized experiments with non-compliance [ 2, 3 , 13 ]. When it fails, the causal effects are no longer point-identified, motivating partial identification [ 40 , 49 ]. The goal of partial identification is to characterize the set of causal effects compatible with the observed distribution under weaker structural assumptions; the standard instrumental variable (IV) model is the most prominent example [64, 48, 5, 4, 9, 58]. 
+
+Two routes for partial identification. A first route, established for the binary IV setting by Balke and Pearl [8 , 9] , derives closed-form bound estimands as functionals of the observed distribution by solving a linear program. Generalizations to discrete or continuous variables [ 59 , 14 , 67 , 68 , 55 , 15 ]or to graphs with covariates [ 11 , 61 , 34 , 33 , 63 ] follow the same pattern but require re-solving the optimization in each new setting ( L1 ). 2 Even when a closed-form estimand is available, estimating             
+
+> ∗Correspondence to vahid@cs.toronto.edu
+> 2Throughout, we use ( L1 )–( L5 ) to label key limitations of various methods for partial identification across the literature. Preprint.
+> arXiv:2605.12924v1 [cs.LG] 13 May 2026 𝐗
+> 𝐓 𝐘 𝐙
+> 𝐔
+> Simulate
+> data under IV
+> Context
+> Transformer
+> Map data to the
+> causal e ff ect
+> True causal e ff ec t
+> Instrument Treatment Outcome
+> Covariates
+> Unobserved
+> confounding
+> {X}{Z}{T}{Y}
+> Zero shot prediction at
+> test time
+> {X} {Z} {T} {Y}
+> ...
+> Causal e ff ect
+> marginal posterior Figure 1: IV-ICL pipeline. During pre-training, we generate a diverse library of synthetic datasets with IV structure and known ground-truth causal effects, and train a transformer to map each dataset to the marginal posterior of its causal effect. At inference, the trained model takes any new IV dataset as context and returns the causal effect marginal posterior in a single forward pass; bounds are read off as marginal posterior quantiles.
+
+it from finite data is expensive: the bound estimands are non-smooth (maxima or minima of linear expressions are functions with sharp edges), and obtaining low-variance semi-parametric estimators in presence of high-dimensional covariates requires manually designing estimators [ 11 , 33 , 63 ] ( L2 ). A second route forgoes closed-form bound estimands and instead infers the causal effects directly via Bayesian inference [ 12 , 20 , 19 , 21 ]: the DGPs themselves are treated as random variables with a wide-prior, the marginal posterior distribution of the causal effects spreads mass across the entire identified set, and its quantiles serve as natural estimators of the lower and upper bounds. This avoids L1 and L2 entirely. However, classical Bayesian inference via Markov chain Monte Carlo (MCMC) or variational inference has three primary issues. First, along the unidentifiable directions of the parameter space where the likelihood is flat, MCMC mixes poorly and variational inference under-disperses ( L3 ). Second, estimates derived from the posterior are sensitive to the choice of prior, so prior’s support over DGPs must be wide enough to span the identified set ( L4 ) [ 57 , 27 ]. Finally, inference must be re-run from scratch per dataset, making large-scale IV analyses infeasible ( L5 ). 
+
+Amortized Bayesian inference. Recent work suggests that one way to cut the cost of Bayesian inference is amortized learning with in-context models: pre-train a single transformer on a wide library of synthetic DGPs, and perform inference on new datasets in a single forward pass. Prior-data Fitted Networks (PFNs) are a successful instantiation of this idea [ 44 , 25 , 36 , 28 ]. This paradigm has proven successful for causal inference under point-identifying assumptions [ 7, 51 , 37 ]. However, extending it to partially identifiable settings requires more work. Flat likelihoods in the unidentifiable directions of the parameter space make the marginal posterior over causal effects prior-sensitive. The goal is no longer to estimate a single effect, but the entire range of feasible causal effects. One can resort to amortizing the marginal posterior over the point-identified lower/upper bound estimands, such as closed-form Balke-Pearl equations [9], but this re-introduces limitation L1 .
+
+PFNs meet partial identification. We observe that the PFN training objective is equivalent to minimizing the inclusive KL between the true marginal posterior and the model’s predicted distri-bution [ 44 , 45 ]. Since inclusive KL is mass-covering, minimizing it pushes the model to spread density wherever the true marginal posterior does. This highlights the challenge in the design of a valid prior for the IV setting: inclusive KL only delivers mass-coverage with respect to the prior, so a partial-identification PFN is only as informative as the breadth of the prior’s support over DGPs; we therefore design a prior whose induced causal effect distribution spans a wider attainable range. On such a prior, the trained posterior avoids the under-dispersion that breaks exclusive KL variational inference, so its quantiles are usable as bounds. Building on these observations, we introduce IV-ICL, a Bayesian method for partial identification that resolves L3 –L5 via amortized in-context learning with a wide-range prior and a mass-covering training objective (Figure 1). Our contributions: • A method that does not require solving linear programs to derive the bounds ( L1 ) and amortizes inference into a single computationally cheap forward pass per dataset ( L2 , L5 ). • A general-purpose prior over IV-consistent synthetic DGPs, designed to have wide support which allows for better transfer and generalization at deployment ( L4 ). • A theoretically justified procedure to convert data from randomized controlled trials (RCT) into IV benchmarks with preserved ground-truth causal effects, allowing for a realistic IV evaluation. • Empirical evidence, on synthetic and RCT-derived benchmarks, that IV-ICL produces tighter and more reliably valid intervals ( L3 ) than efficient semi-parametric, Bayesian, and plug-in baselines. 22 Related Work 
+
+Bayesian Partial Identification. Bayesian inference has been used as a framework for partial identification [ 53 , 12 , 57 , 17 , 27 ]. One strategy is to follow transparent parameterization of the potential outcome model to distinguish between identifiable from non-identifiable parts [ 50 , 57 ]; this separates the epistemic uncertainty from the uncertainty inherent in the unidentifiable set but requires per-problem manual effort. The other strategy directly learns the marginal posterior of causal effects [ 20 , 19 , 21 ], but historically has been limited by under-dispersed variational inference posteriors ( L3 ), prior sensitivity ( L4 ), and computational cost ( L5 ). IV-ICL pursues the latter strategy and aims to resolve L3 –L5 via amortized in-context learning with a wide-range prior and a mass-covering training objective. 
+
+Covariate-Adjusted Bounds. Incorporating covariates can sharpen IV bounds by exploiting condi-tional independence structures [ 11 ]. Recent work has developed frequentist estimators for covariate-adjusted bounds: Levis et al. [33] derive nonparametrically efficient estimators using smooth ap-proximations to the non-differentiable Balke-Pearl functionals, while Whitehouse et al. [63] develop general methodology for inference on irregular functionals via smoothing. Both approaches operate on closed-form Balke-Pearl estimands ( L1 ) and require careful nuisance estimation under high-dimensional covariates ( L2 ). Our work bypasses L1 entirely by not relying on closed-form bounds and addresses L2 through amortized inference. 
+
+Automated and Optimization-Based Approaches. General partial identification problems can be formulated as constrained optimization over response functions. For instance, Duarte et al. [15] develop automated methods for discrete settings via linear programming. The computational complexity of such methods, however, grows rapidly with the number of variable categories. A parallel line of work optimizes over distributions of response functions directly using deep generative or neural-network parameterizations [ 30 , 65 , 6, 46 , 56 ]. While flexible, these methods solve complex and costly optimization problems per dataset ( L5 ). 
+
+Amortized Inference for Causal Effects. Recent work leverages transformers for amortized causal inference [ 66 , 10 , 38 ]. CausalPFN [ 7] demonstrated that pre-training on synthetic data enables causal effect estimation under unconfoundedness, Do-PFN [ 51 ] handles interventional queries, and Ma et al. [37] developed foundation models for front-door estimation and IV regression under the conditional mean model. These amortized methods learn point-identified estimands and are not amenable to partial identification. In our setting, the objective is to learn an identified set , not a point. 
+
+Applications of Binary Instrumental Variables. Binary IVs with bounded outcome—the setting we use in this work—appear across a wide range of fields: lift studies in digital advertising [ 29 ], randomized encouragement designs in healthcare [ 23 ], lottery-based admissions in education [ 1], and clinical trials with non-compliance [ 4]. Many of these settings involve large number of analyses, where per-dataset inference cost becomes a bottleneck ( L5 ). 
+
+## 3 Background 
+
+Notation and Assumptions. We adopt the potential outcome framework [ 54 ]. Assume we observe a dataset D of N i.i.d. samples from random variables O = ( X, Z, T, Y ), where X ∈ Rd denotes the vector of observed covariates, Z ∈ { 0, 1} is the binary instrument, T ∈ { 0, 1} denotes the binary treatment, and Y ∈ [0 , 1] is the bounded outcome (binary or continuous). For z, t ∈ { 0, 1},we let T (z) be the potential treatment under intervention Z := z. We further denote the potential outcome under intervention T := t by Y (t). Finally, we define Y (z, t ) as the potential outcome under intervention Z := z, T := t.3 Our goal is to estimate the sample average treatment effect (SATE): 
+
+λ(D) := 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+E[Y (t = 1) − Y (t = 0) | X = xi]. (1) We generally cannot rule out the existence of unobserved variables that can confound the causal effect of the treatment on the outcome. In such settings, the SATE is not point-identified, i.e., it cannot be uniquely determined from the data alone, as multiple causal effects are compatible with the same observed distribution [ 52 , 47 ]. We thus turn to partial identification: estimating an informative set interval [ℓ, u ] that contains the true SATE. We specifically focus on the standard IV setting, which can provably lead to nontrivial values of ℓ and u [8, 9, 39]: 
+
+> 3We focus on the binary setting as most mature methods and evaluation benchmarks exist only for this setting.
+
+3Assumption 1 (Standard Instrumental Variable) . (i) Consistency : Observed variables match their relevant potential variables, i.e., Y = Y (z, t ) for all Z = z and T = t, and T = T (z′) for all Z = z′.
+
+(ii) Positivity : All covariate strata have positive probability of each instrument value, so conditioning on the instrument Z is well-defined, i.e., P(Z = 1 | X) ∈ [ϵ, 1 − ϵ] for some ϵ ∈ (0 , 0.5) . (iii) 
+
+Exclusion Restriction : Z has no direct effect on Y other than through T , i.e., Y (z, t ) = Y (t) for all 
+
+z, t ∈ { 0, 1}. (iv) Unconfoundedness of the Instrument : Conditional on observed covariates, the instrumental variable is independent of potential outcomes, i.e., Z ⊥⊥ Y (t) | X for all t ∈ { 0, 1}.
+
+Balke-Pearl Bounds. In the binary IV regime, Balke and Pearl [9] derived closed-form bounds on the conditional average treatment effect by expressing them as the maximum and minimum of a set of linear functions of the conditional probabilities pyt.z (x) := P(Y = y, T = t | Z = z, X = x) for 
+
+y, t, z ∈ { 0, 1}. We denote these conditional bounds by [ℓ(x), u (x)] . The full equations are provided in Appendix A. Note that these closed-form bounds do not appear in the training/inference pipeline of IV-ICL. We use them only for evaluation purposes on synthetic benchmarks. 
+
+## 4 Bounding SATE via Bayesian Inference 
+
+Consider a parameterized family of joint distributions {Pψ }ψ∈Ψ over observed variables and all the potential treatments and outcomes. We specifically consider the following factorization: 
+
+Pψ
+
+ X, Z, {T (z)}z∈{ 0,1}, {Y (t)}t∈{ 0,1}, T, Y  (2) 
+
+= Pψ
+
+ X · Pψ (Z | X) · Pψ
+
+ {T (z)}z∈{ 0,1}, {Y (t)}t∈{ 0,1} | X · IT = T (Z), Y = Y (T ) .
+
+This factorization is specifically designed to satisfy Assumption 1. The term IT = T (Z), Y = Y (T )
+
+enforces consistency. Z is conditionally independent of potential outcomes given X, and the potential outcome only depends on the intervention T := t.Now, consider a prior π on Ψ. Given an observational dataset D, we can compute a posterior belief on the parameters using Bayes’ rule, π(ψ | D ) ∝ π(ψ) × P O 
+
+> ψ
+
+(D), where P O 
+
+> ψ
+
+is the marginal distribution of Pψ on the observed random variables. 
+
+Marginal Posterior of the SATE. For each parameter ψ and dataset D, the joint distribution Pψ in (2) pins down a SATE, i.e., λ(ψ; D) := 1
+
+> |D|
+
+P 
+
+> xi∈D
+
+EPψ [Y (t = 1) − Y (t = 0) | X = xi]. We then define the marginal posterior of SATE as 
+
+πsate (B | D ) := 
+
+Z
+
+I{λ(ψ; D) ∈ B} π(d ψ | D ), (3) where B is an arbitrary Borel subset of R. Under a sufficiently broad prior, πsate assigns non-negligible mass across the entire identified set, so its quantiles serve as natural estimators of the lower and upper bounds. Specifically, for a chosen α ∈ (0 , 1) , we define 
+
+λα(D) := Qα/ 2
+
+ πsate (· | D ), λ α(D) := Q1−α/ 2
+
+ πsate (· | D ), (4) where Qβ (μ) denotes the β-quantile of a distribution μ. We return the interval λα(D), λ α(D) as our final estimator of the SATE bound. This formulation does not require a closed-form estimand for the lower or upper bound, resolving L1 .
+
+Why Standard Bayesian Inference Fails. Classical Bayesian inference of πsate via MCMC or variational inference can suffer from three issues along the unidentifiable parts of Ψ, where the likelihood P O 
+
+> ψ
+
+is flat [ 57 ]. First, MCMC mixes poorly along these directions, and variational inference—which minimizes the mode-seeking exclusive KL—under-disperses, collapsing onto a single mode of the identified set ( L3 ). Second, the posterior shape along these directions is dictated entirely by the prior even with infinite data, producing prior sensitivity ( L4 ) [ 57 , 27 ]. Third, inference must be re-run per dataset, which is computationally prohibitive at scale ( L5 ). Section 5 addresses 
+
+L3 –L5 via amortized in-context learning with an inclusive KL objective. 
+
+## 5 Implementing the Bayesian Approach via Amortized In-Context Learning 
+
+To implement the Bayesian framework described above, we must specify: (i) a computational method for approximating the marginal posterior πsate , and (ii) the parameter space Ψ and prior π. We address the former first via amortized inference, then describe our prior construction in Section 5.1. 4Approximating the Posterior via Amortized In-Context Learning. Rather than computing the posterior for each dataset, we employ amortized inference and train a single model that directly approximates the marginal posterior of the SATE for any input dataset. Specifically, we seek a model 
+
+qθ (· | D ) ≈ πsate (· | D ), where θ are the model parameters. We learn θ such that this approximation holds across diverse datasets. Specifically, we optimize the following loss 
+
+L(θ) := Eψ∼π, ˜D∼ P O
+
+> ψ
+
+h
+
+− log qθ
+
+
+
+λ(ψ; ˜D) | ˜D
+
+i 
+
+. (5) At each evaluation, we first sample a parameter ψ ∼ π, then sample an observational dataset ˜D of i.i.d. samples from P O 
+
+> ψ
+
+. Since ψ is known, the ground-truth SATE λ(ψ; ˜D) is computable directly from the data-generating process without any closed-form bound estimand. The loss is the negative log-likelihood under qθ of the ground-truth SATE values for datasets sampled from the prior. 
+
+Equivalence to Inclusive KL. A key property of the loss in (5) is that its optimization is equivalent to minimizing the expected inclusive KL between the true marginal posterior and our model: 
+
+arg min  
+
+> θ
+
+L(θ) = arg min  
+
+> θ
+
+E
+
+h
+
+DKL 
+
+
+
+πsate 
+
+
+
+· | ˜D
+
+
+
+qθ
+
+
+
+· | ˜D
+
+i 
+
+, (6) where the outer expectation is over datasets drawn from the prior. Similar derivations have been shown in prior work[44, 45]; for completeness, we provide ours in Appendix B. This equivalence is the key technical reason IV-ICL resolves L3 . The inclusive KL is mass-covering :minimizing it forces qθ to assign positive density wherever πsate has mass, which prevents the under-dispersed posteriors that arise when minimizing the mode-seeking exclusive KL via standard variational inference. In partial identification, where πsate is intentionally diffuse over the identified set, this property is essential for valid bound estimation. 
+
+Architecture and Inference. We follow a similar architecture to standard PFNs [ 24 , 7] and model qθ
+
+as a transformer encoder taking the entire observational dataset ˜D as its context. We embed each row 
+
+o(i) ∈ ˜D into a single token with a fixed dimension via a learnable embedding layer. The encoder processes the resulting sequence of | ˜D| tokens through a stack of self-attention and MLP layers. To produce a dataset-level representation, we average the output tokens of the encoder. We omit positional encoding to enforce permutation-invariance over the rows. Full training and architectural details, including hyperparameters, appear in Appendix C. 
+
+5.1 Prior Data Generation 
+
+Optimizing the training loss in (5) does not require an explicit parametrization for Pψ . Instead, it only requires a prior that can: (i) generate observational datasets ˜D consisting of tuples (x, z, t, y ) from 
+
+P O 
+
+> ψ
+
+while adhering to the IV structure in (2), and (ii) compute the ground-truth SATE λ(ψ; ˜D). Still, not every choice of prior leads to useful posteriors. If the prior is not sufficiently rich and fails to capture a diverse range of DGPs, then even the optimal approximation qθ⋆ ≈ πsate will not generalize to new unseen datasets. Moreover, the prior must distribute mass broadly over the range of possible SATE values: if it concentrates near zero, the trained model will inherit that bias and produce overly narrow posteriors at inference time ( L4 ). To address diversity, we draw inspiration from the success of tabular foundation models [ 25 , 36 , 28 ]and construct a prior that contains a rich set of datasets with sufficient coverage to approximate real-world scenarios. Our setting, however, introduces a constraint absent in standard supervised tabular models: the joint distribution Pψ must satisfy the IV constraints stated in Assumption 1, i.e., each Pψ must admit the factorization in (2), with the instrument Z being unconfounded given covariates and having no direct effect on the outcome beyond its influence through the treatment. Hence, we propose the following prior data generation process, mirroring the factorization in (2): 1. Base table and covariate generation Pψ
+
+ X: We begin by generating a “base” table with varying numbers of rows and columns, drawn from a large collection of synthetic datasets. We follow the prior data generation scheme used by tabular foundation models in Hollmann et al. [25] , Balazadeh et al. [7] : features are produced by passing samples through randomly initialized neural networks, ensuring the prior covers a rich set of tabular feature distributions. From the base table, we randomly select columns and denote them as our covariates X.2. Instrument propensity Pψ (Z | X): To guarantee the unconfoundedness of the instrument (Assumption 1), we generate the instrument Z as only a function of the covariates. We create a 5-1.00 0.00 1.00            
+
+> 0
+> 5
+> 10
+> Density
+> d′= 2
+> -1.00 0.00 1.00
+> d′= 4
+> -1.00 0.00 1.00
+> d′= 6
+> SATE
+> before post-processing after post-processing Figure 2: The effect of post-processing on SATE distribution .d′refers to the covariate dimension.
+
+random function fψ : Rd′
+
+→ R, using synthetic function generators similar to Balazadeh et al. [7] .The instrument propensity is then defined as Pψ (Z = 1 | X) = sigmoid( fψ (X)) .3. Potential outcome and treatment generation Pψ
+
+ {T (z)}z∈{ 0,1}, {Y (t)}t∈{ 0,1} | X: The conditional distribution of the potential treatments and outcomes can be characterized by a 16 -dimensional probability vector, where each of the 16 entries corresponds to one of the |{ 0, 1}4| = 16 
+
+configurations of the binary T (z = 0) , T (z = 1) , Y (t = 0) , and Y (t = 1) . We denote this probability vector by pψ (X) ∈ ∆15 in the probability simplex. To sample these conditional probability vectors, we select 16 additional columns from the base table to get a raw g0 
+
+> ψ
+
+(X) ∈ R16 and apply a softmax function to obtain an initial p0 
+
+> ψ
+
+(X) = softmax( g0 
+
+> ψ
+
+(X)) .To ensure that the resulting samples cover the entire probability simplex ( L4 ), we apply a post-processing step. We first sample a target average vector pψ ∼ Dirichlet( γ, . . . , γ ) in the simplex. We choose a small concentration parameter (e.g., γ = 0 .1) to get draws that are sparse and spread broadly over the simplex. We then add a single constant vector cψ ∈ R16 to the pre-softmax logits of every individual: gψ (xi) ← g0 
+
+> ψ
+
+(xi)+ cψ . We specifically choose cψ = log pψ −log( P 
+
+> i
+
+pψ (xi)/N ),where the logarithms are componentwise. We then calculate the final probability vector by applying 
+
+pψ (X) = softmax( gψ (X)) again. This log-domain shift translates each per-individual logit toward the target by an amount equal to the log-discrepancy between target and current population mean. The shift is approximate (because softmax does not commute with averaging) but is sufficient to push the population mean substantially toward pψ , and consequently to reshape the prior distribution of λ(ψ; ˜D) to span a wide range of values across [−1, 1] . Figure 2 illustrates the effect on the prior distribution of λ(ψ; ˜D).4. Computing the SATE and simulation of observational data : With the probability vector pψ
+
+at hand, we can analytically compute λ(ψ; ˜D) = 1
+
+> N
+
+PNi=1 Epψ [Y (t = 1) − Y (t = 0) | X = xi].Moreover, to generate the observational data ˜D, we sample T (z = 0) , T (z = 1) , Y (t = 0) , and 
+
+Y (t = 1) from pψ (X) and the instrument Z from the Pψ (Z | X). We then construct the observed treatment and outcome via consistency (Assumption 1) as T = T (z = Z) and Y = Y (t = T ).
+
+Remark. When the outcome is continuous, we apply the discretization method in Levis et al. [33 , §6 ] ;this reduces a continuous outcome IV into solving multiple binary outcome IVs. Because computing the SATEs requires only the synthetic DGP and not closed-form bounds, the framework does not, in principle, require the binary-outcome assumption. 
+
+## 6 A More Realistic Evaluation: Converting RCTs to IV Benchmarks 
+
+Evaluating IV methods is challenging because ground-truth causal effects are rarely known for real datasets. Fully synthetic benchmarks allow exact evaluation but may not reflect realistic data distributions. To bridge this gap, we propose a procedure to convert RCTs into observational IV datasets while preserving the ground-truth causal effects from the experiment. RCTs provide gold-standard estimates of causal effects through randomization. However, RCT data cannot directly serve as IV benchmarks because there is no instrument-treatment-confounder structure. Our key insight is that we can synthetically introduce such structure while using accept-reject sampling to ensure the resulting observational outcomes match the original RCT outcomes. This preserves the ground-truth causal effect while creating a realistic IV estimation problem. Given an RCT dataset of i.i.d. samples from (X, T rct , Y ) with balanced treatment assignment, we construct an IV dataset as follows. (i) Split X into observed covariates O (available to estimators) and 6hidden confounders U. (ii) Sample the instrument Z ∼ Bernoulli( pz (O)) , where the propensity pz
+
+depends only on observed covariates. This ensures the instrument satisfies conditional unconfound-edness. (iii) Sample the treatment T synth ∼ Bernoulli( pt(O, U, Z )) , where pt depends on observed covariates, hidden confounders, and the instrument. Note that pt is synthetically designed to introduce confounding through dependence on U; the dependence on Z provides instrument relevance. (iv) 
+
+Retain samples if and only if T synth = T rct . For accepted units, use the original Y . The following establishes that this procedure produces valid IV data, proved in Appendix D. 
+
+Proposition 1. Suppose the original RCT has a treatment assignment with P(T rct = 1) = 0 .5,
+
+pt(O, U, Z ) ∈ [ϵ, 1 − ϵ], and pz (O) ∈ [ϵ′, 1 − ϵ′] for some ϵ, ϵ ′ > 0. Then the dataset resulting from the above procedure satisfies the following. 
+
+(IV Validity). The data-generating process satisfies Assumption 1. 
+
+(Causal Effect Preservation). The population average treatment effect (PATE) in the accepted population equals the RCT PATE: 
+
+E[Y (1) −Y (0) | T rct = T synth ] = E[Y | T rct = 1] − E[Y | T rct = 0] .
+
+Note that while our target estimand is the SATE, Proposition 1 establishes preservation of the PATE. However, the two are connected: the SATE is itself a Monte Carlo estimator of the PATE over the covariate distribution, and the RCT PATE (our ground-truth label) is estimated via its own Monte Carlo average over the available RCT samples. Both sources of approximation vanish as sample size grows and remain practically reliable for the RCTs we use. 
+
+Why this is a useful benchmark. Our procedure decouples the components of an IV benchmark by their realism. In particular, the entire outcome distribution is preserved exactly: accepted units retain their original RCT outcomes, so we evaluate against the real, complex outcome-generating mechanism (e.g., job-training effects on earnings) rather than a simulated one. What we synthesize is only the treatment/instrument assignment structures, which are typically simpler than the outcome process. The procedure should be viewed not as a replacement for real IV data, but as a controlled bridge between toy simulators and real IV settings without ground-truth. 
+
+## 7 Experiments 
+
+Baselines. We choose the following standard baselines for IV. 
+
+(i) Plug-in Estimator : The plug-in estimator from Section 3, with TabPFN-v2 as the base classifier; requires the Balke-Pearl equations. 
+
+(ii) Nonparametric Efficient Estimators : The efficient frequentist methods of Levis et al. [33] ,Whitehouse et al. [63] , which requires the Balke-Pearl bounds; we use TabPFN-v2 as the base model. 
+
+(iii) Bayes-BP (Bayesian Inference over the Bounds) : Bayesian inference on the conditional prob-abilities pyt.z (x) under a GP prior; we sample posteriors, evaluate the Balke-Pearl equations on each sample, and average. This baseline isolates epistemic uncertainty in the identifiable 
+
+p(Y, T | Z, X) [50, 57], but still requires the closed-form bounds and per-dataset optimization. 
+
+(iv) Bayes (Pure Bayesian Inference) : The fully Bayesian approach discussed in Section 4 that directly infers the posterior on the SATE without using the Balke-Pearl equations. We follow the factorization in (2) and use a GP prior. This baseline mirrors the formulation IV-ICL amortizes with a different prior, allowing us to isolate the effect of replacing MCMC and variational inference with amortized in-context learning, and the GP prior with the one discussed in Section 5.1. For both Bayesian baselines we use sparse variational inference for scalability [60, 18]. 
+
+Quantile levels. The Bayes baseline and IV-ICL both return a marginal posterior over the SATE; we convert this posterior into a bound interval by taking the α/ 2 and 1 − α/ 2 quantiles as in (4). We use 
+
+α = 0 .01 for both. For Bayes-BP, which targets the lower/upper bounds directly, we use α = 0 .1.
+
+Evaluation Metrics. We evaluate methods along three axes: validity , informativeness , and efficiency .All the metrics are averaged over 10 random seeds, and we report mean ± standard error. 
+
+(i) Validity : When the true bounds [ℓ⋆, u ⋆] are known—only in the fully synthetic benchmark where the complete DGP is available—we report a binary indicator that equals 1 if the estimated interval contains the true interval, i.e., ˆℓ ≤ ℓ⋆ and ˆu ≥ u⋆. For RCT-derived benchmarks, the sharp IV bounds 7Table 1: Results on the synthetic binary-outcome benchmark ( left ; ground-truth bounds known) and the semi-synthetic Jobs benchmark ( right ; RCT-derived labels available, aggregated across weak and strong instruments). Best validity and time in                                                                                                                      
+
+> bold ; best width among perfectly valid methods is underlined. Mean ±ste over seeds.
+> Binary-outcome (synthetic) Jobs (semi-synthetic) Method Validity ↑Width ↓Time/1k (s) ↓Validity ↑Width ↓Time/1k (s) ↓
+> IV-ICL (Ours) 1.00 ±0.00 0.609 ±0.158 0.18 ±0.01 1.00 ±0.00 0.439 ±0.040 1.77 ±0.29
+> Plug-in 0.50 ±0.17 0.530 ±0.147 1.18 ±0.26 0.70 ±0.09 0.541 ±0.029 68.5 ±17.0
+> Whitehouse et al. 1.00 ±0.00 0.641 ±0.158 2.15 ±0.35 0.90 ±0.07 0.836 ±0.040 92.9 ±10.3
+> Levis et al. 0.90 ±0.10 0.575 ±0.147 2.30 ±0.35 0.60 ±0.07 0.545 ±0.053 92.6 ±16.0
+> Bayes-BP 0.70 ±0.15 0.588 ±0.113 6.35 ±0.32 0.90 ±0.10 0.429 ±0.089 136.46 ±16.09
+> Bayes 0.00 ±0.00 0.169 ±0.038 8.82 ±0.35 0.25 ±0.14 0.229 ±0.045 254.55 ±19.93
+
+are not known; the RCT provides an estimated causal-effect label, but not the induced IV identified set. We therefore report a binary indicator that equals 1 if λ⋆ ∈ [ˆℓ, ˆu]. The distinction will be clear based on the benchmark. (ii) Informativeness (Width) : We report the normalized width of the estimated interval divided by the width of the Manski natural bounds [ 39 ] as the measure of informativeness/tightness. Note that the width of the Manski bounds is always w = (max( Y )−min( Y )) . Hence, our informative measure is defined as (ˆ u − ˆℓ)/w . A tighter estimated interval ( ≪ 1) indicates the method extracts more information from the IV structure. (iii) Efficiency : We record the inference time in seconds per 
+
+1,000 samples of the inference dataset to measure efficiency. Note that an interval estimator is only useful if it is valid, i.e., it contains the true causal quantity. Informativeness and efficiency metrics are mostly meaningful only after validity is achieved; a narrow interval that excludes the truth can lead to systematically incorrect decisions. 
+
+Datasets. We evaluate IV-ICL on fully synthetic and semi-synthetic benchmarks. Below, we discuss their high-level construction. For details like the characterization of the underlying DGPs, see Appendix E. We also consider a modified version of the airplane demand dataset [ 22 ] in Appendix F. 
+
+Binary Outcome Benchmark (Synthetic) : We construct a synthetic IV benchmark with binary instru-ment, treatment, and outcome. Covariates X ∈ Rd are sampled with d ∼ Unif (5 , 10) . The joint distribution of potential treatments and outcomes is parameterized via principal strata [ 16 ], with strata probabilities generated as softmax transformations of linear functions of the covariates. The instrument Z is generated as a function of covariates with added exogenous noise. This construction allows us to compute the exact Balke-Pearl bounds, which we use as ground truth for evaluation. 
+
+Jobs (Semi-Synthetic) : The National Supported Work (NSW) Demonstration is a randomized job-training program designed to evaluate the causal effect of training on subsequent earnings [ 32 ]. We apply the RCT-to-IV procedure in Section 6 to convert the dataset into a suitable IV benchmark. We use log-transformed 1978 earnings as the outcome. Observed covariates include demographics (age, education, race, marital status), while pre-program earnings (1974, 1975) serve as hidden confounders. We also vary the instrument strength, controlling the correlation between the instrument and treatment ρ(Z, T ), creating “weak” ( ρ small) and “strong” ( ρ large) instrument variants. 
+
+STAR (Semi-Synthetic) : Project STAR is a large-scale RCT conducted to measure the effect of class size on early-grade academic achievement [ 42 , 31 ]. We apply the RCT-to-IV procedure discussed in Section 6 and construct an entry-grade snapshot with grade-standardized test scores (math or reading) as outcomes. Observed covariates include student demographics and teacher credentials, while school-level factors (free lunch eligibility, school type) serve as hidden confounders. We consider two treatment contrasts: small vs. regular and regular+aide vs. regular , each with weak and strong instrument variants. Here, we present the results for the small vs. regular class comparison with reading scores as outcome. For other variants, see Appendix G. For RCT-derived benchmarks, we balance the treatment assignment by randomly subsampling the larger arm to match the smaller one in size. This satisfies the required condition of Proposition 1. 
+
+7.1 Results Synthetic and Jobs benchmarks. Table 1 reports validity, width, and per-1k-sample inference time on the synthetic benchmark (where ground-truth bounds are known) and the semi-synthetic Jobs benchmark (where an RCT-derived causal-effect label is available via the RCT-to-IV procedure). On both benchmarks, IV-ICL is the only method that attains 1.00 validity and the tightest valid intervals: on Jobs, every other baseline either under-covers. The Bayes baseline, the same fully-8Table 2: Results on STAR (small vs. regular class size, reading scores), stratified by instrument strength.                                                                                                                            
+
+> Weak instrument ρ(Z, T )≈0.29 Strong instrument ρ(Z, T )≈0.89
+> Method Validity ↑Width ↓Time/1k (s) ↓Validity ↑Width ↓Time/1k (s) ↓
+> IV-ICL (Ours) 1.00 ±0.00 0.232 ±0.041 0.17 ±0.01 1.00 ±0.00 0.044 ±0.002 0.18 ±0.03
+> Plug-in 1.00 ±0.00 0.661 ±0.017 9.51 ±1.34 1.00 ±0.00 0.103 ±0.009 8.05 ±0.99
+> Whitehouse et al. 1.00 ±0.00 0.817 ±0.017 15.6 ±1.9 1.00 ±0.00 0.149 ±0.013 16.5 ±2.7
+> Levis et al. 1.00 ±0.00 0.692 ±0.018 17.5 ±2.9 1.00 ±0.00 0.110 ±0.011 16.0 ±1.9
+> Bayes-BP 1.00 ±0.00 0.711 ±0.015 81.72 ±5.72 1.00 ±0.00 0.220 ±0.013 84.31 ±5.92
+> Bayes 0.90 ±0.11 0.084 ±0.005 175.69 ±24.57 1.00 ±0.00 0.148 ±0.005 170.35 ±19.03
+
+Bayesian formulation IV-ICL amortizes but with variational inference, collapses to validity 0.00 on the synthetic benchmark and 0.25 on Jobs, with severely under-dispersed widths. This is the predicted consequence of mode-seeking exclusive KL discussed in Section 5 and confirms the importance of the forward-KL training objective. IV-ICL is also the fastest method by 2–140 × across both benchmarks. 
+
+STAR benchmark. Table 2 reports results on STAR (small vs. regular, reading scores). Most methods attain perfect validity in both weak- and strong-instrument regimes, so the compar-ison reduces to width. IV-ICL produces the tightest valid intervals— 2–3× tighter than the second-best method—and is the fastest, by 20 –500 ×. Additional STAR variants (regular+aide vs. regular; math scores) and the airplane-demand benchmark appear in Appendices F and G. 0.2 0.4 0.6 0.8
+
+Instrument strength ρ(Z, T )    
+
+> 0.2
+> 0.4
+> 0.6
+> Normalized width
+> 0.00.20.40.60.81.0
+> Validity (mean)
+> Figure 3: Effect of instrument strength on interval width (Jobs benchmark). Width decreases as ρ(Z, T )
+> increases; validity remains perfect.
+
+Effect of instrument strength. Figure 3 shows that as the instrument strength ρ(Z, T ) increases on the Jobs benchmark, IV-ICL’s interval narrows monoton-ically while validity remains at 1.00 across the full range. This is a sanity check to see that a stronger instrument indeed shrinks the identified set, and IV-ICL’s mass-covering posterior contracts accordingly. 
+
+Calibration and sensitivity analysis. Beyond the validity metric reported above, Appendix H provides a fuller picture of IV-ICL’s interval estimator. Cali-bration curves (Appendix H.2) show that empirical coverage exceeds the nominal level across all credi-bility levels on three synthetic DGPs, which is con-sistent with the conservative over-coverage induced by the inclusive KL objective. A sensitivity analysis (Appendix H.3) further shows that coverage always remains perfect at 1.00, while interval width contracts monotonically with sample size and inflates modestly with covariate dimensionality. 
+
+## 8 Conclusion and Limitations 
+
+We introduced IV-ICL, a Bayesian in-context learning approach for partial identification under instrumental variables. By learning the marginal posterior of the sample average treatment effect (SATE) directly and minimizing an inclusive KL training objective, IV-ICL addresses five key limitations of partial identification under IV ( L1 –L5 ). Our experiments demonstrate that IV-ICL achieves superior validity–informativeness trade-offs compared to existing baselines with orders-of-magnitude faster inference. Beyond the methodological contribution, we introduced a prior data generation procedure that produces a diverse family of IV-consistent synthetic datasets with full support over the SATE that enabled large-scale pre-training. We also proposed a novel procedure to convert randomized controlled trial data into realistic IV benchmarks with preserved RCT causal-effect labels. This is useful for evaluating partial identification methods on realistic data. Several limitations remain. First, while IV-ICL achieves perfect validity across our benchmarks, valid intervals are not formally guaranteed under arbitrary prior–data mismatch. The inclusive KL objective enforces mass-covering only with respect to the prior used at training time; downstream coverage on real data depends on the prior assigning sufficient mass near the true DGP. We empirically probed this dependence through calibration curves and analyzing IV-ICL’s sensitivity to sample-size and covariate size, but achieving exact frequentist calibration in amortized methods remains an open problem [ 43 , 41 ]. Second, although IV-ICL is architecturally agnostic to outcome type, the current implementation samples binary outcomes during pretraining and discretizes continuous outcomes at inference time. We leave the implementation of the fully continuous setting to future work. 9References 
+
+[1] Atila Abdulkadiro˘ glu, Joshua D Angrist, Susan M Dynarski, Thomas J Kane, and Parag A Pathak. Accountability and flexibility in public schools: Evidence from boston’s charters and pilots. The Quarterly Journal of Economics , 126(2):699–748, 2011. [2] Joshua D Angrist and Guido W. Imbens. Identification and estimation of local average treatment effects. Econometrica , 62:467–475, 1994. [3] Joshua D Angrist and Jörn-Steffen Pischke. Mostly harmless econometrics: An empiricist’s companion . Princeton university press, 2009. [4] Joshua D Angrist, Guido W Imbens, and Donald B Rubin. Identification of causal effects using instrumental variables. Journal of the American statistical Association , 91(434):444–455, 1996. [5] Stuart G Baker and Karen S Lindeman. The paired availability design: a proposal for evaluating epidural analgesia during labor. Statistics in medicine , 13(21):2269–2278, 1994. [6] Vahid Balazadeh, Vasilis Syrgkanis, and Rahul G Krishnan. Partial identification of treatment effects with implicit generative models. Advances in Neural Information Processing Systems ,35:22816–22829, 2022. [7] Vahid Balazadeh, Hamidreza Kamkari, Valentin Thomas, Benson Li, Junwei Ma, Jesse C. Cresswell, and Rahul G. Krishnan. Causalpfn: Amortized causal effect estimation via in-context learning. In Advances in Neural Information Processing Systems , volume 38, 2025. [8] Alexander Balke and Judea Pearl. Counterfactual probabilities: Computational methods, bounds and applications. In Uncertainty in artificial intelligence , pages 46–54. Elsevier, 1994. [9] Alexander Balke and Judea Pearl. Bounds on treatment effects from studies with imperfect compliance. Journal of the American statistical Association , 92(439):1171–1176, 1997. [10] Lucius EJ Bynum, Aahlad Manas Puli, Diego Herrero-Quevedo, Nhi Nguyen, Carlos Fernandez-Granda, Kyunghyun Cho, and Rajesh Ranganath. Black box causal inference: Effect estimation via meta prediction. arXiv:2503.05985 , 2025. [11] Zhihong Cai, Manabu Kuroki, and Tosiya Sato. Non-parametric bounds on treatment effects with non-compliance by covariate adjustment. Statistics in medicine , 26(16):3188–3204, 2007. [12] David Maxwell Chickering and Judea Pearl. A clinician’s tool for analyzing non-compliance. In Proceedings of the National Conference on Artificial Intelligence , pages 1269–1276, 1996. [13] Carlos Cinelli, Avi Feller, Guido Imbens, Edward Kennedy, Sara Magliacane, and Jose Zu-bizarreta. Challenges in statistics: A dozen challenges in causality and causal inference. arXiv preprint arXiv:2508.17099 , 2025. [14] A Philip Dawid. Causal inference using influence diagrams: the problem of partial compliance. 
+
+Oxford Statistical Science Series , pages 45–65, 2003. [15] Guilherme Duarte, Noam Finkelstein, Dean Knox, Jonathan Mummolo, and Ilya Shpitser. An automated approach to causal inference in discrete settings. Journal of the American Statistical Association , 119(547):1778–1793, 2024. [16] Constantine E Frangakis and Donald B Rubin. Principal stratification in causal inference. 
+
+Biometrics , 58(1):21–29, 2002. [17] AlexanderM Franks, Alexander D’Amour, and Avi Feller. Flexible sensitivity analysis for observational studies without observable implications. Journal of the American Statistical Association , 2020. [18] Jacob R Gardner, Geoff Pleiss, David Bindel, Kilian Q Weinberger, and Andrew Gordon Wilson. Gpytorch: Blackbox matrix-matrix gaussian process inference with gpu acceleration. In Advances in Neural Information Processing Systems , 2018. 10 [19] Sander Greenland. Relaxation penalties and priors for plausible modeling of nonidentified bias sources. Statistical Science , 24:195–210, 2009. [20] Paul Gustafson. On Model Expansion, Model Contraction, Identifiability and Prior Information: Two Illustrative Scenarios Involving Mismeasured Variables. Statistical Science , 20(2):111 – 140, 2005. [21] Paul Gustafson. Bayesian inference for partially identified models. The international journal of biostatistics , 6(2), 2010. [22] Jason Hartford, Greg Lewis, Kevin Leyton-Brown, and Matt Taddy. Deep iv: A flexible approach for counterfactual prediction. In Proceedings of the 34th International Conference on Machine Learning, ICML 2017, Sydney, Australia, 6-11 August 2017 , pages 1–9, 2017. [23] Keisuke Hirano, Guido W Imbens, Donald B Rubin, and Xiao-Hua Zhou. Assessing the effect of an influenza vaccine in an encouragement design. Biostatistics , 1(1):69–88, 2000. [24] Noah Hollmann, Samuel Müller, Katharina Eggensperger, and Frank Hutter. TabPFN: A transformer that solves small tabular classification problems in a second. In The Eleventh International Conference on Learning Representations , 2023. [25] Noah Hollmann, Samuel Müller, Lennart Purucker, Arjun Krishnakumar, Max Körfer, Shi Bin Hoo, Robin Tibor Schirrmeister, and Frank Hutter. Accurate predictions on small data with a tabular foundation model. Nature , 637(8045):319–326, 2025. [26] Guido W Imbens and Donald B Rubin. Causal inference in statistics, social, and biomedical sciences . Cambridge University Press, 2015. [27] Andrew Jesson, Sören Mindermann, Uri Shalit, and Yarin Gal. Identifying causal-effect inference failure with uncertainty-aware models. Advances in Neural Information Processing Systems , 33:11637–11649, 2020. [28] Qu Jingang, David Holzmüller, Gaël Varoquaux, and Marine Le Morvan. Tabicl: A tabular foundation model for in-context learning on large data. In Forty-second International Conference on Machine Learning , 2025. [29] Garrett A Johnson, Randall A Lewis, and Elmar I Nubbemeyer. Ghost ads: Improving the economics of measuring online ad effectiveness. Journal of Marketing Research , 54(6):867–884, 2017. [30] Niki Kilbertus, Matt J Kusner, and Ricardo Silva. A class of algorithms for general instrumental variable models. Advances in Neural Information Processing Systems , 33:20108–20119, 2020. [31] Christian Kleiber and Achim Zeileis. Applied Econometrics with R . Springer-Verlag, New York, 2008. doi: 10.1007/978-0-387-77318-6. [32] Robert J LaLonde. Evaluating the econometric evaluations of training programs with experi-mental data. The American Economic Review , pages 604–620, 1986. [33] Alexander W. Levis, Matteo Bonvini, Zhenghao Zeng, Luke Keele, and Edward H. Kennedy. Covariate-assisted bounds on causal effects with instrumental variables. Journal of the Royal Statistical Society Series B: Statistical Methodology , 2025. [34] Dustin M Long and Michael G Hudgens. Sharpening bounds on principal effects with covariates. 
+
+Biometrics , 69(4):812–819, 2013. [35] Ilya Loshchilov and Frank Hutter. Decoupled weight decay regularization. In International Conference on Learning Representations , 2017. [36] Junwei Ma, Valentin Thomas, Rasa Hosseinzadeh, Hamidreza Kamkari, Alex Labach, Jesse C Cresswell, Keyvan Golestan, Guangwei Yu, Anthony L Caterini, and Maksims Volkovs. Tabdpt: Scaling tabular foundation models on real data. In The Thirty-ninth Annual Conference on Neural Information Processing Systems , 2025. 11 [37] Yuchen Ma, Dennis Frauen, Emil Javurek, and Stefan Feuerriegel. Foundation models for causal inference via prior-data fitted networks. In The Fourteenth International Conference on Learning Representations , 2026. [38] Divyat Mahajan, Jannes Gladrow, Agrin Hilmkil, Cheng Zhang, and Meyer Scetbon. Amortized inference of causal models via conditional fixed-point iterations. Transactions on Machine Learning Research , 2025. ISSN 2835-8856. J2C Certification. [39] Charles F Manski. Nonparametric bounds on treatment effects. The American Economic Review ,80(2):319–323, 1990. [40] Charles F Manski. Partial identification of probability distributions . Springer, 2003. [41] Valentyn Melnychuk, Dennis Frauen, Maresa Schröder, and Stefan Feuerriegel. Frequentist consistency of prior-data fitted networks for causal inference. arXiv preprint arXiv:2603.12037 ,2026. [42] Frederick Mosteller. The tennessee study of class size in the early school grades. The future of children , pages 113–127, 1995. [43] Francisco Mourao, David Hajage, Daria Bystrova, Bertrand Bouvarel, Nathanaël Lapidus, Fabrice Carrat, and Benjamin Glemain. Prior-data fitted networks for causal inference: a simulation study with real-world scenarios. arXiv preprint arXiv:2603.15928 , 2026. [44] Samuel Müller, Noah Hollmann, Sebastian Pineda Arango, Josif Grabocka, and Frank Hut-ter. Transformers Can Do Bayesian Inference. In International Conference on Learning Representations , 2022. [45] Thomas Nagler. Statistical foundations of prior-data fitted networks. In Proceedings of the 40th International Conference on Machine Learning , volume 202, pages 25660–25676, 2023. [46] Kirtan Padh, Jakob Zeitler, David Watson, Matt Kusner, Ricardo Silva, and Niki Kilbertus. Stochastic causal programming for bounding treatment effects. In Conference on Causal Learning and Reasoning , pages 142–176. PMLR, 2023. [47] Judea Pearl. Causality . Cambridge University Press, 2009. [48] Olav Reiersøl. Confluence analysis by means of instrumental sets of variables . PhD thesis, Almqvist & Wiksell, 1945. [49] Amy Richardson, Michael G Hudgens, Peter B Gilbert, and Jason P Fine. Nonparametric bounds and sensitivity analysis of treatment effects. Statistical science: a review journal of the Institute of Mathematical Statistics , 29(4):596, 2015. [50] Thomas S Richardson, Robin J Evans, and James M Robins. Transparent parameterizations of models for potential outcomes. Bayesian statistics , 9:569–610, 2011. [51] Jake Robertson, Arik Reuter, Siyuan Guo, Noah Hollmann, Frank Hutter, and Bernhard Schölkopf. Do-PFN: In-context learning for causal effect estimation. In The Thirty-ninth Annual Conference on Neural Information Processing Systems , 2025. [52] Donald B Rubin. Estimating causal effects of treatments in randomized and nonrandomized studies. Journal of Educational Psychology , 66(5):688, 1974. [53] Donald B Rubin. Bayesian inference for causal effects: The role of randomization. The Annals of Statistics , pages 34–58, 1978. [54] Donald B Rubin. Causal inference using potential outcomes: Design, modeling, decisions. 
+
+Journal of the American Statistical Association , 100(469):322–331, 2005. [55] Michael C Sachs, Gustav Jonzon, Arvid Sjölander, and Erin E Gabriel. A general method for deriving tight symbolic bounds on causal effects. Journal of Computational and Graphical Statistics , 32(2):567–576, 2023. 12 [56] Jonas Schweisthal, Dennis Frauen, Maresa Schröder, Konstantin Hess, Niki Kilbertus, and Stefan Feuerriegel. Learning representations of instruments for partial identification of treatment effects. In ICLR 2025 Workshop on Generative and Experimental Perspectives for Biomolecular Design , 2025. [57] Ricardo Silva and Robin Evans. Causal inference through a witness protection program. Journal of Machine Learning Research , 17(56):1–53, 2016. [58] Sonja A Swanson, Miguel A Hernán, Matthew Miller, James M Robins, and Thomas S Richard-son. Partial identification of the average treatment effect using instrumental variables: review of methods for binary instruments, treatments, and outcomes. Journal of the American Statistical Association , 113(522):933–947, 2018. [59] Jin Tian and Judea Pearl. Probabilities of causation: Bounds and identification. Annals of Mathematics and Artificial Intelligence , 28(1):287–313, 2000. [60] Michalis Titsias. Variational learning of inducing variables in sparse gaussian processes. In 
+
+Artificial intelligence and statistics , pages 567–574. PMLR, 2009. [61] Anastasios A Tsiatis, Marie Davidian, Min Zhang, and Xiaomin Lu. Covariate adjustment for two-sample treatment comparisons in randomized clinical trials: a principled yet flexible approach. Statistics in medicine , 27(23):4658–4677, 2008. [62] Tyler J. VanderWeele and Ilya Shpitser. On the definition of a confounder. Annals of statistics ,41(1):196–220, 2013. [63] Justin Whitehouse, Morgane Austern, and Vasilis Syrgkanis. Inference on optimal policy values and other irregular functionals via smoothing. arXiv preprint arXiv:2507.11780 , 2025. [64] Philip Green Wright. The tariff on animal and vegetable oils . Macmillan, 1928. [65] Kevin Xia, Yushu Pan, and Elias Bareinboim. Neural causal models for counterfactual identifi-cation and estimation. arXiv preprint arXiv:2210.00035 , 2022. [66] Jiaqi Zhang, Joel Jennings, Agrin Hilmkil, Nick Pawlowski, Cheng Zhang, and Chao Ma. Towards causal foundation model: on duality between causal inference and attention. arXiv preprint arXiv:2310.00809 , 2023. [67] Junzhe Zhang and Elias Bareinboim. Bounding causal effects on continuous outcome. In 
+
+Proceedings of the AAAI Conference on Artificial Intelligence , volume 35, pages 12207–12215, 2021. [68] Junzhe Zhang and Elias Bareinboim. Non-parametric methods for partial identification of causal effects. Columbia CausalAI Laboratory Technical Report , 2021. 13 Appendix Contents 
+
+A Balke-Pearl Equations 15 B Inclusive KL Equivalence 15 C Training Details and Inference 16 D Proof of Proposition 1 16 E Details of the Benchmark 17 
+
+E.1 Details of the Synthetic Binary Outcome Benchmark . . . . . . . . . . . . . . . . 17 E.2 Details of the Jobs Benchmark . . . . . . . . . . . . . . . . . . . . . . . . . . . . 18 E.3 Details of the STAR Benchmark . . . . . . . . . . . . . . . . . . . . . . . . . . . 18 
+
+F Additional Experiments - Airplane Demand Benchmark 18 G Additional Experiments - STAR Benchmark 19 H Additional Experiments - Calibration and Sensitivity Analysis 19 
+
+H.1 Synthetic IV Data-Generating Processes . . . . . . . . . . . . . . . . . . . . . . . 19 H.2 Calibration Curves . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 20 H.3 Sensitivity to Sample Size and Dimensionality . . . . . . . . . . . . . . . . . . . . 21 14 A Balke-Pearl Equations 
+
+The closed-form sharp bounds of Balke and Pearl [8 , 9] for the standard binary IV model arise from a constrained linear program whose decision variables are the probabilities of the sixteen response-function strata for a binary (T, Y ) pair under a binary instrument Z. The exclusion restriction and consistency (Assumption 1) impose linear equality constraints between these strata probabilities and the observational distribution pyt.z (x) = P(Y = y, T = t | Z = z, X = x)
+
+for y, t, z ∈ { 0, 1}. Maximizing or minimizing the linear functional E[Y (1) − Y (0) | X = x]
+
+subject to these constraints yields, by LP duality, sharp bounds expressible as the maximum of eight linear lower-bound expressions ϕl,j and the minimum of eight linear upper-bound expressions 
+
+ϕu,j , each a different linear combination of the eight conditional probabilities {pyt.z (x)}. Each ϕl,j 
+
+corresponds to a worst-case allocation of mass across the unidentifiable response-function strata under one extremum of the LP, with an analogous reading for ϕu,j . The bounds are pointwise sharp [ 9]: there exist data-generating processes consistent with {pyt.z (x)} at which the conditional SATE attains each endpoint. Levis et al. [33] extend sharpness from the conditional SATE to the population SATE. The eight expressions for the lower and upper conditional bounds are: 
+
+ϕl, 1(x) = p11 .1(x) + p00 .0(x) − 1
+
+ϕl, 2(x) = p11 .0(x) + p00 .1(x) − 1
+
+ϕl, 3(x) = −p01 .1(x) − p10 .1(x)
+
+ϕl, 4(x) = −p01 .0(x) − p10 .0(x)
+
+ϕl, 5(x) = p11 .0(x) − p11 .1(x) − p10 .1(x) − p01 .0(x) − p10 .0(x) (7) 
+
+ϕl, 6(x) = p11 .1(x) − p11 .0(x) − p10 .0(x) − p01 .1(x) − p10 .1(x)
+
+ϕl, 7(x) = p00 .1(x) − p01 .1(x) − p10 .1(x) − p01 .0(x) − p00 .0(x)
+
+ϕl, 8(x) = p00 .0(x) − p01 .0(x) − p10 .0(x) − p01 .1(x) − p00 .1(x)
+
+ϕu, 1(x) = 1 − p01 .1(x) − p10 .0(x)
+
+ϕu, 2(x) = 1 − p01 .0(x) − p10 .1(x)
+
+ϕu, 3(x) = p11 .1(x) + p00 .1(x)
+
+ϕu, 4(x) = p11 .0(x) + p00 .0(x)
+
+ϕu, 5(x) = −p01 .0(x) + p01 .1(x) + p00 .1(x) + p11 .0(x) + p00 .0(x) (8) 
+
+ϕu, 6(x) = −p01 .1(x) + p11 .1(x) + p00 .1(x) + p01 .0(x) + p00 .0(x)
+
+ϕu, 7(x) = −p10 .1(x) + p11 .1(x) + p00 .1(x) + p11 .0(x) + p10 .0(x)
+
+ϕu, 8(x) = −p10 .0(x) + p11 .0(x) + p00 .0(x) + p11 .1(x) + p10 .1(x)
+
+In IV-ICL, these equations are used only to compute ground-truth bounds for synthetic benchmarks; they do not appear in the training/inference pipeline of the main IV-ICL method, which operates directly on the marginal posterior of the SATE. 
+
+## B Inclusive KL Equivalence 
+
+We derive the equivalence stated in (6). Recall the loss 
+
+L(θ) = Eψ∼π, ˜D∼ P O
+
+> ψ
+
+h
+
+− log qθ
+
+
+
+λ(ψ; ˜D) | ˜D
+
+i 
+
+.
+
+By the law of total expectation, 
+
+L(θ) = E ˜D∼ P O Eψ∼π(·| ˜D)
+
+h
+
+− log qθ
+
+
+
+λ(ψ; ˜D) | ˜D
+
+i 
+
+,
+
+where we have used Bayes’ rule to swap the joint sampling (ψ, ˜D) ∼ π · P O 
+
+> ψ
+
+for the marginal-conditional decomposition ˜D ∼ P O and ψ | ˜D ∼ π(· | ˜D). The inner expectation is 
+
+Eψ∼π(·| ˜D)
+
+h
+
+− log qθ
+
+
+
+λ(ψ; ˜D) | ˜D
+
+i 
+
+= Eb∼πsate (·| ˜D)
+
+h
+
+− log qθ
+
+
+
+b | ˜D
+
+i 
+
+,
+
+15 where the second equality follows from the definition of πsate as the pushforward of π(· | ˜D) through 
+
+ψ 7 → λ(ψ; ˜D). Using the cross-entropy decomposition, 
+
+Eb∼πsate (·| ˜D)
+
+h
+
+− log qθ
+
+
+
+b | ˜D
+
+i 
+
+= H
+
+
+
+πsate (· | ˜D)
+
+
+
++ D KL 
+
+
+
+πsate (· | ˜D) qθ (· | ˜D)
+
+
+
+,
+
+where H(·) is the entropy. The entropy term does not depend on θ, so 
+
+arg min  
+
+> θ
+
+L(θ) = arg min  
+
+> θ
+
+E ˜D∼ P O
+
+h
+
+DKL 
+
+
+
+πsate (· | ˜D) qθ (· | ˜D)
+
+i 
+
+,
+
+which is precisely the expected inclusive KL between the true marginal posterior and our approx-imation. The inclusive KL is mass-covering in the standard sense: any region with πsate -mass for which qθ assigns zero density contributes infinite penalty, so the optimum qθ⋆ must support the entire support of πsate .
+
+## C Training Details and Inference 
+
+Output level. The averaged representation is projected through a linear head producing a K-dimensional vector ( K = 1 ,024 ) of logits over a discretized output space. Since Y ∈ [0 , 1] , the SATE lies in [−1, 1] ; we partition [−1, 1] into K uniform bins and apply softmax to obtain a probability distribution qθ ([ k] | ˜D) over bin indices k ∈ { 1, . . . , K }.
+
+Inferring Bounds. At inference time, given a new observational dataset D, the trained model 
+
+qθ⋆ produces an approximation to πsate (· | D ) in a single forward pass. We read off the bound as Qα/ 2(qθ⋆ (· | D )) , Q 1−α/ 2(qθ⋆ (· | D )) . Inference is one forward pass per dataset, resolving L5 .
+
+Training Process. We train θ by performing gradient descent updates with the AdamW optimizer [ 35 ]on a Monte-Carlo estimate of the loss in (5). At each iteration, we sample a batch of parameters 
+
+ψ1, . . . , ψ B ∼ π. For each ψb, we generate an observational dataset ˜Db ∼ P O 
+
+> ψb
+
+and compute the ground-truth SATE λ(ψb; ˜Db) analytically. We discretize the SATE values into uniformly spaced bins on [−1, 1] via the mapping w 7 → ⌊ K × (w + 1) /2⌋ to obtain [ˆλ(ψb; ˜Db)] (clipped to be at most 
+
+K − 1). The estimated loss is 
+
+bL(θ) := − 1
+
+B
+
+> B
+
+X
+
+> b=1
+
+log qθ
+
+
+
+[ˆλ(ψb; ˜Db)] | ˜Db
+
+
+
+. (9) We minimize bL for a sufficient number of steps until the loss converges. We denote the trained parameters by θ⋆.
+
+Inferring SATE Bounds. Once trained, the transformer model can take new unseen datasets D and produce qθ⋆ (· | D ) ≈ πsate (· | D ) in a single forward pass without further training. We then read off the bound interval Qα/ 2(qθ⋆ (· | D )) , Q 1−α/ 2(qθ⋆ (· | D ))  via (4), computing the quantiles directly on the discretized marginal posterior. 
+
+Hyperparameters. We list the training hyperparameters in Table 3. The transformer architecture is a standard encoder with self-attention layers and MLPs, omitting positional encoding to enforce permutation-invariance over dataset rows. The total pre-training cost is 69 .5 GPU-hours on one H100. Once trained, inference takes under 2 seconds per dataset, so the pre-training cost amortizes after roughly 1,000 –3,000 inference calls—a threshold readily reached when IV-ICL is deployed as a general-purpose tool. 
+
+## D Proof of Proposition 1 
+
+Proof. We prove each claim in turn. 
+
+Part 1: IV Validity. 
+
+Instrument unconfoundedness: By construction, Z is generated as Zi ∼ Bernoulli (pz (Oi)) , depend-ing only on observed covariates O. Since Z does not depend on U, we have 
+
+Z ⊥⊥ U | O. (10) Moreover, the RCT outcomes Y (t) are pre-determined and do not depend on the synthetically generated Z. Since the original RCT satisfies T rct ⊥⊥ Y (t) | X = ( O, U) by randomization, and Z
+
+is generated independently of Y (t) given O, we have Z ⊥⊥ Y (t) | O.16 Table 3: Training hyperparameters for IV-ICL. 
+
+Hyperparameter Value 
+
+Batch size 256 Iterations 262,144 Number of synthetic tables 67,108,864 Output bins ( K) 1,024 Optimizer AdamW Learning rate 1e-4 Weight decay 0.05 Embedding dimension 384 Transformer depth 20 Number of attention heads 6Total training time (one H100 GPU) 69.5 hrs 
+
+Exclusion restriction: The outcome Yi for each accepted unit is the original RCT outcome, which was generated before and independently of the synthetic instrument Z. The instrument Z was only used to generate the synthetic treatment T synth , not the outcome. Therefore, Z has no direct effect on 
+
+Y other than through its effect on T .
+
+Part 2: SATE Preservation. 
+
+Let γ = P(T rct = 1) = 0 .5 by the balancing assumption. For any unit with covariates (O, U, Z ),define p := pt(O, U, Z ). The acceptance probability is: 
+
+P(T synth = T rct | O, U, Z ) = P(T synth = 1 , T rct = 1 | O, U, Z ) + P(T synth = 0 , T rct = 0 | O, U, Z )= p · γ + (1 − p) · (1 − γ) = p · 0.5 + (1 − p) · 0.5 = 0 .5. (11) 
+
+Note that this acceptance probability does not depend on (O, U, Z ). Therefore, the accepted subsample is a uniform random subsample of the original balanced RCT. Moreover, for the accepted units, the treatment assignment follows: 
+
+P(T = 1 | O, U, Z, T synth = T rct ) = P(T synth = 1 , T rct = 1 | O, U, Z )
+
+P(T synth = T rct | O, U, Z ) = p · 0.50.5 = p = pt(O, U, Z ).
+
+(12) 
+
+This confirms that the treatment mechanism in the accepted sample is exactly the intended confounded propensity. Since acceptance is independent of all covariates and potential outcomes, conditioning on acceptance does not change the distribution of potential outcomes: 
+
+E[Y (t) | T synth = T rct ] = E[Y (t)] . (13) 
+
+Therefore, the SATE in the accepted sample equals the SATE in the original RCT: 
+
+E[Y (1) − Y (0) | T synth = T rct ] = E[Y (1) | T synth = T rct ] − E[Y (0) | T synth = T rct ] (14) 
+
+= E[Y (1)] − E[Y (0)] (15) 
+
+= E[Y | T rct = 1] − E[Y | T rct = 0] , (16) 
+
+where the last equality uses the unconfoundedness of the original RCT. 
+
+## E Details of the Benchmark 
+
+E.1 Details of the Synthetic Binary Outcome Benchmark 
+
+We generate 10 synthetic IV datasets with binary instrument, treatment, and outcome, containing 
+
+n = 2048 samples: 1. Covariates: Sample X ∈ Rn×d with d ∼ Unif {5, 6, 7, 8, 9, 10 }, where each entry is drawn from either N (5 , 1) or Unif (−10 , 5) , chosen randomly. 2. Instrument generation: Generate weights wZ ∈ Rd from either N (1 , 2) or Unif (−2, 2) . Com-pute logits as ℓZ = Xw Z + εZ , where εZ is noise from either N (0 , 1) or Laplace (0 , 1) . Stan-dardize: ˜ℓZ = ( ℓZ − ¯ℓZ )/std (ℓZ ). Sample Z ∼ Bernoulli (σ(˜ℓZ )) .17 3. Potential treatment/outcome: Generate weights W ∈ Rd×16 and compute logits L = XW + E
+
+where E ∈ Rn×16 is noise. Apply row-wise softmax to obtain strata probabilities P ∈ Rn×16 ,where each row sums to 1. 4. Treatment and outcome strata: The 16 columns correspond to combinations of: • Treatment strata: Always-Takers (AT), Never-Takers (NT), Defiers (DE), Compliers (CO) • Outcome strata: Always-Good (AG), Always-Bad (AB), Effective (EF), Harmful (HF) 5. Observable generation: For each unit i, sample the stratum from the categorical distribution defined by Pi, then determine (Ti, Y i) based on Zi and the sampled stratum. 6. Ground-truth bounds: Compute the observational probabilities pyt.z (xi) analytically from the strata probabilities, then apply the Balke-Pearl equations to obtain ℓ(xi) and u(xi).
+
+E.2 Details of the Jobs Benchmark 
+
+The original National Supported Work (NSW) Demonstration is an RCT evaluating job training effects on earnings. It includes the following covariates: age , education , black , hispanic ,
+
+married , nodegree , re74 , re75 , where the last two features correspond to the earning in 1974 and 1975. The treatment is a binary indicator of assignment to job training program. Finally, the outcome variable is the amount of earnings in 1978 (re78). We apply log transforms to the outputs to get less skewed outcome distribution: re74 ← log( re74 + 1) , re75 ← log( re75 + 1) , Y ← log( re78 + 1) .
+
+Covariate Split. We split the features into observed covariates ( O), which consist of age , education ,
+
+black , hispanic , married , nodegree , and unobserved covariates ( U), which are re74 , re75 (pre-program earnings). 
+
+Synthetic Instrument propensity. We use pz (O) = σ(sz (O)+ bz ), where sz (O) includes nonlinear effects of the observed demographics and bz is calibrated such that E[Z] ≈ 0.5. In particular, we make sure positivity by clipping pz ∈ [0 .05 , 0.95] .
+
+Synthetic Treatment propensity. We use pt(O, U, Z ) = σ(st(O, U) + β · Z + bt), where st(O, U)
+
+includes confounding effects through pre-program earnings, and β controls instrument strength. We vary β from 0.25 to 8 to produce different instrument strengths. 
+
+E.3 Details of the STAR Benchmark 
+
+Project STAR randomized students to three class types, (i) Small class ( ≈ 13–17 students), (ii) 
+
+Regular class ( ≈ 22–25 students), and (iii) Regular class with aide ( ≈ 22–25 students + full-time aide). We create an entry-grade snapshot using the earliest grade with observed class type to convert the longitudinal study into a static dataset. 
+
+Covariate Split. The observed covariates ( O) include student’s gender , birth-quarter , and 
+
+ethnicity , as well as entry-grade-indicator . We also consider teacher’s degree and 
+
+career-ladder as observed data. For unobserved variables, we use school-type , free-lunch ,and teacher’s ethnicity and experience .
+
+Treatment Contrasts. We consider two types of experiments, one with small vs. regular class sizes, where T = 1 if small class, T = 0 if regular class. The other is regular+aide vs. regular classes, with 
+
+T = 1 if regular+aide, T = 0 if regular. 
+
+Outcome Standardization. Finally, we standardize the outcomes, reading and math scores, within the entry grade, i.e., Y ← Y raw −μG 
+
+> σG
+
+, where μG and σG are grade-specific means and standard deviations. 
+
+## F Additional Experiments - Airplane Demand Benchmark 
+
+We adapt the airplane ticket demand benchmark from Hartford et al. [22] to our binary IV setting. The original benchmark simulates airline pricing with unobserved confounding between price and demand. We modify this to have: (i) a binary instrument Z ∼ Bernoulli (0 .5) , representing high vs. low fuel cost regimes, (ii) a binary treatment T ∈ { 0, 1}, representing regular vs. premium pricing, obtained via soft thresholding of the latent continuous price, and (iii) a continuous outcome 
+
+Y representing ticket sales. The ground-truth SATE is computed analytically from the structural model. 18 The original benchmark models airline ticket pricing and sales as follows. The covariates are 
+
+X = ( s, e) where s ∼ Unif (0 , 10) is time-of-year and e ∈ { 0, 1}7 is a one-hot customer type. The instrument is chosen as Z ∼ N (0 , 1) represents fuel cost variation. The treatment value corresponds to the price P = sensf (s)( Z+3)+25+ V −μp 
+
+> σp
+
+where V ∼ N (0 , σ 2 
+
+> p
+
+) and sensf (·) is a seasonal function. Finally, the outcome is defined as Y = g(s, e, P ) + ε where ε = ρ σy 
+
+> σp
+
+V + p1 − ρ2η with 
+
+η ∼ N (0 , σ 2 
+
+> y
+
+). The correlation between V and ε induces confounding. We modify the benchmark to have binary instrument and treatment. Specifically, we choose the instrument as Z ∼ Bernoulli (0 .5) , and map it to standardized proxy using ˜Z = −(Z − 0.5) /√0.25 .Moreover, we compute P using the same formula as above, but with ˜Z in place of the original Gaussian instrument. We then standardize the price and then apply sigmoid to get our binary treatment. We generate datasets with n = 2048 samples. 
+
+Results. Table 4 shows results on the airplane demand benchmark. All methods except the fully Bayesian method achieve perfect validity, but IV-ICL produces the tightest bounds (normalized width 0.26 vs. 0.62–0.84 for valid baselines). The fully Bayesian method again produces overly narrow intervals (0.13), resulting in 0.90 validity. This reinforces that naively targeting the causal effects directly with exclusive KL variational inference can lead to invalid intervals. IV-ICL achieves 35–275 × speedup. Table 4: Results on the airplane demand benchmark. We report validity, normalized width, and inference time (mean ± ste over seeds). Best results in validity and inference time are bolded ; The best width for perfectly valid intervals are underlined.                                                             
+
+> Method Validity ↑Width ↓Time/1k (s) ↓
+> IV-ICL (Ours) 1.00 ±0.00 0.257 ±0.097 0.44 ±0.04
+> Plug-in 1.00 ±0.00 0.625 ±0.032 31.7 ±3.6
+> Whitehouse et al. 1.00 ±0.00 0.844 ±0.033 58.8 ±6.0
+> Levis et al. 1.00 ±0.00 0.652 ±0.031 61.4 ±6.4
+> Bayes-BP 1.00 ±0.00 0.619 ±0.021 193.9 ±8.5
+> Bayes 0.90 ±0.10 0.127 ±0.002 251.7 ±4.3
+
+## G Additional Experiments - STAR Benchmark 
+
+We present additional results on the Project STAR benchmark across different treatment contrasts and outcome measures. Tables 5–7 report results for: (i) Regular+Aide vs. Regular class comparison with math scores, (ii) Regular+Aide vs. Regular with reading scores, and (iii) Small vs. Regular with math scores. The main text presents Small vs. Regular with reading scores (Table 2). Across all variants, IV-ICL consistently achieves perfect validity while producing competitive interval widths, and maintains significant computational advantages over all baselines. 
+
+## H Additional Experiments - Calibration and Sensitivity Analysis 
+
+The main experiments report validity as the binary indicator that an estimated interval contains the ground-truth SATE, averaged over 10 seeds at a single nominal credibility level. Here we further evaluate IV-ICL’s interval estimator along two complementary axes: (i) calibration (appendix H.2), the empirical coverage of the credible interval as a function of the nominal level 1 − α, and (ii) 
+
+sensitivity (appendix H.3), the behavior of coverage and interval width as we vary the sample size n
+
+and the covariate dimensionality d. Both studies share the same trained IV-ICL checkpoint used for the main results, so any variation we report is attributable to the data-generating process rather than to retraining. 
+
+H.1 Synthetic IV Data-Generating Processes 
+
+We design three families of IV-consistent DGPs that differ in the complexity of the structural link functions. In every family, X ∈ Rd is sampled i.i.d. from Unif( −2, 2) d, Z ∼ Bernoulli(0 .5) is the binary instrument, and U ∼ N (0 , 1) is a latent confounder of T and Y (Z is exogenous in U ). The 19 Table 5: Results on STAR benchmark comparing Regular+Aide vs. Regular class sizes using math scores as outcome. We report validity, normalized interval width, and inference time per 1,000 samples (mean ± standard error over 10 seeds), stratified by instrument strength. Best validity and time in bold ; best width among perfectly valid methods is underlined. 
+
+Weak instrument ρ(Z, T ) ≈ 0.28 Strong instrument ρ(Z, T ) ≈ 0.89 
+
+Method Validity Width Time/1k (s) Validity Width Time/1k (s) 
+
+IV-ICL (Ours) 1.00 ± 0.00 0.193 ± 0.023 0.15 ± 0.01 1.00 ± 0.00 0.049 ± 0.002 0.15 ± 0.01 
+
+Plug-in 1.00 ± 0.00 0.651 ± 0.013 6.14 ± 1.45 1.00 ± 0.00 0.097 ± 0.007 4.03 ± 0.40 
+
+Whitehouse et al. 1.00 ± 0.00 0.786 ± 0.014 8.32 ± 1.18 1.00 ± 0.00 0.129 ± 0.012 8.03 ± 0.85 
+
+Levis et al. 1.00 ± 0.00 0.677 ± 0.012 7.87 ± 0.74 1.00 ± 0.00 0.107 ± 0.010 8.30 ± 0.97 
+
+Bayes-BP 1.00 ± 0.00 0.713 ± 0.016 64.60 ± 4.23 1.00 ± 0.00 0.201 ± 0.010 67.76 ± 4.34 
+
+Bayes 1.00 ± 0.00 0.068 ± 0.001 132.61 ± 22.89 1.00 ± 0.00 0.144 ± 0.005 134.27 ± 14.07 
+
+Table 6: Results on STAR benchmark comparing Regular+Aide vs. Regular class sizes using reading scores as outcome. We report validity, normalized interval width, and inference time per 1,000 samples (mean ± standard error over 10 seeds), stratified by instrument strength. Best validity and time in bold ; best width among perfectly valid methods is underlined. 
+
+Weak instrument ρ(Z, T ) ≈ 0.28 Strong instrument ρ(Z, T ) ≈ 0.89 
+
+Method Validity Width Time/1k (s) Validity Width Time/1k (s) 
+
+IV-ICL (Ours) 1.00 ± 0.00 0.194 ± 0.033 0.15 ± 0.01 1.00 ± 0.00 0.039 ± 0.002 0.15 ± 0.01 
+
+Plug-in 1.00 ± 0.00 0.654 ± 0.015 4.02 ± 0.47 1.00 ± 0.00 0.099 ± 0.006 4.48 ± 0.82 
+
+Whitehouse et al. 1.00 ± 0.00 0.789 ± 0.015 7.79 ± 0.62 1.00 ± 0.00 0.136 ± 0.010 7.79 ± 0.75 
+
+Levis et al. 1.00 ± 0.00 0.682 ± 0.014 8.16 ± 1.14 1.00 ± 0.00 0.108 ± 0.009 7.27 ± 0.44 
+
+Bayes-BP 1.00 ± 0.00 0.722 ± 0.006 68.61 ± 4.00 1.00 ± 0.00 0.208 ± 0.002 75.25 ± 15.78 
+
+Bayes 1.00 ± 0.00 0.072 ± 0.001 141.94 ± 9.28 1.00 ± 0.00 0.139 ± 0.008 155.83 ± 19.42 
+
+treatment is generated as 
+
+T | X, Z, U ∼ Bernoulli( pT ), pT = sigmoid 
+
+
+
+a · ˜Z + hT (X) + γT U
+
+
+
+, (17) where ˜Z = ( Z − 0.5) /√0.25 is the standardized instrument, a = 2 controls instrument strength, 
+
+γT = 1 controls confounding, and pT is clipped to [0 .05 , 0.95] to enforce positivity. The continuous outcome is 
+
+Y = μT (X) + γY U + σY η, η ∼ N (0 , 1) , γY = 1 , σY = 0 .5, (18) so Z does not appear in the outcome equation, satisfying the exclusion restriction in Assumption 1. The three families differ only in the link functions (hT , μ 0, μ 1):• Linear : hT (x) = w⊤ 
+
+> T
+
+x and μt(x) = w⊤ 
+
+> Y0
+
+x + tβ , with wT , wY 0 ∼ N (0, I d/d ) and β ∼
+
+Unif(0 .5, 2.0) (random sign). The treatment effect is homogeneous. • Polynomial : same as Linear but with an added centered quadratic term in hT , a sinusoidal 
+
+μ0(x) = sin( w⊤ 
+
+> Y
+
+x), and μ1(x) = μ0(x) + β + κ · (x21 − 4/3) for β ∼ Unif(0 .5, 1.5) and 
+
+κ ∼ Unif(0 .3, 0.8) (random signs). The quadratic terms are mean-centered ( E[X2] = 4 /3 for 
+
+X ∼ Unif( −2, 2) ) so they introduce no marginal shift. • DeepNonlinear : hT , μ0, and μ1 are independent two-layer tanh -MLPs with hidden width 16 and i.i.d. Gaussian weights, producing fully nonlinear treatment-assignment, baseline, and causal effect surfaces. For each generated dataset, we treat the SATE λ(D) = 1
+
+> n
+
+Pni=1 [μ1(xi) − μ0(xi)] as the ground truth, matching the SATE convention in (1). We use the same trained IV-ICL checkpoint as in Section 7.1; continuous outcomes are handled at inference time via the discretization of Levis et al. [33 , §6 ], as in our other continuous-outcome benchmarks. 
+
+H.2 Calibration Curves Setup. For each DGP, we generate K = 100 datasets at n = 1024 and d = 5 from independent seeds. For each dataset we run a single forward pass of the trained model to obtain the marginal 20 Table 7: Results on STAR benchmark comparing Small vs. Regular class sizes using math scores as outcome. We report validity, normalized interval width, and inference time per 1,000 samples (mean 
+
+± standard error over 10 seeds), stratified by instrument strength. Best validity and time in bold ; best width among perfectly valid methods is underlined. 
+
+Weak instrument ρ(Z, T ) ≈ 0.29 Strong instrument ρ(Z, T ) ≈ 0.89 
+
+Method Validity Width Time/1k (s) Validity Width Time/1k (s) 
+
+IV-ICL (Ours) 1.00 ± 0.00 0.265 ± 0.036 0.17 ± 0.01 1.00 ± 0.00 0.052 ± 0.003 0.17 ± 0.02 
+
+Plug-in 1.00 ± 0.00 0.659 ± 0.011 7.99 ± 0.70 0.90 ± 0.10 0.105 ± 0.007 7.84 ± 0.80 
+
+Whitehouse et al. 1.00 ± 0.00 0.822 ± 0.015 16.5 ± 2.0 1.00 ± 0.00 0.148 ± 0.010 16.2 ± 1.8 
+
+Levis et al. 1.00 ± 0.00 0.686 ± 0.014 17.6 ± 1.6 1.00 ± 0.00 0.116 ± 0.008 15.9 ± 2.1 
+
+Bayes-BP 1.00 ± 0.00 0.715 ± 0.013 55.81 ± 15.22 1.00 ± 0.00 0.223 ± 0.017 91.46 ± 13.15 
+
+Bayes 0.60 ± 0.17 0.078 ± 0.001 84.06 ± 28.17 1.00 ± 0.00 0.154 ± 0.005 168.46 ± 28.61 0.00 0.25 0.50 0.75 1.00 
+
+Nominal credible level 1 − α  
+
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> Empirical coverage
+> y=x
+> Linear Polynomial DeepNonlinear
+
+Figure 4: Calibration curves on three synthetic IV DGPs. Empirical coverage versus nominal credibility level 
+
+1 − α over K = 100 datasets per DGP at n = 1024 , d = 5 . Bands show ±1 standard error. IV-ICL over-covers in the regime that matters for inference and approaches the diagonal smoothly at very narrow nominal levels — the expected signature of an inclusive KL-trained marginal posterior on partial identification. 
+
+posterior approximation qθ⋆ (· | D ), and read off the credible interval at 18 nominal levels 1 − α ∈{0.01 , . . . , 0.995 } as [Qα/ 2, Q 1−α/ 2]. Empirical coverage at level 1 − α is the fraction of the K
+
+datasets whose sample SATE lies inside the predicted interval, and is the multi-seed analogue of the validity metric used in Section 7.1. 
+
+Results. Figure 4 reports empirical coverage versus nominal credibility, with ±1 standard error bands. Across all three DGPs, empirical coverage exceeds the nominal level for every credibility level. The model is also more conservative on the more nonlinear DGPs ( DeepNonlinear ⪰ Polynomial ⪰
+
+Linear at every credibility between 0.4 and 0.9). This observation is consistent with the inclusive KL loss that induces conservative over-coverage. 
+
+H.3 Sensitivity to Sample Size and Dimensionality Setup. For each DGP we run two one-dimensional sweeps at fixed α = 0 .1 (i.e., 90% nominal credible intervals): a sample-size sweep with n ∈ { 256 , 512 , 1024 , 2048 , 4096 } at d = 5 , and a dimensionality sweep with d ∈ { 2, 4, 8, 16 , 32 } at n = 1024 . Each cell uses K = 30 independent seeds drawn disjointly from those in appendix H.2. We report empirical coverage and the mean normalized interval width (ˆ u − ˆℓ)/(max Y − min Y ), matching the informativeness convention in Section 7. 
+
+Results. Figure 5 shows the two sweeps. Coverage stays at 1.00 in every cell of both sweeps and across all three DGPs, consistent with the conservative over-coverage of the 90% interval characterized in appendix H.2; coverage thus carries no signal at this nominal level, and the interesting axis is interval width . As n grows from 256 to 4096 the mean normalized width contracts by ∼ 20% 
+
+(from ∼ 0.45 to ∼ 0.36 ), with all three DGPs tracking each other closely. As d grows from 2 to 32 
+
+the width inflates by ∼ 30% (from ∼ 0.37 to ∼ 0.49 ). 21 0.00         
+
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> Empirical coverage
+> Sample-size sweep ( d=fixed)
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> Empirical coverage
+> Dimensionality sweep ( n=fixed)
+> 2829210 211 212
+
+Sample size n    
+
+> 0.35
+> 0.40
+> 0.45
+> Mean normalized width
+> 2122232425
+
+Covariate dim d  
+
+> 0.35
+> 0.40
+> 0.45
+> 0.50
+> Mean normalized width
+> Linear Polynomial DeepNonlinear
+
+Figure 5: Sensitivity to sample size and dimensionality at α = 0 .1 (90% credible intervals). Top row :empirical coverage; bottom row : mean normalized interval width. Bands show ±1 standard error over K = 30 
+
+seeds per cell. Coverage saturates at 1.00 across the entire grid; widths shrink monotonically with n and grow with d, as expected. 
+
+22

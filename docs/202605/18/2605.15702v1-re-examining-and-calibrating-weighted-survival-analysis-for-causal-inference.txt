@@ -1,0 +1,5501 @@
+Title: Re-examining and calibrating weighted survival analysis for causal inference
+
+URL Source: https://arxiv.org/pdf/2605.15702v1
+
+Published Time: Mon, 18 May 2026 00:40:16 GMT
+
+Number of Pages: 62
+
+Markdown Content:
+## Re-examining and calibrating weighted survival analysis for causal inference 
+
+Wenfu Xu ∗, Yi Zhang †, Tobias Gerhard ‡, Zhiqiang Tan †
+
+May 18, 2026 
+
+Abstract. Causal inference with time-to-event outcomes is fundamental in various scientific stud-ies. In a static setup with fitted propensity scores, weighted Kaplan–Meier estimation for survival probabilities and weighted Breslow–Peto estimation for hazard ratios have been widely used, but their statistical properties have been overlooked or studied only to a limited extent. We re-examine the weighted Kaplan–Meier method by formally linking it with the general framework of augmented inverse probability weighted estimation including both point and variance estimation. Furthermore, to address limitations of existing weighted methods for survival analysis, we develop new methods and associated theory through calibrated estimation in both low-dimensional and high-dimensional settings. We present a simulation study and an empirical application on the effectiveness of ad-junctive psychotropic treatments for patients with schizophrenia. The calibrated methods yield coverage proportions closer to target ones in the simulation study, and produce shorter confidence intervals in both simulation and empirical studies. 
+
+Key words and phrases. Discrete-time survival analysis; Augmented inverse probability weight-ing; Breslow–Peto estimation; Calibrated estimation; Double robustness; Kaplan–Meier estimation; Variance estimation. 
+
+> ∗College of Economics, China Jiliang University
+> †Department of Statistics, Rutgers University
+> ‡Institute for Health, Health Care Policy, and Aging Research, Rutgers University
+> arXiv:2605.15702v1 [stat.ME] 15 May 2026
+
+## 1 Introduction 
+
+Causal inference for time-to-event outcomes is of interest in various scientific fields including med-ical and social sciences. In observational studies, a primary objective is to assess the causal effect of a treatment on the distribution of survival times. Commonly studied causal estimands in-clude treatment-specific survival probabilities and hazard probabilities, as well as contrasts such as survival probability differences and hazard ratios. Under standard identification assumptions, including no unmeasured confounding and non-informative censoring, these estimands can be iden-tified from observed data (Robins & Rotnitzky 1992; Hern´ an & Robins 2020). The main challenge beyond identification lies in constructing estimators that are robust to model misspecification and admit valid large-sample inference (e.g., confidence intervals). Consider the static setup where a sample of observations are obtained on a binary treatment A,right-censored survival time Y and non-censoring indicator ∆, and a vector of baseline covariates 
+
+X, but no additional time-varying covariates are measured. For this setup, there seems to be two strands of causal inference literatures which are arguably disconnected. On one hand, both weighted Kaplan–Meier (KM) for survival probabilities and weighted Breslow–Peto estimation 1 for hazard ratios as in Cox’s proportional hazards models have been proposed through general ideas of inverse probability weighted (IPW) estimation (Cole & Hern´ an 2004; Joffe et al. 2004; Xie & Liu 2005). The inverse weights are fitted values from a propensity score (PS) model for the probability of A given X. These methods have been widely used in practice, available from the popular R package survival (Therneau 2020), but their statistical properties have been overlooked or studied only to a limited extent. On the other hand, semi-parametric theory and augmented IPW estimation have been developed in more general, dynamic setups with both baseline and time-varying covariates (Robins & Rotnitzky 1992; Hubbard et al. 2000; Bai et al. 2013). While such general theory and methods are applicable to the static setup, limited work has been done to specifically study the application and implications, or to carefully connect the general theory with weighted Kaplan–Meier and Breslow–Peto estimation in practical use. The purpose of our work is twofold. First, we re-examine the weighted Kaplan–Meier method by formally linking it with the general framework of augmented IPW estimation including both point 
+
+> 1This method is a weighted version of Breslow’s (1974) and Peto’s (1972) modification of Cox’s (1972) maximum partial likelihood estimator to handle ties in survival times. See Section 3.2 for more details.
+
+1and variance estimation. Second, to address limitations of existing weighted methods for survival analysis, we develop new methods and associated theory through calibrated (CAL) estimation (Tan 2020; Ghosh & Tan 2022). For simplicity, we focus on the discrete-time setting, thereby avoiding technical issues in asymptotic theory related to continuous time. Our main contributions are summarized as follows. See Table 1 for the notation of various estimators. 
+
+• We show that the weighted Kaplan–Meier estimator ˆS1k, wKM , can be recast as an augmented IPW estimator provided that (a) the non-censoring probabilities and survival probabilities are each modeled as constant with respect to the covariate vector X, leading to working models termed CCP and CSP respectively, and (b) the working-model parameters are estimated in a particular manner which differs from maximum likelihood (ML) estimation but conforms to calibrated estimation (Proposition 1). Then the weighted Kaplan–Meier estimator is doubly robust, i.e., being consistent if either the PS and CCP models are correct or the CSP model is correct, and hence the consistency is not ensured by only correct specification of PS model. Moreover, we show that the model-robust variance estimator in R package survival alge-braically coincides with the standard, sample-variance based estimator from augmented IPW theory under a mild normalization condition, and is nonparametrically consistent provided that sampling variation is ignored in the estimated propensity score (Proposition 2). To our knowledge, all these results have not been appreciated in the literature. 
+
+• We generalize the standard augmented IPW estimator by introducing an outcome regression (OR) model for the conditional survival probability, separately from the CSP model, and then propose two calibrated augmented IPW estimators, ˆS1k, CAL and ˆS1k, CAL,lin , for the treatment-specific (marginal) survival probability. While both estimators preserve pointwise double robustness, ˆS1k, CAL admits a consistent variance estimator as long as the PS model is correctly specified and ˆS1k, CAL,lin admits a nonparametrically consistent variance estimator even when the PS model is misspecified (Propositions 4 and 5). Hence the method based on ˆS1k, CAL 
+
+enables valid inference under correct PS and CCP models, whereas that based on ˆS1k, CAL,lin 
+
+enables doubly robust inference under either correct PS and CCP models or correct CSP model. Furthermore, we formulate a hazard-ratio parameter that is targeted by the weighted Brewlow–Peto estimator ˆθwBP , and propose two calibrated augmented IPW estimators, ˆθCAL 
+
+and ˆθCAl,lin by incorporating risk-set OR models. Both estimators achieve pointwise double robustness and lead to valid inference under correct PS and CCP models (Proposition 6), and 2ˆθCAl,lin also enables valid inference under correct CSP and risk-set OR models. 
+
+• We extend calibrated augmented IPW estimation to high-dimensional settings, where the number of covariate terms in PS and OR models is close to or exceeds the sample size. For survival probabilities, the regularized calibrated estimator ˆS1k, RCAL involves directly replacing unregularized estimation by Lasso regularized estimation when fitting PS and OR models. In contrast, a direct extension for hazard ratio estimation requires Lasso regularized estimation at each time period, which is computationally costly when cross validation is used for selecting Lasso tuning parameters. To overcome this difficulty, we develop a novel regularized calibrated estimator, ˆθRCa , by exploiting a linearization technique to combine OR-based augmentation terms across time periods and then apply regularized estimation with OR models. The resulting method is computationally tractable while achieving similar theoretical properties as the calibrated estimator in low-dimensional settings (Proposition 7). 
+
+• We conduct a simulation study to evaluate the proposed methods and compare with existing ones in low-dimensional and high-dimensional settings. We also present an empirical appli-cation to re-analyze the data used in Stroup et al. (2019) for studying the effectiveness of adjunctive psychotropic treatments for patients with schizophrenia. The calibrated methods yield coverage proportions closer to target ones in the simulation study, and produce shorter confidence intervals (i.e., smaller SEs) in both simulation and empirical studies. Table 1: Notation of estimators studied                                    
+
+> Estimator of γfor PS Survival probability Hazard ratio
+> General ˆγ
+> ˆS1k, wKM = ˆS1k(ˆ γ, ˆρ1,1: k, CAL ,ˆη1,1: k, CAL )
+> (AIPW)
+> = ˆS1k(ˆ η1,1: k, CAL )
+> (ICE)
+> ˆS1k, wKM = ˆS1k(ˆ γ, ˆρ1,1: k, CAL )
+> (IPW)
+> if ∑ni=1 Aiˆπ−1
+> i=n
+> ˆθwBP (Eq 8)
+> Calibrated ˆγ1,CAL
+> ˆS1k, CAL
+> def
+> = ˆS1k(ˆ γ1,CAL ,ˆρ1,1: k, CAL ,ˆη1,1: k, CAL ,ˆα1k, CAL )ˆS1k, CAL, lin
+> def
+> = ˆS1k(ˆ γ1,CAL ,ˆρ1,1: k, CAL ,ˆη1,1: k, CAL ,ˆα1k, CAL, lin )= ˆS1k, wKM
+> ˆθCAL (Eq 45) ˆθCAL, lin = ˆθwBP
+> Regularized calibrated ˆγ1,RCAL
+> ˆS1k, RCAL
+> def
+> = ˆS1k(ˆ γ1,RCAL ,ˆρ1,1: k, CAL ,ˆη1,1: k, CAL ,ˆα1k, RCAL ) (Eq 27) ˆS1k, RCAL, lin
+> def
+> = ˆS1k(ˆ γ1,RCAL ,ˆρ1,1: k, CAL ,ˆη1,1: k, CAL ,ˆα1k, RCAL, lin )ˆS1k, RCw = ˆS1k, wKM (ˆ γ1,RCAL ) (Eq 5) ˆθRCAL
+> ˆθRCAL, lin
+> ˆθRCw = ˆθwBP (ˆ γ1,RCAL ) (Eq 52) ˆθRCa (Eq 56)
+
+The remainder of the paper is organized as follows. Section 2 introduces the setup and identifica-tion conditions. Section 3 reviews existing methods for estimating survival probabilities and hazard ratios. Section 4 reviews standard augmented IPW estimation and then re-examines weighted KM estimation. Section 5 introduces calibrated estimation for survival probabilities and for hazard ratios. Section 6 extends the calibrated methods to high-dimensional settings. Section 7 presents a simulation study, and Section 8 provides a real-data application. 32 Setup 
+
+Suppose that the observed data are {(Yi, ∆i, A i, X i) : i = 1 , . . . , n } from n individuals, where 
+
+Yi = min( Ui, C i), ∆ i = 1 {Ui ≤ Ci}, Ui is an (uncensored) event time such as death time, Ci is a censoring time, Ai is a binary treatment and Xi is a (baseline) covariate vector. Assume that 
+
+{(Ui, C i, A i, X i) : i = 1 , . . . , n } are independent and identically distributed copies of ( U, C, A, X ), and hence {(Yi, ∆i, A i, X i) : i = 1 , . . . , n } are independent and identically distributed copies of (Y, ∆, A, X ) with Y = min( U, C ) and ∆ = 1 {U ≤ C}.For causal inference, let ( U (0) , U (1) ) be the potential survival times and ( C(0) , C (1) ) be the potential censoring times. By consistency, assume that ( U, C ) is either ( U (0) , C (0) ) or ( U (1) , C (1) ), depending on A = 0 or 1. Throughout, we focus on discrete-time data and assume that there are discrete values, 0 = u0 < u 1 < · · · < u K < u K+1 , such that C(a) ∈ { u0, u 1, . . . , u K } and 
+
+U (a) ∈ { u1, . . . , u K , u K+1 } for a = 0 , 1. By this assumption, P (U (a) > u 0) = 1. It is commonly of interest to estimate the treatment-specific survival probabilities Sak = P (U (a) > u k), hazard probabilities qak = P (U (a) = uk|U (a) ≥ uk), or other population quantities derived from these probabilities. Causal effects can be defined as some contrasts of these population quantities between treatment a = 0 and 1, for example, the survival probability differences S1k − S0k or the hazard probability ratios q1k/q 0k.To ensure point identification, we assume throughout that no unmeasured confounding (NUC) and non-informative censoring (NIC) hold: 
+
+A ⊥ U (a)|X, a = 0 , 1, (1) 
+
+U (a) ⊥ C(a)|A = a, X, a = 0 , 1, (2) i.e., A and U (a) are independent given X, and U (a) and C(a) are independent given A = a and X
+
+for a = 0 , 1. Under Assumptions (1)–(2), the conditional survival probabilities P (U (a) > u k|U (a) ≥
+
+uk, X ) and hence also P (U (a) > u k|X) and P (U (a) > u k), can be identified from the observed-data distribution for k = 1 , . . . , K (see footnote 3). 
+
+## 3 Existing weighted survival analysis 
+
+We describe existing methods of weighted survival analysis. The weights are defined from the fitted values in a regression model π(X; γ) for the propensity score π∗(X) = P (A = 1 |X) (Rosenbaum & Rubin 1983). For an estimator ˆ γ of γ, the fitted propensity score is π(X; ˆ γ). For example, consider 4logistic regression 
+
+π(X; γ) = exp( γTf (X)) 
+
+1 + exp( γTf (X)) , (3) where f (X) is a vector of known covariate functions (including an intercept) such as main effects and interactions, and γ = ( γ0, γ 1, . . . , γ p)T is a vector of unknown coefficients including intercept 
+
+γ0. In general, let ˆ γ be an estimator of γ which is consistent for the true value γ∗ if the model is correctly specified. As a specific choice, the maximum likelihood (ML) estimator of γ, denoted as ˆγML , is a solution to 0 = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{Ai − π(Xi; γ)}f (Xi).
+
+The fitted propensity score is then π(X; ˆ γML ). 
+
+3.1 Weighted survival probabilities 
+
+Weighted Kaplan–Meier estimation has been proposed by incorporating inverse propensity-score weighting with Kaplan–Meier (KM) estimation (Kaplan & Meier, 1958) to estimate survival prob-abilities Sak (Cole & Hernan 2004; Xie & Liu 2005). For estimating S1k, k = 1 , . . . , K , the hazard probabilities, q1j , j = 1 , . . . , k , are estimated as ˆq1j =
+
+∑ 
+
+> i∈Jj
+
+Ai ˆw1i
+
+∑ 
+
+> i∈Ij
+
+Ai ˆw1i
+
+, (4) where ˆ w1i = π(Xi; ˆ γ)−1, Ij = {1 ≤ i ≤ n : Yi ≥ uj } and Jj = {1 ≤ i ≤ n : Yi = uj , ∆i = 1 }, which represent, respectively, the risk set and event set at time uj (hence Ij \ Jj represents the survival set at uj ). The weighted KM estimator of S1k is ˆS1k, wKM =
+
+> k
+
+∏
+
+> j=1
+
+(1 − ˆq1j ). (5) The dependency of ˆ q1j and ˆS1k, wKM on ˆ γ is suppressed in the notation. See Section 4.2 for a careful discussion of consistency of ˆS1k, wKM . For inference (e.g., confidence intervals), several variance estimators are available. The variance estimator derived in Xie & Liu (2005) is ˆVb( ˆS1k, wKM ) = ˆS21k, wKM 
+
+> k
+
+∑
+
+> j=1
+
+∑ 
+
+> i∈Ij
+
+Ai ˆw21i
+
+(∑ 
+
+> i∈Ij
+
+Ai ˆw1i)2
+
+ˆq1j
+
+1 − ˆq1j
+
+, (6) which will be called a model-based variance estimator as indicated by Proposition 3 later. The 
+
+survfit() function in R package survival (Therneau 2020) provides two variance estimators for weighted KM estimation. By our understanding and numerical evaluation, the model-based variance estimator in survival is ˆVb0 ( ˆS1k, wKM ) = ˆS21k, wKM 
+
+> k
+
+∑
+
+> j=1
+
+1
+
+∑ 
+
+> i∈Ij
+
+Ai ˆw1i
+
+ˆq1j
+
+1 − ˆq1j
+
+,
+
+5which is appropriate only for frequency weighted estimation, not inverse probability weighted (IPW) estimation (Therneau & Grambsch 2000). The model-robust variance estimator is ˆVr( ˆS1k, wKM ) = ˆS21k, wKM 
+
+n2
+
+> n
+
+∑
+
+> i=1
+
+ˆϕ21ki, wKM , (7) where ˆϕ1ki, wKM = n
+
+> k
+
+∑
+
+> j=1
+
+−Ai ˆw1i
+
+∑   
+
+> τ∈Ij\Jj
+
+Aτ ˆw1τ
+
+1{i ∈ Ij }(1 {i ∈ Jj } − ˆq1j )The additional factor of n in ˆ ϕ1ki, wKM is introduced to facilitate comparison with augmented IPW estimation in Section 4.1. For completeness, we directly derive the model-robust variance estimator through Taylor expansions in Supplement Section IV, provided that ˆ γ (hence each weight ˆ w1i) is treated as data-independent. See Section 4.2 for a further discussion of consistency of ˆVr( ˆS1k, wKM ). For estimating the treatment-0 survival probabilities S0k, k = 1 , . . . , K , the hazard probabilities, 
+
+q0j , j = 1 , . . . , k , are estimated as ˆq0j =
+
+∑ 
+
+> i∈Jj
+
+(1 − Ai) ˆ w0i
+
+∑ 
+
+> i∈Ij
+
+(1 − Ai) ˆ w0i
+
+,
+
+where ˆw0i = (1 − π(Xi; ˆ γ)) −1. The weighted KM estimator of S0k is ˆS0k, wKM = ∏kj=1 (1 − ˆq0j ). Variance estimators can be obtained similarly as above. 
+
+3.2 Weighted hazard ratios 
+
+Inverse propensity-score weighting has also been used in fitting Cox’s (1972) proportional hazards models to estimate hazard ratios between potential survival outcomes (Cole & Hernan 2004; Joffe et al. 2004). A popular, simple method is to fit a proportional hazards model with the treatment variable as the only regression term. For example, the coxph() function in R package survival 
+
+implements weighted proportional hazard regression, including Breslow’s (1974) and Peto’s (1972) modification of Cox’s maximum partial likelihood estimator with option ties="breslow" . In the discrete-time setting, the weighted Breslow–Peto (BP) estimator ˆθwBP is defined as a solution to 0 = 
+
+> K
+
+∑
+
+> k=1
+
+∑
+
+> i∈Jk
+
+ˆwi
+
+(
+
+Ai −
+
+∑  
+
+> τ∈Ik
+
+ˆwτ Aτ eθA τ
+
+∑  
+
+> τ∈Ik
+
+ˆwτ eθA τ
+
+)
+
+,
+
+where ˆ wi = Ai ˆw1i + (1 − Ai) ˆ w0i, i.e., ˆ wi = ˆ w1i if Ai = 1 or ˆ w0i if Ai = 0. To help understanding, the preceding estimating equation can be rewritten as 0 = 
+
+> K
+
+∑
+
+> k=1
+
+{
+
+ˆW1k ˆq1k − ˆW1keθ
+
+ˆW1keθ + ˆW0k
+
+( ˆW1k ˆq1k + ˆW0k ˆq0k)
+
+}
+
+or equivalently 0 = 
+
+> K
+
+∑
+
+> k=1
+
+ˆW1k ˆW0k
+
+ˆW1keθ + ˆW0k
+
+(ˆ q1k − ˆq0keθ ), (8) 6where ˆW1k = n−1 ∑ 
+
+> i∈Ik
+
+Ai ˆw1i, ˆW0k = n−1 ∑ 
+
+> i∈Ik
+
+(1 − Ai) ˆ w0i, and ˆ q1k and ˆ q0k are defined in Section 3.1. 2 From the expression (8), ˆθwBP is expected to be a consistent estimator of θ in the following model of proportional hazard probabilities (PHP): 
+
+q1k = e θq0k, k = 1 , . . . , K. (9) where qak = P (U (a) = uk|U (a) ≥ uk) is a hazard probability. If model (9) is misspecified, then ˆθwBP 
+
+serves as a scalar summary of log hazard probability ratios, log( q1k/q 0k) at individual times uk,
+
+k = 1 , . . . , K . For completeness, we mention that a model of proportional hazard odds can also be considered: q1k/(1 − q1k) = e ϑq0k/(1 − q0k) , k = 1 , . . . , K . See Tan (2022, 2023) for a discussion of discrete-time survival models and associated estimation. For inference, the R function coxph() from R package survival also provides two variance estimators for ˆθwBP . The model-based variance estimator is ˆVb0 (ˆθwBP ) = n−1 ˆH(ˆθwBP )−1, where ˆH(θ) = 
+
+> K
+
+∑
+
+> k=1
+
+ˆW1k ˆW0keθ
+
+( ˆW1keθ + ˆW0k)2 ( ˆW1k ˆq1k + ˆW0k ˆq0k).
+
+We caution against the use of this variance estimator for two reasons. First, ˆVb0 (ˆθwBP ), like ˆVb0 ( ˆS1k, wKM ), is not appropriate for IPW estimation. Second, even for frequency weighted esti-mation, ˆVb0 (ˆθwBP ) tends to be asymptotically biased and conservative in the discrete-time setting (i.e., allowing tied event times) as shown in Tan (2022, 2023). The model-robust variance estimator is ˆVr(ˆθwBP ) = ˆH(θ)−1 ˆG(θ) ˆH(θ)−1
+
+∣∣∣ˆθwBP 
+
+, (10) where ˆG(θ) = n−2 ∑ni=1 {∑Kk=1 ˆϕki, wBP (θ)}2 with ˆϕki, wBP (θ) = ˆW0k
+
+ˆW1keθ + ˆ W0k
+
+Ai( ˆ w1i1{i ∈ Jk} − ˆq1k1{i ∈ Ik})
+
+− ˆW1keθ
+
+ˆW1keθ + ˆW0k
+
+(1 − Ai)( ˆ w0i1{i ∈ Jk} − ˆq0k1{i ∈ Ik})+ ˆq1k − ˆq0keθ
+
+( ˆW1keθ + ˆW0k)2
+
+{ ˆW 20k(Ai ˆw1i1{i ∈ Ik} − ˆW1k) + e θ ˆW 21k((1 − Ai) ˆ w0i1{i ∈ Ik} − ˆW0k)
+
+}
+
+.
+
+This variance estimator is similar to an unweighted version in Tan (2022), Proposition 6, and can be verified through Taylor expansions, provided that ˆ γ is treated as data-independent.  
+
+> 2
+
+While ˆ q1k and ˆ q0k are invariant to rescaling of ˆ w1i’s and ˆ w0i’s, equation (8) is affected by rescaling of ˆ w1i’s and ˆw0i’s. For example, if ˆ w1i ≡ (n1/n )−1 and ˆ w0i ≡ (( n − n1)/n )−1, with n1 = ∑ni=1 Ai, then resetting ˆ w1i ≡ 1 and ˆw0i ≡ 1 in (8) may give a different solution for ˆθwBP .
+
+74 Re-examining weighted survival analysis 
+
+4.1 Review: Augmented IPW estimation 
+
+We describe augmented IPW estimation for the treatment-1 survival probability S1k in the setup of Section 2, adapted from previous works (Robins & Rotnitzky 1992; Hubbard et al. 2000; Bai et al. 2013). The method involves estimating two distinct sets of unknown covariate functions. The first set includes the treatment propensity score π∗(X) = P (A = 1 |X) and the non-censoring probabilities π∗ 
+
+> 1j
+
+(X), j = 1 , . . . , k , defined as 
+
+π∗ 
+
+> 1j
+
+(X) = P (Y ≥ uj |Y ≥ uj−1, (Y, ∆) 6 = ( uj−1, 1) , X, A = 1) = P (not censored at uj−1 | in the risk set and event-free at uj−1, X, A = 1) ,
+
+where the risk set at uj is {Y ≥ uj }. The second set consists of the conditional survival probabilities 
+
+m∗ 
+
+> 1j
+
+(X), j = 1 , . . . , k , defined as 
+
+m∗ 
+
+> 1j
+
+(X) = P (( Y, ∆) 6 = ( uj , 1) |Y ≥ uj , X, A = 1) = P (event-free at uj | in the risk set at uj , X, A = 1) .
+
+Under Assumptions (1)–(2), identification is achieved such that π∗ 
+
+> 1j
+
+(X) = P (C(1) ≥ uj |C(1) ≥
+
+uj−1, X, A = 1), the conditional survival function of C(1) given ( X, A = 1), and m∗ 
+
+> 1j
+
+(X) = P (U (1) >uj |U (1) ≥ uj , X ), the conditional survival function of U (1) given X. 3 In general, these covariate functions need to be estimated by postulating and fitting some (parametric) regression models, denoted as π(X; γ) for π∗(X), π1j (X; ρ1j ) for π∗ 
+
+> 1j
+
+(X), and m1j (X; η1j ) for m∗ 
+
+> 1j
+
+(X) for j = 1 , . . . , k ,where γ, ρ1j , and η1j are parameter vectors. In general, let ˆ γ, {ˆρ1j : j = 1 , . . . , k }, and {ˆη1j :
+
+j = 1 , . . . , k } be any estimators which are consistent for their true values γ∗, {ρ∗ 
+
+> 1j
+
+: j = 1 , . . . , k },and {η∗ 
+
+> 1j
+
+: j = 1 , . . . , k } if the associated models are correctly specified with π∗(X) = π(X; γ∗), 
+
+π∗ 
+
+> 1j
+
+(X) = π1j (X; ρ∗ 
+
+> 1j
+
+), and m∗ 
+
+> 1j
+
+(X) = m1j (X; η∗ 
+
+> 1j
+
+) for j = 1 , . . . , k . Then the fitted values π(X; ˆ γ), 
+
+π1j (X; ˆ ρ1j ), and m1j (X; ˆ η1j ) are consistent for the unknown functions π∗(X), π∗ 
+
+> 1j
+
+(X), and m∗ 
+
+> 1j
+
+(X)respectively. For the treatment propensity score π∗(X), logistic regression models are commonly used as de-scribed in Section 3. For the non-censoring probabilities {π∗ 
+
+> 1j
+
+(X) : j = 1 , . . . , k } or the conditional                                              
+
+> 3For identification, the second identity can be shown as follows (and similarly the first identity can be shown):
+> m∗
+> 1j(X) = P(( Y, ∆) 6= ( uj,1) |Y≥uj, X, A = 1) = P(U(1) > u j|U(1) ≥uj, C (1) ≥uj, X, A = 1) = P(U(1) >uj|U(1) ≥uj, X, A = 1) = P(U(1) > u j|U(1) ≥uj, X ), where the third equality follows from NIC Assumption (2) and the fourth equality follows from NUC Assumption (1).
+
+8survival probabilities {m∗ 
+
+> 1j
+
+(X) : j = 1 , . . . , k }, regression models are usually specified with homo-geneity (or dimension-reduction) assumptions on some components of ρ1j or η1j over j = 1 , . . . , k .In particular, proportional hazards models for {π∗ 
+
+> 1j
+
+(X) : j = 1 , . . . , k } or {m∗ 
+
+> 1j
+
+(X) : j = 1 , . . . , k }
+
+assumes that the coefficients associated with non-intercept covariate terms are constant over j in the hazard probabilities or odds. See Tan (2023) for relevant regression models and inferences in the discrete-time setting. Given any estimators ˆ γ, ˆ ρ1,1: k = {ˆρ1j : j = 1 , . . . , k }, and ˆ η1,1: k = {ˆη1j : j = 1 , . . . , k }, the augmented IPW estimator of S1k is ˆS1k(ˆ γ, ˆρ1,1: k, ˆη1,1: k) = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+ϕ1ki (ˆ γ, ˆρ1,1: k, ˆη1,1: k) (11) with 
+
+ϕ1ki (ˆ γ, ˆρ1,1: k, ˆη1,1: k)= Ai
+
+ˆπi
+
+Rki 
+
+ˆπ1ki 
+
+1{U (1)  
+
+> i
+
+> u k} − 
+
+> k−1
+
+∑
+
+> ℓ=0
+
+Ai
+
+ˆπi
+
+Rℓi 
+
+ˆπ1ℓi 
+
+( Rℓ+1 ,i 
+
+ˆπ1,ℓ +1 ,i 
+
+− 1
+
+)
+
+ˆm1,ℓ +1 ,i 1{U (1)  
+
+> i
+
+> u ℓ}−
+
+( Ai
+
+ˆπi
+
+− 1
+
+)
+
+ˆm11 i,
+
+(12) where the following notation is used: Rℓi = 1 {Yi ≥ uℓ}, ˆ πi = π(Xi; ˆ γ), ˆ π1ℓi = π1ℓ(Xi; ˆ ρ1ℓ), ˆ m1ℓi =
+
+m1ℓ(Xi; ˆ η1ℓ), Rℓi = ∏ℓj=1 Rji , ˆ π1ℓi = ∏ℓj=1 ˆπ1ji , ˆ m1ℓi = ∏kj=ℓ ˆm1ji for 1 ≤ ℓ ≤ k, and R0i ≡ 1 and 
+
+π10 i ≡ 1. (The dependency of ˆ m1ℓi on k is suppressed in the notation.) The expression (12) uses the potential survival time U (1)  
+
+> i
+
+only through the product AiR1ℓi 1{U (1)  
+
+> i
+
+> u ℓ}, which can be evaluated as 1 {Yi ≥ uℓ, (Yi, ∆i) 6 = ( uℓ, 1) , A i = 1 } from the observed data. Equivalently, the augmented IPW estimator can be expressed as (11) with 
+
+ϕ1ki (ˆ γ, ˆρ1,1: k, ˆη1,1: k)=
+
+> k−1
+
+∑
+
+> ℓ=0
+
+Ai
+
+ˆπi
+
+Rℓ+1 ,i 
+
+ˆπ1,ℓ +1 ,i 
+
+ˆm1,ℓ +2 ,i 1{U (1)  
+
+> i
+
+> u ℓ}(1 {U (1)  
+
+> i
+
+> u ℓ+1 } − ˆm1,ℓ +1 ,i ) + ˆ m11 i,
+
+(13) where m1,k +1 ,i ≡ 1. The augmented IPW estimator depends on fitted values from the two sets of regression models mentioned earlier. For illustration, the explicit expressions for the special case of k = 2 are provided in Supplement Section I. Retaining only the first term in the expression (12) leads to the IPW estimator ˆS1k(ˆ γ, ˆρ1,1: k) = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+Ai
+
+ˆπi
+
+Rki 
+
+ˆπ1ki 
+
+1{U (1)  
+
+> i
+
+> u k}, (14) depending only on the fitted propensity scores ˆ πi and non-censoring probabilities {ˆπ1ℓi : ℓ =1, . . . , k }. Retaining only the last term in the expression (13) leads to the iterated-conditional-9expectation (ICE) estimator ˆS1k(ˆ η1,1: k) = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+ˆm11 i = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+ˆm11 i · · · ˆm1ki , (15) depending only on the fitted conditional survival probabilities { ˆm1ℓi : ℓ = 1 , . . . , k }. The estimator ˆS1k(ˆ γ, ˆρ1,1: k) or ˆS1k(ˆ η1,1: k) is consistent for S1k only if the associated models are correctly specified, 
+
+π(X; γ) and {π1j (X; ρ1j ) : 1 ≤ j ≤ k} in the first case or {m1j (X; η1j ) : 1 ≤ j ≤ k} in the second case. However, the augmented IPW estimator is doubly roust, i.e., being consistent for S1k if either 
+
+π(X; γ) and {π1j (X; ρ1j ) : 1 ≤ j ≤ k} are correctly specified or {m1j (X; η1j ) : 1 ≤ j ≤ k} are correctly specified. Variance estimation for the augmented IPW estimator requires additional consideration to prop-erly account for sampling variations associated with the estimators (ˆ γ, ˆρ1,1: k, ˆη1,1: k). By the current theory of augmented IPW estimation (e.g., Tsiatis 2006), there are three distinct scenarios. 
+
+• If the two sets of models, first π(X; γ) and {π1j (X; ρ1j ) : 1 ≤ j ≤ k} and second {m1j (X; η1j ) : 1 ≤ j ≤ k}, are correctly specified, then the asymptotic variance of ˆS1k(ˆ γ, ˆρ1,1: k, ˆη1,1: k) can be consistently estimated by ˆVr( ˆS1k(ˆ γ, ˆρ1,1: k, ˆη1,1: k)) = 1
+
+n2
+
+> n
+
+∑
+
+> i=1
+
+{
+
+ϕ1ki (ˆ γ, ˆρ1,1: k, ˆη1,1: k) − ˆS1k(ˆ γ, ˆρ1,1: k, ˆη1,1: k)
+
+}2
+
+, (16) without being affected by the sampling variations from (ˆ γ, ˆρ1,1: k, ˆη1,1: k) (in other words, (ˆ γ, ˆρ1,1: k, ˆη1,1: k) can be treated as if they were data-independent). 
+
+• If the models π(X; γ) and {π1j (X; ρ1j ) : 1 ≤ j ≤ k} are correctly specified and if (ˆ γ, ˆρ1,1: k)are ML estimators, then the variance estimator (16) is conservative, i.e., no smaller than the asymptotic variance of ˆS1k(ˆ γ, ˆρ1,1: k, ˆη1,1: k). 
+
+• If the models {m1j (X; η1j ) : 1 ≤ j ≤ k}, are correctly specified, then the variance estimator (16) may be inconsistent in either direction. In practice, bootstrap or related methods can be used, assuming that the usual justification holds for such methods. 
+
+4.2 Re-examining weighted KM estimation 
+
+With the postulated non-censoring and conditional survival probabilities π1j (X; ρ1j ) and m1j (X; η1j )allowed to vary in X, the augmented IPW estimator is apparently more complicated than the weighted KM estimator (5). There is, however, an interesting connection. We show that the augmented IPW estimator algebraically reduces to the weighted KM estimator if π1j (X; ρ1j ) and 10 m1j (X; η1j ), j = 1 , . . . , k , are assumed to be constant in X and if the estimators ˆ ρ1j and ˆ η1j ,
+
+j = 1 , . . . , k , are defined in a particular manner. 
+
+Proposition 1. Consider the following Constant non-Censoring Probability (CCP) model for 
+
+π∗ 
+
+> 1j
+
+(X) and Constant Survival Probability (CSP) model for m∗ 
+
+> 1j
+
+(X):
+
+π1j (X; ρ1j ) = ρ1j , j = 1 , . . . , k, (17) 
+
+m1j (X; η1j ) = η1j , j = 1 , . . . , k, (18) 
+
+where {ρ1j : j = 1 , . . . , k } and {η1j : j = 1 , . . . , k } are unknown parameters (independent of X). For any estimator ˆγ, define ˆρ1,1: k, CAL = {ˆρ1j, CAL : j = 1 , . . . , k } and ˆη1,1: k, CAL = {ˆη1j, CAL : j = 1 , . . . , k },called calibrated estimators, as the solutions to the equations, 
+
+0 = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+Ai
+
+ˆπi
+
+Rℓi 
+
+( Rℓ+1 ,i 
+
+ρ1,ℓ +1 
+
+− 1
+
+)
+
+1{U (1)  
+
+> i
+
+> u ℓ}, ℓ = 0 , . . . , k − 1, (19) 0 = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+Ai
+
+ˆπi
+
+Rℓ+1 ,i 1{U (1)  
+
+> i
+
+> u ℓ}(1 {U (1)  
+
+> i
+
+> u ℓ+1 } − η1,ℓ +1 ), ℓ = 0 , . . . , k − 1, (20) 
+
+where ˆπi = π(Xi; ˆ γ) as before. The dependency of (ˆ ρ1,1: k, CAL , ˆη1,1: k, CAL ) on ˆγ is suppressed in the notation. The augmented IPW estimator not only coincides with the ICE and weighted KM estimators, 
+
+ˆS1k(ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL ) = ˆS1k(ˆ η1,1: k, CAL ) = ˆS1k, wKM ,
+
+but also, if the normalization ∑ni=1 Ai ˆπ−1 
+
+> i
+
+= n is satisfied, coincides with the IPW estimator, 
+
+ˆS1k(ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL ) = ˆS1k(ˆ γ, ˆρ1,1: k, CAL ),
+
+where ˆS1k(ˆ γ, ˆρ1,1: k, ˆη1,1: k), ˆS1k(ˆ γ, ˆρ1,1: k) and ˆS1k(ˆ η1,1: k) are defined in (11) , (14) and (15) respec-tively. 
+
+As a consequence of Proposition 1, the weighted KM estimator ˆS1k, wKM is doubly robust, i.e., being consistent if in addition to Assumptions (1)–(2), either PS model π(X; γ) and CCP model (17) are correctly specified or CSP model (18) is correctly specified. Therefore, the consistency of ˆS1k, wKM in general depends on correct specification of either CCP model (17) or CSP model (18), in addition to that of PS model in the former case. 4 This result seems surprising and previously under-appreciated in two ways: first ˆS1k, wKM is in general inconsistent if PS model is correct but CCP model is misspecified, and second ˆS1k, wKM is consistent if CSP model is correctly even when PS     
+
+> 4Intuitively, this result can be explained by the fact that the hazard probabilities are estimated in (4) as constants ˆq1j,independently of covariates, for weighted KM estimation.
+
+11 model is misspecified. The consistency result of Xie & Liu (2005) was formally obtained in a setting that can be seen to implicitly assume that PS model π(X; γ) and CSP model (18) are correctly specified. For further understanding, see Supplement Section II for a comparison of weighted and unweighted KM estimation in their consistency properties. The augmented IPW representation for the weighted KM estimator is also helpful for study-ing variance estimation. As mentioned in Section 4.1, consistent variance estimation may be analytically difficult unless all the associated regression models are correctly specified. Never-theless, with the particular models (17) and (18) and estimators {ˆρ1j, CAL : j = 1 , . . . , k } and 
+
+{ˆη1j, CAL : j = 1 , . . . , k }, the variance estimator (16) coincides with the model-robust variance es-timator ˆVr( ˆS1k, wKM ) in (7) under the condition ∑ni=1 Ai ˆπi = n. Moreover, ˆVr( ˆS1k, wKM ) and, if 
+
+E(∑ni=1 Ai ˆπ−1 
+
+> i
+
+) = n, the variance estimator (16) is nonparametrically consistent even when both CCP and CSP models (17) and (18) are misspecified, provided that ˆ γ is treated as data-independent. With model misspecification, the point estimator ˆS1k(ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL ) converges in probabil-ity to a population quantity which may differ from S1k.
+
+Proposition 2. Suppose that ˆγ were data-independent. Then the asymptotic variance of ˆS1k, wKM or equivalently ˆS1k(ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL ) can be consistently estimated by ˆVr( ˆS1k, wKM ) or, if E( n∑
+
+> i=1
+
+Ai ˆπ−1 
+
+> i
+
+)= n, by ˆVr( ˆS1k(ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL )) as defined in (16) . Moreover, if ∑ni=1 Ai ˆπ−1 
+
+> i
+
+= n, then 
+
+ˆVr( ˆS1k(ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL )) algebraically coincides with ˆVr( ˆS1k, wKM ).
+
+By Proposition 2, in spite of model misspecification, the sampling variations from {ˆρ1j, CAL : j =1, . . . , k } and {ˆη1j, CAL : j = 1 , . . . , k } do not affect variance estimation for ˆS1k(ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL ), while the sampling variation from ˆ γ were ignored. As seen from the proof, the estimating equations (19) and (20) for (ˆ ρ1,1: k, CAL , ˆη1,1: k, CAL ) are precisely constructed to achieve this desirable property via calibrated estimation (Tan 2020; Ghosh & Tan 2022). Proposition 2, however, leaves open the question of variance estimation while accounting for data-dependency of ˆ γ. In fact, the usual theory guaranteeing the conservativeness of the variance estimator (16) under correctly specified models π(X; γ) and {π1j (X; ρ1j ) : 1 ≤ j ≤ k} fitted by maximum likelihood (e.g., Tsiatis 2006) does not in general apply to the weighted KM estimator. Specifically, the ML estimators of {ρ1j : j = 1 , . . . , k } and {η1j : j = 1 , . . . , k } are defined as the solutions to 0 = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+AiRℓi (Rℓ+1 ,i − ρ1,ℓ +1 ) 1 {U (1)  
+
+> i
+
+> u ℓ}, ℓ = 0 , . . . , k − 1, (21) 12 0 = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+AiRℓ+1 ,i 1{U (1)  
+
+> i
+
+> u ℓ}(1 {U (1)  
+
+> i
+
+> u ℓ+1 − η1,ℓ +1 ), ℓ = 0 , . . . , k − 1, (22) which are independent of ˆ γ because models (17) and (18) are concerned about nested conditional probabilities. Hence the calibrated estimators {ˆρ1j, CAL : j = 1 , . . . , k } and {ˆη1j, CAL : j = 1 , . . . , k }
+
+differ from the ML estimators except in the special case where the postulated propensity score 
+
+π(X; γ) is constant in X.For completeness, we also point out that if CSP model (18) is correctly specified but PS model π(X; γ) and CCP model (17) may be misspecified, then the model-based variance esti-mator ˆVb( ˆS1k, wKM ) in (6) is consistent, subject to a technical condition on ˆ γ. As discussed in Supplement Section II, if CSP model (18) is correctly specified, then both the unweighted and weighted KM estimators are consistent for S1k and hence, in this case, weighted KM estimation is not advantageous. 
+
+Proposition 3. If CSP model (18) is correctly specified but PS model π(X; γ) and CCP model (17) 
+
+may be misspecified, then the asymptotic variance of ˆS1k, wKM or equivalently ˆS1k(ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL )
+
+can be consistently estimated by ˆVb( ˆS1k, wKM ), provided that ˆγ admits a limit value ˘γ satisfying 
+
+E(Aπ (X; ˘ γ)−1) = 1 .
+
+Proposition 3 is more general than Xie & Liu (2005), Proposition 2, where both PS model 
+
+π(X; γ) and CSP model (18) are assumed to be correctly specified. If model π(X; γ) is correctly specified, the technical condition E(Aπ (X; ˘ γ)−1) = 1 is satisfied by any consistent estimator ˆ γ, for example, the ML estimator. In this case, Proposition 3 agrees with Xie & Liu (2005). However, if PS model π(X; γ) is misspecified as allowed in Proposition 3, then whether E(Aπ (X; ˘ γ)−1) = 1 is satisfied depends on the actual definition of ˆ γ. In particular, this condition is satisfied by the calibrated estimator of ˆ γ defined later in (28), but it may not be satisfied by the ML estimator of 
+
+γ except in the special case where the postulated propensity score π(X; γ) is constant in X.
+
+## 5 Calibrating weighted survival analysis 
+
+5.1 Calibrated estimation for survival probabilities 
+
+From Section 4.2, consistent variance estimation remains to be developed for the weighted KM esti-mator ˆS1k, wKM while accounting for the data-dependency of ˆ γ if PS model π(X; γ) and CCP model 
+
+{π1j (X; ρ1j ) : 1 ≤ j ≤ k} in (17) are correctly specified but CSP model {m1j (X; η1j ) : 1 ≤ j ≤ k}
+
+in (18) may be misspecified, which is the scenario where weighted KM estimation is advanta-13 geous over the unweighted version. The usual theory of augmented IPW estimation indicating conservative variance estimation does not apply to ˆS1k, wKM because the associated estimators for 
+
+{ρ1j : j = 1 , . . . , k } are not ML estimators, even when ˆ γ is an ML estimator. To tackle this issue, we propose a modification of ˆS1k, wKM to achieve consistent variance estimation analytically accounting for estimation of γ and {(ρ1j , η 1j ) : j = 1 , . . . , k } in the aforementioned scenario through calibrated estimation (Tan 2020; Ghosh & Tan 2022). In fact, a direct application of calibrated estimation to the augmented IPW estimator ˆS1k(ˆ γ, ˆρ1,1: k, ˆη1,1: k) involves a technical difficulty in our setting with non-constant π(X; γ) but constant π1j (X; ρ1j ) and m1j (X; η1j ) as in CCP and CSP model (17) and (18). See Supplement Section III for details. First, we generalize the augmented IPW estimator ˆS1k(ˆ γ, ˆρ1,1: k, ˆη1,1: k) in (11) as follows, where the non-censoring probability model, π1j (X; ρ1j ), and survival probability model, m1j (X; η1j ), may not necessarily be the “constant” models (17) and (18). Consider an outcome regression (OR) model, denoted as μ1k(X; α1k ), for μ∗
+
+> 1k
+
+(X) = P (U (1) > u k|X), for example: 
+
+μ1k(X; α1k ) = exp( αT 
+
+> 1k
+
+f (X)) 
+
+1 + exp( αT
+
+> 1k
+
+f (X)) , (23) where f (X) is the same vector of covariate functions as in propensity score model (3) and α1k
+
+is a parameter vector. By definition, μ∗
+
+> 1k
+
+(X) is related to the nested conditional probabilities as 
+
+μ∗
+
+> 1k
+
+(X) = ∏kj=1 m∗ 
+
+> 1j
+
+(X). However, μ1k(X; α1k ), as a working regression model which may be mis-specified, is not required to satisfy the same relationship with the regression models {m1j (X; η1j ) : 1 ≤ j ≤ k}, μ1k(X; α1k ) = ∏kj=1 m1j (X; η1j ). Given any estimators ˆ γ, ˆ ρ1,1: k = {ˆρ1j : j = 1 , . . . , k },ˆη1,1: k = {ˆη1j : j = 1 , . . . , k }, and ˆ α1k, a new augmented IPW estimator of S1k is ˆS1k(ˆ γ, ˆρ1,1: k, ˆη1,1: k, ˆα1k) = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+ϕ1ki (ˆ γ, ˆρ1,1: k, ˆη1,1: k, ˆα1k) (24) with 
+
+ϕ1ki (ˆ γ, ˆρ1,1: k, ˆη1,1: k, ˆα1k )= Ai
+
+ˆπi
+
+Rki 
+
+ˆπ1ki 
+
+1{U (1)  
+
+> i
+
+> u k} − 
+
+> k−1
+
+∑
+
+> ℓ=0
+
+Ai
+
+ˆπi
+
+Rℓi 
+
+ˆπ1ℓi 
+
+( Rℓ+1 ,i 
+
+ˆπ1,ℓ +1 ,i 
+
+− 1
+
+)
+
+ˆm1,ℓ +1 ,i 1{U (1)  
+
+> i
+
+> u ℓ}−
+
+( Ai
+
+ˆπi
+
+− 1
+
+)
+
+ˆμ1ki ,
+
+(25) where ˆ μ1ki = μ1k(Xi; ˆ α1k), in addition to the notation used in (12). It is helpful to rewrite 
+
+ϕ1ki (ˆ γ, ˆρ1,1: k, ˆη1,1: k, ˆα1k) = Ai
+
+> ˆπi
+
+ˆU (1)  
+
+> ki
+
+(ˆ ρ1,1: k, ˆη1,1: k) −
+
+( Ai 
+
+> ˆπi
+
+− 1
+
+)
+
+ˆμ1ki , where ˆU (1)  
+
+> ki
+
+(ˆ ρ1,1: k, ˆη1,1: k) = Rki 
+
+ˆπ1ki 
+
+1{U (1)  
+
+> i
+
+> u k} − 
+
+> k−1
+
+∑
+
+> ℓ=0
+
+Rℓi 
+
+ˆπ1ℓi 
+
+( Rℓ+1 ,i 
+
+ˆπ1,ℓ +1 ,i 
+
+− 1
+
+)
+
+ˆm1,ℓ +1 1{U (1)  
+
+> i
+
+> u ℓ},
+
+which can be evaluated from the observed data and treated as an imputed value of 1 {U (1)  
+
+> i
+
+> u k}
+
+14 for each individual i with Ai = 1. Then the new augmented IPW estimator of S1k takes a cross-sectional form of augmented IPW estimation with imputed survival outcomes: ˆS1k(ˆ γ, ˆρ1,1: k, ˆη1,1: k, ˆα1k ) = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{ Ai
+
+ˆπi
+
+ˆU (1)  
+
+> ki
+
+(ˆ ρ1,1: k, ˆη1,1: k) −
+
+(Ai
+
+ˆπi
+
+− 1
+
+)
+
+ˆμ1ki 
+
+}
+
+. (26) If ˆ μ1ki = ˆ m11 i, then (24) and (25) reduce to (11) and (12). However, ˆ μ1ki in (24) is allowed to differ from ˆm11 i. Such a disentanglement of ˆ μ1ki from the implied ˆm11 i is useful when the regression models {m1j (X; η1j ) : 1 ≤ j ≤ k} may be misspecified. In place of ˆS1k, wKM , our calibrated augmented IPW estimator of S1k is ˆS1k, CAL = ˆS1k(ˆ γ1,CAL , ˆρ1,1: k, CAL , ˆη1,1: k, CAL , ˆα1k, CAL ), (27) where ˆ ρ1,1: k, CAL = {ˆρ1j, CAL : j = 1 , . . . , k } and ˆ η1,1: k, CAL = {ˆη1j, CAL : j = 1 , . . . , k }, associated with CCP and CSP models (17) and (18), are defined as in Proposition 1 with ˆ γ = ˆ γ1,CAL . The dependency of (ˆ ρ1,1: k, CAL , ˆη1,1: k, CAL , ˆα1k, CAL ) on ˆ γ1,CAL is suppressed in the notation. The estimator ˆγ1,CAL is a calibrated estimator of γ in model (3), defined as a solution to the estimating equation 0 = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{ Ai
+
+π(Xi; γ) − 1
+
+}
+
+f (Xi). (28) Equivalently, ˆ γ1,CAL can also be determined as a minimizer of the convex loss function (Tan 2020) 
+
+ℓCAL (γ) = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{Aie−f T(Xi)γ + (1 − Ai)f T(Xi)γ}. (29) The estimator ˆ α1k, CAL is a calibrated estimator of α1k in model (23), defined as a solution to 0 = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+Ai
+
+1 − ˆπ1i, CAL 
+
+ˆπ1i, CAL 
+
+{ ˆU (1)  
+
+> ki, CAL
+
+− μ1k(Xi; α1k)
+
+}
+
+f (Xi), (30) where ˆ π1i, CAL = π(Xi; ˆ γ1,CAL ) and ˆU (1)  
+
+> ki, CAL
+
+= ˆU (1)  
+
+> ki
+
+(ˆ ρ1,1: k, CAL , ˆη1,1: k, CAL ). Similarly to ˆ γ1,CAL , ˆ α1k, CAL 
+
+can also be equivalently determined as a minimizer of the convex loss function 
+
+ℓCAL (α1k) = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+Ai
+
+1 − ˆπ1i, CAL 
+
+ˆπ1i, CAL 
+
+[− ˆU (1) 
+
+> ki, CAL
+
+f T(Xi)α1k + log {1 + e f T(Xi)α1k }]. (31) The estimator ˆ α1k, CAL is a weighted ML estimator for logistic regression with response ˆU (1) 
+
+> ki, CAL
+
+,covariate terms f (Xi), and weight (1 − ˆπ1i, CAL )/ˆπ1i, CAL in the treated group {Ai = 1 }. Hence the estimator ˆS1k, CAL can be seen as an application of the method in Tan (2020) with PS model (3) and OR model (23) after the imputed response ˆU (1)  
+
+> ki, CAL
+
+is obtained. Similarly to S1k, wKM , the point estimator ˆS1k, CAL can be shown to be doubly robust for S1k, i.e., being consistent in two distinct scenarios: either PS and CCP models (3) and (17) are correctly specified, or CSP and OR models (18) and (23) are correctly specified. In our specific setting, CSP model (18) implies OR model (23), which allows μ∗
+
+> 1k
+
+(X) to be constant in X because f (·) is assumed to include an intercept. Hence the second scenario is just that CSP model (18) is correctly 15 specified. As discussed in Supplement Section II, the consistency in the first scenario (although not the second) represents a real advantage over unweighted KM estimation. Compared with weighted KM estimation, a benefit of ˆS1k, CAL is that in the first scenario above, consistent variance estimation can be obtained for ˆS1k, CAL such that the sampling variations from estimation of the nuisance parameters ( γ, ρ 1,1: k , η 1,1: k, α 1k) can be safely ignored, as indicated by the asymptotic expansion (32). 5 The consistency of the variance estimator (33) does not require that all relevant regression models be correctly specified, as in the usual theory for the consistency of the variance estimator (16) (e.g., Tsiatis 2006). 
+
+Proposition 4. Suppose that PS model (3) is correctly specified, but CCP, CSP or OR model (17) ,
+
+(18) or (23) may be misspecified. Then under standard regularity conditions as n → ∞ and the dimension of f , denoted as dim( f ), and K are fixed, ˆS1k, CAL satisfies the asymptotic expansion 
+
+ˆS1k, CAL = ˆS1k(˘ τ1,CAL ) + op(n−1/2) = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+ϕ1ki (˘ τ1,CAL ) + op(n−1/2), (32) 
+
+where ˆS1k(τ ) and ϕ1ki (τ ) are defined as ˆS1k(ˆ τ ) and ϕ1ki (ˆ τ ) in (24) and (25) with ˆτ = (ˆ γ, ˆρ1,1: k, ˆη1,1: k,
+
+ˆα1k) replaced by τ = ( γ, ρ 1,1: k, η 1,1: k, α 1k), and ˘τ1,CAL = (˘ γ1,CAL , ˘ρ1,1: k, CAL , ˘η1,1: k, CAL , ˘α1k, CAL ) are the limit values of ˆτ1,CAL = (ˆ γ1,CAL , ˆρ1,1: k, CAL , ˆη1,1: k, CAL , ˆα1k, CAL ) (see the proof in Supplement Section IV for details). Moreover, the asymptotic variance of ˆS1k, CAL can be consistently estimated by 
+
+ˆVr( ˆS1k, CAL ) = 1
+
+n2
+
+> n
+
+∑
+
+> i=1
+
+{
+
+ϕ1ki (ˆ τ1,CAL ) − ˆS1k, CAL 
+
+}2
+
+. (33) By Proposition 4, if PS and CCP models (3) and (17) are correctly specified, then ˆS1k, CAL is consistent for S1k, and an asymptotic (1 −c)-confidence interval for S1k is ˆS1k, CAL ±zc/ 2
+
+√ ˆVr( ˆS1k, CAL ), where zc/ 2 is the (1 − c/ 2)-quantile of N(0 , 1). Correct specification of both PS and CCP models (3) and (17) ensures the consistency of ˆS1k, CAL for S1k, whereas correct specification of PS model (3) alone ensures the consistency of ˆVr( ˆS1k, CAL ) for the asymptotic variance of ˆS1k, CAL .The asymptotic expansion (32) is achieved mainly because the estimating equations (19), (20), (28), and (30) for (ˆ ρ1,1: k, CAL , ˆη1,1: k, CAL , ˆγ1,CAL , ˆα1k, CAL ) are carefully chosen such that if PS model (3) is correctly specified, then the limit values ˘ γ1,CAL = γ∗, ˘ ρ1,1: k, CAL , ˘ η1,1: k, CAL , and ˘ α1k, CAL satisfy  
+
+> 5
+
+An additional advantage of ˆS1k, CAL over ˆS1k, wKM is that ˆS1k, CAL tends to achieve smaller variance than ˆS1k, wKM ,because ˆS1k, CAL involves a flexible augmentation term in (26) with μ1k (X; α1k ) non-constant in X, whereas the augmentation term for ˆ S1k, wKM is restricted with constant μ1k (X; α1k ) = ∏kj=1 η1j as implied from CCP model (18). 
+
+16 the following calibration equations: 0 = E
+
+{ ∂
+
+∂τ ˆS1k(τ )
+
+} ∣∣∣˘τ1,CAL 
+
+,
+
+where τ = ( γ, ρ 1,1: k, η 1,1: k, α 1k). A similar asymptotic expansion as (32) also holds and underlies Proposition 2 for the weighted KM estimator ˆS1k, wKM or equivalently the augmented IPW estimator ˆS1k(ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL ) except that only calibration equations for ( ρ1,1: k, η 1,1: k) are involved, with non-random ˆ γ.There are interesting implications when the logistic OR model (23) for μ∗
+
+> 1k
+
+(X) is replaced by a linear OR model: 
+
+μ1k(X; α1k ) = αT 
+
+> 1k
+
+f (X). (34) Our estimator, ˆS1k, CAL,lin , is defined similarly as ˆS1k, CAL in (27). The calibrated estimator ˆ α1k, CAL ,defined as a solution to (30) or a minimizer of 
+
+ℓCAL (α1k ) = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+Ai
+
+1 − ˆπ1i, CAL 
+
+ˆπ1i, CAL 
+
+[− ˆU (1) 
+
+> ki, CAL
+
+f T(Xi)α1k + 1
+
+2 {f T(Xi)α1k }2], (35) becomes a weighted least-squares estimator for linear regression with response ˆU (1) 
+
+> ki, CAL
+
+, covariate terms f (Xi), and weight (1 − ˆπ1i, CAL )/ˆπ1i, CAL in the treated group {Ai = 1 }. The point estimator ˆS1k, CAL,lin with linear OR model (34) can be shown to be doubly robust for S1k, i.e., being consistent if either PS and CCP models (3) and (17) are correctly specified, or CSP and OR models (18) and (34) (or just CSP model (18)) are correctly specified. As discussed earlier, the consistency in the first scenario is of more interest than in the second scenario. Moreover, Proposition 4 can be extended as follows for variance estimation. Hence in spite of the lack of range restriction to [0 , 1], model (34) can be used, similarly to model (23), as a working regression model to facilitate consistent variance estimation. 
+
+Proposition 5. Suppose that PS, CCP, CSP, or linear OR model (3) , (17) , (18) , or (34) may be misspecified. Then the conclusions in Proposition 4 remain valid for the estimator 
+
+ˆS1k, CAL,lin = ˆS1k(ˆ γ1,CAL , ˆρ1,1: k, CAL , ˆη1,1: k, CAL , ˆα1k, CAL,lin ),
+
+i.e., defined as ˆS1k, CAL in (27) with ˆα1k, CAL replaced by ˆα1k, CAL,lin .
+
+We provide two additional remarks about Proposition 5. First, by equation (28) for ˆ γ1,CAL and the linearity of μ1k(·; α1k ) in α1k , it is shown in Supplement Section IV that ˆS1k, CAL,lin = ˆS1k(ˆ γ1,CAL , ˆρ1,1: k, CAL , ˆη1,1: k, CAL ) = ˆS1k, wKM (ˆ γ1,CAL ), (36) where ˆS1k(ˆ γ1,CAL , ˆρ1,1: k, CAL , ˆη1,1: k, CAL ) and ˆS1k, wKM (ˆ γ1,CAL ) are ˆS1k(ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL ) and ˆS1k, wKM 
+
+17 in Section 4.2 with ˆ γ = ˆ γ1,CAL . Incidentally, a benefit from this reduction is by the expression (5) for ˆS1k, wKM , the estimator ˆS1k, CAL,lin is necessarily non-increasing in k. Such a monotonicity may not hold for ˆS1k, CAL in finite samples when logistic OR model (23) is used. By Proposition 5, the variance estimator (33) is consistent for the asymptotic variance of ˆS1k, wKM (ˆ γ1,CAL ) and therefore serves as a correction to ˆVr( ˆS1k, wKM ) with ˆ γ = ˆ γ1,CAL in (7), in further accounting for sampling variation from ˆ γ.Second, while Proposition 4 assumes that PS model (3) is correctly specified, Proposition 5 shows that the variance estimator from (33) is nonparametrically consistent for the asymptotic variance of ˆS1k, CAL,lin , even if all associated models are misspecified and ˆS1k, CAL,lin may be inconsistent for 
+
+S1k, converging to a population quantity different from S1k. Moreover, the assumption of either PS and CCP models (3) and (17) being correctly specified or CSP and OR models (18) and (34) (or just CSP model (18)) being correctly specified ensures that ˆS1k, CAL,lin is consistent for S1k. Hence the point estimator ˆS1k, CAL,lin with the variance estimator from (33) can be said to enable doubly robust inference about S1k, even though CSP model (18) may often be misspecified in practice. See Tan (2020), Remark 9, for a related discussion. To conclude this subsection, a calibrated estimator, ˆS0k, CAL , can be defined for treatment-0 survival probabilities S0k, similarly to ˆS1k, CAL for S1k, by replacing Ai and π(·; γ) with 1 − Ai and 1 − π(·; γ). In particular, a treatment-0 calibrated estimator of γ, denoted as ˆ γ0,CAL , is defined as a solution to the estimating equation 0 = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{ 1 − Ai
+
+1 − π(X; γ) − 1
+
+}
+
+f (Xi), (37) or a minimizer of the convex loss function 
+
+ℓCAL (γ) = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{(1 − Ai)e f T(Xi)γ − Aif T(Xi)γ}.
+
+If PS model (3) is correctly specified, then ˆ γ1,CAL and ˆ γ0,CAL are expected to be consistent for the same true value γ∗. Otherwise, the two estimators may have different asymptotic limits. In practice, comparison of the estimators ˆ γ1,CAL and ˆ γ0,CAL and the corresponding fitted values π(Xi; ˆ γ1,CAL )and π(Xi; ˆ γ0,CAL ) can be used for model diagnosis. See Chan, Yam and Zhang (2016, Section 2.3), Vermeulen and Vansteelandt (2015, Section 5.1), and Tan (2020, Section 3.5) for related discussions. 
+
+5.2 Calibrated estimation for hazard ratios 
+
+The hazard probabilities qak are related to the survival probabilities as 
+
+qak = Sa,k −1 − Sak 
+
+Sa,k −1
+
+, k = 1 , . . . , K, a = 0 , 1. (38) 18 Hence inference about individual hazard ratios q1k/q 0k can be deduced, using the delta method, from the calibrated estimators of Sak and associated variance estimators. In this subsection, we mainly discuss calibrated estimation for the parameter ˘θwBP defined as a solution to the population version of (8), 0 = 
+
+> K
+
+∑
+
+> k=1
+
+W1kW0k
+
+W1keθ + W0k
+
+(q1k − q0keθ ), (39) where Wak = E[P −1(A = a|X)1 {A = a, Y ≥ uk}] = E{P (Y ≥ uk|A = a, X )} is the asymptotic limit of ˆWak if model π(·; γ) is correctly specified. 6 If the treatment-1 and treatment-0 hazard probabilities are proportional as in PHP model (9), then the common value θ∗ of the log hazard probability ratios, log( q1k/q 0k), is identified by ˘θwBP . Otherwise, ˘θwBP represents a scalar summary of the heterogeneous log hazard probability ratios. The existing estimator ˆθwBP is obtained by solving (39) after estimating Wak by ˆWak and qak by ˆqak . The estimator ˆ qak is derived from the weighted KM estimator as prescribed by (38), i.e., ˆ qak =( ˆSa,k −1,wKM − ˆSak, wKM )/ ˆSa,k −1,wKM . From this relationship and the discussion after Proposition 1, there are two distinct scenarios. First, if PS and CCP models (3) and (17), in both treatment-1 and treatment-0 versions, are correctly specified, then ˆSak, wKM and ˆWak are consistent for Sak 
+
+and Wak , and hence ˆθwBP is consistent for ˘θwBP . Second, if CSP model (18), in both treatment-1 and treatment-0 versions, is correctly specified but models (3) and (17) may be misspecified, then ˆSak, wKM is also consistent for Sak while ˆWak may be inconsistent for Wak and ˆθwBP may be inconsistent for ˘θwBP . Nevertheless, in either scenario, if further PHP model (9) is valid, then the true value θ∗ satisfies equation (39) and ˆθwBP is consistent for θ∗. In the second scenario, from the discussion in Supplement Section II, similar properties are also achieved by the unweighted version of ˆθwBP . Hence it is of main interest to consider the first scenario. The model-robust variance estimator ˆVr(ˆθwBP ) in (10) is nonparametrically consistent for the asymptotic variance of ˆθwBP , provided that the data-dependency of ˆ γ were removed. There are two sources of such data-dependency, from the difference (ˆ q1k − eθ ˆq0k) or from the pre-factor ˆW1k ˆW0k  
+
+> ˆW1keθ+ ˆW0k
+
+,for each k in (8). To tackle this limitation, we exploit calibrated estimation for {(W1k , W 0k) : k =1, . . . , K }, in addition to that for {(S1k , S 0k) : k = 1 , . . . , K }, and develop both a consistent                               
+
+> 6If A⊥(U(a), C (a))|X, which is more restrictive than Assumptions (1) and (2) combined, then A⊥Y(a)|Xand
+> Wak reduces to P(Y(a)≥uk), where Y(a)= min( U(a), C (a)). Nevertheless, Wak is a well-defined population quantity under Assumptions (1) and (2) alone, which allows A6⊥Y(a)|X. The equality of the two expressions for Wak can be verified by the law of iterated expectations (Tan 2006, Theorem 7).
+
+19 estimator of ˘θwBP and a consistent variance estimator in the aforementioned scenario where models (3) and (17) are correctly specified. Instead of the IPW estimator ˆWak , we employ an augmented IPW estimator for risk-set weight 
+
+Wak . For a = 0 , 1, consider a risk-set OR model, denoted as νak (X; βak ), for ν∗
+
+> ak
+
+(X) = P (Y ≥
+
+uk|A = 1 , X ), for example: 
+
+νak (X; βak ) = exp( βT 
+
+> ak
+
+f (X)) 
+
+1 + exp( βT 
+
+> ak
+
+f (X)) , (40) where f (X) is the same as in PS model (3) and βak is a parameter vector. Given any estimators ˆ γ
+
+and ˆβ1k, an augmented IPW estimator of W1k is ˆW1k(ˆ γ, ˆβ1k ) = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+ψ1ki (ˆ γ, ˆβ1k ), (41) with 
+
+ψ1ki (ˆ γ, ˆβ1k ) = Ai
+
+ˆπi
+
+1{Yi ≥ uk} − 
+
+( Ai
+
+ˆπi
+
+− 1
+
+)
+
+ˆν1ki ,
+
+where ˆ ν1ki = ν1k(Xi; ˆβ1k ), in addition to the notation used in (12). Our calibrated augmented IPW estimator of W1k is ˆW1k, CAL = ˆW1k(ˆ γ1,CAL , ˆβ1k, CAL ), (42) where ˆ γ1,CAL is defined in (28) and ˆβ1k, CAL is defined as a solution to 0 = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+Ai
+
+1 − ˆπ1i, CAL 
+
+ˆπ1i, CAL 
+
+[1 {Yi ≥ uk} − ν1k(Xi; β1k)] f (Xi), (43) with ˆ π1i, CAL = π(Xi; ˆ γ1,CAL ) as in (30). Similarly to ˆ γ1,CAL and ˆ α1k, CAL , ˆβ1k, CAL can also be equiva-lently determined as a minimizer of the convex loss function 
+
+ℓCAL (β1k ) = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+Ai
+
+1 − ˆπ1i, CAL 
+
+ˆπ1i, CAL 
+
+[1 {Yi ≥ uk}f T(Xi)β1k − log {1 + e f T(Xi)β1k }]. (44) The estimator ˆW1k, CAL , similar to ˆS1k, CAL , is an application of the method in Tan (2020) with PS model (3) and OR model (40) for the binary outcome 1 {Yi ≥ uk}. A technical relaxation is that A and Y (a) may be confounded given X, and hence Wak may differ from P (Y (a) ≥ uk) (See footnote 3). Our calibrated augmented IPW estimator, ˆW0k, CAL , can be similarly defined for W0k
+
+by replacing Ai and π(·; γ) with 1 − Ai and 1 − π(·; γ). Our calibrated estimator, denoted as ˆθCAL , for ˘θwBP is defined as a solution to 0 = 
+
+> K
+
+∑
+
+> k=1
+
+{ ˆW1k, CAL ˆW0k, CAL 
+
+ˆW1k, CAL eθ + ˆW0k, CAL 
+
+(ˆ q1k, CAL − ˆq0k, CAL eθ )
+
+}
+
+, (45) with ˆ qak, CAL = ( ˆSa,k −1,CAL − ˆSak, CAL )/ ˆSa,k −1,CAL by (38), where ˆSak, CAL and ˆWak, CAL are calibrated augmented IPW estimators, for example, in (27) and (42) for a = 1. The point estimator ˆθCAL can 20 be shown to be doubly robust for ˘θwBP , i.e., being consistent in two scenarios: either PS and CCP models (3) and (17) or CSP and OR models (18), (23), and (40) (or just CSP and OR models (18) and (40)) are correctly specified, including both treatment-1 and treatment-0 versions. Moreover, as an improvement over ˆθwBP in the first scenario, if model (3) alone is correctly specified, then consistent variance estimation can be obtained for ˆθCAL by using the asymptotic expansions (or influence functions) for ˆSak, CAL and ˆWak, CAL . Let ˆϕki (θ) = ˆW0k, CAL ˆW1k, CAL 
+
+ˆW1k, CAL eθ + ˆW0k, CAL 
+
+(
+
+− ˆϕ1ki + (1 − ˆq1k, CAL ) ˆ ϕ1,k −1,i 
+
+ˆS1,k −1,CAL 
+
+)
+
+− ˆW0k, CAL ˆW1k, CAL eθ
+
+ˆW1k, CAL eθ + ˆW0k, CAL 
+
+(
+
+− ˆϕ0ki + (1 − ˆq0k, CAL ) ˆ ϕ0,k −1,i 
+
+ˆS0,k −1,CAL 
+
+)
+
++ ˆq1k, CAL − ˆq0k, CAL eθ
+
+( ˆ W1k, CAL eθ + ˆ W0k, CAL )2
+
+{ ˆW 20k, CAL ( ˆψ1ki − ˆW1k, CAL ) + e θ ˆW 21k, CAL ( ˆψ0ki − ˆW0k, CAL )
+
+}
+
+,
+
+where ˆϕ1ki = ϕ1ki (ˆ γ1,CAL , ˆρ1,1: k, CAL , ˆη1,1: k, CAL , ˆα1k, CAL ) as in Proposition 4, ˆψ1ki = ψ1ki (ˆ γ1,CAL ,
+
+ˆβ1k, CAL ), and ˆ ϕ0ki and ˆψ0ki are similarly defined. 
+
+Proposition 6. Suppose that PS model (3) is correctly specified. Then under standard regularity conditions as n → ∞ and dim( f ) and K are fixed, ˆθCAL satisfies the asymptotic expansion 
+
+ˆθCAL − ˘θCAL = HCAL (θ)−1
+
+> K
+
+∑
+
+> k=1
+
+˘ϕki (θ)
+
+∣∣∣˘θCAL 
+
++ op(n−1/2), (46) 
+
+where ˘θCAL is the limit value defined as the solution of (39) with Wak and qak replaced by the limit values of ˆWak, CAL and ˆqak, CAL , ˘ϕki (θ) is the limit version of ˆϕki (θ), and HCAL (θ) is the limit version of ˆHCAL (θ) below (see the proof in Supplement Section IV for details). Moreover, the asymptotic variance of ˆθCAL can be consistently estimated by 
+
+ˆVr(ˆθCAL ) = ˆHCAL (θ)−1 ˆGCAL (θ) ˆHCAL (θ)−1
+
+∣∣∣˘θCAL 
+
+, (47) 
+
+where ˆGCAL (θ) = n−2 ∑ni=1 {∑Kk=1 ˆϕki (θ)}2 and 
+
+ˆHCAL (θ) = 
+
+> K
+
+∑
+
+> k=1
+
+ˆW1k, CAL ˆW0k, CAL eθ
+
+( ˆW1k, CAL eθ + ˆW0k, CAL )2 ( ˆW1k, CAL ˆq1k, CAL + ˆW0k, CAL ˆq0k, CAL ).
+
+By Proposition 6, if PS and CCP models (3) and (17), in both treatment-1 and treatment-0 versions, are correctly specified, then ˆθCAL is consistent for ˘θwBP (i.e., ˘θCAL = ˘θwBP ), and an asymp-totic (1 − c)-confidence interval for ˘θwBP is ˆθCAL ± zc/ 2
+
+√
+
+ˆVr(ˆθCAL ). The confidence interval is also of asymptotic level 1 − c for the true value θ∗ if PHP model (9) is valid about homogeneous hazard probability ratios. In particular, if models (3) and (17) are correctly specified, then the Wald rejec-tion region, |ˆθCAL | ≥ zc/ 2
+
+√
+
+ˆVr(ˆθCAL ), achieves an asymptotic level c for testing the null hypothesis 
+
+θ∗ = 0, i.e., the distributions of U (1) and U (0) are the same. This test is more desirable than the 21 weighted log-rank test in Xie & Liu (2005), which relies on CSP model (18), in both treatment-1 and treatment-0 versions, being correctly specified. In the latter scenario, the unweighted log-rank test is also valid similarly to unweighted KM estimation as discussed in Supplement Section II. Similarly to the replacement of logistic regression (23) by linear regression (34) in calibrated estimation of S1k, the logistic OR model (40) can also be replaced by a linear OR model in calibrated estimation of W1k:
+
+νak (X; βak ) = βT
+
+> ak
+
+f (X). (48) The corresponding estimator, for example ˆW1k, CAL,lin , is defined similarly as ˆW1k, CAL in (42), where ˆβ1k, CAL , defined as a solution to (43) or a minimizer of 
+
+ℓCAL (β1k) = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+Ai
+
+1 − ˆπ1i, CAL 
+
+ˆπ1i, CAL 
+
+[1 {Yi ≥ uk} − f T(Xi)β1k ]2/2, (49) becomes a weighted least-squares estimator. Our calibrated estimator, ˆθCAL,lin , is defined as a solu-tion to (45), with ˆSak, CAL and ˆWak, CAL replaced by ˆSak, CAL,lin and ˆWak, CAL,lin . In addition to ˆSak, CAL,lin 
+
+reducing to ˆSak, wKM (ˆ γa, CAL ) as in (36), the estimator ˆWak, CAL,lin also reduces to ˆWak (ˆ γa, CAL ), i.e., the IPW estimator ˆWak with ˆ γ = ˆ γa, CAL . Hence ˆθCAL,lin reduces to ˆθwBP based on ˆ γa, CAL , i.e., ˆθCAL,lin = ˆθwBP (ˆ γa, CAL ), (50) where ˆθwBP (ˆ γa, CAL ) is ˆθwBP in Section 3.2 with ˆ wai defined from ˆ γ = ˆ γa, CAL for a = 0 , 1. Moreover, Proposition 6 can be extended such that the variance estimator from (47) is nonparametrically consistent for the asymptotic variance of ˆθCAL,lin even if PS model (3) is misspecified. For this reason, the point estimator ˆθCAL,lin with the variance estimator from (47) enables doubly robust inference about ˘θwBP if either PS and CCP models (3) and (17) or CSP and OR models (18), (34), and (48) (or just CSP and OR models (18) and (48)) are correctly specified. 
+
+## 6 High-dimensional estimation 
+
+We propose regularized calibrated estimation for survival probabilities Sak and the hazard-ratio parameter ˘θwBP in high-dimensional settings, where the dimension of f (X) is close to or exceeds the sample size. In particular, to be computationally efficient, we develop a novel regularized calibrated estimator of ˘θwBP through a “linearization” technique instead of directly incorporating regularization at each time period. 
+
+Estimation of survival probabilities. Given PS, CCP, CSP, and OR models (3), (17), (18) and (23), our regularized calibrated estimator for Sak is defined as ˆ S1k, RCAL = ˆ S1k(ˆ γ1,RCAL , ˆρ1,1: k, RCAL ,
+
+22 ˆη1,1: k, RCAL , ˆα1k, RCAL ), where (ˆ γ1,RCAL , ˆα1k, RCAL ) are regularized versions of the calibrated estimators (ˆ γ1,CAL , ˆα1k, CAL ), and (ˆ ρ1j, RCAL , ˆη1j, RCAL ) are solutions of (19) and (20) with ˆ πi = π(Xi; ˆ γ1,RCAL ) for 
+
+j = 1 , . . . , k . The estimator ˆ γ1,RCAL is a regularized calibrated estimator of γ (Tan 2020), defined as a minimizer of the penalized loss function ℓCAL (γ)+ λ‖γ1: p‖1, where ℓCAL (γ) is defined in (29), λ ≥ 0is a tuning parameter, ‖·‖ 1 denotes the L1 norm, and γ1: p = ( γ1, . . . , γ p)T excludes the intercept γ0.Similarly, ˆ α1k, RCAL is defined as a minimizer of the penalized loss function ℓCAL (α1k) + λk‖α1k, 1: p‖1,where ℓCAL (α1k ) is defined in (31), but with ˆ π1i, CAL and ˆU (1)  
+
+> ki, CAL
+
+replaced by ˆ π1i, RCAL = π(Xi; ˆ γ1,RCAL )and ˆU (1)  
+
+> ki, RCAL
+
+= ˆU (1)  
+
+> ki
+
+(ˆ ρ1,1: k, RCAL , ˆη1,1: k, RCAL ). With linear OR model (34), the regularized version of ˆS1k, CAL, lin , denoted as ˆS1k, RCAL, lin , is defined in the same way as ˆS1k, RCAL , except that the loss func-tion for estimating ˆ α1k, RCAL is (35) instead of (31). Under suitable regularity and sparsity conditions in the high-dimensional setting, it can be shown as in Tan (2020) that ˆS1k, RCAL and ˆS1k, RCAL, lin 
+
+satisfy similar properties as in Propositions 4 and 5 for their non-regularized counterparts ˆS1k, CAL 
+
+and ˆS1k, CAL, lin respectively. For treatment-0, a regularized calibrated estimator, ˆS0k, RCAL , can be defined for S0k, similarly to ˆS1k, RCAL , by replacing Ai and π(·; γ) with 1 − Ai and 1 − π(·; γ). 
+
+Estimation of hazard-ratio parameter (first method). We discuss two methods for regularized estimation of ˘θwBP . The first method incorporates regularization at each time period and proceeds similarly as in Section 5.2 for obtaining ˆθCAL . Specifically, we first compute the regularized calibrated augmented IPW estimator for Wak , denoted as ˆWak, RCAL , and then define the regularized calibrated estimator ˆθRCAL for ˘θwBP as a solution to (45), replacing ˆSak, CAL and ˆWak, CAL with ˆSak, RCAL and ˆWak, RCAL . Given PS model (3) and logistic OR model (40), ˆW1k, RCAL 
+
+is defined as ˆW1k, RCAL = ˆW1k(ˆ γ1,RCAL , ˆβ1k, RCAL ), where ˆβ1k, RCAL is the minimizer of the penalized loss function ℓCAL (β1k ) + λk‖β1k, 1: p‖1, with ℓCAL (β1k ) defined in (44). A regularized calibrated estimator, ˆW0k, RCAL , can be defined for W0k, similarly to ˆW1k, RCAL , by replacing Ai and π(·; γ) with 1 − Ai and 1 − π(·; γ). With linear OR model (48), the regularized version of ˆW1k, CAL, lin , denoted as ˆW1k, RCAL, lin , is defined in the same way as ˆW1k, RCAL , except that the loss function for estimating ˆβ1k, RCAL is (49) instead of (44). For treatment-0, ˆW0k, CAL, lin is similarly defined. The regularized calibrated estimator ˆθRCAL, lin is defined as a solution to (45), with ˆSak, CAL and ˆWak, CAL replaced by ˆSak, RCAL, lin and ˆWak, RCAL, lin . Then Proposition 6 and related discussion can be extended to ˆθRCAL 
+
+and ˆθRCAL, lin under suitable regularity and sparsity conditions in the high-dimensional setting. The first method is time-consuming for two reasons. First, it requires fitting 4 K distinct OR models (23) and (40), μak (X; αak ) and νak (X; βak ) for a = 0 , 1 and k = 1 , . . . , K . Sec-23 ond, the method estimates each coefficient vector αak or βak separately, which is challenging in high-dimensional settings due to the need for selecting tuning parameters (e.g., through cross-validation). The second issue can be addressed by adopting group Lasso (Yuan & Lin, 2006) to estimate ( αak : k = 1 , . . . , K ) or ( βak : k = 1 , . . . , K ) simultaneously for a = 0 , 1. For example, for treatment-1, a group regularized calibrated estimators ˆ α1,RCALg = (ˆ α1k, RCALg : k = 1 , . . . , K )for ( α1k : k = 1 , . . . , K ) is jointly as a minimizer to ∑Kk=1 ℓCAL (α1k) + λ ∑pj=1 ‖α1·j ‖2, where 
+
+α1·j = ( α1k,j : k = 1 , . . . , K )T consists of K coefficients associated with the covariate term fj (X)across k. However, the problem of estimating 4 K coefficient vectors remains computationally ex-pensive and statistically undesirable. 
+
+Estimation of hazard-ratio parameter (second method). To address the computational difficulty of the first method, we develop a novel regularized calibrated estimator for ˘θwBP by combining OR-based augmentation terms across time periods before incorporating regularization estimation with OR models. First, consider the weighted-only regularized calibrated estimators for S1k and W1k, defined as follows: ˆS1k, RCw = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+Ai
+
+ˆπ1i, RCAL 
+
+ˆU (1) 
+
+> ki, RCAL
+
+, ˆW1k, RCw = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+Ai
+
+ˆπ1i, RCAL 
+
+1{Yi ≥ uk}, (51) by using the inverse PS weighted terms, without the OR-based augmentation terms, in ˆS1k, RCAL 
+
+and ˆW1k, RCAL . The weighted-only regularized calibrated estimators ˆS0k, RCw and ˆW0k, RCw for S0k
+
+and W0k are defined similarly to ˆS1k, RCw and ˆW1k, RCw by replacing Ai and π(·; γ) with 1 − Ai and 1 − π(·; γ). By substituting ( ˆSak, RCw , ˆWak, RCw ) for ( ˆSak, CAL , ˆWak, CAL ) in (45), consider the weighted-only regularized calibrated estimator, ˆθRCw , defined as a solution to 0 = 
+
+> K
+
+∑
+
+> k=1
+
+{ ˆW1k, RCw ˆW0k, RCw 
+
+ˆW1k, RCw eθ + ˆW0k, RCw 
+
+(ˆ q1k, RCw − ˆq0k, RCw eθ )
+
+}
+
+, (52) with ˆ qak, RCw = ( ˆSa,k −1,RCw − ˆSak, RCw )/ ˆSa,k −1,RCw . To derive another augmented estimator based on ˆθRCw , we use a “linearization” of the estimating function in (52), which are nonlinear functionals of the weighted-only estimators ( ˆSak, RCw , ˆWak, RCw ), k = 1 , . . . , K, a = 0 , 1. In Supplement Section IV, we show that the following asymptotic expansion holds: 
+
+> K
+
+∑
+
+> k=1
+
+ˆW1k, RCw ˆW0k, RCw 
+
+ˆW1k, RCw eθ + ˆW0k, RCw 
+
+(ˆ q1k, RCw − ˆq0k, RCw eθ )= 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+Ai
+
+ˆπ1i, RCAL 
+
+B1i(θ, ˘S1,RCw , ˘WRCw ) − 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+1 − Ai
+
+1 − ˆπ0i, RCAL 
+
+B0i(θ, ˘S0,RCw , ˘WRCw ) + oP (n−1/2), (53) where ˘ qak, RCw = ( ˘Sa,k −1,RCw − ˘Sak, RCw )/ ˘Sa,k −1,RCw , ˘Sak, RCw and ˘Wak, RCw are the limit values of 24 ˆSak, RCw and ˆWak, RCw , ˘Sa, RCw = { ˘Sak, RCw : k = 0 , 1, . . . , K } ( ˘Sa0,RCw ≡ 1), ˘WRCw = { ˘Wak, RCw : k =1, . . . , K, a = 0 , 1}, and 
+
+B1i(θ, ˘S1,RCw , ˘WRCw ) = 
+
+K∑
+
+k=1 
+
+˘W1k, RCw ˘W0k, RCw 
+
+( ˘W1k, RCw eθ + ˘W0k, RCw ) ˘S1,k −1,RCw 
+
+{(1 − ˘q1k, RCw ) ˆU (1) 
+
+k−1,i − ˆU (1) 
+
+ki }
+
++
+
+K∑
+
+k=1 
+
+˘q1k, RCw − ˘q0k, RCw eθ
+
+( ˘ W1k, RCw eθ + ˘ W0k, RCw )2
+
+˘W 20k, RCw 1{Yi ≥ uk},B0i(θ, ˘S0,RCw , ˘WRCw ) =e θK∑
+
+k=1 
+
+˘W1k, RCw ˘W0k, RCw 
+
+( ˘W1k, RCw eθ + ˘W0k, RCw ) ˘S0,k −1,RCw 
+
+{(1 − ˘q0k, RCw ) ˆU (0) 
+
+k−1,i − ˆU (0) 
+
+ki }− eθK∑
+
+k=1 
+
+˘q1k, RCw − ˘q0k, RCw eθ
+
+( ˘W1k, RCw eθ + ˘W0k, RCw )2
+
+˘W 21k, RCw 1{Yi ≥ uk}.
+
+A key point is that, by direct calculation using the definitions (51), estimating equation (52) for ˆθRCw 
+
+is equivalent to setting to 0 the leading term in (53) with ( ˘Sa, RCw , ˘WRCw ) replaced by ( ˆSa, RCw , ˆWRCw ): 0 = 1
+
+n
+
+n∑
+
+i=1 
+
+Ai
+
+ˆπ1i, RCAL 
+
+B1i(θ, ˆS1,RCw , ˆWRCw ) − 1
+
+n
+
+n∑
+
+i=1 
+
+1 − Ai
+
+1 − ˆπ0i, RCAL 
+
+B0i(θ, ˆS0,RCw , ˆWRCw ), (54) where ˆSa, RCw = { ˆSak, RCw : k = 0 , 1, . . . , K } ( ˆSa0,RCw ≡ 1) and ˆWRCw = { ˆWak, RCw : k = 1 , . . . , K, a =0, 1}. Hence ˆθRCw is equivalently a solution to (54). By incorporating an OR-based augmentation term into (54), we propose a new augmented regularized calibrated estimator for ˘θwBP . For a = 0 , 1, consider an OR model, denoted as ga(x; ζa), for the “mean outcome” g∗
+
+a(x) = E{Bai (˘θRCw , ˘Sa, RCw , ˘WRCw )|Xi = x)}, for example: 
+
+ga(X; ζa) = ζT
+
+a f (X), (55) where ˘θRCw is the limit value defined as the solution of (39) with Wak and qak replaced by ˘Wak, RCw 
+
+and ˘ qak, RCw , the limit values of ˆWak, RCw and ˆ qak, RCw . Then our augmented regularized calibrated estimator, denoted as ˆθRCa , for ˘θwBP is the solution of the following equation 0 = 1
+
+n
+
+n∑
+
+i=1 
+
+{ Ai
+
+ˆπ1i, RCAL 
+
+B1i(θ, ˆS1,RCw , ˆWRCw ) −
+
+( Ai
+
+ˆπ1i, RCAL 
+
+− 1
+
+)
+
+ˆg1i, RCAL 
+
+}
+
+− 1
+
+n
+
+n∑
+
+i=1 
+
+{ 1 − Ai
+
+1 − ˆπ0i, RCAL 
+
+B0i(θ, ˆS0,RCw , ˆWRCw ) −
+
+( 1 − Ai
+
+1 − ˆπ0i, RCAL 
+
+− 1
+
+)
+
+ˆg0i, RCAL 
+
+}
+
+=
+
+K∑
+
+k=1 
+
+{ ˆW1k, RCw ˆW0k, RCw 
+
+ˆW1k, RCw eθ + ˆW0k, RCw 
+
+(ˆ q1k, RCw − ˆq0k, RCw eθ )
+
+}
+
+− 1
+
+n
+
+n∑
+
+i=1 
+
+{( Ai
+
+ˆπ1i, RCAL 
+
+− 1
+
+)
+
+ˆg1i, RCAL −
+
+( 1 − Ai
+
+1 − ˆπ0i, RCAL 
+
+− 1
+
+)
+
+ˆg0i, RCAL 
+
+}
+
+, (56) where ˆ gai, RCAL = ga(Xi; ˆζa, RCAL ) and ˆζa, RCAL is a minimizer of the penalized loss function ℓ(ζa) + 25 λ‖ζa, 1: p‖1 with 
+
+ℓ(ζ1) = 1
+
+2n
+
+> n
+
+∑
+
+> i=1
+
+Ai
+
+1 − ˆπ1i, RCAL 
+
+ˆπ1i, RCAL 
+
+{B1i(ˆθRCw , ˆS1,RCw , ˆWRCw ) − f T(X)ζ1}2,ℓ(ζ0) = 1
+
+2n
+
+> n
+
+∑
+
+> i=1
+
+(1 − Ai) ˆπ0i, RCAL 
+
+1 − ˆπ0i, RCAL 
+
+{B0i(ˆθRCw , ˆS0,RCw , ˆWRCw ) − f T(X)ζ0}2.
+
+The second equality in (56) follows from the equivalence between (52) and (54). By similar reasoning as in Ghosh and Tan (2022), the following result can be obtained. Let ˆδi(θ) be the ith summand in (56), i.e., ˆδi(θ) = 
+
+{ Ai
+
+ˆπ1i, RCAL 
+
+B1i(θ, ˆS1,RCw , ˆWRCw ) −
+
+( Ai
+
+ˆπ1i, RCAL 
+
+− 1
+
+)
+
+ˆg1i, RCAL 
+
+}
+
+−
+
+{ 1 − Ai
+
+1 − ˆπ0i, RCAL 
+
+B0i(θ, ˆS0,RCw , ˆWRCw ) −
+
+( 1 − Ai
+
+1 − ˆπ0i, RCAL 
+
+− 1
+
+)
+
+ˆg0i, RCAL 
+
+}
+
+,
+
+and let ˘δi(θ) be the limit version of ˆδi(θ), with ( ˆSa, RCw , ˆWRCw ) and (ˆ γa, RCAL , ˆρa, 1: k, RCAL , ˆηa, 1: k, RCAL ,
+
+ˆζa, RCAL ) replaced by their limit values. Note that Bai (θ, ˆSa, RCw , ˆWRCw ) depends on ˆ γa, RCAL through ˆπai, RCAL and on (ˆ ρa, 1: k, RCAL , ˆηa, 1: k, RCAL ) through ˆU (a)
+
+> ki, RCAL
+
+, in addition to depending on ( ˆSa, RCw , ˆWRCw ). 
+
+Proposition 7. Under suitable regularity and sparsity conditions in the high-dimensional setting as n, dim( f ) → ∞ and K is fixed, ˆθRCa converges in probability to the same limit value ˘θRCw as ˆθRCw 
+
+and satisfies the asymptotic expansion 
+
+ˆθRCa − ˘θRCw = HRCw (θ)−1 · 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+˘δi(θ)
+
+∣∣∣˘θRCw 
+
++ op(n−1/2), (57) 
+
+where HRCw (θ) is the limit version of ˆHRCw (θ) below (see the proof for details). Moreover, the asymptotic variance of ˆθRCa can be consistently estimated by 
+
+ˆVr(ˆθRCa ) = ˆHRCw (θ)−1 ˆGRCa (θ) ˆHRCw (θ)−1
+
+∣∣∣ˆθRCa 
+
+, (58) 
+
+where ˆGRCa (θ) = n−2 ∑ni=1 ˆδi(θ)2 and 
+
+ˆHRCw (θ) = 
+
+> K
+
+∑
+
+> k=1
+
+ˆW1k, RCw ˆW0k, RCw eθ
+
+( ˆW1k, RCw eθ + ˆW0k, RCw )2 ( ˆW1k, RCw ˆq1k, RCw + ˆW0k, RCw ˆq0k, RCw ).
+
+Proposition 7 is similar to Proposition 5 about ˆS1k, CAL,lin with linear OR model (34) and the discussion about ˆθCAL,lin with linear OR models (34) and (48). Nonparametrically, the asymptotic expansion (57) is valid, and the variance estimator from (58) is consistent for the asymptotic variance of ˆθRCa . Moreover, ˆθRCa can be shown to be doubly robust for ˘θwBP , in being consistent (i.e., ˘θRCw = ˘θwBP ) if either PS and CCP models (3) and (17) or CSP and OR models (18) and (55) are correctly specified, including both treatment-1 and treatment-0 versions. Therefore, in either of the two cases, an asymptotic (1 − c)-confidence interval for ˘θwBP is ˆθRCa ± zc/ 2
+
+√
+
+ˆVr(ˆθRCa ). Compared with Propositions 4 and 6, PS model (3) is allowed to be misspecified in Proposition 26 7. This difference is due to the choice that (nonlinear) logistic OR models (23) and (40) are used in the augmentation terms for ˆS1k, CAL and ˆθCAL , whereas linear OR model (55) is used for ˆθRCa here. If OR model (55) is replaced by a (nonlinear) generalized linear model and regularized calibrated estimation of coefficient vector ζa is defined as in Tan (2020), then similar properties as in Proposition 7 can be obtained in general only when model (3) is correctly specified. This would be more aligned with Propositions 4 and 6. For completeness, we connect the regularized with non-regularized estimators. Consider the low-dimensional setting with Lasso tuning parameters set to 0, so that ˆ γa, RCAL = ˆ γa, CAL and ˆ π1i, RCAL =ˆπ1i, CAL . Then the augmented estimator ˆθRCa reduces to the weighted-only estimator ˆθRCw , because the augmentation terms in (11) vanish directly by the definition of (ˆ γ1,CAL , ˆγ0,CAL ), i.e., 0 = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{( Ai
+
+ˆπ1i, RCAL 
+
+− 1
+
+)
+
+ˆg1i, RCAL −
+
+( 1 − Ai
+
+1 − ˆπ0i, RCAL 
+
+− 1
+
+)
+
+ˆg0i, RCAL 
+
+}
+
+.
+
+In estimating equation (51) for ˆθRCw , note that ˆSak, RCw = ˆSak, wKM (ˆ γa, CAL ) = ˆSak, CAL,lin and ˆWak, RCw =ˆWak (ˆ γa, CAL ) = ˆWak, CAL,lin from the discussion about ˆθCAL,lin in Section 5.2. Then ˆθRCw coincides with ˆθCAL,lin . From these observations, the point estimator ˆθRCa reduces to ˆθCAL,lin in the low-dimensional setting. Furthermore, it can be shown by direct calculation (details omitted) that the variance estimator (58) for ˆθRCa is also identical to the variance estimator (47) for ˆθCAL,lin .
+
+## 7 Simulation study 
+
+We conduct a simulation study to evaluate the performance of the following estimators for survival probabilities and hazard-ratio parameter ˘θwBP in both low-dimensional and high-dimensional set-tings. In the low-dimensional setting, where p = 10 and n = 400 or 1000, we compare ˆSak, CAL and ˆSak, CAL,lin against ˆSak, KM and ˆSak, wKM for survival probability estimation, and compare ˆθCAL and ˆθCAL,lin and, with Lasso penalty set to 0, ˆθRCw and ˆθRCa against ˆθBP and ˆθwBP for ˘θwBP estimation. In the high-dimensional setting, where p = 200 and n = 400 or 1000, we assess the performance of ˆSak, RCAL and ˆSak, RCAL,lin in comparison to ˆSak, KM and ˆSak, wKM for survival probability estimation, and compare ˆθRCw and ˆθRCa with ˆθBP and ˆθwBP for ˘θwBP estimation. In this setting, ˆS1k, wKM and ˆθwBP 
+
+are computed with ˆ γ obtained by regularized maximum likelihood (RML). Due to computational constraints, we do not compute ˆθRCAL or ˆθRCAL,lin . All estimates of coefficient vectors γ, α ak , β ak , ζ a
+
+are computed using the R package RCAL (Tan and Sun 2020). The Lasso tuning parameters are selected via 5-fold cross-validation in the high-dimensional setting. In the simulation, the treatment variable A is generated from a Bernoulli distribution with 27 probability 0.5. The first 10 covariates of X follow a truncated multivariate normal distribution in each treatment group: X1:10 |A = 0 ∼ N (μ0, Σ0) and X1:10 |A = 1 ∼ N (μ1, Σ1), where μ0 and μ1 are both 10 × 1 vectors with all components being −0.25 /10 and 0 .25 /10 respectively. These covariates are truncated element-wise on the interval ( −2.5/√10 , 2.5/√10). The remaining covariates are independently generated from a standard normal distribution. For the covariances matrices Σ 0 and Σ1, we consider two cases: (C1) Σ 0 = Σ 1 = (0 .5|i−j|)i,j =1 ,..., 10 ; (C2) Σ 0 = 4 /3(0 .5|i−j|)i,j =1 ,..., 10 and Σ1 = 2 /3(0 .5|i−j|)i,j =1 ,..., 10 . We show in Supplement Section V that PS model (3) with f (X) = X
+
+is correctly specified under (C1) and misspecified under (C2). Furthermore, we show that the limit value of ˆ γ1,RCAL is nonzero only for the first 10 covariates. Given X, a continuous event time ˜U is generated as Weibull with shape and scale parameters 2 and exp(0 .5X1 + · · · + 0 .5X10 )or respectively 1 and exp(0 .5X1 + · · · + 0 .5X10 ) in treatment 0 and treatment 1. A continuous censoring time ˜C is generated as 4 times Beta(2, 2) in treatment 0, and uniform(0, 4) in treatment 1. The observed data ( Y, ∆) are then obtained, where ∆ = 1 { ˜U ≤ ˜C} and Y is integer-valued, defined by discretizing ˜Y = min( ˜U , ˜C) in intervals of length .01 (Tan 2022). Table 2 summarizes the estimates of S1k at uk = 60 , 90 , 120, and Table 3 summarizes the estimates of ˘θwBP , based on 2000 repeated simulations with n = 1000 and p = 10 or p = 200 under (C1). Results for the estimation of S1k and ˘θwBP with n = 400 under (C1), as well as for n = 400 or 1000 under (C2), and for the estimation of S0k, are presented in the Supplement, and similar conclusions can be drawn as discussed below. A caveat under (C2) with misspecified model (3) is that the bias of each estimator is defined against its limit value (or target value), not the true value (Supplement Tables S1 and S2). From Table 2, we have the following findings. (1) ˆS1k, KM leads to considerable biases and under-coverage. (2) Under low dimension ( p = 10), ˆS1k, CAL and ˆS1k, CAL,lin methods perform similarly to each other and slightly improve over ˆS1k, wKM method in achieving shorter confidence intervals and coverage proportions closer to the nominal. (3) Under high dimension ( p = 200), all methods exhibit under-coverage, possibly due to insufficient sample size. Nevertheless, ˆS1k, RCAL and ˆS1k, RCAL,lin no-ticeably improve over ˆS1k, wKM in achieving smaller biases, shorter confidence intervals, and coverage proportions closer to the nominal. From Table 3, we have the following findings. (1) ˆθBP leads to considerable biases and under-coverage. (2) Under low dimension, ˆθCAL , ˆθCAL,lin and ˆθRCa methods perform noticeably better than ˆθwBP and ˆθRCw in producing shorter confidence intervals, variance estimates closer to the Monte Carlo variances, and coverage proportions closer to the nominal. Note that ˆθCAL,lin and ˆθRCa give 28 Table 2: Summary for estimation of S1k at uk = 60 , 90 , 120 with n = 1000 under (C1).                                                                                                                                              
+
+> uk= 60 uk= 90 uk= 120
+> Bias √Var √EVar Cov90(L90) Cov95(L95) Bias √Var √EVar Cov90(L90) Cov95(L95) Bias √Var √EVar Cov90(L90) Cov95(L95)
+> p= 10 ˆS1k, KM 0.030 0.024 0.023 0.632 ( 0.076 ) 0.732 ( 0.091 ) 0.031 0.024 0.024 0.647 ( 0.078 ) 0.753 ( 0.093 ) 0.029 0.023 0.023 0.655 ( 0.077 ) 0.773 ( 0.092 ) ˆS1k, wKM 0.000 0.023 0.024 0.905 ( 0.078 ) 0.959 ( 0.093 ) 0.000 0.022 0.024 0.914 ( 0.077 ) 0.956 ( 0.092 ) -0.001 0.022 0.023 0.915 ( 0.075 ) 0.958 ( 0.089) ˆS1k, CAL 0.000 0.023 0.022 0.884 ( 0.074 ) 0.944 ( 0.088 ) 0.000 0.022 0.022 0.901 ( 0.073 ) 0.946 ( 0.087 ) -0.001 0.021 0.022 0.903 ( 0.071 ) 0.949 ( 0.085 ) ˆS1k, CAL,lin 0.000 0.023 0.022 0.885 ( 0.074 ) 0.947 ( 0.088 ) 0.000 0.022 0.022 0.898 ( 0.073 ) 0.944 ( 0.087 ) -0.001 0.022 0.022 0.904 ( 0.071 ) 0.949 ( 0.085 )
+> p= 200 ˆS1k, KM 0.030 0.023 0.023 0.637 ( 0.076 ) 0.739 ( 0.091 ) 0.030 0.024 0.024 0.644 ( 0.078 ) 0.744 ( 0.093 ) 0.029 0.023 0.023 0.662 ( 0.077 ) 0.774 ( 0.092 ) ˆS1k, wKM 0.024 0.023 0.023 0.716 ( 0.077 ) 0.824 ( 0.091 ) 0.024 0.023 0.024 0.727 ( 0.078 ) 0.824 ( 0.093 ) 0.023 0.023 0.023 0.756 ( 0.077 ) 0.844 ( 0.091 ) ˆS1k, RCAL 0.011 0.023 0.022 0.846 ( 0.073 ) 0.911 ( 0.086 ) 0.009 0.023 0.022 0.860 ( 0.074 ) 0.927 ( 0.088 ) 0.008 0.022 0.022 0.871 ( 0.073 ) 0.938 ( 0.086 ) ˆS1k, RCAL,lin 0.011 0.023 0.022 0.847 ( 0.073 ) 0.912 ( 0.086 ) 0.009 0.023 0.022 0.863 ( 0.074 ) 0.926 ( 0.088 ) 0.008 0.022 0.022 0.871 ( 0.073 ) 0.938 ( 0.087 )
+
+Note : Bias is the Monte Carlo bias of the point estimates against the true (data-generating) values. Var are the Monte Carlo variance of the point estimates. EVar is the mean of the variance estimates. Cov90(L90) and Cov95(L95) denote coverage proportion and average length of the 90% and 95% confidence intervals. 
+
+Table 3: Summary for estimation of ˘θwBP with n = 1000 under (C1). 
+
+p = 10 p = 200 
+
+ˆθBP ˆθwBP ˆθCAL ˆθCAL,lin ˆθRCw ˆθRCa ˆθBP ˆθwBP ˆθRCw ˆθRCa 
+
+Bias -0.191 -0.001 0.000 -0.001 -0.001 -0.001 -0.189 -0.152 -0.158 -0.042 
+
+√Var 0.074 0.060 0.060 0.060 0.060 0.060 0.073 0.069 0.067 0.061 
+
+√EVar 0.074 0.075 0.059 0.060 0.075 0.060 0.074 0.074 0.074 0.059 Cov90(L90) 0.172 (0.242) 0.961 (0.246) 0.895 (0.195) 0.898 (0.197) 0.957 (0.246) 0.898 (0.197) 0.166 (0.242) 0.324 (0.243) 0.281 (0.243) 0.814 (0.195) Cov95(L95) 0.258 (0.288) 0.985 (0.294) 0.945 (0.232) 0.949 (0.235) 0.985 (0.294) 0.949 (0.235) 0.263 (0.288) 0.458 (0.289) 0.418 (0.289) 0.886 (0.233) 
+
+Note : Bias is the Monte Carlo bias relative to the true value of ˘θwBP in (39). Var is the Monte Carlo variance, EVar is the mean estimated variance. Cov90(L90) and Cov95(L95) denote coverage proportion and average length of the 90% and 95% confidence intervals. 
+
+identical results (including point and variance estimates) as explained in Section 6. (3) Under high dimension, all methods exhibit under-coverage, possibly due to insufficient sample size. The method ˆθRCa performs the best, with smallest bias and, on average, coverage proportions closest to the target ones and shortest confidence intervals. 
+
+## 8 Empirical application 
+
+We illustrate the proposed methods by studying the effectiveness of adjunctive psychotropic treat-ments for patients with schizophrenia, using a dataset derived from the U.S. national Medicaid Analytic eXtract files covering January 1, 2001 to December 31, 2010. This dataset was previously analyzed by Stroup et al. (2019). The original cohort includes four treatment groups correspond-ing to initiating treatment with an antidepressant, a benzodiazepine, a mood stabilizer, or another antipsychotic. To focus on binary treatment comparisons, we define initiating treatment with an antidepressant as treatment 0 and initiating treatment with a benzodiazepine as treatment 1. We consider three main outcomes analyzed in Stroup et al. (2019), namely hospitalization for a mental disorder (primary), emergency department (ED) visits for a mental disorder, and all-cause mortal-ity. The total sample size is 43,058, and the covariate vector X includes 101 baseline variables after converting categorical variables to dummy variables. We consider two settings for PS and OR model specifications: a low-dimensional setting and a high-dimensional setting. In the low-dimensional setting, working models include main effects from X only. In the high-dimensional setting, working models include additionally 2275 two-way interactions from X excluding those either with nonzero values less than 344 (i.e., 0.8% of the 29 sample size 43,058) or perfectly collinear with other terms. In the low-dimensional setting, we apply ˆSak, KM , ˆSak, wKM and ˆSak, CAL,lin to estimate survival probabilities. For estimating ˘θwBP , we apply ˆθBP , ˆθwBP and ˆθCAL,lin . We do not apply calibrated estimators based on logistic OR models (23) and (40) (i.e., ˆSak, CAL and ˆθCAL ) because the corre-sponding performance tends to be similar to that of the estimators based on linear OR models. In addition, we do not apply ˆθRCa because it coincides with ˆθCAL,lin in this setting, and we exclude ˆθRCw 
+
+due to its inferior performance observed in the simulation study. In the high-dimensional setting, we apply ˆSak, wKM and ˆSak, RCAL,lin to estimate survival probabil-ities. For estimating ˘θwBP , we apply ˆθwBP and ˆθRCa . As in the simulation study, ˆS1k, wKM and ˆθwBP 
+
+are computed with ˆ γ obtained by RML. For similar reasons as in the low-dimensional setting, we do not apply ˆSak, RCAL or ˆθRCw . Due to computational constraints as in the simulation study, we exclude ˆθRCAL and ˆθRCAL,lin in the high-dimensional setting. Survival probabilities are evaluated at {30 × k : k = 1 , 2, . . . , 12 } for Hospitalization and ED visits outcomes. For mortality outcome, exact multiples of 30 do not correspond to observed times. Therefore, we estimate survival probabilities at the nearest available times: 30, 64, 91, 121, 151, 180, 210, 242, 274, 300, 330, and 361 days. We summarize the results from two aspects: comparison between low dimension and high dimension, and comparison between existing weighted methods and calibrated methods. A discussion on the effects of covariate adjustment is provided in Supplement Section VI, and the key finding from there is as follows. For the Hospitalization and Mortality outcomes, weighting primarily affects survival probability estimation associated with treatment 1, leading to substantial differences between ˆθwBP and ˆθBP , whereas for the ED visits outcome, weighting affects survival probability estimation for both treatments, and the effects partially cancel out for estimation of the hazard-ratio parameter. Table 4: Summary for estimation of ˘θBP                                            
+
+> Outcome Point Est SE
+> Low-Dim High-Dim Low High
+> ˆθBP ˆθwBP ˆθCAL,lin ˆθwBP ˆθRCa ˆθBP ˆθwBP ˆθCAL,lin ˆθwBP ˆθRCa
+> Hospitalization 0.194 0.262 0.238 0.254 0.218 0.025 0.030 0.027 0.029 0.026 ED Visits 0.192 0.219 0.192 0.218 0.190 0.022 0.027 0.025 0.026 0.023 Mortality 0.495 0.195 0.208 0.253 0.322 0.089 0.109 0.101 0.102 0.095
+> Note : Point Est is point estimate, and SE is standard error. Low-Dim means that only main-effects are included in working models, and High-Dim means that both main-effects and interactions are included in working models.
+
+Comparison between low dimension and high dimension. Figure 1 presents the stan-dardized absolute difference between ˆSak, CAL,lin and ˆSak, RCAL,lin . Across outcomes and treatment groups, the two estimators yield similar point estimates when evaluated against SEs. A consistent 30 50 100 150 200 250 300 350                               
+
+> 0.0  0.5  1.0  1.5
+> Time
+> Hospitalization
+> Treatment 1
+> 50 100 150 200 250 300 350
+> 0.0  0.5  1.0  1.5
+> Time
+> ED Visits
+> 50 100 150 200 250 300 350
+> 0.0  0.5  1.0  1.5
+> Time
+> Mortality
+> 50 100 150 200 250 300 350
+> 0.0  0.5  1.0  1.5
+> Time
+> Treatment 0
+> 50 100 150 200 250 300 350
+> 0.0  0.5  1.0  1.5
+> Time
+> 50 100 150 200 250 300 350
+> 0.0  0.5  1.0  1.5
+> Time
+
+Figure 1: Standardized absolute difference between ˆSak, CAL,lin and ˆSak, RCAL,lin . Solid line is stan-dardized by SE( ˆSak, CAL,lin ) and dashed line is standardized by SE( ˆSak, RCAL,lin ). A horizontal line is placed at 1.5. pattern is observed for the estimation of ˘θwBP from Table 4, where ˆθCAL,lin and ˆθRCa also produce comparable point estimates relative to SEs. These findings suggest that a PS model including only main effects may be “nearly correct”, since otherwise the point estimates would likely dif-fer. This conclusion is further supported by the covariate balance results in Supplement Table S9, which shows that extending the PS model to include interaction terms does not materially improve the balance of the interactions, indicating that the interaction terms are already approximately balanced once main effects are controlled for. In spite of similar point estimates, the high-dimensional methods exhibit notable efficiency gains over low-dimensional ones. Except at time points 30 and 64 for treatment 1 in the Mortality outcome, ˆSak, RCAL,lin generally has SEs no larger than those of ˆSak, CAL,lin . 7 This can be seen from Figure 1: the dashed lines, where the absolute difference is scaled by SE( ˆSak, RCAL,lin ), are consistently no lower than the solid lines, where the absolute difference is scaled by SE( ˆSak, CAL,lin ). From Table 4, ˆθRCa also consistently has smaller SEs than ˆθCAL,lin . For example, for the ED visits outcome, the relative efficiency of ˆθRCa over ˆθCAL,lin is ( .025 /. 023) 2 = 1 .18, The efficiency gain is due to regularization estimation using more flexible working models, as observed in an empirical application with only administrative censoring in Tan (2020). Finally, similar conclusions are obtained when comparing between low- and high-dimensional applications of ˆSak, wKM for survival probability estimation from Supplement Figure S2, and when  
+
+> 7
+
+The exceptions can be explained by the fact that the SEs are extremely small at time points 30 and 64. Specifically, as reported in Supplement Table S14, for treatment 1 in the Mortality outcome, the SEs of ˆSak, RAIPW 
+
+and ˆSak, CAL,lin are 4 × 10 −4 and 3 × 10 −4 respectively at time 30, and 5 × 10 −4 and 4 × 10 −4 at time 64. These slight absolute differences lead to the reversal in the standardized comparison. 
+
+31 comparing those of ˆθwBP for the estimation of ˘θwBP from Table 4. 
+
+Comparison between existing weighted methods and calibrated methods. Figure 2 presents the standardized absolute difference between ˆSak, wKM and ˆSak, CAL,lin in the low dimensional setting. For treatment 0 across all three outcomes, the two estimators yield very similar point estimates relative to SEs. Although the differences for treatment 1 are relatively larger, they remain within two SEs. A consistent pattern is observed for the estimation of ˘θwBP from Table 4, where ˆθwBP and ˆθCAL,lin produce similar point estimates. Beyond similar point estimates, ˆSak, CAL,lin generally has SEs no larger than those of ˆSak, wKM .This can be seen from Figure 2: the dashed lines, where the absolute differences are scaled by SE( ˆSak, CAL,lin ), are consistently no lower than the solid lines, where the differences are scaled by SE( ˆSak, wKM ). Analogously, for the estimation of ˘θwBP in Table 4, ˆθCAL,lin has smaller SEs than ˆθwBP .These efficiency gains can be attributed to two factors. First, inverse probability weights con-structed via calibrated estimation tend to be less variable than those obtained from ML estimation (Tan 2020). Second, augmented IPW estimation via OR model (34) in ˆSak, CAL,lin often achieves smaller variance than that via the implied, constant OR model in ˆSak, wKM (footnote 5). Finally, similar conclusions hold in the high dimensional setting. As shown in Supplement Figure S3, ˆSak, wKM and ˆSak, RCAL,lin yield comparable survival probability estimates relative to SEs. From Table 4, ˆθwBP and ˆθRCa produce similar point estimates for ˘θwBP relative to SEs, but the calibrated estimator ˆθRCa achieve smaller SEs than ˆθwBP , for example, by a factor of ( .026 /. 023) 2 = 1 .28 for the ED visits outcome.                                     
+
+> 50 100 150 200 250 300 350
+> 0.0  1.0  2.0
+> Time
+> Hospitalization
+> Treatment 1
+> 50 100 150 200 250 300 350
+> 0.0  1.0  2.0
+> Time
+> ED Visits
+> 50 100 150 200 250 300 350
+> 0.0  1.0  2.0
+> Time
+> Mortality
+> 50 100 150 200 250 300 350
+> 0.0  0.5  1.0  1.5
+> Time
+> Treatment 0
+> 50 100 150 200 250 300 350
+> 0.0  0.5  1.0  1.5
+> Time
+> 50 100 150 200 250 300 350
+> 0.0  0.5  1.0  1.5
+> Time
+
+Figure 2: Standardized absolute difference between ˆSak, wKM and ˆSak, CAL,lin . Solid line is standardized by SE( ˆSak, wKM ) and dashed line is standardized by SE( ˆSak, CAL,lin ). A horizontal line is placed at 1.5. 
+
+Summary. There are three main findings from the empirical results. First, as discussed in Supplement Section VI and summarized earlier, covariate adjustment has a meaningful impact on 32 the estimation of survival probabilities and hazard-ratio parameter ˘θwBP , but this impact is outcome and treatment specific. Second, expanding from low-dimensional to high-dimensional working mod-els does not materially change point estimates, suggesting that a main-effect PS model is adequate in this application, a conclusion further supported by covariate balance diagnostics. At the same time, regularized estimation consistently achieves efficiency gains, yielding smaller SEs. Third, ex-isting methods and calibrated methods produce similar point estimates across outcomes and low-and high-dimensional settings, but calibrated methods uniformly exhibit improved efficiency, both for survival probability estimation and ˘θwBP estimation. 
+
+## References 
+
+Bai, X., Tsiatis, A., and O’Brien, S. (2013) Doubly-robust Estimators of Treatment-specific Survival Distributions in Observational Studies with Stratified Sampling, Biometrics , 69, 830–839. Breslow, N. (1974) Covariance analysis of censored survival data, Biometrics , 30, 89–100. Chan, K., Yam, S., and Zhang, Z. (2016). Globally efficient non-parametric inference of average treatment effects by empirical balancing calibration weighting, Journal of the Royal Statistical Society Series B , 78, 673–700. Cole, S. and Hern´ an, M. (2004) Adjusted survival curves with inverse probability weights, Com-puter Methods and Programs in Biomedicine , 75, 45–49. Cox, D. (1972) Regression models and life tables (with discussion), Journal of the Royal Statistical Society Series B , 34, 187–220. Ghosh, S. and Tan, Z. (2022) Doubly robust semiparametric inference using regularized calibrated estimation with high-dimensional data, Bernoulli , 28, 1675–1703. Hern´ an, M. and Robins, J. (2020) Causal Inference: What If , Boca Raton: Chapman & Hall/CRC. Hubbard, A., van der L., and Robins, J. (2000) Nonparametric locally efficient estimation of the treatment specific survival distributions with right censored data and covariates in observa-tional studies, In Statistical Models in Epidemiology, the Environment, and Clinical Trials 
+
+(pp. 135–177), New York: Springer. Joffe, R., MacQueen, G., Marriott, M., and Young, L. (2004) A prospective, longitudinal study of percentage of time spent ill in patients with bipolar I or bipolar II disorders, International Journal of Bipolar Disorders , 6, 62–66. 33 Kaplan, E. and Meier, P. (1958) Nonparametric estimation from incomplete observations, Journal of the American Statistical Association , 53, 457–481. Peto, R. (1972) Contribution to the discussion of Cox (1972): regression models and life tables, 
+
+Journal of the Royal Statistical Society Series B , 34, 205–207. Robins, J. and Rotnitzky, A. (1992) Recovery information and adjustment for dependent censoring using surrogate markers, In AIDS epidemiology: methodological issues (, 297–331), Boston: Springer. Rosenbaum, P. and Rubin, D. (1983) The Central Role of the Propensity Score in Observational Studies for Causal Effects, Biometrika , 70, 41–55. Stroup, T., Gerhard, T., Crystal, S., Huang, C., and Tan, Z. (2019) Comparative Effectiveness of Adjunctive Psychotropic Medications in Patients With Schizophrenia, JAMA psychiatry , 76, 508–515. Tan, Z. (2006) A Distributional Approach for Causal Inference Using Propensity Scores, Journal of the American Statistical Association , 101, 1607–1618. Tan, Z. (2020) Model-assisted inference for treatment effects using regularized calibrated estima-tion with high-dimensional data, Annals of Statistics , 48, 811–837. Tan, Z. and Sun, B. (2020) RCAL: Regularized calibrated estimation , R package version 2.0. Tan, Z. (2022) Analysis of odds, probability, and hazard ratios: From 2 by 2 tables to two-sample survival data, Journal of Statistical Planning and Inference , 221, 248–265. Tan, Z. (2023) Consistent and robust inference in hazard probability and odds models with discrete-time survival data, Lifetime Data Analysis , 29, 555–584. Therneau, T. (2020) A package for survival analysis in R , R package version 3.2-7. Therneau, T. and Grambsch, P. (2000) Modeling survival data: extending the Cox model , New York: Springer. Tsiatis, A. (2006) Semiparametric Theory and Missing Data , New York: Springer. Vermeulen, K. and Vansteelandt, S. (2015) Bias-reduced doubly robust estimation, Journal of the American Statistical Association , 110, 1024–1036. Xie, J. and Liu, C. (2005) Adjusted Kaplan–Meier estimator and log-rank test with inverse prob-ability of treatment weighting for survival data, Statistics in Medicine , 24, 3089–3110. Yuan, M. and Lin, Y. (2006) Model selection and estimation in regression with grouped variables, 
+
+Journal of the Royal Statistical Society Series B , 68, 49–67. 34 Supplementary Material for “Re-examining and calibrating weighted survival analysis for causal inference” 
+
+Wenfu Xu, Yi Zhang, Tobias Gerhard, Zhiqiang Tan 
+
+## I Augmented IPW estimator for k = 2 
+
+We provide the explicit expressions for the augmented IPW estimator in the special case of k = 2, as mentioned in Section 4.1 of the main paper. The augmented IPW estimator (11) with the expression (12) becomes ˆS12 (ˆ γ, ˆρ1,1:2 , ˆη1,1:2 ) = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{
+
+Ai
+
+ˆπi
+
+R1iR2i
+
+ˆπ11 i ˆπ12 i
+
+1{U (1)  
+
+> i
+
+> u 2} − Ai
+
+ˆπi
+
+R1i
+
+ˆπ11 i
+
+( R2i
+
+ˆπ12 i
+
+− 1
+
+)
+
+ˆm12 i1{U (1)  
+
+> i
+
+> u 1}− Ai
+
+ˆπi
+
+( R1i
+
+ˆπ11 i
+
+− 1
+
+)
+
+ˆm12 i ˆm11 i −
+
+( Ai
+
+ˆπi
+
+− 1
+
+)
+
+ˆm12 i ˆm11 i
+
+}
+
+. (S1) The augmented IPW estimator with the expression (13) becomes ˆS12 (ˆ γ, ˆρ1,1:2 , ˆη1,1:2 ) = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{
+
+Ai
+
+ˆπi
+
+R1iR2i
+
+ˆπ11 i ˆπ12 i
+
+1{U (1)  
+
+> i
+
+> u 1}(1 {U (1)  
+
+> i
+
+> u 2} − ˆm12 i)+ Ai
+
+ˆπi
+
+R1i
+
+ˆπ11 i
+
+ˆm12 i(1 {U (1)  
+
+> i
+
+> u 1} − ˆm11 i) + ˆ m12 i ˆm11 i
+
+}
+
+. (S2) The two expressions can be easily verified to be equivalent to each other. 
+
+## II Comparison of weighted and unweighted KM estimation 
+
+We compare weighted and unweighted KM estimation in their consistency properties. Formally, the unweighted KM estimator of S1k (defined by setting ˆ w1i ≡ 1) is doubly robust, but with respect to the following sets of models: either π∗(X) is constant in X (hence ˆ πi is constant in i) and model (17) holds, or model (18) holds, in addition to the unadjusted version of Assumptions (1)–(2): 
+
+A ⊥ U (1) (S3) 
+
+U (1) ⊥ C(1) |A = 1 , (S4) We make two simple but important observations (see Supplement Section IV for proofs). (i) If CCP model (17) is correctly specified (i.e., π∗ 
+
+> 1j
+
+(X) = ρ∗ 
+
+> 1j
+
+for some constant ρ∗ 
+
+> 1j
+
+, j = 1 , . . . , k ), then Assumption (2) implies the unadjusted version (S4), provided that the behavior of C(1) 
+
+is restricted up to time uk (i.e., C(1) is replaced by 1 {C(1) ≥ uj } for any j = 1 , . . . , k ). (ii) If CSP model (18) is correctly specified (i.e., m∗ 
+
+> 1j
+
+(X) = η∗ 
+
+> 1j
+
+for some constant η∗ 
+
+> 1j
+
+, j =1, . . . , k ), then Assumption (2) implies the unadjusted version (S4), and Assumption (1) 1implies the unadjusted version (S3), provided that the behavior of U (1) is restricted up to time uk+1 (i.e., U (1) is replaced by 1 {U (1) > u j } for any j = 1 , . . . , k ). From these observations, we obtain the following comparison provided that Assumptions (1)–(2) hold. First, if CSP model (18) is correctly specified, then both the weighted and unweighted KM estimators are consistent for S1k. However, if PS model π(X; γ) and CCP model (17) are correctly specified but CSP model (18) may be misspecified, then the weighted KM estimator is consistent while the unweighted KM estimator is in general inconsistent. Hence compared with the unweighted KM estimator, the weighted KM estimator is advantageous when propensity score model π(X; γ)and CCP model (17) are correctly specified but CSP model (18) may be misspecified. 
+
+## III Calibrated estimation with augmented IPW estimation 
+
+We discuss application of calibrated estimation to the original augmented IPW estimator ˆS1k(ˆ γ, ˆρ1,1: k,
+
+ˆη1,1: k), and compare with calibrated estimation to the new augmented IPW estimator ˆS1k(ˆ γ, ˆρ1,1: k,
+
+ˆη1,1: k, ˆα1k). When applied to the original augmented IPW estimator ˆS1k(ˆ γ, ˆρ1,1: k, ˆη1,1: k), the calibration equations (Tan 2020; Ghosh & Tan 2022) are 
+
+E
+
+{ ∂
+
+∂γ ˆS1k(γ, ρ 1,1: k , η 1,1: k)
+
+}
+
+= 0 , (S5) 
+
+E
+
+{ ∂
+
+∂ρ 1,1: k
+
+ˆS1k(γ, ρ 1,1: k, η 1,1: k)
+
+}
+
+= 0 , (S6) 
+
+E
+
+{ ∂
+
+∂η 1,1: k
+
+ˆS1k(γ, ρ 1,1: k, η 1,1: k)
+
+}
+
+= 0 . (S7) For simplicity, consider the case of k = 2 and ˆS12 (ˆ γ, ˆρ1,1:2 , ˆη1,1:2 ) in (S1) and (S2). For logistic PS model (3) and CCP and CSP models (17) and (18), equation (S5) can be calculated as 0 = −E
+
+[
+
+1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{
+
+Ai
+
+1 − π(Xi; γ)
+
+π(Xi; γ)
+
+R1iR2i
+
+ρ11 ρ12 
+
+1{U (1)  
+
+> i
+
+> u 1}(1 {U (1)  
+
+> i
+
+> u 2} − η12 )f (Xi)+ Ai
+
+1 − π(Xi; γ)
+
+π(Xi; γ)
+
+R1i
+
+ρ11 
+
+η12 (1 {U (1)  
+
+> i
+
+> u 1} − η11 )f (Xi)
+
+}] 
+
+,
+
+equation (S6) with ρ1,1:2 = ( ρ11 , ρ 12 ) can be calculated as 0 = −E
+
+[
+
+1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{
+
+Ai
+
+π(Xi; γ)
+
+R1iR2i
+
+ρ211 ρ12 
+
+1{U (1)  
+
+> i
+
+> u 1}(1 {U (1)  
+
+> i
+
+> u 2} − η12 )+ Ai
+
+π(Xi; γ)
+
+R1i
+
+ρ211 
+
+η12 (1 {U (1)  
+
+> i
+
+> u 1} − η11 )
+
+}] 
+
+,
+
+0 = −E
+
+[
+
+1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{
+
+Ai
+
+π(Xi; γ)
+
+R1iR2i
+
+ρ11 ρ212 
+
+1{U (1)  
+
+> i
+
+> u 1}(1 {U (1)  
+
+> i
+
+> u 2} − η12 )
+
+}] 
+
+,
+
+(S8) 2and equation (S7) with η1,1:2 = ( η11 , η 12 ) can be calculated as 0 = −E
+
+[
+
+1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{
+
+Ai
+
+π(Xi; γ)
+
+( R1i
+
+ρ11 
+
+− 1
+
+)
+
+η12 +
+
+( Ai
+
+π(Xi; γ) − 1
+
+)
+
+η12 
+
+}] 
+
+,
+
+0 = −E
+
+[
+
+1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{
+
+Ai
+
+π(Xi; γ)
+
+R1i
+
+ρ11 
+
+( R2i
+
+ρ12 
+
+− 1
+
+)
+
+1{U (1)  
+
+> i
+
+> u 1}
+
++ Ai
+
+π(Xi; γ)
+
+(R1i
+
+ρ11 
+
+− 1
+
+)
+
+η11 +
+
+( Ai
+
+π(Xi; γ) − 1
+
+)
+
+η11 
+
+}] 
+
+.
+
+There are dim( f ) + 4 scalar unknowns, ( γ, ρ 11 , ρ 12 , η 11 , η 12 ), and also dim( f ) + 4 scalar equations. However, it seems difficult to manipulate this system of equations and obtain tractable solutions. When applied to the new augmented IPW estimator ˆS1k(ˆ γ, ˆρ1,1: k, ˆη1,1: k, ˆα1k), the calibration equations (Tan 2020; Ghosh & Tan 2022) are 
+
+E
+
+{ ∂
+
+∂γ ˆS1k(γ, ρ 1,1: k, η 1,1: k, α 1k )
+
+}
+
+= 0 , (S9) 
+
+E
+
+{ ∂
+
+∂ρ 1,1: k
+
+ˆS1k(γ, ρ 1,1: k , η 1,1: k, α 1k)
+
+}
+
+= 0 , (S10) 
+
+E
+
+{ ∂
+
+∂η 1,1: k
+
+ˆS1k(γ, ρ 1,1: k, η 1,1: k, α 1k)
+
+}
+
+= 0 , (S11) 
+
+E
+
+{ ∂
+
+∂α 1k
+
+ˆS1k(γ, ρ 1,1: k, η 1,1: k, α 1k )
+
+}
+
+= 0 . (S12) In the case of k = 2, the new augmented IPW estimator is ˆS12 (ˆ γ, ˆρ1,1:2 , ˆη1,1:2 , ˆα12 )= 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{
+
+Ai
+
+ˆπi
+
+R1iR2i
+
+ˆπ11 i ˆπ12 i
+
+1{U (1)  
+
+> i
+
+> u 2} − Ai
+
+ˆπi
+
+R1i
+
+ˆπ11 i
+
+( R2i
+
+ˆπ12 i
+
+− 1
+
+)
+
+ˆm12 i1{U (1)  
+
+> i
+
+> u 1}− Ai
+
+ˆπi
+
+( R1i
+
+ˆπ11 i
+
+− 1
+
+)
+
+ˆm12 i ˆm11 i −
+
+(Ai
+
+ˆπi
+
+− 1
+
+)
+
+ˆμ12 i
+
+}
+
+.
+
+For logistic PS model (3) and CCP and CSP models (17) and (18), equation (S9) can be calculated as 0 = −E
+
+[
+
+1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{
+
+Ai
+
+1 − π(Xi; γ)
+
+π(Xi; γ)
+
+R1iR2i
+
+ρ11 ρ12 
+
+1{U (1)  
+
+> i
+
+> u 1}(1 {U (1)  
+
+> i
+
+> u 2} − η12 )f (Xi)+ Ai
+
+1 − π(Xi; γ)
+
+π(Xi; γ)
+
+R1i
+
+ρ11 
+
+η12 (1 {U (1)  
+
+> i
+
+> u 1} − η11 )f (Xi)+ Ai
+
+1 − π(Xi; γ)
+
+π(Xi; γ) (η12 η11 − μ12 (Xi; α12 )) f (Xi)
+
+}] 
+
+,
+
+(S13) equation (S10) with ρ1,1:2 = ( ρ11 , ρ 12 ) can be calculated as (S8), equation (S11) with η1,1:2 =3(η11 , η 12 ) can be calculated as 0 = −E
+
+[
+
+1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{
+
+Ai
+
+π(Xi; γ)
+
+( R1i
+
+ρ11 
+
+− 1
+
+)
+
+η12 
+
+}] 
+
+,
+
+0 = −E
+
+[
+
+1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{
+
+Ai
+
+π(Xi; γ)
+
+R1i
+
+ρ11 
+
+( R2i
+
+ρ12 
+
+− 1
+
+)
+
+1{U (1)  
+
+> i
+
+> u 1}
+
++ Ai
+
+π(Xi; γ)
+
+( R1i
+
+ρ11 
+
+− 1
+
+)
+
+η11 
+
+}] 
+
+.
+
+(S14) For logistic OR model (23), equation (S12) can be calculated as 0 = −E
+
+[
+
+1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{ ( Ai
+
+π(Xi; γ) − 1
+
+) ∂μ 12 (Xi; α12 )
+
+∂α 12 
+
+}] 
+
+. (S15) For linear OR model (34), equation (S12) can be calculated as 0 = −E
+
+[
+
+1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{ ( Ai
+
+π(Xi; γ) − 1
+
+)
+
+f (Xi)
+
+}] 
+
+. (S16) Equations (S13), (S8), (S14), (S16) can be solved in a tractable manner via (S27)–(S30) as in the proof of Proposition 4. For logistic OR model (23), equation (S15) is not directly solved, but is still satisfied by the limit values of the calibrated estimators when PS model is correctly specified as assumed in Proposition 4. 
+
+## IV Technical details 
+
+Derivation of variance estimator (7) . Suppose that ˆ γ were data-independent. By definition (5) for ˆS1k, wKM ,log ˆS1k, wKM =
+
+> k
+
+∑
+
+> j=1
+
+log(1 − ˆq1j ).
+
+By the delta method, it suffices to show that a model-robust variance estimator for log ˆS1k, wKM is 
+
+> 1
+> n2
+
+∑ni=1 ˆϕ21ki, wKM . The population (or limit) version of ˆ q1j is ˘q1j = E(∑ 
+
+> i∈Jj
+
+Ai ˆw1i)
+
+E(∑ 
+
+> i∈Ij
+
+Ai ˆw1i) ,
+
+and hence the population (or limit) version of log ˆS1k, wKM is log ˘S1k, wKM =
+
+> k
+
+∑
+
+> j=1
+
+log(1 − ˘q1j ).
+
+Consider the Taylor expansion log ˆS1k, wKM − log ˘S1k, wKM =
+
+> k
+
+∑
+
+> j=1
+
+{log(1 − ˆq1j ) − log(1 − ˘q1j )}
+
+=
+
+> k
+
+∑
+
+> j=1
+
+−1
+
+1 − ˘q1j
+
+(ˆ q1j − ˘q1j ) + op(n−1/2),
+
+4where by standard manipulation, ˆq1j − ˘q1j =
+
+∑ 
+
+> i
+
+1{i ∈ Ij }(1 {i ∈ Jj } − ˘q1j )Ai ˆw1i
+
+∑ 
+
+> i
+
+1{i ∈ Ij }Ai ˆw1i
+
+=
+
+∑
+
+> i
+
+(1 {i ∈ Jj } − ˘q1j )Ai ˆw1i
+
+E(∑ 
+
+> i
+
+1{i ∈ Ij }Ai ˆw1i) + op(n−1/2).
+
+Combining the preceding two displays yields log ˆS1k, wKM − log ˘S1k, wKM =
+
+> k
+
+∑
+
+> j=1
+
+{log(1 − ˆq1j ) − log(1 − ˘q1j )}
+
+=
+
+> k
+
+∑
+
+> j=1
+
+−1
+
+E(∑  
+
+> i∈Ij\Jj
+
+Ai ˆw1i)
+
+> n
+
+∑
+
+> i=1
+
+1{i ∈ Ij }(1 {i ∈ Jj } − ˘q1j )Ai ˆw1i + op(n−1/2)= 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+˘ϕ1ki, wKM + op(n−1/2),
+
+where ˘ϕ1ki, wKM = n
+
+> k
+
+∑
+
+> j=1
+
+−Ai ˆw1i
+
+E(∑  
+
+> i∈Ij\Jj
+
+Ai ˆw1i) 1{i ∈ Ij }(1 {i ∈ Jj } − ˘q1j ).
+
+With the approximation of ˘ ϕ1ki, wKM by ˆ ϕ1ki, wKM , we see that a consistent variance estimator for log ˆS1k, wKM is 1
+
+> n2
+
+∑ni=1 ˆϕ21ki, wKM .The function survfit() in R package survival also enables model-robust variance estimation for survival probabilities after fitting proportional hazards models, but the formula appears to in general differ from that derived from a Taylor expansion as discussed in Tan (2023), Supplement Section I.1. 
+
+Proof of Proposition 1. First, we show that the augmented IPW estimator ˆS1k(ˆ γ, ˆρ1,1: k, CAL ,
+
+ˆη1,1: k, CAL ) coincides with the ICE estimator ˆS1k(ˆ η1,1: k, CAL ). By definitions (17) and (18), the fitted values ˆ π1ji, CAL = ˆρ1j, CAL and ˆm1ji, CAL = ˆη1j, CAL are constant in i. Then the identity ˆS1k(ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL ) = ˆS1k(ˆ η1,1: k, CAL ) follows by applying the equations (20) to the expres-sions (11) and (13). Second, we show that the ICE estimator ˆS1k(ˆ η1,1: k, CAL ) coincides with the weighted Kaplan–Meier estimator ˆS1k, wKM . Solving equation (20) for individual 0 ≤ ℓ ≤ k − 1 yields ˆη1,ℓ +1 ,CAL =
+
+∑ni=1 Ai 
+
+> ˆπi
+
+Rℓ+1 ,i 1{U (1)  
+
+> i
+
+> u ℓ+1 }
+
+∑ni=1 Ai 
+
+> ˆπi
+
+Rℓ+1 ,i 1{U (1)  
+
+> i
+
+> u ℓ} ,
+
+which can be expressed in the notation of Section 3 as ˆη1,ℓ +1 ,CAL =
+
+∑ 
+
+> i∈Iℓ+1 \Jℓ+1
+
+Ai ˆw1i
+
+∑ 
+
+> i∈Iℓ+1
+
+Ai ˆw1i
+
+= 1 − ˆq1,ℓ +1 . (S17) 5Then by definition (15), ˆS1k(ˆ η1,1: k, CAL ) = 
+
+> k−1
+
+∏
+
+> ℓ=0
+
+ˆη1,ℓ +1 ,CAL =
+
+> k−1
+
+∏
+
+> ℓ=0
+
+∑ 
+
+> i∈Iℓ+1 \Jℓ+1
+
+Ai ˆw1i
+
+∑ 
+
+> i∈Iℓ+1
+
+Ai ˆw1i
+
+= ˆS1k, wKM .
+
+Third, we show that the augmented IPW estimator ˆS1k(ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL ) coincides with the IPW estimator ˆS1k(ˆ γ, ˆρ1,1: k, CAL ) under the normalization condition. The identity ˆS1k(ˆ γ, ˆρ1,1: k, CAL ,
+
+ˆη1,1: k, CAL ) = ˆS1k(ˆ γ, ˆρ1,1: k, CAL ) follow by applying the equations (19) to the expressions (11) and (12) and using ∑ni=1 ( Ai 
+
+> ˆπi
+
+− 1) = 0 by the assumption ∑ni=1 Ai ˆπ−1 
+
+> i
+
+= n. This completes the proof of Proposition 1. For completeness, we also verify directly that the weighted Kaplan–Meier estimator ˆS1k, wKM 
+
+coincides with the IPW estimator ˆS1k(ˆ γ, ˆρ1,1: k, CAL ) under the normalization condition. Solving equation (19) for individual 0 ≤ ℓ ≤ k − 1 yields ˆρ1,ℓ +1 ,CAL =
+
+∑ni=1 Ai 
+
+> ˆπi
+
+Rℓi Rℓ+1 ,i 1{U (1)  
+
+> i
+
+> u ℓ}
+
+∑ni=1 Ai 
+
+> ˆπi
+
+Rℓi 1{U (1)  
+
+> i
+
+> u ℓ} ,
+
+which can be expressed in the notation of Section 3 ( ˆ w1i = ˆ π−1 
+
+> i
+
+) as ˆρ1,ℓ +1 ,CAL =
+
+∑ 
+
+> i∈Iℓ+1
+
+Ai ˆw1i
+
+∑ 
+
+> i∈Iℓ\Jℓ
+
+Ai ˆw1i
+
+, (S18) due to the following relationship 
+
+{i ∈ Iℓ \ Jℓ, A i = 1 } = {Yi ≥ uℓ, (Yi, ∆i) 6 = ( uℓ, 1) , A i = 1 }
+
+= {Yi ≥ uℓ, U (1)  
+
+> i
+
+> u ℓ, A i = 1 } = {Rℓi = 1 , U (1)  
+
+> i
+
+> u ℓ, A i = 1 }.
+
+(S19) Then by definition (14), ˆS1k(ˆ γ, ˆρ1,1: k, CAL ) = 
+
+> 1
+> n
+
+∑ni=1 Ai 
+
+> ˆπi
+
+Rki 1{U (1)  
+
+> i
+
+> u k}
+
+∏k−1 
+
+> ℓ=0
+
+ˆρ1,ℓ +1 ,CAL 
+
+=
+
+> 1
+> n
+
+∑ 
+
+> i∈Ik\Jk
+
+Ai ˆw1i
+
+∏k−1    
+
+> ℓ=0
+> ∑
+> i∈Iℓ+1 Aiˆw1i
+> ∑
+> i∈Iℓ\JℓAiˆw1i
+
+=
+
+> 1
+> n
+
+∑ 
+
+> i∈I0\J0
+
+Ai ˆw1ik−1∏
+
+> ℓ=0
+
+∑ 
+
+> i∈Iℓ+1 \Jℓ+1
+
+Ai ˆw1i
+
+∑ 
+
+> i∈Iℓ+1
+
+Ai ˆw1i
+
+= ˆS1k, wKM ,
+
+Note that I0 = {1 ≤ i ≤ n} and J0 = ∅ because P (U (a) > u 0) = 1 for a = 0 , 1 in our setup (Section 2). The last step above follows because ∑ 
+
+> i∈I0\J0
+
+Ai ˆw1i = ∑ni=1 Ai ˆw1i = n by assumption. 
+
+Proof of properties (i) and (ii) in Section II. (i) Suppose that model (17) is correctly specified. Then for any j = 1 , . . . , k ,
+
+P (C(1) ≥ uj |U (1) , X, A = 1) = P (C(1) ≥ uj |X, A = 1) = P (C(1) ≥ uj |A = 1) ,
+
+6where the first equality follows from Assumption (2), and the second follows from model (17). The above equation holds for any X, and hence implies that for any j = 1 , . . . , k ,
+
+P (C(1) ≥ uj |U (1) , A = 1) = P (C(1) ≥ uj |A = 1) .
+
+This is Assumption (S4) provided that the behavior of C(1) is restricted up to time uk.(ii) Suppose that model (18) is correctly specified. Then for any j = 1 , . . . , k ,
+
+P (U (1) > u j |C(1) , X, A = 1) = P (U (1) > u j |X, A = 1) = P (U (1) > u j |A = 1) ,
+
+where the first equality follows from Assumption (2), and the second follows from model (18). The above equation holds for any X, and hence implies that for any j = 1 , . . . , k ,
+
+P (U (1) > u j |C(1) , A = 1) = P (U (1) > u j |A = 1) .
+
+This is Assumption (S4) provided that the behavior of U (1) is restricted up to time uk+1 . Moreover, for any j = 1 , . . . , k ,
+
+P (U (1) > u j |X) = P (U (1) > u j |X, A = 1) = P (U (1) > u j |A = 1) ,
+
+where the first equality follows from Assumption (1), and the second follows from model (18) as indicated earlier. The above equation holds for any X, and hence implies that for any j = 1 , . . . , k ,
+
+P (U (1) > u j ) = P (U (1) > u j |A = 1) .
+
+This is Assumption (S3) provided that the behavior of U (1) is restricted up to time uk+1 .
+
+Proof of Proposition 2. The consistency of ˆVr( ˆS1k, wKM ) follows from the derivation as a model-robust variance estimator. To show the consistency of ˆVr( ˆS1k(ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL )), let (˘ ρ1,1: k, CAL , ˘η1,1: k, CAL ) be the limit values of (ˆ ρ1,1: k, CAL , ˆη1,1: k, CAL ), which are determined as the solu-tions to the population version of the equations (19) and (20): 0 = E
+
+[
+
+1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+Ai
+
+ˆπi
+
+Rℓi 
+
+(Rℓ+1 ,i 
+
+ρ1,ℓ +1 
+
+− 1
+
+)
+
+1{U (1)  
+
+> i
+
+> u ℓ}
+
+]
+
+, ℓ = 0 , . . . , k − 1, (S20) 0 = E
+
+[
+
+1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+Ai
+
+ˆπi
+
+Rℓ+1 ,i 1{U (1)  
+
+> i
+
+> u ℓ}(1 {U (1)  
+
+> i
+
+> u ℓ+1 − η1,ℓ +1 )
+
+]
+
+, ℓ = 0 , . . . , k − 1, (S21) By a Taylor expansion, the estimator ˆS1k(ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL ) can be shown to satisfy the follow-7ing asymptotic expansion: ˆS1k(ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL ) = ˆS1k(ˆ γ, ˘ρ1,1: k, CAL , ˘η1,1: k, CAL )+ E
+
+{ ∂
+
+∂ρ 1,1: k
+
+ˆS1k(ˆ γ, ρ 1,1: k, η 1,1: k)
+
+}T ∣∣∣˘ρ1,1: k, CAL ,˘η1,1: k, CAL 
+
+(ˆ ρ1,1: k, CAL − ˘ρ1,1: k, CAL )+ E
+
+{ ∂
+
+∂η 1,1: k
+
+ˆS1k(ˆ γ, ρ 1,1: k, η 1,1: k)
+
+}T ∣∣∣˘ρ1,1: k, CAL ,˘η1,1: k, CAL 
+
+(ˆ η1,1: k, CAL − ˘η1,1: k, CAL ) + op(n−1/2),
+
+(S22) where ˆS1k(ˆ γ, ρ 1,1: k, η 1,1: k) is defined as S1k(ˆ γ, ˆρ1,1: k, ˆη1,1: k) with (ˆ ρ1,1: k, ˆη1,1: k) replaced by ( ρ1,1: k,η1,1: k). Because π1j (Xi; ρ1j ) = ρ1j and m1j (Xi; η1j ) = η1j are constant in i, it is easily verified that 0 = E
+
+{ ∂
+
+∂ρ 1,1: k
+
+ˆS1k(ˆ γ, ρ 1,1: k, η 1,1: k)
+
+} ∣∣∣˘ρ1,1: k, CAL ,˘η1,1: k, CAL 
+
+,
+
+0 = E
+
+{ ∂
+
+∂η 1,1: k
+
+ˆS1k(ˆ γ, ρ 1,1: k, η 1,1: k)
+
+} ∣∣∣˘ρ1,1: k, CAL ,˘η1,1: k, CAL 
+
+,
+
+using equations (S20), (S21) and E(∑ni=1 Ai ˆπ−1
+
+i ) = n. The derivatives involved are, for j = 1 , . . . , k ,
+
+∂
+
+∂ρ 1j
+
+ˆS1k(ˆ γ, ρ 1,1: k, η 1,1: k)= −
+
+k−1∑
+
+ℓ=j−1
+
+{ ∏ kj′=ℓ+2 η1j′
+
+ρ1j
+
+∏ℓ+1 
+
+j′=1 ρ1j′
+
+× 1
+
+n
+
+n∑
+
+i=1 
+
+Ai
+
+ˆπi
+
+Rℓ+1 ,i 1{U (1) 
+
+i > u ℓ}(1 {U (1) 
+
+i > u ℓ+1 − η1,ℓ +1 )
+
+}
+
+,∂
+
+∂η 1j
+
+ˆS1k(ˆ γ, ρ 1,1: k, η 1,1: k)= −
+
+j−1∑
+
+ℓ=0 
+
+{ ∏ kj′=ℓ+1 ,j ′6 =j η1j′
+
+∏ℓj′=1 ρ1j′
+
+× 1
+
+n
+
+n∑
+
+i=1 
+
+Ai
+
+ˆπi
+
+Rℓi 
+
+( Rℓ+1 ,i 
+
+ρ1,ℓ +1 
+
+− 1
+
+)
+
+1{U (1) 
+
+i > u ℓ}
+
+}
+
+−
+
+k∏
+
+j′=1 ,j ′6 =j
+
+η1j′ × 1
+
+n
+
+n∑
+
+i=1 
+
+( Ai
+
+ˆπi
+
+− 1
+
+)
+
+,
+
+where a product over an empty index set (e.g., ∏kj′=k+1 η1j′ ) is taken to be 1. These expressions are obtained by straightforward differentiation of ˆS1k(ˆ γ, ˆρ1,1: k, ˆη1,1: k) in Equation (11). See Section III for related expressions in the case of k = 2. Therefore, the simple asymptotic expansion holds: ˆS1k(ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL ) = ˆS1k(ˆ γ, ˘ρ1,1: k, CAL , ˘η1,1: k, CAL ) + op(n−1/2),
+
+which implies the consistency of the variance estimator ˆVr( ˆS1k(ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL )) under stan-dard regularity conditions. Next, we show that if ∑ni=1 Ai ˆπ−1
+
+i = n, then ˆVr( ˆS1k(ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL )) algebraically coin-cides with ˆVr( ˆS1k, wKM ). Note that ˆS1k(ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL ) = ˆ η1k, CAL . By comparing the expres-sions in (7) and (16), it suffices to show 
+
+ϕ1ki (ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL ) − ˆη1k, CAL = ˆ S1k, wKM ˆϕ1ki, wKM ,
+
+8or to show that for 0 ≤ ℓ ≤ k − 1, 
+
+Ai
+
+ˆπi
+
+Rℓ+1 ,i 
+
+ˆρ1,ℓ +1 ,CAL 
+
+ˆη1,ℓ +2 ,CAL 1{U (1) 
+
+i > u ℓ}(1 {U (1) 
+
+i > u ℓ+1 } − ˆη1,ℓ +1 ,CAL )= n ˆS1k, wKM 
+
+−Ai ˆw1i
+
+∑
+
+τ ∈Iℓ+1 \Jℓ+1 Aτ ˆw1τ
+
+1{i ∈ Iℓ+1 }(1 {i ∈ Jℓ+1 } − ˆq1,ℓ +1 ).
+
+In fact, the relationship (S19) and the expression (S17) indicate 
+
+AiRℓ+1 ,i 1{U (1) 
+
+i > u ℓ+1 } = Ai1{i ∈ Iℓ+1 \ Jℓ+1 } = Ai1{i ∈ Iℓ+1 }(1 − 1{i ∈ Jℓ+1 }),AiRℓ+1 ,i 1{U (1) 
+
+i > u ℓ} = Ai1{i ∈ Iℓ+1 },
+
+ˆη1,ℓ +1 ,CAL = 1 − ˆq1,ℓ +1 ,
+
+and hence 
+
+Ai
+
+ˆπi
+
+1{U (1) 
+
+i > u ℓ}(1 {U (1) 
+
+i > u ℓ+1 } − ˆη1,ℓ +1 ,CAL )= −Ai ˆw1i1{i ∈ Iℓ+1 }(1 {i ∈ Jℓ+1 } − ˆq1,ℓ +1 ).
+
+(S23) Moreover, direct calculation using the expressions (S18) and (S17) yields 1
+
+n
+
+1
+
+ˆρ1,ℓ +1 ,CAL 
+
+ˆη1,ℓ +2 ,CAL = 1
+
+n
+
+1
+
+∏ℓj=0 
+
+∑ 
+
+> i∈Ij+1
+
+Ai ˆw1i
+
+∑  
+
+> i∈Ij\Jj
+
+Ai ˆw1i
+
+ˆη1,ℓ +2 ,CAL 
+
+=
+
+
+
+ℓ∏
+
+j=0 
+
+∑
+
+i∈Ij+1 \Jj+1 Ai ˆw1i
+
+∑
+
+i∈Ij+1 Ai ˆw1i
+
+ 1
+
+∑
+
+i∈Iℓ+1 \Jℓ+1 Ai ˆw1i
+
+ˆη1,ℓ +2 ,CAL 
+
+= ˆ η1,ℓ +1 ,CAL 
+
+1
+
+∑
+
+i∈Iℓ+1 \Jℓ+1 Ai ˆw1i
+
+ˆη1,ℓ +2 ,CAL 
+
+= ˆS1k, wKM 
+
+1
+
+∑
+
+τ ∈Iℓ+1 \Jℓ+1 Aτ ˆw1τ
+
+(S24) where the second equality uses the assumption ∑ni=1 Ai ˆπ−1
+
+i = n. Combining the two displays (S23) and (S24) gives the desired result. 
+
+Proof of Proposition 3. To account for the sampling variation of ˆ γ, an asymptotic expansion for ˆS1k(ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL ) can be obtained with an additional term from (S22): ˆS1k(ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL ) = ˆS1k(˘ γ, ˘ρ1,1: k, CAL , ˘η1,1: k, CAL )+ E
+
+{ ∂
+
+∂γ ˆS1k(γ, ρ 1,1: k, η 1,1: k)
+
+}T ∣∣∣˘γ, ˘ρ1,1: k, CAL ,˘η1,1: k, CAL 
+
+(ˆ γ − ˘γ)+ E
+
+{ ∂
+
+∂ρ 1,1: k
+
+ˆS1k(γ, ρ 1,1: k, η 1,1: k)
+
+}T ∣∣∣˘γ, ˘ρ1,1: k, CAL ,˘η1,1: k, CAL 
+
+(ˆ ρ1,1: k, CAL − ˘ρ1,1: k, CAL )+ E
+
+{ ∂
+
+∂η 1,1: k
+
+ˆS1k(γ, ρ 1,1: k, η 1,1: k)
+
+}T ∣∣∣˘γ, ˘ρ1,1: k, CAL ,˘η1,1: k, CAL 
+
+(ˆ η1,1: k, CAL − ˘η1,1: k, CAL ) + op(n−1/2),
+
+(S25) where (˘ γ, ˘ρ1,1: k, CAL , ˘η1,1: k, CAL ) are the limit values of (ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL ). Then (S20) and (S21) 9are satisfied with ˆ πi replaced by ˘ πi = π(Xi; ˘ γ). Similarly as in the proof of Proposition 2, it can be shown that 0 = E
+
+{ ∂
+
+∂ρ 1,1: k
+
+ˆS1k(γ, ρ 1,1: k, η 1,1: k)
+
+} ∣∣∣˘γ, ˘ρ1,1: k, CAL ,˘η1,1: k, CAL 
+
+,
+
+0 = E
+
+{ ∂
+
+∂η 1,1: k
+
+ˆS1k(γ, ρ 1,1: k , η 1,1: k)
+
+} ∣∣∣˘γ, ˘ρ1,1: k, CAL ,˘η1,1: k, CAL 
+
+,
+
+using equations (S20), (S21) and E(Aπ (X; ˘ γ)−1) = 1. Moreover, if model (18) is correctly specified, then it can be shown using (13) that 
+
+E
+
+{ ∂
+
+∂γ ˆS1k(γ, ρ 1,1: k, η 1,1: k)
+
+} ∣∣∣˘γ, ˘ρ1,1: k, CAL ,˘η1,1: k, CAL 
+
+= E
+
+[ 1
+
+n
+
+> n
+
+∑
+
+> i=1
+> k−1
+
+∑
+
+> ℓ=0
+
+∂π (Xi; γ)
+
+∂γ 
+
+−Ai
+
+π(Xi; γ)2
+
+Rℓ+1 ,i 
+
+ρ1,ℓ +1 
+
+η1,ℓ +2 
+
+× 1{U (1)  
+
+> i
+
+> u ℓ}(1 {U (1)  
+
+> i
+
+> u ℓ+1 } − η1,ℓ +1 )
+
+]∣ ∣∣˘γ, ˘ρ1,1: k, CAL ,˘η1,1: k, CAL 
+
+= 0 .
+
+By combining the preceding two displays, if model (18) is correctly specified, then the asymptotic expansion (S25) reduces to ˆS1k(ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL ) = ˆS1k(˘ γ, ˘ρ1,1: k, CAL , ˘η1,1: k, CAL ) + op(n−1/2).
+
+Next, if model (18) is correctly specified, then from the preceding expansion, the asymptotic variance of ˆS1k(ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL ) is determined as 
+
+E
+
+[{ ˆS1k(˘ γ, ˘ρ1,1: k, CAL , ˘η1,1: k, CAL ) − S1k
+
+}2]
+
+= 1
+
+n2 E
+
+
+
+> n
+
+∑
+
+> i=1
+
+{k−1∑
+
+> ℓ=0
+
+Ai
+
+˘πi
+
+Rℓ+1 ,i 
+
+˘ρ1,ℓ +1 ,CAL 
+
+˘η1,ℓ +2 ,CAL 1{U (1)  
+
+> i
+
+> u ℓ}(1 {U (1)  
+
+> i
+
+> u ℓ+1 } − ˘η1,ℓ +1 ,CAL )
+
+}2
+
+= 1
+
+n2 E
+
+[ n∑
+
+> i=1
+> k−1
+
+∑
+
+> ℓ=0
+
+Ai
+
+(˘ πi)2
+
+Rℓ+1 ,i 
+
+(˘ ρ1,ℓ +1 ,CAL )2 (˘ η1,ℓ +2 ,CAL )21{U (1)  
+
+> i
+
+> u ℓ}(1 {U (1)  
+
+> i
+
+> u ℓ+1 } − ˘η1,ℓ +1 ,CAL )2
+
+]
+
+= 1
+
+n2 E
+
+[ n∑
+
+> i=1
+> k−1
+
+∑
+
+> ℓ=0
+
+Ai
+
+(˘ πi)2
+
+Rℓ+1 ,i 
+
+(˘ ρ1,ℓ +1 ,CAL )2 (˘ η1,ℓ +2 ,CAL )2 ˘η1,ℓ +1 ,CAL (1 − ˘η1,ℓ +1 ,CAL )
+
+]
+
+.
+
+With model (18) correctly specified, the first equality above follows because S1k = ˘ ρ1k, CAL and the individual observations are independent across i, the second equality follows because the individual terms 
+
+Ai
+
+˘πi
+
+Rℓ+1 ,i 
+
+˘ρ1,ℓ +1 ,CAL 
+
+˘η1,ℓ +2 ,CAL 1{U (1)  
+
+> i
+
+> u ℓ}(1 {U (1)  
+
+> i
+
+> u ℓ+1 } − ˘η1,ℓ +1 ,CAL )are uncorrelated across ℓ, and the third equality follows because 
+
+E{(1 {U (1)  
+
+> i
+
+> u ℓ+1 } − ˘η1,ℓ +1 ,CAL )2|Rℓ+1 ,i = 1 , X i, A i = 1) 10 = ˘ η1,ℓ +1 ,CAL (1 − ˘η1,ℓ +1 ,CAL ).
+
+Then the asymptotic variance of ˆS1k(ˆ γ, ˆρ1,1: k, CAL , ˆη1,1: k, CAL ) can be consistently estimated by 1
+
+n2
+
+n∑
+
+i=1 
+
+k−1∑
+
+ℓ=0 
+
+Ai
+
+(ˆ πi)2
+
+Rℓ+1 ,i 
+
+(ˆ ρ1,ℓ +1 ,CAL )2 (ˆ η1,ℓ +2 ,CAL )2 ˆη1,ℓ +1 ,CAL (1 − ˆη1,ℓ +1 ,CAL ),
+
+which we show is algebraically identical to ˆVb( ˆS1k, wKM ). By comparing the preceding display and the expression in (6), it suffices to show that for 0 ≤ ℓ ≤ k − 1, 1
+
+n2
+
+n∑
+
+i=1 
+
+Ai
+
+(ˆ πi)2
+
+Rℓ+1 ,i 
+
+(ˆ ρ1,ℓ +1 ,CAL )2 (ˆ η1,ℓ +2 ,CAL )2 ˆη1,ℓ +1 ,CAL (1 − ˆη1,ℓ +1 ,CAL )= ˆS21k, wKM 
+
+∑
+
+i∈Iℓ+1 Ai ˆw21i
+
+(∑
+
+i∈Iℓ+1 Ai ˆw1i)2
+
+ˆq1,ℓ +1 
+
+1 − ˆq1,ℓ +1 
+
+.
+
+This can be verified by combining the following equations: 
+
+n∑
+
+i=1 
+
+Ai
+
+(ˆ πi)2 Rℓ+1 ,i = ∑
+
+i∈Iℓ+1 
+
+Ai ˆw21i,
+
+1
+
+n
+
+1
+
+ˆρ1,ℓ +1 ,CAL 
+
+ˆη1,ℓ +2 ,CAL = ˆS1k, wKM 
+
+1
+
+∑
+
+τ ∈Iℓ+1 \Jℓ+1 Aτ ˆw1τ
+
+,
+
+ˆη1,ℓ +1 ,CAL (1 − ˆη1,ℓ +1 ,CAL ) = (∑
+
+i∈Iℓ+1 \Jℓ+1 Ai ˆw1i)2
+
+(∑
+
+i∈Iℓ+1 Ai ˆw1i)2
+
+ˆq1,ℓ +1 
+
+1 − ˆq1,ℓ +1 
+
+,
+
+where the first equality follows by definition, the second equality follows from (S24), and the third equality follows from the expression (S17). 
+
+Proof of Proposition 4. To account for the sampling variations of ˆξCAL = (ˆ γ1,CAL , ˆρ1,1: k, CAL ,
+
+ˆη1,1: k, CAL , ˆα1k, CAL ) about the limit values ˘ξCAL = (˘ γ1,CAL , ˘ρ1,1: k, CAL , ˘η1,1: k, CAL , ˘α1k, CAL ), an asymptotic expansion for ˆS1k, CAL = ˆS1k(ˆξCAL ) can be obtained as ˆS1k(ˆξCAL ) = ˆS1k(˘ξCAL )+ E
+
+{ ∂
+
+∂γ ˆS1k(ξ)
+
+}T ∣∣∣˘ξCAL 
+
+(ˆ γ1,CAL − ˘γ1,CAL )+ E
+
+{ ∂
+
+∂ρ 1,1: k
+
+ˆS1k(ξ)
+
+}T ∣∣∣˘ξCAL 
+
+(ˆ ρ1,1: k, CAL − ˘ρ1,1: k, CAL )+ E
+
+{ ∂
+
+∂η 1,1: k
+
+ˆS1k(ξ)
+
+}T ∣∣∣˘ξCAL 
+
+(ˆ η1,1: k, CAL − ˘η1,1: k, CAL )+ E
+
+{ ∂
+
+∂α 1k
+
+ˆS1k(ξ)
+
+}T ∣∣∣˘ξCAL 
+
+(ˆ α1k, CAL − ˘α1k, CAL ) + op(n−1/2),
+
+(S26) where ξ = ( γ, ρ 1,1: k, η 1,1: k, α 1k). The limit values ˘ξCAL are jointly determined as the solutions to the population version of the equations (19), (20), (28), and (30) for ˆξCAL :0 = E
+
+[
+
+1
+
+n
+
+n∑
+
+i=1 
+
+Ai
+
+π(Xi; γ) Rℓi 
+
+( Rℓ+1 ,i 
+
+ρ1,ℓ +1 
+
+− 1
+
+)
+
+1{U (1) 
+
+i > u ℓ}
+
+]
+
+, ℓ = 0 , . . . , k − 1, (S27) 11 0 = E
+
+[
+
+1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+Ai
+
+π(Xi; γ) Rℓ+1 ,i 1{U (1)  
+
+> i
+
+> u ℓ}(1 {U (1)  
+
+> i
+
+> u ℓ+1 − η1,ℓ +1 )
+
+]
+
+, ℓ = 0 , . . . , k − 1, (S28) 0 = E
+
+[
+
+1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{ Ai
+
+π(Xi; γ) − 1
+
+}
+
+f (Xi)
+
+]
+
+, (S29) 0 = E
+
+[
+
+1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+Ai
+
+1 − π(Xi; γ)
+
+π(Xi; γ)
+
+{ ˆU (1)  
+
+> ki
+
+(ρ1,1: k, η 1,1: k) − μ1k(Xi; α1k )
+
+}
+
+f (Xi)
+
+]
+
+, (S30) where ˆU (1)  
+
+> ki
+
+(ρ1,1: k, η 1,1: k) is defined as ˆU (1)  
+
+> ki
+
+(ˆ ρ1,1: k, ˆη1,1: k) with (ˆ ρ1,1: k, ˆη1,1: k) replaced by ( ρ1,1: k, η 1,1: k). First, similarly as in the proof of Proposition 2, it can be shown that 0 = E
+
+{ ∂
+
+∂ρ 1,1: k
+
+ˆS1k(ξ)
+
+} ∣∣∣˘ξCAL 
+
+,
+
+0 = E
+
+{ ∂
+
+∂η 1,1: k
+
+ˆS1k(ξ)
+
+} ∣∣∣˘ξCAL 
+
+,
+
+using equations (S27), (S28) and E(Aπ (X; ˘ γ)−1) = 1 from (S29) with f including an intercept. Second, it can be shown using the expression of ϕ1ki (ξ) and (S30) that 
+
+E
+
+{ ∂
+
+∂γ ˆS1k(ξ)
+
+} ∣∣∣˘ξCAL 
+
+= E
+
+[ 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+∂π (Xi; γ)
+
+∂γ 
+
+−Ai
+
+π(Xi; γ)2
+
+{ ˆU (1)  
+
+> ki
+
+(ρ1,1: k, η 1,1: k) − μ1k(Xi; α1k)
+
+} ]∣ ∣∣˘ξCAL 
+
+= 0 ,
+
+where ∂π (Xi;γ) 
+
+> ∂γ
+> 1
+> π(Xi;γ)2
+
+= 1−π(Xi;γ) 
+
+> π(Xi;γ)
+
+f (Xi) for logistic regression (3). Second, if model (3) is correctly specified, then it can be shown using the expression of ϕ1ki (ξ) that 
+
+E
+
+{ ∂
+
+∂α 1k
+
+ˆS1k(ξ)
+
+} ∣∣∣˘ξCAL 
+
+= E
+
+[ −1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{ Ai
+
+π(Xi; γ) − 1
+
+} ∂μ 1k(Xi; α1k )
+
+∂α 1k
+
+]∣ ∣∣˘ξCAL 
+
+= 0 .
+
+(S31) By combining the preceding three displays, if model (3) is correctly specified, then the asymptotic expansion (S26) reduces to (32): ˆS1k(ˆξCAL ) = ˆS1k(˘ξCAL ) + op(n−1/2).
+
+From this asymptotic expansion, the consistency of the variance estimator (33) can be verified by standard arguments. 
+
+Proof of Proposition 5. The result can be shown similarly as Proposition 4, except for the following modification. Equation (S31) can be obtained using (S29) but without requiring model 12 (3) to be correctly specified: 
+
+E
+
+{ ∂
+
+∂α 1k
+
+ˆS1k(ξ)
+
+} ∣∣∣˘ξCAL 
+
+= E
+
+[ −1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{ Ai
+
+π(Xi; γ) − 1
+
+} ∂μ 1k(Xi; α1k )
+
+∂α 1k
+
+]∣ ∣∣˘ξCAL 
+
+= E
+
+[ −1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{ Ai
+
+π(Xi; γ) − 1
+
+}
+
+f (Xi)
+
+]∣ ∣∣˘ξCAL 
+
+= 0 ,
+
+because ∂μ 1k (Xi;α1k ) 
+
+> ∂α 1k
+
+= f (Xi) for linear regression (34). 
+
+Proof of equation (36) . By the definitions of ˆS1k, CAL, lin and ˆS1k(ˆ γ1,CAL , ˆρ1,1: k, CAL , ˆη1,1: k, CAL )in (24) and (11), the only difference between these two estimators lies in their final terms, namely, 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+( Ai
+
+ˆπi
+
+− 1)ˆ μ1ki and 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{( Ai
+
+ˆπi
+
+− 1) 
+
+> k
+
+∏
+
+> j=1
+
+ˆm1ji }.
+
+Under linear OR model (34) and constant CSP model (18), these two terms can be rewritten as 1
+
+n ˆαT
+
+> 1k, CAL
+> n
+
+∑
+
+> i=1
+
+( Ai
+
+ˆπi
+
+− 1) f (X) and 1
+
+n
+
+> k
+
+∏
+
+> j=1
+
+ˆη1j, CAL 
+
+> n
+
+∑
+
+> i=1
+
+( Ai
+
+ˆπi
+
+− 1) .
+
+By the definition of ˆ γ1,CAL in (28) and noting that f (X) includes a constant term, both expressions equals 0. Therefore, ˆS1k, CAL, lin = ˆS1k(ˆ γ1,CAL , ˆρ1,1: k, CAL , ˆη1,1: k, CAL ). The equality between ˆS1k(ˆ γ1,CAL , ˆρ1,1: k, CAL , ˆη1,1: k, CAL ) and ˆSwKM (ˆ γ1,CAL ) follows directly from Proposition 1. This completes the proof. 
+
+Proof of Proposition 6. Suppose that model (3) is correctly specified, with the true value 
+
+γ∗. From Proposition 4, the calibrated estimator ˆSak, CAL satisfies the asymptotic expansion ˆSak, CAL = ˆSak (˘ γa, CAL , ˘ρa, 1: k, CAL , ˘ηa, 1: k, CAL , ˘αak, CAL ) + op(n−1/2)= 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+ϕaki (˘ γa, CAL , ˘ρa, 1: k, CAL , ˘ηa, 1: k, CAL , ˘αak, CAL )
+
+︸ ︷︷ ︸
+
+> ˘ϕaki
+
++op(n−1/2). (S32) The limit value of ˆSak, CAL , denoted as ˘Sak, CAL , coincides with Sak if models (3) and (17) are correctly specified but may differ from Sak otherwise. From Tan (2020), the calibrated estimator ˆWak, CAL is consistent for ˘Wak, CAL = Wak (because model (3) is correctly specified) and satisfies the asymptotic expansion ˆWak, CAL = ˆWak (˘ γa, CAL , ˘βak, CAL ) + op(n−1/2)= 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+ψaki (˘ γa, CAL , ˘βak, CAL )
+
+︸ ︷︷ ︸
+
+> ˘ψaki
+
++op(n−1/2), (S33) 13 where (˘ γa, CAL , ˘βak, CAL ) are the limit values of (ˆ γa, CAL , ˆβak, CAL ), and ˘ γa, CAL = γ∗.By standard arguments in theory of M-estimation, it can be shown that ˆθCAL converges in probability to a limit value ˘θCAL , which is determined as a solution to 0 = 
+
+K∑
+
+k=1 
+
+W1kW0k
+
+W1keθ + W0k
+
+(˘ q1k, CAL − ˘q0k, CAL eθ), (S34) where ˘ qak, CAL = ( ˘ Sa,k −1,CAL − ˘Sak, CAL )/ ˘Sa,k −1,CAL . The limit value ˘θCAL coincides with ˘θwBP if models (3) and (17) are correctly specified and hence ˘Sak, CAL = Sak but may differ from ˘θwBP otherwise. Moreover, ˆθCAL satisfies the asymptotic expansion ˆθCAL − ˘θCAL 
+
+= HCAL (θ)−1
+
+K∑
+
+k=1 
+
+{ ˆW1k, CAL ˆW0k, CAL 
+
+ˆW1k, CAL eθ + ˆ W0k, CAL 
+
+(ˆ q1k, CAL − ˆq0k, CAL eθ )
+
+} ∣∣∣˘θCAL 
+
++ op(n−1/2), (S35) where 
+
+HCAL (θ) = ( −1) d
+
+dθ
+
+K∑
+
+k=1 
+
+W1kW0k
+
+W1keθ + W0k
+
+(˘ q1k, CAL − ˘q0k, CAL eθ)=
+
+K∑
+
+k=1 
+
+W1kW0keθ
+
+(W1keθ + W0k)2 (W1k ˘q1k, CAL + W0k ˘q0k, CAL ).
+
+We show that 
+
+K∑
+
+k=1 
+
+ˆW1k, CAL ˆW0k, CAL 
+
+ˆW1k, CAL eθ + ˆW0k, CAL 
+
+(ˆ q1k, CAL − ˆq0k, CAL eθ )
+
+∣∣∣˘θCAL 
+
+= 1
+
+n
+
+n∑
+
+i=1 
+
+K∑
+
+k=1 
+
+˘ϕki (˘θCAL ) + op(n−1/2), (S36) where ˘ ϕki (θ) is defined as ˆ ϕki (θ) prior to Proposition 6, with ˆWak, CAL replaced by Wak , ˆ qak, CAL 
+
+replaced by ˘ qak, CAL , ˆ ϕaki replaced by ˘ ϕaki , and ˆψaki replaced by ˘ψaki , i.e., ˘ϕki (θ) = W0kW1k
+
+W1keθ + W0k
+
+(
+
+− ˘ϕ1ki + (1 − ˘q1k, CAL ) ˘ ϕ1,k −1,i 
+
+˘S1,k −1,CAL 
+
+)
+
+− W0kW1keθ
+
+W1keθ + W0k
+
+(
+
+− ˘ϕ0ki + (1 − ˘q0k, CAL ) ˘ ϕ0,k −1,i 
+
+˘S0,k −1,CAL 
+
+)
+
++ ˘q1k, CAL − ˘q0k, CAL eθ
+
+(W1keθ + W0k)2
+
+{
+
+W 20k( ˘ψ1ki − W1k) + e θ W 21k( ˘ψ0ki − W0k)
+
+}
+
+.
+
+Combining (S35) and (S36) then yields ˆθCAL − ˘θCAL = HCAL (θ)−1
+
+K∑
+
+k=1 
+
+˘ϕki (˘θCAL )
+
+∣∣∣˘θCAL 
+
++ op(n−1/2),
+
+from which the consistency of the variance estimator (47) for the asymptotic variance of ˆθCAL can be deduced by standard arguments. 14 To show (S36), consider the decomposition 
+
+K∑
+
+k=1 
+
+ˆW1k, CAL ˆW0k, CAL 
+
+ˆW1k, CAL eθ + ˆW0k, CAL 
+
+(ˆ q1k, CAL − ˆq0k, CAL eθ)=
+
+K∑
+
+k=1 
+
+[ ˆW1k, CAL ˆW0k, CAL 
+
+ˆW1k, CAL eθ + ˆW0k, CAL 
+
+(ˆ q1k, CAL − ˘q1k, CAL )
+
+− ˆW1k, CAL ˆW0k, CAL eθ
+
+ˆW1k, CAL eθ + ˆW0k, CAL 
+
+(ˆ q0k, CAL − ˘q0k, CAL )+ (˘ q1k, CAL − ˘q0k, CAL eθ)
+
+{ ˆW1k, CAL ˆW0k, CAL 
+
+ˆW1k, CAL eθ + ˆW0k, CAL 
+
+− W1kW0k
+
+W1keθ + W0k
+
+} ] 
+
+,
+
+using the fact that ˘θCAL satisfies (S34). Here and subsequently, θ is evaluated at ˘θCAL . First, by standard manipulation and asymptotic expansion (S32) for ˆSak, CAL ,
+
+K∑
+
+k=1 
+
+ˆW1k, CAL ˆW0k, CAL 
+
+ˆW1k, CAL eθ + ˆ W0k, CAL 
+
+(ˆ q1k, CAL − ˘q1k, CAL )=
+
+K∑
+
+k=1 
+
+W0kW1k
+
+W1keθ + W0k
+
+(
+
+− ˆS1k, CAL + (1 − ˘q1k, CAL ) ˆS1,k −1,CAL 
+
+ˆS1,k −1,CAL 
+
+)
+
++ op(n−1/2)= 1
+
+n
+
+n∑
+
+i=1 
+
+K∑
+
+k=1 
+
+W0kW1k
+
+W1keθ + W0k
+
+(
+
+− ˘ϕ1ki + (1 − ˘q1k, CAL ) ˘ ϕ1,k −1,i 
+
+˘S1,k −1,CAL 
+
+)
+
++ op(n−1/2),
+
+and similarly 
+
+K∑
+
+k=1 
+
+ˆW0k, CAL ˆW0k, CAL eθ
+
+ˆW0k, CAL eθ + ˆW0k, CAL 
+
+(ˆ q0k, CAL − ˘q0k, CAL )= 1
+
+n
+
+n∑
+
+i=1 
+
+K∑
+
+k=1 
+
+W0kW0keθ
+
+W0keθ + W0k
+
+(
+
+− ˘ϕ0ki + (1 − ˘q0k, CAL ) ˘ ϕ0,k −1,i 
+
+˘S0,k −1,CAL 
+
+)
+
++ op(n−1/2).
+
+Second, by a Taylor expansion and asymptotic expansion (S33) for ˆWak, CAL ,
+
+K∑
+
+k=1 
+
+(˘ q1k, CAL − ˘q0k, CAL eθ )
+
+{ ˆW1k, CAL ˆW0k, CAL 
+
+ˆW1k, CAL eθ + ˆW0k, CAL 
+
+− W1kW0k
+
+W1keθ + W0k
+
+}
+
+=
+
+K∑
+
+k=1 
+
+˘q1k, CAL − ˘q0k, CAL eθ
+
+(W1keθ + W0k)2
+
+{
+
+W 20k( ˆW1k, CAL − W1k) + e θW 21k( ˆW0k, CAL − W0k)
+
+}
+
++ op(n−1/2)= 1
+
+n
+
+n∑
+
+i=1 
+
+K∑
+
+k=1 
+
+˘q1k, CAL − ˘q0k, CAL eθ
+
+(W1k eθ + W0k)2
+
+{
+
+W 20k( ˘ψ1ki − W1k) + e θW 21k( ˘ψ0ki − W0k)
+
+}
+
++ op(n−1/2).
+
+Combining the preceding four displays gives the expansion (S36). 
+
+Proof of asymptotic expansion (53) . The asymptotic expansion (53) is similar to (S36) in the proof of Proposition 6, where θ is set to ˆθCAL (satisfying (S34)). In fact, for any θ, following similar steps as in the proof of (S36) gives 
+
+K∑
+
+k=1 
+
+[ ˆW1k, IPW ˆW0k, IPW 
+
+ˆW1k, IPW eθ + ˆW0k, IPW 
+
+(ˆ q1k, IPW − ˆq0k, IPW eθ) − ˘W1k, IPW ˘W0k, IPW 
+
+˘W1k, IPW eθ + ˘W0k, IPW 
+
+(˘ q1k, IPW − ˘q0k, IPW eθ )
+
+]
+
+15 =
+
+K∑
+
+k=1 
+
+[ ˘W1k, IPW ˘W0k, IPW 
+
+˘W1k, IPW eθ + ˘W0k, IPW 
+
+(
+
+− ˆS1k, IPW + (1 − ˘q1k, IPW ) ˆS1,k −1,IPW 
+
+˘S1,k −1,IPW 
+
+)
+
+− ˘W1k, IPW ˘W0k, IPW eθ
+
+˘W1k, IPW eθ + ˘W0k, IPW 
+
+(
+
+− ˆS0k, IPW + (1 − ˘q0k, IPW ) ˆS0,k −1,IPW 
+
+˘S0,k −1,IPW 
+
+)
+
++ ˘q1k, IPW − ˘q0k, IPW eθ
+
+( ˘W1k, IPW eθ + ˘W0k, IPW )2 { ˘W 20k, IPW ( ˆW1k, IPW − ˘W1k, IPW ) + e θ ˘W 21k, IPW ( ˆW0k, IPW − ˘W0k, IPW )}
+
+]
+
++ oP (n−1/2).
+
+By direct calculation, 
+
+K∑
+
+k=1 
+
+˘W1k, IPW ˘W0k, IPW 
+
+˘W1k, IPW eθ + ˘W0k, IPW 
+
+(˘ q1k, IPW − ˘q0k, IPW eθ)=
+
+K∑
+
+k=1 
+
+[ ˘q1k, IPW − ˘q0k, IPW eθ
+
+( ˘W1k, IPW eθ + ˘W0k, IPW )2 { ˘W 20k, IPW ˘W1k, IPW + e θ ˘W 21k, IPW ˘W0k, IPW }
+
+]
+
+.
+
+Combining the preceding two displays gives 
+
+K∑
+
+k=1 
+
+ˆW1k, IPW ˆW0k, IPW 
+
+ˆW1k, IPW eθ + ˆW0k, IPW 
+
+(ˆ q1k, IPW − ˆq0k, IPW eθ )=
+
+K∑
+
+k=1 
+
+[ ˘W1k, IPW ˘W0k, IPW 
+
+˘W1k, IPW eθ + ˘W0k, IPW 
+
+(1 − ˘q1k, IPW ) ˆS1,k −1,IPW − ˆS1k, IPW 
+
+˘S1,k −1,IPW 
+
+− ˘W1k, IPW ˘W0k, IPW eθ
+
+˘W1k, IPW eθ + ˘W0k, IPW 
+
+(1 − ˘q0k, IPW ) ˆS0,k −1,IPW − ˆS0k, IPW 
+
+˘S0,k −1,IPW 
+
++ ˘q1k, IPW − ˘q0k, IPW eθ
+
+( ˘W1k, IPW eθ + ˘W0k, IPW )2 { ˘W 20k, IPW ˆW1k, IPW + e θ ˘W 21k, IPW ˆW0k, IPW }
+
+]
+
++ oP (n−1/2).
+
+Substituting into the above equation the definitions of ˆSak, IPW and ˆWak, IPW as in (51) for a = 1 yields the asymptotic expansion (53). 
+
+Proof of Proposition 7. For conciseness, we provide the reasoning leading to the asymptotic expansion (57) only. To make explicit the dependency on (ˆ ρa, 1: k, ˆηa, 1: k) through ˆU (a)
+
+ki , we rewrite 
+
+Bai (θ, ˆS1,IPW , ˆWIPW ) = Bai (θ, ˆS1,IPW , ˆWIPW , ˆρa, 1: k, ˆηa, 1: k) and ˆδi(θ) = 
+
+{ Ai
+
+ˆπ1i
+
+B1i(θ, ˆS1,IPW , ˆWIPW , ˆρ1,1: k, ˆη1,1: k) −
+
+( Ai
+
+ˆπ1i
+
+− 1
+
+)
+
+ˆg1i
+
+}
+
+−
+
+{ 1 − Ai
+
+1 − ˆπ0i
+
+B0i(θ, ˆS0,IPW , ˆWIPW , ˆρ0,1: k, ˆη0,1: k) −
+
+( 1 − Ai
+
+1 − ˆπ0i
+
+− 1
+
+)
+
+ˆg0i
+
+}
+
+.
+
+Then as noted in the main paper, 1
+
+n
+
+n∑
+
+i=1 
+
+ˆδi(θ) = 
+
+K∑
+
+k=1 
+
+{ ˆW1k, IPW ˆW0k, IPW 
+
+ˆW1k, IPW eθ + ˆW0k, IPW 
+
+(ˆ q1k, IPW − ˆq0k, IPW eθ)
+
+}
+
+16 − 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{( Ai
+
+ˆπ1i
+
+− 1
+
+)
+
+ˆg1i −
+
+( 1 − Ai
+
+1 − ˆπ0i
+
+− 1
+
+)
+
+ˆg0i
+
+}
+
+.
+
+The limit version of ˆδi(θ) is ˘δi(θ) = 
+
+{ Ai
+
+˘π1i
+
+B1i(θ, ˘S1,IPW , ˘WIPW , ˘ρ1,1: k, ˘η1,1: k) −
+
+( Ai
+
+˘π1i
+
+− 1
+
+)
+
+˘g1i
+
+}
+
+−
+
+{ 1 − Ai
+
+1 − ˘π0i
+
+B0i(θ, ˘S0,IPW , ˘WIPW , ˘ρ0,1: k, ˘η0,1: k) −
+
+( 1 − Ai
+
+1 − ˘π0i
+
+− 1
+
+)
+
+˘g0i
+
+}
+
+.
+
+Note that Bai (θ, ˘Sa, IPW , ˘WIPW , ˘ρa, 1: k, ˘ηa, 1: k) differs from Bai (θ, ˘Sa, IPW , ˘WIPW ) in the main paper, which corresponds to Bai (θ, ˘Sa, IPW , ˘WIPW , ˆρa, 1: k, ˆηa, 1: k ). Then 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+˘δi(θ) = 
+
+> K
+
+∑
+
+> k=1
+
+{ ˘W1k, IPW ˘W0k, IPW 
+
+˘W1k, IPW eθ + ˘W0k, IPW 
+
+(˘ q1k, IPW − ˘q0k, IPW eθ)
+
+}
+
+− 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{( Ai
+
+˘π1i
+
+− 1
+
+)
+
+˘g1i −
+
+( 1 − Ai
+
+1 − ˘π0i
+
+− 1
+
+)
+
+˘g0i
+
+}
+
+, (S37) where ˘ πai = π(Xi; ˘ γa), ˘ gai = ga(Xi; ˘ζa). By similar reasoning as in Ghosh and Tan(2022) as well as that underlying Proposition 6, it can be shown that ˆθAIPW satisfies the asymptotic expansion ˆθAIPW − ˘θIPW = H(θ)−1 · 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+˘δi(θ)
+
+∣∣∣˘θIPW 
+
++ op(n−1/2),
+
+where H(θ) = ( −1) E
+
+{ d
+
+> dθ
+> 1
+> n
+
+∑ni=1 ˘δi(θ)
+
+}
+
+. Then the asymptotic expansion (57) follows because differentiating the expression (S37) gives H(θ) = HIPW (θ), where 
+
+HIPW (θ) = 
+
+> K
+
+∑
+
+> k=1
+
+˘W1k, IPW ˘W0k, IPW eθ
+
+( ˘W1k, IPW eθ + ˘W0k, IPW )2 ( ˘W1k, IPW ˘q1k, IPW + ˘W0k, IPW ˘q0k, IPW ).
+
+## V Additional results for simulation study 
+
+V.1 Results for simulation setup 
+
+We first give the formula for computing the true values of the survival probabilities Sak and ˘θwBP ,and then show that the true PS model is sparse, and model (3) is correctly specified under (C1) and misspecified under (C2) with f (X) = (1 , X T )T.Applying the law of total expectation and no unmeasured confounding assumption, we have 
+
+Sak = P ( ˜U (a) > u k) = E{P ( ˜U (a) > u k|X)} = E{P ( ˜U > u k|A = a, X )}
+
+= P (A = 1) EX1:10 |A=1 P ( ˜ U > u k|A = a, X 1:10 ) + P (A = 0) EX1:10 |A=0 P ( ˜ U > u k|A = a, X 1:10 ),
+
+where EX1:10 |A=a denotes the conditional expectation of X1:10 |A = a. We employ a Monte Carlo approach to obtain Sak . Specifically, we generate independent samples of X1:10 |A = a from the truncated multivariate normal distribution using the R package tmvtnorm . For each sampled 17 X1:10 = x, we compute the probability P ( ˜U > u k|A = a, X 1:10 ) based on the Weibull distri-bution of ˜U |A = a, X 1:10 . After generating samples of size n = 10 6 from X1:10 |A = a for each a, we estimate the expectation EX1:10 |A=aP ( ˜U > u k|A = a, X 1:10 ) by taking the sample average of these probabilities and then we obtain an estimate of P ( ˜U (a) > u k). To improve accuracy, we repeat the entire procedure 20 times and use the average of these 20 estimates as our final approximation of 
+
+P ( ˜U (a) > u k). The parameter ˘θwBP is defined as a solution to (39). To compute ˘θwBP , we need to obtain values of Sak and Wak for k = 1 , . . . , K . Under the non-informative censoring assumption and the independence of ˜C from X, we have 
+
+Wak = E{P ( ˜Y ≥ uk|A = a, X )} = E[P {min( ˜U , ˜C) ≥ uk|A = a, X }]= E{P ( ˜U ≥ uk|A = a, X ) × P ( ˜C ≥ uk|A = a, X )}
+
+= E{P ( ˜U ≥ uk|A = a, X )} × P ( ˜C ≥ uk|A = a) = Sak × P ( ˜C ≥ uk|A = a),
+
+which can be used to compute Wak once Sak is computed. We still employ a Monte Carlo approach to obtain ˘θwBP . Specifically, we generate a dataset of ( Y, ∆, A, X ) with sample size n = 2 × 10 6.For each k = 1 , . . . , K , we compute an estimate of Sak as described above, then compute Wak 
+
+using the relationship above, and finally solve equation (39) using the R package trust to obtain an estimate of ˘θwBP . To improve accuracy, we repeat the entire procedure 20 times and use the average of these 20 estimates as our final approximation of ˘θwBP . The value of K is determined as described in Section V.2. Under the data generating setting, the propensity score is log π∗(X)
+
+1 − π∗(X) = − 1
+
+2 X1:10 T
+
+(Σ 1 − Σ0)X1:10 + ( μT 
+
+> 1
+
+Σ1 − μT 
+
+> 0
+
+Σ0)T X1:10 .
+
+Then it is easily seen that model (3) with f (X) = (1 , X )T is correctly specified under (C1) and misspecified under (C2). Next, we show that ˘ γ1,CAL are sparse, with only the first 11 components nonzero. In fact, consider a coefficient vector ˘ γ with the first 11 components defined as a solution to (S38) below for j = 0 with X0 ≡ 1 and for j = 1 , . . . , 10, and the remaining components set to 0. Then it suffices to verify that 
+
+E
+
+{( A
+
+π(X; ˘ γ) − 1
+
+)
+
+Xj
+
+}
+
+= 0 (S38) for j = 11 , . . . , p . By the definition of ˘ γ, (S38) holds for j = 0 , 1, . . . , 10. For j ≥ 11, 
+
+E
+
+{( A
+
+π(X; ˘ γ) − 1
+
+)
+
+Xj
+
+}
+
+= E
+
+{( A
+
+π(X; ˘ γ) − 1
+
+)
+
+(Xj − E(Xj )) 
+
+}
+
+18 = E
+
+{( π∗(X)
+
+π(X; ˘ γ) − 1
+
+)
+
+(Xj − E(Xj )) 
+
+}
+
+= E
+
+{ π∗(X)
+
+π(X; ˘ γ) − 1
+
+}
+
+E(Xj − E(Xj )) = 0 ,
+
+where the first equality follows from (S38) for j = 0 (i.e., X0 ≡ 1), the second equality follows from the law of iterated expectations by conditioning on X, and the third equality follows from the independence of Xj and X1:10 for j ≥ 11. 
+
+V.2 Additional simulation results 
+
+The number of time periods K is determined by the maximum observed time Y in the relevant treatment groups, provided that the observation is uncensored and at least one event has occurred. For estimating survival probabilities, K is determined as the maximum of Y in the treatment-1 or treatment-0 group, provided that the observation is uncensored and at least one event has occurred. For estimating the hazard ratio parameter ˘θwBP , K is determined as the maximum of Y satisfying this criterion in both treatment groups. Tables S1 and S2 present the true and limit (or target) values of estimators for survival proba-bilities at uk = 60 , 90 , 120 and the hazard-ratio parameter ˘θwBP . The limit values are taken to be the Monte Carlo means of the point estimates from 20 repeated simulations each of size 10 6 for the survival probabilities and 2 × 10 6 for the hazard-ratio parameter. From Table S1, we observe that under (C1), the limit values of ˆS1k, KM differ significantly from the true values, whereas the limit values of all other estimators closely approximate the true values. Under (C2), the limit values of all estimators deviate from the true values. Table S2 shows that under (C1), the limit values of all estimators are similar, except for ˆθBP . Under (C2), the limit values of ˆθCAL, lin , ˆθRCw and ˆθRCa 
+
+remain the same due to the relationship explained in Section 6, and these values differ from those of ˆθBP and ˆθwBP .Tables S3 and S4 summarize the simulation results for estimating S1k with n = 1000 under (C2) and n = 400 under both (C1) and (C2), respectively. Tables S5 and S6 summarize the simulation results for estimating S0k with n = 400 and n = 1000, respectively. Tables S7 and S8 report the simulation results for the estimating hazard-ratio parameter ˘θwBP . The conclusions drawn from these tables agree with the findings discussed in the main paper. 19 Table S1: True and limit values of estimators for survival probabilities at uk = 60 , 90 , 120. 
+
+(C1) (C2) 
+
+uk = 60 uk = 90 uk = 120 uk = 60 uk = 90 uk = 120 
+
+p = 10 , a = 1 
+
+P (U (1) > u k) 0.525 ( 0.000 ) 0.405 ( 0.000 ) 0.322 ( 0.000 ) 0.531 ( 0.000 ) 0.411 ( 0.000 ) 0.326 ( 0.000 ) ˆS1k, KM 0.555 ( 0.001 ) 0.437 ( 0.001 ) 0.352 ( 0.001 ) 0.564 ( 0.001 ) 0.442 ( 0.001 ) 0.353 ( 0.001 ) ˆS1k, wKM 0.525 ( 0.001 ) 0.406 ( 0.001 ) 0.322 ( 0.001 ) 0.540 ( 0.001 ) 0.416 ( 0.001 ) 0.328 ( 0.001 ) ˆS1k, CAL 0.525 ( 0.001 ) 0.406 ( 0.001 ) 0.322 ( 0.001 ) 0.534 ( 0.001 ) 0.414 ( 0.001 ) 0.329 ( 0.001 ) ˆS1k, CAL,lin 0.525 ( 0.001 ) 0.406 ( 0.001 ) 0.322 ( 0.001 ) 0.534 ( 0.001 ) 0.411 ( 0.001 ) 0.323 ( 0.001 ) 
+
+p = 10 , a = 0 
+
+P (U (0) > u k) 0.608 ( 0.000 ) 0.441 ( 0.000 ) 0.324 ( 0.000 ) 0.620 ( 0.000 ) 0.450 ( 0.000 ) 0.329 ( 0.000 ) ˆS0k, KM 0.567 ( 0.001 ) 0.397 ( 0.001 ) 0.283 ( 0.001 ) 0.570 ( 0.001 ) 0.407 ( 0.001 ) 0.296 ( 0.001 ) ˆS0k, wKM 0.608 ( 0.001 ) 0.441 ( 0.001 ) 0.324 ( 0.001 ) 0.617 ( 0.000 ) 0.457 ( 0.001 ) 0.344 ( 0.001 ) ˆS0k, CAL 0.608 ( 0.001 ) 0.441 ( 0.001 ) 0.324 ( 0.001 ) 0.618 ( 0.001 ) 0.448 ( 0.001 ) 0.328 ( 0.001 ) ˆS0k, CAL,lin 0.608 ( 0.001 ) 0.441 ( 0.001 ) 0.324 ( 0.001 ) 0.610 ( 0.000 ) 0.449 ( 0.001 ) 0.336 ( 0.001 ) 
+
+p = 200 , a = 1 
+
+P (U (1) > u k) 0.525 ( 0.000 ) 0.405 ( 0.000 ) 0.322 ( 0.000 ) 0.531 ( 0.000 ) 0.411 ( 0.000 ) 0.326 ( 0.000 ) ˆS1k, KM 0.554 ( 0.001 ) 0.436 ( 0.001 ) 0.351 ( 0.001 ) 0.564 ( 0.001 ) 0.442 ( 0.001 ) 0.353 ( 0.001 ) ˆS1k, wKM 0.525 ( 0.001 ) 0.406 ( 0.001 ) 0.322 ( 0.001 ) 0.539 ( 0.001 ) 0.416 ( 0.001 ) 0.328 ( 0.001 ) ˆS1k, RCAL 0.525 ( 0.001 ) 0.406 ( 0.001 ) 0.322 ( 0.001 ) 0.533 ( 0.001 ) 0.414 ( 0.001 ) 0.329 ( 0.001 ) ˆS1k, RCAL,lin 0.525 ( 0.001 ) 0.406 ( 0.001 ) 0.322 ( 0.001 ) 0.533 ( 0.001 ) 0.410 ( 0.001 ) 0.322 ( 0.001 ) 
+
+p = 200 , a = 0 
+
+P (U (0) > u k) 0.608 ( 0.000 ) 0.441 ( 0.000 ) 0.324 ( 0.000 ) 0.620 ( 0.000 ) 0.450 ( 0.000 ) 0.329 ( 0.000 ) ˆS1k, KM 0.567 ( 0.001 ) 0.397 ( 0.001 ) 0.284 ( 0.000 ) 0.570 ( 0.001 ) 0.406 ( 0.001 ) 0.296 ( 0.001 ) ˆS1k, wKM 0.608 ( 0.001 ) 0.441 ( 0.001 ) 0.324 ( 0.000 ) 0.617 ( 0.000 ) 0.457 ( 0.000 ) 0.344 ( 0.000 ) ˆS1k, CAL 0.608 ( 0.001 ) 0.441 ( 0.001 ) 0.324 ( 0.000 ) 0.618 ( 0.000 ) 0.448 ( 0.000 ) 0.328 ( 0.000 ) ˆS1k, CAL,lin 0.608 ( 0.001 ) 0.441 ( 0.001 ) 0.324 ( 0.000 ) 0.610 ( 0.000 ) 0.449 ( 0.000 ) 0.336 ( 0.000 )  
+
+> Note : Limit values are taken to be the Monte Carlo means of the point estimates from 20 repeated simulations each of size 10 6. Numbers inside the parentheses are standard deviations of the point estimates from the 20 repeated simulations.
+
+20 Table S2: True and limit values of estimators for ˘θwBP .
+
+Case ˘θwBP ˆθBP ˆθwBP ˆθCAL ˆθCAL,lin ˆθRCw ˆθRCa 
+
+p = 10 (C1) 0.068 ( 0.000 ) -0.122 ( 0.003 ) 0.066 ( 0.002 ) 0.066 ( 0.002 ) 0.066 ( 0.002 ) 0.066 ( 0.002 ) 0.066 ( 0.002 ) (C2) 0.065 ( 0.000 ) -0.099 ( 0.002 ) 0.094 ( 0.002 ) 0.053 ( 0.002 ) 0.091 ( 0.002 ) 0.091 ( 0.002 ) 0.091 ( 0.002 ) 
+
+p = 200 (C1) 0.068 ( 0.000 ) -0.121 ( 0.003 ) 0.067 ( 0.002 ) – – 0.067 ( 0.002 ) 0.067 ( 0.002 ) (C2) 0.065 ( 0.000 ) -0.098 ( 0.002 ) 0.094 ( 0.002 ) – – 0.091 ( 0.002 ) 0.091 ( 0.002 ) 
+
+Note : Limit values are taken to be the Monte Carlo means of the point estimates from 20 repeated simulations each of size 2 × 10 6 . Numbers inside the parentheses are standard deviations of the point estimates from the 20 repeated simulations. 
+
+Table S3: Summary for estimation of S1k at uk = 60 , 90 , 120 with n = 1000 under (C2). 
+
+uk = 60 uk = 90 uk = 120 
+
+Bias √Var √EVar Cov90(L90) Cov95(L95) Bias √Var √EVar Cov90(L90) Cov95(L95) Bias √Var √EVar Cov90(L90) Cov95(L95) 
+
+p = 10 ˆS1k, KM -0.001 0.023 0.023 0.895 ( 0.076 ) 0.946 ( 0.091 ) -0.002 0.024 0.024 0.899 ( 0.078 ) 0.949 ( 0.093 ) -0.003 0.023 0.023 0.895 ( 0.077 ) 0.942 ( 0.092 ) ˆS1k, wKM -0.001 0.023 0.024 0.902 ( 0.078 ) 0.955 ( 0.093 ) -0.002 0.023 0.024 0.897 ( 0.078 ) 0.952 ( 0.093 ) -0.003 0.022 0.023 0.903 ( 0.075 ) 0.951 ( 0.090 ) ˆS1k, CAL -0.001 0.023 0.023 0.901 ( 0.075 ) 0.952 ( 0.090 ) -0.001 0.022 0.023 0.895 ( 0.075 ) 0.951 ( 0.089 ) -0.001 0.021 0.022 0.901 ( 0.072 ) 0.951 ( 0.086 ) ˆS1k, CAL,lin -0.001 0.023 0.023 0.889 ( 0.075 ) 0.946 ( 0.090 ) -0.002 0.023 0.023 0.881 ( 0.075 ) 0.942 ( 0.089 ) -0.002 0.022 0.022 0.895 ( 0.073 ) 0.944 ( 0.087 ) 
+
+p = 200 ˆS1k, KM -0.001 0.023 0.023 0.902 ( 0.076 ) 0.947 ( 0.091 ) -0.001 0.024 0.024 0.899 ( 0.078 ) 0.949 ( 0.093 ) -0.002 0.024 0.023 0.900 ( 0.077 ) 0.945 ( 0.092 ) ˆS1k, wKM 0.019 0.023 0.023 0.803 ( 0.076 ) 0.873 ( 0.091 ) 0.019 0.024 0.024 0.798 ( 0.078 ) 0.879 ( 0.093 ) 0.018 0.023 0.023 0.819 ( 0.077 ) 0.886 ( 0.092 ) ˆS1k, RCAL 0.012 0.023 0.022 0.844 ( 0.074 ) 0.908 ( 0.088 ) 0.009 0.023 0.023 0.875 ( 0.075 ) 0.930 ( 0.089 ) 0.006 0.022 0.022 0.889 ( 0.074 ) 0.947 ( 0.088 ) ˆS1k, RCAL,lin 0.012 0.024 0.022 0.839 ( 0.074 ) 0.903 ( 0.088 ) 0.011 0.023 0.023 0.854 ( 0.075 ) 0.923 ( 0.089 ) 0.010 0.023 0.022 0.869 ( 0.074 ) 0.926 ( 0.088 ) 
+
+Note : Bias is the Monte Carlo bias of the point estimates against the limit values. Var are the Monte Carlo variance of the point estimates. EVar is the mean of the variance estimates. Cov90(L90) and Cov95(L95) denote coverage proportion and average length of the 90% and 95% confidence intervals. 
+
+Table S4: Summary for estimation of S1k at uk = 60 , 90 , 120 with n = 400. 
+
+uk = 60 uk = 90 uk = 120 
+
+Bias √Var √EVar Cov90(L90) Cov95(L95) Bias √Var √EVar Cov90(L90) Cov95(L95) Bias √Var √EVar Cov90(L90) Cov95(L95) 
+
+(C1), p = 10 ˆS1k, KM 0.027 0.036 0.037 0.817 ( 0.120 ) 0.896 ( 0.143 ) 0.027 0.036 0.037 0.824 ( 0.123 ) 0.903 ( 0.147 ) 0.025 0.036 0.037 0.834 ( 0.122 ) 0.897 ( 0.145 ) ˆS1k, wKM -0.003 0.035 0.038 0.922 ( 0.124 ) 0.961 ( 0.148 ) -0.004 0.035 0.037 0.917 ( 0.123 ) 0.958 ( 0.147 ) -0.005 0.034 0.036 0.908 ( 0.119 ) 0.955 ( 0.142 ) ˆS1k, CAL -0.003 0.035 0.035 0.902 ( 0.116 ) 0.950 ( 0.138 ) -0.004 0.035 0.035 0.899 ( 0.115 ) 0.947 ( 0.137 ) -0.005 0.034 0.034 0.886 ( 0.111 ) 0.943 ( 0.133 ) ˆS1k, CAL,lin -0.003 0.035 0.035 0.898 ( 0.116 ) 0.947 ( 0.138 ) -0.004 0.035 0.035 0.896 ( 0.115 ) 0.946 ( 0.138 ) -0.005 0.034 0.034 0.891 ( 0.112 ) 0.944 ( 0.133 ) (C2), p = 10 ˆS1k, KM -0.005 0.037 0.037 0.899 ( 0.120 ) 0.947 ( 0.143 ) -0.006 0.037 0.038 0.898 ( 0.123 ) 0.951 ( 0.147 ) -0.006 0.037 0.037 0.900 ( 0.122 ) 0.946 ( 0.145 ) ˆS1k, wKM -0.005 0.037 0.038 0.907 ( 0.124 ) 0.957 ( 0.147 ) -0.006 0.037 0.038 0.903 ( 0.124 ) 0.951 ( 0.147 ) -0.005 0.035 0.036 0.904 ( 0.120 ) 0.950 ( 0.143 ) ˆS1k, CAL -0.005 0.035 0.036 0.910 ( 0.119 ) 0.955 ( 0.142 ) -0.003 0.035 0.036 0.908 ( 0.118 ) 0.948 ( 0.141 ) -0.002 0.034 0.035 0.902 ( 0.114 ) 0.954 ( 0.136 ) ˆS1k, CAL,lin -0.005 0.037 0.036 0.898 ( 0.120 ) 0.948 ( 0.143 ) -0.006 0.037 0.036 0.888 ( 0.119 ) 0.938 ( 0.142 ) -0.005 0.035 0.035 0.887 ( 0.115 ) 0.939 ( 0.137 ) (C1), p = 200 ˆS1k, KM 0.026 0.037 0.037 0.814 ( 0.120 ) 0.881 ( 0.143 ) 0.026 0.038 0.037 0.822 ( 0.123 ) 0.903 ( 0.146 ) 0.024 0.037 0.037 0.829 ( 0.121 ) 0.908 ( 0.145 ) ˆS1k, wKM 0.024 0.037 0.037 0.834 ( 0.121 ) 0.894 ( 0.144 ) 0.023 0.037 0.037 0.835 ( 0.123 ) 0.909 ( 0.147 ) 0.022 0.037 0.037 0.846 ( 0.121 ) 0.916 ( 0.145 ) ˆS1k, RCAL 0.016 0.037 0.035 0.852 ( 0.115 ) 0.906 ( 0.137 ) 0.014 0.037 0.035 0.857 ( 0.116 ) 0.924 ( 0.139 ) 0.013 0.036 0.035 0.874 ( 0.115 ) 0.927 ( 0.137 ) ˆS1k, RCAL,lin 0.015 0.037 0.035 0.857 ( 0.114 ) 0.907 ( 0.136 ) 0.014 0.037 0.035 0.861 ( 0.116 ) 0.926 ( 0.139 ) 0.013 0.036 0.035 0.875 ( 0.115 ) 0.928 ( 0.137 ) (C2), p = 200 ˆS1k, KM -0.002 0.036 0.037 0.904 ( 0.120 ) 0.953 ( 0.143 ) -0.004 0.038 0.038 0.900 ( 0.123 ) 0.953 ( 0.147 ) -0.006 0.036 0.037 0.895 ( 0.122 ) 0.952 ( 0.145 ) ˆS1k, wKM 0.020 0.036 0.037 0.853 ( 0.121 ) 0.916 ( 0.144 ) 0.020 0.037 0.038 0.854 ( 0.124 ) 0.921 ( 0.147 ) 0.017 0.036 0.037 0.879 ( 0.122 ) 0.933 ( 0.145 ) ˆS1k, RCAL 0.020 0.036 0.035 0.828 ( 0.116 ) 0.906 ( 0.138 ) 0.016 0.037 0.036 0.861 ( 0.119 ) 0.922 ( 0.141 ) 0.010 0.036 0.036 0.892 ( 0.117 ) 0.945 ( 0.140 ) ˆS1k, RCAL,lin 0.020 0.036 0.035 0.829 ( 0.116 ) 0.904 ( 0.138 ) 0.019 0.037 0.036 0.842 ( 0.118 ) 0.913 ( 0.141 ) 0.016 0.036 0.036 0.874 ( 0.117 ) 0.927 ( 0.139 ) 
+
+Note : Bias is the Monte Carlo bias of the point estimates against the true values under (C1), or against the limit values under (C2). Var are the Monte Carlo variance of the point estimates. EVar is the mean of the variance estimates. Cov90(L90) and Cov95(L95) denote coverage proportion and average length of the 90% and 95% confidence intervals. 
+
+Table S5: Summary for estimation of S0k with n = 400. 
+
+uk = 60 uk = 90 uk = 120 
+
+Bias √Var √EVar Cov90(L90) Cov95(L95) Bias √Var √EVar Cov90(L90) Cov95(L95) Bias √Var √EVar Cov90(L90) Cov95(L95) 
+
+(C1), p = 10 ˆS0k, KM -0.042 0.036 0.036 0.673 ( 0.117 ) 0.782 ( 0.139 ) -0.047 0.036 0.036 0.638 ( 0.117 ) 0.733 ( 0.140 ) -0.045 0.035 0.034 0.610 ( 0.111 ) 0.709 ( 0.132 ) ˆS0k, wKM -0.001 0.032 0.035 0.926 ( 0.116 ) 0.970 ( 0.138 ) -0.003 0.034 0.038 0.917 ( 0.124 ) 0.967 ( 0.147 ) -0.005 0.035 0.037 0.908 ( 0.122 ) 0.949 ( 0.146 ) ˆS0k, CAL -0.001 0.032 0.031 0.896 ( 0.102 ) 0.944 ( 0.122 ) -0.004 0.034 0.033 0.875 ( 0.107 ) 0.934 ( 0.128 ) -0.005 0.034 0.032 0.866 ( 0.105 ) 0.922 ( 0.126 ) ˆS0k, CAL,lin -0.001 0.033 0.032 0.892 ( 0.104 ) 0.946 ( 0.124 ) -0.003 0.034 0.033 0.875 ( 0.109 ) 0.934 ( 0.130 ) -0.005 0.034 0.033 0.874 ( 0.107 ) 0.924 ( 0.128 ) (C2), p = 10 ˆS0k, KM -0.002 0.035 0.035 0.905 ( 0.117 ) 0.952 ( 0.139 ) -0.003 0.035 0.036 0.908 ( 0.118 ) 0.954 ( 0.140 ) -0.004 0.033 0.034 0.898 ( 0.112 ) 0.947 ( 0.133 ) ˆS0k, wKM -0.002 0.030 0.035 0.941 ( 0.116 ) 0.980 ( 0.138 ) -0.003 0.032 0.038 0.942 ( 0.125 ) 0.975 ( 0.149 ) -0.005 0.033 0.038 0.943 ( 0.125 ) 0.973 ( 0.149 ) ˆS0k, CAL -0.001 0.032 0.031 0.881 ( 0.100 ) 0.936 ( 0.119 ) -0.004 0.034 0.032 0.879 ( 0.105 ) 0.930 ( 0.125 ) -0.007 0.034 0.032 0.865 ( 0.104 ) 0.925 ( 0.124 ) ˆS0k, CAL,lin -0.002 0.031 0.031 0.899 ( 0.101 ) 0.951 ( 0.121 ) -0.003 0.032 0.032 0.899 ( 0.106 ) 0.945 ( 0.126 ) -0.005 0.032 0.032 0.892 ( 0.105 ) 0.949 ( 0.125 ) (C1), p = 200 ˆS0k, KM -0.043 0.036 0.036 0.675 ( 0.117 ) 0.780 ( 0.139 ) -0.046 0.037 0.036 0.633 ( 0.117 ) 0.733 ( 0.140 ) -0.043 0.034 0.034 0.628 ( 0.111 ) 0.724 ( 0.132 ) ˆS0k, wKM -0.040 0.035 0.036 0.712 ( 0.117 ) 0.811 ( 0.139 ) -0.042 0.036 0.036 0.672 ( 0.118 ) 0.772 ( 0.141 ) -0.040 0.034 0.034 0.663 ( 0.112 ) 0.757 ( 0.133 ) ˆS0k, RCAL -0.016 0.033 0.031 0.842 ( 0.102 ) 0.900 ( 0.121 ) -0.019 0.035 0.031 0.792 ( 0.102 ) 0.870 ( 0.122 ) -0.021 0.034 0.030 0.763 ( 0.097 ) 0.838 ( 0.116 ) ˆS0k, RCAL,lin -0.016 0.033 0.031 0.845 ( 0.103 ) 0.906 ( 0.123 ) -0.019 0.035 0.032 0.797 ( 0.104 ) 0.873 ( 0.124 ) -0.020 0.034 0.030 0.771 ( 0.099 ) 0.850 ( 0.118 ) (C2), p = 200 ˆS0k, KM -0.002 0.036 0.035 0.900 ( 0.117 ) 0.953 ( 0.139 ) -0.003 0.035 0.036 0.899 ( 0.118 ) 0.952 ( 0.140 ) -0.004 0.034 0.034 0.887 ( 0.112 ) 0.941 ( 0.133 ) ˆS0k, wKM -0.045 0.035 0.035 0.646 ( 0.117 ) 0.770 ( 0.139 ) -0.049 0.035 0.036 0.600 ( 0.118 ) 0.723 ( 0.141 ) -0.048 0.034 0.034 0.585 ( 0.113 ) 0.696 ( 0.135 ) ˆS0k, RCAL -0.018 0.033 0.031 0.819 ( 0.100 ) 0.887 ( 0.120 ) -0.018 0.034 0.031 0.810 ( 0.101 ) 0.886 ( 0.121 ) -0.018 0.034 0.030 0.787 ( 0.097 ) 0.864 ( 0.116 ) ˆS0k, RCAL,lin -0.015 0.032 0.031 0.854 ( 0.102 ) 0.915 ( 0.122 ) -0.018 0.033 0.031 0.827 ( 0.103 ) 0.895 ( 0.123 ) -0.020 0.034 0.030 0.781 ( 0.099 ) 0.859 ( 0.118 ) 
+
+Note : Bias is the Monte Carlo bias of the point estimates against the true values under (C1), or against the limit values under (C2). Var are the Monte Carlo variance of the point estimates. EVar is the mean of the variance estimates. Cov90(L90) and Cov95(L95) denote coverage proportion and average length of the 90% and 95% confidence intervals. 
+
+21 Table S6: Summary for estimation of S0k with n = 1000. 
+
+uk = 60 uk = 90 uk = 120 
+
+Bias √Var √EVar Cov90(L90) Cov95(L95) Bias √Var √EVar Cov90(L90) Cov95(L95) Bias √Var √EVar Cov90(L90) Cov95(L95) 
+
+(C1), p = 10 ˆS0k, KM -0.041 0.023 0.022 0.414 ( 0.074 ) 0.549 ( 0.088 ) -0.045 0.023 0.023 0.375 ( 0.074 ) 0.490 ( 0.089 ) -0.042 0.021 0.021 0.382 ( 0.070 ) 0.494 ( 0.084 ) ˆS0k, wKM 0.000 0.020 0.022 0.931 ( 0.073 ) 0.972 ( 0.087 ) -0.001 0.021 0.024 0.932 ( 0.078 ) 0.972 ( 0.092 ) -0.001 0.021 0.023 0.926 ( 0.077 ) 0.969 ( 0.091 ) ˆS0k, CAL 0.000 0.020 0.020 0.896 ( 0.065 ) 0.951 ( 0.078 ) -0.001 0.021 0.021 0.897 ( 0.068 ) 0.947 ( 0.081 ) -0.001 0.021 0.020 0.892 ( 0.067 ) 0.943 ( 0.080 ) ˆS0k, CAL,lin 0.000 0.020 0.020 0.897 ( 0.066 ) 0.950 ( 0.079 ) -0.001 0.021 0.021 0.897 ( 0.069 ) 0.948 ( 0.082 ) -0.001 0.021 0.021 0.893 ( 0.068 ) 0.942 ( 0.081 ) (C2), p = 10 ˆS0k, KM 0.000 0.023 0.022 0.885 ( 0.074 ) 0.944 ( 0.088 ) 0.000 0.023 0.023 0.892 ( 0.075 ) 0.944 ( 0.089 ) -0.001 0.022 0.022 0.894 ( 0.071 ) 0.945 ( 0.085 ) ˆS0k, wKM 0.000 0.020 0.022 0.940 ( 0.072 ) 0.974 ( 0.086 ) 0.000 0.021 0.024 0.939 ( 0.078 ) 0.971 ( 0.093 ) -0.001 0.021 0.024 0.935 ( 0.078 ) 0.972 ( 0.093 ) ˆS0k, CAL 0.000 0.021 0.019 0.874 ( 0.064 ) 0.938 ( 0.076 ) -0.001 0.022 0.020 0.871 ( 0.067 ) 0.929 ( 0.080 ) -0.002 0.021 0.020 0.875 ( 0.066 ) 0.931 ( 0.079 ) ˆS0k, CAL,lin 0.000 0.020 0.020 0.893 ( 0.064 ) 0.951 ( 0.077 ) 0.000 0.021 0.020 0.892 ( 0.067 ) 0.947 ( 0.080 ) -0.001 0.021 0.020 0.894 ( 0.067 ) 0.944 ( 0.080 ) (C1), p = 200 ˆS0k, KM -0.041 0.023 0.022 0.437 ( 0.074 ) 0.556 ( 0.088 ) -0.043 0.023 0.023 0.405 ( 0.074 ) 0.528 ( 0.089 ) -0.041 0.021 0.021 0.402 ( 0.070 ) 0.519 ( 0.084 ) ˆS0k, wKM -0.032 0.022 0.022 0.587 ( 0.074 ) 0.693 ( 0.088 ) -0.035 0.022 0.023 0.545 ( 0.075 ) 0.671 ( 0.089 ) -0.033 0.021 0.022 0.542 ( 0.072 ) 0.666 ( 0.085 ) ˆS0k, RCAL -0.007 0.021 0.020 0.857 ( 0.065 ) 0.927 ( 0.077 ) -0.008 0.021 0.020 0.845 ( 0.066 ) 0.909 ( 0.078 ) -0.009 0.021 0.019 0.818 ( 0.063 ) 0.890 ( 0.075 ) ˆS0k, RCAL,lin -0.008 0.021 0.020 0.853 ( 0.066 ) 0.918 ( 0.079 ) -0.009 0.022 0.020 0.837 ( 0.067 ) 0.903 ( 0.080 ) -0.011 0.021 0.020 0.812 ( 0.064 ) 0.887 ( 0.077 ) (C2), p = 200 ˆS0k, KM 0.000 0.023 0.022 0.898 ( 0.074 ) 0.944 ( 0.088 ) 0.001 0.023 0.023 0.896 ( 0.075 ) 0.944 ( 0.089 ) 0.000 0.021 0.022 0.901 ( 0.071 ) 0.947 ( 0.085 ) ˆS0k, wKM -0.037 0.021 0.022 0.513 ( 0.074 ) 0.632 ( 0.088 ) -0.039 0.022 0.023 0.466 ( 0.075 ) 0.596 ( 0.090 ) -0.038 0.021 0.022 0.471 ( 0.073 ) 0.601 ( 0.086 ) ˆS0k, RCAL -0.009 0.021 0.019 0.848 ( 0.064 ) 0.913 ( 0.076 ) -0.007 0.022 0.020 0.848 ( 0.065 ) 0.918 ( 0.077 ) -0.006 0.021 0.019 0.844 ( 0.063 ) 0.906 ( 0.075 ) ˆS0k, RCAL,lin -0.007 0.020 0.020 0.876 ( 0.065 ) 0.934 ( 0.077 ) -0.007 0.021 0.020 0.860 ( 0.066 ) 0.923 ( 0.078 ) -0.009 0.021 0.019 0.843 ( 0.064 ) 0.897 ( 0.076 ) 
+
+Note : Bias is the Monte Carlo bias of the point estimates against the true values under (C1), or against the limit values under (C2). Var are the Monte Carlo variance of the point estimates. EVar is the mean of the variance estimates. Cov90(L90) and Cov95(L95) denote coverage proportion and average length of the 90% and 95% confidence intervals. 
+
+Table S7: Summary for estimation of ˘θwBP with n = 1000 under (C2). 
+
+p = 10 p = 200 
+
+ˆθBP ˆθwBP ˆθCAL ˆθCAL,lin ˆθRCw ˆθRCa ˆθBP ˆθwBP ˆθRCw ˆθRCa 
+
+Bias 0.001 0.001 -0.007 0.001 0.001 0.001 0.004 -0.149 -0.153 -0.039 
+
+√Var 0.074 0.062 0.060 0.061 0.061 0.061 0.074 0.069 0.068 0.062 
+
+√EVar 0.074 0.076 0.060 0.060 0.075 0.060 0.074 0.074 0.074 0.060 Cov90(L90) 0.895 (0.242) 0.957 (0.248) 0.896 (0.199) 0.894 (0.198) 0.958 (0.246) 0.894 (0.198) 0.900 (0.242) 0.350 (0.243) 0.328 (0.242) 0.815 (0.197) Cov95(L95) 0.949 (0.288) 0.981 (0.296) 0.950 (0.237) 0.946 (0.236) 0.983 (0.293) 0.946 (0.236) 0.946 (0.288) 0.480 (0.289) 0.456 (0.289) 0.894 (0.234) 
+
+Note : Bias is the Monte Carlo bias of the point estimates against the limit values. Var is the Monte Carlo variance of the point estimates. EVar is the mean of the variance estimates. Cov90(L90) and Cov95(L95) denote coverage proportion and average length of the 90% and 95% confidence intervals. 
+
+Table S8: Summary for estimation of ˘θwBP with n = 400. 
+
+Bias √Var √EVar Cov90(L90) Cov95(L95) Bias √Var √EVar Cov90(L90) Cov95(L95) 
+
+p = 10 (C1) (C2) 
+
+ˆθBP -0.191 0.117 0.116 0.499 ( 0.383 ) 0.624 ( 0.456 ) 0.005 0.112 0.116 0.913 ( 0.383 ) 0.965 ( 0.456 ) ˆθwBP -0.002 0.096 0.120 0.964 ( 0.393 ) 0.985 ( 0.469 ) 0.004 0.093 0.121 0.966 ( 0.397 ) 0.989 ( 0.473 ) ˆθCAL 0.001 0.095 0.092 0.899 ( 0.304 ) 0.944 ( 0.362 ) -0.015 0.090 0.095 0.914 ( 0.312 ) 0.959 ( 0.372 ) ˆθCAL,lin -0.002 0.096 0.094 0.897 ( 0.311 ) 0.952 ( 0.370 ) 0.003 0.092 0.095 0.913 ( 0.314 ) 0.959 ( 0.374 ) ˆθRCw -0.002 0.096 0.120 0.963 ( 0.393 ) 0.984 ( 0.469 ) 0.003 0.092 0.120 0.970 ( 0.394 ) 0.989 ( 0.469 ) ˆθRCa -0.002 0.096 0.094 0.897 ( 0.311 ) 0.952 ( 0.370 ) 0.003 0.092 0.095 0.913 ( 0.314 ) 0.959 ( 0.374 ) 
+
+p = 200 (C1) (C2) 
+
+ˆθBP -0.185 0.118 0.116 0.512 ( 0.383 ) 0.643 ( 0.456 ) 0.000 0.115 0.116 0.905 ( 0.383 ) 0.953 ( 0.456 ) ˆθwBP -0.170 0.114 0.117 0.558 ( 0.384 ) 0.701 ( 0.457 ) -0.176 0.113 0.117 0.549 ( 0.384 ) 0.672 ( 0.458 ) ˆθRCw -0.180 0.117 0.116 0.526 ( 0.383 ) 0.659 ( 0.456 ) -0.185 0.114 0.116 0.511 ( 0.383 ) 0.637 ( 0.456 ) ˆθRCa -0.075 0.102 0.094 0.779 ( 0.310 ) 0.864 ( 0.370 ) -0.084 0.103 0.096 0.750 ( 0.316 ) 0.840 ( 0.376 ) 
+
+Note : Bias is the Monte Carlo bias of the point estimates against the true value under (C1), or against the limit values under (C2). Var is the Monte Carlo variance of the point estimates. EVar is the mean of the variance estimates. Cov90(L90) and Cov95(L95) denote coverage proportion and average length of the 90% and 95% confidence intervals. 
+
+## VI Additional results for empirical application 
+
+VI.1 Effects of covariate adjustment 
+
+Figure S1 presents the standardized absolute difference between ˆSak, KM and ˆSak, wKM under low-dimensional setting. For two estimators ˆ μ1 and ˆ μ2, the standardized absolute difference is defined as |ˆμ1 − ˆμ2|/SE(ˆ μ1) or |ˆμ1 − ˆμ2|/SE(ˆ μ2), being standardized by SE(ˆ μ1) or SE(ˆ μ2) respectively, 22 where SE( ·) denotes the standard error of an estimator. For convenience, a standardized absolute difference greater than 1 .5 is considered non-negligible. For the Hospitalization and Mortality outcomes, ˆS1k, wKM differs noticeably from ˆS1k, KM relative to their SEs, while ˆS0k, wKM is similar to ˆS0k, KM relative to their SEs, indicating that covariate adjust-ment plays a non-negligible role for treatment 1 but is less influential for treatment 0. This asym-metry helps explain the corresponding ˘θwBP estimates: the larger effect of weighting for treatment 1 leads to substantial differences between ˆθwBP and ˆθBP for these two outcomes, as shown in Table 4. For example, for the Mortality outcome, the absolute difference equals 0 .495 − 0.195 = 0 .300, which is approximately 3 .36 times SE( ˆθBP ) and 2 .75 times SE( ˆθwBP ). In contrast, for the ED visits outcome, ˆSak, KM and ˆSak, wKM differ noticeably relative to their SEs for both a = 1 and a = 0. Because the differences are in the same direction for both treatment groups, their effects partially cancel out when aggregated into the estimation of ˘θwBP , which explains why ˆθwBP remains similar to ˆθBP for this outcome, as seen in Table 4. The absolute difference equals 0.219 − 0.192 = 0 .028, which is approximately 1 .20 times SE( ˆθBP ) and 0 .98 times SE( ˆθwBP ).                                     
+
+> 50 100 150 200 250 300 350
+> 1.5  2.5  3.5  4.5
+> Time
+> Hospitalization
+> Treatment 1
+> 50 100 150 200 250 300 350
+> 1.5  2.5  3.5  4.5
+> Time
+> ED Visits
+> 50 100 150 200 250 300 350
+> 1.5  2.5  3.5  4.5
+> Time
+> Mortality
+> 50 100 150 200 250 300 350
+> 0.5  1.0  1.5  2.0
+> Time
+> Treatment 0
+> 50 100 150 200 250 300 350
+> 0.5  1.0  1.5  2.0
+> Time
+> 50 100 150 200 250 300 350
+> 0.5  1.0  1.5  2.0
+> Time
+
+Figure S1: Standardized difference between ˆSak, KM and ˆSak, wKM under low-dimensional setting. Solid line is standardized by SE( ˆSak, KM ) and dashed line is standardized by SE( ˆSak, wKM ). A hori-zontal line is placed at 1.5. 
+
+VI.2 Additional tables and figures 
+
+Table S9 shows the covariate balance results. The covariate balance results show that weighting based on low-dimensional PS models is effective. Both ML and CAL weighting substantially im-prove balance relative to the unweighted sample, with CAL achieving superior balance for main effects. Differences between CAL and ML mainly reflect their different objectives, explicit balancing versus likelihood-based model fitting. Moreover, extending PS model to include high-dimensional interaction terms does not yield additional gains in covariate balance for the interaction terms, 23 50 100 150 200 250 300 350                               
+
+> 0.5  1.0  1.5
+> Time
+> Hospitalization
+> Treatment 1
+> 50 100 150 200 250 300 350
+> 0.5  1.0  1.5
+> Time
+> ED Visits
+> 50 100 150 200 250 300 350
+> 0.5  1.0  1.5
+> Time
+> Mortality
+> 50 100 150 200 250 300 350
+> 0.0  0.5  1.0  1.5
+> Time
+> Treatment 0
+> 50 100 150 200 250 300 350
+> 0.0  0.5  1.0  1.5
+> Time
+> 50 100 150 200 250 300 350
+> 0.0  0.5  1.0  1.5
+> Time
+
+Figure S2: Standardized absolute difference between ˆSak, wKM in the low-dimensional setting and ˆSak, wKM in the high-dimensional setting. Solid line is standardized by SE( ˆSak, wKM ) under low-dimensional setting and dashed line is standardized by SE( ˆSak, wKM ) under high-dimensional setting. A horizontal line is placed at 1.5. suggesting that a main-effect only PS model may be correctly specified, because interaction terms appear to be approximately balanced once main effects are controlled for. Figure S2 presents the standardized absolute difference between ˆSak, wKM in the low-dimensional setting and ˆSak, wKM in the high-dimensional setting. Figure S3 presents the standardized absolute difference between ˆSak, wKM (high-dimensional setting) and ˆSak, RCAL,lin . Tables S10–S15 show nu-merical estimates and standard errors for the estimation of survival probabilities. The conclusions drawn from these figures and tables agree with the findings discussed in the main paper. Table S9: Summary of covariate balance 
+
+main interaction # ImbanCov 
+
+Raw (2.53e-4, 6.05e-1) (5.68e-6, 5.51e-1) (9, 148) ML (4.05e-5, 3.46e-2) (1.49e-5, 7.55e-2) (0, 0) CAL (2.86e-13, 3.49e-10) (5.05e-6, 7.03e-2) (0, 0) RML (3.46e-4, 4.25e-2) (4.75e-6, 5.80e-2) (0, 0) RCAL (5.14e-4, 6.88e-2) (2.99e-5, 7.13e-2) (0, 0) 
+
+Note : Each entry reports the range of relative differences across all main effects or interaction terms. For each covariate, the relative difference is the difference in (weighted) means between treatment groups divided by the pooled weighted standard deviation (see Section VII for a detailed definition). Raw corresponds to unweighted differences. ML, CAL, RML, and RCAL correspond to differences weighted by propensity scores estimated using ML, CAL, RML, and RCAL methods, respectively. # ImbanCov represents number of imbalance covariates of main effects and interaction terms, where we say it is imbalance if the difference exceeds 0.1. 
+
+24 50 100 150 200 250 300 350                               
+
+> 0.0  0.5  1.0  1.5
+> Time
+> Hospitalization
+> Treatment 1
+> 50 100 150 200 250 300 350
+> 0.0  0.5  1.0  1.5
+> Time
+> ED Visits
+> 50 100 150 200 250 300 350
+> 0.0  0.5  1.0  1.5
+> Time
+> Mortality
+> 50 100 150 200 250 300 350
+> 0.0  0.5  1.0  1.5
+> Time
+> Treatment 0
+> 50 100 150 200 250 300 350
+> 0.0  0.5  1.0  1.5
+> Time
+> 50 100 150 200 250 300 350
+> 0.0  0.5  1.0  1.5
+> Time
+
+Figure S3: Standardized absolute difference between ˆSak, wKM (high-dimensional setting) and ˆSak, RCAL,lin . Solid line is standardized by SE( ˆSak, wKM ) and dashed line is standardized by SE( ˆSak, RCAL,lin ). A horizontal line is placed at 1.5. Table S10: Summary for estimation of S1k for Hospitalization outcome 
+
+uk
+
+Est SE 
+
+Low High Low High 
+
+ˆS1k, KM ˆS1k, wKM ˆS1k, CAL,lin ˆS1k, wKM ˆS1k, RCAL,lin ˆS1k, KM ˆS1k, wKM ˆS1k, CAL,lin ˆS1k, wKM ˆS1k, RCAL,lin 
+
+30 0.9476 0.9434 0.9461 0.9441 0.9462 0.0020 0.0028 0.0026 0.0026 0.0024 60 0.9188 0.9130 0.9171 0.9140 0.9175 0.0025 0.0035 0.0031 0.0032 0.0029 90 0.8981 0.8902 0.8953 0.8920 0.8961 0.0028 0.0039 0.0035 0.0036 0.0032 120 0.8796 0.8712 0.8765 0.8730 0.8777 0.0030 0.0042 0.0037 0.0038 0.0034 150 0.8655 0.8551 0.8606 0.8572 0.8631 0.0032 0.0044 0.0039 0.0041 0.0036 180 0.8527 0.8412 0.8467 0.8433 0.8496 0.0033 0.0046 0.0041 0.0043 0.0037 210 0.8403 0.8271 0.8329 0.8292 0.8361 0.0034 0.0048 0.0042 0.0045 0.0039 240 0.8288 0.8135 0.8192 0.8162 0.8234 0.0035 0.0050 0.0044 0.0046 0.0040 270 0.8178 0.8036 0.8094 0.8062 0.8136 0.0036 0.0050 0.0045 0.0047 0.0041 300 0.8077 0.7921 0.7983 0.7950 0.8023 0.0037 0.0052 0.0046 0.0048 0.0042 330 0.7974 0.7820 0.7885 0.7849 0.7913 0.0038 0.0053 0.0047 0.0049 0.0042 360 0.7884 0.7723 0.7790 0.7752 0.7825 0.0039 0.0053 0.0047 0.0050 0.0043 
+
+Note : Est means point estimates, and SE means standard deviations. Low means that only main-effects are included in working models, and High means that both main-effects and interactions are included in working models. 
+
+Table S11: Summary for estimation of S0k for Hospitalization outcome 
+
+uk
+
+Est SE 
+
+Low High Low High 
+
+ˆS0k, KM ˆS0k, wKM ˆS0k, CAL,lin ˆS0k, wKM ˆS0k, RCAL,lin ˆS0k, KM ˆS0k, wKM ˆS0k, CAL,lin ˆS0k, wKM ˆS0k, RCAL,lin 
+
+30 0.9610 0.9602 0.9609 0.9608 0.9607 0.0011 0.0012 0.0012 0.0012 0.0012 60 0.9380 0.9367 0.9377 0.9375 0.9375 0.0014 0.0015 0.0015 0.0015 0.0014 90 0.9192 0.9177 0.9189 0.9185 0.9184 0.0016 0.0017 0.0017 0.0017 0.0016 120 0.9037 0.9021 0.9035 0.9030 0.9027 0.0017 0.0019 0.0018 0.0018 0.0018 150 0.8892 0.8871 0.8887 0.8881 0.8881 0.0018 0.0020 0.0019 0.0019 0.0019 180 0.8771 0.8751 0.8767 0.8762 0.8762 0.0019 0.0021 0.0020 0.0020 0.0020 210 0.8667 0.8648 0.8665 0.8659 0.8659 0.0020 0.0022 0.0021 0.0021 0.0020 240 0.8564 0.8545 0.8563 0.8556 0.8557 0.0020 0.0022 0.0021 0.0022 0.0021 270 0.8471 0.8453 0.8472 0.8464 0.8465 0.0021 0.0023 0.0022 0.0022 0.0022 300 0.8373 0.8353 0.8371 0.8364 0.8364 0.0022 0.0024 0.0023 0.0023 0.0022 330 0.8286 0.8266 0.8285 0.8277 0.8277 0.0022 0.0024 0.0023 0.0023 0.0023 360 0.8210 0.8187 0.8207 0.8199 0.8199 0.0023 0.0025 0.0024 0.0024 0.0023 
+
+Note : Est means point estimates, and SE means standard deviations. Low means that only main-effects are included in working models, and High means that both main-effects and interactions are included in working models. 
+
+25 Table S12: Summary for estimation of S1k for ED visits outcome 
+
+uk
+
+Est SE 
+
+Low High Low High 
+
+ˆS1k, KM ˆS1k, wKM ˆS1k, CAL,lin ˆS1k, wKM ˆS1k, RCAL,lin ˆS1k, KM ˆS1k, wKM ˆS1k, CAL,lin ˆS1k, wKM ˆS1k, RCAL,lin 
+
+30 0.9201 0.9137 0.9176 0.9151 0.9183 0.0025 0.0035 0.0031 0.0032 0.0029 60 0.8888 0.8833 0.8884 0.8846 0.8890 0.0029 0.0039 0.0035 0.0036 0.0033 90 0.8666 0.8590 0.8654 0.8602 0.8657 0.0031 0.0043 0.0038 0.0040 0.0035 120 0.8461 0.8374 0.8437 0.8388 0.8450 0.0033 0.0045 0.0041 0.0042 0.0037 150 0.8295 0.8207 0.8273 0.8223 0.8292 0.0035 0.0047 0.0043 0.0044 0.0038 180 0.8136 0.8043 0.8112 0.8062 0.8129 0.0036 0.0049 0.0044 0.0046 0.0041 210 0.7993 0.7869 0.7944 0.7890 0.7962 0.0037 0.0051 0.0045 0.0048 0.0042 240 0.7851 0.7732 0.7811 0.7756 0.7829 0.0038 0.0052 0.0046 0.0049 0.0043 270 0.7738 0.7630 0.7711 0.7652 0.7722 0.0039 0.0053 0.0047 0.0049 0.0043 300 0.7621 0.7507 0.7593 0.7531 0.7608 0.0040 0.0054 0.0048 0.0050 0.0044 330 0.7522 0.7400 0.7490 0.7428 0.7501 0.0041 0.0055 0.0049 0.0051 0.0044 360 0.7413 0.7294 0.7385 0.7322 0.7396 0.0042 0.0055 0.0050 0.0052 0.0045 
+
+> Note : Est means point estimates, and SE means standard deviations. Low means that only main-effects are included in working models, and High means that both main-effects and interactions are included in working models.
+
+Table S13: Summary for estimation of S0k for ED visits outcome 
+
+uk
+
+Est SE 
+
+Low High Low High 
+
+ˆS0k, KM ˆS0k, wKM ˆS0k, CAL,lin ˆS0k, wKM ˆS0k, RCAL,lin ˆS0k, KM ˆS0k, wKM ˆS0k, CAL,lin ˆS0k, wKM ˆS0k, RCAL,lin 
+
+30 0.9475 0.9454 0.9464 0.9463 0.9463 0.0013 0.0014 0.0014 0.0014 0.0013 60 0.9187 0.9161 0.9175 0.9173 0.9174 0.0016 0.0017 0.0017 0.0017 0.0016 90 0.8967 0.8938 0.8955 0.8952 0.8954 0.0017 0.0019 0.0018 0.0019 0.0018 120 0.8775 0.8741 0.8759 0.8756 0.8757 0.0019 0.0021 0.0020 0.0020 0.0020 150 0.8606 0.8568 0.8589 0.8585 0.8588 0.0020 0.0022 0.0021 0.0021 0.0021 180 0.8448 0.8411 0.8432 0.8428 0.8432 0.0021 0.0023 0.0022 0.0022 0.0022 210 0.8318 0.8281 0.8303 0.8298 0.8302 0.0022 0.0024 0.0023 0.0023 0.0022 240 0.8193 0.8157 0.8180 0.8175 0.8179 0.0022 0.0025 0.0023 0.0024 0.0023 270 0.8085 0.8042 0.8066 0.8062 0.8065 0.0023 0.0025 0.0024 0.0024 0.0024 300 0.7976 0.7932 0.7957 0.7952 0.7955 0.0023 0.0026 0.0025 0.0025 0.0024 330 0.7873 0.7825 0.7851 0.7847 0.7852 0.0024 0.0026 0.0025 0.0026 0.0025 360 0.7784 0.7733 0.7760 0.7756 0.7761 0.0024 0.0027 0.0026 0.0026 0.0025 
+
+> Note : Est means point estimates, and SE means standard deviations. Low means that only main-effects are included in working models, and High means that both main-effects and interactions are included in working models.
+
+Table S14: Summary for estimation of S1k for Mortality outcome 
+
+uk
+
+Est SE 
+
+Low High Low High 
+
+ˆS1k, KM ˆS1k, wKM ˆS1k, CAL,lin ˆS1k, wKM ˆS1k, RCAL,lin ˆS1k, KM ˆS1k, wKM ˆS1k, CAL,lin ˆS1k, wKM ˆS1k, RCAL,lin 
+
+30 0.9978 0.9984 0.9984 0.9982 0.9980 4e-04 3e-04 3e-04 4e-04 4e-04 64 0.9963 0.9974 0.9974 0.9972 0.9970 6e-04 4e-04 4e-04 5e-04 5e-04 91 0.9952 0.9961 0.9961 0.9960 0.9958 6e-04 7e-04 7e-04 6e-04 7e-04 121 0.9937 0.9951 0.9950 0.9949 0.9946 7e-04 8e-04 7e-04 7e-04 7e-04 151 0.9923 0.9935 0.9933 0.9933 0.9930 8e-04 9e-04 8e-04 8e-04 9e-04 180 0.9908 0.9924 0.9922 0.9922 0.9919 9e-04 9e-04 9e-04 9e-04 9e-04 210 0.9889 0.9912 0.9909 0.9909 0.9904 0.0010 0.0010 9e-04 9e-04 0.0010 242 0.9874 0.9896 0.9896 0.9894 0.9891 0.0010 0.0011 0.0010 0.0010 0.0011 274 0.9863 0.9887 0.9888 0.9884 0.9882 0.0011 0.0012 0.0011 0.0011 0.0011 300 0.9850 0.9878 0.9879 0.9875 0.9872 0.0011 0.0012 0.0011 0.0011 0.0011 330 0.9833 0.9864 0.9865 0.9859 0.9858 0.0012 0.0013 0.0011 0.0012 0.0012 361 0.9820 0.9852 0.9853 0.9848 0.9846 0.0013 0.0013 0.0012 0.0012 0.0012 
+
+> Note : Est means point estimates, and SE means standard deviations. Low means that only main-effects are included in working models, and High means that both main-effects and interactions are included in working models.
+
+26 Table S15: Summary for estimation of S0k for Mortality outcome 
+
+uk
+
+Est SE 
+
+Low High Low High 
+
+ˆS0k, KM ˆS0k, wKM ˆS0k, CAL,lin ˆS0k, wKM ˆS0k, RCAL,lin ˆS0k, KM ˆS0k, wKM ˆS0k, CAL,lin ˆS0k, wKM ˆS0k, RCAL,lin 
+
+30 0.9989 0.9988 0.9988 0.9988 0.9988 2e-04 2e-04 2e-04 2e-04 2e-04 60 0.9978 0.9976 0.9977 0.9976 0.9977 3e-04 3e-04 3e-04 3e-04 3e-04 90 0.9970 0.9967 0.9968 0.9967 0.9967 3e-04 4e-04 4e-04 4e-04 4e-04 120 0.9960 0.9957 0.9958 0.9957 0.9957 4e-04 4e-04 4e-04 4e-04 4e-04 152 0.9951 0.9945 0.9947 0.9946 0.9946 4e-04 5e-04 5e-04 5e-04 5e-04 180 0.9941 0.9935 0.9937 0.9936 0.9936 4e-04 5e-04 5e-04 5e-04 5e-04 210 0.9931 0.9924 0.9926 0.9926 0.9927 5e-04 6e-04 5e-04 6e-04 5e-04 240 0.9923 0.9916 0.9917 0.9917 0.9918 5e-04 6e-04 6e-04 6e-04 6e-04 271 0.9914 0.9907 0.9908 0.9908 0.9909 5e-04 6e-04 6e-04 6e-04 6e-04 300 0.9906 0.9898 0.9900 0.9900 0.9901 6e-04 7e-04 6e-04 6e-04 6e-04 334 0.9898 0.9888 0.9890 0.9891 0.9892 6e-04 7e-04 7e-04 7e-04 7e-04 360 0.9891 0.9880 0.9882 0.9883 0.9885 6e-04 8e-04 7e-04 7e-04 7e-04 
+
+> Note : Est means point estimates, and SE means standard deviations. Low means that only main-effects are included in working models, and High means that both main-effects and interactions are included in working models.
+
+## VII Definition of relative difference 
+
+For each covariate j, the weighted mean in treatment group a ∈ { 0, 1} is ¯X(1) 
+
+j =
+
+∑ni=1 Ai ˆω1iXij 
+
+∑ni=1 Ai ˆω1i
+
+, ¯X(0) 
+
+j =
+
+∑ni=1 (1 − Ai)ˆ ω0iXij 
+
+∑ni=1 (1 − Ai)ˆ ω0i
+
+,
+
+where the weights are defined as ˆ ω1i = π(Xi; ˆ γ)−1 and ˆ ω0i = (1 − π(Xi; ˆ γ)) −1, and ˆ ω1i = ˆ ω0i = 1 for unweighted differences. The difference for covariate j is Dj = | ¯X(1) 
+
+j − ¯X(0) 
+
+j | and the pooled weighted standard deviation is 
+
+Sj =
+
+√√√√√ 1
+
+2
+
+∑ni=1 Ai ˆω1i(Xij − ¯X(1) 
+
+j )2
+
+∑ni=1 Ai ˆω1i −
+
+∑ni=1 Ai ˆω21i∑ni=1 Ai ˆω1i
+
++
+
+∑ni=1 (1 − Ai)ˆ ω0i(Xij − ¯X(0) 
+
+j )2
+
+∑ni=1 (1 − Ai)ˆ ω0i −
+
+∑ni=1 (1 −Ai)ˆ ω20i∑ni=1 (1 −Ai)ˆ ω0i
+
+.
+
+The relative difference is then Rj = Dj /S j and the range of relative differences across all covariates is [min j Rj , max j Rj ]. 
+
+## References 
+
+Ghosh, S. and Tan, Z. (2022) Doubly robust semiparametric inference using regularized calibrated estimation with high-dimensional data, Bernoulli , 28, 1675–1703. Tan, Z. (2020) Model-assisted inference for treatment effects using regularized calibrated estima-tion with high-dimensional data, Annals of Statistics , 48, 811–837. Tan, Z. (2023) Consistent and robust inference in hazard probability and odds models with discrete-time survival data, Lifetime Data Analysis , 29, 555–584. 27

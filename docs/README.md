@@ -6,61 +6,58 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-05-16
-- 运行时间：2026-05-16 20:35:43 UTC
+- 最新运行日期：2026-05-18
+- 运行时间：2026-05-18 21:01:00 UTC
 - 运行状态：成功
-- 本次总论文数：13
-- 精读区：2
+- 本次总论文数：12
+- 精读区：1
 - 速读区：11
 
 ### 今日简报（AI）
-今日精选 13 篇前沿论文，深度聚焦心理健康、人力资本积累与家庭决策的复杂交互。
-重点关注养老金制度下心理健康对资本构成的长期影响，以及父母时间分配如何决定生育补贴的政策效能。
-建议关注社会保障与人口政策的研究者深入研读，探索宏观制度如何微观影响个体福利与家庭结构。
-- 详情：[/202605/16/README](/202605/16/README)
+今日深度复盘 12 篇前沿文献，聚焦育儿补贴政策效力与因果推断计量方法的最新演进。
+核心结论指出育儿时间分配是补贴能否奏效的关键，同时提供了处理网络溢出及异质性效应的实用工具指南。
+建议政策研究者深挖生育激励机制，方法论爱好者则可重点关注交错 DiD 与工具变量法的识别新进展。
+- 详情：[/202605/18/README](/202605/18/README)
 
 ### 精读区论文标签
-1. [Mental Health and Human Capital Composition in a Dynastic OLG Model with PAYG Pensions](/202605/16/2605.07377v1-mental-health-and-human-capital-composition-in-a-dynastic-olg-model-with-payg-pensions)  
-   标签：评分：9.0/10、query:profile-1
-   evidence：父母在世代交叠模型中选择消费、储蓄和生育
-2. [How many parents does it take? Parental time allocation and the effectiveness of fertility subsidies](/202605/16/2605.13679v1-how-many-parents-does-it-take-parental-time-allocation-and-the-effectiveness-of-fertility-subsidies)  
-   标签：评分：8.5/10、query:q2
-   evidence：父母时间分配与生育补贴的有效性
+1. [How many parents does it take? Parental time allocation and the effectiveness of fertility subsidies](/202605/18/2605.13679v1-how-many-parents-does-it-take-parental-time-allocation-and-the-effectiveness-of-fertility-subsidies)  
+   标签：评分：8.5/10、query:profile-1
+   evidence：家庭内部分配、父母时间分配与生育补贴
 
 ### 速读区论文标签
-1. [Skill Premia and Pre-Marital Investments in Marriage Markets](/202605/16/2605.10060v2-skill-premia-and-pre-marital-investments-in-marriage-markets)  
+1. [A Practical Guide to Instrumental Variables Methods with Heterogeneous Treatment Effects](/202605/18/2605.15115v1-a-practical-guide-to-instrumental-variables-methods-with-heterogeneous-treatment-effects)  
    标签：评分：7.5/10、query:profile-1
-   evidence：家庭效用最大化与婚前投资
-2. [ConfoundingSHAP: Quantifying confounding strength in causal inference](/202605/16/2605.10533v1-confoundingshap-quantifying-confounding-strength-in-causal-inference)  
+   evidence：应用微观经济学中工具变量和异质性处理效应的指南
+2. [Identification and Estimation of Staggered Difference-in-Differences with Network Spillovers](/202605/18/2605.15119v1-identification-and-estimation-of-staggered-difference-in-differences-with-network-spillovers)  
+   标签：评分：7.5/10、query:q9
+   evidence：用于因果识别的交错双重差分框架
+3. [Causal Stability Selection](/202605/18/2605.09300v1-causal-stability-selection)  
+   标签：评分：7.0/10、query:profile-1
+   evidence：识别因果推断中修正处理效应的协变量
+4. [Proximal Path-Specific Inference](/202605/18/2605.09462v1-proximal-path-specific-inference)  
+   标签：评分：7.0/10、query:profile-1
+   evidence：存在未观测混杂时的路径特定效应因果中介分析
+5. [ConfoundingSHAP: Quantifying confounding strength in causal inference](/202605/18/2605.10533v1-confoundingshap-quantifying-confounding-strength-in-causal-inference)  
    标签：评分：7.0/10、query:profile-1
    evidence：量化观察性研究因果推断中的混杂强度
-3. [Smooth Multi-Policy Causal Effect Estimation in Longitudinal Settings](/202605/16/2605.14284v1-smooth-multi-policy-causal-effect-estimation-in-longitudinal-settings)  
-   标签：评分：7.0/10、query:profile-1
-   evidence：纵向背景下政策决策的因果效应估计
-4. [A Practical Guide to Instrumental Variables Methods with Heterogeneous Treatment Effects](/202605/16/2605.15115v1-a-practical-guide-to-instrumental-variables-methods-with-heterogeneous-treatment-effects)  
-   标签：评分：7.0/10、query:profile-1
-   evidence：因果识别的工具变量法
-5. [Identification and Estimation of Staggered Difference-in-Differences with Network Spillovers](/202605/16/2605.15119v1-identification-and-estimation-of-staggered-difference-in-differences-with-network-spillovers)  
-   标签：评分：7.0/10、query:q9
-   evidence：用于因果识别的交错双重差分框架
-6. [BGM-IV: an AI-powered Bayesian generative modeling approach for instrumental variable analysis](/202605/16/2605.07029v1-bgm-iv-an-ai-powered-bayesian-generative-modeling-approach-for-instrumental-variable-analysis)  
-   标签：评分：6.5/10、query:q7
-   evidence：用于工具变量分析的贝叶斯生成模型
-7. [Fit CATE Once: Model-Assisted Randomization Tests Without Sample Splitting](/202605/16/2605.09116v1-fit-cate-once-model-assisted-randomization-tests-without-sample-splitting)  
+6. [IV-ICL: Bounding Causal Effects with Instrumental Variables via In-Context Learning](/202605/18/2605.12924v1-iv-icl-bounding-causal-effects-with-instrumental-variables-via-in-context-learning)  
+   标签：评分：6.8/10、query:q7
+   evidence：使用工具变量界定因果效应以进行部分识别
+7. [Doubly Robust Proxy Causal Learning with Neural Mean Embeddings](/202605/18/2605.09514v1-doubly-robust-proxy-causal-learning-with-neural-mean-embeddings)  
    标签：评分：6.5/10、query:profile-1
-   evidence：用于面板实验中处理效应异质性的模型辅助随机化检验
-8. [Nested Sensitivity Envelopes for Transported Quantile Treatment Effects](/202605/16/2605.09264v1-nested-sensitivity-envelopes-for-transported-quantile-treatment-effects)  
-   标签：评分：6.5/10、query:q7
-   evidence：因果推断和目标群体处理效应的方法论桥梁
-9. [Causal Stability Selection](/202605/16/2605.09300v1-causal-stability-selection)  
+   evidence：用于识别观察性研究中因果响应函数的因果学习框架
+8. [Synthetic Control Method with Mixed Frequency Data](/202605/18/2605.12136v1-synthetic-control-method-with-mixed-frequency-data)  
    标签：评分：6.5/10、query:profile-1
-   evidence：用于识别处理效应修正因子的因果稳定性选择方法
-10. [Proximal Path-Specific Inference](/202605/16/2605.09462v1-proximal-path-specific-inference)  
+   evidence：用于经济研究因果识别的合成控制法
+9. [Nonparametric inference for sublevel-set probabilities of conditional average treatment effect functions](/202605/18/2605.15373v1-nonparametric-inference-for-sublevel-set-probabilities-of-conditional-average-treatment-effect-functions)  
    标签：评分：6.5/10、query:profile-1
-   evidence：针对存在未观测混杂因素的路径特定效应的因果中介分析
-11. [Doubly Robust Proxy Causal Learning with Neural Mean Embeddings](/202605/16/2605.09514v1-doubly-robust-proxy-causal-learning-with-neural-mean-embeddings)  
+   evidence：条件平均处理效应（CATE）函数的推断以捕捉异质性
+10. [Re-examining and calibrating weighted survival analysis for causal inference](/202605/18/2605.15702v1-re-examining-and-calibrating-weighted-survival-analysis-for-causal-inference)  
    标签：评分：6.5/10、query:profile-1
-   evidence：观察性研究的双重稳健代理因果学习
+   evidence：具有事件发生时间结果和生存分析的因果推断
+11. [Exploiting independence constraints for efficient estimation of bounds on causal effects in the presence of unmeasured confounding](/202605/18/2605.11515v1-exploiting-independence-constraints-for-efficient-estimation-of-bounds-on-causal-effects-in-the-presence-of-unmeasured-confounding)  
+   标签：评分：6.2/10、query:profile-1
+   evidence：在存在未测量混杂因素的情况下有效估计因果效应
 
 
 <div class="dpr-home-promo-card">
