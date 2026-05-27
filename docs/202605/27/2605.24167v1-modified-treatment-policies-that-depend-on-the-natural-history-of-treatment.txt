@@ -1,0 +1,1674 @@
+Title: Modified treatment policies that depend on the natural history of treatment
+
+URL Source: https://arxiv.org/pdf/2605.24167v1
+
+Published Time: Tue, 26 May 2026 00:13:07 GMT
+
+Number of Pages: 24
+
+Markdown Content:
+# Modified treatment policies that depend on the natural history of treatment. 
+
+Iv´ an D´ ıaz 1,∗, Nicholas T. Williams 2, Paweł Morzywołek 3, and Kara E. Rudolph 41Division of Biostatistics, Department of Population Health, New York University Grossman School of Medicine 
+
+> 2
+
+Division of Biostatistics, School of Public Health, University of California at Berkeley 
+
+> 3
+
+Section of Biostatistics, Department of Public Health, University of Copenhagen 
+
+> 4
+
+Department of Epidemiology, Mailman School of Public Health, Columbia University 
+
+> ∗
+
+Corresponding author: ivan.diaz@nyu.edu 
+
+May 26, 2026 
+
+Abstract 
+
+Longitudinal modified treatment policies (LMTP) are a class of interventions that allow the defi-nition, identification, and estimation of causal effects in general settings, such as with continuous or multivariate exposures, treatment regimens that require grace periods. Targeted machine learning esti-mators (i.e., double/debiased) have been formulated for LMTPs that assign the exposure at time t as a function of the natural value of treatment at time t. However, important applications such as estimating the effect of a delay in the start of a treatment require formulating LMTPs that depend not only on the natural value of treatment at time t but also on the history of the natural value of treatment prior to time 
+
+t. This paper develops targeted learning estimators for this general case. We discuss the definition of the effects, and propose estimators that use an augmented-data version of the sequential regression form of the longitudinal g-computation formula. Our estimators are based on the efficient influence function and provide √n inference under standard doubly robust rate assumptions on the convergence of the outcome and treatment regressions. We apply the new estimators to assess the effect of delaying a risky pain treatment by one month on 12-month incidence of opioid use disorder. 
+
+Key words: Modified treatment policies, natural value of treatment, longitudinal g-computation formula. 
+
+# 1 Introduction 
+
+Modified treatment policies (MTPs), also known as dynamic interventions that depend on the natural value of treatment (D´ ıaz and van der Laan, 2012; Haneuse and Rotnitzky, 2013; Richardson and Robins, 2013; Young et al., 2014; D´ ıaz et al., 2023; Hoffman et al., 2024), provide a flexible way to define, identify, and estimate causal effects in real-world situations such as continuous or multivariate exposures (Jiang et al., 2025), limited overlap or practical positivity violations (Wen et al., 2023), grace periods or delays in treatment initiation (Wanis et al., 2024), longitudinal studies with time-varying treatments, censoring, and competing risks (D´ ıaz et al., 2024), resource-constrained treatment policies (Sarvet et al., 2023), and policy interventions with spillovers or network interference (Balkus et al., 2026). Sarvet and Stensrud (2025) provide a thorough review of the literature on methods involving the natural value of treatment. Longitudinal modified treatment policies were originally formulated broadly enough to allow the inter-vention at time t to depend on the history of natural treatment values up to time t (Richardson and Robins, 1
+
+> arXiv:2605.24167v1 [stat.ME] 22 May 2026
+
+2013). The natural treatment value at time t is the treatment that would have been observed had the interven-tion been stopped immediately before treatment at time t was assigned. Thus, in the original formulation, the policy at time t may depend both on the contemporaneous natural treatment value and on earlier nat-ural treatment values. In contrast, subsequent work on inverse probability weighted (Young et al., 2014) and targeted learning estimators (D´ ıaz et al., 2023) focused on the narrower class of policies in which the intervention at time t depends only on the contemporaneous natural treatment value. This restriction rules out policies whose treatment rule depends on the natural values of treatment at previous timepoints, such as when the intervention modifies the timing of a naturally occurring treatment process rather than only the contemporaneous treatment value. For example, in longitudinal policy evaluation, one may wish to estimate the effect of delaying the natural date of policy adoption, such as shifting the enactment time of a naloxone access law (Rudolph et al., 2022). In this case, treatment at time t depends on the natural policy status at an earlier time, or equivalently on the natural adoption time. For longitudinal modified treatment policies that depend only on the contemporaneous natural value of treatment, D´ ıaz et al. (2023) developed targeted machine learning estimators based on efficient influence function that achieve √n-consistency under slow convergence rates for the nuisance regressions, including the outcome regressions and treatment mechanisms. These estimators rely on the fact that, for this class of interventions, the generalized g-computation formula of Richardson and Robins (2013) admits a standard iterated conditional expectation representation (Bang and Robins, 2005; Luedtke et al., 2017). We show that this representation fails for longitudinal modified treatment policies that depend on the natural history of treatment. We therefore introduce a modified iterated conditional expectation formula on an augmented data structure and prove that it equals the corresponding g-computation functional. We then derive the efficient influence function of the resulting nonparametric functional and characterize conditions for √n-consistent estimation. These results yield two extensions of the estimators of D´ ıaz et al. (2023): a targeted minimum loss-based estimator and a sequentially doubly robust estimator. Like their original counterparts, our estimators are asymptotically efficient under a product-rate condition requiring certain regression errors to converge to zero at √n-rate in L2 norm. We assess finite-sample performance in simulations and illustrate the methods in an application estimating the effect of delaying a risky pain treatment by one month on 12-month incidence of opioid use disorder or overdose diagnosis among 12,745 Medicaid-insured patients with lumbar spinal stenosis. 
+
+# 2 Notation and definition of causal effects 
+
+Let Z1, . . . , Z n denote i.i.d. observations with Z = ( L1, A 1, L 2, A 2, . . . , L τ , A τ , Y ) ∼ P, where Lt denotes time-varying covariates, At denotes a discrete exposure variable, and Y denotes an outcome of interest measured at the end of study follow-up. We let Pn to denote the empirical distribution of Z1, . . . Z n, and assume P is an element of the non-parametric statistical model defined as all continuous densities on Z with respect to a dominating measure ν. We let Pf = R f (z)d P(z) for a given function f (z), and let E denote the expectation with respect to P, i.e., E{f (Z)} = R f (z)d P(z). We use || f || 2 to denote the L2(P) norm R f 2(z)d P(z). ¯Xt = ( X1, . . . , X t) will be used to denote the history of a variable, Xt = ( Xt, . . . , X τ ) to denote the future of a variable, and Ht = ( ¯At−1, ¯Lt) to denote the history of all variables up until just before 
+
+At. When useful, we will also use notation ¯Xt:k = ( Xt, . . . X k). We let gt(at | ht) denote the probability mass function of At conditional on Ht = ht, and use calligraphic font to denote the support of a random variable, e.g., At denotes the support of At. Causal effects are defined relying on counterfactual logic. Counterfactual random variables will be formally defined using a non-parametric structural equation model (Pearl, 2009). Specifically, for each timepoint t, we assume the existence of deterministic functions fLt ,
+
+fAt , and fY such that Lt = fLt (At−1, H t−1, U L,t ), At = fAt (Ht, U A,t ), and Y = fY (Aτ , H τ , U Y ), where 
+
+U = ( UL,t , U A,t , U Y : t ∈ { 1, . . . , τ }) is a vector of exogenous variables with a distribution satisfying 2assumptions that will be given in §3. Unless defined otherwise, sums of the type Ptk=s ak and products of the type Qtk=s ak for s > t are defined as zero and one. 
+
+2.1 Longitudinal modified treatment policies that only depend on the contemporaneous nat-ural value of treatment 
+
+We first revisit the definition of LMTPs used in D´ ıaz et al. (2023) to contrast it with the more general definition we use in this manuscript (§2.2). D´ ıaz et al. (2023) defined LMTP effects in terms of hypothet-ical interventions where the equation At = fAt (Ht, U A,t ) is removed from the structural model, and the exposure is assigned as follows. For a user-defined function d1, at the first timepoint, t = 1 , the post-intervention treatment is defined as a transformation Ad 
+
+> 1
+
+= d1(A1, L 1) of the natural value of treatment at that time, A1, and the history of data collected up until A1, L1. At time t = 1 , the natural value of treatment is equal to the observed value of treatment, but this will not be the case for subsequent timepoints. The hypothetical intervention, 
+
+d1, generates an intervened-on treatment at t = 1 , which we have denoted Ad
+
+> 1
+
+, and counterfactual L2(Ad
+
+> 1
+
+).These are then part of the counterfactual history and the natural value of treatment at time t = 2 , denoted with H2(Ad
+
+> 1
+
+) = ( L1, A d
+
+> 1
+
+, L 2(Ad
+
+> 1
+
+)) and A2(Ad
+
+> 1
+
+).At time t = 2 , the post-intervention treatment is defined as Ad 
+
+> 2
+
+= d2(A2(Ad
+
+> 1
+
+), H 2(Ad
+
+> 1
+
+)) . In particular, note that this intervention depends only on the contemporaneous natural value of treatment at time t = 2 ,
+
+A2(Ad
+
+> 1
+
+), and not on the natural value of treatment at t = 1 , A1. Instead, the intervention depends on the intervened-on value of treatment at t = 1 , namely Ad 
+
+> 1
+
+= d1(A1, L 1). This intervention at time t = 2 
+
+generates an intervened-on Ad 
+
+> 2
+
+and updated counterfactual history, which are then used to assign the post-intervention exposure at time t = 3 as Ad 
+
+> 3
+
+= d3(A3( ¯Ad
+
+> 2
+
+), H 3( ¯Ad
+
+> 2
+
+)) . This process is iterated forward in time until interventions at all times t ∈ [τ ] have been performed, at which point we obtain the counterfactual outcome Y ( ¯Ad) = fY (Adτ , H τ ( ¯Adτ −1), U Y ). The general definition of LMTPs that depend on the current natural value of treatment is as follows: 
+
+Definition 1. An intervention variable Adt is said to be a longitudinal modified treatment that depends on the contemporaneous natural value of treatment if it is defined as Adt = dt(At( ¯Adt−1), H t( ¯Adt−1)) for a user-given function dt.The data generating process that leads to the above counterfactual outcome is illustrated in Figure 1a with τ = 2 and omitting L1. Hoffman et al. (2024) provide a large list of interventions of practical interest that can be described using this framework. Importantly, delay interventions do not fit this definition. We elaborate on this point in §2.3. 
+
+2.2 Longitudinal modified treatment policies that depend on the natural history of treat-ment 
+
+In this paper, we generalize the above definition to allow dependence of the intervention at time t on the 
+
+history of the natural value of treatment—instead of just on the contemporaneous natural value of treatment. Specifically, counterfactual outcomes are generated as follows. The intervention at t = 1 is defined identical to §2.1. At time t = 1 , the post-intervention variable is defined as a transformation Ad 
+
+> 1
+
+= d1(A1, L 1) of the natural value (which, again, is also the observed value) of treatment A1 and L1. This intervention generates a counterfactual history and treatment at time t = 2 ,denoted with H2(Ad
+
+> 1
+
+) = ( L1, A d
+
+> 1
+
+, L 2(Ad
+
+> 1
+
+)) and A2(Ad
+
+> 1
+
+), respectively. At time t = 2 , the two definitions diverge. At this timepoint the post-intervention exposure is generated as Ad 
+
+> 2
+
+= d2( ¯A2(Ad
+
+> 1
+
+), H 2(Ad
+
+> 1
+
+)) . The difference between this and the definition of Ad 
+
+> 2
+
+in §2.1 is the overbar for the history of the natural value ¯A2(Ad
+
+> 1
+
+), which is defined as ¯A2(Ad
+
+> 1
+
+) = ( A1, A 2(Ad
+
+> 1
+
+)) . In particular, note that 3this intervention can depend on two values of treatment at t = 1 , the natural value of treatment, A1, and the intervened value of treatment, Ad 
+
+> 1
+
+= d1(A1, L 1). This intervention at time t = 2 generates a counterfactual history and natural value of treatment at time t = 3 , H3( ¯Ad
+
+> 2
+
+) = ( L1, A d
+
+> 1
+
+, L 2(Ad
+
+> 1
+
+), A d
+
+> 2
+
+, L 3( ¯Ad
+
+> 2
+
+)) and A3( ¯Ad
+
+> 2
+
+),similar to §2.1. These variables are then used to assign the post-intervention exposure at time t = 3 as 
+
+Ad 
+
+> 3
+
+= d3( ¯A3( ¯Ad
+
+> 2
+
+), H 3( ¯Ad
+
+> 2
+
+)) , where ¯A3( ¯Ad
+
+> 2
+
+) = ( A1, A 2(Ad
+
+> 1
+
+), A 3( ¯Ad
+
+> 2
+
+)) . This process is iterated forward in time until interventions at all times t ∈ [τ ] have been performed, at which point we obtain the counterfactual outcome Y ( ¯Ad) = fY (Adτ , H τ ( ¯Adτ −1), U Y ). Below is the formal definition, which coincides with the general definition given in §5.2 of Richardson and Robins (2013). Figure 2 gives a graphical illustration of the differences between this definition and the definition of §2.1. 
+
+Definition 2. An intervention Adt is a generalized longitudinal modified treatment policy that depends on the history of the natural value of treatment (G-LMTP) if it is defined as Adt = dt( ¯At( ¯Adt−1), H t( ¯Adt−1)) for a user-given function dt, where the natural history of treatment ¯At( ¯Adt−1) is defined as (A1, A 2(Ad
+
+> 1
+
+), A 3( ¯Ad
+
+> 2
+
+), . . . , A t( ¯Adt−1)) .
+
+A1 Ad 
+
+> 1
+
+L2(Ad
+
+> 1
+
+) A2(Ad
+
+> 1
+
+) Ad 
+
+> 2
+
+Y ( ¯Ad)  
+
+> (a) LMTP that depends on the natural contemporaneous value of treatment
+
+A1 Ad 
+
+> 1
+
+L2(Ad
+
+> 1
+
+) A2(Ad
+
+> 1
+
+) Ad 
+
+> 2
+
+Y (d)   
+
+> (b) LMTP that depends on the natural history of treatment. The dashed line is used to highlight the additional arrow used here, as compared to the figure above.
+
+Figure 1: Single world intervention graphs (SWIGs) for a modified treatment policy with two timepoints. The dashed arrow corresponds to the generalization addressed in this work. 
+
+2.3 Interventions that depend on the natural history of treatment 
+
+In this section we discuss two scientifically and clinically relevant interventions that require the G-LMTP framework, highlighting issues that arise when more narrowly defined LMTPs do not have access to the history of natural treatment values once a modification has occurred. Specificially, the G-LMTP framework is required for policies that depend on aspects of the natural treatment trajectory that may be overwritten by the intervention. 
+
+2.3.1 Delay interventions 
+
+In vaccine studies, one may be interested in assessing the effect of a delay in receiving a vaccine booster. Likewise, one may be interested in estimating the effect of delaying a potentially harmful intervention such 4as invasive mechanical ventilation in acutely ill patients. Here we briefly show that such delay policies cannot be expressed within the LMTP framework described by D´ ıaz et al. (2023), but can be expressed by the G-LMTP framework described in this paper. Consider a simple setting with only two time points and a binary intervention at each timepoint. A delay in exposure of one timepoint would correspond to an intervention that assigns treatment at time t = 1 as Ad 
+
+> 1
+
+= d1(A1, L 1) = 0 . At time t = 2 , the desired delay intervention should assign the treatment as Ad 
+
+> 2
+
+= A1. This however, is not possible in the setting depicted by Figure 1a, as there is no dependence of the MTP on the prior natural value of treatment under that setup. In other words, Ad 
+
+> 2
+
+= d2(A2(Ad
+
+> 1
+
+), L 2(Ad
+
+> 1
+
+), A d
+
+> 1
+
+, L 1) must be defined solely in terms of the natural value of treatment at time 2 and the intervened history, i.e., d1(A1, L 1). If d1 modifies A1 (e.g., from 1 to 0), the function d2 no longer has access to the original A1, and thus cannot shift it forward in time. In contrast, under an G-LMTP, Ad 
+
+> 2
+
+may be defined as a function of A1 even if Ad
+
+> 1
+
+̸ = A1, and the policy can be explicitly constructed to reassign the original treatment at time 1 to occur at time 2 instead. To further elaborate, consider a long-standing question in critical care regarding the effects of delaying invasive mechanical ventilation. Let At ∈ { 0, 1, 2} denote the level of oxygen support at time t, where At =0 indicates no support, At = 1 indicates non-invasive support, and At = 2 indicates invasive mechanical ventilation. For an arbitrary vector ¯at, define the function 
+
+dt(at, ¯at−1) = 
+
+(
+
+1 if at = 2 and as ≤ 1 for all s < t, at otherwise, which represents a policy that delays mechanical ventilation by substituting it with non-invasive support unless the patient has already received invasive mechanical ventilation (IMV), where the G-LMTP is de-fined by Adt = dt(At( ¯Adt−1), ¯At−1( ¯Adt−2)) . Consider τ = 3 and a patient with observed treatment history 
+
+(A1, A 2, A 3) = (1 , 2, 2) . At time t = 1 , the patient would receive Ad 
+
+> 1
+
+= 1 . At time t = 2 , since the natural treatment is A2(1) = 2 and the patient has not yet received invasive ventilation, the policy prescribes 
+
+Ad 
+
+> 2
+
+= 1 . At time t = 3 , the value of Ad 
+
+> 3
+
+depends on the counterfactual oxygen support requirement under the delayed history: if A3(1) = 2 , then the policy assigns Ad 
+
+> 3
+
+= 1 ; otherwise, Ad 
+
+> 3
+
+= A3(1) . That is, the possible paths under this intervention are (1 , 1, 2) , (1 , 1, 1) , and (1 , 1, 0) , depending on the natural value of 
+
+A3(1) .In contrast, if the intervened-on treatment is assigned as an LMTP that depends on the current natural value of treatment, i.e., Adt = dt(At( ¯Adt−1), ¯Adt−1), corresponding to the estimators developed in D´ ıaz et al. (2023), the intervention would effectively prevent intubation for all patients rather than intend to delay it. Continuing with the example above, a patient with observed treatment history (A1, A 2, A 3) = (1 , 2, 2) 
+
+would have Ad 
+
+> 1
+
+= 1 as before. At time t = 2 , the LMTP rule applies d2 to A2(1) = 2 and Ad 
+
+> 1
+
+= 1 , yielding 
+
+Ad 
+
+> 2
+
+= 1 . However, at time t = 3 , the intervention uses A3( ¯Ad
+
+> 2
+
+) = A3(1 , 1) and (Ad
+
+> 2
+
+, A d
+
+> 1
+
+) = (1 , 1) . The only consistent regimens under the intervention are therefore ¯Ad = (1 , 1, 1) and ¯Ad = (1 , 1, 0) , depending on the value of A3(1 , 1) . In other words, the LMTP cannot detect that invasive ventilation had been indicated and subsequently overridden, and so the rule continues to suppress it indefinitely. 
+
+2.3.2 Dose escalation interventions 
+
+Another example of a class of interventions that requires access to the history of natural treatment values arises when the treatment is a dose and the scientific question concerns modification of the clinician’s natural dose-escalation behavior. For example, suppose At denotes the dose of a medication at visit t, and consider a policy that leaves the clinician’s natural dose unchanged unless the clinician would naturally increase the dose by more than δ since the previous visit. If the natural increase exceeds δ, the policy caps the increase at δ.Assume that At is ordered and let δ > 0 denote the maximum allowed increase. For arbitrary treatment values at and at−1, define, for t ≥ 2, dt(at, a t−1) = at−1 + δ if at − at−1 > δ , and dt(at, a t−1) = at
+
+5otherwise. The rule at t = 1 may be defined as d1(a1, a 0) = a1. The corresponding G-LMTP is Adt =
+
+dt(At( ¯Adt−1), A t−1( ¯Adt−2)) . This policy compares the natural dose at time t with the natural dose at time 
+
+t − 1, both evaluated under the counterfactual history induced by the previous interventions. It therefore modifies only large natural escalations, while leaving smaller natural increases, dose decreases, and dose stability unchanged. This intervention cannot generally be represented as an LMTP that depends only on the contempo-raneous natural value of treatment. Under such an LMTP, the treatment at time t may be written as 
+
+Adt = dt(At( ¯Adt−1), A dt−1). The intervened previous dose Adt−1, does not generally correspond to the previ-ous natural dose At−1( ¯Adt−2). Once a large escalation has been capped at time t − 1, the contemporaneous LMTP no longer has access to the dose the clinician would naturally have assigned at that time. As a re-sult, it cannot determine whether the clinician’s next natural dose represents a large increase relative to the previous natural dose. To illustrate, take δ = 10 and suppose A1 = 10 . Since the policy does not modify the dose at time 
+
+1, both the G-LMTP and the corresponding current-time LMTP assign Ad 
+
+> 1
+
+= 10 . Suppose that, under this intervened history, the clinician would naturally assign A2(Ad
+
+> 1
+
+) = 40 . Both policies would then cap the increase at 10 , yielding Ad 
+
+> 2
+
+= 20 .Now consider the next timepoint. Suppose that, under the common intervened history through time 2,the clinician would naturally assign A3(Ad
+
+> 1
+
+, A d
+
+> 2
+
+) = 45 . At this point the two policies differ. The G-LMTP compares this current natural dose with the previous natural dose, A2(Ad
+
+> 1
+
+) = 40 , and therefore leaves the dose unchanged because 45 −40 ≤ δ. Thus the G-LMTP assigns Ad 
+
+> 3
+
+= 45 . In contrast, a current-time LMTP that only has access to the intervened history would compare the current natural dose with the previously administered intervened dose Ad 
+
+> 2
+
+= 20 , and would assign Ad 
+
+> 3
+
+= 30 . This is a different intervention: it caps increases relative to the previously administered intervened dose, rather than capping the clinician’s natural dose-escalation decision. 
+
+# 3 Identification of causal effects 
+
+For fixed values ¯at and ¯lt, we recursively define adt = dt(¯ at, h dt ), where hdt = (¯ adt−1, ¯lt). G-LMTPs will be identified under the following assumptions. Alternative assumptions under a different causal model were given by Richardson and Robins (2013) and Young et al. (2014). 
+
+Assumption 1 (Positivity) . If (at, l t) ∈ supp {At, L t | At−1 = adt−1, H t−1 = hdt−1} then (adt , h dt ) ∈
+
+supp {At, H t} for t ∈ { 1, . . . , τ }.
+
+Assumption 2 (Strong sequential randomization) . UA,t ⊥⊥(U L,t +1 , U A,t +1 ) | Ht for all t ∈ { 1, . . . , τ }.We have the following identification theorem, which allows us to compute the parameters θlmtp as a function of the observed data distribution. 
+
+Theorem 1 (Identification of the effect of H-LMTPs) .
+
+Under Assumptions 1 and 2, θlmtp is identified as 
+
+θ =
+
+Z  
+
+> ¯Aτ,¯Lτ
+
+E[Y | Aτ = adτ , H τ = hdτ ]
+
+> τ
+
+Y
+
+> k=1
+
+dP(ak, l k | Ak−1 = adk−1, H k−1 = hdk−1)
+
+The proof of this theorem is identical to the first part of the proof of Theorem 1 in D´ ıaz et al. (2023) and is given in the Supplementary Materials. Theorem 1 in D´ ıaz et al. (2023) additionally shows that current-time LMTPs admit a sequential regression representation of the identification formula, which greatly facilitates their estimation because it allows for the straightforward generalization of estimators developed for static 6interventions (Luedtke et al., 2017; Rotnitzky et al., 2017). In contrast, constructing a sequential regression representation for G-LMTPs requires more care. Consider a simple example with only two timepoints, no baseline covariates, and an intervention that only depends on the history of the natural value of treatment, i.e., Ad 
+
+> 1
+
+= d1(A1) and Ad 
+
+> 2
+
+= d2(A1, A 2(Ad
+
+> 1
+
+)) . The outcome expectation under this intervention is identified as Z
+
+E[Y | A2 = d2(a2, a 1), L 2 = l2, A 1 = d1(a1)]d P(a2, l 2 | A1 = d1(a1))d P(a1).
+
+The integral with respect to (a2, l 2) cannot be written as a conditional expectation because the outcome regression involves setting A1 to two different values a1 and d1(a1). However, progress can be made by decoupling the value of a1 used in the conditioning set P(a2, l 2 | A1 = d1(a1)) from that used in d2(a2, a 1)
+
+(see §5 and Figure 2 for more discussion). Specifically, define m2(a2, h 2) = E[Y | A2 = a2, L 2 = l2, A 1 =
+
+a1]. Then, for each s1 in the support of A1, define m1(s1, a 1) = E[m2(d2(s1, A 2), H 2) | A1 = a1], and note that θ = E[m1(A1, d 1(A1))] . This can be generalized as in the following proposition. 
+
+Proposition 1 (Sequential regression representation of the identification formula) . Let mτ (aτ , h τ ) = E[Y |
+
+Aτ = aτ , H τ = hτ ], and qτ (¯ sτ −1, A τ , H τ ) = mτ (dτ ((¯ sτ −1, A τ ), H τ ), H τ ). For each ¯st ∈ ¯At, recursively for t = τ − 1, . . . , 1 define 
+
+mt(¯ st, a t, h t) = E[qt+1 (¯ st, A t+1 , H t+1 ) | At = at, H t = ht]
+
+qt(¯ st−1, a t, h t) = mt((¯ st−1, a t), d t((¯ st−1, a t), h t), h t),
+
+where we define s0 = ∅. Then we have θ = E[q1(A1, H 1)] .
+
+To illustrate this proposition, consider an example with τ = 3 timepoints, no baseline covariates, and an intervention that only depends on the history of the natural value of treatment but not on covariates, i.e., 
+
+Ad 
+
+> 1
+
+= d1(A1), Ad 
+
+> 2
+
+= d2(A1, A 2(Ad
+
+> 1
+
+)) , and Ad 
+
+> 3
+
+= d3(A1, A 2(Ad
+
+> 1
+
+), A 3( ¯Ad
+
+> 2
+
+)) . According to Theorem 1, the outcome expectation under this intervention would be identified as 
+
+Z
+
+E[Y | d3(¯ a3), l 3, d 2(¯ a2), l 2, d 1(a1)]d P(a3, l 3 | d2(¯ a2), l 2, d 1(a1))d P(a2, l 2 | d1(a1))d P(a1).
+
+The sequential regression algorithm in Proposition 1 would proceed as follows. The recursion is initialized as m3(a3, h 3) = E[Y | A3 = a3, H 3 = h3] and q3(¯ s2, a 3, h 3) = m3(d(¯ s2, a 3), h 3), which is equal to E[Y |
+
+d3(¯ s2, a 3), l 3, a 2, l 2, a 1]. Then, we start the iteration by computing m2(¯ s2, a 2, h 2) = E[q3(¯ s2, A 3, H 3) |
+
+A2 = a2, H 2 = h2], which according to our definitions is equal to 
+
+Z
+
+E[Y | d3(¯ s2, a 3), l 3, a 2, l 2, a 1]d P(a3, l 3 | a2, l 2, a 1).
+
+The iteration then proceeds by computing 
+
+q2(s1, a 2, h 2) = m2(( s1, a 2), d 2(s1, a 2), h 2)=
+
+Z
+
+E[Y | d3(s1, a 2, a 3), l 3, d 2(s1, a 2), l 2, a 1]d P(a3, l 3 | d2(s1, a 2), l 2, a 1)
+
+and the regression m1(s1, a 1) = E[q2(s1, A 2, H 2) | A1 = a1] which is equal to 
+
+Z
+
+E[Y | d3(s1, a 2, a 3), l 3, d 2(s1, a 2), l 2, a 1]d P(a3, l 3 | d2(s1, a 2), l 2, a 1)d P(a2, l 2 | a1).
+
+The prediction q1(A1) = m1(A1, d (A1)) is averaged across values of A1 to obtain the identification for-mula. In other words, we augment the data using st to track the possible values that At can take in dt+1 ,while reserving the original notation at to compute integrals with respect to P (at+1 , l t+1 | . . . ) (see Figure 2). 74 Optimality theory 
+
+Efficiency theory in this paper focuses on functions d that do not depend on P (recall that the function is deterministic but allowed to take a randomizer as argument). For each t < k , and each st define the random variable Dt,k (¯ sk) = 1{At+1 = dt+1 (¯ st+1 , H t+1 ), . . . A k = dk(¯ sk, H k)}. For t = τ − 1, . . . , 0, define 
+
+¯φt+1 (¯ st, Z ) = φt+1 (¯ st, Z ) − mt(¯ st, A t, H t), where m0 = θ and 
+
+φt+1 (¯ st, Z ) = 
+
+> τ
+
+X
+
+> k=t+1
+
+X
+
+> ¯s(t+1): k
+
+Dt,k (¯ sk)
+
+> k
+
+Y
+
+> u=t+1
+
+gu(su | Hu)
+
+gu(Au | Hu)
+
+!
+
+{qk+1 (¯ sk, A k+1 , H k+1 ) − mk(¯ sk, A k, H k)}
+
++ qt+1 (¯ st, A t+1 , H t+1 ).
+
+(1) 
+
+When necessary, we use the notation φt(·; η) or φt(·; ηt) to highlight the dependence of φt (or ¯φt) on 
+
+ηt = ( gt, m t, . . . , g τ , m τ ). We also use η to denote (g1, m 1, . . . , g τ , m τ ), and define φτ +1 (sτ , Z ; η) = Y .In the following, we let η′ = ( g′
+
+> 1
+
+, m ′
+
+> 1
+
+, . . . , g ′ 
+
+> τ
+
+, m ′ 
+
+> τ
+
+) denote some value of η. This value will typically represent the probability limit of a given estimator ˆη. The function φt satisfies the following property, which will be crucial to establish consistency of some estimators of θ under multiple robustness assumptions, and to construct estimators of θ under slow convergence rates for estimation of gt and mt.
+
+Theorem 2 (Conditional von Mises expansion) . Define C′ 
+
+> t,k
+
+= Dt,k (¯ sk) Qk−1       
+
+> r=t+1
+> g′
+> r(sr,H r)
+> g′
+> r(Ar,H r)
+
+. For each t ∈{0, . . . , τ − 1}, and for any η′, define the second order error term                                     
+
+> Rem t(¯ st, a t, h t;η′) =
+> X
+> k>t
+> ¯s(t+1): k
+> E
+> 
+> C′
+> t,k
+> g′
+> k(sk|Hk)
+> g′
+> k(Ak|Hk)−gk(sk|Hk)
+> gk(Ak|Hk)
+> 
+> {m′
+> k(¯ sk, A k, H k)−mk(¯ sk, A k, H k)}At=at, H t=ht
+> 
+> ,(2)
+
+where for t = 0 the conditioning event is the null set, and for t = τ we let Rem τ (¯ sτ , a τ , h τ ; η′) = 0 . The error of m′ 
+
+> t
+
+as an estimator of mt is characterized by the following first-order expansion: 
+
+m′
+
+> t
+
+(¯ st, a t, h t) − mt(¯ st, a t, h t) = E ¯φt+1 (¯ st, Z ; η′) | At = at, H t = ht
+
+ + Rem t(¯ st, a t, h t; η′). (3) This lemma shares important connections to the von Mises-type expansions used in some of the semi-parametric inference literature (e.g., von Mises, 1947; van der Vaart, 1998; Robins et al., 2009). Inspection of this lemma teaches us that an estimator of mt constructed by regressing φt+1 (¯ st, Z i; ˆ η) for each st,has a doubly robust point-wise error equal to Rem t(¯ st, a t, h t; ˆ η). Furthermore, this implies the following corollary: 
+
+Corollary 1 (Efficient Influence Function) . Assume that d does not depend on P. The efficient influence function for estimating θ = E[q1(A1, H 1)] in the non-parametric model is given by ¯φ1(Z).If the modified treatment policy depends only on the contemporaneous natural value of treatment, i.e., if dt(¯ at, h dt ) = dt(at, h dt ), then all the above results reduce to the results presented by D´ ıaz et al. (2023). If the intervention only depends on some of the history of natural values of treatment, then the argument ¯st−1
+
+in the function qt can be modified to only include values on which the intervention depends. We elaborate on this point in the Supplementary Materials §4. 
+
+# 5 Estimation and statistical inference 
+
+In this section we assume that preliminary estimators ˆgt, and ˆmt are available. These estimators may be ob-tained from flexible regression methods from the machine learning literature or ensembles thereof (van der 8Laan et al., 2007). As implied by Theorem 2, the consistency of these estimators will determine the con-sistency of our estimators of the parameter θ. We will use Super Learner (van der Laan et al., 2007), an ensemble regression algorithm known that builds a convex combination of regression algorithms in a user-given library, with weights chosen to minimize the cross-validated prediction error. A na¨ ıve plug-in estimator for mt : t = 1 , . . . , τ may be obtained using pooled regressions in an aug-mented dataset. Let Kt = | ¯At|. Define the augmented dataset Dτ = (i, Z i, ¯sτ ) : i ∈ { 1, . . . , n }, ¯sτ ∈ ¯Aτ .That is, Dτ is a dataset with nK τ rows and τ additional columns corresponding to possible exposure se-quences ¯sτ . Start by running a regression of Yi on (Aτ,i , H τ,i ) to obtain an estimator of mτ (aτ , h τ ) = E[Y |
+
+Aτ = aτ , H τ = hτ ] among the original data. Generate predictions qτ (¯ sτ −1, A τ , H τ ) = mτ (dτ ((¯ sτ −1, A τ ), H τ ), H τ ) = 
+
+E[Y | Aτ = dτ ((¯ sτ −1, A τ ), H τ ), H τ ] using the augmented data Dτ . Because predictions are generated us-ing the augmented data, qτ (¯ sτ −1, A τ , H τ ) is a nK τ length vector. Recursively for t = τ − 1, . . . , 1:(1) Add qt+1 (¯ st, A t+1 , H t+1 ) as a new column to Dt+1 .(2) Construct Dt by subsetting Dt+1 to unique combinations of (i, ¯st), such that Dt has nK t rows. (3) Obtain an estimator mt(¯ st, a t, h t) = E[qt+1 (¯ st, A t+1 , H t+1 ) | ¯st, A t = at, H t = ht] by regressing 
+
+qt+1 (¯ st, A t+1 , H t+1 ) on (¯ st, A t, H t) among Dt.(4) Generate predictions qt(¯ st−1, A t, H t) = mt((¯ st−1, A t), d t((¯ st−1, A t), H t), H t).
+
+An example of this approach is shown in Figure 2. Note that this approach exchanges τ K τ regressions in a size-n dataset for τ regressions in a sequence of n, nK τ −1, . . . , nK 1 sized datasets which may be more computationally efficient. A similar pooling strategy has also previously been used for estimating so-called time-smooth counterfactual curves (Susmann et al., 2025). Here, we give the algorithm in full generality for interventions that may depend on the entire history ¯st. When the intervention depends only on selected components of ¯st, the augmented data need only carry those components. For example, delay policies require only a rolling lagged window of natural treatment values with length is determined by the magnitude of the delay. We give concrete examples in the Supplementary Materials §4. 9Step 1. Estimate m3(a3, a 2, a 1) by regressing Y on (A3, A 2, A 1) and create the augmented dataset. 
+
+i A1 A2 A3 Y
+
+1 a1,1 a1,2 a1,3 y1
+
+... ... ... ... ...
+
+n an, 1 an, 2 an, 3 yn
+
+7→
+
+i A1 A2 A3 s1 s2 Y
+
+1 a1,1 a1,2 a1,3 0 1 y1
+
+1 a1,1 a1,2 a1,3 0 0 y1
+
+1 a1,1 a1,2 a1,3 1 1 y1
+
+1 a1,1 a1,2 a1,3 1 0 y1
+
+... ... ... ... ... ... ... ...
+
+n an, 1 an, 2 an, 3 1 0 yn
+
+Step 2. Generate predictions q3(¯ s2, A 3) = m3(d3(¯ s2, A 3), A 2, A 1) in the augmented dataset and subset to the unique rows of 
+
+(i, s 1, s 2). Estimate m2(s2, s 1, A 2, A 1) by regressing q3(¯ s2, A 3) on (s2, s 1, A 2, A 1).
+
+i A1 A2 s1 s2 q3(¯ s2, A 3)1 a1,1 a1,2 0 1 q3((0 , 0) , a 1,3)1 a1,1 a1,2 0 0 q3((0 , 1) , a 1,3)1 a1,1 a1,2 1 1 q3((1 , 1) , a 1,3)1 a1,1 a1,2 1 0 q3((1 , 0) , a 1,3)
+
+... ... ... ... ... ...
+
+n an, 1 an, 2 1 0 q3((1 , 0) , a n, 3)
+
+Step 3. Generate predictions q2(s1, A 2) = m2(A2, s 1, d 2(s1, A 2), A 1) in the augmented dataset and subset to the unique rows of 
+
+(i, s 1). Estimate m1(s1, A 1) by regressing q2(s1, A 2) on (s1, A 1).
+
+i A1 A2 s1 s2 q3(¯ s2, A 3) q2(s1, A 2)1 a1,1 a1,2 0 1 q3((0 , 0) , a 1,3) q2(0 , a 1,2)1 a1,1 a1,2 0 0 q3((0 , 1) , a 1,3) q2(0 , a 1,2)1 a1,1 a1,2 1 1 q3((1 , 1) , a 1,3) q2(1 , a 1,2)1 a1,1 a1,2 1 0 q3((1 , 0) , a 1,3) q2(1 , a 1,2)
+
+... ... ... ... ... ... ...
+
+n an, 1 an, 2 1 0 q3((1 , 0) , a n, 3) q2(1 , a n, 2)
+
+7→
+
+i A1 s1 q2(s1, A 2)1 a1,1 0 q2(0 , a 1,2)1 a1,1 1 q2(1 , a 1,2)
+
+... ... ... ...
+
+n an, 1 1 q2(1 , a n, 2)
+
+Step 4. Generate predictions q1(A1) = m1(A1, d 1(A1)) in the augmented dataset and subset to the unique rows of i.
+
+i A1 s1 q2(s1, A 2) q1(A1)1 a1,1 0 q2(0 , a 1,2) q1(a1,1)1 a1,1 1 q2(1 , a 1,2) q1(a1,1)
+
+... ... ... ... ...
+
+n an, 1 1 q2(1 , a n, 2) q1(an, 1)
+
+7→
+
+i q1(A1)1 q1(a1,1)
+
+... ...
+
+n q1(an, 1)
+
+Figure 2: Schematic of the pooled-regression approach to Proposition 1 with τ = 3 , At ∈ { 0, 1}, and no covariates. Although this na¨ ıve estimator is simple to implement, its error is first order in the error of each regres-sion estimate at time t. This means that it is not possible to use this algorithm to construct an estimator that is generally √n-consistent under data-adaptive regression. To achieve this, we will leverage two approaches that rely on the canonical gradient of Proposition 1: targeted minimum loss-based estimation (TMLE), and sequential doubly robust (SDR) regression. Both of these estimators are √n-consistent, efficient, and asymptotically normal under assumptions, but the SDR has the advantage over TMLE that it has a simpler error structure therefore leading to potential gains in finite sample bias and consistency, whereas the ad-vantage of the TMLE over SDR is that it is a substitution estimator therefore offering protection in cases where the parameter space is bounded and the true value of the parameter is close to the boundary. The discussion about the difference between TMLE and SDR estimators is given elsewhere (e.g., Molina et al., 2017; Luedtke et al., 2017; D´ ıaz et al., 2023) and is therefore omitted here. 10 5.1 Targeted minimum loss-based estimator 
+
+We use sample splitting to avoid imposing Donsker conditions on the regression estimators (Klaassen, 1987; Zheng and van der Laan, 2011; Chernozhukov et al., 2018). Let V1, . . . , VJ denote a random partition of the index set {1, . . . , n } into J prediction sets of approximately the same size. For each j, the associated training sample is given by Tj = {1, . . . , n } \ V j . We let ˆηj denote the estimator of η obtained by training the corresponding prediction algorithm using only data in the sample Tj . Further, we let j(i) denote the index of the validation set which contains observation i.The targeted minimum loss-based estimator ˆθtmle is computed as a substitution estimator that uses an estimate ˜m1,j (i) constructed to solve the cross-validated efficient influence function estimating equation 
+
+Pn{φ1(·, ˜ηj(·)) − ˆθtmle } = 0 . The construction of ˜m1,j (i) is motivated by the observation that, for an appropriately defined variable ω(¯ st, a t, h t) the efficient influence function of θ can be expressed as a sum of terms of the form ω(¯ st, a t, h t){qt+1 (¯ st, a t+1 , h t+1 ) − mt(¯ st, a t, h t)}, which, for fixed ¯st, takes the form of score functions ω(W ){M − E(M | W )} for appropriately defined variables M and W and some weight function ω. If E(M | W ) is estimated within a weighted generalized linear model with canonical link that includes an intercept, then the weighted MLE estimate solves the score equation P 
+
+> i
+
+ω(Wi){Mi − ˆE(Mi |
+
+Wi)} = 0 . TMLE uses this observation to iteratively tilt preliminary estimates of mt towards a solution of the efficient influence function estimating equation. The algorithm is defined as follows: Step 1. Initialize ˜η = ˆ η and ˜mτ +1 ,j (i) = ˜ qτ +1 ,j (i) = Yi.Step 2. For k = 1 , . . . , τ , and for each ¯sk, compute the weights ωk,i (¯ sk) = D0,k (¯ sk)
+
+Qku=1 
+
+> gu(su|Hu)
+> gu(Au|Hu)
+
+
+
+.Step 3. For t = τ, . . . , 1, for each ¯st:• Fit the generalized linear tilting model link ˜ mϵt (¯ st, A t,i , H t,i ) = ϵ + link ˜ mt,j (i)(¯ st, A t, 1, H t,i ),where link( ·) is the canonical link. The parameter ϵ may be estimated by running a generalized linear model of the pseudo-outcome ˜qt+1 ,j (i)(¯ st, A t+1 ,i , H t+1 ,i ) with only an intercept term, an offset term equal to link ˜ mt,j (i)(¯ st, A t,i , H t,i ), and weights ωt,i (¯ st), using all the data points in the sample. An outcome bounded in an interval [a, b ] may be analyzed with logistic regression (i.e., link = logit ) by mapping it to an outcome (0 , 1) through the transformation (Y −a)/(b−
+
+a)(1 − 2ϵ) + ϵ for some small value ϵ > 0. This approach has robustness advantages compared to fitting a linear model as it guarantees that the predictions in the next step remain within the outcome space (see Gruber and van der Laan, 2010). • Let ˆϵ denote the maximum likelihood estimate, and update the estimates as 
+
+link ˜ mˆϵt,j (i)(¯ st, A t,i , H t,i ) = ˆ ϵ + link ˜ mt,j (i)(¯ st, A t,i , H t,i )link ˜ qˆϵt,j (i)(¯ st−1, A t,i , H t,i ) = ˆ ϵ + link ˜ mt,j (i)((¯ st−1, A t,i ), d ((¯ st−1, A t,i ), H t,i ), H t,i ).
+
+• Update ˜mt,j (i) = ˜ mˆϵt,j (i), t = t − 1, and iterate. Step 4. The TMLE is defined as ˆθtmle = 1
+
+> n
+
+Pni=1 ˜q1,j (i)(A1,i , H 1,i ).The iterative procedure and the score equation argument above guarantee that the above estimates solve the efficient influence function estimating equation, which is crucial to prove that √n(ˆθtmle − θ) converges to a random variable N (0; Var [ ¯ φ1(Z; η)]) , provided that Rem 0(ˆ η) = oP (n−1/2) and that the true and estimated weights ωt(si) are bounded. The proof of this result follows standard arguments in the analysis of TMLE presented elsewhere (e.g., Zheng and van der Laan, 2011; D´ ıaz et al., 2023) and is therefore omitted. 11 5.2 Sequential regression estimator using SDR unbiased transformations 
+
+In this section we use the multiply robust unbiased transformation in expression (3) to obtain an estimate of 
+
+mt. We say that φt+1 is a multiply robust unbiased transformation (Buckley and James, 1979; Rubin and van der Laan, 2007; D´ ıaz and van der Laan, 2013; Kennedy et al., 2017; Luedtke et al., 2017) for mt due to the following proposition, which is a straightforward consequence of Theorem 2. 
+
+Proposition 2. Let η′ be such that either m′ 
+
+> s
+
+= ms or g′ 
+
+> s
+
+= gs for all s > t . Then we have Eφt+1 (¯ st, Z ; η′) |
+
+At = at, H t = ht
+
+ = mt(¯ st, a t, h t).
+
+The above motivates the construction of the sequential regression estimator by regressing an estimate of the data transformation φt+1 (¯ st, Z ; η) on (At, H t) for each ¯st, starting at φτ +1 (Z; η) = Y . For preliminary cross-fitted estimates ˆg1,j (i), . . . , ˆgτ,j (i), the estimator is defined as follows: Step 1 Initialize φτ +1 (¯ sτ , Z i; ˇ ητ,j (i)) = Yi for i = 1 , . . . , n .Step 2 For t = τ, . . . , 1 and each st ∈ A t:• Compute the pseudo-outcome ˇYt+1 ,i = φt+1 (¯ st, Z i; ˇ ηt,j (i)) for all i = 1 , . . . , n .• For j = 1 , . . . , J :
+
+– Regress ˇYt+1 ,i on (At,i, Ht,i ) using any regression technique and using only data points 
+
+i ∈ T j .
+
+– Let ˇmt,j denote the output, update ˇηt,j = (ˆ gt,j , ˇmt,j , . . . , ˆgτ,j , ˇmτ,j ), and iterate. Step 3 Define the sequential estimator regression as ˆθsr = 1
+
+> n
+
+Pni=1 φ1(Zi; ˇ ηj(i)).Like its TMLE counterpart, this estimator satisfies √n(ˆθsr −θ) converges to a random variable N (0; Var [ ¯ φ1(Z; η)]) ,provided that Rem 0(ˆ η) = oP (n−1/2). This can be used to construct asymptotically valid confidence intervals and hypothesis tests, for example a (1 − α)100% confidence interval may be constructed as 
+
+ˆθsr ± z1−α/ 2 ˆσ/ √n, where ˆσ2 is the empirical variance of ¯φ1(Zi; ˇ ηj(i)).
+
+# 6 Numerical illustration 
+
+We use Monte Carlo simulation to illustrate the performance of the TMLE and SDR estimators. For n ∈{250 , 500 , 1000 , 5000 , 10000 }, data were simulated from the data generating mechanism given in Figure 3. This data generating mechanism corresponds to a survival analysis scenario with time-varying confounding and conditionally degenerate exposure assignment. At each sample size, we generated 1000 data-sets, and for each data-set, using both the SDR and TMLE, we estimated the expected value of Y5 under a hypothetical intervention where exposure ( At) was delayed by one time-point. Outcome regressions were estimated using a generalized linear model with all possible two-way interactions; the propensity score at each time-point was estimated using a main-term generalized linear model with the logit link. Because the robustness results of the SDR and TMLE have been thoroughly discussed in the existing literature, (see e.g., D´ ıaz et al. (2023); Wen et al. (2023); D´ ıaz et al. (2024)) we limit the simulation study to the ideal scenario where all nuisance parameters are correctly specified and estimated at fast enough rates. Performance was summarized using absolute bias, mean squared error (MSE), n×MSE, and nominal 95% confidence interval coverage. The true value under the intervention was calculated using Proposition 1 with correctly specified models and a “super-population” of one-million observations. The R code for the simulation can be found at https://github.com/CI-NYC/htlmtp-simulations. 12 Let L0 ∼ N (0 , 1) , ϵt ∼ N (0 , 1) , and A0 = 0 , Y0 = 0 . For t ∈ { 1, . . . , 5}, define: 
+
+Lt =
+
+(
+
+0.5Lt−1 + ϵt if Yt−1 = 0 
+
+∅ if Yt−1 = 1 
+
+P (At = 1 | Lt) = 
+
+
+
+logit −1(−1.5 + 0 .3Lt) if At−1 = 0 and Yt−1 = 0 1 if At−1 = 1 and Yt−1 = 0 
+
+At−1 if Yt−1 = 1 
+
+P (Yt = 1 | At, L t) = 
+
+(
+
+logit −1(−2 + 0 .4Lt − 0.8At) if Yt−1 = 0 1 if Yt−1 = 1 .
+
+Figure 3: Data generating mechamism for the numerical illustration in §6 The results of the simulation study are presented in Table 1. As expected, both the TMLE and SDR demonstrate improving metrics with increasing sample size. Interestingly, both estimators have greater than nominal confidence interval indicating conservative variance estimation at sample sizes greater than 
+
+n = 1000 . Further, at n = 250 , the bias-variance tradeoff of the estimators appears slightly different with the SDR trading a slight increase in bias for smaller variance (as indicated by n × MSE), while the TMLE was opposite. However, we caution against drawing comparative conclusions regarding finite sample per-formance from such a simulation study as estimator performance can vary greatly with the data-generating mechanism (Rudolph et al., 2023). Table 1: Performance of the SDR and TMLE estimators in a simulation study. 
+
+n Estimator |Bias | MSE n × MSE 95% Cov. 250 SDR 0.007 0.002 0.527 0.920 TMLE 0.004 0.003 0.665 0.893 500 SDR 0.002 0.001 0.488 0.942 TMLE 0.002 0.001 0.495 0.941 1,000 SDR 0.000 0.000 0.472 0.959 TMLE 0.000 0.000 0.473 0.958 5,000 SDR 0.000 0.000 0.456 0.968 TMLE 0.000 0.000 0.455 0.967 10,000 SDR 0.000 0.000 0.454 0.966 TMLE 0.000 0.000 0.453 0.967 
+
+# 7 Motivating application 
+
+We applied our proposed approach to estimate the effect of delaying a risky pain treatment by one month on 12-month incidence of opioid use disorder (OUD) or overdose diagnosis among non-dual-eligble, Medicaid-insured patients, aged 19-63 years, with lumbar spinal stenosis, N=12745. Day 0 was the first day of a pain treatment claim, which occurred within 30 days of a new-onset diagnosis of lumbar spinal stenosis (ICD-10 code M4806). Patients must have been continuously enrolled in Medicaid for the 6 months prior to day 0 (a “washout period”) to determine cohort eligibility, which, in addition to the above age and eligibility 13 criteria, also included being opioid-naive, with no history of OUD, no cancer diagnosis, not pregnant, and community-dwelling. Additionally, they could not have been hospitalized in the 1 month prior to day 0. This cohort was drawn from Medicaid T-MSIS Analytic Files (TAF), Demographics, Other Services, Inpatient, and Pharmacy claims, 2016-2019 from the 25 states that implemented the ACA prior to 2014: AR, AZ, CA, CO, CT, DE, HI, IA, IL, KY, MA, MD, MI, MN, ND, NH, NJ, NM, NV, NY, OH, OR, RI, VT, WA, WV (excluded Maryland due to poor diagnostic code quality). We were interested in examining this treatment delay question among patients with a lumbar spinal stenosis diagnosis, because these patients typically receive multiple months of pain treatment and frequently receive pain treatments where concerns have been raised about their OUD risks. Starting from day 0, we discretized follow-up into 1-month intervals, ending at month 12. During each month, we evaluated 1) which pain treatments the patient had a claim for, 2) whether or not the patient was censored, and 3) pres-ence of an OUD or overdose diagnosis code or receipt of medication for OUD. We collected information on the following baseline covariates during the washout period: age; sex; race/ethnicity; receipt of: TANF benefits, SSI benefits; veteran status; household size; marital status; english as primary language; diagno-sis codes for: anxiety, bipolar, depression, ADHD, other psychiatric illness, alcohol use disorder, or other substance use disorder; mental health counseling claims; healthcare utilization variables: number of inpa-tient hospitalizations in the washout period prior to one month before day 0, number of outpatient visits, number of emergency department visits. We considered the following set of pain treatment variables: i) opioid analgesic prescription of ≤ 7 days and dose ≤ 50 morphine milligram equivalents (MME), ii) opioid analgesic prescription of > 7 days and dose ≤ 50 , iii) opioid analgesic prescription of dose > 50 MME, iv) gabapentoid prescription, v) benzodiazepine prescription, vi) muscle relaxant prescription, vii) duloxe-tine prescription, viii) anti-inflammatory prescription, ix) interventional procedure, x) chiropractic visit, xi) physical therapy visit. Patients could have, and frequently did have, more than one treatment during a given month. For the purpose of this illustrative analysis we dichotomized treatment into the presence vs absence of any of the following higher-risk treatments, where this binary treatment variable, At = 1 if any of treat-ments ii-v were present in month t and At = 0 otherwise. Patients were censored in month t if: they had disenrolled from Medicaid by the end of month t, they became dual-eligible for Medicare, or 2019 ended. The study was approved by the Columbia University Institutional Review Board. All code to replicate cohort and variable creation and statistical analyses is given in the GitHub repository: https://github. com/CI-NYC/m4806-diagnosis .We were interested in the effect of delaying a higher-risk pain treatment by one month as compared to the observed average risk, assuming all censoring were prevented, E[Y ( ¯Ad, ¯C = ¯ 1) − Y ( ¯C = ¯ 1)] , where 
+
+dt(at, ¯at−1) = 0 if at = 1 and as = 0 for all s < t and dt(at, ¯at−1) = at otherwise. We estimated the effect of this delay using both the TMLE and SDR estimators with 2-fold cross-fitting. The nuisance parameters 
+
+gt and mt were estimated using the Super Learner (van der Laan et al., 2007) with a GLM and multivariate adaptive regression splines (MARS) as candidate algorithms. Results are shown in Table 2. Using both the TMLE and SDR to adjust for right-censoring, we estimated the 12-month probability of remaining free from an OUD or overdose diagnosis (survivial-type probability) as 0.963 (95% CI: 0.96, 0.966). Under a hypothetical one-month delay of risky pain treatments, the TMLE estimated the 12-month probability of remaining free from an OUD or overdose diagnosis as 0.985 (95% CI: 0.92, 1), where the upper bound was truncated at one. The SDR produced a point estimate of 1.27, outside the parameter space. This is a well-known limitation of the SDR when the true value lies near the boundary due to it not being a substitution estimator (§5), and we omit the confidence interval accordingly. 14 Table 2: Estimated 12-month OUD survival probability. No cens. 1-mo. delay Delay effect Estimator Estimate 95% CI Estimate 95% CI Estimate 95% CI PTMLE 0.963 0.96–0.966 0.986 0.915–1 0.022 -0.048–0.092 0.53 SDR 0.963 0.96–0.966 1.27 - - - -
+
+# 8 Conclusion 
+
+This paper proposes targeted learning estimators for longitudinal modified treatment policies whose hypo-thetical interventions may depend on the history of natural treatment values, extending previous work on modified treatment policies that depend only on the contemporaneous natural value of treatment. This ex-tension allows the double/de-biased machine learning estimation of the effects of policies that modify the timing or trajectory of treatment decisions. The proposed augmented sequential regression representation, together with the corresponding efficient influence function, yields practical TMLE and SDR estimators for this broader class of interventions. Several directions of research remain open. We have focused on discrete exposures, for which the rel-evant natural treatment histories can be represented by summing over possible exposure sequences. Many applications motivating modified treatment policies involve continuous, multivariate, or mixed discrete-continuous treatments, including medication doses and combinations of therapies. Future work should develop efficient estimators for G-LMTPs in these settings, avoiding explicit enumeration of treatment his-tories and replacing conditional mass-function ratios with appropriate density-ratio or Riesz representers. Other useful directions include scalable algorithms for long follow-up, diagnostics for support violations induced by history-dependent policies, and extensions to settings with censoring, competing risks, interfer-ence, or continuous time. 
+
+# Acknowledgments 
+
+The authors are grateful to Alex Luedtke for insightful conversations that helped clarify the motivation for the generalization developed in this paper, as well as Anton Hung for the creation of the dataset used in our motivating application. Iv´ an D´ ıaz was supported by a Patient-Centered Outcomes Research Institute (PCORI) Project Program Award (ME-2024C3-43044). Paweł Morzywołek was partially supported through a National Institutes of Health (NIH) Award (5UM1AI068635-20), the Pacific Institute for the Mathematical Sciences (PIMS), UW eScience Institute and the Pioneer Center for SMARTbiomed. Kara Rudolph was supported by a National Institute on Drug Abuse (NIDA) Award (R01DA053243). 
+
+# References 
+
+Salvador V. Balkus, Scott W. Delaney, and Nima S. Hejazi. The causal effects of modified treatment policies under network interference. Journal of the Royal Statistical Society: Series B, page qkag052, 2026. doi: 10.1093/jrsssb/qkag052. Heejung Bang and James M Robins. Doubly robust estimation in missing data and causal inference models. Biometrics, 61(4):962–973, 2005. 15 Jonathan Buckley and Ian James. Linear regression with censored data. Biometrika, 66(3):429–436, 1979. Victor Chernozhukov, Denis Chetverikov, Mert Demirer, Esther Duflo, Christian Hansen, Whitney Newey, and James Robins. Double/debiased machine learning for treatment and structural parameters. The Econometrics Journal, 21(1):C1–C68, 2018. Iv´ an D´ ıaz and Mark J van der Laan. Population intervention causal effects based on stochastic interventions. Biometrics, 68(2):541–549, 2012. Iv´ an D´ ıaz and Mark J van der Laan. Targeted data adaptive estimation of the causal dose–response curve. Journal of Causal Inference, 1(2):171–192, 2013. Iv´ an D´ ıaz, Nicholas Williams, Katherine L Hoffman, and Edward J Schenck. Nonparametric causal effects based on longitudinal modified treatment policies. Journal of the American Statistical Association, 118 (542):846–857, 2023. Iv´ an D´ ıaz, Katherine L. Hoffman, and Nima S. Hejazi. Causal survival analysis under competing risks using longitudinal modified treatment policies. Lifetime Data Analysis, 30(1):213–236, 2024. doi: 10.1007/ s10985-023-09606-7. Susan Gruber and Mark J van der Laan. A targeted maximum likelihood estimator of a causal effect on a bounded continuous outcome. The International Journal of Biostatistics, 6(1), 2010. Sebastian Haneuse and Andrea Rotnitzky. Estimation of the effect of interventions that modify the received treatment. Statistics in Medicine, 32(30):5260–5277, 2013. doi: 10.1002/sim.5907. Katherine L Hoffman, Diego Salazar-Barreto, Nicholas T Williams, Kara E Rudolph, and Iv´ an D´ ıaz. Study-ing continuous, time-varying, and/or complex exposures using longitudinal modified treatment policies. Epidemiology, 35(5):667–675, 2024. Ziren Jiang, Philip S. Crooke, John J. Marini, and Jared D. Huling. Exploring the effects of mechanical ventilator settings with modified vector-valued treatment policies, 2025. Edward H Kennedy, Zongming Ma, Matthew D McHugh, and Dylan S Small. Non-parametric methods for doubly robust estimation of continuous treatment effects. Journal of the Royal Statistical Society: Series B (Statistical Methodology), 79(4):1229–1245, 2017. Chris AJ Klaassen. Consistent estimation of the influence function of locally asymptotically linear estima-tors. The Annals of Statistics, pages 1548–1562, 1987. Alexander R Luedtke, Oleg Sofrygin, Mark J van der Laan, and Marco Carone. Sequential double robustness in right-censored longitudinal models. arXiv preprint arXiv:1705.02459, 2017. J Molina, A Rotnitzky, M Sued, and JM Robins. Multiple robustness in factorized likelihood models. Biometrika, 104(3):561–581, 2017. Judea Pearl. Causality: Models, Reasoning, and Inference. Cambridge University Press, Cambridge, 2009. Thomas S Richardson and James M Robins. Single world intervention graphs (swigs): A unification of the counterfactual and graphical approaches to causality. Center for the Statistics and the Social Sciences, University of Washington Series. Working Paper, 128(30):2013, 2013. James Robins, Lingling Li, Eric Tchetgen, and Aad W van der Vaart. Quadratic semiparametric von mises calculus. Metrika, 69(2-3):227–247, 2009. 16 Andrea Rotnitzky, James Robins, and Lucia Babino. On the multiply robust estimation of the mean of the g-functional. arXiv preprint arXiv:1705.08582, 2017. Daniel Rubin and Mark J van der Laan. A doubly robust censoring unbiased transformation. The international journal of biostatistics, 3(1), 2007. Kara E Rudolph, Catherine Gimbrone, Ellicott C Matthay, Iv´ an D´ ıaz, Corey S Davis, Katherine Keyes, and Magdalena Cerd´ a. When effects cannot be estimated: redefining estimands to understand the effects of naloxone access laws. Epidemiology, 33(5):689–698, 2022. Kara E Rudolph, Nicholas T Williams, Caleb H Miles, Joseph Antonelli, and Ivan Diaz. All models are wrong, but which are useful? comparing parametric and nonparametric estimation of causal effects in finite samples. Journal of Causal Inference, 11(1):20230022, 2023. Aaron L Sarvet and Mats J Stensrud. The natural value of treatment and its importance for causal inference. Annual Review of Statistics and Its Application, 13, 2025. Aaron L. Sarvet, Jessica G. Young, Wei Wang, Brent Logan, and Miguel A. Hern´ an. Longitudinal incre-mental propensity score interventions for limited resource settings. Biometrics, 79(4):3418–3430, 2023. doi: 10.1111/biom.13859. Herbert P Susmann, Nicholas T Williams, Richard Liu, Jessica G Young, and Iv´ an D´ ıaz. Computa-tionally and statistically efficient estimation of time-smoothed counterfactual curves. arXiv preprint arXiv:2509.26554, 2025. M.J. van der Laan, E. Polley, and A. Hubbard. Super learner. Statistical Applications in Genetics & Molecular Biology, 6(25):Article 25, 2007. A. W. van der Vaart. Asymptotic Statistics. Cambridge University Press, 1998. R von Mises. On the asymptotic distribution of differentiable statistical functions. The annals of mathematical statistics, 18(3):309–348, 1947. Kerollos N. Wanis, Aaron L. Sarvet, Lan Wen, Jason P. Block, Sheryl L. Rifas-Shiman, James M. Robins, and Jessica G. Young. Grace periods in comparative effectiveness studies of sustained treatments. Journal of the Royal Statistical Society: Series A, 187(3):796–810, 2024. doi: 10.1093/jrsssa/qnae002. Lan Wen, Julia Marcus, and Jessica Young. Intervention treatment distributions that depend on the observed treatment process and model double robustness in causal survival analysis [preprint]. arxiv. 2021. arXiv preprint arXiv.2112.00807, 2023. Jessica G Young, Miguel A Hern´ an, and James M Robins. Identification, estimation and approxima-tion of risk under interventions that depend on the natural value of treatment using observational data. Epidemiologic methods, 3(1):1–19, 2014. Wenjing Zheng and Mark J van der Laan. Cross-validated targeted minimum-loss-based estimation. In Targeted Learning, pages 459–474. Springer, 2011. 17 Supplementary Materials for Modified treatment policies that depend on the natural history of treatment. 1 Identification (Theorem 1) 
+
+Proof Recall that for fixed values ¯at, ¯ht, we denote adt = d(¯ at, h dt ), where hdt = (¯ adt−1, ¯lt). Define the random variable 
+
+Zt(¯ at) = Y {¯adt , d t+1 (¯ at, A t+1 (¯ at, A dt+1 ), H t+1 (¯ at, A dt+1 )) }.
+
+Note that Z0(a0) = Y ( ¯Ad), and that Zt(¯ at) = Zt+1 (¯ at+1 ) in the event At+1 = at+1 and Ht+1 = hdt+1 , and that Zτ (¯ aτ ) = Y in the event Aτ = aτ and Hτ = hdτ . We have 
+
+E[Y ( ¯Ad)] = 
+
+Z
+
+> A1,L1
+
+E[Z0(a0) | A1 = a1, L 1 = l1]d P(a1, l 1)=
+
+Z
+
+> A1,L1
+
+E[Z1(a1) | A1 = a1, L 1 = l1]d P(a1, l 1)=
+
+Z
+
+> A1,L1
+
+E[Z1(a1) | A1 = ad
+
+> 1
+
+, L 1 = l1]d P(a1, l 1)=
+
+Z 
+
+> ¯A2,¯L2
+
+E[Z1(a1) | A2 = a2, L 2 = l2, A 1 = ad
+
+> 1
+
+, L 1 = l1]d P(a2, l 2 | ad
+
+> 1
+
+, l 1)d P(a1, l 1)=
+
+Z 
+
+> ¯A2,¯L2
+
+E[Z2(¯ a2) | A2 = ad
+
+> 2
+
+, L 2 = l2, A 1 = ad
+
+> 1
+
+, L 1 = l1]d P(a2, l 2 | ad
+
+> 1
+
+, l 1)d P(a1, l 1)=
+
+Z 
+
+> ¯A2,¯L2
+
+E[Z2(¯ a2) | A2 = ad
+
+> 2
+
+, H 2 = hd
+
+> 2
+
+]d P(a2, l 2 | ad
+
+> 1
+
+, l 1)d P(a1, l 1)
+
+...
+
+=
+
+Z  
+
+> ¯Aτ,¯Lτ
+
+E[Zτ (¯ aτ ) | Aτ = adτ , H τ = hdτ ]
+
+> τ
+
+Y
+
+> k=1
+
+dP(ak, l k | adk−1, h dk−1)=
+
+Z  
+
+> ¯Aτ,¯Lτ
+
+E[Y | Aτ = adτ , H τ = hdτ ]
+
+> τ
+
+Y
+
+> k=1
+
+dP(ak, l k | adk−1, h dk−1) (1) Where the first and fourth equalities follow by law of iterated expectation. 
+
+Lemma 1. Under Assumption 2, we have Zt(¯ at−1)⊥⊥At | Ht.
+
+Proof This lemma follows trivially after noticing that under the assumed NPSEM, Zt(¯ at−1) is a deter-ministic function of (U L,t +1 , U A,t +1 ).
+
+# 2 Efficient influence functions (Corollary 1) 
+
+Proof In this proof we will use Θ( P) to denote a parameter as a functional that maps the distribution P in the model to a real number. A function φ1(Z; η) is the EIF of a parameter functional Θ( P ) if it satisfies 
+
+ddϵ Θ( Pϵ) ϵ=0 
+
+= E[φ1(Z; η)s(Z)] , (2) 18 where Pϵ is a smooth parametric submodel that locally covers the non-parametric model, with score 
+
+s(Z) = 
+
+ d log Pϵ
+
+dϵ
+
+
+
+ϵ=0 
+
+such that Pϵ=0 = P. We start by conjecturing an EIF, and then prove it is in fact the EIF using the above definition. To conjecture an EIF we find the EIF in a model where we assume that the measure ν is discrete so that integrals can be written as sums. Recall that for fixed values ¯at, ¯ht, we denote adt = d(¯ at, h dt ), where 
+
+hdt = (¯ adt−1, ¯lt). We can express the non-parametric MLE of θ as 
+
+Θ( Pn) = X
+
+¯aτ ,¯lτ +1 
+
+lτ +1 Pnflτ +1 ,a dτ ,h dτ
+
+τY
+
+k=1 
+
+Pnfak ,l k ,a dk−1,h dk−1
+
+Pnfadk ,h dk
+
+, (3) where we remind the reader of the notation Pf = R f dP. Here fx(X) = 1(X = y) for any variable X and value x. In the above display we used the assumption that d does not depend on P, and therefore does not need to be estimated. We will use the fact that the efficient influence function in a non-parametric model corresponds with the influence curve of the NPMLE. This is true because the influence curve of any regular estimator is also a gradient, and a non-parametric model has only one gradient. The Delta method shows that if ˆΘ( Pn) is a substitution estimator such that θ = ˆΘ( P), and ˆΘ( Pn) can be written as ˆΘ∗(Pnf : f ∈ F ) for some class of functions F and some mapping Θ∗, then the influence function of ˆΘ( Pn) is equal to 
+
+IF P(Z) = X
+
+f ∈F 
+
+d ˆΘ∗
+
+dPf {f (O) − Pf }.
+
+Applying this result to (3) with F = {flτ +1 ,a dτ ,h dτ , f as,l s,a ds−1,h ds−1 , f ads ,h ds : lτ +1 , a τ , h τ ; s = 1 , . . . , τ }
+
+and rearranging terms gives IF P (Z) = φ1(Z; η). In particular we have 
+
+dΘ( P)dPflτ +1 ,a dτ ,h dτ
+
+= lτ +1 
+
+τY
+
+k=1 
+
+Pfak ,l k ,a dk−1,h dk−1
+
+Pfadk ,h dk
+
+,
+
+and 
+
+dΘ( P)dPfas,l s,a ds−1,h ds−1
+
+= X 
+
+> lτ+1 ,a s+1 ,h s+1
+
+lτ +1 
+
+Pflτ +1 ,a dτ ,h dτ
+
+Pfas,l s,a ds−1,h ds−1
+
+> τ
+
+Y
+
+> k=1
+
+Pfak ,l k ,a dk−1,h dk−1
+
+Pfadk ,h dk
+
+=
+
+ X
+
+> as+1 ,h s+1
+
+mτ (adτ , h dτ ) Pfadτ ,h dτ
+
+Pfads ,h ds
+
+> τ
+
+Y
+
+> k=s+1
+
+Pfak ,l k ,a dk−1,h dk−1
+
+Pfadk ,h dk
+
+
+
+> s−1
+
+Y
+
+> k=1
+
+Pfak ,l k ,a dk−1,h dk−1
+
+Pfadk ,h dk
+
+=
+
+X  
+
+> as+1 ,...,a τ−1
+> ls+1 ,...,l τ−1
+
+ X 
+
+> aτ,l τ
+
+mτ (adτ , h dτ ) Pfaτ ,l τ ,a dτ −1,h dτ −1
+
+Pfadτ −1,h dτ −1
+
+ Pfadτ −1,h dτ −1
+
+Pfads ,h ds 
+
+> τ−1
+
+Y
+
+> k=s+1
+
+Pfak ,l k ,a dk−1,h dk−1
+
+Pfadk ,h dk
+
+
+
+> s−1
+
+Y
+
+> k=1
+
+Pfak ,l k ,a dk−1,h dk−1
+
+Pfadk ,h dk
+
+=
+
+X  
+
+> as+1 ,...,a τ−1
+> ls+1 ,...,l τ−1
+
+mτ −1(¯ aτ −1, a dτ −1, h dτ −1) Pfadτ −1,h dτ −1
+
+Pfads ,h ds 
+
+> τ−1
+
+Y
+
+> k=s+1
+
+Pfak ,l k ,a dk−1,h dk−1
+
+Pfadk ,h dk
+
+
+
+> s−1
+
+Y
+
+> k=1
+
+Pfak ,l k ,a dk−1,h dk−1
+
+Pfadk ,h dk
+
+= ms(¯ as, a ds , h ds )
+
+> s−1
+
+Y
+
+> k=1
+
+Pfak ,l k ,a dk−1,h dk−1
+
+Pfadk ,h dk
+
+,
+
+19 as well as 
+
+dΘ( P)dPfads ,h ds
+
+= − X
+
+lτ +1 ,a s+1 ,h s+1 
+
+lτ +1 
+
+Pflτ +1 ,a dτ ,h dτ
+
+Pfads ,h ds
+
+τY
+
+k=1 
+
+Pfak ,l k ,a dk−1,h dk−1
+
+Pfadk ,h dk
+
+= − X
+
+lτ +1 ,a s+1 ,h s+1 
+
+lτ +1 
+
+Pflτ +1 ,a dτ ,h dτ
+
+Pfads ,h ds
+
+τY
+
+k=s+1 
+
+Pfak ,l k ,a dk−1,h dk−1
+
+Pfadk ,h dk
+
+sY
+
+k=1 
+
+Pfak ,l k ,a dk−1,h dk−1
+
+Pfadk ,h dk
+
+= −ms(¯ as, a ds , h ds )
+
+sY
+
+k=1 
+
+Pfak ,l k ,a dk−1,h dk−1
+
+Pfadk ,h dk
+
+.
+
+Notice now that 
+
+X  
+
+> lτ+1 ,a τ,h τ
+
+dΘ( P)dflτ +1 ,a dτ ,h dτ
+
+flτ +1 ,a dτ ,h dτ (Z)= X 
+
+> aτ,h τ
+
+1{Aτ = adτ , H τ = hdτ }Lτ +1 
+
+> τ
+
+Y
+
+> k=1
+
+P(A = ak, L k = lk, A k−1 = adk−1, H k−1 = hdk−1)
+
+P(Ak = adk, H k = hdk)= Lτ +1 
+
+X
+
+> ¯aτ
+
+1{Aτ = d(¯ aτ , H τ ), . . . , A 1 = d(a1, L 1)}
+
+> τ
+
+Y
+
+> k=1
+
+gk(ak | Hk)
+
+gk(Ak | Hk)= Lτ +1 
+
+¯gdτ (Aτ , H τ )¯gτ (Aτ , H τ ) ,
+
+as well as 
+
+X
+
+> as,h s
+
+dΘ( P)dPfas,l s,a ds−1,h ds−1
+
+fas,l s,a ds−1,h ds−1 (Z)= X
+
+> ¯as−1
+
+1{As−1 = d(¯ as−1, H s−1), . . . , A 1 = d(a1, L 1)}ms((¯ as−1, A s), d ((¯ as−1, A s), H s), H s)
+
+> s−1
+
+Y
+
+> k=1
+
+gk(ak | Hk)
+
+gk(Ak | Hk) ,
+
+and 
+
+X
+
+> as,h s
+
+dΘ( P)dPfads ,h ds
+
+fads ,h ds (Z)= − X
+
+> ¯as
+
+1{As = d(¯ as, H s), . . . , A 1 = d(a1, L 1)}ms(¯ as, A s, H s)
+
+> s
+
+Y
+
+> k=1
+
+gk(ak | Hk)
+
+gk(Ak | Hk) ,
+
+Putting these results together and summing over s yields the conjectured IF P (Z) = φ1(Z; η) − Θ( P ).Then, we can confirm that φ1(Z; η) satisfies (2). To see this, note that Lemma 2 implies that the functional satisfies the following expansion: 
+
+Θ( Pϵ) = Θ( P) + 
+
+Z
+
+{φ1(Z; η) − Θ( P)}dPϵ − Rem 0(ηϵ, η ),
+
+Differentiating with respect to ϵ and evaluating at ϵ = 0 yields 
+
+ddϵ Θ( Pϵ) ϵ=0 
+
+=
+
+Z
+
+{φ1(Z; η) − Θ( P)}
+
+ dPϵ
+
+dϵ
+
+
+
+ϵ=0 
+
+− ddϵ Rem 0(ηϵ, η ) ϵ=0 
+
+=
+
+Z
+
+{φ1(Z; η) − Θ( P)}
+
+ d log Pϵ
+
+dϵ
+
+
+
+ϵ=0 
+
+dP − ddϵ Rem 0(ηϵ, η ) ϵ=0 
+
+,
+
+20 and the result follows after noticing that 
+
+ddϵ Rem 0(ηϵ, η ) ϵ=0 
+
+= 0 .
+
+# 3 Sequential double robustness (Lemma 2) 
+
+We first prove an auxiliary result. 
+
+Proposition 1. For any function mk, 1(¯ sk, a k, h k) define Dk(¯ sk) = 1{Ak = d(¯ sk, H k)}, and 
+
+qk, 1(¯ sk−1, A k, H k) = mk, 1((¯ sk−1, A k), d ((¯ sk−1, A k), H k), H k).
+
+We have 
+
+E[qk, 1(sk−1, A k, H k) | Ak−1 = ak−1, H k−1 = hk−1] = 
+
+E
+
+"X
+
+> sk
+
+Dk(¯ sk) gk(sk | Hk)
+
+gk(Ak | Hk) mk, 1(¯ sk, A k, H k) | Ak−1 = ak−1, H k−1 = hk−1
+
+#
+
+. (4) 
+
+Proof The right hand side can be written as 
+
+X 
+
+> ak,l k
+
+X
+
+> sk
+
+1{ak = d(¯ sk, h k)} gk(sk | hk)
+
+gk(ak | hk) mk, 1(¯ sk, a k, h k)gk(ak | hk)p(lk | ak−1, h k−1)= X 
+
+> ak,l k
+
+X
+
+> sk
+
+1{ak = d(¯ sk, h k)}gk(sk | hk)mk, 1(¯ sk, a k, h k)p(lk | ak−1, h k−1)= X 
+
+> lk,s k
+
+gk(sk | hk)mk, 1(¯ sk, d (¯ sk, h k), h k)p(lk | ak−1, h k−1)= X 
+
+> lk,a k
+
+gk(ak | hk)qk, 1(¯ sk−1, a k, h k)p(lk | ak−1, h k−1)= E[qk, 1(¯ sk−1, A k, H k) | Ak−1 = ak−1, H k−1 = hk−1].
+
+We now proceed with the proof of the main result (Lemma 2). 
+
+Proof This lemma follows from recursive application for k = t + 1 , . . . , τ of the following relation: 
+
+E[qk, 1(¯ sk−1, A k, H k) − qk(¯ sk−1, A k, H k) | Ak−1, H k−1] = 
+
+E
+
+(X
+
+> sk
+
+Dk(¯ sk)
+
+ gk(sk | Hk)
+
+gk(Ak | Hk) − gk, 1(sk | Hk)
+
+gk, 1(Ak | Hk)
+
+
+
+[mk, 1(¯ sk, A k, H k) − mk(¯ sk, A k, H k)] Ak−1, H k−1
+
+)
+
+−E
+
+(X
+
+> sk
+
+Dk(¯ sk) gk, 1(sk | Hk)
+
+gk, 1(Ak | Hk) [qk+1 ,1(¯ sk, A k+1 , H k+1 ) − mk, 1(¯ sk, A k, H k)] Ak−1, H k−1
+
+)
+
++E
+
+(X
+
+> sk
+
+Dk(¯ sk) gk, 1(sk | Hk)
+
+gk, 1(Ak | Hk) E[qk+1 ,1(¯ sk, A k+1 , H k+1 ) − qk+1 (¯ sk, A k+1 , H k+1 ) | Ak, H k] Ak−1, H k−1
+
+)
+
+,
+
+which follows from rewriting it as 
+
+a − b = X(c − d)( a1 − b1)
+
+21 − X d(a2 − b2)+ X d(a3 − b3),
+
+after noticing that P da 2 = P da 3, P db 2 = P da 1, P db 1 = P db 3, a = P ca 1, and b = P cb 1, where the latter two follow from the above proposition. 
+
+# 4 Delay intervention with three time points 
+
+Proposition 1 shows that the augmented history ¯st need not be carried in full when the intervention de-pends only on selected components of the natural treatment history. Delay interventions provide a simple illustration. For an absorbing binary treatment status, a delay by κ time points may be written as 
+
+d(κ) 
+
+> t
+
+(¯ at, h dt ) = 
+
+(
+
+0, t ≤ κ, at−κ, t > κ. 
+
+Thus, the rule at time t does not generally require the entire history ¯at, only the corresponding value of treatment at−κ. Equivalently, the sequential regression implementation only needs to augment the data by the relevant history. We discuss two examples. 
+
+Example 1 (Delay by one time point) . Consider τ = 3 and a binary exposure representing an absorbing state. Consider an intervention given by d1(a1, h 1) = 0 , d2(¯ a2, h d
+
+> 2
+
+) = a1, and d3(¯ a3, h d
+
+> 3
+
+) = a2. Then, the sequential regression formula equals the following: 
+
+m3(A3, H 3) = E[Y | A3, H 3]
+
+q3(¯ s2, A 3, H 3) = m3(d3(¯ s2, A 3, H 3), H 3) = m3(s2, H 3)
+
+m2(¯ s2, A 2, H 2) = E[q3(¯ s2, A 3, H 3) | A2, H 2]
+
+q2(s1, A 2, H 2) = m2(( s1, A 2), d 2(( s1, A 2), H 2), H 2) = m2(A2, s 1, H 2)
+
+m1(s1, A 1, H 1) = E[q2(s1, A 2, H 2) | A1, H 1]
+
+q1(A1, H 1) = m1(A1, d 1(A1, H 1), H 1) = m1(A1, 0, H 1)
+
+θ = E[q1(A1, H 1)] .
+
+Although this display is written using the general notation ¯s2 = ( s1, s 2), the functions used in the recursion do not depend on all components of ¯s2. Specifically, q3(¯ s2, A 3, H 3) depends on ¯s2 only through s2. After substituting the intervention at time 2, q2(s1, A 2, H 2) depends on the previous natural value s1 and the current natural value A2, but not on a jointly augmented pair (s1, s 2). Therefore, the one timepoint delay can be implemented by carrying only one natural-treatment value in the augmented data at each recursion step, as shown in Figure 4. This example allows us to also illustrate the canonical gradients, which are equal to                                
+
+> ψ3(s2, Z ) = X
+> s3
+> D2,3(s2, s 3)g3(s3|H3)
+> g3(A3|H3) (Y−m3(A3, H 3)) +q3(s2, A 3, H 3)−m2(s2, A 2, H 2)
+> ψ2(s1, Z ) = X
+> s2,s 3
+> D1,3(s2, s 3)g2(s2|H2)
+> g2(A2|H2)
+> g3(s3|H3)
+> g3(A3|H3) (Y−m3(A3, H 3)) +X
+> s2
+> D1,2(s1, s 2)g2(s2|H2)
+> g2(A2|H2) (q3(s2, A 3, H 3)−m2(s2, A 2, H 2))
+
+22 + q2(s1, A 2, H 2) − m1(s1, A 1, H 1)
+
+ψ1(Z) = X
+
+> s2,s 3
+
+D0,3(s2, s 3) g1(s1 | H1)
+
+g1(A1 | H1)
+
+g2(s2 | H2)
+
+g2(A2 | H2)
+
+g3(s3 | H3)
+
+g3(A3 | H3) (Y − m3(A3, H 3)) + X
+
+> s1,s 2
+
+D0,2(s1, s 2) g1(s1 | H1)
+
+g1(A1 | H1)
+
+g2(s2 | H2)
+
+g2(A2 | H2) (q3(¯ s2, A 3, H 3) − m2(¯ s2, A 2, H 2)) + X
+
+> s1
+
+D0,1(s1) g1(s1 | H1)
+
+g1(A1 | H1) (q1(s1, A 2, H 2) − m1(s1, A 1, H 1)) + q1(A1, H 1) − θ. 
+
+Step 1. Estimate m3(a3, h 3) by regressing Y on (A3, H 3). Since q3 depends only on s2, create an augmented dataset with one additional column 
+
+s2.
+
+i A1 A2 A3 Y
+
+1 a1,1 a1,2 a1,3 y1
+
+... ... ... ... ...
+
+n an, 1 an, 2 an, 3 yn
+
+7→
+
+i A1 A2 A3 s2 Y
+
+1 a1,1 a1,2 a1,3 0 y1
+
+1 a1,1 a1,2 a1,3 1 y1
+
+... ... ... ... ... ...
+
+n an, 1 an, 2 an, 3 1 yn
+
+Step 2. Generate q3(s2, A 3) = m3(s2, H 3) and estimate m2(s2, A 2, H 2) by regressing q3(s2, A 3) on (s2, A 2, H 2).
+
+i A1 A2 s2 q3(s2, A 3)1 a1,1 a1,2 0 q3(0 , a 1,3)1 a1,1 a1,2 1 q3(1 , a 1,3)
+
+... ... ... ... ...
+
+n an, 1 an, 2 1 q3(1 , a n, 3)
+
+Step 3. To estimate m1, augment the data with an additional column s1. Generate q2(s1, A 2) = m2(A2, s 1, H 2) and regress it on (s1, A 1, H 1).
+
+i A1 A2 s1 q2(s1, A 2)1 a1,1 a1,2 0 q2(0 , a 1,2)1 a1,1 a1,2 1 q2(1 , a 1,2)
+
+... ... ... ... ...
+
+n an, 1 an, 2 1 q2(1 , a n, 2)
+
+7→
+
+i q1(A1)1 q1(a1,1)
+
+......
+
+n q1(an, 1)
+
+Figure 4: Reduced pooled-regression implementation of the one-timepoint delay in Example 1, with τ = 3 ,
+
+At ∈ { 0, 1}, and no covariates. Unlike the fully general implementation in Figure 2, this intervention never requires simultaneous augmentation by (s1, s 2): only the single natural value that may be used in a future delayed treatment decision is carried at each step. 
+
+Example 2 (Delay by two time points) . Consider τ = 3 and a binary exposure representing an absorbing state. Consider a delay of two time units, where the intervention is given by d1(a1, h 1) = 0 , d2(¯ a2, h d
+
+2) = 0 ,and d3(¯ a3, h d
+
+3) = a1. Then, the sequential regression formula equals the following: 
+
+m3(A3, H 3) = E[Y | A3, H 3]
+
+q3(¯ s2, A 3, H 3) = m3(d3((¯ s2, A 3), H 3), H 3) = m3(s1, H 3)
+
+m2(¯ s2, A 2, H 2) = E[q3(¯ s2, A 3, H 3) | A2, H 2]
+
+q2(s1, A 2, H 2) = m2(( s1, A 2), d 2(( s1, A 2), H 2), H 2) = m2(( s1, A 2), 0, H 2)
+
+m1(s1, A 1, H 1) = E[q2(s1, A 2, H 2) | A1, H 1]
+
+q1(A1, H 1) = m1(A1, d 1(A1, H 1), H 1) = m1(A1, 0, H 1)
+
+θ = E[q1(A1, H 1)] .
+
+23 A two timepoint delay requires the intervention at time 3 to only remember the natural treatment value at timepoint 1. Similar to the illustration in Figure 4, this implies that full data augmentation by ¯s2 is not necessary, augmenting the data with a single column s1 is sufficient. 
+
+4.1 Time horizon considerations. 
+
+When natural treatment initiation occurs close to the end of follow-up, the delayed treatment initiation time may fall outside the study horizon. For example, in a vaccine study with τ = 10 monthly decision times and a five-month delay, individuals naturally vaccinated in months 6, . . . , 10 would remain unvaccinated throughout the observed ten-month horizon under the delayed intervention. This does not create a prob-lem with our technical framework, but it may affect interpretation because, for late vaccines, the delayed intervention is equivalent within the study horizon to no vaccination. 24
