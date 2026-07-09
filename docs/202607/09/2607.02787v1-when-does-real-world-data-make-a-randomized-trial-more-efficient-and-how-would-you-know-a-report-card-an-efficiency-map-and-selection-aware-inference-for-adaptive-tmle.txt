@@ -1,0 +1,532 @@
+Title: When Does Real-World Data Make a Randomized Trial More Efficient, and How Would You Know? A Report Card, an Efficiency Map, and Selection-Aware Inference for Adaptive-TMLE
+
+URL Source: https://arxiv.org/pdf/2607.02787v1
+
+Published Time: Tue, 07 Jul 2026 00:14:31 GMT
+
+Number of Pages: 28
+
+Markdown Content:
+# When Does Real-World Data Make a Randomized Trial More Efficient, and How Would You Know? A Report Card, an Efficiency Map, and Selection-Aware Inference for Adaptive-TMLE 
+
+M. Ehsan Karim ∗
+
+School of Population and Public Health, University of British Columbia, Vancouver, British Columbia, Canada, and Centre for Advancing Health Outcomes, St. Paul’s Hospital, Vancouver, British Columbia, Canada 
+
+Abstract 
+
+Augmenting a randomized controlled trial with real-world data promises greater efficiency, but how much a given fusion actually delivers, and how to attach honest uncertainty to that gain, is rarely characterized. Using adaptive targeted maximum likelihood estimation (A-TMLE) as the running example, we develop three reproducible tools for honest evidence from combined trial and real-world data. First, a report card that makes the estimator’s data-adaptively learned bias model auditable, measuring how well it recovers the true enrollment-effect surface and attributing the estimator’s variance to its structural parts. Second, a map of when fusion helps versus hurts, benchmarked against an efficient trial-only estimator: the gain is driven primarily by the magnitude of the real-world bias rather than its functional complexity, a dominance an exact variance identity explains; it crosses break-even near a moderate bias and erodes as the trial grows, so the advantage is finite-sample rather than a form of super-efficiency. Third, selection-aware inference for the gain, treated as a data-adaptive estimand: the naive standard error undercovers, and among ten candidate standard errors only a block jackknife is calibrated, though conservatively so. Three openly available fusions, in a biomedical HIV trial, a public-health trial, and a job-training trial, span the map and show the difference an honest interval makes for real-world evidence. 
+
+Key words: Adaptive debiased machine learning; Cross-fitting; Data fusion; Efficient influence function; Highly adaptive lasso; Jackknife; Real-world evidence; Reliability of machine-learning methods; Selection-aware inference; Targeted maximum likelihood estimation. 
+
+# 1 Introduction 
+
+Background and motivation. The 21st Century Cures Act and the U.S. Food and Drug Ad-ministration’s Real-World Evidence program have made the augmentation of randomized controlled trials (RCTs) with real-world data (RWD) a central methodological problem [114th United States Congress, 2016, U.S. Food and Drug Administration, 2018]. The appeal is efficiency: a trial delivers unbiased treatment effects but is expensive and small, while observational RWD is abundant but 
+
+> ∗
+
+ehsan.karim@ubc.ca . ORCID: 0000-0002-0346-2871 
+
+1
+
+> arXiv:2607.02787v1 [stat.ME] 2 Jul 2026
+
+M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE 
+
+confounded. A large literature now combines the two — by reweighting for representativeness, by test-then-pool borrowing, or by shrinkage — and a recurring promise is that fusion “buys” efficiency over using the trial alone [Colnet et al., 2024]. Two questions, however, are seldom answered for any given method: how much efficiency does the fusion actually deliver in finite samples, and how does one form an honest confidence statement about that gain? Adaptive-TMLE (A-TMLE) of van der Laan et al. [2026] — a member of the targeted maximum likelihood estimation framework [van der Laan and Rubin, 2006] — is an attractive entry into this space and our running example throughout. It targets the trial-respecting ATE under only the assumptions known to hold for an RCT plus a trial-enrollment positivity condition, and it integrates RWD not through an exchange-ability assumption but through a learned bias model : the ATE is written as a pooled-ATE estimand minus a bias estimand — the conditional effect of trial enrollment on the outcome — estimated by a data-adaptively selected, relaxed highly-adaptive-lasso (HAL) working model. The method is √n-consistent, asymptotically normal, and is argued to be finite-sample super-efficient, with its efficiency gain held to be driven by the complexity , not the magnitude , of the bias, so that “even if the bias is large in magnitude, provided it is a simple function . . . A-TMLE is still expected to yield efficiency gain” [van der Laan et al., 2026]. 
+
+The two gaps. First, the learned object is invisible . The bias working model τS — the very object the theory says drives the gain — is never reported, plotted, or audited; a reader sees only a final estimate and a confidence interval. This is true not only of A-TMLE but of the broader family of adaptive/debiased machine-learning estimators that build and then debias a data-driven working model [van der Laan et al., 2023, Hubbard et al., 2016]: the working model is treated as an inferential nuisance, never as a reportable artifact. Second, the gain is characterized only qualitatively . The “complexity not magnitude” claim is asymptotic and oracle-conditional, and the authors themselves flag the gap: “it remains unclear in practice how much efficiency gain one should expect . . . [in] some [cases] the efficiency gain is small” [van der Laan et al., 2026]. There is, moreover, no standard error for the efficiency gain itself — it is reported only as a Monte Carlo ratio across simulation runs. 
+
+Contributions. We close both gaps with three contributions — together, a practitioner’s toolkit for honest evidence from combined trial and real-world data — developed and demonstrated on A-TMLE as the running example (their extension to the broader adaptive-debiased family is a conjecture, not a claim; Table 1). (1) A report card for a data-adaptively learned working model : we audit a fitted estimator to make the learned bias object legible — measuring how well it recovers the true enrollment-effect surface, attributing the estimator’s influence-curve variance to its structural components, and flagging over-sparse selection. The closest prior work is the adaptive-debiased-ML framework of van der Laan et al. [2023], which formalizes the oracle projection target and its efficiency bound; our delta is to audit the realized working model rather than only debias it . (2) A practical characterization of when the fusion’s finite-sample variance gain materializes : we map the gain as a joint function of bias magnitude, complexity, the reference distribution, and n. The closest prior work is the elastic integrative analysis of Yang et al. [2023], which decides whether to borrow via one compatibility test; our delta is to characterize when and how much of that variance gain materializes, and to explain its magnitude-dominance through an exact population-oracle variance identity (Section 4.4) . (3) Selection-aware inference for the efficiency gain : treating the gain as a data-adaptive estimand, we show standard cross-fitting, CV-TMLE, and an assumption-lean HulC interval all fail, while a block jackknife is conservatively valid; a heuristic account (Section 4.5) explains why. The closest prior work is the data-adaptive-target inference of Hubbard et al. [2016]; 2M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE our delta is to show the standard split-sample routes fail for the efficiency estimand and the block jackknife is the conservatively-valid alternative .Table 1: The three contributions at a glance. Each is a general methodological/empirical result, instantiated on A-TMLE for RCT+RWD fusion.                                             
+
+> Contribution What it delivers Headline evidence §
+> 1Report card for alearned working model Makes the opaque bias model
+> bτSauditable: recovery, influence-curve variance attribution, drift cor ⋆≥0.82 at large bias; var( DA) inflates 6–7 .5×
+> 4.2 2Efficiency map When the fusion’s finite-sample variance gain materializes, as a function of bias magnitude ×
+> complexity ×reference ×n
+> gain 1 .15 →0.34; crosses 1 near m≈1; erodes with n
+> 4.3 3Selection-aware in-ference Honest CIs for the efficiency gain; across our grid the block jackknife is the only calibrated SE jackknife cover 0.98–1 .00 (conservative); cross-fit/CV-TMLE/HulC fail 4.5
+
+Positioning. This paper sits at the intersection of RCT+RWD fusion [Colnet et al., 2024, Yang et al., 2023, Yang and Ding, 2020, Rosenman et al., 2023, Viele et al., 2014, Dang et al., 2025], adaptive/debiased machine learning with data-adaptive target parameters [van der Laan et al., 2023, Hubbard et al., 2016, Li et al., 2025], and selection-aware inference and resampling [Berk et al., 2013, Chernozhukov et al., 2018, Zheng and van der Laan, 2011, Kuchibhotla et al., 2024, Efron and Stein, 1981, Quenouille, 1956]. The dominant fusion paradigms are test-then-pool, shrinkage, and Bayesian dynamic borrowing [Ibrahim and Chen, 2000, Schmidli et al., 2014, Pocock, 1976], which borrow all-or-nothing or via a global weight; A-TMLE instead decomposes the ATE and borrows direction-by-direction through an explicitly learned bias function — but, like the rest of this lineage, never reports it. The closest selection-aware fusion method, experiment-selector CV-TMLE [Dang et al., 2025], data-adaptively selects between the trial-only and pooled estimands on each cross-validation fold, yet reports no honest standard error for the resulting efficiency gain and never audits the learned bias object — the two gaps our contributions target. More broadly, the standard selection-aware toolbox (cross-fitting, CV-TMLE, HulC) assumes a fixed target functional and does not transfer to a data-adaptive efficiency estimand. Two themes central to real-world evidence run through all three contributions: the learned bias model τS is precisely the conditional enrollment-effect surface that a transportability analysis between the trial and the external population would need to model [Stuart et al., 2011, Westreich et al., 2017, Dahabreh et al., 2020], so the report card doubles as a diagnostic for how the two populations differ; and the selection-aware standard error supplies uncertainty quantification for the efficiency gain, a quantity otherwise reported without one. Because that bias model is itself a data-adaptively learned, machine-learning object, auditing it is a concrete instance of the reliability of AI/ML methods for real-world evidence — the report card turns an otherwise-opaque learned component into an inspectable one. The extended treatment, delineating each contribution from its closest prior work, is in Web Appendix B. 
+
+Aims and roadmap. We stress throughout that an efficiency comparison is reference-dependent :our claims are relative to an efficient RCT-only estimator. Framed honestly, the work is a rigorous, reproducible characterization of when and how much fusion helps, and of how to report it — not a 3M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE 
+
+refutation of A-TMLE, whose validity our report card in fact strengthens. Section 2 fixes notation, the estimand, and the identification assumptions; Section 3 defines the estimator, the report-card diagnostics, and the ten selection-aware standard errors; Section 4 reports the simulation study (the report card, the efficiency map, and the selection-aware head-to-head); Section 5 illustrates all three on three real fusions, a biomedical HIV trial, a public-health trial, and a job-training trial; Section 6 discusses implications and limitations. All results are reproducible from a public harness built on the atmle package of van der Laan et al. [2026]. 
+
+# 2 Notation, estimand, and assumptions 
+
+Observed data and estimand. We observe O = ( S, W, A, Y ) ∼ P0 on n units, where S ∈ { 0, 1}
+
+indicates RCT enrollment ( S = 1 trial, S = 0 external RWD), W are baseline covariates, A ∈ { 0, 1}
+
+is treatment, and Y is the outcome. Our target is the trial-population ATE 
+
+ψ0 = E Y (1) − Y (0) S = 1  = EW |S=1 
+
+ E(Y | S=1 , W, A =1) − E(Y | S=1 , W, A =0) , (1) the parameter the implementation computes as “average over S = 1” via the empirical reweighting 
+
+S/ mean( S). van der Laan et al. [2026] also study the covariate-pooled variant that averages the conditional effect over the pooled distribution of W ; in our data-generating processes the within-trial effect is homogeneous (a constant, Section 4) and W has the same marginal law in both arms, so the two estimands coincide and equal a constant, making the efficiency comparison a pure variance contrast rather than a statement about heterogeneous effects. Identification of (1) from the within-trial conditionals requires only consistency (no interference; Y = Y (A)) and RCT randomization and treatment positivity within the trial; fusing the external data adds one further condition, which A-TMLE names as its price: trial-enrollment positivity 0 < Π( W ) ≡ P (S=1 |
+
+W ) < 1 PW -almost everywhere — a two-sided overlap condition whose lower bound places the external covariate support inside the trial’s and whose upper bound ( P (S=0 | W ) > 0) keeps the external conditional mean entering τS identified [van der Laan et al., 2026]. In the two-arm case, identifying the treated bias term τS (W, 1) additionally requires arm-specific external overlap 
+
+P (A=1 | S=0 , W ) ∈ (0 , 1) (the two-arm condition stated with (4) below). We write Π( W, A ) = 
+
+P (S=1 | W, A ) for the (treatment-aware) trial-membership mechanism, g(W ) = P (A=1 | W ) for the treatment propensity, and reserve Π( W ) for the covariate-only enrollment probability of the positivity assumption. 
+
+The bias decomposition. A-TMLE writes 
+
+ψ0 = eΨ( P0) − Ψ#(P0), (2) where eΨ is the pooled-ATE estimand — the pooled conditional treatment-effect contrast E(Y |
+
+A=1 , W ) − E(Y | A=0 , W ) averaged over the trial W -law, which A-TMLE estimates via a working model τA(W ) for the pooled conditional average treatment effect learned over RCT+RWD (Web Appendix A) — and Ψ # is a bias projection that subtracts the contribution the (possibly con-founded) RWD would inject. The bias projection is built from the conditional RCT-enrollment effect on the outcome, 
+
+τS (W, A ) = E(Y | S=1 , W, A ) − E(Y | S=0 , W, A ), (3) through the trial-population specialization of the Lemma 2 identity of van der Laan et al. [2026] Ψ#(P ) = EW |S=1 
+
+ Π(0 | W, 0) τS (W, 0) − Π(0 | W, 1) τS (W, 1) , Π(0 | W, A ) = P (S=0 | W, A ),
+
+(4) 4M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE 
+
+which reduces to a single term when the external arm contains only controls; when both exter-nal arms are present, the two-term Ψ # additionally requires external two-arm overlap, P (A=1 |
+
+S=0 , W ) ∈ (0 , 1) with joint support, for the bias projection to be well-defined. Crucially, A-TMLE does not assume mean exchangeability E(Ya | S=0 , W ) = E(Ya | W ); Ψ # absorbs whatever bias — including unmeasured confounding — the pooled projection introduces. The decomposition (2) is an exact population identity for the true-contrast eΨ; the deployed estimator, however, targets the 
+
+projection of eΨ onto its relaxed-HAL working model and is consistent and asymptotically linear for ψ0 only up to a second-order remainder equal to the working-model approximation error — negligible ( oP (n−1/2)) once that model approximates the oracle bias model at rate n−1/4 [van der Laan et al., 2026]. 
+
+Influence curve and the efficiency gain. At the solution the estimator is asymptotically linear with efficient influence curve 
+
+D = DA − DS , (5) where DA is the pooled-projection component and DS the bias-correction component (which carries an extra trial-membership score reflecting that Π is estimated); the reported standard error is 
+
+cSE = {dVar( D)/n }1/2, the empirical influence-curve variance. The object of Sections 4–5 is the 
+
+efficiency gain 
+
+R = var( Drct )var( Datmle ) , (6) the ratio of the influence-curve variances of Drct — the influence function of a matched RCT-only estimator, the correctly-specified-GLM cross-fitted TMLE/AIPW defined in Section 4.1 — and of A-TMLE’s Datmle ; R > 1 means A-TMLE is tighter. R is itself a data-adaptive (and n- and reference-dependent) estimand, and Section 4.5 asks how to put an honest interval on it. Figure 1 summarizes the decomposition and where each contribution attaches. 
+
+A scope caveat stated up front. In the main data-generating processes of Section 4 trial mem-bership is assigned deterministically, so Π( W ) is constant and the named enrollment-positivity as-sumption holds trivially; only the selection-aware positivity slice exercises a genuinely W -dependent Π( W ). Our report-card and efficiency conclusions are therefore, strictly, statements about the constant-positivity regime; extending them to selective ( W -dependent) enrollment is left to future work (Section 6). 
+
+# 3 Methods 
+
+3.1 The A-TMLE estimator 
+
+Both working models are estimated by an R-learner with a relaxed-HAL representation (a HAL basis screened by an ℓ1 penalty with cross-validated penalty, then refit unpenalized on the selected basis); the treatment main-effect basis is forced into τS unpenalized. The pair (Π , τ S ) together with a targeted trial-membership mechanism Π ⋆ are updated by iterated TMLE fluctuations, while 
+
+τA receives a single fluctuation. The full estimator mechanics — the R-loss, the clever covariates, the fluctuation submodels, and the reproducibility-critical defaults — are in Web Appendix A; the estimator is the atmle package of van der Laan et al. [2026]. 5M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE                              
+
+> Data O= ( S, W, A, Y )trial S=1 + RWD S=0
+> Pooled projection eΨworking model τA(W)
+> Bias projection Ψ #
+> learned τS(W, A )
+> bψ=eΨ−Ψ#
+> EIC D=DA−DS
+> gain R=var( Drct )var( Datmle )block-jackknife CI
+> Report card audits τS:recovery ·variance attribution ·drift
+
+Figure 1: Schematic. A-TMLE decomposes the trial-population ATE into a pooled projection eΨ(via the working model τA) minus a bias projection Ψ # (via the learned τS ); the efficient influence curve is D = DA − DS . Contribution (1) audits τS (the report card); contribution (2) maps the gain R; contribution (3) builds a calibrated interval for R via the block jackknife. 
+
+Alt text: Flow diagram. Trial-plus-real-world data O = ( S, W, A, Y ) feeds two branches — a pooled projection eΨ using working model τA, and a bias projection Ψ # using a learned τS —which combine into the A-TMLE estimate with influence curve D = DA − DS , from which the efficiency gain R and its block-jackknife confidence interval are formed; a dashed box shows the report card auditing τS for recovery, variance attribution, and drift. 
+
+3.2 A report card for the learned working model 
+
+We attach three diagnostics to a fitted A-TMLE fusion estimator that make the learned bias object legible. Recovery compares the targeted learned surface bτS (W, A ) to the truth τS, 0(W, A ) on known data-generating processes, via cor ⋆ = cor( bτS , τ S, 0). Attribution decomposes the influence-curve variance var( D) into the pooled-projection variance var( DA) and the variance the bias-correction step adds or removes, reported alongside the gain (6). Drift is a Π-weighted distance between the cross-validation-selected and the TMLE-targeted τS , a flag for an over-sparse working model. On real data, where τS, 0 is unknown, the report card instead reports the learned model’s effective dimension and the variance attribution (Section 5). 
+
+3.3 Selection-aware standard errors 
+
+The efficiency gain (6) is itself an estimand, and its naive influence-function SE conditions on the one cross-validation-selected HAL working model. We benchmark ten SE estimators of log(gain): the naive influence-function SE; a delete-a-fold block jackknife that re-selects the working model on each S-stratified leave-fold-out subsample; a cross-fitted out-of-fold influence-curve variance (with model selection refit within each training fold); three ridge stabilizations of the cross-fit information-matrix inverse ( λ = 0 .01 , 0.05 , 0.2); a winsorized cross-fit; a principled CV-TMLE 
+
+that re-targets a one-dimensional fluctuation for each of τA and τS on each held-out fold; CV-TMLE plus ridge; and an assumption-lean HulC interval (the convex hull of six disjoint-group gains, valid under only median-unbiasedness). Each is defined precisely in Web Appendix C. 6M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE 
+
+# 4 Simulation study 
+
+We assess all three contributions on a common simulation grid; Table 2 is a roadmap of the study, pointing each component to its headline display in the main text and its full per-cell results in the Supplementary Material. We pair each of the two headline findings with an analytic account where it arises — a population-variance identity for the magnitude-dominance (Section 4.4) and a heuristic for the standard-error failures (Section 4.5). Table 2: Roadmap of the simulation study. Each component, the question it answers and what it shows, and where to find the headline display in the main text and the full per-cell results in the Supplementary Material (Web Appendices). The three contributions are (1) the report card, (2) the efficiency map, and (3) selection-aware inference. 
+
+Component Question it answers, and what it shows Where 
+
+(1) Bias-model report card 
+
+Does the audit recover the learned bias surface? It recov-ers the true enrollment-effect surface and attributes the influence-curve variance to its parts. Table 3, Fig. 2; Web App. D 
+
+(2) Efficiency map When does fusion help versus hurt? The gain is driven by bias magnitude , not complexity, crossing parity near a mod-erate bias. Table 4, Fig. 3; Web App. D Bias and coverage Is the sub-unity gain a variance cost, not bias? A-TMLE stays approximately unbiased with near-nominal coverage across the map. Table 5; Web App. D Reference panel and 
+
+n-ladder 
+
+Is the verdict an artifact of the benchmark, and does it per-sist as the trial grows? It holds against three references and erodes toward parity with sample size. Table 6; Web App. D 
+
+(3) Selection-aware standard error 
+
+Which standard error for the gain is calibrated? Of ten can-didates only the block jackknife attains nominal coverage; naive, cross-fit, CV-TMLE, and HulC all fall short across our grid. Table 7, Fig. 4; Web App. D Robustness slices Does the verdict survive selective enrollment, heterogeneity, larger samples, and other stresses? It does, across all slices. Web App. E Analytic account (§4.4) 
+
+Why does magnitude dominate, and why do the naive stan-dard errors fail? A population identity and a heuristic ac-count, respectively. 
+
+§4.4 and §4.5; Web App. G 
+
+> “Web App.” refers to the Supplementary Material (Web Appendices A–G), which hold the full per-cell grids, the complete ten-method standard-error comparison, all robustness slices, the software/reproducibility map, and the proofs.
+
+4.1 Design 
+
+We generate RCT+RWD data with a true, homogeneous ATE of 1 .5 and a bias that enters only the RWD arm. With three standard-normal covariates and Gaussian outcome noise, the struc-tural outcome is Y = 2 .5 + 0 .9W1 + 1 .1W2 + 2 .7W3 + 1 .5A + UY + 1{S=0 } B, so the treatment effect is the constant 1 .5 in every cell and the bias B = B(W, A ) perturbs only the external arm. Treatment is randomized in the trial ( P (A=1 | S=1) = 0 .67) and confounded externally (P (A=1 | S=0 , W ) = expit(0 .5W1)), matching the original paper’s allocation. The bias is param-eterized so that its magnitude m (the bias standard deviation, in outcome-residual SD units) and 7M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE 
+
+its complexity (functional shape: linear, interaction, or wiggly) vary orthogonally : each shape is normalized to unit standard deviation over the external population, then scaled by m, i.e. 
+
+B = m s (W, A )/sd 0(s) with s(W, A ) the unit-shape carrier and sd 0(s) its standard deviation over the external ( S=0) population, so m is the bias SD. We benchmark A-TMLE’s efficiency against a 
+
+matched, correctly-specified-GLM, cross-fitted RCT-only TMLE/AIPW — main-terms logistic propensity and linear outcome GLMs, cross-fitted, returning an influence curve on the same “average over S=1” scale as A-TMLE. This is a method -matched reference (the same parametric nuisance class A-TMLE is given, the same estimand, influence-curve-returning), not a learner-vs-learner contrast; Section 4.3.1 shows a genuinely flexible reference collapses to this GLM on these near-linear DGPs, so it is not a weak denominator. Full DGP and reference definitions are in Web Appendix C. 
+
+4.2 The bias-model report card 
+
+Table 3 reports recovery and the mean working-model size across the grid ( B = 1000 replicates per cell; Monte Carlo SE of cor ⋆ ≤ 0.005). Recovery is strong where it matters: cor ⋆ ≥ 0.82 for every complexity once the bias reaches two residual SDs ( m ≥ 2), and ≈ 0.95 for a linear bias, degrading only at small magnitude where the true τS is near-constant (and the gain is already ∼ 1.15, so the auditor needs the tool least); it is undefined at m = 0, where there is no bias to recover. On the original paper’s own scenarios (a)/(b) the targeted surface attains cor ⋆ = 0 .931/0 .949 (each over 
+
+B = 8 diagnostic replicates, Monte Carlo SD ≈ 0.02), and it reproduces qualitative structure — for instance that the W1-dependence of the bias is present in the control arm and absent in the treated arm (Figure 2). Because cor ⋆ is invariant to affine rescaling, we separately certify the scale 
+
+of bτS : it enters Ψ # multiplicatively, so a shape-correct but scale-attenuated surface would bias the point estimate — yet A-TMLE’s relative bias stays ≤ 4.6% throughout (Table 5), so the scale is certified implicitly. Attribution shows var( DA) inflates roughly six- to seven-and-a-half-fold across the grid (from ≈ 4.2 at m = 0 to ≈ 25–31 at m = 4, by complexity) — pooling a noisier, biased outcome, not the bias-correction step itself, is the dominant cost (Web Appendix D). Drift is small in the linear DGPs and grows monotonically with bias (from ≈ 0.002 at m = 0 to ≈ 0.03–0 .05 at 
+
+m = 4), a quantitative warning that the working model is being stretched. The report card thus makes auditable the central data-adaptive object the original method leaves unreported. 
+
+4.3 The efficiency map 
+
+Table 4 reports the gain (6) over magnitude × complexity ( B = 1000, 15 ,000 fits, zero failures). Three findings. 1. Magnitude is the dominant axis. The gain falls monotonically with m, crossing 1 .0 just above m ≈ 1 (between m = 1 and m = 2) (a bias of ∼one outcome-residual SD) for every complexity. The mechanism is transparent: as noted in Section 4.2, the pooled-projection variance var( DA) inflates ∼ 6–7 .5× across the range — pooling a noisier biased outcome is the cost, not the bias-correction step. 2. Complexity is a second-order amplifier. At m ≤ 1 the three complexity curves agree to within ∼ 0.03; at m ≥ 2 they fan out (linear > interaction > wiggly), the spread growing from ∼ 0.17 ( m = 2) to ∼ 0.25 ( m = 4). A graded roughness ladder — varying complexity continuously while holding magnitude, bias-SD, and the low-order projection fixed (Web Appendix E) — confirms this: the gain is flat across six roughness rungs at m ≤ 1 (spread 
+
+≤ 0.03) and fans out only at large bias, where it tracks the effective basis count, which rises with roughness then saturates and falls once the oscillation outruns the HAL knot resolution. 8M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE 
+
+Table 3: Report card: recovery of the learned bias model bτS . For each bias shape and magnitude m, cor ⋆ is the correlation between the tar-geted learned bias surface and the truth, and ¯d the mean number of active basis terms in the selected working model, over B = 1000 replicates. Re-covery is strong where it matters — ≥ 0.82 for every shape once m ≥ 2, 
+
+≈ 0.95 for a linear bias — and degrades only at small magnitude, where the true bias is near-constant. 
+
+m = 0 m = 0 .5 m = 1 m = 2 m = 4 Bias shape cor ⋆ ¯d cor ⋆ ¯d cor ⋆ ¯d cor ⋆ ¯d cor ⋆ ¯d
+
+Linear — 2.3 0.718 7.6 0.889 13.0 0.948 16.2 0.967 18.0 Interaction — 2.4 0.509 8.3 0.763 17.2 0.860 26.0 0.886 31.2 Wiggly — 2.4 0.411 7.8 0.699 19.7 0.824 30.6 0.860 38.0                 
+
+> m, bias magnitude (the bias standard deviation, in outcome-residual SD units); m= 0 is unbiased RWD. cor ⋆= cor( bτS, τ S, 0), the Pearson correlation of the targeted learned bias surface bτSwith the truth τS, 0(W, A ) = −B(W, A ); undefined (—) at m= 0, where there is no bias to recover. Monte Carlo SE of cor ⋆≤0.005. ¯d, mean number of active highly-adaptive-lasso basis terms in the cross-validation-selected working model (an effective dimension of bτS).
+
+Table 4: The magnitude × complexity effi-ciency map. Influence-curve efficiency gain bR of A-TMLE relative to a matched, correctly-specified-GLM, cross-fitted RCT-only TMLE/AIPW, over the bias magnitude m and bias complexity. bR > 1 means A-TMLE is tighter than the trial-only estimator. The gain is driven primarily by magnitude — falling from 
+
+∼ 1.15 at zero bias to 0 .34–0 .59 at large bias and crossing parity just above m ≈ 1 — with complexity separating the shapes only at large magnitude. Even a simple (linear) large bias drives the gain below one. 
+
+Bias shape m = 0 m = 0 .5 m = 1 m = 2 m = 4 Linear 1.155 1.080 1.031 0.906 0.589 
+
+Interaction 1.150 1.100 1.012 0.757 0.386 Wiggly 1.150 1.114 1.018 0.732 0.340                  
+
+> bR=cvar( Drct )/cvar( Datmle ), the ratio of the influence-curve variance of the matched RCT-only estimator to that of A-TMLE (Eq. 6).
+> m,bias magnitude (bias standard deviation, in outcome-residual SD units). B= 1000 replicates per cell (15 ,000 A-TMLE fits, zero failures); nrct =next = 250. Monte Carlo SE
+> ≈0.003–0 .005.
+
+9M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE 
+
+Figure 2: Recovery surface. The learned bias model bτS (W, A ) (solid, from cross-validated relaxed-HAL) against the truth τS, 0(W, A ) = −B(W, A ) (dashed), sliced at W2 = W3 = 0, by treatment arm ( A = 0/ A = 1, columns) and scenario (rows). The report card reproduces the structure of the enrollment-effect surface, including the arm-specific W1-dependence. 
+
+Alt text: Grid of line plots. In each panel the learned bias-model surface (solid) closely tracks the true enrollment-effect surface (dashed) as a function of W1, across treatment arms (columns 
+
+A = 0, A = 1) and scenarios (rows), sliced at W2 = W3 = 0, including the arm-specific 
+
+W1-dependence. 10 M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE 
+
+3. A simple but large bias does not preserve the gain. A linear bias at m = 4 gives 0 .589 (MCSE 0 .004) — firmly below one — which complicates the original claim that a simple bias preserves the gain “even if [it] is large in magnitude.” This is reference-dependent :against a matched, efficient RCT-only estimator a simple large bias is a net efficiency loss; Section 4.3.1 tests directly whether a weaker reference would change the verdict (it does not). The original work in fact states a stronger guarantee — that “our estimator will always be at least as efficient as an efficient estimator that uses the RCT data only” [van der Laan et al., 2026] — which our finite-sample R < 1 sharpens rather than contradicts. That guarantee is oracle-conditional: it is the super-efficiency A-TMLE attains when its data-adaptively learned working model coincides with the oracle bias model, a limit the deployed relaxed-HAL model reaches only as n grows. At nrct = 250 the working model instead pays a finite-sample variance cost that puts R below one against a matched efficient RCT-only reference, and — consistent with the guarantee — that cost erodes toward parity as n grows (Section 4.3.1). The m = 0 cell is a clean positive control for this constant-CATE design : with unbiased RWD, A-TMLE wins ( ∼ 1.15 ×), correctly exploiting the extra data (the win is reference- and design-dependent — it sits at parity, ∼ 0.92, against the strengthened matched-glm reference under a heterogeneous within-trial effect; see the relaxations below and Web Appendix E). In the realistic regime m ∈ [0 , 2] the map reads as “a modest gain that erodes toward break-even as the RWD becomes more biased.” 
+
+The sub-unity gain is a variance cost, not a bias cost. A variance ratio below one is an efficiency verdict only if A-TMLE stays unbiased there; otherwise the R < 1 cells would be confounded with mean-squared error from residual bias. Reusing the same B = 1000 replicates without refitting, Table 5 shows the A-TMLE point estimate is approximately unbiased throughout (relative bias ≤ 0.9% through m = 1, rising only to 1 .7%/2 .5%/4 .6% at the extreme m = 4 for linear/wiggly/interaction) with 95% Wald coverage in 0 .936–0 .970 across all 15 cells and a well-calibrated SE for m ≤ 2 (mean-SE/MC-SD ≈ 0.96–1 .03). Two conclusions follow. First, the map is a clean variance comparison: where R < 1, A-TMLE pays a pure efficiency price, not hidden MSE. Second, a mild, monotone finite-sample positive bias does emerge at large complex bias (interaction 
+
+m = 4: +0 .069, z ≈ 9), the expected regularization residual of the relaxed-HAL working model at 
+
+nrct = 250, and the one regime where coverage would erode at a larger effect-to-noise ratio. 
+
+Two relaxations of the design. The map above holds trial enrollment completely at random and the within-trial effect constant. Re-running the full grid after relaxing each in turn (Web Appendix E; nrct ∈ { 250 , 400 }, B = 1000 per cell, against all three RCT-only references) leaves the magnitude-over-complexity verdict and the erosion with n intact under both W -dependent trial enrollment (realized Π( W ) ∈ [0 .10 , 0.90]) and a heterogeneous within-trial effect (cate( W ) = 1.5 + 0 .8W1 − 0.5W2, trial ATE still 1 .5). Two qualifications emerge: under selective enrollment the wiggly, large-bias corner loses A-TMLE coverage and the loss worsens with n (Wiggly, m=4: 0.82 → 0.72); and under a heterogeneous effect the matched-glm reference becomes strong enough that the gain sits at parity even at zero bias while the Super-Learner and HAL references still register a gain — reinforcing that the gain is a statement about a chosen reference, not an absolute. 
+
+4.3.1 A paper-matched reference panel and the n-dependence of the gain 
+
+The verdict above is read at nrct = 250 against a matched-glm reference. To probe both caveats we re-ran the gain map against three RCT-only references computed on the same A-TMLE fit — 11 M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE 
+
+Table 5: The sub-unity gain is a variance cost, not a bias cost. Reusing the same B = 1000 replicates (no refits), each cell reports the A-TMLE bias and, in parentheses, the empirical 95% Wald-interval coverage. A-TMLE is approximately unbiased throughout (relative bias ≤ 0.9% through m = 1, rising only to 4 .6% at the extreme interaction m = 4) with near-nominal coverage, so where the gain of Table 4 falls below one A-TMLE pays a pure variance price, not hidden mean-squared error. 
+
+Bias shape m = 0 m = 0 .5 m = 1 m = 2 m = 4 Linear 0.000 (.942) −0.008 (.955) −0.002 (.947) 0.012 (.949) 0.026 (.970) Interaction 0.001 (.942) 0.005 (.950) 0.011 (.939) 0.031 (.936) 0.069 (.954) Wiggly −0.001 (.943) 0.013 (.945) 0.009 (.942) 0.019 (.952) 0.037 (.943)          
+
+> Each entry is the A-TMLE point-estimate bias bψ−ψ0against the true trial-population ATE
+> ψ0= 1 .5; the value in parentheses is the empirical coverage of nominal 95% Wald intervals.
+> m, bias magnitude (bias standard deviation, in outcome-residual SD units). B= 1000 replicates per cell; Monte Carlo SE of coverage ≈0.007.
+
+Figure 3: The efficiency gain map. Influence-curve gain (6) versus bias magnitude m, by complexity. The gain falls monotonically with magnitude and crosses parity just above m ≈ 1; complexity separates the curves only at large magnitude. 
+
+Alt text: Line plot of the efficiency gain (vertical axis) against bias magnitude m (horizontal axis) for three bias complexities. All three curves fall monotonically with m and cross the value one just above m = 1, separating from one another only at large m (linear above interaction above wiggly). 12 M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE 
+
+matched-glm, a flexible discrete SuperLearner {glm, earth, gam }, and relaxed-HAL (the paper’s own working-model learner) — across nrct ∈ { 250 , 400 , 800 } (total n up to 1600, the paper’s own scale) and an external multiple {1, 2, 3}× . Every cell is complete with zero reference fall-backs, and A-TMLE Wald coverage stays in 0 .926–0 .986. We report both the influence-curve gain (6) and the original paper’s MSE-ratio gain MSE(ref) /MSE(atmle); the two track each other in shape, so the IC-variance gain of Table 4 is not an artifact of the metric — though the MSE ratio runs uniformly a little lower (A-TMLE’s small finite-sample bias), so MSE parity is reached marginally earlier, and a few small-bias cells sit at or just above one on the influence-curve gain yet just below one on the MSE ratio (Web Appendix D). Table 6 summarizes; the full grid and the MSE-ratio columns are in Web Appendix D. Table 6: The sub-unity gain survives a stronger reference and erodes with sample size. Panel A : influence-curve gain of A-TMLE against three RCT-only references computed on the same fit; a more ef-ficient reference does not raise the gain (the flexible SuperLearner collapses to the GLM on these near-linear DGPs, and the gain rises only against the noisier relaxed-HAL reference). Panel B : against the efficient (GLM/SL) reference the no-bias gain shrinks toward one and the parity crossing moves to smaller bias as n grows. 
+
+Panel A. Three references (nrct = 250, external multiple 1 ×, Wiggly bias) Reference m = 0 m = 1 m = 2 m = 4 Matched-GLM (correctly specified) 1.156 1.015 0.729 0.344 Flexible SuperLearner (GLM, MARS, GAM) 1.169 1.024 0.735 0.347 Relaxed-HAL 1.437 1.287 0.946 0.434 
+
+Panel B. Sample-size dependence (gain vs. Matched-GLM, external multiple 1 ×)Sample size Gain at m = 0 Crosses 1 near 
+
+nrct = 250 (n = 500) ∼ 1.15 m ∈ (1 , 2) 
+
+nrct = 400 (n = 800) ∼ 1.09 m ∈ (0 .5, 1) 
+
+nrct = 800 (n = 1600) ∼ 1.05 m ∈ (0 , 0.5)            
+
+> Entries are the influence-curve gain bR=cvar( Drct )/cvar( Datmle ); mis the bias magnitude. The three references are RCT-only AIPW/TMLE estimators differing only in the outcome regression: a correctly-specified main-terms GLM (the headline denominator), a discrete SuperLearner over {GLM, multivariate adaptive regression splines, generalized additive model }, and a relaxed highly-adaptive lasso. B= 1000/1000/1000 across the n-ladder; A-TMLE Wald coverage 0 .926–0 .986; zero reference fall-backs. GLM, generalized linear model; SL, SuperLearner; HAL, highly adaptive lasso. Full grids and the MSE-ratio gains are in Web Appendix D.
+
+(1) Not an artifact of a weak denominator. Against all three references the gain falls below one at large bias. The flexible references are not more efficient than matched-glm: on these near-linear DGPs the discrete SuperLearner selects the glm fit, so the SL and glm gains agree to within ∼ 1% in most cells (at most 3 .6% at the extreme interaction/high-external corner at 
+
+nrct = 250, shrinking below 1% by nrct = 400), while relaxed-HAL is a noisier RCT-only estimator against which A-TMLE looks even better (Table 6, Panel A). A more efficient reference therefore does not rescue the gain; the gain rises only against the noisier relaxed-HAL, while the genuinely more efficient references (SuperLearner, matched-glm) leave it essentially unchanged. 
+
+(2) Super-efficiency erodes with n. Against the efficient (glm/SL) reference the no-bias gain shrinks toward one as n grows and the parity crossing moves to smaller bias (Panel B): from 13 M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE 
+
+∼ 1.15 crossing at m ∈ (1 , 2) at n = 500, to ∼ 1.05 crossing at m ∈ (0 , 0.5) at n = 1600. At the paper’s own scale A-TMLE is at or below parity with an efficient RCT-only estimator for all but the smallest bias — the advertised finite-sample variance gain is concentrated at small n and low bias. This sharpens rather than overturns the original result. 
+
+(3) More external data helps only at negligible bias. Sweeping the external multiple 1× → 3× at fixed nrct (wiggly, MSE-ratio gain), the gain rises only marginally at m = 0 (1 .06 →
+
+1.08) and falls once bias is present ( m = 1: 0 .89 → 0.82; m = 2: 0 .61 → 0.43). The paper’s “more external data ⇒ larger gain” holds only in the near-unbiased corner; with biased RWD, adding more of it enlarges the variance A-TMLE must pay to correct. Consistent with this, under the 3×-external arm A-TMLE’s worst-case relative bias rises to ∼ 9% (interaction, m = 4, nrct = 250: 9.2%; n = 400: 8 .8%), still with near-nominal coverage (0 .93) — a caveat to the “pure variance cost” reading that is invisible in the 1 × map. 
+
+Coverage is robust to the HAL smoothing choice. A dedicated undersmoothing slice (penalty multiplicity nλ ∈ { 1, 3, 5} at the highest-bias cells) confirms the m = 4 finite-sample bias does not erode validity: A-TMLE’s 95% Wald coverage stays near-nominal (0 .93–0 .96) across the undersmoothing range at both nrct = 250 and 400, with only a small monotone bias reduction at wiggly m = 4 (3 .4% → 1.8% at n = 250). 
+
+4.4 Why magnitude, not complexity, drives the variance 
+
+The first headline finding of the efficiency map — that the gain is governed by bias magnitude 
+
+rather than complexity — reflects a structural feature of the pooled-projection variance rather than a quirk of the chosen bias shapes. The efficiency loss is localized in var( DA), the variance of the pooled-projection influence curve, and admits an exact population-oracle analytic identity (Proposition 1, proved in Web Appendix G) under an explicitly restricted oracle model. (The companion question — why the naive and cross-fit standard errors fail — is taken up where those failures appear, in Section 4.5.) The identity uses four objects from the influence-curve decomposition of Web Appendix A: the working-model basis Φ that the pooled CATE τA is fit on; the outcome-noise variance σ2 = E[U 2 
+
+> Y
+
+|
+
+W, A ]; the pooled R-learner residual r = Y − θ − (A − g)τA with θ = E(Y | W ); and DWA , the covariate (heterogeneity) component of the pooled-projection influence curve DA = DWA + DβA.
+
+Proposition 1 (population curvature of the oracle, intercept-only influence curve) . Under the main design, oracle nuisances, and a forced intercept-only working model (Φ ≡ 1) — an assumed restriction, since a homogeneous within-trial effect does not by itself make the pooled projection 
+
+τA(W ) constant or collapse the HAL selection to the intercept once the external arm carries an arm-dependent bias — the population variance of the (oracle) pooled-projection influence curve DA
+
+is the exact identity 
+
+var( DA) = a + b m 2, a = cc σ2, b = cc 2 E(A − g)2 es 2
+
+sd 0(s)2 ≥ 0, (7) 
+
+where cc = 1 /E {g(1 − g)} (the pooled inverse-overlap constant), g is the pooled propensity, and es
+
+is the L2 residual of the unit-bias carrier 1{S=0 }s(W, A ) after removing its W -conditional mean and its (A − g)-component (the explicit formula and the shape/ W specifications that make a, b 
+
+reproducible are in Web Appendix G). There is no linear-in-m term. The identity is population-oracle exact — not a finite-sample identity for the deployed HAL-selected estimator. 
+
+The bias magnitude thus enters at first order, through m2, with no first-order shape or linear-in-m term. The mechanism is transparent: the forced intercept-only model leaves only the score 14 M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE 
+
+term cc ( A − g) r; the pooled outcome regression and pooled CATE remove the W -measurable and (A − g)-components of the injected bias, and the residual carrier contributes a variance exactly 
+
+proportional to m2 (the linear term vanishes identically because the outcome noise is conditionally mean-zero, E[UY | W, A, S ] = 0). The curvature b is an arm-weighted second moment: because the planted bias depends on the treatment arm, the symmetric g(1 − g) factorization fails and the correct expression carries arm-asymmetric weights. In the full influence curve D = DA − DS ,neither of the two terms that could couple shape or complexity to the bias at first order enters the var( DA) identity above. The heterogeneity × bias term does not, because the forced intercept-only working model sets DWA ≡ 0, removing the pooled projection’s covariate (heterogeneity) component from DA. The membership-score × bias coupling does not, because the trial-membership score (the Π ⋆-fluctuation score) is carried by the bias-correction term DS , not by DA: in var( D) = var( DA) − 2 Cov( DA, D S ) + var( DS ) any such pairing sits inside var( DS ) or the cross-covariance Cov( DA, D S ), never inside var( DA) — it is absorbed there, not a free DA–DS cross term, and we do not certify its magnitude. The one bias–noise cross term internal to var( DA) — outcome noise UY
+
+times the centered bias carrier — drops by E[UY | W, A, S ] = 0 (Web Appendix G, Step 4), a step that uses conditional mean-zero alone, neither S ⊥ (A, W ) nor constancy of Π. (Indeed Π( W ) is not even the relevant object for DS , whose targeted score runs through the arm-dependent Π( W, A ), so constancy of Π( W ) is not the reason here.) Once the working model is richer than the intercept (Φ ̸ ≡ 1, restoring DWA ) or enrollment is W -dependent, these couplings re-enter the variance budget along different routes: the heterogeneity × bias coupling enters var( DA) directly through var( DWA ), while the membership-score coupling enters through var( DS ) and the cross term Cov( DA, D S ); we treat all of these empirically rather than as a theorem (Web Appendices E, G). Computing the population curvature directly gives per-shape b = {1.49 , 1.38 , 1.16 } (linear, interaction, wiggly), mean ≈ 1.34. A simulated corroboration regresses per-cell var( DA) on m2 and the selected-basis count ¯d across the 15-cell map (Web Appendix D): var( DA) ≈ 3.25 + 1 .40 m2 +0.094 ¯d (R2 = 0 .989); the population constant a = cc σ2 = 4 .18 reproduces the empirical m=0 value of var( DA) to three digits (the regression’s own intercept 3 .25 is lower because the 0 .094 ¯d
+
+term carries part of the m=0 level), the mean curvature ( ≈ 1.34) sits just below the fitted 1 .40, and the standardized magnitude effect (0 .91) is eight times the complexity effect (0 .11) — though, because ¯d is endogenous and collinear with m2, we read this standardized comparison as indicative of magnitude-dominance rather than a clean variance decomposition. One honest subtlety: the 
+
+population shape ordering (linear > interaction > wiggly — a wigglier bias projects more into the absorbed span) is the reverse of the empirical finite-n ordering, an empirical phenomenon driven by the finite-n channels the Proposition excludes (the ¯d/selector inflation and finite-HAL nuisance-fit error); the ¯d term is thus an empirical finite-sample extension, not part of Equation (7). The parity crossing involves the combined var( DA − DS ) and is read near m ≈ 1 residual SD empirically. 
+
+4.5 Selection-aware inference for the efficiency gain 
+
+Having accounted for the magnitude-dominance of the variance, we turn to the second headline finding: how to put an honest interval on the gain. Across the 15-cell sweep the naive SE is anti-conservative: mean(SE) /MC-SD ≈ 0.53–0 .74, with fixed-truth coverage 0 .70–0 .87, worst at large 
+
+m where the selected model is largest and least stable. We therefore ask which of the ten selection-aware SEs of Section 3.3 is calibrated, on 7 ,500 datasets (the 15 cells, B = 500). Coverage must be scored against a fixed truth — the locked B = 1000 gain of Table 4 — not against each method’s own mean, which would grade a biased estimator against a moved goalpost. The gap between the two scorings is itself diagnostic: the cross-fit, CV-TMLE, and HulC comparators look respectable self-centered yet collapse against the fixed truth. Table 7 summarizes. 15 M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE 
+
+Table 7: Ten selection-aware standard errors for the efficiency gain, scored against a fixed truth. Each method estimates the gain and a standard error of its logarithm; entries are ranges over the 15 cells (Linear/Interaction/Wiggly × m ∈ { 0, 0.5, 1, 2, 4}), B = 500. Only the block jackknife attains nominal (markedly conservative) coverage; no other method reaches 0.93 in any cell. The gap between the fixed-truth and own-mean coverage columns is itself diagnostic: the cross-fit, winsorized, and CV-TMLE comparators look respectable self-centered yet collapse against the fixed truth. Per-method compute time (all ten) is reported in Web Appendix F: every fold-based SE costs ≈ V A-TMLE fits, so the block jackknife is no more expensive than the variants that fail. 
+
+Method Gain bias a Cover., fixed b Cover., own mean c Ratio d
+
+Block jackknife −0.8 to +2 .1% 0.984–0.998 0.984–0.998 1.6–2.2 Naive IF-SE −0.8 to +2 .1% 0.704–0.866 0.71–0.86 0.53–0.74 Cross-fit (plain out-of-fold) −8 to −65% 0.15–0.52 0.60–0.90 0.24–0.57 + ridge IM −1 (λ=0 .01 /0.05 /0.2) −41 to +130% 0.00–0.84 0.53–0.82 0.31–0.61 + winsorized IC −10 to −40% 0.12–0.44 0.53–0.77 0.33–0.59 
+
+CV-TMLE (re-target per fold) −8 to −56% 0.18–0.51 0.67–0.88 0.43–0.74 CV-TMLE + ridge IM −1 −27 to +78% 0.03–0.78 0.56–0.81 0.45–0.62 HulC (assumption-lean hull) +251 to +461% 0.07–0.57 0.84–0.90 1.0–1.2            
+
+> aRelative bias of the method’s mean gain against the locked B= 1000 truth (Table 4).
+> bCoverage of the 95% CI against that fixed truth — the honest target.
+> cCoverage against the method’s own mean (circular; shown to expose the gap).
+> dCalibration ratio mean(SE) /Monte-Carlo SD of log(gain); 1 is calibrated, the jackknife is conservative. IF, influence function; IM, information matrix; CV-TMLE, cross-validated targeted maximum likelihood estimation; HulC, the convex-hull interval of Kuchibhotla et al. [2024]. Monte Carlo SE of coverage ≤0.022.
+
+Figure 4: Fixed-truth coverage of the ten selection-aware SEs. 95% CI coverage of the efficiency gain, scored against the locked B = 1000 truth, by bias magnitude m and shape (faceted); the dashed line marks the 0 .95 target. The block jackknife (gold) is the only method to reach the target (0 .98–1 .00); the other nine fall entirely within the shaded min–max envelope (never above 0.87), undercovering across all three shapes, with naive (blue) the best of them at 0 .70–0 .87. The full per-method breakdown is in Table 7 and Web Appendix D. 
+
+Alt text: Faceted line plot of 95% confidence-interval coverage of the efficiency gain (vertical axis) against bias magnitude (horizontal axis), one facet per bias shape. The block-jackknife curve is the only one to reach the 0.95 target line (0.98–1.00); the other nine methods stay within a shaded envelope that never exceeds 0.87. 16 M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE 
+
+Only the block jackknife is conservatively valid. The block jackknife — delete-a-fold, re-selecting the working model on each S-stratified leave-fold-out subsample — is the only method that is both approximately unbiased ( ≤ 2.1%, inherited from the naive full-data gain it centers on) and attains nominal coverage (0 .984–0 .998 across the main 15 cells, markedly conservative; the ratio ≈ 1.6–2 .2 overshoot reflects right-skew and the jackknife’s known inconsistency for non-smooth, selection-based statistics). It is the only one of the ten whose fixed-truth coverage reaches 0.95 — indeed no other method reaches even 0 .93 in any of the 15 cells. 
+
+Why the cross-fit family fails. The cross-fitted out-of-fold variance was the theoretically-motivated refinement; it does the opposite. Its fixed-truth coverage collapses to 0 .15–0 .52 (the self-centered 0 .60–0 .88 had merely hidden this) because its gain point estimate is badly biased: cross-fit underestimates the gain by up to 65% and the ridge variants swing from −41% to +130%, so these are poor estimators of the gain, not merely mis-calibrated SEs. The downward bias is an uncentered out-of-fold reconstruction, a finite-sample effect that shrinks with n (the closing heuristic of this subsection makes the mechanism precise); ridge and winsorization shift it around but never restore coverage (still 0 .00–0 .84). The full ten-method, per-cell results are in Web Appendix D. 
+
+The principled CV-TMLE also fails. The comparator the theory points to — a CV-TMLE that re-targets the working-model fluctuation on each held-out fold (one fluctuation each for τA
+
+and τS , centering the validation score plain cross-fit leaves uncentered, in the spirit of the original paper’s Appendix-C construction) — also fails: fixed-truth coverage 0 .18–0 .51, gain biased −8 to 
+
+−56%, no better than plain cross-fit, and ridge-stabilizing it only reintroduces overshoot. We are careful not to over-claim the mechanism : re-targeting is not inert (once a bias is present CV-TMLE is consistently less biased than plain cross-fit), and the τS information matrix is severely ill-conditioned and worsens with m — but the re-targeting fluctuation tracks the bias magnitude rather than the inverse conditioning, and both estimators are already ∼ 8–9% biased at m = 0 where conditioning is mildest, so we do not isolate conditioning as the sole driver. The honest summary is empirical: the out-of-fold reconstruction is both biased and high-variance. The full re-targeting and conditioning diagnostics (condition numbers, fluctuation magnitudes) are in Web Appendix D. 
+
+HulC is far too wide and upward-biased. The assumption-lean HulC interval looks self-calibrated (own-mean coverage 0 .84–0 .90) but its point estimate is inflated 3 .5–5 .6×: its convex-hull guarantee needs each disjoint-subgroup gain to be median-unbiased, and on these small subsamples the per-group ratio is badly biased so the hull’s center explodes — we are applying HulC outside its design regime , and against the fixed truth it covers only 0 .07–0 .57. The naive SE, approximately unbiased, still undercovers (0 .70–0 .87). Only the jackknife survives the honest, fixed-truth scoring. 
+
+Robustness across four reduced-grid slices. We re-ran the head-to-head under four stress settings — W -dependent enrollment, a 4 × RWD arm, a coarser degree-2 HAL, and n = 2000 — scored against the approximately-unbiased naive-mean reference because the DGP changes (Web Appendix E). The verdict is invariant: in every executed cell the block jackknife stays conservatively valid and no cross-fit/CV-TMLE/HulC variant reaches 0 .95. The n = 2000 slice is decisive —cross-fit and CV-TMLE still miss the naive-mean reference and the CV-TMLE conditioning is 
+
+worse , not better (condition number up to ≈ 3.7 × 10 8 at n = 2000), so the recommendation is not a small-sample artifact (the cross-fit point-estimate bias does shrink with n, as expected, but coverage stays broken). Two qualifications keep this honest: (i) because the jackknife’s point 17 M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE 
+
+estimate is the naive full-data gain, its slice “unbiasedness” against the naive-mean reference is true by construction, so what the slices genuinely test for it is SE calibration (its ratio stays 1 .4–2 .1); and (ii) the modal biomedical endpoint — a binary outcome — is no longer a Gaussian-only blind spot: with the out-of-fold reconstruction link-corrected, the full ten-method head-to-head now runs for a Bernoulli outcome and returns the same SE-calibration verdict — note the binary DGP’s true gain stays near unity throughout (truth 1 .05–1 .14), so it stresses SE calibration rather than re-tracing the sub-unity gain map — (the block jackknife the only calibrated SE at Cov fix ≈ 0.99; naive ≈ 0.79; no cross-fit/CV-TMLE/ridge/winsor/HulC variant reaching 0 .95, mean fixed-truth coverage < 0.60; the full 15 ×10 binary grid is in Web Appendix D). On the W -dependent positivity slice the truth gain is if anything higher than under constant positivity, so selective enrollment does not erode the gain. 
+
+The gain is barely detectable per study — and the jackknife keeps that honest. Asecond consequence of having a calibrated SE: with the (deliberately conservative) jackknife, the per-study 95% CI for the gain excludes one in only 1–10% of studies across the realistic regime 
+
+m ∈ [0 , 1] (where the true gain is 1 .01–1 .15), rising to 0 .32/0 .41/0 .60 (linear/interaction/wiggly) only at the extreme m = 4 (the per-study Det1 rate — the rate of excluding gain = 1 — of the selection-aware grid, Web Appendix D). This detectability rate reflects both the near-unity true gain (genuinely ∼ 1.15 at m = 0, not 1) and the conservatism of the jackknife SE, so it should be read as a lower bound on achievable power. A calibrated test would legitimately reject some of the time, so the anti-conservative naive SE’s extra “detections” are partly real-signal power the jackknife misses and partly spurious; either way, a single fusion study cannot, with the only SE we find calibrated, distinguish the efficiency gain from one unless the bias is large. 
+
+Why the naive and cross-fit standard errors fail: a heuristic, not a theorem. We give no 
+
+theorem for the selection-aware standard error of the gain R = var( Drct )/var( Datmle ): it is built on a non-smooth CV-selection step, and a rigorous treatment would need stable-selection, eigenvalue, and differentiability conditions we do not impose. Under an oracle, stably-selected working model treated as an idealization, R is a smooth functional of two second moments of learned influence curves, and log R has influence function U + Γ with a plug-in part U and a working-model part Γ induced by the selection. This heuristic explains the three empirical findings. (i) The naive plug-in estimates the influence-curve variance by Var( U ), omitting Γ — not merely conditioning on the selected model; whether the omission widens or narrows coverage is not sign-determined in general, and empirically it undercovers (0 .70–0 .87). (ii) The plain cross-fit evaluates the bias-model influence curve on an out-of-fold score it does not re-center, so the uncentered out-of-fold second moment carries a nonnegative excess. This is a mechanism for the observed downward bias in 
+
+bR — verified in sign and in n-scaling, and corroborated in trend by the instrumented out-of-fold reconstruction, whose uncentered mean grows with the bias though it is not pinned to a closed-form constant (Web Appendix G) — not a sign theorem, since the total also involves the DA block, the cross term, and a Π ⋆-replay bias nonzero at m=0. Under the oracle idealization above this excess shrinks with n, though the cross-fit’s coverage does not recover by n=5000 (Web Appendix E); empirically the failure is not governed by information-matrix conditioning. (iii) The delete-a-fold block jackknife, which re-selects and re-targets on each subsample, avoids the cross-fit’s out-of-fold defects and is empirically the best-covering candidate: at-or-above nominal fixed-truth coverage in all but one of the 40 cells (Web Appendix E), dipping to 0 .910 only at n=5000, wiggly, m=0 (where the gain has eroded to ≈ 1.01) and even there far ahead of every rival (0 .910 versus ≤ 0.54), doing so conservatively (1 .6–2 .2× over-wide). We do not claim it is consistent — the statistic is 18 M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE 
+
+non-smooth — nor super-efficient (the variance advantage erodes to one as n grows). The oracle idealization, assumptions, and caveats are in Web Appendix G. 
+
+Recommendation. Report gain/attribution CIs with the block jackknife : across 15 cells and 4 robustness slices it is the only selection-aware SE that is approximately unbiased and attains nominal (here conservative, ∼ 1.6–2 .2× over-wide) coverage. Because it inherits the naive full-data point estimate, its job is to calibrate the interval width rather than to de-bias the gain. The naive IF-SE is unsafe; the cross-fitted out-of-fold variance, its ridge/winsor stabilizations, and the principled CV-TMLE re-targeting are all both biased and anti-conservative here, for the reason made precise above; the HulC interval is far too wide and upward-biased to use at these sample sizes. We do not claim the block jackknife is asymptotically exact — it is admittedly inconsistent for this non-smooth statistic and is here only empirically calibrated — only that it is the single selection-aware SE attaining at-or-above nominal coverage in all but one of the 40 fixed-truth cells (minimum 0 .910), and the best-covering method in that one. 
+
+# 5 Real-world illustrations 
+
+We illustrate all three contributions on three openly-available fusions, ordered to span the efficiency map’s verdict rather than to endorse fusion: a biomedical HIV trial where fusion most clearly helps (gain ≈ 1.2), a public-health cluster-randomized trial with a modest gain ( ≈ 1.10), and a job-training trial that lands at or below parity (0 .91/0 .99). 
+
+5.1 A biomedical trial: ACTG175 HIV therapy 
+
+Our lead illustration is a biomedical fusion on real, openly-available trial data: ACTG175, a ran-domized trial of nucleoside regimens in HIV-infected adults [Hammer et al., 1996], distributed on CRAN in the speff2trial package [Juraska et al., 2022]. ACTG175 randomized 2,139 patients (stratified by antiretroviral history) among zidovudine monotherapy and three alternative nucleo-side regimens (zidovudine+didanosine, zidovudine+zalcitabine, or didanosine alone); we take the standard endpoint, CD4 count at 20 ±5 weeks, and contrast the alternative regimens against zidovu-dine monotherapy. We treat the antiretroviral-naive stratum as the trial ( S = 1, with treatment randomized within stratum) and fuse in an external cohort ( S = 0) of antiretroviral-experienced 
+
+patients, who differ systematically in prognosis. To probe how the audit responds to the external cohort’s distance from the trial population, we split the experienced patients by prior-antiretroviral burden into a lightly-pretreated arm (closer to the naive trial) and a heavily-pretreated arm (more distant), holding their size essentially fixed (Table 8). Like the WASH fusion below, this external cohort is a within-trial construction — a randomization stratum used as a stand-in for an external real-world population that differs in prognosis — not independently-collected observational data; we exclude the stratum-defining variables (antiretroviral history, prior-ART days) from W , so the learned bτS captures the residual enrollment effect on the outcome. Three reads, one per contribution. (1) Report card. Without a ground-truth τS, 0 the report card still responds to the external cohort: the learned bias model is parsimonious against the close, lightly-pretreated external arm (one active basis) but richer against the distant, heavily-pretreated arm (four bases) — the learned enrollment-effect surface is more structured for the more prognostically distant cohort, with the external sample size held essentially fixed (628 vs. 625) so the difference is not driven by n. As in the simulation (Section 4.2), the basis count tracks the 
+
+complexity of the bias surface jointly with its magnitude, so we read it as a qualitative flag that 19 M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE 
+
+Table 8: A biomedical fusion: the ACTG175 HIV trial. The antiretroviral-naive randomized arm ( S = 1: 663 on an alternative reg-imen, 223 on zidovudine monotherapy) is augmented with one external cohort ( S = 0) of antiretroviral-experienced patients to estimate the regi-men’s effect on CD4 count at 20 weeks. The external cohort is the same trial’s treatment-experienced stratum, split by prior-antiretroviral burden into a lightly -pretreated arm (closer to the naive trial population) and a 
+
+heavily -pretreated arm (prognostically more distant), at essentially equal size, so the report-card difference reflects the external cohort rather than its sample size. Rows report the fused and matched RCT-only ATE (standard error), the learned bias-model size, the influence-curve variance attribution, the efficiency gain, and its naive and block-jackknife intervals. 
+
+RCT + close ext. RCT + distant ext. 
+
+(lightly pretreated) (heavily pretreated) 
+
+External cohort, n (S = 0) 628 625 ATE, A-TMLE (fused) a 46 .2 (8.3) 49 .3 (8.2) ATE, matched RCT-only b 48 .3 (9.0) 48 .3 (9.0) Learned bτS size (active bases) 1 4
+
+cvar( Datmle ) / cvar( Drct )c 104 / 123 101 / 123 Membership overlap (diagnostic) d [0 .20 , 0.91] [0 .09 , 0.93] Efficiency gain bR 1.18 1.21 95% CI, naive influence-function SE [1 .08 , 1.29] [1 .11 , 1.32] 95% CI, block jackknife [0 .93 , 1.49] [1 .02 , 1.45] Jackknife / naive SE ratio 2.6 2.0 
+
+Outcome is CD4 count (cells/mm 3) at 20 ±5 weeks; treatment is an alternative nucleoside regimen (zidovudine+didanosine, zidovudine+zalcitabine, or didanosine alone) versus zidovudine monotherapy, randomized within stratum; covariates: age, weight, Karnofsky score, baseline CD4 and CD8, sex, race, symptomatic status, hemophilia, homosexual activity, history of injection-drug use. The external arm carries both treatment groups, so Ψ# has two terms. Data: ACTG175 (Hammer et al. 1996), distributed openly on CRAN in the speff2trial package. The external cohort is a within-trial construction — the treatment-experienced randomization stratum used as a stand-in for an external real-world population that differs in prognosis from the trial-eligible (naive) patients — not 
+
+independently-collected observational data; the stratum-defining variables (antiretroviral history, prior-ART days) are excluded from W , so bτS captures the residual enrollment effect on the outcome.  
+
+> a
+
+A-TMLE point estimate (standard error) for the fused trial + external-cohort estimator.  
+
+> b
+
+Matched cross-fitted GLM-AIPW on the naive trial only — the reference-dependent denominator.  
+
+> c
+
+cvar( Datmle ) / cvar( Drct ) in 10 3 (cells/mm 3)2; here the bias-correction step lowers the influence-curve variance relative to the RCT-only estimator, consistent with the gain above one.  
+
+> d
+
+Range of fitted trial-membership probabilities from an auxiliary logistic fit of S on W —a positivity diagnostic, separate from the estimator’s internal targeted membership model Π⋆ — over the fused sample; no unit falls below 0 .05 or above 0 .95 in either fusion, so covariate overlap (positivity) holds; the full distribution is in Web Appendix F. A single-dataset illustration, not a coverage assessment. 
+
+20 M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE 
+
+the audit found more to correct here, not a calibrated measure of distance. (2) Efficiency gain. 
+
+The estimated regimen effect is a clinically sensible +46 to +49 CD4 cells (versus the RCT-only +48), consistent with the trial’s finding that the alternative regimens preserve short-term CD4 response better than zidovudine monotherapy, and fusing the external cohort buys a real ∼ 20% variance gain in both fusions ( R = 1 .18 close, 1 .21 distant); here the bias-correction step lowers 
+
+the influence-curve variance (Table 8), unlike the LaLonde fusions below (Section 5.3). This is the illustration where fusion most clearly helps — the favorable end of the spectrum these three illustrations trace: it shows the largest variance gain of the three ( ∼ 20%), and its good overlap and modest bias place it in the gain-above-one regime of the map (Section 4.3), while the job-training fusion below lands at or below parity. (3) Selection-aware inference. The guardrail again bites. For the close arm the naive influence-function interval excludes one ([1 .08 , 1.29]) while the block jackknife — 2 .6× wider — includes it ([0 .93 , 1.49]): an analyst trusting the naive SE would report a significant efficiency gain the honest interval cannot support. The two fusions buy essentially the same gain (1 .18 vs. 1 .21); what differs is the jackknife inflation — 2 .6× for the close arm versus 2.0× for the distant — so the distant arm’s interval ([1 .02 , 1.45]) only just retains a detected gain. Consistent with Proposition 1, the gain is governed by the (modest) bias magnitude and is near-constant across the two arms; it is the report card, not the gain, that responds to the more distant external cohort — and the jackknife is conservative, not merely wide. Finally, covariate overlap is good in both fusions: an auxiliary logistic fit of trial membership on W — a positivity diagnostic, distinct from the estimator’s internal targeted membership model Π ⋆ — gives fitted membership probabilities spanning [0 .20 , 0.91] (close) and [0 .09 , 0.93] (distant), with no unit below 0 .05 or above 0.95, so positivity holds without extrapolation (their full distributions are in Web Appendix F) — in welcome contrast to the poorer overlap of the NSW+PSID fusion below (Section 5.3). We present these as single-dataset illustrations, not coverage assessments. 
+
+5.2 A public-health trial: WASH Benefits 
+
+A public-health contrast to the biomedical lead, the WASH Benefits Bangladesh trial randomized a water, sanitation, and handwashing intervention and measured child length-for-age Z-score, a standard linear-growth outcome [Luby et al., 2018]. Using the hybrid teaching subset distributed with the EScvtmle package [Dang et al., 2025], we treat the randomized arm as the trial ( S = 1) and fuse in one external study arm ( S = 0) — one deliberately biased , one unbiased — to estimate the intervention’s effect on growth (Table 9); both arms are present externally, so Ψ # has two terms, and the external bias is the methodological point A-TMLE must learn. These external arms are constructed teaching arms of the same trial (the openly-distributed subset is balanced by design: three studies of 300, 150 per arm), not independently-collected real-world data; the exercise is therefore a controlled recovery of a known, planted bias, not a characterization of genuine real-world confounding. Three reads, one per contribution. (1) Report card. Without a ground-truth τS, 0, the report card still discriminates: the learned bias model is parsimonious against the unbiased external arm (one active basis) but richer against the deliberately biased arm (three bases) — the audit visibly detecting the induced confounding. (2) Efficiency gain. The estimated intervention effect on length-for-age is near zero ( bψ ≈ 0.01/ −0.00 versus the RCT-only −0.02, in Z-score units), faithful to the trial’s null linear-growth finding, and fusing the external study buys a modest, reference-dependent gain ( R ≈ 1.10 biased, 1 .09 unbiased). (3) Selection-aware inference. The Section 4.5 message reproduces vividly on these public-health data: the naive influence-function interval for the gain excludes one in both fusions ([1 .04 , 1.17], [1 .04 , 1.14]) while the calibrated block-jackknife interval — about five times wider — includes it ([0 .83 , 1.47], [0 .87 , 1.36]). An analyst trusting the 21 M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE 
+
+Table 9: A public-health fusion: the WASH Benefits trial. The ran-domized WASH Benefits arm ( S = 1: 150 treated, 150 control) is augmented with one external study arm ( S = 0) — either a deliberately biased or an unbi-ased arm — to estimate the effect of the water/sanitation/handwashing inter-vention on child length-for-age Z-score. Rows report the fused and matched RCT-only ATE (standard error), the learned bias-model size, the influence-curve variance attribution, and the efficiency gain with its naive and block-jackknife intervals. 
+
+RCT + biased ext. RCT + unbiased ext. External arm, n (S = 0) 300 300 ATE, A-TMLE (fused) a 0.011 (0.122) −0.004 (0.123) ATE, matched RCT-only b −0.017 (0.128) −0.017 (0.128) Learned bτS size (active bases) 3 1
+
+cvar( Datmle ) / cvar( Drct )c 8.9 / 9.8 9.0 / 9.8 Efficiency gain bR 1.10 1.09 95% CI, naive influence-function SE [1 .04 , 1.17] [1 .04 , 1.14] 95% CI, block jackknife [0 .83 , 1.47] [0 .87 , 1.36] Jackknife / naive SE ratio 5.0 5.0 
+
+Outcome is the child length-for-age Z-score; covariates: age, sex, maternal education, house-hold food-insecurity. The external arm carries both treatment groups, so Ψ # here has two terms. Data: the WASH Benefits Bangladesh hybrid teaching subset (derived from Luby et al. 2018), openly redistributed with the EScvtmle package; the external study indicator marks a deliberately-biased and an unbiased external arm.  
+
+> a
+
+A-TMLE point estimate (standard error) for the fused trial + external-data estimator.  
+
+> b
+
+Matched cross-fitted GLM-AIPW on the trial only — the reference-dependent denomi-nator. Neither interval declares a gain ̸ = 1; a single-dataset illustration, not a coverage assessment.  
+
+> c
+
+cvar( Datmle ) / cvar( Drct ) in Z-score 2 (no scale factor). 
+
+22 M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE 
+
+naive SE would report a significant efficiency gain the honest interval cannot support; we present this as a single-dataset illustration, not a coverage assessment. 
+
+5.3 A job-training trial: the National Supported Work demonstration 
+
+We close the trio with a cross-domain illustration on real, openly-available data downloaded from the internet — the one fusion here using genuinely non-experimental controls, and the one that lands at parity: the Dehejia–Wahba LaLonde files (NBER), comprising the randomized National Supported Work (NSW) job-training trial (185 treated, 260 experimental controls) and two non-experimental comparison groups — 2,490 PSID and 15,992 CPS observational controls. We build two fusions, NSW+PSID and NSW+CPS, each augmenting the trial with one external-controls arm (all untreated, so Ψ # has a single term) to estimate the effect of training on 1978 earnings (covariates: age, education, race, marital status, degree status, 1974/1975 earnings). PSID is the canonical badly-confounded comparison and CPS the larger, milder one, so the pair also exercises the external-arm axis of Section 4.3.1. We fit A-TMLE with the same correctly-specified-GLM nuisances and relaxed-HAL working models as the simulation (Table 10). Table 10: Two real-data fusions on the National Supported Work demonstration. The randomized NSW job-training trial (S = 1: 185 treated, 260 controls) is augmented with one external observational-controls arm ( S = 0, all untreated) to estimate the effect of training on 1978 earnings. The efficiency gain is at or below parity in both fusions — a more biased external arm does not buy efficiency — and the block-jackknife interval for the gain is 
+
+∼ 4× wider than the over-confident naive interval, the Section 4.5 message on real data. A single-dataset illustration, not a coverage assessment. 
+
+NSW + PSID NSW + CPS  
+
+> (harder arm) (larger, milder)
+
+External controls, n (S = 0) 2,490 15,992 ATE, A-TMLE (fused) a $1.49 (0.72) $1.68 (0.69) ATE, matched RCT-only b $1.61 (0.69) $1.61 (0.69) Learned bτS size (active bases) 1 7Variance attribution c 1510 / 1378 7785 / 7716 Efficiency gain bRd 0.91 0.99 95% CI, naive influence-function SE [0 .77 , 1.08] [0 .86 , 1.14] 95% CI, block jackknife [0 .46 , 1.82] [0 .57 , 1.73] Jackknife / naive SE ratio 4.2 3.9             
+
+> Earnings in thousands of 1978 dollars; covariates: age, education, race, mar-ital status, degree status, 1974/1975 earnings. Data downloaded from NBER (nsw dw ,psid controls ,cps controls ).
+> aA-TMLE point estimate (standard error) for the fused trial + real-world-data estimator.
+> bMatched cross-fitted GLM-AIPW on the trial only — the fair, reference-dependent denominator (not an absolute benchmark).
+> ccvar( Datmle )/cvar( Drct ) in ($1000) 2; here the bias-correction step slightly raises the influence-curve variance, consistent with the near-parity gain.
+> dbR=cvar( Drct )/cvar( Datmle ) (all 10 jackknife folds converged). Neither interval declares a gain ̸= 1.
+
+23 M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE 
+
+Three reads, one per contribution. (1) Report card. With no ground-truth τS, 0 on real data the recovery correlation is unavailable (recovery is validated in the simulation), but the report card surfaces the learned model’s size and the variance attribution: the bias model is parsimonious against the homogeneous PSID arm (one active basis) and richer against the more heterogeneous CPS arm (seven), and in both the bias-correction step slightly raises the influence-curve variance (var( Datmle ) > var( Drct )). (Earnings carry a point mass at zero, so the Gaussian working models are an approximation; refitting both fusions with an asinh-transformed outcome leaves the verdict qualitatively unchanged — the gain stays at or near parity (0 .94 PSID, 1 .03 CPS) and the block jackknife stays several-fold wider than the naive interval.) (2) Efficiency gain. Both fused estimates lie within one standard error of the RCT-only benchmark ( $1.61 thousand, i.e. $1,610), and the gain is at or just below parity — R = 0 .91 for the heavily-confounded PSID arm and 0 .99 for the milder, larger CPS arm. This is a real-data instance of the map’s lesson (Section 4.3.1): a more biased external arm does not buy efficiency, and can cost it, relative to an efficient RCT-only estimator. 
+
+(3) Selection-aware inference. The central point survives on real data: the block-jackknife interval for the gain is 3 .9–4.2× wider than the naive influence-function interval (PSID naive [0 .77 , 1.08] vs jackknife [0 .46 , 1.82]; CPS [0 .86 , 1.14] vs [0 .57 , 1.73]), so the naive SE is dramatically over-confident. Here neither interval declares a gain different from one — consistent with the near-parity estimates — but an analyst trusting the naive SE in a study whose point estimate landed further from one would report a spurious detection the calibrated interval would not. We present these as single-dataset illustrations, not coverage assessments, and the gain as relative to the matched-glm RCT-only estimator. 
+
+# 6 Discussion 
+
+Contributions and implications. We gave three reproducible tools for fused RCT+RWD es-timation, using A-TMLE as the running example: a report card that makes a learned bias working model auditable; a magnitude × complexity × reference × n map of when the fusion’s finite-sample variance gain actually materializes; and a selection-aware standard error for the efficiency gain. Together they convert a qualitative promise (“fusion buys efficiency”) into an inspectable object, a quantitative map with a parity crossing near a bias of one residual SD, and an honest interval — and the real-data illustrations show the difference an honest interval makes. 
+
+Practical recommendations. Report the report card alongside any A-TMLE (or adaptive-debiased) fusion estimate, so the learned bias object and its influence-curve variance attribution are visible rather than hidden. Read the efficiency gain as reference-relative and n-dependent : at realistic sample sizes it is “near break-even unless the RWD is both abundant and nearly unbi-ased.” Form gain/attribution intervals with the block jackknife — the naive influence-function SE undercovers and the cross-fit/CV-TMLE/HulC routes are both biased and anti-conservative. 
+
+Limitations and future work. Our efficiency verdicts are relative to a matched, efficient (correctly-specified-GLM, cross-fitted) RCT-only estimator; Section 4.3.1 shows the sub-unity ver-dict is not an artifact of this choice (it holds against a flexible SuperLearner and relaxed-HAL), but the numerical gain is reference-relative. We benchmark against an RCT-only estimator, rather than against a selective-fusion competitor such as experiment-selector CV-TMLE [Dang et al., 2025], by design: the efficiency map asks what fusion buys relative to using the trial alone , so the trial-only estimator is the correct denominator, whereas a fusion competitor would answer a dif-ferent question. A further limitation is the provenance of our real-world external arms: two of the 24 M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE 
+
+three real-data fusions (WASH Benefits and ACTG175) use constructed , within-trial external arms rather than independently-collected observational data, while the third (LaLonde NSW with its PSID/CPS comparison groups), which does use genuine non-experimental controls, lands near par-ity — so the regime of large, genuinely unmeasured-confounded real-world data is exercised mainly in our simulations, and the real-data sections are best read as faithful end-to-end demonstrations of the toolkit rather than as evidence on the magnitude of genuine confounding. By contrast, the original A-TMLE analysis [van der Laan et al., 2026] augmented a cardiovascular-outcomes trial with a genuinely observational electronic-health-record cohort and reported a real efficiency gain in precisely this regime; our audit exercises that regime only in simulation, so pairing the report card and the selection-aware interval with such an observational fusion is a natural next step. The efficiency gain erodes with n, while the selection-aware verdict is confirmed not to be a small-sample artifact (it holds at n = 2000). The main DGPs assign trial membership determinis-tically, so Π( W ) is constant and enrollment positivity holds trivially; only the positivity slice and the W -dependent-enrollment map of Web Appendix E exercise a genuinely W -dependent Π( W ), and there the picture is mixed — we report it plainly. The selection-aware verdict is unchanged (the jackknife stays conservatively valid and cross-fit/CV-TMLE still collapse) and the gain-truth slice is if anything higher; but A-TMLE’s own ATE coverage degrades at the wiggly, large-bias corner, and the degradation worsens with n (the wiggly, large-bias under-coverage noted in Sec-tion 4.3; Web Appendix E). That is genuine under-coverage where the trial-enrollment positivity assumption is most stressed, not conservatism, and we flag it as such. The within-trial effect is also homogeneous by construction (constant CATE = 1 .5), so the map is a pure variance contrast and does not exercise A-TMLE’s heterogeneous-CATE learning. The jackknife is conservative, not exact (coverage 0 .98–1 .00, ratio ≈ 1.6–2 .2); an exact selection-aware SE [Lee et al., 2016, Fithian et al., 2014] remains open, and the cross-fit, ridge, winsor, and CV-TMLE routes were all built and shown not to calibrate, so CV-TMLE re-targeting is not that route. The most important extensions are a fuller W -dependent-enrollment map (the natural transportability extension, where the trial and external populations differ in covariate distribution, which would let the named identification assumption do real work rather than hold vacuously: the positivity slice suggests the efficiency ver-dict survives, but the coverage degradation above shows the assumption then does real work and must be respected), a finer attribution sub-decomposing DS into its W/ Π/β pieces via a projection representation that resolves the HAL basis collinearity [Li et al., 2025], and survival/coarsened-data endpoints. We conjecture the report card and the selection-aware-inference result extend to other adaptive-debiased estimators that build and then debias a learned working model; demonstrating this beyond A-TMLE is future work. 
+
+Conclusion. Fused RCT+RWD estimators promise efficiency, but how much and how to report it honestly has been left implicit. Auditing the learned bias object, mapping when the gain mate-rializes, and using the calibrated block jackknife make the promise inspectable, quantitative, and honest — on simulated grids and on real biomedical, public-health, and job-training fusions. 
+
+# Reproducibility 
+
+All code is public and every table and figure regenerates from a committed script: the report card and a local sweep run in minutes on a laptop, and the confirmatory simulations run as self-contained UBC Advanced Research Computing SLURM-array bundles, each vendoring and pinning the atmle 
+
+package of van der Laan et al. [2026]. Web Appendix F maps each reported result to its code artifact, pins the software stack, and records the compute environment; Web Appendices A–E and G give 25 M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE 
+
+the exact estimator mechanics, the data-generating process, the ten SE-method definitions, the full per-cell tables, and the Proposition 1 proof. 
+
+# Funding 
+
+This work was not supported by any specific grant from funding agencies in the public, commercial, or not-for-profit sectors. 
+
+# Acknowledgements 
+
+This research was supported in part through computational resources from Advanced Research Computing at the University of British Columbia. During this work the author used AI-based tools to assist with analysis and simulation code, text editing, and checking derivations; the author verified all outputs and takes full responsibility for the content. 
+
+# Conflict of Interest 
+
+The author declares no conflicts of interest. 
+
+# Data and code availability 
+
+The simulation study uses no human-subjects data. The real-data illustrations use three openly-available datasets: the ACTG175 HIV-trial data (distributed on CRAN in the speff2trial 
+
+package), the WASH Benefits Bangladesh hybrid teaching subset (distributed with the EScvtmle 
+
+package; its external arms are constructed teaching arms, not independently-collected data — see Section 5.2), and the Dehejia–Wahba LaLonde data from NBER ( https://users.nber.o rg/~rdehejia/data ). EScvtmle is installed from its GitHub source and speff2trial from CRAN; the download helper pins each input and records a SHA-256 checksum, and package versions are pinned in Web Appendix F. All code is available in the public project repository (https://github.com/ehsanx/atmle-efficiency , pinned at commit bdfc432 ), which Web Appendix F maps result-by-result to the script and output file that regenerate each number. 
+
+# References 
+
+114th United States Congress. 21st century cures act (public law 114-255, h.r. 34), 2016. URL 
+
+https://www.congress.gov/114/plaws/publ255/PLAW-114publ255.pdf . Enacted December 13, 2016. R. Berk, L. Brown, A. Buja, K. Zhang, and L. Zhao. Valid post-selection inference. The Annals of Statistics , 41(2):802–837, 2013. doi: 10.1214/12-AOS1077. V. Chernozhukov, D. Chetverikov, M. Demirer, E. Duflo, C. Hansen, W. Newey, and J. Robins. Double/debiased machine learning for treatment and structural parameters. The Econometrics Journal , 21(1):C1–C68, 2018. doi: 10.1111/ectj.12097. B. Colnet, I. Mayer, G. Chen, A. Dieng, R. Li, G. Varoquaux, J.-P. Vert, J. Josse, and S. Yang. Causal inference methods for combining randomized trials and observational studies: A review. 
+
+Statistical Science , 39(1):165–191, 2024. doi: 10.1214/23-STS889. arXiv:2011.08047. 26 M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE 
+
+I. J. Dahabreh, S. E. Robertson, J. A. Steingrimsson, E. A. Stuart, and M. A. Hern´ an. Extending inferences from a randomized trial to a new target population. Statistics in Medicine , 39(14): 1999–2014, 2020. doi: 10.1002/sim.8426. L. E. Dang, J. M. Tarp, T. J. Abrahamsen, K. Kvist, J. B. Buse, M. Petersen, and M. van der Laan. Experiment-selector cross-validated targeted maximum likelihood estimator for hybrid RCT-external data studies. Journal of Causal Inference , 13(1):20240041, 2025. doi: 10.1515/jci-2024-0041. arXiv:2210.05802. B. Efron and C. Stein. The jackknife estimate of variance. The Annals of Statistics , 9(3):586–596, 1981. doi: 10.1214/aos/1176345462. W. Fithian, D. L. Sun, and J. Taylor. Optimal inference after model selection. arXiv preprint arXiv:1410.2597 , 2014. doi: 10.48550/arXiv.1410.2597. S. M. Hammer, D. A. Katzenstein, M. D. Hughes, H. Gundacker, R. T. Schooley, R. H. Haubrich, W. K. Henry, M. M. Lederman, J. P. Phair, M. Niu, M. S. Hirsch, and T. C. Merigan. A trial comparing nucleoside monotherapy with combination therapy in HIV-infected adults with CD4 cell counts from 200 to 500 per cubic millimeter. New England Journal of Medicine , 335(15): 1081–1090, 1996. doi: 10.1056/NEJM199610103351501. A. E. Hubbard, S. Kherad-Pajouh, and M. J. van der Laan. Statistical inference for data adaptive target parameters. The International Journal of Biostatistics , 12(1):3–19, 2016. doi: 10.1515/ijb-2015-0013. J. G. Ibrahim and M.-H. Chen. Power prior distributions for regression models. Statistical Science ,15(1):46–60, 2000. doi: 10.1214/ss/1009212673. M. Juraska, P. B. Gilbert, X. Lu, M. Zhang, M. Davidian, and A. A. Tsiatis. speff2trial :Semiparametric Efficient Estimation for a Two-Sample Treatment Effect , 2022. URL https: //CRAN.R-project.org/package=speff2trial . R package version 1.0.5; includes the ACTG175 
+
+dataset. A. K. Kuchibhotla, S. Balakrishnan, and L. Wasserman. The HulC: Confidence regions from convex hulls. Journal of the Royal Statistical Society: Series B (Statistical Methodology) , 86(3):586–622, 2024. doi: 10.1093/jrsssb/qkad134. arXiv:2105.14577. J. D. Lee, D. L. Sun, Y. Sun, and J. E. Taylor. Exact post-selection inference, with application to the lasso. The Annals of Statistics , 44(3):907–927, 2016. doi: 10.1214/15-AOS1371. Y. Li, S. Qiu, Z. Wang, and M. van der Laan. Regularized targeted maximum likelihood estimation in highly adaptive lasso implied working models. arXiv preprint arXiv:2506.17214 , 2025. URL 
+
+https://arxiv.org/abs/2506.17214 . stat.ME. S. P. Luby, M. Rahman, B. F. Arnold, L. Unicomb, et al. Effects of water quality, sanitation, handwashing, and nutritional interventions on diarrhoea and child growth in rural Bangladesh: A cluster randomised controlled trial. The Lancet Global Health , 6(3):e302–e315, 2018. doi: 10.1016/S2214-109X(17)30490-4. S. J. Pocock. The combination of randomized and historical controls in clinical trials. Journal of Chronic Diseases , 29(3):175–188, 1976. doi: 10.1016/0021-9681(76)90044-8. 27 M. E. Karim Efficiency of RCT +RWD fusion with A-TMLE 
+
+M. H. Quenouille. Notes on bias in estimation. Biometrika , 43(3–4):353–360, 1956. doi: 10.1093/ biomet/43.3-4.353. E. T. R. Rosenman, G. Basse, A. B. Owen, and M. Baiocchi. Combining observational and experimental datasets using shrinkage estimators. Biometrics , 79(4):2961–2973, 2023. doi: 10.1111/biom.13827. arXiv:2002.06708. H. Schmidli, S. Gsteiger, S. Roychoudhury, A. O’Hagan, D. Spiegelhalter, and B. Neuenschwan-der. Robust meta-analytic-predictive priors in clinical trials with historical control information. 
+
+Biometrics , 70(4):1023–1032, 2014. doi: 10.1111/biom.12242. E. A. Stuart, S. R. Cole, C. P. Bradshaw, and P. J. Leaf. The use of propensity scores to assess the generalizability of results from randomized trials. Journal of the Royal Statistical Society: Series A (Statistics in Society) , 174(2):369–386, 2011. doi: 10.1111/j.1467-985X.2010.00673.x. U.S. Food and Drug Administration. Framework for FDA’s real-world evidence program. Technical report, U.S. Food and Drug Administration, 12 2018. URL https://www.fda.gov/media/1200 60/download .L. van der Laan, M. Carone, A. Luedtke, and M. van der Laan. Adaptive debiased machine learning using data-driven model selection techniques. arXiv preprint arXiv:2307.12544 , 2023. URL https://arxiv.org/abs/2307.12544 . stat.ME. M. J. van der Laan and D. Rubin. Targeted maximum likelihood learning. The International Journal of Biostatistics , 2(1):Article 11, 2006. doi: 10.2202/1557-4679.1043. M. J. van der Laan, S. Qiu, J. M. Tarp, and L. van der Laan. Adaptive-TMLE for the average treatment effect based on randomized controlled trial augmented with real-world data. Journal of Causal Inference , 14(1):20240025, 2026. doi: 10.1515/jci-2024-0025. arXiv:2405.07186. K. Viele, S. Berry, B. Neuenschwander, B. Amzal, F. Chen, N. Enas, B. Hobbs, J. G. Ibrahim, N. Kinnersley, S. Lindborg, S. Micallef, S. Roychoudhury, and L. Thompson. Use of historical control data for assessing treatment effects in clinical trials. Pharmaceutical Statistics , 13(1): 41–54, 2014. doi: 10.1002/pst.1589. D. Westreich, J. K. Edwards, C. R. Lesko, E. Stuart, and S. R. Cole. Transportability of trial results using inverse odds of sampling weights. American Journal of Epidemiology , 186(8):1010–1014, 2017. doi: 10.1093/aje/kwx164. S. Yang and P. Ding. Combining multiple observational data sources to estimate causal effects. 
+
+Journal of the American Statistical Association , 115(531):1540–1554, 2020. doi: 10.1080/016214 59.2019.1609973. S. Yang, C. Gao, D. Zeng, and X. Wang. Elastic integrative analysis of randomised trial and real-world data for treatment heterogeneity estimation. Journal of the Royal Statistical Society: Series B (Statistical Methodology) , 85(3):575–596, 2023. doi: 10.1093/jrsssb/qkad017. arXiv:2005.10579. W. Zheng and M. J. van der Laan. Cross-validated targeted minimum-loss-based estimation. In M. J. van der Laan and S. Rose, editors, Targeted Learning: Causal Inference for Observational and Experimental Data , chapter 27, pages 459–474. Springer, New York, 2011. doi: 10.1007/978-1-4419-9782-1 27. 28

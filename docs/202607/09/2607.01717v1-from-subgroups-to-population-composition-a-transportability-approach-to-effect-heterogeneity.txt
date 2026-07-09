@@ -1,0 +1,1228 @@
+Title: 2607.01717v1.pdf
+
+URL Source: https://arxiv.org/pdf/2607.01717v1
+
+Published Time: Fri, 03 Jul 2026 00:32:45 GMT
+
+Number of Pages: 18
+
+Markdown Content:
+From Subgroups to Population Composition: A Transportability Approach to Effect 
+
+Heterogeneity 
+
+Authors : Michael Cheung 1,2 , Candus Shi 1, Kara E Rudolph 3, Valérie Garès 4, Caroline A 
+
+Thompson 5, Tarik Benmarhnia 1,6 
+
+Author Affiliations 
+
+> 1
+
+Scripps Institution of Oceanography, University of California San Diego, La Jolla, CA, USA 
+
+> 2
+
+Francis I. Proctor Foundation and the Department of Ophthalmology, University of California, 
+
+San Francisco, San Francisco, CA, USA 
+
+> 3
+
+Department of Epidemiology, Mailman School of Public Health, Columbia University, New 
+
+York, NY , USA 
+
+> 4
+
+Univ Rennes, INRIA, CNRS, IRMAR -UMR 6625, IRSET, Rennes, France 
+
+> 5
+
+Department of Epidemiology, Gillings School of Global Public Health, The University of North 
+
+Carolina at Chapel Hill, Chapel Hill, NC, USA; Lineberger Comprehensive Cancer Center, 
+
+University of North Carolina at Chapel Hill, Chapel Hill, NC, USA 
+
+> 6
+
+Irset Institut de Recherche en Santé, Environnement et Travail, UMR -S 1085, Inserm, 
+
+University of Rennes, EHESP, Rennes, France 
+
+*Corresponding author. Email: tbenmarhnia@ucsd.edu Abstract 
+
+Identifying heterogeneous populations across which exposure effects vary is essential for 
+
+transportability applications, cost -benefit analyses, and intervention prioritization. Traditional 
+
+methods for heterogeneity analyses rely on parametric regression with prespecified subgroups, 
+
+which may fail to capture complex patterns of effect modification . While recent data -adaptive 
+
+methods improve high -dimensional heterogeneous effect prediction, they add methodological 
+
+complexity to analyses and may offer limited insight into key drivers of heterogeneity. In this 
+
+paper, we propose a novel , conceptual approach for heterogeneity analyses that considers how 
+
+exposure effects would differ in populations with different compositions by model ing the 
+
+population -level effect surface as a function of the distribution of effect modifiers. The approach 
+
+consists of three steps: i) selecting confounders and effect modifiers based on prior knowledge 
+
+(or alternatively using data -adaptive methods to learn effect modifiers ), ii) estimating exposure 
+
+effects in hypothetical populations with different effect modifier prevalences using 
+
+transportability methods, and iii) modeling the estimated effects as a function of prevalence 
+
+values. This approach provides t wo types of output s: estimation of the change in the population -
+
+level exposure effects attributable to increases in effect modifier prevalence and ranking of effect 
+
+estimates across multiple effect modifiers and prevalences to identify population characteristics 
+
+most strongly associated with differential vulnerability . We demonstrate the approach using 
+
+Demographic and Health Surveys data to examine heterogeneous effects of drought on child 
+
+stunting and provide a Shiny application to implement this approach in any setting .1 Introduction 
+
+A primary interest of epidemiologists and other quantitative social researchers involves 
+
+understanding how and why the effect of an exposure varies across populations – not only 
+
+identifying subgroups with heterogeneous exposure effects, i.e. the exposure effect varies in 
+
+magnitude or direction across subgroups, but also characterizing the relationship between 
+
+population characteristics and effect magnitude. Discrepancies in effects across populations arise 
+
+notably due to differences in the distributions of effect modifiers or mediators between 
+
+populations (Rudolph and Díaz, 2022a) , which alter the average effect of an exposure on the 
+
+outcome between those populations . Identification of populations with heterogeneous exposure 
+
+effects is important for generalizability, accurate cost -benefit analysis , and subsequent 
+
+intervention allocation and prioritization. Moreover, it is particularly crucial to identify 
+
+vulnerable populations who are harmed by an exposure but may be obscured by a n on -average 
+
+null or protective effect (Rudolph and Díaz, 2022b) .
+
+Traditional methods for heterogeneity analyses involve parametric regression modeling with 
+
+prespecified subgroups based on prior knowledge. These typically include two main approaches :
+
+i) incorporating an interaction term in a multivariable model; ii) conducting stratified analyses 
+
+coupled with a heterogeneity test. In the first approach, heterogeneity is assessed by the 
+
+interaction between the exposure and the variable(s) that constitute the relevant subgroups. In the 
+
+second approach, subgroup effects are estimated by separate models and compared using a 
+
+hypothesis test such as Cochran’s Q test (Kaufman and MacLehose, 2013) . While simple to 
+
+implement, t hese methods are not optimal when multiple effect modifiers are of interest 
+
+(VanderWeele et al., 2019) – manual specification of effect modifiers, relevant covariates, and 
+
+the model form often ignores the complex , high -dimensional heterogeneous relationships that are 
+
+more realistic in real -world data. 
+
+In the last decade, some methods have been proposed to improve heterogeneous exp osure effect 
+
+prediction accuracy through a variety of nonparametric techniques . Meta -learner s (Kennedy, 
+
+2023; Künzel et al., 2019; Nie and Wager, 2021) , which comprise classes of algorithms that 
+
+deconstruct heterogeneous effect estimation into steps that can be accomplished with separate 
+
+predictive models , have been shown to perform well in a variety of settings (Chernozhukov et 
+
+al., 2024; Dorie et al., 2019) . These approaches are more capable of modeling high -dimensional 
+
+heterogeneous effects than traditional methods but add methodological complexity that makes 
+
+them more challenging to implement and communicate to external audiences . Moreover, when 
+
+the purpose of an analysis is identifying and understanding key drivers of heterogeneity (to 
+
+define actionable vulnerable populations), high -dimensional effect estimates may offer limited 
+
+insight. Variable importance metrics and methods akin to feature selection such as LASSO and 
+
+Classification and Regression Trees (CART) have been suggested to highlight covariates that 
+
+play large roles in heterogeneous effect estimation (Cheung et al., 2025; Hines et al., 2025) .
+
+More recently, methods have been designed to directly identify heterogeneous subgroups 
+
+(Bargagli -Stoffi et al., 2024; Nianogo et al., 2025; Wang et al., 2024; Zhao et al., 2022) . These 
+
+are promising tools for heterogeneity analyses but have seen limited use in applied settings .
+
+Overall , the available methods for heterogeneity analyses primarily focus on estimation of 
+
+heterogeneous exposure effects and identification of heterogeneous subgroups as a means of 
+
+characterizing effect modification. In this paper, w e put forward a conceptual approach for 
+
+heterogeneity analyses that address how exposure effects would differ in populations with 
+
+different compositions, without requiring pre -specified subgroups or parametric assumptions. We build on recently proposed approaches for heterogeneity analyses and consider population -level 
+
+exposure effects and effect modifier prevalences , that is, how the overall effect in a population 
+
+changes as the proportion of individuals with a given characteristic increases or decreases .
+
+Specifically, this approach provides two informative results: 1) estimation of the change in the 
+
+population -level exposure effect attributable to an increase in the prevalence of an effect 
+
+modifier (considering any functional form ) and 2) a ranking of effect estimates across multiple 
+
+effect modifiers and prevalences to identify the population characteristics most strongly 
+
+associated with differential vulnerability . This approach does not focus on optimizing or 
+
+improving the accuracy or efficiency of exposure effect estimation or effect modifier 
+
+identification. Rather, the primary aim is to provide a practical conceptual approach for 
+
+heterogeneity analyses as an alternative to conventional methods . While meta -learners and data -
+
+adaptive approach es provide high -dimensional effect estimation, this approach provide s low -
+
+complexity visualization of the population -level exposure effect modification that is interpretable 
+
+and outlines actionable vulnerable subgroups . We also include a Shiny application (Chang et al., 
+
+2012) in R (R Core Team, 2023) as a user -friendly alternative for researchers to implement the 
+
+approach in their own work (https://github.com/benmarhnia -
+
+lab/heterogeneity_resampling_approach ).
+
+In section 2, we first briefly discuss the notation and assumptions used throughout the paper ,
+
+followed by a detailed description of the approach . In s ection 3 , we demonstrate its application in 
+
+relation to the heterogeneous effects of droughts on child stunting using the Demographic and 
+
+Health Surveys (DHS) data as a case study . Section 4 concludes with a discussion. 
+
+2 Method s
+
+2.1 Method overview 
+
+This section describes the proposed approach for heterogeneity analyses. The approach is 
+
+comprised of a 3 -step process detailed in the following subsections. In brief , the first step 
+
+involves selecting the appropriate confounders and effect modifiers based on prior knowledge of 
+
+the data and research question. In the second step, population -averaged exposure effects are 
+
+estimated in hypothetical populations with different effect modifier distributions . The third step 
+
+consists of modeling the estimated exposu re effects as a function of the prevalence values to 
+
+quantify the relationship between the effect modifier and the population -level exposure effect. 
+
+2.2 Terminology and assumptions 
+
+We first establish the notation used to define terms referenced throughout the paper. Following 
+
+the potential outcomes framework, let 𝑌 (𝐴 ) denote the potential outcome under the exposure 
+
+𝐴 ∈ {0,1} and 𝐿 be the covariate values . Let (𝑌 !, 𝐴 !, 𝐿 !) be the observed data for unit 𝑖 = 1, … , 𝑛 .
+
+The effect of an exposure on a given outcome in a population is measured by the average 
+
+treatment effect (ATE). Using the potential outcomes notation, the ATE is defined as 
+
+𝔼 [𝑌 (1) − 𝑌 (0)].
+
+We assume the standard causal identification assumptions of consistency ( 𝑌 = 𝐴𝑌 (1) +
+
+(1 − 𝐴 )𝑌 (0)), positivity ( 𝑃 (𝐴 = 𝑎 |𝐿 = 𝑙 ) > 0 for all 𝑙 with 𝑃 (L = 𝑙 ) ≠ 0), and conditional 
+
+exchangeability (𝑌 (1), 𝑌 (0) ⊥ 𝐴 |𝐿 ). Additionally, we require the analogous set of transport assumptions to estimate the exposure effect in hypothetical populations (Degtiar and Rose, 
+
+2023) . First, let 𝐸 be the set of effect modifiers and 𝑅 ∈ {0,1} be the indicator for the study 
+
+sample (𝑅 ! = 1 if unit 𝑖 is in the study sample, 𝑅 ! = 0 if unit 𝑖 is in the hypothetical 
+
+population). Consistency (and the stable unit treatment value assumption) requires that the 
+
+treatment version is the same across the study sample and hypothetical populations, and there is 
+
+no interference between units . Positivity of selection requires that within each stratum of effect 
+
+modifiers, the probability of being in the study sample is non -zero , or alternatively, any stratum 
+
+of the effect modifiers that exists in the hypothetical population must also have representation in 
+
+the study sample (𝑃 (𝐸 = 𝑒 |𝑅 = 0) > 0 ⇒ 𝑃 (𝐸 = 𝑒 |𝑅 = 1) > 0). Conditional exchangeability 
+
+of the study sample and hypothetical population units is also required – the potential outcomes 
+
+are independent of selection into the hypothetical population, conditioned on the observed effect 
+
+modifiers and covariates (𝑌 (1), 𝑌 (0) ⊥ 𝑅 |𝐸 , 𝐿 ). Notably, this assumes no unmeasured effect 
+
+modifiers, as well as other correlated covariates that differ in distribution between the study 
+
+sample and hypothetical population. Last, t o attribute changes in the population -level exposure 
+
+effect across hypothetical populations solely to changes in the effect modifier distribution , one 
+
+must assume there are no mediators on the causal pathway between the exposure and outcome 
+
+that differ in distribution between the study sample and the hypothetical populatio n. If an effect 
+
+modifier is correlated with a mediator, fixing the effect modifier distribution at different 
+
+prevalences will in turn shift the mediator's marginal distribution . In this case, the change in the 
+
+estimated exposure effect across prevalence values will reflect both effect modification and a 
+
+change in the natural indirect effect attributable to the mediator .
+
+2.3 Step 1: Select confounders and effect modifier s
+
+The first step involves the researcher selecting an appropriate set of confounders and effect 
+
+modifiers. It is crucial for the researcher to select confounders that close back door paths 
+
+between the exposure and outcome, while carefully excluding variables that would otherwise 
+
+induce collider stratification bias (Greenland, 2003) . Higher -dimensional sets of effect modifiers 
+
+may also be considered (i.e. joint effect modifier interactions) which our approach handles , but it 
+
+is worth mentioning that interpretability is reduced with increasing dimensionality. 
+
+In the absence of prior knowledge of effect modifiers, meta -learners or other data -adaptive 
+
+methods may be used to identify effect modifiers (Bargagli -Stoffi et al., 2024; Nianogo et al., 
+
+2025; Wang et al., 2024; Zhao et al., 2022) . Additionally, descriptive summaries of the data may 
+
+be presented in this step. Potential violations of positivity that may limit analyses will be 
+
+reflected in these summaries. 
+
+2.4 Step 2: Estimate the exposure effect in hypothetical populations with different effect modifier 
+
+prevalences 
+
+The next step involves estimating the average exposure effect in hypothetical populations with 
+
+different prevalences of an effect modifier . Implementing th is procedure across a range of target 
+
+prevalence s, for example, the set of quintile values (0%, 2 0%, 40%, 60 %, 80%, 100% ), can 
+
+provide an informative set of population -level effect estimates that together describe how the 
+
+exposure effect varies as the effect modifier distribution changes. This step is agnostic to the 
+
+specific estimation method, and can be accomplished using transportability weighting, outcome model standardization, or doubl y robust methods such as targeted maximum likelihood 
+
+estimation (TMLE) .
+
+Transportability weighting: Under this approach, the data are transported to hypothetical 
+
+populations using weighting methods, which construct weights that rebalance the study sample 
+
+to reflect the target effect modifier prevalence. Common examples include inverse odds 
+
+weighting and entropy balancing (Westreich et a l., 2017; Josey et al., 2021). Under inverse odds 
+
+weighting, weights for unit 𝑖 are defined as: 
+
+𝑤 ! = C
+
+𝑃 (𝑅 ! = 0|𝐸 ! = 𝑒 !)
+
+𝑃 (𝑅 ! = 1|𝐸 ! = 𝑒 !) × 𝑃 (𝑅 ! = 1)
+
+𝑃 (𝑅 ! = 0) , 𝑅 ! = 1
+
+0, 𝑅 ! = 0
+
+where the quantity 𝑃 (𝑅 ! = 1|𝐸 ! = 𝑒 !) can be estimated by logistic regression. Entropy balancing 
+
+consists of solving the minimization problem 
+
+minimize E 𝑤 ! log 𝑤 ! − 𝑤 !
+
+> {!:$!%&}
+
+subject to E 𝑤 !𝐸 ! = 𝑝 , E 𝑤 ! = 1
+
+> {!:$!%&}{!:$!%&}
+
+where 𝑝 is the desired effect modifier prevalence in a hypothetical population. A confounding -
+
+adjusted exposure effect model is then fit using these weights. 
+
+Outcome model standardization (g -computation): An outcome model 𝐸 J[𝑌 ∣ 𝐴 , 𝐸 , 𝐿 ] is fit on the 
+
+original study sample where 𝐸 is an effect modifier whose distribution we wish to set to the 
+
+target prevalence 𝑝 . To estimate the exposure effect in a hypothetical population with effect 
+
+modifier prevalence 𝑝 , the effect modifier is set to the target prevalence value for all individuals 
+
+while all other covariate values 𝐿 ! are held at their observed values. Predictions 𝐸 J[𝑌 ∣ 𝐴 =
+
+1, 𝐸 = 𝑝 , 𝐿 !] and 𝐸 J[𝑌 ∣ 𝐴 = 0, 𝐸 = 𝑝 , 𝐿 !] are then averaged over the full study sample to obtain 
+
+the estimated ATE. 
+
+Doubly robust estimators: Doubly robust estimators , including augmented inverse probability 
+
+weighted estimators and targeted maximum likelihood estimation (TMLE) , combine outcome 
+
+modeling with transportability weighting, providing protection against misspecification of either 
+
+model (Josey et al., 2022; Lee et al., 2023; Rudolph and Van Der Laan, 2017) . These estimators 
+
+are consistent if either the outcome model or the weight model is correctly specified and are 
+
+semi -parametrically efficient under correct specification of both. 
+
+Regardless of the chosen estimation method, this step may be repeated over resampled data (i.e., 
+
+bootstrapping) to obtain confidence intervals for the exposure effect at each prevalence value. 
+
+Positivity of selection should be assessed at each target preva lence, particularly at extreme values 
+
+(0% and 100%), where weight distributions and covariate overlap should be inspected before 
+
+interpreting results. 2.5 Step 3: Model exposure effects as a function of prevalence values 
+
+Once exposure effects are estimated for different effect modifier prevalences, they can be ranked 
+
+by magnitude to descriptively identify heterogeneous and vulnerable populations with increased 
+
+risks compared to the ATE . These estimates can be modeled in a second -stage regression as a 
+
+function of the prevalence values to quantify the relationship between the population -level 
+
+exposure effect and distribution of an effect modifier. The regression can fit any functional form 
+
+that best characterizes the relationship, but it is important to balance interpretability of the model 
+
+estimates and plausibility of the model assumptions. For example, a n ordinary least squares 
+
+model provides a simple interpretation of the change in the exposure effect due to an increase in 
+
+the effect modifier prevalence but stipulates a strong assumption of linearity. 
+
+2.6 Shiny application framework 
+
+We provide a Shiny application (Chang et al., 2012) for researchers to implement this approach 
+
+with their data. Shiny is a framework for developing interactive applications that can perform 
+
+analyses without user knowledge of R or other statistical programming languages. The code is 
+
+stored at https://github.com/benmarhnia -lab/heterogeneity_resampling_approach and the 
+
+corresponding markdown files provide instructions for running the application. 
+
+3 Application: Demographic and Health Survey s Data 
+
+We demonstrate the application of the approach using the Demographic and Health Survey s
+
+(DHS) data. The DHS is a multi -country survey collecting information about health -related 
+
+issues and status of women in reproductive age (ages 15 to 49) and their children under 5 years 
+
+of age in low - and middle -income countries (LMIC). These include, but are not limited to, 
+
+fertility, mortality, diseases, nutrition, and health -seeking behavior . M ore details regarding the 
+
+data are provided in the appendix .
+
+For our analysis, we select ed drought as the exposure and stunted child growth as the outcome. 
+
+There is strong evidence that droughts pose a serious threat to child health and nutrition in 
+
+LMICs (Belesova et al., 2019; Cooper et al., 2019) . However, the population groups most at risk 
+
+have not been well studied. The extent to which climate shocks impact human health is likely to 
+
+vary depending on the underlying level of population vulnerability. 
+
+The selected co nfounders are child sex, age, birth size, breastfed status, the mother’s education 
+
+level, single status, occupation, mass media consumption, rural residence, and wealth level. We 
+
+consider ed three variables for effect modifiers: mother’s education level, rural residence, and 
+
+mass media consumption. These variables were chosen based on prior subject matter knowledge 
+
+(Belesova et al., 2019) and for simplicity of demonstration. All variables are expressed as binary 
+
+and missingness was removed such that all observations are complete . Table 1 shows the counts 
+
+and prevalence s of these variables in the data. 
+
+To adjust for confounding , we used stabilized inverse probability weighting , where the 
+
+probability of exposure was estimated from a logistic regression model with all main effects of 
+
+confounder s. Exposure effects were weighted to the hypothetical populations of different effect 
+
+modifier prevalences using inverse odds weighting and the set of quintiles w as chosen as target prevalence s. 95% confidence intervals for the exposure effects were estimated using 5000 
+
+bootstrap samples. 
+
+The estimate of the ATE (risk difference) in the original sample data is 0.01 4 ( 95% CI: [0. 00 96, 
+
+0.0 19]) , indicating that o ut of every 1,000 children exposed to droughts , approximately 14 more 
+
+stunting cases would occur compared to if those same children had not been exposed. Table 2 
+
+gives the estimated exposure effects for the hypothetical populations with different effect 
+
+modifier prevalences ranked by magnitude. The largest exposure effect , a 3.3% increase in the 
+
+risk of stunted child growth , belongs to the population with 100% prevalence of no maternal 
+
+education . Moreover, the populations with at least 60% prevalence of no maternal education 
+
+have larger exp osure effects than the estimated ATE. Conversely, we see a diminished exposure 
+
+effect for the populations with prevalence below 60% of rural residence and below 20% of mass 
+
+media consumption .
+
+Figure 1 plots the estimated exposure effects across prevalence values for each effect modifier, 
+
+and the relationship between the population -level exposure effect and effect modifier prevalence 
+
+is visually distinct across the three modifiers. For mother's educatio n and mass media 
+
+consumption, the exposure effect increases with prevalence at a decelerating rate . For rural 
+
+residence, the opposite pattern is observed, with the exposure effect increasing at an accelerating 
+
+rate. To characterize these relationships, we fit a second -order polynomial regression of the 
+
+estimated exposure effects on prevalence values for each effect modifier. The quadratic 
+
+specification was chosen following visual inspection of Figure 1, which suggested nonlinear 
+
+relationships for all three modifiers . However, researchers should assess whether a linear, 
+
+quadratic, or alternative functional form best characterizes the relationship in their own data prior 
+
+to model fitting. Table 3 gives the estimated regression formulas by effect modifier. For mass 
+
+media consumption, the function describes an estimated average increase of 0.70% in the risk of 
+
+stunted child growth when the prevalence increases from 0% to 20%. However, when the 
+
+prevalence increases from 80% to 100%, the estimated average risk decr eases by 0.13%. This 
+
+reversal in the direction of the marginal change, captured by the quadratic fit , highlights the 
+
+value of modeling the full effect surface rather than relying on a subgroup comparison from a 
+
+conventional stratified analysis .
+
+4 Discussion 
+
+Using the proposed approach, researchers can: 1) visualize effect modification due to an increase 
+
+in the prevalence of an effect modifier in a population and 2) rank effect measures across 
+
+multiple effect modifiers to identify which characteristics are mos t strongly associated with 
+
+differential vulnerability across the population distribution. These functions go beyond the binary 
+
+descriptions of conventional heterogeneity subgroup analyses and have implications for 
+
+intervention assessment and prioritization in external populations. The approach is agnostic to 
+
+the effect estimation method (and thereby agnostic to the effect scale and measure), which 
+
+provides researchers the flexibility to use the most appropriate estimation model in their own 
+
+analyses. By lev eraging recent developments in the transportability literature, this approach does 
+
+not require data outside of a study sample to investigate exposure effects in external populations. 
+
+Rather than transporting to an observed external population, the same methods are applied to 
+
+hypothetical populations defined entirely within the study sample by varying the prevalence of effect modifiers. This means that the full range of effect modification can be explored using only 
+
+the data at hand, without requiring a separate target dataset . Different transport methods may also 
+
+be used to estimate the exposure effect in the hypothetical populations, including weighting, 
+
+outcome model standardization, and doubly robust approaches. 
+
+Using the DHS data, we found strong effect modification across the prevalences of mother's 
+
+education level, mass media consumption, and rural residence. The estimated ATE in the original 
+
+sample corresponds to a 1.4% increase in the risk of stunted child gr owth due to drought 
+
+exposure. Populations with a prevalence of no maternal education above 60% had exposure 
+
+effects exceeding this average, with those at 100% prevalence facing an estimated 3.3% increase 
+
+in risk. In populations where the prevalence of no m aternal education approaches zero (that is, 
+
+nearly all mothers have at least some education), the estimated exposure effect becomes 
+
+negative, suggesting a small protective association between drought and stunting in highly 
+
+educated populations. This may reflect the capacity of educated mothers to buffer the nutritional 
+
+consequences of drought through adaptive behaviors such as dietary substitution or access to 
+
+health services. While this finding warrants cautious interpretation given the uncertainty in 
+
+esti mates at extreme prevalences due to potential positivity violations , it illustrates the value of 
+
+modeling the full effect surface rather than relying on a single subgroup comparison, which 
+
+might obscure such heterogeneity. Furthermore, findings such as these could inform intervention 
+
+prioritization by identifying vulnerable populations with similar high risk prevalences of the 
+
+effect modifying characteristic. For example, geographic targeting of nutrition programs to 
+
+villages or districts where maternal edu cation levels are low and drought risk is high could 
+
+reduce the burden of stunting attributable to drought. 
+
+While the demonstration was restricted to three binary effect modifiers for simplicity , the 
+
+approach generalizes to larger sets of effect modifiers and, with extensions to the current 
+
+implementation, to continuous effect modifiers. In practice, researchers may consider a richer set 
+
+of vulnerability indicators simultaneously, provided that p ositivity and interpretability are 
+
+maintained. It is also important to note that drought is an area -level exposure, which typically 
+
+involves a simpler confounding structu re than individual -level exposures, and the DHS survey 
+
+weights were not incorporated for ease of demonstration. Applied researchers should carefully 
+
+specify confounding structures excluding colliders and incorporate appropriate adjustments such 
+
+as survey w eights during the exposure effect estimation step, as they would in conventional 
+
+heterogeneity analyses. 
+
+While the framework we propose is novel in its general formulation for heterogeneity analyses, it 
+
+is worth situating it relative to prior work that has employed related ideas in more constrained 
+
+settings. Inoue et al. (2022) used a similar approach to investigate how living arrangement and 
+
+race modify the relationship between intensive blood pressure control and cardiovascular events 
+
+using data from clinical trial participants. Specifically, the authors considered the set of quintile 
+
+prevalences for both effect modifiers (0%, 20%, 40%, 60%, 80%, and 100%) using inverse odds 
+
+of weighting to generate weights for the hypothetical populations. This can be seen as a special 
+
+case of our proposed approach applied to a randomized, exp erimental population. Moreno -
+
+Betancur et al. (2018) proposed a conceptual framework for defining estimands to measure the 
+
+change in disease occurrence due to joint and individual distributional variations in effect 
+
+modifiers. This framework is fundamentally different from the approach we propose but analogously provides structure to quantify the change in an exposure effect due to effect modifier 
+
+distribution differences while adjusting for confounders. 
+
+This approach has several limitations. First, it does not improve upon the efficiency or prediction 
+
+accuracy of heterogeneous exposure effect estimation. The approach draws on existing methods ,
+
+transportability methods to estimate exposure effects in hypothetical populations, and optionally 
+
+meta -learners or other data -adaptive methods to identify effect modifiers , and is therefore 
+
+constrained by the performance and assumptions of those chosen methods. Second, the approach 
+
+does not improve statistical power to detect heterogeneous effects, nor does it resolve empirical 
+
+positivity violations, whether near or literal. These are known limitations of conventional 
+
+heterogeneity analyses and are not unique to this approach. Poor precision due to limited data 
+
+within effect modifier strata will propagate through the approach and be reflected in estimates of 
+
+uncertainty . For instance, bootstrap confidence intervals will widen when resampled datasets 
+
+frequently undersample sparse strata . Researchers should interpret effect estimates at extreme 
+
+prevalence values with caution . Third, the assumption that no mediators on the causal pathway 
+
+between the exposure and outcome differ in distribution between the study sample and the 
+
+hypothetical population may not always hold. As discussed in Section 2. 2, violations of this 
+
+assumption mean that changes in the estimated exposure effect across hypothetical populations 
+
+reflect not only effect modification but also changes in the natural indirect effect. 
+
+Heterogeneity analyses are vital to understanding the relationship between exposures and 
+
+outcomes for different populations. This work puts forward a conceptual approach for 
+
+heterogeneity analyses that provides a more thorough description of effect modific ation than 
+
+conventional methods , specifically moving from binary subgroup comparisons to a continuous 
+
+characterization of how the population -level exposure effect varies as a function of effect 
+
+modifier prevalence. Several directions remain for future work . For example, s imulation studies 
+
+evaluating the finite -sample performance of the approach across a range of data -generating 
+
+scenarios , varying sample sizes, degrees of effect modification, and levels of positivity violation ,
+
+would help establish practical guidance for applied researchers. As climate shocks, social 
+
+inequities, and other population -level stressors increasingly motivate targeted interventions, 
+
+methods that characterize the full surface of effect modification rath er than isolated subgroup 
+
+comp arisons will be essential for producing actionable epidemiological evidence. References 
+
+Alderman, H., Headey, D., 2018. The timing of growth faltering has important implications for 
+
+observational analyses of the underlying determinants of nutrition outcomes. PLOS ONE 
+
+13, e0195904. https://doi.org/10.1371/journal.pone.0195904 
+
+Arthur, S.S., Nyide, B., Soura, A.B., Kahn, K., Weston, M., Sankoh, O., 2015. Tackling 
+
+malnutrition: a systematic review of 15 -year research evidence from INDEPTH health 
+
+and demographic surveillance systems. Glob. Health Action 8, 28298. 
+
+https://doi.org/10 .3402/gha.v8.28298 
+
+Bang, H., Robins, J.M., 2005. Doubly Robust Estimation in Missing Data and Causal Inference 
+
+Models. Biometrics 61, 962 –973. https://doi.org/10.1111/j.1541 -0420.2005.00377.x 
+
+Bargagli -Stoffi, F.J., Cadei, R., Lee, K., Dominici, F., 2024. Causal Rule Ensemble: Interpretable 
+
+Discovery and Inference of Heterogeneous Treatment Effects. 
+
+https://doi.org/10.48550/arXiv.2009.09036 
+
+Belesova, K., Agabiirwe, C.N., Zou, M., Phalkey, R., Wilkinson, P., 2019. Drought exposure as 
+
+a risk factor for child undernutrition in low - and middle -income countries: A systematic 
+
+review and assessment of empirical evidence. Environ. Int. 131, 104973. 
+
+https://doi.org/10.1016/j.envint.2019.104973 
+
+Black, R.E., Victora, C.G., Walker, S.P., Bhutta, Z.A., Christian, P., De Onis, M., Ezzati, M., 
+
+Grantham -McGregor, S., Katz, J., Martorell, R., Uauy, R., 2013. Maternal and child 
+
+undernutrition and overweight in low -income and middle -income countries. The Lancet 
+
+382, 427 –451. https://doi.org/10.1016/S0140 -6736(13)60937 -X
+
+Chang, W., Cheng, J., Allaire, J., Sievert, C., Schloerke, B., Xie, Y., Allen, J., McPherson, J., 
+
+Dipert, A., Borges, B., 2012. shiny: Web Application Framework for R. 
+
+https://doi.org/10.32614/CRAN.package.shiny 
+
+Chernozhukov, V., Hansen, C., Kallus, N., Spindler, M., Syrgkanis, V., 2024. Applied Causal 
+
+Inference Powered by ML and AI. https://doi.org/10.48550/arXiv.2403.02467 
+
+Cheung, M., Dimitrova, A., Benmarhnia, T., 2025. An overview of modern machine learning 
+
+methods for effect measure modification analyses in high -dimensional settings. SSM -
+
+Popul. Health 29, 101764. https://doi.org/10.1016/j.ssmph.2025.101764 
+
+Cole, S.R., Hernan, M.A., 2008. Constructing Inverse Probability Weights for Marginal 
+
+Structural Models. Am. J. Epidemiol. 168, 656 –664. https://doi.org/10.1093/aje/kwn164 
+
+Cooper, M.W., Brown, M.E., Hochrainer -Stigler, S., Pflug, G., McCallum, I., Fritz, S., Silva, J., 
+
+Zvoleff, A., 2019. Mapping the effects of drought on child stunting. Proc. Natl. Acad. 
+
+Sci. 116, 17219 –17224. https://doi.org/10.1073/pnas.1905228116 
+
+De Onis, M., 2017. Child Growth and Development, in: De Pee, S., Taren, D., Bloem, M.W. 
+
+(Eds.), Nutrition and Health in a Developing World. Springer International Publishing, 
+
+Cham, pp. 119 –141. https://doi.org/10.1007/978 -3-319 -43739 -2_6 
+
+Degtiar, I., Rose, S., 2023. A Review of Generalizability and Transportability. Annu. Rev. Stat. 
+
+Its Appl. 10, 501 –524. https://doi.org/10.1146/annurev -statistics -042522 -103837 
+
+Dorie, V., Hill, J., Shalit, U., Scott, M., Cervone, D., 2019. Automated versus Do -It -Yourself 
+
+Methods for Causal Inference: Lessons Learned from a Data Analysis Competition. Stat. 
+
+Sci. 34. https://doi.org/10.1214/18 -STS667 
+
+Greenland, S., 2003. Quantifying Biases in Causal Models: Classical Confounding vs Collider -
+
+Stratification Bias: Epidemiology 14, 300 –306. 
+
+https://doi.org/10.1097/01.EDE.0000042804.12056.6C Harris, I., Osborn, T.J., Jones, P., Lister, D., 2020. Version 4 of the CRU TS monthly high -
+
+resolution gridded multivariate climate dataset. Sci. Data 7, 109. 
+
+https://doi.org/10.1038/s41597 -020 -0453 -3
+
+Hines, O.J., Diaz -Ordaz, K., Vansteelandt, S., 2025. Variable importance measures for 
+
+heterogeneous treatment effects. Biometrics 81, ujaf140. 
+
+https://doi.org/10.1093/biomtc/ujaf140 
+
+Inoue, K., Watson, K.E., Kondo, N., Horwich, T., Hsu, W., Bui, A.A.T., Duru, O.K., 2022. 
+
+Association of Intensive Blood Pressure Control and Living Arrangement on 
+
+Cardiovascular Outcomes by Race: Post Hoc Analysis of SPRINT Randomized Clinical 
+
+Trial. JAMA Netw. Open 5, e222037. 
+
+https://doi.org/10.1001/jamanetworkopen.2022.2037 
+
+Josey, K.P., Berkowitz, S.A., Ghosh, D., Raghavan, S., 2021. Transporting experimental results 
+
+with entropy balancing. Stat. Med. 40, 4310 –4326. https://doi.org/10.1002/sim.9031 
+
+Josey, K.P., Yang, F., Ghosh, D., Raghavan, S., 2022. A calibration approach to transportability 
+
+and data‐fusion with observational data. Stat. Med. 41, 4511 –4531. 
+
+https://doi.org/10.1002/sim.9523 
+
+Kaufman, J.S., MacLehose, R.F., 2013. Which of these things is not like the others? Cancer 119, 
+
+4216 –4222. https://doi.org/10.1002/cncr.28359 
+
+Kennedy, E.H., 2023. Towards optimal doubly robust estimation of heterogeneous causal effects. 
+
+Electron. J. Stat. 17. https://doi.org/10.1214/23 -EJS2157 
+
+Künzel, S.R., Sekhon, J.S., Bickel, P.J., Yu, B., 2019. Metalearners for estimating heterogeneous 
+
+treatment effects using machine learning. Proc. Natl. Acad. Sci. 116, 4156 –4165. 
+
+https://doi.org/10.1073/pnas.1804597116 
+
+Lee, D., Yang, S., Dong, L., Wang, X., Zeng, D., Cai, J., 2023. Improving Trial Generalizability 
+
+Using Observational Studies. Biometrics 79, 1213 –1225. 
+
+https://doi.org/10.1111/biom.13609 
+
+Levels and Trends in Child Malnutrition Child Malnutrition: Key Findings of the 2023 Edition, 
+
+1st ed. ed, 2023. . World Health Organization, Geneva. 
+
+Monfreda, C., Ramankutty, N., Foley, J.A., 2008. Farming the planet: 2. Geographic distribution 
+
+of crop areas, yields, physiological types, and net primary production in the year 2000. 
+
+Glob. Biogeochem. Cycles 22, 2007GB002947. https://doi.org/10.1029/2007 GB002947 
+
+Moreno -Betancur, M., Koplin, J.J., Ponsonby, A. -L., Lynch, J., Carlin, J.B., 2018. Measuring the 
+
+impact of differences in risk factor distributions on cross -population differences in 
+
+disease occurrence: a causal approach. Int. J. Epidemiol. 47, 217 –225. 
+
+https://doi.org/10.1093/ije/dyx194 
+
+Nianogo, R.A., O’Neill, S., Inoue, K., 2025. Generalized framework for identifying meaningful 
+
+heterogenous treatment effects in observational studies: A parametric data -adaptive G -
+
+computation approach. Stat. Methods Med. Res. 34, 648 –662. 
+
+https://doi.org/10.1177/09622802251316969 
+
+Nie, X., Wager, S., 2021. Quasi -oracle estimation of heterogeneous treatment effects. Biometrika 
+
+108, 299 –319. https://doi.org/10.1093/biomet/asaa076 
+
+Poveda, N.E., Hartwig, F.P., Victora, C.G., Adair, L.S., Barros, F.C., Bhargava, S.K., Horta, 
+
+B.L., Lee, N.R., Martorell, R., Mazariegos, M., Menezes, A.M.B., Norris, S.A., Richter, 
+
+L.M., Sachdev, H.S., Stein, A., Wehrmeister, F.C., Stein, A.D., 2021. Patt erns of Growth 
+
+in Childhood in Relation to Adult Schooling Attainment and Intelligence Quotient in 6 
+
+Birth Cohorts in Low - and Middle -Income Countries: Evidence from the Consortium of Health -Oriented Research in Transitioning Societies (COHORTS). J. Nutr. 151, 2342 –
+
+2352. https://doi.org/10.1093/jn/nxab096 
+
+Prendergast, A.J., Humphrey, J.H., 2014. The stunting syndrome in developing countries. 
+
+Paediatr. Int. Child Health 34, 250 –265. 
+
+https://doi.org/10.1179/2046905514Y.0000000158 
+
+R Core Team, 2023. R: A Language and Environment for Statistical Computing. 
+
+Rudolph, K.E., Díaz, I., 2022a. Efficiently transporting causal direct and indirect effects to new 
+
+populations under intermediate confounding and with multiple mediators. Biostatistics 
+
+23, 789 –806. https://doi.org/10.1093/biostatistics/kxaa057 
+
+Rudolph, K.E., Díaz, I., 2022b. When the Ends do not Justify the Means: Learning Who is 
+
+Predicted to Have Harmful Indirect Effects. J. R. Stat. Soc. Ser. A Stat. Soc. 185, S573 –
+
+S589. https://doi.org/10.1111/rssa.12951 
+
+Rudolph, K.E., Schmidt, N.M., Glymour, M.M., Crowder, R., Galin, J., Ahern, J., Osypuk, T.L., 
+
+2018. Composition or Context: Using Transportability to Understand Drivers of Site 
+
+Differences in a Large -scale Housing Experiment. Epidemiology 29, 199 –206. 
+
+http s://doi.org/10.1097/EDE.0000000000000774 
+
+Rudolph, K.E., Van Der Laan, M.J., 2017. Robust Estimation of Encouragement Design 
+
+Intervention Effects Transported Across Sites. J. R. Stat. Soc. Ser. B Stat. Methodol. 79, 
+
+1509 –1525. https://doi.org/10.1111/rssb.12213 
+
+Rutstein, S.O., 2015. Steps to constructing the new DHS Wealth Index. Rockv. MD ICF Int. 6. 
+
+Sacks, W.J., Deryng, D., Foley, J.A., Ramankutty, N., 2010. Crop planting dates: an analysis of 
+
+global patterns. Glob. Ecol. Biogeogr. 19, 607 –620. https://doi.org/10.1111/j.1466 -
+
+8238.2010.00551.x 
+
+VanderWeele, T.J., Luedtke, A.R., Van Der Laan, M.J., Kessler, R.C., 2019. Selecting Optimal 
+
+Subgroups for Treatment Using Many Covariates. Epidemiology 30, 334 –341. 
+
+https://doi.org/10.1097/EDE.0000000000000991 
+
+Victora, C.G., Adair, L., Fall, C., Hallal, P.C., Martorell, R., Richter, L., Sachdev, H.S., 2008. 
+
+Maternal and child undernutrition: consequences for adult health and human capital. The 
+
+Lancet 371, 340 –357. https://doi.org/10.1016/S0140 -6736(07)61692 -4
+
+Wang, T., Keil, A.P., Kim, S., Wyss, R., Htoo, P.T., Funk, M.J., Buse, J.B., Kosorok, M.R., 
+
+Stürmer, T., 2024. Iterative Causal Forest: A Novel Algorithm for Subgroup 
+
+Identification. Am. J. Epidemiol. 193, 764 –776. https://doi.org/10.1093/aje/kwad219 
+
+Westreich, D., Edwards, J.K., Lesko, C.R., Stuart, E., Cole, S.R., 2017. Transportability of Trial 
+
+Results Using Inverse Odds of Sampling Weights. Am. J. Epidemiol. 186, 1010 –1014. 
+
+https://doi.org/10.1093/aje/kwx164 
+
+World Health Organization, 2019. Nutrition Landscape Information System (NLiS) country 
+
+profile indicators: interpretation guide, 2nd ed. ed. World Health Organization, Geneva. 
+
+Zhao, Q., Small, D.S., Ertefaie, A., 2022. Selective Inference for Effect Modification Via the 
+
+Lasso. J. R. Stat. Soc. Ser. B Stat. Methodol. 84, 382 –413. 
+
+https://doi.org/10.1111/rssb.12483 Tables and Figures 
+
+Table 1: Descriptive statistics 
+
+Stunted Child Growth 
+
+Variable Overall , N = 
+
+345,499 1
+
+Not Stunted , N = 
+
+212190 (61%) 1
+
+Stunted , N = 133309 
+
+(39%) 1
+
+Exposure 
+
+Drought 50,310 (15%) 30,034 (14%) 20,276 (15%) 
+
+Effect Modifiers 
+
+Mother's Education -
+
+None 
+
+174,528 (51%) 99,828 (47%) 74,700 (56%) 
+
+Mass Media 
+
+Consumption - Yes 
+
+156,872 (45%) 105,636 (50%) 51,236 (38%) 
+
+Residence - Rural 249,258 (72%) 142,971 (67%) 106,287 (80%) 
+
+Covariates 
+
+Child Breastfed - Never 7,463 (2.2%) 4,558 (2.1%) 2,905 (2.2%) 
+
+Child Sex - Male 174,324 (50%) 103,099 (49%) 71,225 (53%) 
+
+Child Age - Under 2 127,378 (37%) 84,656 (40%) 42,722 (32%) 
+
+Single Mother - Yes 27,128 (7.9%) 16,348 (7.7%) 10,780 (8.1%) 
+
+Agricultural Occupation -
+
+Yes 
+
+161,724 (47%) 87,741 (41%) 73,983 (55%) 
+
+Child birth Size - Small 62,218 (18%) 34,449 (16%) 27,769 (21%) 
+
+Wealth - Poor 158,259 (46%) 83,998 (40%) 74,261 (56%) 
+
+> 1
+
+n (%) 
+
+All variables recorded as binary Table 2: Estimated exposure effects ranked by estimate across effect modifiers and prevalences .
+
+Effects are expressed as risk differences. 
+
+Effect Modifier Prevalence Estimate Lower 95% CI Upper 95% CI 
+
+Mother’s Education - None 100 0.033 0.027 0.04 
+
+Mother’s Education - None 80 0.027 0.022 0.033 
+
+Residence - Rural 100 0.022 0.016 0.027 
+
+Mother’s Education - None 60 0.02 0.016 0.025 
+
+Mass Media Consumption -
+
+Yes 80 0.019 0.014 0.025 
+
+Mass Media Consumption -
+
+Yes 60 0.019 0.014 0.023 
+
+Mass Media Consumption -
+
+Yes 100 0.018 0.011 0.025 
+
+Mass Media Consumption -
+
+Yes 40 0.016 0.011 0.02 
+
+Residence - Rural 80 0.015 0.011 0.02 
+
+Average treatment effect in the study 
+
+sample 0.014 0.0096 0.019 
+
+Mother’s Education - None 40 0.012 0.007 0.017 
+
+Mass Media Consumption -
+
+Yes 20 0.011 0.006 0.016 
+
+Residence - Rural 60 0.01 0.005 0.014 
+
+Residence - Rural 40 0.006 0 0.011 
+
+Mass Media Consumption -
+
+Yes 0 0.004 -0.002 0.01 
+
+Residence - Rural 20 0.003 -0.004 0.009 
+
+Mother’s Education - None 20 0.002 -0.003 0.008 
+
+Residence - Rural 0 0 -0.007 0.008 
+
+Mother’s Education - None 0 -0.009 -0.015 -0.002 Table 3: Second -stage polynomial regression formula 
+
+(Exposure Effect ~ 𝛽 ( + 𝛽 & ∗ prevalence + 𝛽 ) ∗ prevalence ))
+
+Effect Modifier Regression Formula 
+
+Mother’s Education –
+
+None 
+
+−0.009 + 0.001 ∗ prevalence − 2 × 10 *+
+
+∗ prevalence )
+
+Mass Media 
+
+Consumption 
+
+0.004 + 4 × 10 *, ∗ prevalence − 3 × 10 *+
+
+∗ prevalence )
+
+Residence - Rural 0.001 + 1 × 10 *, ∗ prevalence + 1 × 10 *+
+
+∗ prevalence )
+
+Figure 1. Line p lot of the estimated exposure effects in hypothetical populations across the 
+
+prevalence quintiles of mother’s education level, rural residence, and mass media consumption 
+
+(estimates reported in table 2) . 95% bootstrap confidence bands are shown for each effect 
+
+modifier and the average treatment effect in the original study sample (0.014 ) is shown by the 
+
+gray line .Appendix 
+
+The DHS surveys are repeated cross -sectional surveys that have been collected in over 90 low -
+
+and middle -income countries (LMIC) since the 1980s. These data focus on women in 
+
+reproductive age (ages 15 to 49) and their children and cover a wide range of hea lth -related 
+
+issues, including fertility, mortality, diseases, nutrition, and health -seeking behavior. The surveys 
+
+also include detailed socioeconomic information, such as household assets, urban or rural places 
+
+of residence, and type of occupation, among o ther information. A two -stage cluster sampling 
+
+process guarantees that the data collected is nationally representative. More recent survey rounds 
+
+include global positioning system (GPS) information (latitude and longitude) for each primary 
+
+sampling unit (P SU). A PSU is defined as a city block in an urban area and a village in a rural 
+
+area. We were able to connect the survey data with high -resolution gridded climate data via the 
+
+GPS information. 
+
+For our analysis, we restrict the data to surveys collected between 2000 and 2022 in sub -Saharan 
+
+African countries. We focus on children under 5 years of age for whom detailed information was 
+
+collected, including anthropometric measurements (weight and hei ght), birth weight, and feeding 
+
+practices. To reduce the risk of misreporting bias, we restrict the sample to children who live 
+
+with their mothers and are usual residents at the place of interview. Our final sample consists of 
+
+345,499 children from 32 coun tries and 86 individual surveys. 
+
+Following standard practice, we construct a binary indicator for child stunting based on the 
+
+children’s height -for -age z -scores (HAZ). Children are classified as stunted if their HAZ score is 
+
+more than 2 standard deviations below the World Health Organizat ion’s (WHO) growth standard 
+
+median for children of the same age -group (World Health Organization, 2019) . We dropped 
+
+observations with implausible HAZ scores (below -6 and above 6). Low HAZ values reflect 
+
+chronic undernutrition in children (stunted growth) (De Onis, 2017) . It is a serious health concern 
+
+since stunted growth has been associated with a range of negative outcomes such as diminished 
+
+cognitive function, learning challenges and an increased risk of chronic health conditions (Black 
+
+et al., 2013; Arthur et al., 2015; Victora et al., 2008; Poveda et al., 2021; Prendergast and 
+
+Humphrey, 2014) . Nearly a third of children in sub -Saharan African are stunted – some of the 
+
+highest levels observed worldwide (Levels and Trends in Child Malnutrition Child Malnutrition ,
+
+2023) .
+
+In addition to children’s anthropometric measurements, we retrieve information about the 
+
+demographic and socioeconomic characteristics of the children and their households, including 
+
+the mother’s level of education (grouped into none or some education), th e type of occupation of 
+
+the household head (agricultural or non -agricultural), the location of the household (urban or 
+
+rural), mother’s consumption of mass media (including television, radio and newspaper), and 
+
+household’s relative wealth group (constructe d based on standard DHS procedures) (Rutstein, 
+
+2015) .
+
+To assess the impact of climate shocks on the health status of LMIC children under 5, we merged 
+
+the survey data with Standardized Precipitation Evapotranspiration Index (SPEI), a multi -scalar 
+
+drought index that is commonly used to measure the intensity and spatial distribution of 
+
+droughts. The SPEI index is computed using input monthly precipitation and potential 
+
+evapotranspiration data from the Climatic Research Unit at the University of East Anglia (CRU TS4) (Harris et al., 2020) . We focus on identifying droughts during key agricultural periods. In 
+
+particular, the main crop growing period for each PSU location is identified using high -
+
+resolution gridded data on the geographical distribution of crop areas (Monfreda et al., 2008) and 
+
+crop calendar information (Sacks et al., 2010) . Following standard practice, droughts are defined 
+
+as crop -growing period SPEI values below -1. We focus on exposure to agricultural droughts 
+
+during the infancy period (the first 12 months of life) since this is a period when most growth 
+
+faltering is show n to occur (Alderman and Headey, 2018) .
+
+The degree to which agricultural droughts disrupt livelihoods and have an impact on human 
+
+health depends on both individual and community -level factors, including dependence on 
+
+agricultural produce, the capacity to diversify income, and access to informati on, to mention a 
+
+few. Identifying population groups that are particularly vulnerable to climatic shocks is important 
+
+for designing targeted interventions. Yet, few studies have looked into such disparities in 
+
+drought -induced undernutrition, possibly due to the limitations of traditional methods of 
+
+identifying effect modifiers.

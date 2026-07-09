@@ -1,0 +1,907 @@
+Title: From Structural Equation Modelling to Double Machine Learning: Robustness Analysis for Survey-Based Research
+
+URL Source: https://arxiv.org/pdf/2607.00512v1
+
+Published Time: Thu, 02 Jul 2026 00:35:06 GMT
+
+Number of Pages: 21
+
+Markdown Content:
+# From Structural Equation Modelling to Double Machine Learning: Robustness Analysis for Survey-Based Research 
+
+Ka Ching Chan a, Qiana Liu a, Sanjib Tiwari a, Ranga Chimhundu a
+
+> aSchool of Business, Law, Humanities and Pathways, University of Southern Queensland, Springfield, 4300, Queensland, Australia
+
+Abstract 
+
+Structural equation modelling (SEM) is widely used in survey-based business and information systems research to assess latent constructs and theory-driven structural relationships. However, SEM path significance is obtained within a particular model specification and may not show whether findings remain stable under alternative estimation frame-works. This study develops and demonstrates a staged robustness analysis framework that connects SEM, ordinary least squares (OLS) regression, and Double Machine Learning (DML). SEM is first used to refine the measurement structure and estimate the robustness-baseline SEM model, in which the full theory-specified structural path system is retained for downstream robustness analysis before final structural path evaluation. OLS regression is then ap-plied to SEM-derived construct scores as a transparent regression benchmark. Finally, DML-style residualisation is used to examine whether each tested focal relationship remains stable after flexible machine-learning-based adjust-ment for observed controls. Learner-sensitivity checks compare Random Forest, Gradient Boosting, and Support Vector Machine learners, and selected reverse-direction diagnostics are used to examine directional sensitivity. The framework is demonstrated using a FinTech Digital Customer Intimacy survey model. The findings identify which relationships are stable across SEM, OLS, and DML-style checks, and which require more cautious interpretation. A reproducible Google Colab workbook and generated result files are publicly available, providing a reusable template that researchers and students can adapt to other survey-based latent-construct studies. The paper contributes a prac-tical robustness workflow and interpretation guide for survey-based researchers seeking to complement SEM with conventional and machine-learning-based robustness checks. 
+
+Keywords: Structural Equation Modelling, Double Machine Learning, OLS, Robustness Analysis, Survey Research, Information Systems, FinTech 
+
+1. Introduction 
+
+Survey-based research frequently relies on latent constructs such as trust, satisfaction, attitude, intention, perceived quality, and customer intimacy. These constructs are usually measured through multiple survey items rather than observed directly. Structural equation modelling (SEM) is therefore well-suited to this type of research because it enables researchers to assess the measurement model and estimate theory-driven structural relationships within a single framework. However, a significant SEM path coe ffi cient remains a result within a particular model specification. Researchers may therefore benefit from supplementary robustness analyses that examine whether key relationships remain stable under alternative score representations and estimation assumptions before final model decisions are made. This study develops a staged SEM–OLS–DML robustness framework for survey-based latent-construct research. The framework is organised around two analytical layers. The first layer generates the empirical evidence: the mea-surement model is refined, the full theory-specified structural model is re-estimated as the robustness-baseline SEM model, construct scores are constructed, and OLS and DML-style robustness checks are run for all SEM paths be-fore final structural path evaluation; SEM factor scores and mean composite scores are constructed, and OLS and DML-style robustness checks are run for all tested SEM paths. The second layer compares and interprets the gen-erated outputs across methods, score representations, nuisance learners, and, where theoretically useful, selected reverse-direction diagnostic checks. This two-layer design separates the production of robustness evidence from the interpretation of convergence, divergence, and sensitivity. 
+
+> arXiv:2607.00512v1 [cs.LG] 1 Jul 2026
+
+The paper is motivated by an emerging methodological gap. Recent studies have introduced Double Machine Learn-ing (DML) to information systems research (Shi et al., 2025), combined PLS-SEM with machine-learning algorithms for predictive and exploratory purposes (Richter and Tudoran, 2024), and applied DML directly in FinTech-related empirical settings (Wu et al., 2024). These studies show that machine learning and DML are increasingly relevant to empirical research. Less attention, however, has been given to using DML as a post-SEM, path-by-path robustness tool for survey-based latent-construct models. This paper addresses that gap by positioning SEM as the primary mea-surement and theory-testing framework, OLS as a transparent regression benchmark, and DML as a flexible-control robustness check for SEM-implied relationships. The study is guided by the following research questions: 
+
+• RQ1: How can SEM, OLS, and DML-style analysis be integrated into a staged robustness framework for survey-based latent-construct research? 
+
+• RQ2: How can a robustness-baseline SEM model be translated into path-level OLS and DML-style specifications before final structural path evaluation? 
+
+• RQ3: How do OLS and DML-style estimates complement SEM when evaluating the robustness of initially tested structural paths? 
+
+• RQ4: How can researchers interpret convergence, divergence, score sensitivity, learner sensitivity, and selected reverse-direction diagnostics within the proposed robustness framework? 
+
+• RQ5: In the FinTech DCI demonstration case, which initially tested structural paths remain robust across SEM, OLS, and DML-style checks, and which paths require further theory, measurement, or directional-diagnostic discussion? The paper makes three contributions. First, it provides a practical workflow for translating SEM-implied struc-tural paths into OLS and DML-style robustness checks without treating machine learning as a replacement for SEM. Second, it clarifies how score-representation sensitivity and learner sensitivity can be interpreted in survey-based latent-construct research. Third, it demonstrates the workflow using a FinTech Digital Customer Intimacy model in which robustness evidence is generated before final structural paths are evaluated and decisions made, and will provide a Google Colab workbook and generated CSV outputs through a Zenodo archive, allowing researchers and students to adapt the workflow to other survey-based SEM applications. 
+
+2. Literature Background and Methodological Positioning 
+
+2.1. SEM and latent-construct survey research 
+
+Survey-based studies commonly use multi-item instruments to measure constructs that cannot be directly observed. In this setting, SEM is not merely a regression model with named variables. Its distinctive value lies in modelling latent constructs from multiple observed indicators, assessing measurement quality, and estimating a theory-specified system of structural paths (Bollen, 1989; Anderson and Gerbing, 1988; MacKenzie et al., 2011). This measurement role is particularly important in behavioural, business, and information systems research, where construct validity is central to credible theory testing. The two-step logic of first assessing the measurement model and then estimating the structural model provides the foundation for using SEM as the primary modelling stage rather than as a preliminary score-generation tool (Anderson and Gerbing, 1988). Regression-based robustness checks can still play a useful supplementary role after SEM. SEM and regression have long been discussed as complementary rather than mutually exclusive approaches in applied information systems research (Gefen et al., 2000). In the present framework, OLS is used as a transparent benchmark that asks whether SEM-implied relationships remain visible when latent constructs are represented as respondent-level construct scores. This benchmark does not replace SEM; instead, it provides a simpler score-based comparison for examining whether the structural pattern is visible under conventional linear regression assumptions. 
+
+2.2. DML, SEM–ML integration, and adjacent applied research 
+
+DML has become influential because it allows a low-dimensional focal relationship to be estimated while flexible machine-learning methods approximate nuisance functions for observed controls and co-predictors (Chernozhukov et al., 2018). The DML software framework further supports reproducible implementation of this logic in Python 2(Bach et al., 2022). Recent information systems work has introduced DML as a flexible semiparametric method for empirical model specification and causal-inference-oriented research designs (Shi et al., 2025). In applied FinTech and sustainability research, DML is often used directly as the main empirical strategy. For example, Wu et al. (2024) investigates the relationship between FinTech development and inclusive green growth using city-level panel data under flexible control adjustment. A related but distinct stream combines SEM or PLS-SEM with machine learning. For instance, Richter and Tudoran (2024), discuss how PLS-SEM and selected machine-learning algorithms can be combined to improve prediction, identify nonlinearities and interactions, and support theoretical insight in business research. Such work shows the increasing value of SEM–ML integration, but its emphasis is often on predictive, exploratory, or causal-predictive approaches. The present study is narrower and more diagnostic. It asks whether theory-specified SEM paths remain directionally and statistically stable when re-examined using OLS and DML-style robustness checks. 
+
+2.3. Why DML is applied after SEM and path by path 
+
+The distinction is important because applying DML directly to raw survey items or simple composite scores may underuse one of SEM’s central strengths: the ability to model measurement structure before testing structural rela-tionships. Therefore, this study first uses SEM to validate the latent-variable measurement structure and identify the retained theoretical path system. OLS and DML are then applied on a per-path basis as supplementary robustness analyses. Each selected SEM path is re-examined as a focal relationship, with other theoretically relevant constructs and observed controls treated as adjustment variables. This use of DML di ff ers from typical applied DML studies in both purpose and implementation. In many applica-tions, the main objective is to estimate one focal treatment–outcome relationship while flexibly adjusting for controls. In contrast, this study uses DML as a robustness diagnostic for a latent-construct path system. SEM provides the mea-surement and theoretical map, OLS provides a transparent regression benchmark, and DML provides a flexible-control robustness check for individual SEM-implied paths. 
+
+2.4. Causal caution, endogeneity, and directional interpretation 
+
+Although DML is often discussed within the causal-inference literature, the present study uses it as a robustness analysis rather than as definitive causal identification. The survey data are observational, and the structural paths esti-mated in SEM, OLS, and DML are therefore interpreted as theoretically grounded associations unless stronger identi-fication assumptions are justified. This cautious interpretation is consistent with Pearl’s account of causal models and inference (Pearl, 2009) and with Pearl’s hierarchy, which distinguishes associational, interventional, and counterfac-tual claims (Bareinboim et al., 2022). Accordingly, the proposed SEM–OLS–DML workflow strengthens robustness assessment, but it does not by itself establish intervention-level or counterfactual causal claims. The same caution applies to exogeneity, endogeneity, and directionality. In SEM, exogenous and endogenous constructs are defined by their positions in the specified structural model. This modelling distinction should not be confused with econometric endogeneity, which refers to potential bias arising from omitted variables, simultaneity, reverse causality, measurement error, or related sources. DML can improve robustness by flexibly adjusting for observed covariates, but it does not eliminate unobserved confounding or prove causal direction in cross-sectional survey data. Throughout this study, directional language refers to the theoretically specified and statistically estimated direction of association among constructs, rather than definitive causal direction. Positive coe ffi cients indicate a direct relationship between the predictor and outcome variables, while negative coe ffi cients indicate an inverse relationship. For theoretically sensitive paths, reverse-direction OLS /DML checks may therefore be used as diagnostic evidence of directional robustness or possible reciprocal association, rather than as proof of bidirectional causality. 
+
+3. Preliminaries and Notation 
+
+This section introduces the notation used to connect the SEM, OLS, and DML-style robustness stages. The purpose is not to derive a new estimator, but to make explicit how survey indicators, latent construct scores, structural paths, and robustness estimates are represented consistently across the three stages. 33.1. Observed survey data 
+
+Let N and P denote the number of respondents and observed survey variables, respectively. For respondent i, the full observed response vector is denoted by Zi:
+
+Zi = hZi1 Zi2 · · · ZiP 
+
+i′
+
+, i = 1, . . . , N. (1) Stacking all respondent-level vectors gives the observed data matrix: 
+
+Z =
+
+
+
+Z′
+
+> 1
+
+Z′
+
+> 2
+
+...
+
+Z′
+
+> N
+
+
+
+∈ RN×P. (2) Let C denote the set of latent constructs and let Ic denote the set of observed indicators assigned to construct c ∈ C .If Ic = { j1, j2, . . . , jJc }, then the observed indicator vector for construct c and respondent i is: 
+
+zc,i = hZi j 1 Zi j 2 · · · Zi j Jc 
+
+i′
+
+, j1, . . . , jJc ∈ I c. (3) 
+
+3.2. First-order and second-order latent constructs 
+
+The SEM measurement model includes both first-order and second-order latent constructs. For a first-order con-struct c, let zc,i denote the vector of observed indicators for respondent i, and let ωc,i denote the corresponding latent construct. The first-order measurement model can be written as: 
+
+zc,i = λcωc,i + ec,i, (4) where λc is the vector of factor loadings and ec,i is the vector of measurement errors. For a second-order construct h, the construct is inferred from multiple first-order latent dimensions. Let ω(1)  
+
+> h,i
+
+denote the vector of first-order latent dimensions associated with second-order construct h, and let ω(2)  
+
+> h,i
+
+denote the second-order latent construct. The second-order measurement relationship can be represented as: 
+
+ω(1)  
+
+> h,i
+
+= λ(2)  
+
+> h
+
+ω(2)  
+
+> h,i
+
++ uh,i, (5) where λ(2)  
+
+> h
+
+contains the second-order loadings and uh,i captures first-order dimension disturbances not explained by the second-order construct. In this study, Perceived Quality (PQ) and User Experience (UX) are treated as second-order constructs. PQ is inferred from system, information, and service quality. UX is inferred from utilitarian, hedonic, personalised, and security experiences. Other constructs are treated as first-order latent constructs measured directly by their observed survey indicators. 
+
+3.3. SEM measurement and structural notation 
+
+In the SEM stage, the measurement model defines latent constructs, while the structural model specifies their relationships. Let ξi denote the vector of structurally exogenous latent constructs for respondent i, and let ηi denote the vector of structurally endogenous latent constructs. The combined latent construct vector is: 
+
+ωi = hξ′ 
+
+> i
+
+η′
+
+> i
+
+i′
+
+. (6) A compact measurement model can be written as: 
+
+Zi = Λωi + ei, (7) where Λ is the factor-loading matrix and ei is the vector of measurement errors. The structural component of the SEM can be written as: 
+
+ηi = Bηi + Γξi + ζi, (8) 4where B contains relationships among endogenous latent constructs, Γ contains e ff ects from exogenous to endoge-nous latent constructs, and ζi is the structural disturbance vector. The SEM parameter vector is estimated by fitting the model-implied covariance structure to the observed data: 
+
+bθ = arg min  
+
+> θ
+
+LSEM (θ; Z, M, P) , (9) where M denotes the measurement specification and P denotes the structural path specification. In SEM terminology, structurally exogenous and endogenous constructs are distinguished by their positions in the specified structural model. Exogenous constructs do not receive incoming structural paths, whereas endogenous constructs are explained by one or more other constructs. This distinction is important for SEM specification and interpretation. However, once respondent-level construct scores are extracted, both exogenous and endogenous con-structs can be represented within the same construct-score matrix for downstream OLS and DML-style robustness checks. 
+
+3.4. Construct-score representations 
+
+After estimating the SEM, respondent-level latent construct scores are extracted. Let bωi denote the SEM factor-score vector for respondent i. A general model-based factor-score representation is: 
+
+bωi = ΦωΛ′Σ bθ−1
+
+Zi, (10) where Φω is the latent construct covariance matrix, Λ is the estimated loading matrix, and Σ(bθ) is the model-implied covariance matrix. Stacking all extracted SEM factor scores gives: 
+
+bFSEM =
+
+bω′
+
+> 1
+
+bω′
+
+> 2
+
+...
+
+bω′
+
+> N
+
+
+
+∈ RN×C , (11) where C is the number of construct scores used in the downstream robustness checks. As a simpler benchmark, mean composite scores are calculated from the retained indicators. For construct c and respondent i, the composite score is: ¯ZCOMP  
+
+> c,i
+
+= 1
+
+Jc
+
+X
+
+> j∈I c
+
+Zi j . (12) Stacking the composite scores gives the composite-score matrix: 
+
+FCOMP =
+
+
+
+¯zCOMP ′
+
+> 1
+
+¯zCOMP ′
+
+> 2
+
+...
+
+¯zCOMP ′
+
+> N
+
+
+
+∈ RN×C . (13) The robustness checks therefore use two alternative construct-score representations: 
+
+s ∈ { SEM , COMP } , (14) where SEM denotes SEM factor scores and COMP denotes mean composite scores. SEM factor scores are treated as the primary construct-score representation because they preserve the fitted SEM measurement model, including estimated factor loadings, latent-variable structure, and the distinction between first-order and second-order constructs. Mean composite scores are included as a transparent sensitivity benchmark. Com-posite scores are widely used in survey-based research because they are simple, interpretable, and easy to reproduce. However, they treat retained indicators as equally weighted and do not explicitly account for factor loadings, mea-surement error, or higher-order construct structure. Comparing the two score representations is therefore useful for 5diagnosing measurement-representation sensitivity. The next section uses this notation to specify how tested SEM paths are translated into OLS and DML-style robustness checks. 
+
+4. Proposed SEM–OLS–DML Robustness Framework 
+
+4.1. Methodological rationale 
+
+The proposed framework is based on methodological complementarity rather than methodological substitution. SEM remains the primary modelling stage because it validates the latent measurement structure and estimates theory-driven structural relationships. OLS provides a transparent score-based benchmark by asking whether the SEM-implied relationships remain visible when respondent-level construct scores are analysed using conventional regres-sion. DML-style residualisation provides an additional robustness layer by asking whether focal path estimates remain stable when the outcome and focal predictor are flexibly adjusted for observed controls and co-predictors. The three methods therefore answer di ff erent but connected questions: SEM asks whether the latent-variable model is theoreti-cally and statistically supported; OLS asks whether the same path pattern is visible under a simpler linear score-based specification; and DML-style checks ask whether the focal relationships remain stable under flexible control-function adjustment. Operationally, the framework separates the analysis into two layers. The result-generation layer estimates the SEM model, constructs alternative construct-score representations, and runs the OLS and DML-style models across the planned scenarios. The comparison-and-interpretation layer then compares the generated outputs across methods, score representations, nuisance learners, and selected reverse-direction diagnostics. This separation is useful because the Colab implementation can first export all scenario-level results as CSV files, after which the paper can analyse convergence, divergence, and sensitivity in an integrated way. 
+
+4.2. Workflow overview 
+
+The proposed workflow is organised into eight operational stages within these two analytical layers. Stages 1–7 form the result-generation layer: they refine the measurement model, establish the robustness-baseline SEM model, construct factor and composite scores, define path-level specifications, and run OLS and DML-style checks across score representations and nuisance learners before final structural path evaluation. Stage 8 forms the comparison-and-interpretation layer: it integrates the evidence by comparing direction, statistical support, score-representation sensitivity, learner sensitivity, and selected reverse-direction diagnostics to support final structural model refinement decisions. The workflow distinguishes measurement refinement from final structural path evaluation. The initial conceptual model specifies both the measurement structure and the theory-driven structural paths among constructs. The mea-surement part is first evaluated using item diagnostics, factor loadings, reliability, validity, and model-fit evidence. Where justified, indicators or measurement factors are refined so that the constructs used in subsequent analysis are empirically defensible. However, the theory-specified structural paths are not removed or modified immediately after SEM estimation solely on the basis of SEM significance. Instead, after the refined measurement model is obtained, the full theory-specified structural model is re-estimated and treated as the robustness-baseline SEM model. This model provides the path system that is then translated into OLS and DML-style specifications. Final structural model refine-ment decisions are made only after SEM estimates, OLS benchmarks, DML-style checks, score sensitivity, learner sensitivity, reverse-direction diagnostics, and theoretical considerations are examined together. Table 1 complements the figure by translating the same workflow into operational stages, questions, and outputs that can be followed in empirical applications. 
+
+4.3. SEM-to-regression translation 
+
+A SEM structural path can be translated into an OLS or DML-style specification by identifying the outcome con-struct, the focal predictor, and the local co-predictor /control set. For a SEM equation of the form Y ∼ D + X, OLS estimates the score-based regression of Y on D and X, while DML-style residualisation partials out X from both Y and 
+
+D before estimating the residual relationship. A key feature of this translation is that SEM structural equations are translated at the equation level, while the resulting regression coe ffi cients are interpreted at the path level. One regression equation may therefore contain 6Table 1: Operational stages of the SEM–OLS–DML robustness workflow 
+
+Stage Workflow component Main question Analytical output 
+
+1 Initial conceptual model and item diagnostics Are the proposed constructs, indicators, and theory-specified structural paths suitable for empirical testing? Initial conceptual model and diagnostic evidence for item /indicator quality 2 Measurement-model refinement Do the retained indicators provide an empirically defensible measurement model for the latent constructs? Refined measurement model, retained indicators, reliability, validity, and fit evidence 3 Robustness-baseline SEM estimation Using the refined measurement model, what evidence is obtained when the full theory-specified structural model is estimated before final structural path evaluation? Robustness-baseline SEM model, SEM path estimates, and tested structural path system 4 Construct-score construction How are the refined latent constructs represented for downstream robustness analysis? SEM factor scores and mean composite scores 5 SEM-to-regression path translation How is each tested SEM path translated into path-level OLS and DML-style specifications? Outcome construct Y, focal predictor D, and control vector X
+
+for each tested path 6 OLS robustness benchmark Do the tested SEM paths remain visible under transparent score-based linear regression? OLS path-level robustness estimates across construct-score representations 7 DML-style robustness and sensitivity checks Do the tested SEM paths remain stable after flexible adjustment for SEM co-predictors and observed controls, and are results sensitive to the learner used? DML-style estimates across score types and RF, GBM, and SVM learners 8 Integrated robustness interpretation and final structural path evaluation Where do SEM, OLS, and DML-style evidence converge or diverge, and which paths should be retained, reviewed, or treated as directionally sensitive? Integrated robustness evidence, selected reverse-direction diagnostics, and final structural model refinement decisions  
+
+> Note. The workflow separates measurement refinement from structural path evaluation. Indicators and measurement factors may be refined before the robustness analysis, but theory-specified structural paths are not modified immediately after SEM estimation. Final structural model refinement decisions are made only after SEM, OLS, DML-style results, score sensitivity, learner sensitivity, reverse-direction diagnostics, and theoretical considerations are reviewed together. Table 2: SEM-to-regression translation logic
+
+SEM component OLS /DML translation Purpose 
+
+Latent construct Factor or composite score Enables construct-level regression Path Y ∼ D Focal relationship Defines the path to check Companion predictors Control set X Preserves local structural context Robustness-baseline SEM estimation Benchmark theory-test result Primary evidence from latent-variable model OLS coe ffi cient Linear score-based estimate Transparent robustness check DML-style coe ffi cient Residualised focal estimate Robustness after flexible observed-control adjustment 
+
+multiple SEM-implied paths. For example, the SEM equation BI ← AT + CA corresponds to one regression model with BI as the outcome and AT and CA as predictors, but it yields two path-level benchmarks: AT → BI and 
+
+CA → BI . Similarly, S A ← BI + UX + U B corresponds to one regression equation but provides three path-level benchmarks. This distinction is important because the robustness analysis follows the SEM structural system while allowing each individual path coe ffi cient to be compared across SEM, OLS, and DML. 74.4. Path-level robustness notation 
+
+Let k = 1, . . . , K index the structural paths from the robustness-baseline SEM model. For each path k and score representation s ∈ { SEM , COMP }, let Y(s) 
+
+> ik
+
+denote the outcome construct score, D(s) 
+
+> ik
+
+denote the focal predictor construct score, and X(s) 
+
+> ik
+
+denote the control vector for respondent i. The control vector may include observed controls and SEM co-predictors from the same structural equation. For example, when a SEM equation contains two predictors, the focal predictor is treated as D, while the other predictor is included in X as a co-predictor control. The path-level notation is: 
+
+Y(s) 
+
+> ik
+
+= outcome construct score ,
+
+D(s) 
+
+> ik
+
+= focal predictor construct score ,
+
+X(s) 
+
+> ik
+
+= observed controls and co-predictors .
+
+(15) 
+
+4.5. OLS robustness benchmark 
+
+OLS is included as an intermediate benchmark rather than as a competing method. Because DML estimates can be less transparent to survey researchers, OLS provides a simple regression-based reference point between SEM and the more flexible DML analysis. This benchmark helps distinguish relationships that are sensitive to the move from SEM to construct-score regression from those that are specifically sensitive to machine-learning-based control adjustment. Following the SEM-to-regression translation described above, OLS is estimated equation by equation using the selected construct-score representation, and the resulting coe ffi cients are interpreted as path-level benchmarks. For each focal SEM path k, the corresponding OLS benchmark can be written as: 
+
+Y(s) 
+
+> ik
+
+= α(s) 
+
+> k
+
++ θ(s)OLS ,k D(s) 
+
+> ik
+
++ γ(s)′ 
+
+> k
+
+X(s) 
+
+> ik
+
++ ε(s) 
+
+> ik
+
+. (16) Here, Y(s) 
+
+> ik
+
+is the outcome construct score for respondent i in focal path k under score representation s, D(s) 
+
+> ik
+
+is the focal predictor construct score, and X(s) 
+
+> ik
+
+contains companion predictors or theoretically relevant controls included in the corresponding SEM structural equation. The coe ffi cient θ(s)OLS ,k is the OLS benchmark estimate for the focal SEM path, and ε(s) 
+
+> ik
+
+is the regression error term. This stage deliberately uses a linear additive score-based specification. Its value is therefore transparency: OLS pro-vides a familiar benchmark for examining whether the SEM-implied path pattern remains visible under conventional regression assumptions before the more flexible DML checks are conducted. 
+
+4.6. DML-style partialling-out robustness check 
+
+The DML-style robustness check uses a partially linear residualisation logic. For each tested path k, the outcome and focal predictor are modelled as functions of the observed controls and co-predictors: 
+
+Y(s) 
+
+> ik
+
+= θ(s)DML ,k D(s) 
+
+> ik
+
++ g(s)
+
+> k
+
+X(s)
+
+> ik
+
+ + ε(s) 
+
+> ik
+
+,
+
+D(s) 
+
+> ik
+
+= m(s)
+
+> k
+
+X(s)
+
+> ik
+
+ + ν(s) 
+
+> ik
+
+. (17) The nuisance functions g(s) 
+
+> k
+
+(·) and m(s) 
+
+> k
+
+(·) are estimated using machine-learning models. In contrast with OLS, the DML-style stage does not require the control functions for the outcome and focal predictor to be linear in X(s) 
+
+> ik
+
+.The focal path remains partially linear, but the adjustment for observed controls and co-predictors can be estimated flexibly. This makes the DML-style check useful for diagnosing whether the OLS robustness result depends on a simple linear control-function assumption. The nuisance functions are represented as: 
+
+bg(s)
+
+> k
+
+X(s)
+
+> ik
+
+ ≈ E hY(s) 
+
+> ik
+
+| X(s)
+
+> ik
+
+i ,
+
+bm(s)
+
+> k
+
+X(s)
+
+> ik
+
+ ≈ E hD(s) 
+
+> ik
+
+| X(s)
+
+> ik
+
+i . (18) The residualised outcome and residualised focal predictor are then: 8eY(s) 
+
+> ik
+
+= Y(s) 
+
+> ik
+
+− bg(s)
+
+> k
+
+X(s)
+
+> ik
+
+ ,
+
+eD(s) 
+
+> ik
+
+= D(s) 
+
+> ik
+
+− bm(s)
+
+> k
+
+X(s)
+
+> ik
+
+ . (19) The DML-style estimate is obtained by regressing the residualised outcome on the residualised focal predictor: 
+
+bθ(s)DML ,k = eD(s)′ 
+
+> k
+
+eD(s)
+
+> k
+
+−1 eD(s)′ 
+
+> k
+
+eY(s) 
+
+> k
+
+. (20) In the implementation, cross-fitting is used to reduce overfitting in the nuisance-function estimation. Let Iq denote fold q and let I−q denote the training observations outside fold q. For learner ℓ and observations i ∈ I q, the cross-fitted residuals are: 
+
+eY(s) 
+
+> ik ,ℓ
+
+= Y(s) 
+
+> ik
+
+− bg(s)
+
+> k,ℓ, −q
+
+X(s)
+
+> ik
+
+ , i ∈ I q,
+
+eD(s) 
+
+> ik ,ℓ
+
+= D(s) 
+
+> ik
+
+− bm(s)
+
+> k,ℓ, −q
+
+X(s)
+
+> ik
+
+ , i ∈ I q. (21) Here, ℓ indexes the machine-learning learner used to estimate the nuisance functions, and −q indicates that the nuisance model is trained on observations outside fold q.
+
+4.7. Machine-learning nuisance learners 
+
+To examine whether the DML-style conclusions depend on one particular nuisance learner, the residualisation step is repeated using multiple learners: 
+
+L = {RF , GBM , SVM } . (22) For each tested path k, score representation s, and learner ℓ ∈ L , the learner-specific nuisance functions are: 
+
+bg(s)
+
+> k,ℓ
+
+X(s)
+
+> ik
+
+ ≈ E hY(s) 
+
+> ik
+
+| X(s)
+
+> ik
+
+i ,
+
+bm(s)
+
+> k,ℓ
+
+X(s)
+
+> ik
+
+ ≈ E hD(s) 
+
+> ik
+
+| X(s)
+
+> ik
+
+i . (23) Random Forest represents the nuisance prediction as an average of regression trees: 
+
+bfRF (X) = 1
+
+B
+
+> B
+
+X
+
+> b=1
+
+Tb (X) , (24) where Tb(·) is the prediction from tree b and B is the number of trees. Gradient Boosting Machine represents the nuisance prediction as an additive sequence of weak learners: 
+
+bfGBM (X) = f0 (X) +
+
+> M
+
+X
+
+> m=1
+
+νhm (X) , (25) where f0(·) is the initial prediction function, hm(·) is the weak learner added at iteration m, M is the number of boosting iterations, and ν is the learning rate. Support Vector Machine regression can be written as: 
+
+bfSVM (X) =
+
+X
+
+> r∈SV
+
+ αr − α∗
+
+> r
+
+ K (Xr, X) + b0, (26) where SV is the set of support vectors, K(·, ·) is the kernel function, αr and α∗ 
+
+> r
+
+are support-vector coe ffi cients, and 
+
+b0 is the intercept term. These learners are not used to redefine the SEM model, serving solely to estimate nuisance functions within the DML-style residualisation step. Learner-sensitivity analysis examines whether the estimated path direction and sta-tistical support remain stable when the nuisance functions are estimated using RF, GBM, and SVM. 94.8. Directional robustness and reverse-direction diagnostics 
+
+For most tested SEM paths, the robustness checks are conducted in the SEM-specified direction. However, selected theoretically sensitive paths may also be examined in the reverse direction as a diagnostic extension. This is useful when a relationship could plausibly be reciprocal, when the SEM sign is unexpected, or when score-representation sensitivity suggests that the path may require cautious interpretation. For a tested SEM path D → Y, the same-direction DML-style check treats Y as the outcome and D as the focal predictor. The reverse-direction diagnostic swaps the focal roles: 
+
+D(s) 
+
+> ik
+
+= ϕ(s)DML ,kY(s) 
+
+> ik
+
++ h(s)
+
+> k
+
+X(s)
+
+> ik
+
+ + υ(s) 
+
+> ik
+
+. (27) The reverse-direction check is not interpreted as proof of bidirectional causality. Instead, it is a diagnostic test of directional robustness. If the SEM-specified direction is supported but the reverse direction is weak, the original direction has stronger robustness support. If both directions are supported, the relationship may reflect reciprocal as-sociation, simultaneity, or shared antecedents. If the reverse direction is stronger than the SEM-specified direction, the original theoretical specification should be interpreted cautiously and may require further longitudinal or experimental validation. 
+
+4.9. Robustness interpretation criteria 
+
+The robustness checks focus on direction, statistical support, score sensitivity, and learner sensitivity. Directional stability across SEM, OLS, and DML-style estimates is defined as: sign bβSEM ,k
+
+ = sign bθ(s)OLS ,k
+
+ = sign bθ(s)DML ,k
+
+ . (28) Statistical stability requires that the path remains statistically supported across the robustness checks: 
+
+p(s)OLS ,k < α, p(s)DML ,k < α, (29) where α is the chosen significance threshold. Score sensitivity is assessed by comparing the SEM factor-score and mean composite-score results: sign bθSEM DML ,k
+
+ = sign bθCOMP DML ,k
+
+ . (30) If the signs remain stable but statistical support di ff ers across score representations, the path is interpreted as measurement-representation sensitive. Learner sensitivity is assessed by comparing GBM, SVM, and RF: sign bθ(s)DML ,k,GBM 
+
+ = sign bθ(s)DML ,k,SVM 
+
+ = sign bθ(s)DML ,k,RF 
+
+ . (31) A path is classified as strongly robust when it is directionally and statistically stable across SEM, OLS, and DML-style checks. A path is classified as partially robust when the direction is stable but statistical support weakens under one or more robustness specifications. A path is interpreted cautiously when its sign changes, or when its statistical support depends strongly on the construct-score representation or nuisance learner. Before applying the workflow to the DCI demonstration case, it is necessary to clarify how convergence and di-vergence across SEM, OLS, and DML-style checks are interpreted. The three approaches do not estimate identical models: SEM estimates the latent-variable path system, OLS translates the tested SEM equations from the robustness-baseline SEM model into transparent construct-score regressions, and DML-style analysis re-examines each focal path under flexible control-function adjustment. Therefore, robustness is assessed through directional consistency, statistical support, score sensitivity, learner sensitivity, and, for selected sensitive paths, reverse-direction diagnostic evidence. Table 3 summarises the interpretation rules used to classify each path in the empirical demonstration. 10 Table 3: Robustness interpretation rules for SEM–OLS–DML comparison 
+
+Evidence pattern Interpretation logic Robustness classification Reporting implication 
+
+SEM, OLS, and DML-style estimates have the same direction and comparable statistical support across score types and learners The relationship remains visible across the latent-variable model, transparent regression benchmark, and flexible-control adjustment Strongly robust Report as a stable SEM-implied relationship SEM and OLS are directionally consistent, but DML-style support weakens or becomes insignificant The relationship survives construct-score regression but is sensitive to flexible control-function adjustment Partially robust /
+
+DML-sensitive Interpret cautiously and discuss possible nonlinear control or specification sensitivity SEM is supported, but OLS and DML-style checks are weak or inconsistent The relationship may be more dependent on the SEM system, latent-variable specification, or measurement structure SEM-specific /
+
+score-sensitive Report as theoretically relevant but empirically sensitive outside SEM Direction is stable, but significance di ff ers between SEM factor scores and mean composite scores The result depends partly on how latent constructs are represented for downstream robustness checks Score-sensitive Compare factor-score and composite-score results explicitly DML-style estimates di ff er substantially across RF, GB, and SVM learners The robustness conclusion depends on the nuisance-function learner used in DML-style residualisation Learner-sensitive Avoid strong claims; report learner-level results transparently SEM, OLS, or DML-style estimates show opposite directions across methods or score types The estimated relationship is unstable and may reflect suppression, multicollinearity, measurement issues, or model-specification sensitivity Directionally unstable Interpret with substantial caution and revisit theory or measurement Reverse-direction diagnostics show support only for the SEM-specified direction The specified direction is more empirically stable than the reverse diagnostic direction Directionally supported Use as diagnostic support, not causal proof Reverse-direction diagnostics show support in both directions The constructs may be reciprocally associated, simultaneously related, or shaped by shared antecedents Possible reciprocal association Discuss as directional diagnostic evidence, not proof of bidirectional causality Reverse-direction diagnostics show stronger support for the reverse direction The SEM-specified direction may require theoretical reconsideration or further validation Directionally sensitive Flag for future testing, preferably with longitudinal or experimental data 
+
+5. Empirical Demonstration: FinTech Digital Customer Intimacy 
+
+The framework is demonstrated using a FinTech Digital Customer Intimacy (DCI) survey model, (Liu et al., 2026). The revised implementation estimates the robustness-baseline SEM model after measurement refinement and before final structural path evaluation. This is an important change from a conventional trim-then-check workflow. In the revised workflow, SEM, OLS, DML-style robustness checks, learner-sensitivity checks, and reverse-direction diag-nostics are all run on the initially tested SEM path system. Final path decisions are then left to the end, after all empirical evidence has been considered together. The tested SEM model includes 17 structural paths. Its structural component is: 11 Table 4: Demonstration case constructs and retained indicators in the tested SEM model 
+
+Code Construct Retained indicators / dimensions Alpha 
+
+PQ_SY Perceived Quality – System Quality PQ_SY1, PQ_SY2, PQ_SY3 0.778 PQ_IQ Perceived Quality – Information Quality PQ_IQ1, PQ_IQ2, PQ_IQ3 0.784 PQ_SQ Perceived Quality – Service Quality PQ_SQ1, PQ_SQ2, PQ_SQ3 0.859 PQ Perceived Quality PQ_SY, PQ_IQ, PQ_SQ Second-order CA Customer Awareness CA1, CA2, CA3 0.744 AT Attitude AT1, AT2 0.803 BI Behavioural Intention BI1, BI2 0.828 UB Usage Behaviour UB_UF, UB_UV2 0.409 UX_PE User Experience – Pragmatic Experience UX_PE1, UX_PE2 0.816 UX_SE User Experience – Social Experience UX_SE1, UX_SE2 0.829 UX User Experience UX_PE, UX_SE Second-order SA Satisfaction SA1, SA2 0.887 TR Trust TR1, TR2 0.809 EC Emotional Connection EC1, EC2, EC3 0.826 DCI Digital Customer Intimacy DCI1, DCI23, DCI5 0.872  
+
+> Note. DCI23 denotes the averaged indicator formed from DCI2 and DCI3. Alpha is reported for first-order retained constructs only; second-order constructs are represented by their first-order dimensions. Table 5: Tested SEM model fit overview
+
+Model DoF χ2 χ2/df CFI TLI RMSEA BIC 
+
+Tested SEM model 441 1166.421 2.645 0.907 0.895 0.063 517.942  
+
+> Note. The robustness-baseline SEM model is the full theory-driven structural specification estimated after measurement refinement and used to generate SEM, OLS, DML, learner-sensitivity, and reverse-diagnostic evidence before final structural model refinement decisions are made.
+
+AT i = β1CA i + β2 PQ i + ζ1,i,
+
+BI i = β3 AT i + β4CA i + ζ2,i,
+
+U B i = β5 BI i + ζ3,i,
+
+UX i = β6U B i + β7 PQ i + ζ4,i,
+
+S A i = β8 BI i + β9UX i + β10 U B i + ζ5,i,
+
+T R i = β11 U B i + β12 S A i + ζ6,i,
+
+EC i = β13 U B i + β14 T R i + ζ7,i,
+
+DCI i = β15 EC i + β16 T R i + β17 CA i + ζ8,i.
+
+(32) Table 4 summarises the retained indicators and dimensions used to estimate the tested SEM model. The DCI construct uses DCI1, DCI23, and DCI5, where DCI23 is the averaged indicator formed from DCI2 and DCI3. 
+
+5.1. Robustness-baseline SEM specification and fit 
+
+The robustness-baseline DCI SEM model provides the common structural path system for all downstream robust-ness checks. Table 5 reports the fit overview for this model. The model has acceptable approximate fit for demonstra-tion purposes, with CFI above 0.90, RMSEA below 0.08, and χ2/d f below 3. The purpose of the demonstration is not to claim that the tested model is the final substantive model, but to show how empirical evidence can be generated before making final structural model refinement decisions. 12 0.215 ** 0.038 n.s. 0.022 n.s Customer Awareness  
+
+> 0.924 ***
+> Attitude 0.085 ** Behavioural Intention
+> 0.934 *** -2.043 ** 0.182 ** 0.665 *** Usage Behaviour 2.380 *** User Experience
+> 1.102 *** 0.261 ***
+> Perceived Quality 1.973 ***
+> 0.707 ***
+> Satisfaction -0.170 ***
+> -0.014 n.s.
+> Trust 1.112 *** Emotional Connection Digital Customer Intimacy Figure 1: The robustness-baseline SEM structural model used as the basis for the OLS and DML-style robustness stages.
+
+5.2. SEM structural path evidence 
+
+Table 6 reports the 17 tested SEM structural paths. Fourteen paths are statistically significant at the 1% level or better, while CA → AT , T R → EC , and CA → DCI are not statistically significant in the SEM model. These non-significant paths are not removed at this stage. Instead, they are carried forward into the OLS, DML, learner-sensitivity, and optional reverse-diagnostic stages so that the final decision can be based on a fuller evidence base. Table 7 reports the explained variance for endogenous constructs in the robustness-baseline SEM model. Most endogenous constructs show substantial to strong explained variance, indicating that the tested structural specification accounts for a large share of variation in the corresponding construct scores. Usage Behaviour has comparatively low explained variance, suggesting that behavioural intention alone explains only a limited portion of actual usage behaviour in this model. The very high explained variance for DCI should be interpreted cautiously, as it may reflect strong shared relational meaning among Digital Customer Intimacy, Emotional Connection, Customer Awareness, and Trust. These R2 values are therefore reported as explanatory diagnostics, not as evidence of causal determination. 
+
+5.3. Path mapping for OLS and DML-style robustness checks 
+
+Table 8 shows how each tested SEM path is translated into the score-based OLS and DML-style specifications. The selection of the focal predictor and control vector follows the structure of the tested SEM equation. For each SEM-implied path D → Y, the outcome construct becomes Y, the predictor corresponding to the path under examination becomes the focal variable D, and the remaining predictors in the same SEM structural equation are included in X as co-predictor controls. The observed Fintech Type variable is also included as a control in the score-based robustness checks. This design preserves the SEM structural context while allowing each tested path to be examined separately. 
+
+6. Robustness Evaluation 
+
+6.1. SEM, OLS, and DML comparison using SEM factor scores 
+
+Table 9 reports the SEM, OLS, and DML learner comparison using SEM factor scores. The factor-score results are closely aligned with the SEM measurement model. Most tested paths are supported across OLS and all three DML learners. The weakest path is CA → AT , which is non-significant in SEM, OLS, and all three DML learners. 13 Table 6: Structural path estimates for the robustness-baseline SEM model using retained indicators 
+
+Path Estimate SE z p Sig. 
+
+CA → AT 0.038 0.062 0.608 0.543 n.s. 
+
+PQ → AT 1.102 0.098 11.296 < 0.001 *** 
+
+AT → BI 0.924 0.064 14.464 < 0.001 *** 
+
+CA → BI 0.215 0.067 3.199 0.001 ** 
+
+BI → U B 0.085 0.030 2.806 0.005 ** 
+
+U B → UX 0.934 0.261 3.580 < 0.001 *** 
+
+PQ → UX 0.261 0.057 4.573 < 0.001 *** 
+
+BI → S A 0.182 0.071 2.579 0.010 ** 
+
+UX → S A 2.380 0.514 4.628 < 0.001 *** 
+
+U B → S A -2.043 0.684 -2.988 0.003 ** 
+
+U B → T R 0.665 0.198 3.366 < 0.001 *** 
+
+S A → T R 0.707 0.049 14.287 < 0.001 *** 
+
+U B → EC 1.973 0.530 3.723 < 0.001 *** 
+
+T R → EC -0.014 0.095 -0.147 0.883 n.s. 
+
+EC → DCI 1.112 0.083 13.463 < 0.001 *** 
+
+T R → DCI -0.170 0.040 -4.293 < 0.001 *** 
+
+CA → DCI 0.022 0.040 0.551 0.582 n.s.  
+
+> Note. The robustness-baseline SEM model uses the retained /refined measurement indicators after item-level reliability and measurement checks. Non-significant paths are retained at this stage so that path decisions can be informed by SEM, OLS, DML, score-sensitivity, learner-sensitivity, and reverse-diagnostic evidence together. Table 7: Explained variance for endogenous constructs in the robustness-baseline SEM model
+
+Endogenous construct R2 Interpretation 
+
+Attitude (AT) 0.728 Strong explained variance Behavioural Intention (BI) 0.827 Strong explained variance Usage Behaviour (UB) 0.065 Low explained variance User Experience (UX) 0.665 Substantial explained variance Satisfaction (SA) 0.881 Strong explained variance Trust (TR) 0.784 Strong explained variance Emotional Connection (EC) 0.606 Substantial explained variance Digital Customer Intimacy (DCI) 0.960 Very high explained variance   
+
+> Note. R 2indicates the proportion of variance in each endogenous construct explained by its predictors in the robustness-baseline SEM model. These values describe explanatory association within the specified model and should not be interpreted as causal evidence.
+
+The paths T R → EC and CA → DCI are non-significant in SEM but show some score-based robustness evidence, suggesting that they should be reviewed rather than automatically removed. 
+
+6.2. SEM, OLS, and DML comparison using mean composite scores 
+
+Table 10 reports the same comparison using mean composite scores. Most paths remain stable, but several paths become more sensitive. In particular, U B → S A is weak under composite-score OLS and all three composite-score DML learners. The U B → T R path is supported only by the RF learner under composite scores, while T R → DCI 
+
+is supported by two of the three composite-score DML learners. The T R → EC path is especially sensitive because SEM estimates it as non-significant and negative, whereas composite-score OLS and DML estimate it as positive and significant. These patterns show why final path decisions should be made only after comparing SEM, OLS, DML, score-representation, and learner-sensitivity evidence together. 14 Table 8: Mapping of SEM structural paths to OLS and DML-style specifications 
+
+Path ID SEM path Y D X
+
+TM01 CA → AT AT CA PQ, Fintech Type TM02 PQ → AT AT PQ CA, Fintech Type TM03 AT → BI BI AT CA, Fintech Type TM04 CA → BI BI CA AT, Fintech Type TM05 BI → U B UB BI Fintech Type TM06 U B → UX UX UB PQ, Fintech Type TM07 PQ → UX UX PQ UB, Fintech Type TM08 BI → S A SA BI UX, UB, Fintech Type TM09 UX → S A SA UX BI, UB, Fintech Type TM10 U B → S A SA UB BI, UX, Fintech Type TM11 U B → T R TR UB SA, Fintech Type TM12 S A → T R TR SA UB, Fintech Type TM13 U B → EC EC UB TR, Fintech Type TM14 T R → EC EC TR UB, Fintech Type TM15 EC → DCI DCI EC TR, CA, Fintech Type TM16 T R → DCI DCI TR EC, CA, Fintech Type TM17 CA → DCI DCI CA EC, TR, Fintech Type 
+
+Note. Y denotes the outcome construct score, D denotes the focal predictor for the SEM-implied path being examined, and X denotes the control vector used in the OLS and DML-style robustness checks. For paths from a multi-predictor SEM equation, X contains the remaining predictors in the same SEM equation plus the observed Fintech Type control. For single-predictor equations, X contains the observed Fintech Type control. Table 9: SEM, OLS, and DML learner comparison using SEM factor scores                                                                                                                                                                                            
+
+> Path SEM est. (sig.) OLS est. (sig.) GBM est. ( p)SVM est. ( p)RF est. ( p)DML sig. learners
+> CA →AT 0.038 (n.s.) 0.006 (n.s.) 0.035 (0.171) 0.025 (0.315) 0.004 (0.880) 0/3
+> PQ →AT 1.102 (***) 0.915 (***) 0.894 ( <0.001) 0.878 ( <0.001) 0.855 ( <0.001) 3/3
+> AT →BI 0.924 (***) 0.890 (***) 0.873 ( <0.001) 0.872 ( <0.001) 0.827 ( <0.001) 3/3
+> CA →BI 0.215 (**) 0.133 (***) 0.162 ( <0.001) 0.143 ( <0.001) 0.132 ( <0.001) 3/3
+> BI →U B 0.085 (**) 0.363 (***) 0.355 ( <0.001) 0.343 ( <0.001) 0.354 ( <0.001) 3/3
+> U B →UX 0.934 (***) 0.638 (***) 0.662 ( <0.001) 0.654 ( <0.001) 0.662 ( <0.001) 3/3
+> PQ →UX 0.261 (***) 0.417 (***) 0.384 ( <0.001) 0.425 ( <0.001) 0.407 ( <0.001) 3/3
+> BI →S A 0.182 (**) 0.132 (***) 0.201 ( <0.001) 0.209 ( <0.001) 0.120 ( <0.001) 3/3
+> UX →S A 2.380 (***) 1.364 (***) 1.109 ( <0.001) 1.157 ( <0.001) 1.244 ( <0.001) 3/3
+> U B →S A -2.043 (**) -0.782 (***) -0.567 ( <0.001) -0.534 ( <0.001) -0.645 ( <0.001) 3/3
+> U B →T R 0.665 (***) 0.258 (***) 0.259 ( <0.001) 0.279 ( <0.001) 0.251 ( <0.001) 3/3
+> S A →T R 0.707 (***) 0.839 (***) 0.790 ( <0.001) 0.809 ( <0.001) 0.765 ( <0.001) 3/3
+> U B →EC 1.973 (***) 0.995 (***) 0.975 ( <0.001) 0.945 ( <0.001) 0.959 ( <0.001) 3/3
+> T R →EC -0.014 (n.s.) -0.159 (***) -0.109 ( <0.001) -0.120 ( <0.001) -0.133 ( <0.001) 3/3
+> EC →DCI 1.112 (***) 1.044 (***) 1.008 ( <0.001) 0.992 ( <0.001) 0.975 ( <0.001) 3/3
+> T R →DCI -0.170 (***) -0.175 (***) -0.120 ( <0.001) -0.131 ( <0.001) -0.137 ( <0.001) 3/3
+> CA →DCI 0.022 (n.s.) 0.013 (**) 0.011 (0.456) 0.023 (0.019) 0.012 (0.070) 1/3
+
+Note. OLS and DML estimates use the same path-level specification as Table 8. DML estimates are derived from the master DML output using Gradient Boosting Machine (GBM), Support Vector Machine regression (SVM), and Random Forest (RF) nuisance learners. The final column reports how many of the three DML learners are statistically significant at p < 0.05. 
+
+6.3. Reverse-direction diagnostic results 
+
+Table 11 summarises the reverse-direction diagnostics. The diagnostics include core path pairs that are conceptually important for the DCI model and optional path pairs added because the tested SEM path was non-significant or because the relationship is useful for model-decision review. These checks are interpreted only as directional association diagnostics. They do not establish causal direction. The reverse diagnostics add several useful insights. First, EC ↔ DCI is stable in both directions across both score types, suggesting a strong reciprocal association pattern between emotional connection and digital customer intimacy. Second, T R ↔ DCI is directionally complex: the reverse diagnostic DCI → T R is stable, while T R → DCI is 15 Table 10: SEM, OLS, and DML learner comparison using mean composite scores 
+
+Path SEM est. (sig.) OLS est. (sig.) GBM est. ( p) SVM est. ( p) RF est. ( p) DML sig. learners 
+
+CA → AT 0.038 (n.s.) 0.045 (n.s.) 0.054 (0.153) 0.053 (0.168) 0.036 (0.356) 0/3
+
+PQ → AT 1.102 (***) 0.695 (***) 0.683 ( < 0.001) 0.670 ( < 0.001) 0.691 ( < 0.001) 3/3
+
+AT → BI 0.924 (***) 0.685 (***) 0.674 ( < 0.001) 0.666 ( < 0.001) 0.665 ( < 0.001) 3/3
+
+CA → BI 0.215 (**) 0.158 (***) 0.173 ( < 0.001) 0.164 ( < 0.001) 0.165 ( < 0.001) 3/3
+
+BI → U B 0.085 (**) 0.190 (***) 0.182 ( < 0.001) 0.172 ( < 0.001) 0.184 ( < 0.001) 3/3
+
+U B → UX 0.934 (***) 0.290 (***) 0.283 ( < 0.001) 0.272 ( < 0.001) 0.282 ( < 0.001) 3/3
+
+PQ → UX 0.261 (***) 0.362 (***) 0.350 ( < 0.001) 0.359 ( < 0.001) 0.366 ( < 0.001) 3/3
+
+BI → S A 0.182 (**) 0.352 (***) 0.368 ( < 0.001) 0.365 ( < 0.001) 0.357 ( < 0.001) 3/3
+
+UX → S A 2.380 (***) 0.358 (***) 0.396 ( < 0.001) 0.392 ( < 0.001) 0.370 ( < 0.001) 3/3
+
+U B → S A -2.043 (**) -0.024 (n.s.) -0.005 (0.920) 0.004 (0.933) -0.034 (0.485) 0/3
+
+U B → T R 0.665 (***) 0.065 (n.s.) 0.064 (0.079) 0.077 (0.059) 0.075 (0.049) 1/3
+
+S A → T R 0.707 (***) 0.685 (***) 0.679 ( < 0.001) 0.659 ( < 0.001) 0.672 ( < 0.001) 3/3
+
+U B → EC 1.973 (***) 0.239 (***) 0.189 ( < 0.001) 0.213 ( < 0.001) 0.196 ( < 0.001) 3/3
+
+T R → EC -0.014 (n.s.) 0.270 (***) 0.286 ( < 0.001) 0.269 ( < 0.001) 0.289 ( < 0.001) 3/3
+
+EC → DCI 1.112 (***) 0.840 (***) 0.783 ( < 0.001) 0.775 ( < 0.001) 0.769 ( < 0.001) 3/3
+
+T R → DCI -0.170 (***) -0.098 (***) -0.057 (0.065) -0.069 (0.016) -0.080 (0.009) 2/3
+
+CA → DCI 0.022 (n.s.) 0.080 (**) 0.091 (0.004) 0.092 (0.001) 0.094 ( < 0.001) 3/3
+
+Note. OLS and DML estimates use the same path-level specification as Table 8. DML estimates are derived from the master DML output using Gradient Boosting Machine (GBM), Support Vector Machine regression (SVM), and Random Forest (RF) nuisance learners. The final column reports how many of the three DML learners are statistically significant at p < 0.05. Table 11: Reverse-direction diagnostic checks for selected path pairs                                                                                                                       
+
+> Pair Status Factor-score support Composite-score support Diagnostic interpretation
+> CA ↔AT optional diagnostic CA →AT : 0 /3; AT →CA : 0 /3CA →AT : 0 /3; AT →CA : 0 /3Weak in both directions; supports end-stage review.
+> CA ↔DCI optional diagnostic CA →DCI : 1 /3; DCI →CA : 1 /3CA →DCI : 3 /3; DCI →CA : 3 /3Score-sensitive; composite scores support both directions.
+> U B ↔S A core diagnostic U B →S A : 3 /3; S A →U B : 3 /3U B →S A : 0 /3; S A →U B : 0 /3Factor-score support but composite-score weakness; score-sensitive.
+> T R ↔DCI core diagnostic T R →DCI : 3 /3; DCI →T R : 3 /3T R →DCI : 2 /3; DCI →T R : 3 /3Reverse direction is stable; indicates directional complexity.
+> U B ↔T R optional diagnostic U B →T R : 3 /3; T R →U B : 3 /3U B →T R : 1 /3; T R →U B : 1 /3Factor-score support but weak composite support; score-sensitive.
+> EC ↔DCI core diagnostic EC →DCI : 3 /3; DCI →EC : 3 /3EC →DCI : 3 /3; DCI →EC : 3 /3Stable in both directions; possible reciprocal association.
+> T R ↔EC optional diagnostic T R →EC : 1 /3; EC →T R : 1 /3T R →EC : 3 /3; EC →T R : 3 /3Score-sensitive and sign-sensitive; review theory.
+
+Note. Entries such as 3 /3 indicate that all three DML learners were significant for that direction. Reverse-direction diagnostics are reported as association-level sensitivity checks only. They do not establish reverse or bidirectional causality. 
+
+weaker under composite scoring. Third, U B ↔ S A and U B ↔ T R are strongly supported under factor scores but weak under composite scores, reinforcing the conclusion that usage-related relational paths are score-sensitive. Fourth, the optional diagnostics for CA ↔ AT , CA ↔ DCI , and T R ↔ EC provide additional evidence for end-stage model review rather than automatic path removal. 
+
+6.4. Integrated model-decision evidence 
+
+Table 12 integrates the SEM, OLS, DML, score-sensitivity, learner-sensitivity, and reverse-diagnostic evidence. The table should be read as decision support rather than as a mechanical rule for retaining or removing paths. The strongest candidates for retention are paths that are significant in SEM and stable across OLS, factor-score DML, composite-score DML, and learners. Paths with weak SEM support and weak downstream support, such as CA → AT , are candidates for removal, revision, or theoretical reconsideration during final structural path evaluation. Paths with mixed SEM and score-based evidence, such as T R → EC and CA → DCI , require theory and measurement review before a final decision is made. Table 13 summarises the answers to the main research question, sub-research questions, and applied demonstration question. 16 Table 12: Integrated evidence summary for model-decision support                                                                                                                          
+
+> Path SEM sig. Factor-score evidence Composite-score evidence Evidence label Decision-support use
+> CA →AT n.s. OLS n.s.; RF n.s.; DML partial /no direction Yes; DML partial /no Weak empirical support Candidate trim /review if theory is weak
+> PQ →AT *** OLS ***; RF ***; DML all direction Yes; DML all Strong retention evidence Candidate retain
+> AT →BI *** OLS ***; RF ***; DML all direction Yes; DML all Strong retention evidence Candidate retain
+> CA →BI ** OLS ***; RF ***; DML all direction Yes; DML all Strong retention evidence Candidate retain
+> BI →U B ** OLS ***; RF ***; DML all direction Yes; DML all Strong retention evidence Candidate retain
+> U B →UX *** OLS ***; RF ***; DML all direction Yes; DML all Strong retention evidence Candidate retain
+> PQ →UX *** OLS ***; RF ***; DML all direction Yes; DML all Strong retention evidence Candidate retain
+> BI →S A ** OLS ***; RF ***; DML all direction Yes; DML all Strong retention evidence Candidate retain
+> UX →S A *** OLS ***; RF ***; DML all direction Yes; DML all Strong retention evidence Candidate retain
+> U B →S A ** OLS ***; RF ***; DML all direction Yes; DML partial /no Strong retention evidence Candidate retain, but discuss sensitivity
+> U B →T R *** OLS ***; RF ***; DML all direction Yes; DML partial /no Strong retention evidence Candidate retain, but discuss sensitivity
+> S A →T R *** OLS ***; RF ***; DML all direction Yes; DML all Strong retention evidence Candidate retain
+> U B →EC *** OLS ***; RF ***; DML all direction Yes; DML all Strong retention evidence Candidate retain
+> T R →EC n.s. OLS ***; RF ***; DML all direction Check; DML all Mixed evidence; theory review needed Theory and measurement review before decision
+> EC →DCI *** OLS ***; RF ***; DML all direction Yes; DML all Strong retention evidence Candidate retain
+> T R →DCI *** OLS ***; RF ***; DML all direction Yes; DML partial /no Strong retention evidence Candidate retain, but discuss sensitivity
+> CA →DCI n.s. OLS **; RF n.s.; DML partial /no direction Yes; DML all Mixed evidence; theory review needed Theory and measurement review before decision
+
+Note. This table provides model-decision support, not automatic path-decision rules. Final decisions should consider theory, construct validity, SEM fit, parsimony, robustness evidence, and substantive interpretability together. 
+
+7. Discussion 
+
+7.1. Methodological implications 
+
+The workflow demonstrates a more conservative and transparent way to use SEM–OLS–DML robustness analysis. Rather than removing structural paths immediately after SEM estimation and then checking only the surviving paths, our implementation tests the full theory-driven SEM model before final structural path evaluation. This allows the re-searcher to review SEM significance, OLS benchmarks, DML-style estimates, learner sensitivity, score-representation sensitivity, and reverse-direction diagnostics together before making final structural decisions. This shift strengthens the methodological contribution. SEM remains central because it validates the measurement model and estimates the theory-specified latent path system. OLS and DML-style checks are not replacements for SEM. They are supplementary evidence layers that help identify whether a path is strongly supported, score-sensitive, learner-sensitive, directionally complex, or empirically weak. The resulting workflow is therefore closer to a model-decision support process than a simple robustness appendix. 
+
+7.2. How the approach di ff ers from typical DML and SEM–ML use 
+
+The proposed approach di ff ers from typical applied DML studies because DML is not used here as the primary estimator for a single observed treatment–outcome relationship. Instead, SEM first provides the measurement model and tested path system. DML is then applied path by path to examine whether the SEM-implied associations remain stable after flexible adjustment for observed controls and co-predictors. This adaptation is especially relevant for survey-based research because direct application of DML to raw items or simple composite scores can underuse SEM’s ability to represent latent constructs and measurement quality. The approach also di ff ers from SEM–ML integration work that uses machine learning mainly for prediction, non-linear discovery, interaction detection, or alternative model exploration. The purpose here is diagnostic robustness and model-decision support. The central question is not whether machine learning can outperform SEM predictively, but whether SEM-implied associations remain directionally and statistically stable under transparent regression, flexible-control residualisation, alternative score construction, and alternative nuisance learners. 
+
+7.3. Substantive implications for the FinTech DCI case 
+
+The demonstration suggests that much of the adoption-to-intimacy pathway is stable. Perceived quality, attitude, customer awareness, behavioural intention, usage behaviour, user experience, satisfaction, trust, emotional connec-tion, and DCI are connected in a broadly coherent sequence. The strongest downstream relational evidence concerns 17 Table 13: Summary answers to the research questions 
+
+Question Focus Summary answer 
+
+RQ1 Methodological framework SEM, OLS, and DML-style analysis can be integrated into a staged robustness framework that separates measurement refinement from final structural path evaluation. SEM provides the latent-variable measurement and theory-testing foundation, OLS provides a transparent score-based regression benchmark, and DML-style residualisation provides flexible path-level robustness evidence. The framework allows researchers to evaluate an initially tested SEM model before making final structural model refinement decisions. RQ2 SEM-to-regression translation A robustness-baseline SEM model can be translated into OLS and DML-style specifications by first constructing respondent-level construct scores from the refined measurement model. Each initially tested SEM path is then represented as a path-level specification with an outcome construct Y, a focal predictor construct D,and a control vector X. For multi-predictor SEM equations, the focal predictor is placed in D, while the remaining same-equation predictors are included in X as co-predictor controls. RQ3 Complementary robustness evidence OLS and DML-style estimates complement SEM by examining whether initially tested structural paths remain visible under alternative estimation assumptions. OLS provides a simple and interpretable linear benchmark using construct scores, while DML-style analysis flexibly adjusts for SEM co-predictors and observed controls. Together, they help distinguish paths that are stable across methods from paths that are sensitive to score construction, model specification, or flexible-control adjustment. RQ4 Robustness interpretation Convergent evidence across SEM, OLS, DML-style estimates, score representations, and learners can be interpreted as stronger robustness evidence. Divergent evidence should be treated diagnostically: score-type di ff erences indicate measurement-representation sensitivity, learner di ff erences indicate nuisance-learner sensitivity, and selected reverse-direction diagnostics indicate possible reciprocal association or directional instability. These diagnostics support interpretation and final structural path evaluation, but they do not establish causal direction in cross-sectional survey data. RQ5 DCI demonstration case In the FinTech DCI demonstration, most initially tested structural relationships remain stable across the SEM–OLS–DML robustness workflow. The framework also identifies paths requiring more cautious interpretation or further review, including weakly supported paths such as CA → AT , mixed-evidence paths such as T R → EC 
+
+and CA → DCI , and directionally or score-sensitive paths such as U B → S A ,
+
+U B → T R , and T R → DCI . These findings illustrate how the proposed framework can support final structural model refinement decisions after multiple sources of empirical and theoretical evidence are considered together. 
+
+emotional connection and DCI: EC → DCI remains strongly supported across score types and learners, and the reverse-direction diagnostic also suggests that emotional connection and digital customer intimacy may be mutu-ally reinforcing. This is consistent with customer-experience thinking that treats emotional connection as a deeper relational outcome than satisfaction alone (Zorfas and Leemon, 2016). The usage-related paths require more nuanced interpretation. The U B → S A path is negative and significant in SEM and strongly supported under factor-score OLS and DML, but it becomes weak under composite-score OLS and DML. This indicates score-representation sensitivity rather than a simple conclusion that usage reduces satisfaction. Prior IS research has treated system usage behaviour as closely related to user satisfaction and even as a potential proxy for satisfaction measurement (Downing, 1999); therefore, the present result should be discussed as a conditional association that may depend on how usage behaviour and satisfaction are operationalised. The usage–trust relationship also requires cautious interpretation. In the tested SEM specification, the model ex-plicitly places usage behaviour as the predictor and trust as the outcome; that is, U B → T R treats usage behaviour 18 as an antecedent of trust. The positive and significant SEM estimate indicates that higher usage behaviour is asso-ciated with higher trust, conditional on the model specification. This path is strongly supported in the factor-score robustness analysis, but the composite-score evidence is weaker, suggesting some sensitivity to how the constructs are represented. Prior mobile-application and FinTech studies also support a close relationship between trust and use behaviour, but they often specify the relationship in the opposite direction, with trust acting as an antecedent of behavioural intention or actual use (Yan et al., 2013; Ratnawati et al., 2022). Therefore, the U B ↔ T R relationship is better interpreted as a directionally sensitive association. Rather than concluding that usage behaviour unidirection-ally determines trust, the evidence suggests that usage behaviour and trust may be mutually associated and should be examined further in future longitudinal or process-oriented research. The trust-to-intimacy and trust-to-emotional-connection results further illustrate the value of testing before final structural path evaluation. The T R → DCI path is negative in SEM and remains negative under most robustness checks, but the reverse diagnostic DCI → T R is also stable. This suggests directional complexity, possible suppres-sion by emotional connection, or a distinction between functional trust and deeper intimacy. The T R → EC path is non-significant in SEM but becomes significant in score-based robustness checks, with sign sensitivity between fac-tor and composite scores. This path should therefore be reviewed theoretically and empirically before a final model decision is made. Finally, the CA → AT and CA → DCI paths show why the revised workflow is useful. CA → AT is weak in SEM and weak across downstream checks, making it a candidate for removal or theoretical reconsideration if theory is also weak. By contrast, CA → DCI is non-significant in SEM but shows stronger composite-score robustness evidence, suggesting that it should be reviewed rather than automatically removed. These examples demonstrate that path decisions should not be made from SEM p-values alone. 
+
+7.4. Boundary conditions and limitations 
+
+Several limitations should be recognised. First, DML-style residualisation adjusts flexibly for observed controls, but it does not remove unobserved confounding by itself. Second, the DML-style models used here retain a partially linear focal path: machine learning is used to model the nuisance control functions, not to claim a fully nonlinear causal e ff ect of the focal predictor. Third, factor-score results are closely aligned with the SEM measurement model and should be interpreted alongside composite-score sensitivity checks. Fourth, very high R2 values in score-based downstream models should be examined carefully because they may reflect the construction and scaling of SEM factor scores rather than purely substantive explanatory power. Fifth, reverse-direction checks should be interpreted only as directional association diagnostics, not as evidence of bidirectional causality. Longitudinal, experimental, quasi-experimental, or process-modelling designs would be needed to make stronger claims about temporal ordering or causal direction. 
+
+8. Conclusion 
+
+This paper proposes and demonstrates a staged SEM–OLS–DML robustness framework for survey-based latent-construct research. The proposed workflow estimates the robustness-baseline SEM model before final structural path evaluation, then uses OLS, DML-style residualisation, score-representation sensitivity, learner sensitivity, and selected reverse-direction diagnostics to generate model-decision evidence. In the FinTech Digital Customer Intimacy demonstration, most tested paths remain stable across methods and score types. The strongest downstream relational path remains EC → DCI . The revised evidence also identifies paths requiring end-stage review: CA → AT shows weak empirical support, T R → EC and CA → DCI show mixed SEM and score-based evidence, and U B → S A ,
+
+U B → T R , and T R → DCI require cautious discussion because of score sensitivity or directional complexity. The framework provides a practical interpretation guide for researchers seeking to complement SEM with conventional and machine-learning-based robustness checks. The accompanying Colab workbook and Zenodo archive further position the paper as a reusable template for researchers and students who wish to adapt the workflow to other survey-based SEM applications. 19 Data and Code Availability 
+
+The Google Colab workbook, generated result tables, and selected output figures associated with this study are available from Zenodo ( https://doi.org/10.5281/zenodo.21073457 ). The archive is intended to serve both as a replication package for the empirical demonstration and as a reusable template for applying the SEM–OLS–DML robustness workflow to other survey-based latent-construct datasets. 
+
+References 
+
+Anderson, J. C., and Gerbing, D. W. (1988). Structural equation modeling in practice: A review and recommended two-step approach. Psychological Bulletin, 103 (3), 411–423. Bach, P., Chernozhukov, V., Kurz, M. S., and Spindler, M. (2022). DoubleML—An object-oriented implementation of double machine learning in Python. Journal of Machine Learning Research, 23 (53), 1–6. Bareinboim, E., Correa, J. D., Ibeling, D., and Icard, T. (2022). On Pearl’s hierarchy and the foundations of causal inference. In H. Ge ff ner, R. Dechter, and J. Y. Halpern (Eds.), Probabilistic and causal inference: The works of Judea Pearl (pp. 507–556). ACM Books. Bhattacherjee, A. (2001). Understanding information systems continuance: An expectation-confirmation model. MIS Quarterly, 25 (3), 351–370. Bollen, K. A. (1989). Structural equations with latent variables . John Wiley & Sons. Breiman, L. (2001). Random forests. Machine Learning, 45 (1), 5–32. Brunner, J. (2023). Structural equation models: An open textbook (Edition 0.10). Department of Statistical Sciences, University of Toronto. Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W., and Robins, J. (2018). Dou-ble /debiased machine learning for treatment and structural parameters. The Econometrics Journal, 21 (1), C1–C68. Cortes, C., and Vapnik, V. (1995). Support-vector networks. Machine Learning, 20 (3), 273–297. Davis, F. D. (1989). Perceived usefulness, perceived ease of use, and user acceptance of information technology. MIS Quarterly, 13 (3), 319–340. Downing, C. E. (1999). System usage behavior as a proxy for user satisfaction: An empirical investigation. Informa-tion & Management, 35 (4), 203–216. https://doi.org/10.1016/S0378-7206(98)00090-1 .Friedman, J. H. (2001). Greedy function approximation: A gradient boosting machine. The Annals of Statistics, 29 (5), 1189–1232. Gefen, D., Straub, D. W., and Boudreau, M.-C. (2000). Structural equation modeling and regression: Guidelines for research practice. Communications of the Association for Information Systems, 4 , Article 7. Liu, Q., Chan, K.-C., and Chimhundu, R. (2024a). Fintech research: Systematic mapping, classification, and future directions. Financial Innovation, 10 (1), Article 24. Liu, Q., Chan, K.-C., and Chimhundu, R. (2024b). From customer intimacy to digital customer intimacy. Journal of Theoretical and Applied Electronic Commerce Research, 19 (4), 3386–3411. Liu, Q., Chan, K.-C., Tiwari, S., and Chimhundu, R. (2026). From adoption to intimacy: Experiential and emotional pathways of digital customer intimacy in FinTech . Manuscript under review. MacKenzie, S. B., Podsako ff , P. M., and Podsako ff , N. P. (2011). Construct measurement and validation procedures in MIS and behavioral research: Integrating new and existing techniques. MIS Quarterly, 35 (2), 293–334. 20 Pearl, J. (2009). Causality: Models, reasoning, and inference (2nd ed.). Cambridge University Press. Podsako ff , P. M., MacKenzie, S. B., Lee, J.-Y., and Podsako ff , N. P. (2003). Common method biases in behavioral research: A critical review of the literature and recommended remedies. Journal of Applied Psychology, 88 (5), 879–903. Ratnawati, S., Durachman, Y., and Saputra, A. (2022). Analyzing factors influencing intention to use and actual use of mobile fintech applications free interbank money transfer Flip using UTAUT 2 model with trust and perceived security. In 2022 10th International Conference on Cyber and IT Service Management (CITSM) . https://doi. org/10.1109/CITSM56380.2022.9935838 .Richter, N. F., and Tudoran, A. A. (2024). Elevating theoretical insight and predictive accuracy in business re-search: Combining PLS-SEM and selected machine learning algorithms. Journal of Business Research, 173 , Article 114453. Shi, B., Mao, X., Yang, M., and Li, B. (2025). What, why, and how: An empiricist’s guide to double /debiased machine learning. Information Systems Research . Advance online publication. Treacy, M., and Wiersema, F. (1993). Customer intimacy and other value disciplines. Harvard Business Review, 71 (1), 84–93. Venkatesh, V., Morris, M. G., Davis, G. B., and Davis, F. D. (2003). User acceptance of information technology: Toward a unified view. MIS Quarterly, 27 (3), 425–478. Wu, B., Ding, Y., Xie, B., and Zhang, Y. (2024). FinTech and inclusive green growth: A causal inference based on double machine learning. Sustainability, 16 (22), Article 9989. https://doi.org/10.3390/su16229989 .Yan, Z., Dong, Y., Niemi, V., and Yu, G. (2013). Exploring trust of mobile applications based on user behaviors: An empirical study. Journal of Applied Social Psychology, 43 (3), 638–659. https://doi.org/10.1111/j. 1559-1816.2013.01044.x .Zorfas, A., and Leemon, D. (2016, August 29). An emotional connection matters more than customer satisfaction. Harvard Business Review . https://hbr.org/2016/08/ an-emotional-connection-matters-more-than-customer-satisfaction .21
