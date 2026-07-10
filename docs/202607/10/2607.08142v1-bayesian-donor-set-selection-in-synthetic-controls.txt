@@ -1,0 +1,4497 @@
+Title: Bayesian Donor Set Selection in Synthetic Controls
+
+URL Source: https://arxiv.org/pdf/2607.08142v1
+
+Published Time: Fri, 10 Jul 2026 00:30:14 GMT
+
+Number of Pages: 63
+
+Markdown Content:
+# Bayesian Donor Set Selection in Synthetic Controls 
+
+Seul Lee 1, Johan Lim ∗1, Joungyoun Kim 2, and Xinlei Wang 31Department of Statistics, Seoul National University, Seoul, Korea 
+
+> 2
+
+Department of Artificial Intelligence, University of Seoul, Seoul, Korea 
+
+> 3
+
+Department of Mathematics, University of Texas at Arlington, Arlington, TX, USA 
+
+Abstract 
+
+The Synthetic Control Method (SCM) is a widely used approach for assessing the effects of interventions by constructing a synthetic counterfactual using a donor set of untreated units. However, the effectiveness of SCM heavily relies on the careful selection of an appropriate donor set. In this paper, we propose a Bayesian hierarchical model that performs donor set selection while preserving the standard SCM simplex constraint on donor weights. Unlike approaches that assume a fixed donor set, our model allows for the simultaneous estimation of the synthetic control weights and the active donor set. By using a hierarchical Gamma–Bernoulli construction for the donor weights, the proposed model assigns posterior mass to simplex faces and allows exact zero weights for excluded donors. We establish a posterior donor-set consistency result under a simplified pre-intervention model. Through numerical simulations, we show that our model improves donor recovery and weight estimation when the donor pool contains irrelevant or weakly related units, while remaining competitive in full-donor settings. Finally, we apply our model to the GDP trajectory of West Germany, illustrating its practical applicability. Our findings suggest that incorporating donor set selection offers a more parsimonious and flexible extension of existing Bayesian synthetic control methods. 
+
+Keywords: Bayesian hierarchical model, donor set selection, GDP of West Germany, synthetic control method 
+
+# 1 Introduction 
+
+We often imagine what might have happened if certain events had not occurred. This type of imagination goes beyond personal curiosity and serves as an essential tool in various academic fields, including policy analysis, economics, and medicine. Abadie and Gardeazabal (2003) proposed a systematic framework for modeling such counterfactual imagination, which later developed into 
+
+> ∗
+
+Corresponding author. Email: johanlim@snu.ac.kr 
+
+1arXiv:2607.08142v1 [stat.ME] 9 Jul 2026 the Synthetic Control Method (SCM) (Abadie et al., 2010). SCM estimates the counterfactual trajectory of a treated unit by constructing a weighted combination of untreated donor units, with the donor weights restricted to the simplex. The resulting synthetic control represents the outcome the treated unit would have experienced in the absence of the intervention. Beyond this basic setup, SCM has been extended in several directions. Matrix completion ap-proaches have been proposed to impute incomplete panels (Bai and Ng, 2021; Athey et al., 2021), and generalized SCM frameworks address staggered adoption and multi-unit settings (Ben-Michael et al., 2021; Abadie and L’Hour, 2021). Bayesian approaches have also been proposed to predict counterfactual outcomes and quantify uncertainty. Some approaches use Bayesian latent factor, structural time-series, state-space, or Gaussian-process models to predict the counterfactual out-come (Brodersen et al., 2015; Pang et al., 2022; Klinenberg, 2023; Ben-Michael et al., 2023). Others relax the standard simplex constraints by assigning shrinkage or sparsity-inducing priors to donor coefficients (Kim et al., 2020). These developments share a common goal: to construct reliable and accurate synthetic controls under various data settings. The quality of a synthetic control still depends on the donor units used to construct it. As discussed by Abadie and Vives-i Bastida (2022), a larger donor pool is not always better. Using a more compact set of highly comparable donor units can help reduce overfitting and interpolation biases. This motivates the need for donor set selection. Several donor selection approaches have been proposed to address instability caused by large or heterogeneous donor pools. Abadie and Vives-i Bastida (2022) suggest trimming donors based on predictor similarity and using a pre-treatment validation period, a strategy formalized by Cerulli (2024). Other automated procedures include functional PCA–based screening (Bayani, 2021; Greathouse et al., 2023), low-rank SVD decompositions (Amjad et al., 2018), and clustering-based donor grouping that identifies latent similarity structures before estimating synthetic controls (Rho et al., 2025). In these approaches, the donor pool is first restricted or transformed, and the synthetic control weights are then estimated in a separate step. In this paper, we propose a Bayesian variable selection framework for synthetic control that preserves the hard simplex structure of the standard SCM weights. Specifically, we represent the donor weights by normalized Gamma variables multiplied by Bernoulli donor-inclusion indicators, so that the selected donors determine the active face of the simplex. This construction keeps the actual synthetic control weights nonnegative and summing to one, while allowing the donor set itself to be inferred within the Bayesian model. Our approach is related to Bayesian formulations that retain or relax the simplex structure, but differs in how donor selection and weight constraints are combined. Goh and Yu (2022) preserve 2the simplex constraint on donor weights while allowing a parallel shift of the donor convex hull through an intercept term. They exploit the duality between constrained least squares and Bayesian MAP estimation to formulate this optimization problem as a Bayesian synthetic control method. However, they do not consider the selection of donor set. Martinez and Vives-i Bastida (2024) study a Bayesian synthetic control framework and connect Bayesian and frequentist inference through a Bernstein–von Mises style result, but their model does not incorporate donor set selection. Their theoretical formulation assigns a normal prior to the actual regression coefficients, centered at a latent mean vector that is constrained to lie on the simplex. 1 The simplex constraint is imposed indirectly through the prior mean rather than directly on the actual weights, yielding a soft simplex formulation. Recently, Xu and Zhou (2025) adopt a related soft simplex formulation and extend it to high-dimensional synthetic control by adapting a spike-and-slab-type prior to select a sparse set of donors. In their model, the selected regression coefficients are allowed to deviate from a simplex-constrained latent mean vector. In contrast, our model combines donor set selection with a hard simplex constraint imposed directly on the selected donor weights. Beyond these Bayesian formulations, our approach also differs from existing donor selection methods such as fPCA-SYNTH (Bayani, 2021; Greathouse et al., 2023), SVD-based trimming (Amjad et al., 2018), and ClusterSC (Rho et al., 2025), which first select or cluster the donor pool and then apply a synthetic control procedure. Our method performs donor set selection, weight estimation, and counterfactual inference jointly within a single posterior framework. The paper is organized as follows. Section 2 reviews the standard SCM, the Bayesian SCM of Martinez and Vives-i Bastida (2024), and several recent donor-selection procedures, including fPCA-SYNTH and ClusterSC. In Section 3, we introduce our proposed Bayesian SCM, establish a posterior donor set consistency result, and describe the Markov chain Monte Carlo (MCMC) procedure used for posterior computation. In Section 4, we numerically investigate how the proposed donor set selection mechanism improves counterfactual prediction compared to existing approaches. In Section 5, we apply our model and the existing methods to the GDP trajectory data of West Germany. Finally, in Section 6, we conclude the paper with a brief review and a discussion of possible extensions.   
+
+> 1Their theoretical discussion includes a Gaussian prior formulation in which the regression coefficients are centered at a simplex-constrained mean vector, while their implemented bsynth specification places the synthetic control weights directly on the simplex.
+
+32 Review of existing synthetic control methods 
+
+2.1 Notation 
+
+In this setup, we consider J + 1 units observed over time periods 1 , 2, . . . , T . The first unit, i = 1, is exposed to the intervention of interest starting from period T0 + 1 through T , while the remaining 
+
+J units, i = 2 , . . . , J + 1, serve as a pool of untreated control candidates. That is, the J units are not affected by the intervention. We use the superscripts N and I to indicate the no-intervention and intervention states, respectively. Specifically, Y Nit denotes the outcome for unit i at time t
+
+in the absence of the intervention, so that Y N 
+
+> 1t
+
+corresponds to the potential outcome under the counterfactual scenario where the intervention did not occur. Conversely, let Y Iit denote the outcome if unit i is subjected to the intervention during periods T0 +1 to T , where Y I 
+
+> 1t
+
+represents the observed post-intervention outcome of the treated unit. Since we assume that there is no intervention effect in the pre-intervention period t ∈ { 1, . . . , T 0}, it follows that Y Iit = Y Nit for all i for t = 1 , 2, . . . , T 0.Therefore, when we aim to analyze the intervention effect on the treated unit for the period after 
+
+T0, we estimate d1t = Y I 
+
+> 1t
+
+− Y N 
+
+> 1t
+
+= Y1t − Y N 
+
+> 1t
+
+for t > T 0.pre-intervention ( t ≤ T0) post-intervention ( t > T 0)observed outcome Y1t = Y N
+
+> 1t
+
+Y I 
+
+> 1t
+
+= Y N 
+
+> 1t
+
++ d1t
+
+counterfactual outcome Y N
+
+> 1t
+
+Table 1: Summary of the notation for the first unit. Prior to the intervention, the observed outcome is identical to the counterfactual outcome. After the intervention, the observed outcome differs from the counterfactual outcome by d1t.
+
+2.2 Standard SCM by Abadie and Gardeazabal (2003) 
+
+SCM was first introduced by Abadie and Gardeazabal (2003) to predict counterfactual outcomes to measure the impact of an intervention in repeated observations. Specifically, SCM generates an estimate of what the treated unit’s outcome would have been in the absence of the intervention by creating a weighted combination of control units in the donor pool. The weights used to form this synthetic control, denoted as w = ( w2, · · · , w J+1 )′, represent the relative contribution of each donor unit. In this framework, X1 is a k × 1 vector representing the pre-intervention characteristics of the treated unit, while X0 is a k × J matrix containing the same characteristics for the control units, where k is the number of predictors used for matching, including both observed covariates and pre-treatment outcome summaries. The optimal set of weights w∗ = ( w∗
+
+> 2
+
+, · · · , w ∗
+
+> J+1
+
+)′ is determined by minimizing the difference between the treated unit’s characteristics and those of the synthetic 4control, expressed as 
+
+∥X1 − X0w∥′V ∥X1 − X0w∥ =
+
+> k
+
+X
+
+> h=1
+
+vh(Xh1 − w2Xh2 − · · · − wJ+1 XhJ +1 )2,
+
+subject to wj ≥ 0 for all j and P 
+
+> j
+
+wj = 1. The matrix V is a k×k diagonal matrix with nonnegative components v1, . . . , v k, reflecting the relative importance of each predictor. The estimation of the intervention effect over the post-intervention period is given by ˆd1t = Y I 
+
+> 1t
+
+−
+
+> J+1
+
+X
+
+> j=2
+
+w∗ 
+
+> j
+
+Yjt . (1) In Abadie et al. (2010), the authors demonstrate the validity of the SCM by showing that under appropriate assumptions, the bias bound converges to zero as T0 becomes large. This result implies that the longer the pre-intervention period, the more accurate the SCM estimator becomes. They assume the following factor model for Y Nit , representing the outcome that would have been observed for unit i at time t in the absence of the intervention. 
+
+Y Nit = δt + θtZi + λtμi + ϵit (2) In this specification, δt captures common time-specific shocks that affect all units equally at time t;
+
+θt ∈ R1×r is a vector of time-varying coefficients associated with the observed covariates Zi ∈ Rr×1;
+
+λt ∈ R1×F and μi ∈ RF ×1 are, respectively, vectors of unobserved common factors and unit-specific factor loadings, with λtμi capturing time-varying unobserved heterogeneity across units. The term 
+
+ϵit is an idiosyncratic error, typically assumed to have mean zero and bounded variance. Under the above factor model (2), the outcome for a synthetic control unit indexed by a weight vector w = ( w2, · · · , w J+1 )′ is expressed as: 
+
+> J+1
+
+X
+
+> j=2
+
+wj Yjt = δt + θtJ+1 X
+
+> j=2
+
+wj Zj + λtJ+1 X
+
+> j=2
+
+wj μj +
+
+> J+1
+
+X
+
+> j=2
+
+wj ϵjt .
+
+Assuming there exists a set of weights w∗ = ( w∗
+
+> 2
+
+, · · · , w ∗
+
+> J+1
+
+)′ satisfying 
+
+> J+1
+
+X
+
+> j=2
+
+w∗ 
+
+> j
+
+Yj1 = Y11 , · · · ,
+
+> J+1
+
+X
+
+> j=2
+
+w∗ 
+
+> j
+
+YjT 0 = Y1T0 , and 
+
+> J+1
+
+X
+
+> j=2
+
+w∗ 
+
+> j
+
+Zj = Z1
+
+5and, further, if we assume that PT0 
+
+> t=1
+
+λ′
+
+> t
+
+λt is non-singular, the expression below holds 
+
+Y N 
+
+> 1t
+
+−
+
+> J+1
+
+X
+
+> j=2
+
+w∗ 
+
+> j
+
+Yjt =
+
+> J+1
+
+X
+
+> j=2
+
+w∗
+
+> jT0
+
+X
+
+> s=1
+
+λt
+
+ T0X
+
+> n=1
+
+λ′
+
+> n
+
+λn
+
+−1
+
+λ′
+
+> s
+
+(ϵjs − ϵ1s) −
+
+> J+1
+
+X
+
+> j=2
+
+w∗ 
+
+> j
+
+(ϵjt − ϵ1t).
+
+In the paper, the authors compute the bias and show that 
+
+E(Y N 
+
+> 1t
+
+−
+
+> J+1
+
+X
+
+> j=2
+
+w∗ 
+
+> j
+
+Y Njt ) , ∀t > T 0
+
+is bounded and converges to zero as T0 increases. In consequence, the synthetic control estimator 
+
+PJ+1  
+
+> j=2
+
+w∗ 
+
+> j
+
+Yjt consistently approximates the counterfactual outcome Y N 
+
+> 1t
+
+for post-treatment periods. 
+
+2.3 Bayesian SCM by Martinez and Vives-i Bastida (2024) 
+
+Martinez and Vives-i Bastida (2024) demonstrate that SCM can be extended within a Bayesian framework and discuss its consistency. When considering the standard SCM under a covariate-free linear factor model, it can be formulated as follows 
+
+Y Nit = λtμi + ϵit , Y Iit = dit + Y Nit , ∀t (3) where dit = 0 for t ≤ T0 and, for t > T 0, dit is an intervention effects that could be nonzero. In the paper, the authors simplify the model by proceeding with the following assumptions: (i) a single factor model where μi, λ t ∈ R, with λt i.i.d. 
+
+∼ N (0 , σ 2), and (ii) the idiosyncratic shocks ϵit i.i.d. 
+
+∼ N (0 , 1). With the assumptions, the conditional distribution of Y1t given YJt = ( Y2t, · · · , Y J+1 t) is expressed as 
+
+Y1t | YJt = yJt ∼ N( ˜ m, ˜Σ) ,
+
+where ˜m =
+
+> J+1
+
+X
+
+> j=2
+
+wj (μ,σ )yjt , ˜Σ = 1 + μ1σ2
+
+1 −
+
+> J+1
+
+X
+
+> j=2
+
+wj (μ, σ )λj
+
+ ,wj (μ, σ ) = σ2μ1μj
+
+1 + PJ+1  
+
+> j=2
+
+μ2 
+
+> j
+
+σ2 .
+
+The distribution of the treated unit Y1t given YJt depends on the weights wj (μ, σ ). Since this predictive distribution depends on weights that reflect latent structure, Martinez and Vives-i Bastida (2024) propose a Bayesian model that retains the key features of the standard SCM by treating these weights as random variables and inferring them via posterior distributions. To be 6specific, their model assumes that 
+
+y1t | yJt , w, σ y ∼ N( y′
+
+> Jt
+
+w, σ 2 
+
+> y
+
+),
+
+and 
+
+wj | yJt ∼ N( mj , τ 2 
+
+> j
+
+),
+
+m = ( m2, m 3, . . . , m J+1 ) ∼ Dir(1 , 1, . . . , 1) .
+
+(4) Under the assumption of the linear factor model (3) and appropriate regularity conditions, it has been established that the Bayesian estimator, obtained by plugging in the posterior mean estimate of the synthetic control weights E(w|yT0 ) into y′
+
+> Jt
+
+w, is asymptotically consistent. Specifically, as the number of pre-treatment periods T0 and the size of the donor pool J increase, the Bayesian posterior predictive estimate y′
+
+> J,T 0+1
+
+E(w|yT0 ) converges in probability to the true predictive component of the treated unit’s counterfactual outcome: λT0+1 μ1.We note that the prior in (4) imposes the simplex constraint on the mean parameters m, rather than directly on the weights w. As a result, the posterior draws of w need not satisfy the standard SCM constraints of nonnegativity and unit-sum weights. However, the same authors also provide the R package bsynth , which further extends the Bayesian SCM in the paper to allow for additional covariates and a Gaussian process. In the bsynth implementation, the synthetic control weights are placed directly on the simplex by assigning 
+
+w ∼ Dir(1 , . . . , 1) , (5) rather than assigning the Dirichlet prior to the latent mean vector m as in (4). Therefore, the implementation used in bsynth is not identical to the formulation originally presented in Martinez and Vives-i Bastida (2024). 
+
+2.4 Two stage procedure 
+
+Some recent extensions of the synthetic control method adopt a two–stage framework: they first identify a subset of donors that are most comparable to the treated unit, and then estimate synthetic control weights using only this restricted donor set. We highlight two very recent two-stage donor set selection approaches, fPCA-SYNTH and ClusterSC. 
+
+2.4.1 fPCA-SYNTH 
+
+Bayani (2021) proposed a robust PCA-based synthetic control method to address several limitations of the conventional SCM, including the subjective selection of donor units and covariates, the 7challenge of screening donors in high-dimensional pre-intervention trajectories, and the sensitivity of SCM to outliers, missing data, and measurement errors. This algorithmic idea was later discussed and applied by Greathouse et al. (2023) under the name fPCA-SYNTH. The procedure can be summarized in three steps. First, functional principal component analysis (FPCA) is applied to the pre-intervention outcome trajectories of the treated and untreated units, reducing each T0-dimensional trajectory to a low-dimensional vector of FPC scores. While Bayani (2021) describes this step using a local-regression-based FPCA procedure following Li and Hsing (2010), the mlsynth implementation associated with Greathouse et al. (2023) carries out the FPCA step by first smoothing the pre-intervention trajectories with a cubic B-spline basis expansion and then computing the FPC scores. Second, K-means clustering is applied to the FPC scores, and they select untreated units in the same cluster with the treated unit as the donor pool. Third, robust PCA is applied to the selected donor outcome matrix over the full observation period. Let 
+
+YD∗ = [ Y − 
+
+> D∗
+
+, Y + 
+
+> D∗
+
+] denote the outcome matrix of the selected donor set D∗, partitioned into pre-and post-intervention periods. Following Bayani (2021), this matrix is decomposed as 
+
+YD∗ = L + S, 
+
+where L = [ L−, L +] represents the low-rank signal structure of the donor trajectories and S captures sparse irregular components, such as outlying or contaminated observations. The low-rank donor structure is then recovered by solving the convex relaxation min  
+
+> L,S
+
+∥L∥∗ + λ∥S∥1 subject to YD∗ = L + S, 
+
+where ∥ · ∥ ∗ denotes the nuclear norm and ∥S∥1 = P 
+
+> j,t
+
+|Sjt | denotes the element-wise ℓ1-norm. This robust PCA step is intended to recover a low-rank donor structure that is less sensitive to outliers and missing or corrupted observations than the standard SVD-based low-rank approxima-tion (Amjad et al., 2018). Finally, the resulting low-rank component is used to estimate the linear relationship between the treated unit and the selected donors. Specifically, the donor coefficients are obtained by solving the nonnegative least-squares problem ˆw = arg min  
+
+> w
+
+y− 
+
+> 1
+
+− (L−)′w 22 subject to w ≥ 0.
+
+The estimated coefficients are then applied to the post-intervention low-rank component L+ to construct the counterfactual outcome. Thus, unlike the original SCM of Abadie and Gardeazabal (2003), fPCA-SYNTH replaces the simplex-constrained weight estimation with nonnegative least squares on the recovered low-rank donor structure. 82.4.2 ClusterSC 
+
+Rho et al. (2025) propose ClusterSC, which addresses the instability of synthetic control in settings where donors exhibit heterogeneous temporal patterns. The method assumes that donor trajectories admit a low-rank spectral representation, so that donors with similar spectral embeddings can be grouped together. By restricting estimation to the cluster whose temporal structure is most aligned with that of the treated unit, ClusterSC aims to improve the stability and reliability of the synthetic control estimator. Let Y = [ Y −, Y +] ∈ RJ×T denote the donor outcome matrix partitioned into the pre- and post-intervention periods. Following the SVD-based low-rank approximation strategy of Amjad et al. (2018), ClusterSC decomposes the full donor matrix as Y = U ΣV ′. Retaining only the top r
+
+singular components yields the low-rank approximation of Y , ˜MY = UrΣrV ′ 
+
+> r
+
+, where Vr captures the leading temporal directions and each row ( UrΣr)i· provides an r-dimensional spectral representation of donor i.Donor set selection proceeds by clustering these representations via the K-means objective min 
+
+> {Dc,h c}
+> C
+
+X
+
+> c=1
+
+X
+
+> i∈Dc
+
+∥(UrΣr)i· − hc∥22,
+
+where C is the number of clusters and hc is the centroid for cluster c. The treated unit, with pre-intervention path y− 
+
+> 1
+
+, is embedded into the same spectral space as y∗ 
+
+> 1
+
+= ( V − 
+
+> r
+
+)′y− 
+
+> 1
+
+. The selected donor set D∗ is the cluster whose centroid is closest to y∗ 
+
+> 1
+
+.A rank-r approximation is recomputed for this subset to recover its low-rank temporal structure. Finally, synthetic control weights are estimated from ˜M − 
+
+> D∗
+
+, the pre-intervention part of the rank-r
+
+approximation for the selected donor set, using unconstrained least squares: ˆw = arg min  
+
+> w
+
+∥y− 
+
+> 1
+
+− ( ˜M − 
+
+> D∗
+
+)′w∥22. (6) 
+
+# 3 Bayesian SCM with donor set selection 
+
+3.1 Model 
+
+In this paper, we assume the following linear model for the outcome of the treated unit 
+
+y1t =
+
+> J+1
+
+X
+
+> j=2
+
+wj yjt + ft +
+
+> q
+
+X
+
+> m=1
+
+αmDmt · I(t > T 0) + ϵt, t = 1 , . . . , T, (7) 9where w = ( w2, . . . , w J+1 )′ lies on the standard SCM simplex, 
+
+> J+1
+
+X
+
+> j=2
+
+wj = 1 , wj ≥ 0, j = 2 , . . . , J + 1 and ϵt ∼ N (0 , σ 2 
+
+> ϵ
+
+). The first term constructs a synthetic control as a simplex-constrained combi-nation of donor outcomes, while ft and Pqm=1 αmDmt I(t > T 0) account for temporal discrepancy and post-intervention effects, respectively. We first specify the prior on w, which induces donor-set selection, and then discuss the remaining two components. First, to induce donor-set selection on this simplex, we construct the constrained weight vector w
+
+using normalized Gamma variables combined with Bernoulli donor-inclusion indicators. Specifically, let 
+
+w =
+
+ u2γ2
+
+P 
+
+> k
+
+ukγk
+
+, · · · , uJ+1 γJ+1 
+
+P 
+
+> k
+
+ukγk
+
+′
+
+, u j ≥ 0 (8) 
+
+γ = ( γ2, γ 3, · · · , γ J+1 )
+
+γj ∼ Ber( η), η ∼ U(0 , 1) , π(γj |η) = ηγj · (1 − η)1−γj (9) 
+
+uj ∼ G
+
+
+
+αu, 1
+
+αu
+
+
+
+(10) The indicator γj determines whether donor j is included in the synthetic control, while uj de-termines its relative contribution among the selected donors. Thus, γj = 0 sets wj = 0 exactly, and the remaining positive components are normalized to satisfy the simplex constraint. Since 
+
+uj ∼ Gamma( αu, 1/α u) has mean one, the fixed hyperparameter αu controls only the dispersion of the relative donor weights. This construction follows the general Bayesian sparse-prior perspective of favoring parsimonious models through regularization (Castillo et al., 2015). 
+
+Proposition 3.1 (Simplex-face representation) . Let Sγ = {j : γj = 1 } be the donor set selected by 
+
+γ. For any nonempty S ⊂ { 2, . . . , J + 1 }, define the simplex face 
+
+∆S =
+
+w ∈ RJ : wj ≥ 0, w j = 0 for j / ∈ S, X
+
+> j∈S
+
+wj = 1 
+
+ .
+
+When Sγ̸ = ∅, the weight vector defined in (8) satisfies 
+
+w(γ, u) ∈ ∆Sγ .
+
+Moreover, for any nonempty S ⊂ { 2, . . . , J + 1 }, conditional on Sγ = S, the normalized Gamma 
+
+10 construction in (8) –(10) implies 
+
+wS | Sγ = S ∼ Dirichlet( αu, . . . , α u).
+
+The corresponding conditional prior density on ∆S is 
+
+πS (w) = Γ( |S|αu)Γ( αu)|S|
+
+Y
+
+> j∈S
+
+wαu−1 
+
+> j
+
+, w ∈ ∆S .
+
+The Dirichlet prior naturally enforces the SCM constraints of nonnegativity and unit-sum weights, and is therefore a convenient choice for modeling probability vectors (Ferguson, 1973). However, when all Dirichlet parameters are strictly positive, the prior is supported on the interior of the simplex. As a result, donor weights may become arbitrarily small, but the prior does not generate exact zeros. This structural property limits the ability of a full-simplex Dirichlet prior to induce sparsity or perform donor set selection (Tang and Chen, 2018; Koslovsky, 2023). In the theoretical formulation of Martinez and Vives-i Bastida (2024), a Dirichlet prior is as-signed to the latent mean vector m, while the implemented bsynth specification places the weights directly on the simplex through a Dirichlet prior. Under this Dirichlet-based specification, the weights satisfy the simplex constraint, but the model does not explicitly distinguish selected donors from excluded ones. In contrast, the proposed Gamma–Bernoulli construction preserves the simplex constraint while allowing exact zero weights through the inclusion indicators. When all donors are selected, γ =
+
+11×J , the selected simplex face becomes the full simplex: 
+
+w = u2
+
+PJ+1  
+
+> k=2
+
+uk
+
+, . . . , uJ+1 
+
+PJ+1  
+
+> k=2
+
+uk
+
+!′
+
+∼ Dirichlet( αu, . . . , α u). (11) When αu = 1, the prior on w in Equation (11) coincides with the uniform Dirichlet prior in Equation (5), which is used in the implementation of Martinez and Vives-i Bastida (2024). Thus, the proposed prior retains the full-simplex Dirichlet construction as a special case, while extending it to lower-dimensional simplex faces indexed by the selected donor set. Second, we introduce the Gaussian process (GP) term ft to capture smooth temporal variation in the treated outcome that is not explained by the simplex-constrained donor combination. This component accounts for remaining time-dependent structure in the treated unit, while keeping the donor-based synthetic control as the primary counterfactual component. In this paper, we assume 11 that f = ( f1, . . . , f T )′ follows a zero-mean GP with a squared exponential covariance kernel: 
+
+f ∼ GP(0 , Σ) , Σ = τ 2
+
+
+
+exp 
+
+
+
+− (i − j)2
+
+2κ
+
+ Ti,j =1 
+
+.
+
+The parameter τ 2 controls the overall magnitude of the GP component, while κ controls the smoothness of the temporal dependence. Finally, the term qX
+
+> m=1
+
+αmDmt I(t > T 0)represents the post-intervention effect over time. Here, Dmt , m = 1 , . . . , q , are prespecified basis functions that determine the shape of the post-intervention effect, and αm denotes the corresponding coefficient. Let α = ( α1, . . . , α q)′, and assign 
+
+α ∼ MVN(0 , σ 2
+
+> α
+
+I).
+
+Different choices of Dmt allow different forms of post-intervention effects. For example, q = 1 and 
+
+D1t = 1 correspond to a constant post-intervention effect. Choosing D1t = 1 and D2t = t − T0
+
+allows the effect to vary linearly over the post-intervention period. Higher-order polynomial terms, such as ( t − T0)2, can be included to represent nonlinear changes, and spline basis functions can be used when a more flexible smooth effect is desired. The role of this basis expansion differs from that of the Gaussian process component ft. The GP term is used to account for smooth temporal variation in the treated outcome after the donor-based synthetic control component is included. In contrast, Pqm=1 αmDmt I(t > T 0) enters only in the post-intervention period and represents the component through which the intervention effect is modeled. In the simplest specification used for comparison with standard SCM, we set q = 1 and 
+
+D1t = 1, so that α1 represents a constant average shift after the intervention. 
+
+3.2 Posterior donor-set consistency 
+
+We provide a theoretical justification for the donor set selection component of the proposed model. We consider the simplified pre-intervention model 
+
+y− 
+
+> 1
+
+= Y − 
+
+> 0
+
+w + ϵ, ϵ ∼ N (0 , σ 2IT0 ),
+
+which excludes the Gaussian process term and the post-intervention effect term. The superscript  
+
+> −
+
+denotes restriction to the pre-intervention periods t = 1 , . . . , T 0, with Y − 
+
+> 0
+
+∈ RT0×J . The result 12 below concerns posterior recovery of the active donor set Sγ and should therefore be interpreted as a consistency statement for donor-set selection. The theorem below establishes posterior con-centration on the true active donor set S∗, in the sense that the posterior probability of Sγ = S∗
+
+converges to one as T0 → ∞ . For notational simplicity, throughout this subsection we re-index the 
+
+J donor units by j = 1 , . . . , J .
+
+Assumption 3.2. The following assumptions hold. (A1) There exists a true nonempty donor set S∗ ⊂ { 1, . . . , J } and an interior weight vector w∗ 
+
+> S∗
+
+∈
+
+∆S∗ such that 
+
+y− 
+
+> 1
+
+= Y − 
+
+> 0,S ∗
+
+w∗ 
+
+> S∗
+
++ ϵ, ϵ ∼ N (0 , σ 2IT0 ),
+
+where min  
+
+> j∈S∗
+
+w∗ 
+
+> j
+
+> c w
+
+for some constant cw > 0. (A2) For every nonempty candidate donor set S ⊂ { 1, . . . , J },1
+
+T0
+
+(Y − 
+
+> 0,S
+
+)⊤Y − 
+
+> 0,S
+
+→ QS ,
+
+where QS is positive definite. (A3) The true simplex face is separated from all candidate faces that do not contain S∗. That is, there exists c0 > 0 such that inf   
+
+> S:S⊉S∗
+
+inf 
+
+> w∈∆S
+
+1
+
+T0
+
+Y − 
+
+> 0,S
+
+w − Y − 
+
+> 0,S ∗
+
+w∗
+
+> S∗
+> 2
+
+≥ c0.
+
+(A4) Let 
+
+π(S) = P (Sγ = S)denote the prior probability assigned to donor set S. The model prior assigns positive prob-ability to every nonempty candidate donor set. In particular, 0 < π (S∗) < 1, π(S)
+
+π(S∗) = O(1) for all nonempty S ⊂ { 1, . . . , J }.
+
+Theorem 3.3 (Posterior donor-set consistency under hard simplex) . Let αu > 0 be fixed, and use 
+
+13 the induced density πS (w) in Proposition 3.1. Then, as T0 → ∞ , the posterior probability satisfies 
+
+Π( Sγ = S∗ | y− 
+
+> 1
+
+, Y − 
+
+> 0
+
+) → 1
+
+in P ∗-probability, where P ∗ denotes the probability measure under the true data-generating process in (A1). 
+
+Theorem 3.3 implies that, under the stated assumptions, the posterior distribution concentrates on the true active donor set as the length of the pre-intervention period increases. The proof is provided in Appendix A. 
+
+3.3 MCMC procedure 
+
+The model (7) in Section 3.1 with 
+
+ϑ = ( f, σ 2 
+
+> ϵ
+
+, τ 2, κ, η, γ, u, α)and ˜Y =  y2 · · · yJ+1 
+
+′ ∈ RJ×T , yi = ( yi1, · · · , y iT )′ ∈ RT .
+
+is summarized as 
+
+y1t|ϑ ∼ N
+
+ J+1 X
+
+> j=2
+
+wj yjt + ft +
+
+> q
+
+X
+
+> m=1
+
+αmDmt · I(t > T 0), σ 2
+
+> ϵ
+
+
+
+γj ∼ Ber( η), η ∼ U(0 , 1) 
+
+uj ∼ G( αu, 1
+
+αu
+
+)
+
+f ∼ GP(0 , Σ) , τ 2 ∼ IG( aτ , b τ ), κ ∼ IG( aκ, b κ)
+
+α ∼ MVN(0 , σ 2
+
+> α
+
+I), σ 2 
+
+> α
+
+∼ IG( aα, b α)
+
+σ2 
+
+> ϵ
+
+∼ IG( aϵ, b ϵ).
+
+(12) In this notation, the hyperparameters α• (with • indicating case-specific values) serve as the inputs to the gamma distributions, while ( a•, b •) are used for the inverse-gamma distributions. Given the y1 = ( y11 , · · · , y 1T )′ and ˜Y , the joint posterior distribution takes the form below: 
+
+π(ϑ | y1, ˜Y ) = π(ϑ, y1, ˜Y )
+
+R 
+
+> ϑ
+
+π(ϑ, y1, ˜Y )dϑ , (13) 14 where 
+
+π(ϑ, y1, ˜Y ) = 
+
+n J+1 Y
+
+> j=2
+
+π(uj | αu) π(γj | η)
+
+o
+
+π(η)π(α | σ2
+
+> α
+
+)π(σ2
+
+> α
+
+)
+
+× π(f | τ 2, κ )π(τ 2)π(κ)π(σ2 
+
+> ϵ
+
+)
+
+×
+
+( TY
+
+> t=1
+
+N
+
+
+
+y1t
+
+> J+1
+
+X
+
+> j=2
+
+ uj γj
+
+P 
+
+> k
+
+ukγk
+
+
+
+yjt +
+
+> q
+
+X
+
+> m=1
+
+αmDmt + ft, σ 2
+
+> ϵ
+
+)
+
+.
+
+(14) To obtain samples from the posterior distribution (14), we apply the Gibbs sampling algo-rithm, where the full conditional distributions for each variable are presented below. The detailed computations of the full conditionals are provided in Appendix B. We first present the full conditional distributions for the GP f and its hyperparameter τ 2,which are involved in the covariance function. For convenience, ϑ[−f ] denotes the vector f with the components indicated by f excluded. 
+
+• f :
+
+π(f | ϑ[−f ], y1, ˜Y ) ∝ N( f | ξf , V ), where 
+
+ξf = 1
+
+σ2
+
+> ϵ
+
+V (y − ˜Y w − Dα), V −1 = Σ −1 + σ−2 
+
+> ϵ
+
+I. 
+
+• τ 2:
+
+π(τ 2 | ϑ[−τ 2], y1, ˜Y ) ∝ IG 
+
+
+
+τ 2 aτ + T 
+
+> 2
+
+, b τ + 12 f ′Σ−1 
+
+> κ
+
+f
+
+
+
+, where Σκ =
+
+
+
+exp 
+
+
+
+− (i − j)2
+
+2κ
+
+ Ti,j =1 
+
+.
+
+Second, the conditional distributions for γ and its hyperparameter η are given as follows. 
+
+• γ:For b ∈ { 0, 1}, let γ[j,b ] denote the inclusion vector obtained by setting γj = b while keeping 
+
+γ[−j] fixed, and define 
+
+w[j,b ] = u ◦ γ[j,b ]
+
+PJ+1  
+
+> k=2
+
+ukγ[j,b ]
+
+> k
+
+,
+
+where ◦ denotes elementwise multiplication. 
+
+π(γj = 1 | ϑ[−γ], γ[−j], y1, ˜Y )= η · N( y1 | ˜Y w[j, 1] + Dα + f, σ 2 
+
+> ϵ
+
+I)
+
+η · N( y1 | ˜Y w[j, 1] + Dα + f, σ 2 
+
+> ϵ
+
+I) + (1 − η) · N( y1 | ˜Y w[j, 0] + Dα + f, σ 2 
+
+> ϵ
+
+I) .
+
+15 • η:
+
+π(η | ϑ[−η], y1, ˜Y ) ∝ Beta 
+
+
+
+η |
+
+> J+1
+
+X
+
+> j=2
+
+γj + 1 ,
+
+> J+1
+
+X
+
+> j=2
+
+(1 − γj ) + 1 
+
+
+
+.
+
+Third, the conditional posterior distributions of α and σ2 
+
+> ϵ
+
+follow. 
+
+• α:
+
+π(α | ϑ[−α], y1, ˜Y ) ∝ MVN( α | ξα, W ), where 
+
+ξα = 1
+
+σ2
+
+> ϵ
+
+W D ′(y − ˜Y w − f ), W −1 = 1
+
+σ2
+
+> α
+
+I + 1
+
+σ2
+
+> ϵ
+
+D′D. 
+
+• σ2 
+
+> ϵ
+
+:
+
+π(σ2 
+
+> ϵ
+
+| ϑ[−σ2 
+
+> ϵ]
+
+, y1, ˜Y )
+
+∝ IG 
+
+
+
+σ2 
+
+> ϵ
+
+aϵ + T
+
+2 , b ϵ + 12
+
+> T
+
+X
+
+> t=1
+
+
+
+y1t −
+
+> J+1
+
+X
+
+> j=2
+
+wj yjt −
+
+> q
+
+X
+
+> m=1
+
+αmDmt − ft
+
+2
+
+.
+
+Fourth, for κ and the elements of u, we employed the Metropolis-Hastings algorithm (Hastings, 1970) to sample from their target distributions. 
+
+• κ:
+
+π(κ | ϑ[−κ], y1, ˜Y ) ∝ κ−aκ−1 exp 
+
+
+
+− bκ
+
+κ
+
+
+
+|Σ|−1/2 exp 
+
+
+
+− 12 f ′Σ−1f
+
+
+
+.
+
+• u:
+
+π(uj | ϑ[−u], u[−j], y1, ˜Y )
+
+∝ (uj )αu−1 exp( −αuuj )
+
+· exp −
+
+> T
+
+X
+
+> t=1
+
+
+
+y1t −
+
+> J+1
+
+X
+
+> j=2
+
+ uj γj
+
+P 
+
+> k
+
+ukγk
+
+
+
+yjt −
+
+> q
+
+X
+
+> m=1
+
+αmDmt − ft
+
+2 12σ2
+
+> ϵ
+
+!
+
+.
+
+In the Metropolis-Hastings step for κ, we use the log-normal distribution as a proposal distribution, log( κnew ) ∼ N(log( κold ), δ 2
+
+> κ
+
+) with the acceptance probability 
+
+ρκ = min π(κnew | ϑ[−κ], y1, ˜Y )
+
+π(κold | ϑ[−κ], y1, ˜Y ) × κnew 
+
+κold , 1
+
+!
+
+.
+
+Using a similar method to that for κ, a log-normal distribution is employed as the proposal distri-bution for each element of u. Specifically, we have log( unew j ) ∼ N(log( uold j ), δ 2 
+
+> uj
+
+). The acceptance probability is 
+
+ρuj = min π(unew  
+
+> j
+
+| ϑ[−u], u[−j], y1, ˜Y )
+
+π(uold  
+
+> j
+
+| ϑ[−u], u[−j], y1, ˜Y ) × unew 
+
+> j
+
+uold 
+
+> j
+
+, 1
+
+!
+
+.
+
+16 Further details can be found in Appendix B. The convergence of the MCMC chains was monitored using the Gelman–Rubin diagnostic (Gel-man and Rubin, 1992), trace plots, and inspection of marginal densities. The convergence was declared when all Gelman–Rubin statistics were below 1 .01. 
+
+3.4 Posterior predictive estimation 
+
+We are interested in predicting the counterfactual outcomes of the treated unit after the intervention point T0, based on the posterior samples from MCMC. The predictive mean of y1t is defined as ˆy1t = E
+
+h
+
+y1t | y1, ˜Y
+
+i
+
+,
+
+where y1 and ˜Y are the observed values for the treated and donor units, respectively. We use posterior samples {ϑ(s)}Ss=1 , where S is the total number of posterior draws, to estimate the predictive expectation. For each posterior sample, we compute ˆy(s)1t =
+
+> J+1
+
+X
+
+> j=2
+
+w(s) 
+
+> j
+
+yjt + f (s) 
+
+> t
+
++
+
+> q
+
+X
+
+> m=1
+
+α(s) 
+
+> m
+
+Dmt · I(t > T 0),
+
+with 
+
+w(s) 
+
+> j
+
+= u(s) 
+
+> j
+
+· γ(s)
+
+> j
+
+PJ+1  
+
+> k=2
+
+u(s) 
+
+> k
+
+· γ(s)
+
+> k
+
+.
+
+Then, the predictive estimate is given by the average: ˆ y1t = 1
+
+> S
+
+PSs=1 ˆy(s)1t . We also construct 95% credible intervals using the quantiles of the sampled predictions {ˆy(s)1t }.
+
+# 4 Numerical study 
+
+4.1 Settings 
+
+We aimed to compare the performance of our proposed Bayesian Adaptive Synthetic Control (BASC) model, which performs donor–set selection jointly with weight estimation, against several existing donor-selection and synthetic control methods: the Bayesian SCM of Martinez and Vives-i Bastida (2024) (hereafter B-MV), fPCA-SYNTH of Bayani (2021); Greathouse et al. (2023), and ClusterSC of Rho et al. (2025). For ClusterSC, since Rho et al. (2025) note that the synthetic control estimation step can be replaced by other preferred procedures, we fit the synthetic control directly on the selected donor set 17 using the original pre-intervention outcomes. The number of clusters K is chosen over a candidate grid by minimizing the pre-intervention fitting error between the observed treated outcome and the fitted synthetic-control path for each candidate K.The total time period is set to T = 50, with the intervention occurring at T0 = 40. For performance comparison with B-MV, we set m = 1 and D1t = 1, assigning it the role of an indicator for the period after T0. Thus, the treatment effect is represented by α1. The donor outcomes yjt ,
+
+j = 2 , . . . , J + 1, are generated under two data-generating mechanisms. 
+
+• Independent outcome setting: Donor outcomes are generated independently as 
+
+yjt i.i.d.
+
+∼ N(15 , 25) , j = 2 , . . . , J + 1 , t = 1 , . . . , T. (15) 
+
+• Latent factor outcome setting: Donor outcomes are generated from a linear factor model: 
+
+yjt = 15 + cλtμj + ejt , j = 2 , . . . , J + 1 , t = 1 , . . . , T, (16) where λt ∈ R1×F is a vector of latent common factors, μj ∈ RF ×1 is a donor-specific loading vector, and ejt ∼ N(0 , σ 2 
+
+> e
+
+) is an error term. The latent factor process follows a stationary AR(1) model: 
+
+λ1 ∼ NF (0 , I F ), λt = ρλt−1 + νt, νt ∼ NF (0 , (1 − ρ2)IF ),
+
+for t = 2 , . . . , T . The donor-specific loadings are generated as 
+
+μj ∼ NF (0 , I F ).
+
+We set F = 4, ρ = 0 .7, c = 2 .5, and σe = 1. The intercept 15 and the scale factor c in (16) keep the overall scale comparable to that of the independent setting. Within these outcome settings, the simulations were designed based on three key donor-structure factors. First, the donor pool size J was varied, with simulations conducted for J = 10 or J = 30. Second, the donor set size Js was adjusted to explore different model settings. When J = 10, we considered two cases: Js = 3 for a reduced model and Js = 10 for a full model. For the reduced model, the donor selection was determined using the following γ vectors: 
+
+γj =
+
+
+
+1, if j ∈ { 2, 5, 8}
+
+0, otherwise .
+
+18 When J = 30, we examined three cases: Js = 3 (highly sparse reduced model), Js = 9 (mod-erately sparse reduced model), and Js = 30 (full model). For the two reduced models, the donor selection was determined using the following γ vectors: (highly sparse reduced model) γj =
+
+
+
+1, if j ∈ { 2, 11 , 16 }
+
+0, otherwise .
+
+(moderately sparse reduced model) γj =
+
+
+
+1, if j ∈
+
+
+
+2, 5, 8, 11 , 13 ,
+
+16 , 21 , 23 , 27 
+
+
+
+0, otherwise .
+
+Third, we considered two scenarios based on the influence vector u. One scenario assumed equal influence across all control units ( u = 1), while the other allowed for unequal levels. Depending on the value of J, unequal u is set as follows, where the values are drawn once from the gamma distribution with mean 1 and variance 1 /3 and rounded to two decimal places: 
+
+u =
+
+
+
+(0 .3, 1.5, 1.0, 0.5, 0.4, 2.0, 0.7, 0.5, 1.7, 1.9) if J = 10 (1 .80 , 1.10 , 0.97 , 1.28 , 1.05 , 0.76 , 1.12 , 1.36 , 0.93 , 0.43 ,
+
+0.38 , 0.50 , 0.40 , 1.46 , 0.94 , 0.52 , 1.25 , 0.76 , 0.96 , 0.59 ,
+
+3.41 , 0.43 , 0.49 , 1.08 , 0.43 , 2.01 , 0.46 , 3.01 , 0.96 , 0.49) if J = 30 .
+
+In total, these choices resulted in ten different simulation settings, which are summarized in Table 2. The full model ( J = Js) is included to assess whether our model performs competitively even when donor set selection is not required. We chose to compare our method primarily with that of Martinez and Vives-i Bastida (2024) because our modeling framework builds directly on theirs, extending it by incorporating a donor set selection mechanism via the γ parameters. For each simulation setting, we compare the performance of BASC, which employs γ to select the donor set, with that of B-MV, which utilizes outcomes from all control units. The prior settings required for our model are presented in Equation (12). In this simulation, we set αu = 3, aτ = 1 /2, bτ = 1, aκ = 5, bκ = 2, aα = 1, bα = 50, aϵ = 2, and bϵ = 4. These values were chosen to give the model enough flexibility to fit the data while keeping the estimates stable. In particular, the prior for α was set with a large scale so that the weights would not be overly shrunk, and the settings for τ and κ were selected to avoid extreme values. Inference was based on posterior samples obtained from three independent MCMC runs. Each chain consisted of 700,000 iterations, with the first 200,000 discarded as burn-in. In all simulation settings, the Gelman–Rubin 19 Influence Model Type Total Donor Pool ( J)Effective Donor Set ( Js) u̸ = 1 u = 1                    
+
+> Reduced 10 3M10-3-ue M10-3-e Full 10 10 M10-10-ue M10-10-e Highly sparse reduced 30 3M30-3-ue M30-3-e Moderately sparse reduced 30 9M30-9-ue M30-9-e Full 30 30 M30-30-ue M30-30-e
+
+Table 2: Simulation design. The table summarizes ten simulation settings constructed by varying the donor pool size ( J), the effective donor set size ( Js), and whether donor weights represent equal influence ( u = 1) or unequal influence ( u̸ = 1). statistics were below 1.01, confirming convergence. Trace plots and marginal densities are provided in Appendix C.1. Given that all MCMC chains converged stably, we now assess the model’s predictive performance and donor set selection accuracy using various metrics. The model’s performance is evaluated from two main perspectives. The first is related to prediction, where the difference between the predicted values ˆ yI 
+
+> 1t
+
+and the true values yI 
+
+> 1t
+
+is assessed using bias, expected absolute error, and the overall root mean squared error (RMSE) across all time points. 
+
+• Bias t = E(ˆ yI 
+
+> 1t
+
+− yI
+
+> 1t
+
+), ∀t
+
+• E(Absolute error t) = E ˆyI 
+
+> 1t
+
+− yI 
+
+> 1t
+
+, ∀t
+
+• RMSE( y1) = 
+
+ 
+
+> 1
+> T∗
+
+P
+
+> t∈T
+
+Es(ˆ yI (s)1t − yt)2
+
+1/2
+
+, where s indexes the posterior samples, T denotes the evaluation period, either pre- or post-treatment, and T ∗ = |T | is the number of time points in that window. In the second analysis, we focus on donor set selection. The predictive accuracy of the model is evaluated by analyzing the estimated weights, w, using total absolute error and RMSE. Addition-ally, the effectiveness of identifying the donor set through the parameter γ is assessed using classi-fication metrics—true positives (TP), false positives (FP), false negatives (FN), and true negatives (TN). From these metrics, the true positive rate (TPR=TP/(TP+FN)), which represents sensitiv-ity, is calculated using TP and FN, while the true negative rate (TNR=TN/(TN+FP)), represent-ing specificity, is derived from TN and FP. Overall accuracy (=(TN+TP)/(TP+TN+FP+FN)), defined as the proportion of correctly classified cases, is also reported. 
+
+• TAE = JP
+
+> j=1
+
+|E( ˆ wj ) − wj |
+
+20 • RMSE( w) = 
+
+
+
+> 1
+> JJ+1
+
+P
+
+> j=2
+
+Es( ˆ w(s) 
+
+> j
+
+− wj )2
+
+1/2
+
+, where s indexes the posterior samples. 
+
+4.2 Independent outcome setting 
+
+To inspect the donor weight mechanism, we first consider a simplified BASC specification under the independent outcome setting, excluding both the temporal discrepancy term f and the intervention indicator term α. The corresponding results are reported in Appendix D.1. To assess computational burden, we also recorded the elapsed time of BASC and B-MV under this setting, considering both specifications with and without the GP component. The results, summarized by donor-pool size, are reported in Appendix D.2. 
+
+4.2.1 Results I: Prediction error 
+
+Table 3 reports the pre- and post-intervention prediction errors across ten simulation settings. The table shows that BASC consistently exhibits the most accurate predictive performance in most of the settings considered. Unlike others, BASC jointly selects a donor set and estimates the weight vector in a Bayesian framework, and it benefits from posterior averaging, which contributes to more stable prediction. B-MV does not perform donor set selection and instead uses all available donors for prediction. Therefore, in settings with a full donor pool (M10-10- and M30-30-), it performs reasonably well, as its prior structure aligns with the underlying data-generating process. However, in scenarios with small true donor sets (M10-3-, M30-3-, M30-9-), it tends to include unnecessary donors, which made the prediction worse. In contrast, the proposed BASC achieves consistently strong performance regardless of the donor set size - outperforming B-MV when the true donor set is small, while it shows comparable performance to B-MV when the donor pool is full. Both two-stage donor screening methods, fPCA-SYNTH and ClusterSC, exhibit substantial variability in selecting donor sets, and this variability (or error) in donor selection propagates into prediction error. We found that fPCA-SYNTH frequently misclusters donors when the signal is weak or when the true donor set is small, which in turn increases the RMSE in prediction. The performance of fPCA-SYNTH depends on how well the data can be represented using a small number of principal components through functional PCA. In contrast, ClusterSC selects donor sets by clustering the pre-intervention data, and its performance depends on how effectively the clustering procedure groups donors that are truly relevant to the outcome being predicted. In our setting - where the donor pool is small and the data consist of temporal trajectories - simple clustering methods in a vector space, without additional modeling structure, failed to yield good 21 performance. Taken together, the results demonstrate that BASC provides the most robust and reliable predictive performance across all data-generating environments. Both BASC and B-MV benefit from posterior predictive averaging, which yields more stable predictions than deterministic two-stage procedures. We present the posterior mean and its prediction interval for the M10-3-ue and M10-3-e settings as representative examples. Additional figures for all other simulation settings are provided in Appendix F.1. Unbalanced (−ue)                           
+
+> BASC
+> Unbalanced (−ue)
+> B−MV
+> Balanced (−e)
+> BASC
+> Balanced (−e)
+> B−MV
+> Prediction Error
+> 010 20 30 40 50 010 20 30 40 50 010 20 30 40 50 010 20 30 40 50
+> 10 20 30
+> −5.0 −2.5 0.0 2.5 5.0
+> Time
+> Prediction: Estimated Prediction: True Error: Bias Error: Absolute error
+
+M10−3 
+
+Figure 1: M10-3 model: Posterior predictions and error estimates for BASC and B-MV. The top row shows posterior predictive trajectories, and the bottom row shows the corresponding bias and absolute error. The shaded band represents the 95% credible interval, and the red vertical line indicates the intervention time point. 
+
+4.2.2 Results II: Donor set selection 
+
+Table 4 summarizes donor set selection performance using the posterior inclusion indicators γ.Because B-MV does not perform donor set selection, its results are omitted. We thus compare our BASC with fPCA-SYNTH and ClusterSC. The table shows that our BASC performs well in identifying true donor units. For true positive rate (TPR), BASC achieves substantially higher values than both fPCA-SYNTH and ClusterSC across all scenarios we consider. This indicates that the donor set selected by BASC is less likely to miss true donors, which is particularly important for accurate prediction in post-intervention 22 Unbalanced Setting (-ue) Balanced Setting (-e) 
+
+Pre-intervention Post-intervention Pre-intervention Post-intervention 
+
+Setting Model Bias RMSE Bias RMSE Bias RMSE Bias RMSE 
+
+M10-3 BASC 0.257 1.557 -0.067 1.958 0.257 1.556 -0.066 1.965 
+
+B-MV 0.473 1.870 -0.125 2.434 0.470 1.857 -0.119 2.448 fPCA-SYNTH -0.922 4.128 -6.163 7.813 -0.823 3.794 -6.359 8.030 ClusterSC -0.000 2.299 -6.155 6.959 -0.000 2.299 -6.155 6.959 M10-10 BASC 0.218 1.536 -0.063 1.896 0.233 1.487 -0.066 1.921 
+
+B-MV 0.193 1.575 -0.077 1.857 0.230 1.487 -0.089 1.926 fPCA-SYNTH -0.945 3.907 -4.065 5.559 -0.984 3.836 -4.433 6.069 ClusterSC 0.000 1.935 -4.864 5.605 0.000 1.785 -5.193 5.916 M30-3 BASC 0.323 1.597 -0.084 2.049 0.218 1.690 0.062 1.233 
+
+B-MV 0.413 2.588 -0.202 3.604 0.063 2.806 -0.006 2.355 fPCA-SYNTH 0.027 2.986 -6.264 8.187 -0.608 3.996 -4.446 4.908 ClusterSC 0.000 2.630 -7.763 8.846 -0.000 2.394 -4.684 4.927 M30-9 BASC 0.338 1.600 -0.090 1.833 0.158 1.667 -0.039 1.392 
+
+B-MV 0.342 1.654 -0.125 1.876 0.173 1.717 -0.097 1.435 fPCA-SYNTH -0.176 2.511 -5.244 6.327 -0.133 2.655 -2.766 3.367 ClusterSC 0.000 1.828 -6.606 7.110 -0.000 2.201 -4.318 4.834 M30-30 BASC 0.354 1.485 -0.035 1.965 0.135 1.687 0.029 1.266 
+
+B-MV 0.372 1.544 -0.057 2.172 0.142 1.724 0.017 1.268 fPCA-SYNTH -0.247 2.757 -4.417 5.780 -0.163 3.015 -2.858 3.179 ClusterSC 0.000 1.790 -5.672 6.350 -0.000 2.403 -3.581 3.988 
+
+Table 3: Prediction performance: Bias and RMSE in pre- and post-intervention periods. The model’s performance was evaluated by calculating bias and RMSE, segmented by the intervention time point. Bold values indicate the lowest post-intervention RMSE among the four methods within each setting and condition. 23 periods. For true negative rates (TNR), BASC shows higher values than (or at least comparable to) fPCA-SYNTH and ClusterSC in most settings except two. The two cases are M30-9-e and M30-9-ue settings, where the donor pool is large and the true donor set is moderately sparse. In these two cases, the accuracy of BASC is also lower than the others and this is simply because the number of non-donor units in the pool is large (21 units) and TNR has a greater influence on accuracy than TPR.                                                                                                                                                                                                                        
+
+> Unbalanced Setting (-ue) Balanced Setting (-e) wγwγ
+> Setting Model TAE RMSE TPR TNR Accuracy TAE RMSE TPR TNR Accuracy
+> M10-3 BASC 0.153 0.043 0.999 0.920 0.944 0.130 0.041 1.000 0.918 0.943 B-MV 0.873 0.108 ---0.880 0.105 ---fPCA-SYNTH 1.749 0.256 0.333 0.714 0.600 1.491 0.229 0.333 0.714 0.600 ClusterSC 0.713 0.124 0.667 0.714 0.700 0.713 0.124 0.667 0.714 0.700 M10-10 BASC 0.234 0.057 0.779 -0.779 0.222 0.052 0.940 -0.940 B-MV 0.267 0.049 ---0.179 0.045 ---fPCA-SYNTH 1.483 0.181 0.300 -0.300 1.599 0.184 0.300 -0.300 ClusterSC 0.703 0.085 0.500 -0.500 0.657 0.075 0.700 -0.700 M30-3 BASC 0.281 0.039 0.797 0.958 0.941 0.306 0.041 0.966 0.989 0.987 B-MV 1.695 0.110 ---1.687 0.096 ---fPCA-SYNTH 0.319 0.036 0.667 1.000 0.967 0.794 0.085 0.667 1.000 0.967 ClusterSC 1.415 0.121 0.667 0.862 0.833 0.960 0.074 0.667 0.778 0.767 M30-9 BASC 1.254 0.062 0.713 0.379 0.479 1.208 0.056 0.774 0.340 0.470 B-MV 1.346 0.061 ---1.331 0.052 ---fPCA-SYNTH 1.676 0.168 0.111 0.952 0.700 1.505 0.155 0.444 1.000 0.833 ClusterSC 0.990 0.063 0.556 0.857 0.767 1.109 0.059 0.444 0.905 0.767 M30-30 BASC 0.501 0.040 0.645 -0.645 0.257 0.029 0.774 -0.774 B-MV 0.462 0.028 ---0.113 0.019 ---fPCA-SYNTH 1.843 0.132 0.133 -0.133 1.812 0.109 0.167 -0.167 ClusterSC 1.205 0.056 0.233 -0.233 1.135 0.047 0.233 -0.233
+
+Table 4: Performance of the four methods in weight estimation and donor set selection under unbalanced (-ue) and balanced (-e) settings. For each setting, w is evaluated using total absolute error (TAE) and root mean squared error (RMSE). Donor set recovery is summarized by true positive rate (TPR), true negative rate (TNR), and overall accuracy. 
+
+4.2.3 Results III: Weight estimation 
+
+Table 4 also reports the error in the estimation of donor weights w. The results are largely similar to those observed in the donor set selection in previous section. In the reduced-donor settings (M10-3-and M30-3-), BASC achieves the smallest TAE and RMSE, which indicates its ability to correctly identify the true donor set and assign appropriate weights to the selected donor units. In the model, by jointly estimating γ and u, BASC restricts attention to a small subset of relevant donors and concentrates weight accurately on those units. B-MV, which assigns positive weights to all donors, performs comparably well in the full donor 24 scenarios (M10-10- and M30-30-), where donor set selection is not needed. However, when the true donor set is sparse or moderate, its weights become dispersed across many irrelevant units, leading to higher TAE and RMSE. Figure 2 (for J = 10) visually illustrates these differences. In the ‘-ue’ scenarios, where the true donor weights differ across units, BASC closely reproduces the heterogeneous weight patterns, whereas B-MV exhibits only modest variations across all donors. In the ‘-e’ scenarios, where true weights are uniform, BASC again recovers the donor set and assigns nearly equal weights to selected units. The behavior of fPCA-SYNTH differ from that of BASC. Across all four scenarios, the esti-mated weights from fPCA-SYNTH appear nearly flat, assigning similar weights to the selected donors regardless of their relevance. We conjecture this is because the fPCA-SYNTH pipeline -functional smoothing, dimension reduction via fPCA, clustering in the score space, and the final OLS regression - tends to homogenize donor trajectories. The resulting low-rank structure stabilizes the pre-intervention fit but prevents the recovery of the true weight ‘heterogeneity’. On the other hand, the weights estimated by ClusterSC are roughly proportional to the true weights within the selected donor set. However, the unconstrained weight solution to the minimization problem (6) introduces some discrepancies. Overall, BASC delivers the most accurate weight recovery when sparsity is present, while adapt-ing well in full donor settings. B-MV performs well when the full model is correctly specified, whereas fPCA-SYNTH and ClusterSC are more affected by the smoothing and donor set selection mecha-nisms inherent in their two-stage procedures. The results for J = 30 exhibit similar patterns and are provided in Appendix F.2. 
+
+4.3 Latent factor outcome setting 
+
+For this setting, we report results only for the ( J = 30) cases, because a sufficiently large donor pool is needed to meaningfully assess the dependence structure induced by common latent factors. The prediction error results are reported in Table 5, and the donor set selection and weight estimation results are summarized in Table 6 and Figure 3. BASC and B-MV show stable prediction performance under the latent factor setting. Their RMSEs are very similar in most cases. In contrast, fPCA-SYNTH and ClusterSC show relatively larger post-intervention prediction errors, as observed in the independent outcome setting. Table 6 shows that BASC continues to provide relatively stable weight estimates under the latent factor setting. However, donor set recovery is weaker than in the independent outcome setting. Under the latent factor model, donor trajectories share common latent components and 25 Figure 2: Estimated donor weights for the M10- models under the independent outcome setting. Each panel corresponds to a different simulation setting and compares the true donor weights with estimates from BASC, B-MV, fPCA-SYNTH, and ClusterSC. Gray bars represent the true donor weights; closer alignment with these bars indicates more accurate recovery of the underlying donor-weight structure. therefore become more similar to one another. Consequently, alternative donor sets approximate the treated unit almost as well as the true donor set, reducing the separation required by Assumption (A3). This makes the active donor set less identifiable and exact donor recovery more difficult, even though prediction accuracy remains largely unaffected. The behavior of ClusterSC is also consistent with this interpretation. In Figure 3, some estimated ClusterSC weights exceed one, and Table 6 reports relatively large TAEs for ClusterSC. Under the latent factor model, the selected donor matrix can exhibit substantial collinearity because many donors share common latent components. In this setting, unconstrained least-squares estimation would yield unstable coefficient estimates with large positive and negative values. As a result, ClusterSC can achieve a reasonable trajectory fit while producing donor weights that are difficult to interpret and far from the true weight vector. The above behavior may also reflect the fact that ClusterSC and the latent factor setting considered here emphasize different forms of dependence. ClusterSC is designed to exploit situations in which donor units form well-separated subgroups in a latent unit space. In contrast, our latent factor setting generates dependence through common latent factors shared across donors, without necessarily inducing distinct donor clusters or requiring the true active donor set to coincide with 26 a particular subgroup. Consequently, the clustering step may be less effective in identifying the relevant donors, which helps explain the weaker performance of ClusterSC in this setting. 
+
+Unbalanced Setting (-ue) Balanced Setting (-e) 
+
+Pre-intervention Post-intervention Pre-intervention Post-intervention 
+
+Setting Model Bias RMSE Bias RMSE Bias RMSE Bias RMSE 
+
+M30-3 BASC 0.010 1.714 0.091 1.636 0.007 1.703 0.088 1.565 B-MV 0.159 1.787 0.064 1.651 0.087 1.762 0.061 1.557 fPCA-SYNTH -0.385 3.403 -3.565 4.202 -0.457 3.318 -0.807 2.918 ClusterSC -0.000 1.374 -2.067 3.472 -0.000 1.463 -1.903 3.221 M30-9 BASC -0.008 1.743 0.096 1.527 0.000 1.689 0.091 1.505 B-MV 0.070 1.761 0.073 1.514 0.042 1.699 0.041 1.504 fPCA-SYNTH -0.496 3.260 -0.190 2.687 -0.541 3.377 -0.610 2.914 ClusterSC -0.000 1.491 -1.727 3.427 -0.000 1.511 -1.693 3.348 M30-30 BASC -0.077 1.709 0.076 1.503 -0.074 1.698 0.079 1.508 B-MV -0.082 1.727 0.066 1.489 -0.076 1.701 0.067 1.492 fPCA-SYNTH -0.682 3.902 1.966 3.883 -0.692 3.852 1.334 3.605 ClusterSC -0.000 1.479 -1.702 3.459 0.000 1.487 -1.647 3.448 
+
+Table 5: Prediction performance: Bias and RMSE in pre- and post-intervention periods. The model’s performance was evaluated by calculating bias and RMSE, segmented by the intervention time point. Bold values indicate the lowest post-intervention RMSE among the four methods within each setting and condition.                                                                                                                                        
+
+> Unbalanced Setting (-ue) Balanced Setting (-e) wγwγ
+> Setting Model TAE RMSE TPR TNR Accuracy TAE RMSE TPR TNR Accuracy
+> M30-3 BASC 1.652 0.120 0.503 0.637 0.624 1.719 0.114 0.439 0.648 0.627 B-MV 1.763 0.114 ---1.780 0.101 ---fPCA-SYNTH 1.712 0.141 0.667 0.852 0.833 1.459 0.168 0.333 1.000 0.933 ClusterSC 10.954 0.515 0.000 0.667 0.600 10.976 0.520 0.000 0.667 0.600 M30-9 BASC 1.323 0.072 0.582 0.460 0.496 1.339 0.062 0.699 0.338 0.447 B-MV 1.362 0.062 ---1.362 0.053 ---fPCA-SYNTH 1.977 0.146 0.222 0.810 0.633 2.080 0.151 0.222 0.810 0.633 ClusterSC 10.127 0.481 0.111 0.619 0.467 10.100 0.485 0.111 0.619 0.467 M30-30 BASC 0.491 0.045 0.667 -0.667 0.151 0.034 0.731 -0.731 B-MV 0.455 0.029 ---0.077 0.019 ---fPCA-SYNTH 1.971 0.191 0.067 -0.067 2.021 0.185 0.067 -0.067 ClusterSC 9.878 0.471 0.300 -0.300 9.947 0.473 0.300 -0.300
+
+Table 6: Performance of the four methods in weight estimation and donor set selection under unbalanced (-ue) and balanced (-e) settings. For each setting, w is evaluated using total absolute error (TAE) and root mean squared error (RMSE). Donor set recovery is summarized by true positive rate (TPR), true negative rate (TNR), and overall accuracy. Overall, the simulation results suggest that the advantages of BASC are most pronounced when the donor pool contains irrelevant or weakly related units. In such settings, the donor-inclusion 27 0.57  0.41 0.36  0.33  1.02  1.67  0.43  0.52  0.56 
+
+> 0.33  0.33  0.33 1.13 0.42  0.32  1.07  1.69  0.44  0.55  0.31  0.57
+> 0.70 0.42  0.32  0.92  1.62  0.37  0.37  0.62  0.54
+> 0.40  0.65 0.44  0.31  0.95  1.63  0.37  0.39  0.51  0.55
+> 1.07 0.46  0.35  0.95  1.60  0.37  0.39  0.49  0.66
+> 1.03 0.47  0.34  0.98  1.62  0.38  0.38  0.45  0.62
+> M30−3−ue
+> M30−3−e
+> M30−9−ue
+> M30−9−e
+> M30−30−ue
+> M30−30−e
+> 1 2 3 4 5 6 7 8 9 10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30
+> 0.0 0.1 0.2 0.3
+> 0.0 0.1 0.2 0.3
+> 0.0 0.1 0.2 0.3
+> 0.0 0.1 0.2 0.3
+> 0.0 0.1 0.2 0.3
+> 0.0 0.1 0.2 0.3
+> Donor pool
+> true  BASC  B−MV  fPCA−SYNTH  ClusterSC Figure 3: Estimated donor weights for the M30- models under the latent factor settings. Each panel corresponds to a different simulation setting and compares the true donor weights with estimates from BASC, B-MV, fPCA-SYNTH, and ClusterSC. Gray bars represent the true donor weights; values exceeding 0.3 are annotated above the corresponding bars. Closer alignment with the gray bars indicates more accurate recovery of the underlying donor-weight structure.
+
+28 indicators allow the posterior distribution to concentrate on a smaller set of relevant donors, lead-ing to improved donor recovery, weight estimation, and counterfactual prediction. When the full donor pool is relevant, BASC remains competitive with B-MV, indicating that the proposed donor-selection mechanism does not substantially degrade performance even when donor exclusion is unnecessary. These findings suggest that BASC provides a robust and flexible framework for syn-thetic control analysis, particularly in applications with large donor pools where only a subset of donors is expected to provide a credible counterfactual for the treated unit. 
+
+# 5 Data example 
+
+We illustrate the BASC method using the canonical West Germany GDP dataset of Abadie et al. (2015), which contains annual per-capita GDP for 17 OECD countries from 1960 to 2003, with the 1990 German reunification treated as the intervention. The pre-intervention period is defined as 1960–1990, and the post-intervention period as 1991–2003. For BASC, the treated unit is modeled as 
+
+y1t =
+
+> 17
+
+X
+
+> j=2
+
+wj yjt + ft + α1 I(t > 1990) + ϵt, 1960 ≤ t ≤ 2003 .
+
+The hyperparameters are set to 
+
+αu = 2 .5, aτ = 3 , bτ = 20000 , aκ = 3 , bκ = 1000 , aϵ = 10 , bϵ = 5000 .
+
+We run three MCMC chains of 500,000 iterations after 500,000 burn-in, achieving convergence with Gelman–Rubin statistics below 1 .01. Additional diagnostics and sensitivity analyses are provided in Appendix C.2. Figure 4 displays the posterior means of the donor inclusion indicators γ under BASC. Switzer-land and Japan are selected most strongly, each exceeding the posterior inclusion threshold of 0 .5. Italy and Portugal are also selected under this threshold, but with smaller posterior weights and larger relative uncertainty. The resulting donor weights in Table 7 show that BASC places most of the synthetic-control weight on Switzerland and Japan. Switzerland provides a natural benchmark because of its ge-ographic proximity and economic similarity to Germany, while Japan captures a large industrial economy with strong exposure to international manufacturing and export markets. Italy and Por-tugal enter as secondary donors with smaller posterior contributions that they may help refine the synthetic control rather than dominate its construction. 29 0.00 0.25 0.50 0.75 1.00 
+
+> USA UK Austria Belgium Denmark France Italy Netherlands Norway Switzerland Japan Greece Portugal Spain Australia New Zealand
+> donor pool
+> γ^
+
+Figure 4: Posterior mean of donor inclusion indicators ( γ) in the West Germany application. This bar plot represents the mean values computed from the posterior samples of γ; the horizontal red dashed line indicates a value of 0.5. We compare BASC with B-MV, standard SCM, fPCA-SYNTH, and ClusterSC. Among these, fPCA-SYNTH is implemented using the mlsynth package in Python. The number of functional principal components is selected by the elbow rule to explain at least 90% of the pre-intervention variation, and the number of clusters is chosen by maximizing the average silhouette coefficient. ClusterSC is implemented using the Python package syclib .The resulting donor weights are reported in Table 7. The table shows that the donor sets selected by fPCA-SYNTH and ClusterSC are quite different from those selected by BASC. In addition, unlike our BASC, their procedures are two-stage and do not account for the uncertainty of the selection step when estimating the weights. Figure 5 compares the counterfactual GDP trajectories. B-MV closely tracks the standard SCM, and BASC yields a slightly higher counterfactual level after the early 1990s. The trajectories of fPCA-SYNTH and ClusterSC again depart from the other three methods. This may be because their predictions are heavily influenced by the clustering results used to select the donor set. Finally, to summarize the post-intervention effect, we compute the average treatment effect on the treated over the post-intervention period, ATT = 1
+
+T − T0
+
+X
+
+> t>T 0
+
+ˆd1t,
+
+where ˆd1t is the estimator defined in (1). The posterior mean ATT estimates are −434 for BASC, 
+
+−218 for B-MV, −159 for standard SCM, −1,655 for fPCA-SYNTH, and −2,427 for ClusterSC (per-capita units). The average post-intervention band width over 1991–2003 is 773 for BASC and 594 for B-MV. 30 Country BASC B-MV s-SCM fPCA Cl-SC 
+
+USA 0.00 ±0.00 0.02 ±0.01 0.05 - -UK 0.00 ±0.00 0.02 ±0.01 0.05 - -Austria 0.00 ±0.01 0.04 ±0.02 0.05 0.02 -Belgium 0.00 ±0.01 0.03 ±0.02 0.05 - -Denmark 0.00 ±0.00 0.02 ±0.01 0.05 - -France 0.00 ±0.01 0.03 ±0.02 0.04 0.35 -
+
+Italy 0.12 ±0.14 0.06 ±0.04 0.04 - -Netherlands 0.00 ±0.00 0.02 ±0.01 0.04 - -Norway 0.00 ±0.00 0.01 ±0.01 0.05 0.49 -
+
+Switzerland 0.44 ±0.05 0.40 ±0.03 0.04 - -
+
+Japan 0.37 ±0.08 0.21 ±0.05 0.04 - -Greece 0.01 ±0.03 0.03 ±0.02 0.03 - 0.09 
+
+Portugal 0.05 ±0.05 0.04 ±0.02 0.04 - 1.09 Spain 0.00 ±0.00 0.02 ±0.01 0.34 - -0.09 Australia 0.00 ±0.00 0.02 ±0.01 0.04 - -New Zealand 0.00 ±0.01 0.03 ±0.02 0.05 - 0.61 Table 7: Donor weights for West Germany across five methods. For BASC and B-MV, the values are posterior means with standard deviations in parentheses, while standard SCM (s-SCM), fPCA-SYNTH (fPCA), and ClusterSC (Cl-SC) provide point estimates. Countries with posterior inclusion probability ¯ γj ≥ 0.5 under BASC are shown in bold. For BASC, B-MV, and standard SCM, the weights satisfy a unit-sum constraint, although the reported values may not sum to exactly 1 due to rounding. In contrast, fPCA-SYNTH and ClusterSC employ relaxed weight constraints. 10,000 15,000 20,000 25,000 30,000 35,000           
+
+> 1985 1990 1995 2000
+> per−capita GDP
+> BASC B−MV standard SCM fSYNTH ClusterSC
+> 20,000 24,000 28,000
+> 1992 1996 2000
+> per−capita GDP
+> BASC B−MV
+
+Figure 5: Comparison of counterfactual GDP trajectories for West Germany. The left panel com-pares five synthetic control estimators—BASC, B-MV, standard SCM, fPCA-SYNTH, and Clus-terSC. The right panel presents the two Bayesian methods (BASC and B-MV) with 95% credible bands. The red dashed line marks the 1990 intervention. 31 To illustrate a richer interpretation of the intervention effect, we also considered q = 2, with 
+
+D1t = 1 for all post-intervention periods and D2t = 1 only for the first three post-intervention periods. Under this specification, α1 represents the persistent post-intervention shift, while α2
+
+captures an additional short-run effect. The posterior means of α1 and α2 were −431 and −33, respectively, suggesting that the estimated negative effect is driven mainly by the persistent post-intervention component rather than by the additional short-run deviation during the first three post-intervention periods. 
+
+# 6 Conclusion 
+
+In this paper, we propose a Bayesian hierarchical model for synthetic control that incorporates donor set selection while preserving the standard SCM simplex constraint. The proposed Gamma– Bernoulli construction places posterior mass on simplex faces, where each face corresponds to a selected donor set, thereby allowing exact zero weights without a separate donor screening step. The model further includes a Gaussian process component and a basis representation of the post-intervention effect, so that temporal discrepancy and intervention effects can be modeled within a unified Bayesian framework. We also establish posterior donor-set consistency under a simplified pre-intervention model. Numerical studies under independent and latent factor outcome settings show that BASC performs particularly well when the donor pool contains irrelevant or weakly related units, while remaining competitive in full-donor settings. Finally, the West Germany GDP application illustrates how the proposed model produces sparse and interpretable donor weights in a canonical synthetic control example. Our model in this paper may further be extended to more complex cases. In particular, spillover effects, situations in which untreated units are indirectly affected by the intervention, have been discussed in the synthetic control literature, as they can invalidate the key assumption that donor units remain unaffected by the treatment (Menchetti and Bojinov, 2022; Cao and Dowd, 2019). Relatedly, Di Stefano and Mellace (2024) note that spillover effects often affect only a subset of control units and emphasizes that treating such units as valid donors may undermine the reliability of synthetic control estimators. This observation suggests that spillover exposure is a relevant consideration when constructing donor sets in synthetic control methods, rather than being a purely incidental source of noise. From a Bayesian perspective, Fern´ andez-Morales et al. (2026) introduce a framework that in-corporates spillover effects by defining an exposure mapping based on external covariates to char-acterize potential spillover exposure among control units. Spillover effects are then included as an explicit component of the outcome model and regularized using spike-and-slab priors. 32 Our framework differs in emphasis by focusing on donor set selection and donor-weight un-certainty within a Bayesian synthetic control setting. From this perspective, spillover effects are relevant because they affect not only outcome modeling but also the validity of donor units. A control unit exposed to spillovers may no longer provide a credible counterfactual for the treated unit, even when its pre-intervention trajectory closely matches that of the treated unit. A natural extension of the proposed framework would be to incorporate spillover information directly into the donor-selection mechanism or the outcome model. Such an extension would allow donor com-parability, donor validity, and spillover adjustment to be addressed jointly, and thereby provide a more comprehensive Bayesian framework for synthetic control analysis. 
+
+# 7 Code availability 
+
+The code used in this study is available on GitHub: https://github.com/sll-lee/paper-BASC .
+
+# 8 Acknowledgement 
+
+We greatly appreciate the Associate Editor and the two anonymous reviewers for their constructive comments and suggestions, which have significantly improved the quality of this paper. This work was supported by the National Research Foundation of Korea (NRF) grant funded by the Ministry of Education (RS-2025-25420879 (S. Lee), No. RS-2025-00520739 (J. Lim), No. RS-2026-25480893 (J. Kim)). 33 A Proof of Theorem 3.3 
+
+The proof of Theorem 3.3 requires a local integral bound near the embedded true weight vector on an overfitted simplex face, that is, a face corresponding to S ⊋ S∗. We first establish this bound. 
+
+Lemma A.1 (Local integral bound near the boundary of an overfitted simplex face) . Let S ⊋ S∗,and define 
+
+A = S \ S∗, r = |A|, d∗ = |S∗| − 1.
+
+Embed w∗ 
+
+> S∗
+
+into ∆S as the boundary point 
+
+w0 
+
+> S,j
+
+=
+
+
+
+w∗ 
+
+> j
+
+, j ∈ S∗,
+
+0, j ∈ A. 
+
+Suppose that w∗ 
+
+> S∗
+
+is an interior point of ∆S∗ , and let 
+
+πS (w) = Γ( |S|αu)Γ( αu)|S|
+
+Y
+
+> j∈S
+
+wαu−1 
+
+> j
+
+, αu > 0,
+
+be the Dirichlet density on ∆S .For a fixed constant C0 > 0, define 
+
+R = w ∈ ∆S : ∥w − w0 
+
+> S
+
+∥ ≤ ρ
+
+and 
+
+IS,T 0 (ρ) = 
+
+Z
+
+> R
+
+exp −C0T0∥w − w0 
+
+> S
+
+∥2 πS (w) dw. 
+
+Then, for sufficiently small fixed ρ > 0, there exists a constant C > 0, independent of T0, such that 
+
+IS,T 0 (ρ) ≤ CT −d∗/20 T −αur/ 20 .
+
+Proof. For w ∈ R, write 
+
+wj = (1 − η+)vj , j ∈ S∗, wj = ηj , j ∈ A, 
+
+where 
+
+v = ( vj )j∈S∗ ∈ ∆S∗ , ηj ≥ 0, η+ = X
+
+> j∈A
+
+ηj .
+
+34 This parameterization preserves the simplex constraint, since 
+
+X
+
+> j∈S
+
+wj = (1 − η+) X
+
+> j∈S∗
+
+vj + X
+
+> j∈A
+
+ηj = 1 .
+
+The boundary point w0 
+
+> S
+
+corresponds to 
+
+v = w∗ 
+
+> S∗
+
+, η = 0 .
+
+Since 
+
+w − w0 
+
+> S
+
+= ((1 − η+)v − w∗ 
+
+> S∗
+
+, η ) ,
+
+we have 
+
+∥w − w0 
+
+> S
+
+∥2 = ∥(1 − η+)v − w∗ 
+
+> S∗
+
+∥2 + ∥η∥2.
+
+Moreover, 
+
+v − w∗ 
+
+> S∗
+
+= {(1 − η+)v − w∗ 
+
+> S∗
+
+} + η+v. 
+
+Because v ∈ ∆S∗ , ∥v∥ is uniformly bounded. Also, 
+
+η+ = X
+
+> j∈A
+
+ηj ≤ √r ∥η∥.
+
+Therefore, there exists a constant K > 0 such that 
+
+∥v − w∗ 
+
+> S∗
+
+∥ ≤ ∥ (1 − η+)v − w∗ 
+
+> S∗
+
+∥ + K∥η∥.
+
+Hence, for some constant C1 > 0, 
+
+∥v − w∗ 
+
+> S∗
+
+∥2 ≤ C1∥w − w0 
+
+> S
+
+∥2.
+
+Since 
+
+∥η∥2 ≤ ∥ w − w0 
+
+> S
+
+∥2,
+
+there exists a constant C2 > 0 such that 
+
+∥v − w∗ 
+
+> S∗
+
+∥2 + ∥η∥2 ≤ C2∥w − w0 
+
+> S
+
+∥2.
+
+Equivalently, with c2 = C−12 > 0, 
+
+∥w − w0 
+
+> S
+
+∥2 ≥ c2
+
+ ∥v − w∗ 
+
+> S∗
+
+∥2 + ∥η∥2 . (17) 35 It follows from Equation (17) that, for some constant C3 > 0, exp −C0T0∥w − w0 
+
+> S
+
+∥2 ≤ exp −C3T0
+
+ ∥v − w∗ 
+
+> S∗
+
+∥2 + ∥η∥2 .
+
+We next bound the prior measure in these coordinates. Under the Dirichlet density, 
+
+πS (w) ∝ Y
+
+> j∈S
+
+wαu−1 
+
+> j
+
+.
+
+Using the parameterization above, 
+
+πS (w(v, η )) ∝
+
+ Y
+
+> j∈S∗
+
+{(1 − η+)vj }αu−1
+
+Y
+
+> j∈A
+
+ηαu−1
+
+> j
+
+ .
+
+Since w∗ 
+
+> S∗
+
+is an interior point of ∆ S∗ , there exists cw > 0 such that min  
+
+> j∈S∗
+
+w∗ 
+
+> j
+
+> c w.
+
+By choosing ρ > 0 sufficiently small, we may ensure that, for all w ∈ R,
+
+vj ≥ cw
+
+2 , 1 − η+ ≥ 12 .
+
+Therefore, (1 − η+)vj ≥ cw
+
+4 , j ∈ S∗.
+
+It follows that there exist constants 0 < C 4 < C 5 < ∞ such that 
+
+C4 ≤ Y
+
+> j∈S∗
+
+{(1 − η+)vj }αu−1 ≤ C5
+
+on R.Using v1, . . . , v |S∗|− 1 as free coordinates on ∆ S∗ , the Jacobian of the transformation ( v, η ) 7 → w
+
+is ∂w ∂(v, η ) = (1 − η+)|S∗|− 1.
+
+On R, since 1 − η+ ≥ 1/2, 2−(|S∗|− 1) ≤ ∂w ∂(v, η ) ≤ 1.
+
+36 Hence, for some constant C6 > 0, 
+
+πS (w) dw ≤ C6
+
+Y
+
+> j∈A
+
+ηαu−1
+
+> j
+
+ dv dη (18) on R.Combining Equation (17) and Equation (18), we obtain 
+
+IS,T 0 (ρ) ≤ C6
+
+Z
+
+exp −C3T0
+
+ ∥v − w∗ 
+
+> S∗
+
+∥2 + ∥η∥2Y
+
+> j∈A
+
+ηαu−1
+
+> j
+
+ dv dη. 
+
+Since the integrand is nonnegative, enlarging the integration region gives 
+
+IS,T 0 (ρ) ≤ C6
+
+Z 
+
+> Rd∗
+
+exp −C3T0∥v − w∗ 
+
+> S∗
+
+∥2 dv 
+
+× Y
+
+> j∈A
+
+Z ∞
+
+> 0
+
+exp −C3T0η2 
+
+> j
+
+ηαu−1 
+
+> j
+
+dη j .
+
+The first integral is Z 
+
+> Rd∗
+
+exp −C3T0∥v − w∗ 
+
+> S∗
+
+∥2 dv =
+
+ πC3T0
+
+d∗/2
+
+.
+
+For each j ∈ A, Z ∞
+
+> 0
+
+exp −C3T0η2 
+
+> j
+
+ηαu−1 
+
+> j
+
+dη j = 12 (C3T0)−αu/2Γ
+
+ αu
+
+2
+
+
+
+.
+
+Therefore, for some constant C > 0, 
+
+IS,T 0 (ρ) ≤ CT −d∗/20 T −αur/ 20 .
+
+Proof of Theorem 3.3. For each nonempty candidate donor set S ⊂ { 1, . . . , J }, define the marginal likelihood 
+
+mS (y− 
+
+> 1
+
+) = 
+
+Z
+
+> ∆S
+
+p(y− 
+
+> 1
+
+| w, S )πS (w) dw, p(y− 
+
+> 1
+
+| w, S ) = (2 πσ 2)−T0/2 exp 
+
+
+
+− 12σ2 ∥y− 
+
+> 1
+
+− Y − 
+
+> 0,S
+
+w∥2
+
+
+
+.
+
+(19) The posterior probability of model S is Π( Sγ = S | y− 
+
+> 1
+
+, Y − 
+
+> 0
+
+) = π(S)mS (y− 
+
+> 1
+
+)
+
+P  
+
+> S⊂{ 1,...,J }, S ̸=∅
+
+π(S)mS (y− 
+
+> 1
+
+) .
+
+37 Thus, it is enough to show that, for every S̸ = S∗,
+
+π(S)mS (y− 
+
+> 1
+
+)
+
+π(S∗)mS∗ (y− 
+
+> 1
+
+) → 0in P ∗-probability. By Assumption (A4), 
+
+π(S)
+
+π(S∗) = O(1) for every nonempty candidate donor set S. Therefore, it suffices to prove that 
+
+mS (y− 
+
+> 1
+
+)
+
+mS∗ (y− 
+
+> 1
+
+) → 0 (20) in P ∗-probability for every S̸ = S∗.For the remainder of the proof, let μ∗ = Y − 
+
+> 0,S ∗
+
+w∗ 
+
+> S∗
+
+. Then, by Assumption (A1), y− 
+
+> 1
+
+= μ∗ + ϵ. We establish Equation (20) by considering two cases: S ⊉ S∗ and S ⊋ S∗.(i) The case S ⊉ S∗.For w ∈ ∆S , define 
+
+dS (w) = μ∗ − Y − 
+
+> 0,S
+
+w. 
+
+Then 
+
+∥y− 
+
+> 1
+
+− Y − 
+
+> 0,S
+
+w∥2 = ∥ϵ + dS (w)∥2 = ∥ϵ∥2 + ∥dS (w)∥2 + 2 ϵ⊤dS (w).
+
+By Assumption (A3), inf 
+
+> w∈∆S
+
+∥dS (w)∥2 ≥ T0c0.
+
+Moreover, by Assumption (A2), compactness of ∆ S , and fixed J,1
+
+T0
+
+sup 
+
+> w∈∆S
+
+|ϵ⊤dS (w)| = oP ∗ (1) .
+
+Therefore, inf 
+
+> w∈∆S
+
+∥y− 
+
+> 1
+
+− Y − 
+
+> 0,S
+
+w∥2 ≥ ∥ ϵ∥2 + T0{c0 − oP ∗ (1) }.
+
+It follows that 
+
+mS (y− 
+
+> 1
+
+) ≤ (2 πσ 2)−T0/2 exp 
+
+
+
+− 12σ2
+
+∥ϵ∥2 + T0{c0 − oP ∗ (1) }
+
+. (21) We now lower bound mS∗ (y− 
+
+> 1
+
+). Let d∗ = |S∗| − 1. Since w∗ 
+
+> S∗
+
+is an interior point of ∆ S∗ , there 38 exists r > 0 such that 
+
+BT0 =
+
+
+
+w ∈ ∆S∗ : w = w∗ 
+
+> S∗
+
++ h
+
+√T0
+
+, 1⊤h = 0 , ∥h∥ ≤ r
+
+
+
+⊂ ∆S∗
+
+for all sufficiently large T0. For w ∈ BT0 ,
+
+y− 
+
+> 1
+
+− Y − 
+
+> 0,S ∗
+
+w = ϵ − Y −
+
+> 0,S ∗
+
+h
+
+√T0
+
+.
+
+Hence 
+
+∥y− 
+
+> 1
+
+− Y − 
+
+> 0,S ∗
+
+w∥2 = ∥ϵ∥2 − 2
+
+√T0
+
+ϵ⊤Y − 
+
+> 0,S ∗
+
+h + 1
+
+T0
+
+h⊤(Y − 
+
+> 0,S ∗
+
+)⊤Y − 
+
+> 0,S ∗
+
+h. 
+
+By Assumption (A2), the last term is OP ∗ (1) uniformly over ∥h∥ ≤ r. Also, 1
+
+√T0
+
+ϵ⊤Y − 
+
+> 0,S ∗
+
+h = OP ∗ (1) uniformly over ∥h∥ ≤ r. Therefore, sup 
+
+> w∈BT0
+
+∥y− 
+
+> 1
+
+− Y − 
+
+> 0,S ∗
+
+w∥2 − ∥ ϵ∥2 = OP ∗ (1) .
+
+Since the Dirichlet density πS∗ (w) is positive and continuous in a neighborhood of the interior point 
+
+w∗ 
+
+> S∗
+
+, there exists a constant a > 0 such that πS∗ (w) ≥ a on BT0 for all sufficiently large T0. Thus, 
+
+mS∗ (y− 
+
+> 1
+
+) ≥
+
+Z
+
+> BT0
+
+p(y− 
+
+> 1
+
+| w, S ∗)πS∗ (w) dw. 
+
+Since Vol( BT0 ) = Cr · T −d∗/20 , we obtain 
+
+mS∗ (y− 
+
+> 1
+
+) ≥ aC rT −d∗/20 (2 πσ 2)−T0/2 exp 
+
+
+
+− ∥ϵ∥2
+
+2σ2
+
+
+
+exp {− OP ∗ (1) }. (22) Using the two bounds above, for every S ⊉ S∗,
+
+mS (y− 
+
+> 1
+
+)
+
+mS∗ (y− 
+
+> 1
+
+) ≤ C−1T d∗/20 exp {OP ∗ (1) } exp 
+
+
+
+− T0
+
+2σ2 {c0 − oP ∗ (1) }
+
+
+
+→ 0. (23) (ii) The case S ⊋ S∗.Let 
+
+A = S \ S∗, r = |A| = |S| − | S∗| > 0.
+
+Here S contains all true donors and also r redundant donors. 39 For the larger model S, define the embedded vector w0 
+
+> S
+
+∈ ∆S by 
+
+w0 
+
+> j
+
+= w∗ 
+
+> j
+
+, j ∈ S∗, w0 
+
+> j
+
+= 0 , j ∈ A. 
+
+Then 
+
+Y − 
+
+> 0,S
+
+w0 
+
+> S
+
+= Y − 
+
+> 0,S ∗
+
+w∗ 
+
+> S∗
+
+= μ∗.
+
+By Equation (19) and y− 
+
+> 1
+
+= μ∗ + ϵ,
+
+p(y− 
+
+> 1
+
+| w, S ) = (2 πσ 2)−T0/2 exp 
+
+
+
+− 12σ2 ∥ϵ + dS (w)∥2
+
+
+
+,
+
+where 
+
+dS (w) = μ∗ − Y − 
+
+> 0,S
+
+w. 
+
+To bound the likelihood, expand the quadratic term as 
+
+∥ϵ + dS (w)∥2 = ∥ϵ∥2 + 2 ϵ⊤dS (w) + ∥dS (w)∥2.
+
+We first obtain a quadratic lower bound for ∥dS (w)∥2. Let 
+
+QS,T 0 = 1
+
+T0
+
+(Y − 
+
+> 0,S
+
+)⊤Y − 
+
+> 0,S
+
+.
+
+By Assumption (A2), QS,T 0 → QS , where QS is positive definite. Hence there exists λS > 0 such that, for all sufficiently large T0,
+
+λmin (QS,T 0 ) ≥ λS .
+
+Therefore, 
+
+∥dS (w)∥2 = ∥Y − 
+
+> 0,S
+
+(w0 
+
+> S
+
+− w)∥2
+
+= T0(w − w0 
+
+> S
+
+)⊤QS,T 0 (w − w0 
+
+> S
+
+)
+
+≥ T0λS ∥w − w0 
+
+> S
+
+∥2.
+
+We next control the cross term ϵ⊤dS (w). By Assumption (A2), the Gaussianity of ϵ, and fixed 
+
+J,
+
+T −1/20 (Y − 
+
+> 0,S
+
+)⊤ϵ = OP ∗ (1) .
+
+Therefore, 
+
+−ϵ⊤dS (w) ≤ {(Y − 
+
+> 0,S
+
+)⊤ϵ}⊤(w0 
+
+> S
+
+− w)
+
+≤ pT0 OP ∗ (1) ∥w0 
+
+> S
+
+− w∥.
+
+40 By the preceding lower bound, ∥dS (w)∥ ≥ √T0λS · ∥ w0 
+
+> S
+
+− w∥, so 
+
+|ϵ⊤dS (w)| ≤ OP ∗ (1) ∥dS (w)∥≤ OP ∗ (1) + 14 ∥dS (w)∥2.
+
+Combining the above bounds, there exists a constant C0 > 0 such that 
+
+p(y− 
+
+> 1
+
+| w, S ) = (2 πσ 2)−T0/2 exp 
+
+
+
+− ∥ϵ∥2
+
+2σ2 − 1
+
+σ2 ϵ⊤dS (w) − ∥dS (w)∥2
+
+2σ2
+
+
+
+≤ L0 exp {OP ∗ (1) } exp −C0T0∥w − w0 
+
+> S
+
+∥2 ,
+
+where 
+
+L0 = (2 πσ 2)−T0/2 exp 
+
+
+
+− ∥ϵ∥2
+
+2σ2
+
+
+
+.
+
+Hence, 
+
+mS (y− 
+
+> 1
+
+) ≤ L0 exp {OP ∗ (1) }IS,T 0 ,IS,T 0 =
+
+Z
+
+> ∆S
+
+exp −C0T0∥w − w0 
+
+> S
+
+∥2 πS (w) dw. (24) We now bound IS,T 0 . Fix a sufficiently small constant ρ > 0, and define 
+
+R = w ∈ ∆S : ∥w − w0 
+
+> S
+
+∥ ≤ ρ .
+
+Decompose 
+
+IS,T 0 = I1 + I2,
+
+where 
+
+I1 =
+
+Z
+
+> R
+
+exp −C0T0∥w − w0 
+
+> S
+
+∥2 πS (w) dw 
+
+and 
+
+I2 =
+
+Z 
+
+> ∆S\R
+
+exp −C0T0∥w − w0 
+
+> S
+
+∥2 πS (w) dw. 
+
+By Lemma A.1, 
+
+I1 ≤ CT −d∗/20 T −αur/ 20 .
+
+On ∆ S \ R,
+
+∥w − w0 
+
+> S
+
+∥ > ρ, 
+
+and therefore 
+
+I2 ≤ exp −C0T0ρ2
+
+Z
+
+> ∆S
+
+πS (w) dw = exp −C0T0ρ2 .
+
+41 Combining the bounds for I1 and I2, we obtain 
+
+IS,T 0 ≤ C7T −d∗/20 T −αur/ 20 + exp {− C0T0ρ2}.
+
+Since the exponential term is smaller than the polynomial term for large T0, there exists a constant 
+
+C8 > 0 such that 
+
+IS,T 0 ≤ C8T −d∗/20 T −αur/ 20 .
+
+Consequently, 
+
+mS (y− 
+
+> 1
+
+) ≤ C8L0 exp {OP ∗ (1) }T −d∗/20 T −αur/ 20 . (25) Combining Equation (25) with the lower bound in Equation (22), we obtain 
+
+mS (y− 
+
+> 1
+
+)
+
+mS∗ (y− 
+
+> 1
+
+) = OP ∗
+
+
+
+T −αur/ 20
+
+
+
+→ 0. (26) Combining the two cases, Equation (20) holds for every S̸ = S∗. By Assumption (A4), 
+
+π(S)mS (y− 
+
+> 1
+
+)
+
+π(S∗)mS∗ (y− 
+
+> 1
+
+) −→ 0for every S̸ = S∗.Since J is fixed, the number of nonempty candidate donor sets is finite. Therefore, 
+
+X 
+
+> S̸=S∗
+
+π(S)mS (y− 
+
+> 1
+
+)
+
+π(S∗)mS∗ (y− 
+
+> 1
+
+) → 0.
+
+Finally, Π( Sγ = S∗ | y− 
+
+> 1
+
+, Y − 
+
+> 0
+
+) = 11 + P     
+
+> S̸=S∗
+> π(S)mS(y−
+> 1)
+> π(S∗)mS∗(y−
+> 1)
+
+→ 1.
+
+# B Full conditional distributions 
+
+As mentioned in Section 3.3, we derive the full conditional distributions under our model. Let 
+
+ϑ = ( f, σ 2 
+
+> ϵ
+
+, τ 2, κ, η, γ, u, α), and define ˜Y =  y2 · · · yJ+1 
+
+′ ∈ RJ×T , yi = ( yi1, · · · , y iT )′ ∈ RT .By combining (13) and (14), we provide a more detailed representation of the posterior dis-tribution, which serves as the foundation for deriving the full conditional distributions of each 42 parameter. 
+
+π(ϑ | y1, ˜Y ) ∝
+
+n J+1 Y
+
+> j=2
+
+π(uj |αu) π(γj |η)
+
+o
+
+π(η) π(α|σ2
+
+> α
+
+) π(σ2
+
+> α
+
+) π(f |τ 2, κ ) π(τ 2) π(κ) π(σ2 
+
+> ϵ
+
+)
+
+×
+
+( TY
+
+> t=1
+
+N
+
+
+
+y1t
+
+> J+1
+
+X
+
+> j=2
+
+ uj γj
+
+P 
+
+> k
+
+ukγk
+
+
+
+yjt +
+
+> q
+
+X
+
+> m=1
+
+αmDmt + ft, σ 2
+
+> ϵ
+
+)
+
+∝
+
+n J+1 Y
+
+> j=2
+
+G uj | αu, 1
+
+αu
+
+ Ber( γj |η)
+
+o
+
+· U( η | 0, 1) · MVN( α|0, σ 2
+
+> α
+
+I) · IG( σ2
+
+> α
+
+|aα, b α)
+
+× N( f |0, Σ) · IG( τ 2|aτ , b τ ) · IG( κ|aκ, b κ) · IG( σ2|aϵ, b ϵ)
+
+×
+
+( TY
+
+> t=1
+
+N
+
+
+
+y1t
+
+> J+1
+
+X
+
+> j=2
+
+ uj γj
+
+P 
+
+> k
+
+ukγk
+
+
+
+yjt +
+
+> q
+
+X
+
+> m=1
+
+αmDmt + ft, σ 2
+
+> ϵ
+
+)
+
+Using this posterior representation, we present the derivation of the full conditional distribu-tions. When the posterior distribution has a closed-form expression, posterior sampling can be directly performed from the corresponding distribution. The parameters whose full conditional distributions have closed-form expressions are summarized below. 
+
+• Full conditional distribution for fπ(f | ϑ[−f ],y1, ˜Y )
+
+∝ N( f | 0, Σ) 
+
+( TY
+
+> t=1
+
+N
+
+
+
+y1t
+
+> J+1
+
+X
+
+> j=2
+
+ uj γj
+
+P 
+
+> k
+
+ukγk
+
+
+
+yjt +
+
+> q
+
+X
+
+> m=1
+
+αmDmt + ft, σ 2
+
+> ϵ
+
+)
+
+= 1
+
+√2πT |Σ| 12
+
+exp 
+
+
+
+− 12 f ′Σ−1f
+
+ 1
+
+√2πσ ϵ
+
+T
+
+× exp 
+
+
+
+−
+
+> T
+
+X
+
+> t=1
+
+ y1t −
+
+> J+1
+
+X
+
+> j=2
+
+wj yjt −
+
+> q
+
+X
+
+> m=1
+
+αmDmt − ft
+
+2 12σ2
+
+> ϵ
+
+
+
+∝ exp 
+
+
+
+− 12 f ′Σ−1f
+
+
+
+exp 
+
+
+
+− 12σ2
+
+> ϵ
+
+(y − ˜Y w − Dα − f )′(y − ˜Y w − Dα − f )
+
+
+
+∝ exp 
+
+
+
+− 12
+
+
+
+f − 1
+
+σ2
+
+> ϵ
+
+V (y − ˜Y w − Dα )
+
+′
+
+V −1
+
+
+
+f − 1
+
+σ2
+
+> ϵ
+
+V (y − ˜Y w − Dα )
+
+ 
+
+∝ N( f | ξf , V ),ξf = 1
+
+σ2
+
+> ϵ
+
+V (y − ˜Y w − Dα),V −1 = Σ −1 + σ−2 
+
+> ϵ
+
+I, w =
+
+ u2γ2
+
+P 
+
+> k
+
+ukγk
+
+, · · · , uJ+1 γJ+1 
+
+P 
+
+> k
+
+ukγk
+
+′
+
+43 .
+
+• Full conditional distribution for τ 2
+
+π(τ 2 | ϑ[−τ 2], y1, ˜Y ) ∝ N( f | 0, Σ)IG( τ 2|aτ , b τ )
+
+∝ (τ 2)− T 
+
+> 2
+
+exp 
+
+
+
+− 12τ 2 f ′Σ−1 
+
+> κ
+
+f
+
+
+
+(τ 2)−aτ −1 exp 
+
+
+
+− bτ
+
+τ 2
+
+
+
+∝ (τ 2)−aτ − T  
+
+> 2−1
+
+exp 
+
+
+
+− 1
+
+τ 2
+
+ bτ + 12 f ′Σ−1 
+
+> κ
+
+f 
+
+∝ IG 
+
+
+
+τ 2 aτ + T
+
+2 , b τ + 12 f ′Σ−1 
+
+> κ
+
+f
+
+
+
+,
+
+Σκ =
+
+
+
+exp 
+
+
+
+− (i − j)2
+
+2κ
+
+ Ti,j =1 
+
+.
+
+• Full conditional distribution for γj For b ∈ { 0, 1}, let γ[j,b ] denote the inclusion vector obtained by setting γj = b while keeping γ[−j] fixed, and define 
+
+w[j,b ] = u ◦ γ[j,b ]
+
+PJ+1  
+
+> ℓ=2
+
+uℓγ[j,b ]
+
+> ℓ
+
+,
+
+where ◦ denotes elementwise multiplication. 
+
+· γj = 1 : 
+
+π(γj = 1 | ϑ[−γ], γ[−j], y1, ˜Y )
+
+∝ Ber( γj = 1 | η) · π(y1 | γj = 1 , ϑ[−γ], γ[−j], ˜Y )
+
+∝ η ·
+
+( TY
+
+> t=1
+
+N
+
+
+
+y1t
+
+> J+1
+
+X
+
+> k=2
+
+w[j, 1]  
+
+> k
+
+ykt +
+
+> q
+
+X
+
+> m=1
+
+αmDmt + ft, σ 2
+
+> ϵ
+
+)
+
+∝ η ·
+
+ 1
+
+√2πσ ϵ
+
+T
+
+exp 
+
+− 12σ2
+
+> ϵT
+
+X
+
+> t=1
+
+y1t −
+
+> J+1
+
+X
+
+> k=2
+
+w[j, 1]  
+
+> k
+
+ykt −
+
+> q
+
+X
+
+> m=1
+
+αmDmt − ft
+
+!2
+
+∝ η · N
+
+
+
+y1 | ˜Y w[j, 1] + Dα + f, σ 2 
+
+> ϵ
+
+I
+
+
+
+.
+
+44 · γj = 0 : 
+
+π(γj = 0 | ϑ[−γ], γ[−j], y1, ˜Y )
+
+∝ Ber( γj = 0 | η) · π(y1 | γj = 0 , ϑ[−γ], γ[−j], ˜Y )
+
+∝ (1 − η) ·
+
+( TY
+
+> t=1
+
+N
+
+
+
+y1t
+
+> J+1
+
+X
+
+> k=2
+
+w[j, 0]  
+
+> k
+
+ykt +
+
+> q
+
+X
+
+> m=1
+
+αmDmt + ft, σ 2
+
+> ϵ
+
+)
+
+∝ (1 − η) ·
+
+ 1
+
+√2πσ ϵ
+
+T
+
+exp 
+
+− 12σ2
+
+> ϵT
+
+X
+
+> t=1
+
+y1t −
+
+> J+1
+
+X
+
+> k=2
+
+w[j, 0]  
+
+> k
+
+ykt −
+
+> q
+
+X
+
+> m=1
+
+αmDmt − ft
+
+!2
+
+∝ (1 − η) · N
+
+
+
+y1 | ˜Y w[j, 0] + Dα + f, σ 2 
+
+> ϵ
+
+I
+
+
+
+.
+
+· π(γj = 1) : 
+
+π(γj = 1 |ϑ[−γ], γ[−j], y1, ˜Y )= π(γj = 1 | ϑ[−γ], γ[−j], y1, ˜Y )
+
+π(γj = 1 | ϑ[−γ], γ[−j], y1, ˜Y ) + π(γj = 0 | ϑ[−γ], γ[−j], y1, ˜Y )=
+
+η · N
+
+
+
+y1 | ˜Y w[j, 1] + Dα + f, σ 2 
+
+> ϵ
+
+I
+
+
+
+η · N
+
+
+
+y1 | ˜Y w[j, 1] + Dα + f, σ 2 
+
+> ϵ
+
+I
+
+
+
++ (1 − η) · N
+
+
+
+y1 | ˜Y w[j, 0] + Dα + f, σ 2 
+
+> ϵ
+
+I
+
+ .
+
+• Full conditional distribution for ηπ(η | ϑ[−η], y1, ˜Y ) ∝
+
+n J+1 Y
+
+> j=2
+
+Ber( γj |η)
+
+o
+
+U( η | 0, 1) 
+
+∝
+
+> J+1
+
+Y
+
+> j=2
+
+ηγj (1 − η)1−γj
+
+= η  
+
+> PJ+1
+> j=2 γj
+
+· (1 − η)  
+
+> PJ+1
+> j=2 (1 −γj)
+
+∝ Beta 
+
+
+
+η |
+
+> J+1
+
+X
+
+> j=2
+
+γj + 1 ,
+
+> J+1
+
+X
+
+> j=2
+
+(1 − γj ) + 1 
+
+
+
+45 • Full conditional distribution for απ(α | ϑ[−α], y1, ˜Y )
+
+∝ MVN( α | 0, σ 2
+
+> α
+
+I)
+
+( TY
+
+> t=1
+
+N
+
+
+
+y1t
+
+> J+1
+
+X
+
+> j=2
+
+ uj γj
+
+P 
+
+> k
+
+ukγk
+
+
+
+yjt +
+
+> q
+
+X
+
+> m=1
+
+αmDmt + ft, σ 2
+
+> ϵ
+
+)
+
+= 1
+
+√2πq(σ2
+
+> α
+
+) q
+
+> 2
+
+exp 
+
+
+
+− 12 α′(σ2
+
+> α
+
+I)−1α
+
+
+
+×
+
+ 1
+
+√2πσ ϵ
+
+T
+
+exp −
+
+> T
+
+X
+
+> t=1
+
+ y1t −
+
+> J+1
+
+X
+
+> j=2
+
+wj yjt −
+
+> q
+
+X
+
+> m=1
+
+αmDmt − ft
+
+2 12σ2
+
+> ϵ
+
+!
+
+∝ exp 
+
+
+
+− 12σ2
+
+> α
+
+α′α
+
+
+
+exp 
+
+
+
+− 12σ2
+
+> ϵ
+
+(y − ˜Y w − Dα − f )′(y − ˜Y w − Dα − f )
+
+
+
+∝ exp 
+
+
+
+− 12
+
+
+
+α − 1
+
+σ2
+
+> ϵ
+
+W D ′(y − ˜Y w − f )
+
+′
+
+W −1
+
+
+
+α − 1
+
+σ2
+
+> ϵ
+
+W D ′(y − ˜Y w − f )
+
+ 
+
+∝ MVN( α | ξα, W ),
+
+ξα = 1
+
+σ2
+
+> ϵ
+
+W D ′(y − ˜Y w − f ),W −1 = 1
+
+σ2
+
+> α
+
+I + 1
+
+σ2
+
+> ϵ
+
+D′D, w =
+
+ u2γ2
+
+P 
+
+> k
+
+ukγk
+
+, · · · , uJ+1 γJ+1 
+
+P 
+
+> k
+
+ukγk
+
+′
+
+• Full conditional distribution for σ2
+
+> ϵ
+
+π(σ2 
+
+> ϵ
+
+| ϑ[−σ2 
+
+> ϵ]
+
+,y1, ˜Y )
+
+∝ IG( σ2 
+
+> ϵ
+
+|aϵ, b ϵ)
+
+( TY
+
+> t=1
+
+N
+
+
+
+y1t
+
+> J+1
+
+X
+
+> j=2
+
+ uj γj
+
+P 
+
+> k
+
+ukγk
+
+
+
+yjt +
+
+> q
+
+X
+
+> m=1
+
+αmDmt + ft, σ 2
+
+> ϵ
+
+)
+
+∝ (σ2 
+
+> ϵ
+
+)−aϵ−1 exp 
+
+
+
+− bϵ
+
+σ2
+
+> ϵ
+
+
+
+·
+
+ 1
+
+√2πσ ϵ
+
+T
+
+× exp 
+
+
+
+−
+
+> T
+
+X
+
+> t=1
+
+
+
+y1t −
+
+> J+1
+
+X
+
+> j=2
+
+ uj γj
+
+P 
+
+> k
+
+ukγk
+
+
+
+yjt −
+
+> q
+
+X
+
+> m=1
+
+αmDmt − ft
+
+2 12σ2
+
+> ϵ
+
+
+
+∝ (σ2 
+
+> ϵ
+
+)−aϵ− T 
+
+> 2−1
+
+×exp 
+
+
+
+− 1
+
+σ2
+
+> ϵ
+
+
+
+bϵ + 12
+
+> T
+
+X
+
+> t=1
+
+
+
+y1t −
+
+> J+1
+
+X
+
+> j=2
+
+ uj γj
+
+P
+
+> k
+
+ukγk
+
+
+
+yjt −
+
+> q
+
+X
+
+> m=1
+
+αmDmt −ft
+
+2
+
+∝ IG 
+
+
+
+σ2 
+
+> ϵ
+
+aϵ + T
+
+2 , b ϵ + 12
+
+> T
+
+X
+
+> t=1
+
+
+
+y1t −
+
+> J+1
+
+X
+
+> j=2
+
+ uj γj
+
+P 
+
+> k
+
+ukγk
+
+
+
+yjt −
+
+> q
+
+X
+
+> m=1
+
+αmDmt −ft
+
+2
+
+For the parameters whose posterior distributions do not have closed-form solutions, we employ the Metropolis-Hastings algorithm for sampling. 46 • Full conditional distribution for κπ(κ | ϑ[−κ], y1, ˜Y ) ∝ N( f | 0, Σ) · IG( κ|aκ, b κ)
+
+∝ (κ)−aκ−1 exp( − bκ
+
+κ ) · | Σ|− 12 exp 
+
+
+
+− 12 f ′Σ−1f
+
+
+
+To generate posterior samples of κ, we use a random walk proposal on the log scale. Specifically, the proposed value κnew is generated as log( κnew ) = log( κold ) + δκz, z ∼ N(0 , 1) This formulation ensures that κ remains positive while allowing for flexible updates. Given the proposed value, the acceptance probability is computed as 
+
+ρκ = min π(κnew | ϑ[−κ], y1, ˜Y )
+
+π(κold | ϑ[−κ], y1, ˜Y ) × q(κold | κnew )
+
+q(κnew | κold ) , 1
+
+!
+
+= min π(κnew | ϑ[−κ], y1, ˜Y )
+
+π(κold | ϑ[−κ], y1, ˜Y ) × κnew 
+
+κold , 1
+
+! (27) where q(·) denotes the proposal density function. Since κnew follows a lognormal distribution, 
+
+q(κnew | κold ) = 1 
+
+> κnew
+
+exp 
+
+
+
+− 12δ2
+
+> κ
+
+  ln κnew − ln κold 2
+
+, which gives the acceptance probability in Equation (27). The step size of the random walk is controlled by δκ. A new sample is accepted if 
+
+U ∼ U(0 , 1) satisfies U < ρ κ; otherwise, the previous value is retained. This process is repeated iteratively, and after a burn-in period, the collected samples are used to approximate the posterior distribution of κ.
+
+• Full conditional distribution for uj
+
+π(uj | ϑ[−u],u[−j], y1, ˜Y )
+
+∝
+
+n
+
+G( uj | αu, 1
+
+αu
+
+)
+
+o( TY
+
+> t=1
+
+N
+
+
+
+y1t
+
+> J+1
+
+X
+
+> j=2
+
+ uj γj
+
+P 
+
+> k
+
+ukγk
+
+
+
+yjt +
+
+> q
+
+X
+
+> m=1
+
+αmDmt + ft, σ 2
+
+> ϵ
+
+)
+
+∝ (uj )αu−1 exp( −αuuj ) ·
+
+ 1
+
+√2πσ 
+
+T
+
+× exp −
+
+> T
+
+X
+
+> t=1
+
+
+
+y1t −
+
+> J+1
+
+X
+
+> j=2
+
+ uj γj
+
+P 
+
+> k
+
+ukγk
+
+
+
+yjt −
+
+> q
+
+X
+
+> m=1
+
+αmDmt − ft
+
+2 12σ2
+
+> ϵ
+
+!
+
+∝ (uj )αu−1 exp( −αuuj )
+
+× exp −
+
+> T
+
+X
+
+> t=1
+
+
+
+y1t −
+
+> J+1
+
+X
+
+> j=2
+
+ uj γj
+
+P 
+
+> k
+
+ukγk
+
+
+
+yjt −
+
+> q
+
+X
+
+> m=1
+
+αmDmt − ft
+
+2 12σ2
+
+> ϵ
+
+!
+
+47 Each component uj is updated sequentially using a Metropolis-Hastings step, where the proposal follows a log-scale random walk. Once all components have been updated, the process yields an updated vector u at each iteration. Specifically, the proposed value unew j is generated as log( unew j ) = log( uold j ) + δuj z, z ∼ N(0 , 1) This formulation ensures that uj remains positive while allowing for flexible updates. Given the proposed value, the acceptance probability is computed as 
+
+ρuj = min π(unew j | ϑ[−u], u[−j], y1, ˜Y )
+
+π(uold j | ϑ[−u], u[−j], y1, ˜Y ) × q(uold j | unew j )
+
+q(unew j | uold j ) , 1
+
+!
+
+= min π(unew j | ϑ[−u], u[−j], y1, ˜Y )
+
+π(uold j | ϑ[−u], u[−j], y1, ˜Y ) × unew j
+
+uold j
+
+, 1
+
+! (28) where q(·) denotes the proposal density function. Since unew j follows a lognormal distribution, 
+
+q(unew j | uold j ) = 1
+
+> unew j
+
+exp 
+
+
+
+− 12δ2
+
+> uj
+
+  ln unew j − ln uold j
+
+2
+
+, which gives the acceptance probability in Equation (28). The step size of the random walk is controlled by δuj . A new sample is accepted if 
+
+U ∼ U(0 , 1) satisfies U < ρ uj ; otherwise, the previous value is retained. This process is repeated iteratively, and after a burn-in period, the collected samples are used to approximate the posterior distribution of uj .
+
+# C Convergence Diagnostics 
+
+We assess MCMC convergence using trace plots and marginal posterior densities across multiple chains. Convergence is indicated when the chains exhibit similar behavior, show no systematic trends, and have comparable marginal distributions. For visual clarity, only every 100th iteration is displayed in the trace plots, while the full posterior samples are used for inference. 
+
+C.1 Numerical study 
+
+For the numerical study, we report the convergence diagnostics for the representative M10-3-ue setting. Since T = 50, displaying trace plots for all components of f = ( f1, . . . , f T )′ would be impractical. We therefore show selected time points. Similarly, since u is generated for all donor units, only representative components are displayed. 48 u (4th control unit) u (2nd control unit) u (10th control unit) 
+
+sigma^2 kappa u (1st control unit) 
+
+tau eta alpha 
+
+f (t=1) f (t=15) f (t=30)         
+
+> 100,000 300,000 500,000 100,000 300,000 500,000 100,000 300,000 500,000
+> −2.5 0.0 2.5
+> 246
+> 0123
+> 01234
+> −2.5 0.0 2.5 5.0
+> 0.00 0.25 0.50 0.75 1.00
+> 0123
+> 01234
+> −5.0 −2.5 0.0 2.5
+> 02468
+> 02468
+> 01234
+
+Iteration 
+
+> Value
+
+chain 
+
+> 1
+> 2
+> 3
+
+Figure 6: M10-3-ue model: Trace plots of selected parameters. The trace plots in Figure 6 show stable mixing across chains for the selected parameters. Figure 7 further shows that the marginal posterior densities from different chains are overlapping, indicating that the chains produce similar posterior distributions in the numerical study. u (4th control unit) u (2nd control unit) u (10th control unit) 
+
+sigma^2 kappa u (1st control unit) 
+
+tau eta alpha 
+
+f (t=1) f (t=15) f (t=30) 
+
+0 1 2 3 4 0 2 4 6 0 2 4 6
+
+0 3 6 9 0 1 2 3 0 1 2 3 4
+
+0 5 10 0.00 0.25 0.50 0.75 1.00 2.5 5.0 7.5 
+
+−5.0 −2.5 0.0 2.5 5.0 −3 0 3 6 −6 −3 0 3
+
+0.0 0.1 0.2 0.3 0.4 
+
+0.0 0.2 0.4 0.6 
+
+0.0 0.5 1.0 1.5 
+
+0.0 0.2 0.4 0.6 0.8 
+
+0.0 0.1 0.2 0.3 0.4 
+
+012
+
+0123
+
+0.00 0.25 0.50 0.75 1.00 
+
+0.0 0.1 0.2 0.3 0.4 
+
+0.0 0.1 0.2 0.3 0.4 0.5 
+
+0.0 0.1 0.2 0.3 0.4 
+
+0.0 0.3 0.6 0.9 1.2 
+
+Value 
+
+> Density
+
+chain 
+
+1
+
+2
+
+3
+
+Figure 7: M10-3-ue model: Marginal posterior densities of selected parameters. 49 C.2 Data example 
+
+For the West Germany application, we use the same diagnostic strategy. Each chain is run for 500,000 post burn-in iterations, and every 100th iteration is displayed for visual clarity. Since u is generated for every donor unit, only a subset of its components is shown. u (10th control unit) u (2nd control unit) u (7th control unit) 
+
+sigma^2 kappa u (1st control unit) 
+
+tau eta alpha 
+
+f (t=1) f (t=10) f (t=40)         
+
+> 100,000 300,000 500,000 100,000 300,000 500,000 100,000 300,000 500,000
+> −20 020
+> −1200 −900 −600 −300 0
+> 012345
+> 012345
+> −40 −20 020
+> 0.0 0.2 0.4 0.6
+> 05000 10000 15000 20000 25000
+> 0246
+> −25 025 50
+> 500 1000 1500 2000
+> 4e+04 6e+04 8e+04 1e+05
+> 012345
+> Iteration
+> Value  chain
+> 1
+> 2
+> 3
+
+Figure 8: Trace plots of selected parameters in the West Germany application. The trace plots in Figure 8 show stable mixing across chains for the selected parameters. Figure 9 further shows that the marginal posterior densities from the three chains are nearly indistinguishable due to overlap, supporting the consistency of the posterior samples across chains. 50 u (10th control unit) u (2nd control unit) u (7th control unit)                                             
+
+> sigma^2 kappa u (1st control unit)
+> tau eta alpha
+> f (t=1) f (t=10) f (t=25)
+> 02402460246
+> 5e+04 1e+05 050000100000 150000 200000 0246
+> 1000 2000 3000 0.0 0.2 0.4 0.6 0.8 −1000 −500 0
+> −60 −30 030 60 −25 025 −25 025 50
+> 0.00 0.02 0.04 0.06
+> 0.0000 0.0005 0.0010 0.0015
+> 0.0 0.2 0.4 0.6 0.8
+> 0.00 0.25 0.50 0.75 1.00
+> 0.00 0.02 0.04 0.06
+> 01234
+> 0.0000 0.0025 0.0050 0.0075
+> 0.0 0.2 0.4 0.6 0.8
+> 0.00 0.01 0.02 0.03 0.04
+> 0.0000 0.0005 0.0010 0.0015 0.0020
+> 0e+00 1e−05 2e−05 3e−05 4e−05
+> 0.0 0.2 0.4 0.6 0.8
+> Value
+> Density  chain
+> 1
+> 2
+> 3
+
+Figure 9: Marginal posterior densities of selected parameters in the West Germany application. 
+
+# D Additional results under the independent outcome setting 
+
+D.1 Simplified model without temporal and intervention components 
+
+In this section, we consider a simplified specification under the independent outcome setting. Specif-ically, we remove the temporal discrepancy term ft and the intervention indicator term α from the proposed BASC model. This simplified specification is used to inspect the donor weight and donor selection mechanisms more directly. 
+
+y1t =
+
+J+1 X
+
+j=2 
+
+wj yjt + ϵt, ϵt ∼ N (0 , σ 2).
+
+The donor weights wj satisfy the same nonnegative simplex constraint as in the original BASC model. They are constructed using Bernoulli donor-inclusion variables and normalized Gamma variables. Thus, the simplified model preserves the donor set selection mechanism, while excluding both ft and α.The estimation procedure for this simplified model differs from that of the full BASC model used in the main simulation study. In the full BASC model, the intervention effect term α is included, and the posterior is estimated using the entire time period t = 1 , . . . , T . In contrast, the simplified model does not directly model the intervention effect. Therefore, following the standard synthetic control framework, donor weights are estimated using only the pre-intervention period t = 1 , . . . , T 0.The estimated posterior samples of the weights are then applied to the donor outcomes in the post-51 intervention period to construct the counterfactual trajectory. Table 8 reports the prediction bias and RMSE in the pre- and post-intervention periods. Overall, BASC and B-MV show comparable prediction performance in several settings. In particular, when the donor pool is small, such as J = 10, B-MV sometimes yields slightly smaller post-intervention RMSE. This is not unexpected, since the simplified model does not include the temporal discrepancy term or the intervention effect term, and the post-intervention evaluation period is relatively short. In such cases, dense averaging over donors, as in B-MV, may reduce prediction variance. However, as shown in Table 9, the advantage of BASC is clearer in terms of donor set selection and weight recovery. In sparse settings, BASC yields much smaller weight estimation error than B-MV. It also shows stable donor recovery performance in terms of true positive rate, true negative rate, and overall accuracy. These results indicate that BASC is not merely a prediction model; it also performs donor set selection within posterior inference, which is a key objective in synthetic control analysis. Overall, the simplified model results show that the donor set selection mechanism of BASC works reliably even after removing ft and α. The results also suggest that the benefit of BASC becomes more visible when the donor pool is large relative to the true active donor set, where excluding irrelevant donors is more important. 52 Unbalanced Setting (-ue) Balanced Setting (-e) 
+
+Pre-intervention Post-intervention Pre-intervention Post-intervention 
+
+Setting Model Bias RMSE Bias RMSE Bias RMSE Bias RMSE 
+
+M10-3 BASC -0.722 1.796 0.089 2.152 -0.723 1.759 0.071 2.121 B-MV -1.124 2.466 0.478 1.797 -1.176 2.446 0.658 1.963 fPCA-SYNTH -0.030 3.383 1.874 2.517 -0.030 2.820 2.268 2.916 ClusterSC -0.000 2.397 2.346 2.913 -0.000 2.484 2.665 3.225 M10-10 BASC -0.408 1.544 -0.235 2.914 -0.491 1.574 -0.181 2.682 B-MV -0.409 1.541 -0.225 2.881 -0.540 1.603 -0.153 2.481 fPCA-SYNTH -0.205 2.643 -0.774 3.838 -0.168 2.444 -0.344 3.182 ClusterSC 0.000 1.913 0.626 2.391 -0.000 1.954 0.529 2.333 M30-3 BASC -0.331 2.103 0.851 2.245 -0.364 2.063 0.969 2.097 B-MV -0.714 3.167 1.276 2.875 -0.479 2.947 0.506 2.912 fPCA-SYNTH -0.345 3.525 1.482 2.659 -1.323 5.041 0.910 5.000 ClusterSC -0.000 2.054 1.575 2.518 -0.000 2.155 1.548 2.618 M30-9 BASC -0.569 2.404 1.125 2.564 -0.425 2.334 1.063 2.409 B-MV -0.708 2.555 1.189 2.652 -0.485 2.429 1.060 2.338 fPCA-SYNTH -0.217 3.175 1.116 3.331 -0.221 3.047 0.819 3.112 ClusterSC 0.000 1.872 2.476 2.882 -0.000 1.909 2.524 2.927 M30-30 BASC -0.333 2.001 0.988 1.928 -0.332 1.947 0.951 2.000 B-MV -0.336 2.030 1.001 1.853 -0.337 1.958 0.952 1.937 fPCA-SYNTH -0.245 2.931 0.483 2.911 -0.239 2.865 0.483 3.179 ClusterSC 0.000 1.662 1.768 2.294 -0.000 1.619 1.894 2.456 
+
+Table 8: Prediction performance of the simplified model and competing methods. Bias and RMSE are reported separately for the pre- and post-intervention periods. The simplified BASC model is fitted using only the pre-intervention observations, and post-intervention predictions are obtained by applying the posterior weight samples to the donor outcomes in the post-intervention period. 53 Unbalanced Setting (-ue) Balanced Setting (-e) w γ w γ                                                                                                                                                                                                                   
+
+> Setting Model TAE RMSE TPR TNR Accuracy TAE RMSE TPR TNR Accuracy
+> M10-3 BASC 0.166 0.046 0.925 0.989 0.970 0.132 0.035 0.999 0.990 0.993 B-MV 0.762 0.092 ---0.844 0.106 ---fPCA-SYNTH 1.309 0.229 0.333 0.857 0.700 1.609 0.265 0.333 0.857 0.700 ClusterSC 0.628 0.125 0.333 0.857 0.700 0.776 0.151 0.333 0.857 0.700 M10-10 BASC 0.593 0.078 0.938 -0.938 0.408 0.067 0.868 -0.868 B-MV 0.582 0.074 ---0.273 0.051 ---fPCA-SYNTH 1.692 0.252 0.200 -0.200 1.820 0.246 0.200 -0.200 ClusterSC 0.655 0.075 0.800 -0.800 0.597 0.068 0.800 -0.800 M30-3 BASC 0.239 0.036 0.738 0.973 0.950 0.176 0.031 0.995 0.962 0.965 B-MV 1.737 0.112 ---1.731 0.098 ---fPCA-SYNTH 2.217 0.222 0.000 0.889 0.800 1.494 0.144 0.333 0.963 0.900 ClusterSC 1.790 0.098 0.667 0.704 0.700 1.909 0.105 0.667 0.704 0.700 M30-9 BASC 1.002 0.058 0.730 0.471 0.548 1.097 0.053 0.798 0.390 0.512 B-MV 1.328 0.061 ---1.315 0.051 ---fPCA-SYNTH 1.898 0.146 0.111 0.952 0.700 1.797 0.145 0.222 0.905 0.700 ClusterSC 1.724 0.077 0.556 0.762 0.700 1.74 0.078 0.556 0.762 0.700 M30-30 BASC 0.477 0.034 0.779 -0.779 0.214 0.027 0.812 -0.812 B-MV 0.461 0.028 ---0.114 0.018 ---fPCA-SYNTH 1.826 0.116 0.133 -0.133 1.845 0.101 0.133 -0.133 ClusterSC 1.755 0.078 0.367 -0.367 1.623 0.071 0.367 -0.367
+
+Table 9: Weight estimation and donor set recovery under the simplified model. Weight estimation is evaluated by total absolute error (TAE) and RMSE. Donor set recovery is summarized by true positive rate (TPR), true negative rate (TNR), and overall accuracy. Since B-MV does not perform explicit donor selection, donor recovery metrics are not applicable. 
+
+D.2 Computation time comparison 
+
+We compare the computation time of the two Bayesian methods, BASC and B-MV. We recorded the elapsed time for each simulation scenario under the independent outcome setting, considering both methods with and without the Gaussian process component. For each method, we used one MCMC chain with 200,000 burn-in iterations and 500,000 posterior iterations. All computations were performed on the same desktop computer with an Intel Core i9-13900K processor and 32.0GB RAM, and elapsed time was measured using the system.time() function in R. Table 10 summarizes the results by donor-pool size, corresponding to the M10– and M30– settings. The results show that the Gaussian process component increases the computational burden for both methods, mainly due to repeated covariance matrix evaluations and Metropolis–Hastings updates for the GP length-scale parameter. When the Gaussian process component is excluded, both 54 Setting Method With GP Without GP M10– BASC 23.63 min (1.30) 2.97 min (0.03) B-MV 15.38 min (0.93) 1.80 min (0.02) M30– BASC 34.37 min (1.89) 17.60 min (0.07) B-MV 30.49 min (9.32) 8.94 min (0.03) Table 10: Average computation time for BASC and B-MV under the independent outcome setting, summarized by donor-pool size. Standard deviations are reported in parentheses. methods become substantially faster. BASC is somewhat more computationally demanding than B-MV because it additionally updates the donor-inclusion indicators and donor weights. Nevertheless, the computation time remains within a practical range in the simulation settings considered. 
+
+# E Sensitivity to prior hyperparameters 
+
+We assess the robustness of BASC to prior choices in the West Germany application by considering alternative hyperparameter settings around the baseline specification. The sensitivity settings are summarized in Table 11. Starting from the baseline setting, we vary one component at a time: the noise prior, the Gaussian-process hyperparameter priors, the donor-weight dispersion parameter 
+
+αu, and the scale parameter bα in the prior for σ2
+
+> α
+
+. We also consider an ‘all’ setting in which the noise prior, the Gaussian-process prior, αu, and bα are varied simultaneously. Each model is fitted using the same MCMC configuration as in the main empirical analysis. We evaluate robustness by comparing the posterior donor weights across sensitivity settings. Specifi-cally, Table 12 reports the posterior mean and standard deviation of wj for each donor. Donors selected under the posterior inclusion criterion ¯ γj ≥ 0.5 are indicated in bold.                                                                                           
+
+> Setting σ2
+> ϵprior τ2prior κprior σ2
+> αprior αu
+> aϵbϵaτbτaκbκbα
+> Baseline 10 5,000 32×10 431,000 2×1000 22.5 Noise only 320,000 32×10 431,000 2×1000 22.5 GP only 10 5,000 33×10 43850 2×1000 22.5
+> αuonly 10 5,000 32×10 431,000 2×1000 22.0
+> σ2
+> αonly 10 5,000 32×10 431,000 2×750 22.5 All 320,000 33×10 43850 2×750 22.0
+
+Table 11: Hyperparameter configurations for the sensitivity analysis. Each row corresponds to one prior setting. The columns report the hyperparameters for the noise variance σ2 
+
+> ϵ
+
+, the Gaussian-process scale τ 2, the Gaussian-process smoothness κ, the scale parameter bα in the prior for σ2
+
+> α
+
+,and the donor-weight dispersion parameter αu.55 Country Baseline Noise only GP only αu only bα only All 
+
+USA 0.00 ±0.00 0.00 ±0.00 0.00 ±0.00 0.00 ±0.00 0.00 ±0.00 0.00 ±0.00 UK 0.00 ±0.00 0.00 ±0.00 0.00 ±0.00 0.00 ±0.00 0.00 ±0.00 0.00 ±0.00 Austria 0.00 ±0.01 0.00 ±0.02 0.00 ±0.01 0.00 ±0.01 0.00 ±0.01 0.00 ±0.02 Belgium 0.00 ±0.01 0.00 ±0.01 0.00 ±0.01 0.00 ±0.01 0.00 ±0.01 0.00 ±0.01 Denmark 0.00 ±0.00 0.00 ±0.00 0.00 ±0.00 0.00 ±0.00 0.00 ±0.00 0.00 ±0.00 France 0.00 ±0.01 0.00 ±0.01 0.00 ±0.01 0.00 ±0.01 0.00 ±0.01 0.05 ±0.01 
+
+Italy 0.12 ±0.14 0.14 ±0.15 0.12 ±0.14 0.10 ±0.13 0.13 ±0.14 0.11 ±0.15 Netherlands 0.00 ±0.00 0.00 ±0.00 0.00 ±0.00 0.00 ±0.00 0.00 ±0.00 0.00 ±0.00 Norway 0.00 ±0.00 0.00 ±0.00 0.00 ±0.00 0.00 ±0.00 0.00 ±0.00 0.00 ±0.00 
+
+Switzerland 0.44 ±0.05 0.43 ±0.05 0.44 ±0.05 0.44 ±0.05 0.43 ±0.05 0.44 ±0.05 Japan 0.37 ±0.08 0.37 ±0.10 0.37 ±0.08 0.38 ±0.08 0.37 ±0.08 0.37 ±0.09 
+
+Greece 0.01 ±0.03 0.01 ±0.03 0.02 ±0.04 0.02 ±0.04 0.03 ±0.04 0.02 ±0.03 
+
+Portugal 0.05 ±0.05 0.04 ±0.05 0.05 ±0.05 0.05 ±0.05 0.04 ±0.05 0.05 ±0.05 
+
+Spain 0.00 ±0.00 0.00 ±0.00 0.00 ±0.00 0.00 ±0.01 0.00 ±0.00 0.00 ±0.01 Australia 0.00 ±0.00 0.00 ±0.00 0.00 ±0.00 0.00 ±0.00 0.00 ±0.00 0.00 ±0.00 New Zealand 0.00 ±0.01 0.00 ±0.02 0.00 ±0.01 0.00 ±0.01 0.00 ±0.01 0.00 ±0.02 
+
+Table 12: Stability of posterior donor weights under alternative prior specifications (BASC; West Germany). Each entry reports the posterior mean and standard deviation of wj . The sensitivity settings correspond to those in Table 11. Countries selected for the donor set in each sensitivity setting are indicated in bold, based on the threshold ¯ γj ≥ 0.5. Due to rounding, the weights may not sum to exactly one. Across these sensitivity settings, the posterior donor weights remain broadly stable. Switzerland and Japan are consistently selected as the dominant donor units, with nearly unchanged posterior weights across the alternative prior specifications. The inclusion of smaller-weight donors, such as Italy and Portugal, varies mildly across settings, suggesting that their posterior inclusion probabil-ities are close to the selection threshold ¯ γj ≥ 0.5. Overall, these results suggest that the substantive conclusions of the West Germany analysis are not driven by a particular hyperparameter choice. 
+
+# F Additional graphical results 
+
+F.1 Additional prediction results 
+
+Figures 10–13 present additional graphical results for BASC and B-MV. 56 Figure 10 shows the results for the full model with J = 10, illustrating a setting without donor sparsity. In this case, the two methods show nearly identical performance, and the differences in their credible bands are minimal. Figures 11–13 correspond to the case J = 30 under different sparsity patterns. Figure 11 depicts a highly sparse scenario with Js = 3, where BASC exhibits superior performance— the credible bands track the variability of the true values more accurately, whereas B-MV performs noticeably worse. In contrast, Figures 12 and 13 show settings with moderate or no sparsity, where BASC and B-MV yield broadly similar performance. As reported in Table 3 of the main text, BASC remains marginally better overall. Unbalanced (−ue)                        
+
+> BASC
+> Unbalanced (−ue)
+> B−MV
+> Balanced (−e)
+> BASC
+> Balanced (−e)
+> B−MV
+> Prediction Error
+> 010 20 30 40 50 010 20 30 40 50 010 20 30 40 50 010 20 30 40 50
+> 10 20 30
+> −5.0 −2.5 0.0 2.5 5.0
+
+Time    
+
+> Prediction: Estimated Prediction: True Error: Bias Error: Absolute error
+
+M10−10 
+
+Figure 10: M10-10- Model: Posterior predictions and error estimates for BASC and B-MV. The top row shows posterior predictive trajectories, and the bottom row shows the corresponding bias and absolute error. The shaded band represents the 95% credible interval, and the red vertical line indicates the intervention time point. 57 Unbalanced (−ue)                        
+
+> BASC
+> Unbalanced (−ue)
+> B−MV
+> Balanced (−e)
+> BASC
+> Balanced (−e)
+> B−MV
+> Prediction Error
+> 010 20 30 40 50 010 20 30 40 50 010 20 30 40 50 010 20 30 40 50
+> 10 20 30
+> −5.0 −2.5 0.0 2.5 5.0
+
+Time    
+
+> Prediction: Estimated Prediction: True Error: Bias Error: Absolute error
+
+M30−3 Figure 11: M30-3- Model: Posterior predictions and error estimates for BASC and B-MV. The top row shows posterior predictive trajectories, and the bottom row shows the corresponding bias and absolute error. The shaded band represents the 95% credible interval, and the red vertical line indicates the intervention time point. Unbalanced (−ue)                        
+
+> BASC
+> Unbalanced (−ue)
+> B−MV
+> Balanced (−e)
+> BASC
+> Balanced (−e)
+> B−MV
+> Prediction Error
+> 010 20 30 40 50 010 20 30 40 50 010 20 30 40 50 010 20 30 40 50
+> 10 20 30
+> −5.0 −2.5 0.0 2.5 5.0
+
+Time    
+
+> Prediction: Estimated Prediction: True Error: Bias Error: Absolute error
+
+M30−9 
+
+Figure 12: M30-9- Model: Posterior predictions and error estimates for BASC and B-MV. The top row shows posterior predictive trajectories, and the bottom row shows the corresponding bias and absolute error. The shaded band represents the 95% credible interval, and the red vertical line indicates the intervention time point. 58 Unbalanced (−ue)                        
+
+> BASC
+> Unbalanced (−ue)
+> B−MV
+> Balanced (−e)
+> BASC
+> Balanced (−e)
+> B−MV
+> Prediction Error
+> 010 20 30 40 50 010 20 30 40 50 010 20 30 40 50 010 20 30 40 50
+> 10 20 30
+> −5.0 −2.5 0.0 2.5 5.0
+
+Time    
+
+> Prediction: Estimated Prediction: True Error: Bias Error: Absolute error
+
+M30−30 Figure 13: M30-30- Model: Posterior predictions and error estimates for BASC and B-MV. The top row shows posterior predictive trajectories, and the bottom row shows the corresponding bias and absolute error. The shaded band represents the 95% credible interval, and the red vertical line indicates the intervention time point. 
+
+F.2 Additional weight estimation results 
+
+The w estimates for J = 30 are visualized in Figure 14. Regardless of the simulation setting, B-MV utilizes all donor sets, whereas BASC reflects donor set selection. In the highly sparse scenarios (M30-3-ue and M30-3-e), BASC accurately selects the donor set, although its performance is somewhat less impressive in moderately sparse scenarios (M30-9-ue, M30-9-e) compared to the highly sparse cases. 59 Figure 14: Estimated donor weights for the M30- models under the independent outcome setting. Each panel corresponds to a different simulation setting and compares the true donor weights with estimates from BASC, B-MV, fPCA-SYNTH, and ClusterSC. Gray bars represent the true donor weights; values exceeding 0.57 are annotated above the corresponding bars. Closer alignment with the gray bars indicates more accurate recovery of the underlying donor-weight structure. 60 References 
+
+Abadie, A., Diamond, A., and Hainmueller, J. (2010). Synthetic control methods for comparative case studies: estimating the effect of california’s tobacco control program. Journal of the American Statistical Association , 105(490):493–505. Abadie, A., Diamond, A., and Hainmueller, J. (2015). Comparative politics and the synthetic control method. American Journal of Political Science , 59(2):495–510. Abadie, A. and Gardeazabal, J. (2003). The economic costs of conflict: A case study of the basque country. American Economic Review , 93(1):113–132. Abadie, A. and L’Hour, J. (2021). A penalized synthetic control estimator for disaggregated data. 
+
+Journal of the American Statistical Association , 116(536):1817–1834. Abadie, A. and Vives-i Bastida, J. (2022). Synthetic controls in action. arXiv preprint arXiv:2203.06279 .Amjad, M., Shah, D., and Shen, D. (2018). Robust synthetic control. Journal of Machine Learning Research , 19(22):1–51. Athey, S., Bayati, M., Doudchenko, N. D., Imbens, G., and Khosravi, K. (2021). Matrix com-pletion methods for causal panel data models. Journal of the American Statistical Association ,116(536):1716–1730. Bai, J. and Ng, S. (2021). Matrix completion, counterfactuals, and factor analysis of missing data. 
+
+Journal of the American Statistical Association , 116(536):1746–1763. Bayani, M. (2021). Robust PCA synthetic control. arXiv preprint arXiv:2108.12542 .Ben-Michael, E., Arbour, D., Feller, A., Franks, A., and Raphael, S. (2023). Estimating the effects of a California gun control program with multitask Gaussian processes. The Annals of Applied Statistics , 17(2):985 – 1016. Ben-Michael, E., Feller, A., and Rothstein, J. (2021). Synthetic controls with staggered adoption. 
+
+Journal of the Royal Statistical Society Series B: Statistical Methodology , 84(2):351–381. Brodersen, K. H., Gallusser, F., Koehler, J., Remy, N., and Scott, S. L. (2015). Inferring causal impact using Bayesian structural time-series models. The Annals of Applied Statistics , 9(1):247 – 274. 61 Cao, J. and Dowd, C. (2019). Estimation and inference for synthetic control methods with spillover effects. arXiv preprint arXiv:1902.07343 .Castillo, I., Schmidt-Hieber, J., and van der Vaart, A. (2015). Bayesian linear regression with sparse priors. The Annals of Statistics , 43(5):1986 – 2018. Cerulli, G. (2024). Optimal initial donor selection for the synthetic control method. Economics Letters , 244:111976. Di Stefano, R. and Mellace, G. (2024). The inclusive synthetic control method. arXiv preprint arXiv:2403.17624 .Ferguson, T. S. (1973). A Bayesian analysis of some nonparametric problems. The Annals of Statistics , 1(2):209 – 230. Fern´ andez-Morales, E., Oganisian, A., and Lee, Y. (2026). Bayesian shrinkage priors for penalized synthetic control estimators in the presence of spillovers. Biometrics , 82(2):ujag054. Gelman, A. and Rubin, D. B. (1992). Inference from iterative simulation using multiple sequences. 
+
+Statistical Science , 7(4):457 – 472. Goh, G. and Yu, J. (2022). Synthetic control method with convex hull restrictions: a bayesian maximum a posteriori approach. The Econometrics Journal , 25(1):215–232. Greathouse, J. A., Bayani, M., and Coupet, J. (2023). Splash! robustifying donor pools for policy studies. arXiv preprint arXiv:2308.13688 .Hastings, W. K. (1970). Monte carlo sampling methods using markov chains and their applications. 
+
+Biometrika , 57(1):97–109. Kim, S., Lee, C., and Gupta, S. (2020). Bayesian synthetic control methods. Journal of Marketing Research , 57(5):pp. 831–852. Klinenberg, D. (2023). Synthetic control with time varying coefficients a state space approach with bayesian shrinkage. Journal of Business & Economic Statistics , 41(4):1065–1076. Koslovsky, M. D. (2023). A bayesian zero-inflated dirichlet-multinomial regression model for mul-tivariate compositional count data. Biometrics , 79(4):3239–3251. Li, Y. and Hsing, T. (2010). Uniform convergence rates for nonparametric regression and principal component analysis in functional/longitudinal data. The Annals of Statistics , 38(6):3321 – 3351. 62 Martinez, I. and Vives-i Bastida, J. (2024). Bayesian and frequentist inference for synthetic controls. 
+
+arXiv preprint arXiv:2206.01779 .Menchetti, F. and Bojinov, I. (2022). Estimating the effectiveness of permanent price reductions for competing products using multivariate Bayesian structural time series models. The Annals of Applied Statistics , 16(1):414 – 435. Pang, X., Liu, L., and Xu, Y. (2022). A bayesian alternative to synthetic control for comparative case studies. Political Analysis , 30(2):269–288. Rho, S., Tang, A., Bergam, N., Cummings, R., and Misra, V. (2025). ClusterSC: advancing synthetic control with donor selection. arXiv preprint arXiv:2503.21629 .Tang, Z.-Z. and Chen, G. (2018). Zero-inflated generalized dirichlet multinomial regression model for microbiome compositional data analysis. Biostatistics , 20(4):698–713. Xu, Y. and Zhou, Q. (2025). Bayesian synthetic control with a soft simplex constraint. arXiv preprint arXiv:2503.06454 .63

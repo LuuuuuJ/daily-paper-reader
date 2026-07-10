@@ -1,0 +1,872 @@
+Title: Post-Selection Inference for Multiverse Analysis in Mixed-Effects Models (PIMAX)
+
+URL Source: https://arxiv.org/pdf/2607.03225v1
+
+Published Time: Tue, 07 Jul 2026 01:09:50 GMT
+
+Number of Pages: 21
+
+Markdown Content:
+# Post-Selection Inference for Multiverse Analysis in Mixed-Effects Models (PIMAX) 
+
+# Anna Vesely ∗1 and Angela Andreella †21Department of Statistical Sciences, University of Bologna, Via delle Belle Arti 41, 40126 Bologna, Italy 
+
+2Department of Economics, Ca’ Foscari University of Venice, Cannaregio 873, 30100 Venezia, Italy 
+
+Abstract 
+
+Sign-flipping score tests provide robust inference in generalized linear models under vari-ance misspecification and form the basis of two recent inferential frameworks: post-selection inference in multiverse analysis (PIMA) and the sign-flipping score-based two-stage summary-statistics approach (flip2sss). PIMA provides asymptotically valid inference across a multiverse of model specifications, whereas flip2sss extends sign-flipping score testing to longitudinal and hierarchical data through cluster-level summary statistics. In this paper, we combine these two approaches to develop PIMAX, a multiverse inferential framework for clustered observations. The resulting method extends post-selection inference to clustered-data settings, accommodat-ing heteroscedasticity, unbalanced designs, and within-cluster dependence. Given a multiverse of candidate specifications, PIMAX provides a global p-value for testing whether any speci-fication exhibits a non-zero effect (weak control of the family-wise error rate, FWER), lower confidence bounds on the number of true discoveries, and multiplicity-adjusted p-values for identifying the specific contributing specifications (strong FWER control). By avoiding infer-ence based on a fully specified random-effects covariance structure, PIMAX solves a key source of type I error inflation due to random-effects misspecification while enabling inference across a multiverse of fixed-effects specifications. 
+
+Keywords: clustered data; generalized linear mixed models; multiverse analysis; selective inference; sign-flipping score test; two-stage summary statistics 
+
+# 1 Introduction 
+
+High-dimensional and structured data settings often involve a large number of defensible ana-lytical choices. Different selections of covariates, transformations, adjustment sets, or modeling assumptions may all be scientifically justified, yet lead to different substantive conclusions. Mul-tiverse analysis (Steegen et al., 2016) addresses this issue by systematically evaluating results 
+
+> ∗
+
+anna.vesely2@unibo.it 
+
+> †
+
+angela.andreella@unive.it 
+
+1
+
+> arXiv:2607.03225v1 [stat.ME] 3 Jul 2026
+
+across a collection of plausible specifications, thereby making explicit the role of researcher de-grees of freedom in the analysis. This perspective is especially relevant in light of longstanding concerns about selective reporting and undisclosed analytical flexibility (Simmons et al., 2011; Gelman and Loken, 2014; Nosek and Lakens, 2014). However, transparency alone does not re-solve the inferential problem induced by model multiplicity. Once multiple specifications have been considered, formal inference must account for the fact that conclusions are drawn after examining a set of reasonable alternatives. Multiverse analysis therefore naturally gives rise to a post-selection inference problem (Benjamini, 2020), in which multiplicity must be controlled over the full collection of candidate models. Post-selection inference in multiverse analysis (PIMA), proposed by Girardi et al. (2024), addresses this problem in the framework of generalized linear models (GLMs). Building on sign-flipping score tests (Hemerik et al., 2020; De Santis et al., 2025b), PIMA provides asymp-totically valid inference across a multiverse of model specifications, allowing one to test whether the effect of interest is present in at least one plausible specification and to perform model-specific inference with appropriate multiplicity adjustment. Operationally, PIMA implements a resampling-based test within each specification using sign-flip transformations and combines the resulting standardized statistics across the multiverse via a suitable combining function. With proper handling of the transformations, this construction preserves dependence among model-specific statistics and yields a global test of the intersection null hypothesis that the effect is absent in all candidate specifications. Through closed testing theory (Marcus et al., 1976; Goeman and Solari, 2011) and its associated shortcut methods (Westfall and Young, 1993; Vesely et al., 2023), PIMA provides multiplicity-adjusted p-values with strong family-wise error rate (FWER) control and simultaneous lower confidence bounds on the number of false null hypotheses, offering post-selection identification and quantification of the specifica-tions that support a non-zero effect. PIMA thus represents a formal inferential counterpart to multiverse analysis. An alternative approach is specification curve analysis (Simonsohn et al., 2020). However, the method only provides a global test for the presence of at least one non-zero effect across specifications, with weak FWER control. Furthermore, its theoretical justification is developed in the context of linear models and does not readily extend to GLMs (Girardi et al., 2024). For these reasons, we focus our attention on PIMA. A major limitation of the original PIMA framework is that it assumes independent ob-servations. In many applications, however, data are clustered, longitudinal, or multilevel, so that valid inference must account for within-cluster dependence. In these settings, model un-certainty is inherently more complex. Researchers are typically uncertain not only about the fixed-effects component of the model, but also about the form of the dependence structure. Within the generalized linear mixed model (GLMM) framework, inferential conclusions may depend on whether random slopes are included, which covariates are allowed to vary across clusters, and how the covariance structure of the random effects is specified (Breslow and Clay-ton, 1993; McCulloch et al., 2008). These choices are rarely unique in practice, and different defensible specifications may lead to different conclusions, as reflected in the methodological debate on maximal versus parsimonious random-effects structures (Barr et al., 2013; Bates et al., 2015; Matuschek et al., 2017). Moreover, likelihood-based inference in GLMMs may be sensitive to misspecification of the random-effects structure, while estimation itself may be-come unstable in complex models, sparse binary settings, or small samples, where convergence failures, singular fits, and boundary estimates are common (Breslow and Clayton, 1993; Cnaan et al., 1997). Both cases lead to inflated type I error, i.e., invalid inference on fixed effects. Thus, in the presence of dependent observations, a multiverse is shaped not only by alternative mean structures but also by competing assumptions on the underlying dependence mechanism. Any inferential procedure for this setting should therefore handle clustering and multiplicity simultaneously, while avoiding undue reliance on a single fully specified random-effects model. 
+
+2A partial solution is provided by the sign-flipping score-based two-stage summary-statistics approach (flip2sss) of Andreella et al. (2025), which extends resampling-based score testing to dependent data. The procedure follows a two-stage strategy: cluster-specific summary measures are first obtained by fitting separate GLMs within clusters and are then analyzed jointly in a second-stage score test based on sign flipping. This construction reduces the dependence problem to the cluster level and avoids explicit parametric specification of the random-effects distribution or covariance structure, while accommodating heteroscedasticity and unbalanced designs. However, flip2sss is not a post-selection method: it yields valid inference within a given specification, but does not address the multiplicity induced by a multiverse of plausible models. In this paper, we combine these two lines of work to develop PIMAX, a multiverse inferen-tial framework for clustered data. By embedding the two-stage summary-statistics construction of flip2sss within the post-selection machinery of PIMA, PIMAX provides inference across a multiverse of clustered-data specifications while accounting simultaneously for within-cluster dependence and model multiplicity. The procedure accommodates heteroscedasticity and un-balanced designs, and avoids requiring a fully specified random-effects distribution or covariance structure, making it particularly suited to settings in which several fixed-effects specifications are scientifically defensible. It is implemented in the R package pima (Finos et al., 2022). The remainder of the paper is organized as follows. Section 2 introduces the notation and background. Section 3 revisits the flip2sss procedure, extends its theoretical characterization, and recasts it in terms of cluster scores. Then Section 4 builds on this foundation to introduce and formally define the PIMAX framework. Section 5 investigates its finite-sample validity and power through simulations and compares its performance with competing methods, while Section 6 presents an application to the survey of health, ageing, and retirement in Europe (SHARE) data (B¨ orsch-Supan et al., 2013). Finally, Section 7 concludes with a discussion. 
+
+# 2 Setting 
+
+We consider clustered data, such as longitudinal data, where responses within the same cluster may be dependent. Let j ∈ { 1, . . . , J } index the clusters, and let i ∈ { 1, . . . , n j } index the units within cluster j, with total sample size n = PJj=1 nj . For unit i in cluster j, let Yij denote the response variable. To fix notation, we consider a GLMM representation in which, conditionally on cluster-specific random effects, Yij follows a distribution in the exponential family and its conditional mean μij satisfies 
+
+g(μij ) = ξ + xij β + z⊤ 
+
+> ij
+
+γ + w⊤ 
+
+> j
+
+δ + Uj + Gj xij + D⊤ 
+
+> j
+
+zij , (1) where g(·) is a known link function. Here, xij ∈ R is a covariate of interest and β ∈ R is its fixed effect. The covariate may vary within clusters ( xij ̸ = xi′j for some i, i ′, j ) or be cluster-constant ( xij = xj ); throughout, we use the notation xij to cover both cases. Furthermore, 
+
+ξ ∈ R represents the intercept, zij ∈ Rp and wj ∈ Rq denote within- and between-cluster nuisance covariates, respectively, and γ ∈ Rp and δ ∈ Rq collect the associated fixed effects. The cluster-specific random variables Uj , G j ∈ R and Dj ∈ Rp represent a random intercept, a random deviation in the effect of xij , and analogous deviations in the effects of the within-cluster nuisance covariates, respectively. This formulation is representative of a standard GLMM setup (McCulloch et al., 2008). We remark here that the model in (1) is introduced primarily to fix notation and formalize the inferential setting. It should not be interpreted as a structural assumption required by the proposed method. In particular, the random-effects specification is only one possible working 
+
+3representation of the within-cluster dependence. The inferential framework developed below is compatible with submodels of (1), as well as with richer dependence structures obtained by extending the random component. This is because the proposed procedure does not rely on an explicit parametric specification of the random-effects distribution or covariance structure. The inferential target is the effect of the covariate of interest on the response. Specifically, we consider the null hypothesis 
+
+H0 : β = 0 against H1 : β̸ = 0 . (2) The interpretation of β depends on the level at which xij varies. If it varies across units within clusters, β represents an effect identified by within-cluster variation. In contrast, if xij = xj
+
+is constant within clusters, β represents a between-cluster effect. The proposed framework extends directly to the more general null hypothesis H0 : β = β0 and to one-sided alternatives, but we restrict our attention to (2) for simplicity of exposition. Under a conventional GLMM analysis, inference on β is typically derived from asymptotic likelihood theory, e.g., via Wald, likelihood-ratio, or score statistics (Breslow and Clayton, 1993; McCulloch et al., 2008). The validity of these procedures depends critically on the correct specification of the random-effects structure (Heagerty and Kurland, 2001; Andreella et al., 2025; Andreella and Finos, 2025, 2026). In particular, omission of relevant random slopes, misspecification of the random-effects covariance matrix, or adoption of an overly restrictive dependence structure may yield biased variance estimates and, consequently, incorrect null approximations for the resulting test statistics, leading to anticonservative tests and inflated type I error. Thus, even when the fixed-effects component is correctly specified, inference on 
+
+β may be unreliable if the random part of the model is misspecified. This is methodologically consequential, since the random-effects structure is generally not identified by the data alone and must instead be selected among competing plausible parameterizations (Barr et al., 2013; Bates et al., 2015; Matuschek et al., 2017). A second issue with GLMM-based testing procedures is computational. Because the GLMM likelihood generally involves integration over the random effects, estimation typically relies on numerical approximation (Breslow and Clayton, 1993; McCulloch et al., 2008). In finite samples, especially with binary or sparse responses, highly correlated covariates, or complex random-effects structures, this may produce non-convergence, singular fits, boundary estimates of variance components, nearly unidentified covariance parameters, and unstable standard error estimates. As a consequence, the finite-sample behavior of the resulting test statistics may deviate substantially from their nominal asymptotic approximations, with possible inflation of the type I error rate (Andreella et al., 2025; Andreella and Finos, 2025). These difficulties become especially relevant when inference is carried out across a collection of plausible fixed-effects specifications. In many applications, there is uncertainty about which nuisance covariates should be included, how continuous covariates should be represented, or whether a covariate should enter the model as a within- or between-cluster effect. Accordingly, let 
+
+M = {m1, . . . , m K } (3) denote a collection of plausible model specifications that may differ in the definition of the response Ykij (e.g., from outlier and/or leverage point removal), the predictors xkij , zkij and 
+
+wkj (combination and transformation), the link function gk , and the estimation procedure used to fit the model (maximum likelihood estimation, Firth bias-reduced estimation (Firth, 1993), penalized likelihood methods, etc.). In this setting, the inferential problem is to perform valid inference across M while simulta-neously accounting for within-cluster dependence and the multiplicity induced by considering multiple candidate specifications. In particular, let βk denote the effect of the considered co-variate under specification mk . Then interest lies in making confidence statements on the 
+
+4model-specific null hypotheses 
+
+H0k : βk = 0 against H1k : βk̸ = 0 , k = 1 , . . . , K (4) at a pre-fixed confidence level 1 − α, with α ∈ (0 , 1). To address this challenge, we propose PIMAX, a multiverse inferential framework for clus-tered data. As shown in the next sections, PIMAX enables three types of confidence statements on the family of hypotheses {H0k }Kk=1 : (i) a global p-value with weak FWER control (“Is there at least one specification with a non-zero effect?”), (ii) lower confidence bounds on the number or proportion of true discoveries (“How many?”), and (iii) multiplicity-adjusted p-values with strong FWER control (“Which ones?”). The adjusted p-values are a key feature of PIMAX, as they allow researchers to select and report a preferred specification post hoc, after seeing the data and performing the analysis, while maintaining valid type I error control. 
+
+# 3 The flip2sss approach 
+
+The main component underlying PIMAX is the flip2sss method developed by Andreella et al. (2025). Given a single specification (1) and the corresponding system of hypotheses (2), flip2sss provides valid resampling-based inference on H0 by reducing within-cluster dependence using cluster-level summaries, from which score statistics are then constructed, as defined below. We consider two cases: a within-cluster scenario, where the covariate of interest xij varies within clusters, and a between-cluster scenario, where xij = xj is cluster-constant. 
+
+# 3.1 Two-stage summaries 
+
+Definition 1 (First-stage model) . For each cluster j = 1 , . . . , J , define the first-stage GLM 
+
+g(μij ) = ξj + r⊤ 
+
+> ij
+
+λj , i = 1 , . . . , n j ,
+
+where rij ∈ Rd contains the within-cluster covariates: 
+
+rij =
+
+( xij , z⊤
+
+> ij
+
+⊤ in the within-cluster case 
+
+zij in the between-cluster case. 
+
+Definition 2 (First-stage summary statistic) . For each cluster j = 1 , . . . , J , let 
+
+ˆθj =
+
+h ˆξj , ˆλ⊤
+
+> j
+
+i⊤
+
+∈ Rd+1 
+
+denote the vector of cluster-specific estimators obtained from the first-stage GLM, and let 
+
+tj = a⊤ ˆθj ∈ R
+
+be a scalar first-stage summary statistic, where a ∈ Rd+1 is a contrast. In particular, let 
+
+tj =
+
+( ˆβj in the within-cluster case 
+
+ˆξj in the between-cluster case, where ˆβj denotes the estimate of the cluster-specific coefficient of xij .
+
+5Table 1: Summary of quantities used in the flip2sss method in the within- and between-cluster cases. Stage Quantity Within Between First Covariates rij [xij , z⊤ 
+
+> ij
+
+]⊤ zij 
+
+Coefficients θj = [ ξj , λ⊤ 
+
+> j
+
+]⊤ [ξj , β j , γ⊤ 
+
+> j
+
+]⊤ [ξj , γ⊤ 
+
+> j
+
+]⊤
+
+Model g(μij ) = ξj + r⊤ 
+
+> ij
+
+λj g(μij ) = ξj + xij βj + z⊤ 
+
+> ij
+
+γj g(μij ) = ξj + z⊤ 
+
+> ij
+
+γj
+
+Summary statistic tj ˆβj ˆξj
+
+Second Target variable qj 1 xj
+
+Nuisance covariates uj wj [1 , w⊤ 
+
+> j
+
+]⊤
+
+Model tj = ˜βq j + u⊤ 
+
+> j
+
+φ + εj tj = ˜β + w⊤ 
+
+> j
+
+δ + εj tj = ˜ξ + xj ˜β + w⊤ 
+
+> j
+
+δ + εj
+
+Definition 3 (Second-stage working model) . Consider a second-stage linear model in which 
+
+tj serves as the response and the between-cluster covariates enter as predictors: 
+
+tj = ˜βq j + u⊤ 
+
+> j
+
+φ + εj , εj ∼ (0 , v j ) independent, (5) 
+
+where qj ∈ R is the target variable, constructed to capture the dependence of the original model 
+
+(1) on xij , and uj ∈ Rm collects the nuisance covariates. Specifically, 
+
+qj ; uj =
+
+(1; wj in the within-cluster case 
+
+xj ; 1, w⊤
+
+> j
+
+⊤ in the between-cluster case. 
+
+To facilitate readability, Table 1 summarizes the key quantities introduced in Definitions 1–3. The second-stage model (5) is treated as a working model for the cluster-level summaries. Throughout, we assume the following. 
+
+Assumption 1. The conditional mean of the summary statistic tj is correctly specified by the corresponding second-stage model (5) .
+
+Assumption 1 concerns only the mean structure of the cluster-level summaries. In particular, it does not require the correct specification of the random-effects distribution or the within-cluster covariance structure. Furthermore, observe that the error terms in (5) are only assumed to be independent with zero mean, allowing for arbitrary heteroscedasticity and non-identical distributions. Inference on β in the original specification (2) is operationally carried out by studying ˜β in the second-stage working model (5): ˜H0 : ˜β = 0 against ˜H1 : ˜β̸ = 0 . (6) 
+
+Proposition 1. Under Assumption 1 and for the first-stage summaries in Definition 2, H0
+
+and ˜H0 are equivalent, in the sense that they induce the same restriction on the distribution of 
+
+{tj }Jj=1 .
+
+Although the cluster-level summaries in Definition 2 are obtained here from cluster-specific GLMs, the flip2sss construction is not tied to this particular choice (Senn, 1990). Other first-stage reductions may be used, provided that they yield well-defined second-stage score contri-butions satisfying the validity conditions stated in Section 3.2. When several such reductions are scientifically defensible, the choice of first-stage summary may itself be included among the 
+
+6analytical decisions defining the multiverse. This flexibility is consistent with results in related settings showing that, under suitable conditions, procedures based on summary statistics need not be less efficient than analyses based on individual-level data (Lin and Zeng, 2010). The validity and finite-sample performance of flip2sss nevertheless depend on the quality of the first-stage summaries. In small samples or sparse designs, cluster-level estimators may be biased or unstable, thereby affecting the centering and variability of the second-stage score statistic. Exact unbiasedness is not required, but the cumulative bias of the summaries entering the second-stage model must be asymptotically negligible, as formalized in the following. 
+
+Proposition 2. Consider any second-stage statistic of the form 
+
+S = J−1/2
+
+> J
+
+X
+
+> j=1
+
+fj (tj ),
+
+where fj : R → R is linear for each j and the sequence {fj }Jj=1 is uniformly bounded. Let t∗
+
+> j
+
+and S∗ be the oracle versions of tj and S, respectively, obtained by plugging-in the true value of θj under H0. If, as J → ∞ ,
+
+J−1/2
+
+> J
+
+X
+
+> j=1
+
+E(tj ) − t∗ 
+
+> j
+
+→ 0,
+
+then 
+
+E(S) − E(S∗) → 0.
+
+Proposition 2 shows that exact unbiasedness of the first-stage summaries tj is not required. What is needed is that the cumulative bias of the scalar summaries entering the second-stage model be negligible at the J−1/2 scale of the second-stage statistic S. In particular, the condition in Proposition 2 is implied by the stronger requirement max 1≤j≤J |E(tj ) − t⋆j | =
+
+o(J−1/2). Moreover, if |E(tj ) − t⋆j | = O(n−1 
+
+> j
+
+) uniformly in j, then a sufficient condition is 
+
+J−1/2 PJj=1 n−1 
+
+> j
+
+→ 0. If the cluster sizes are fixed or uniformly bounded, the rate O(n−1 
+
+> j
+
+) is not sufficient to guarantee this condition, since the within-cluster bias does not vanish as J
+
+increases. In such settings, the first-stage summaries must therefore be chosen or corrected so that their cumulative bias remains negligible at the J−1/2 scale. 
+
+# 3.2 Score-based test 
+
+A test for ˜H0, and thus for H0, is constructed via score-based sign-flipping (Hemerik et al., 2020; De Santis et al., 2025b) at the cluster level. The required assumptions and definitions are introduced below. 
+
+Assumption 2. The clusters j = 1 , . . . , J are mutually independent. 
+
+Definition 4 (Cluster-wise score) . In the second-stage model (5) , let ˆζj = u⊤ 
+
+> j
+
+ˆφ denote the fitted mean of tj under H0, and recall that vj is the variance of tj . The cluster-wise effective score contribution of the jth cluster is 
+
+cj =
+
+qj −
+
+> J
+
+X
+
+> ℓ=1
+
+qℓu⊤
+
+> ℓ
+
+vℓ
+
+! JX
+
+> ℓ=1
+
+uℓu⊤
+
+> ℓ
+
+vℓ
+
+!−1
+
+uj
+
+ v−1 
+
+> j
+
+(tj − ˆζj ). (7) 
+
+The corresponding effective score statistic (Hemerik et al., 2020) is 
+
+S = J−1/2
+
+> J
+
+X
+
+> j=1
+
+cj .
+
+7The standardized score statistic (De Santis et al., 2025b), introduced to improve small-sample performance, is obtained by dividing the effective score by its standard deviation: 
+
+T = S
+
+pVar( S) ,
+
+where 
+
+Var( S) = J−1
+
+> J
+
+X
+
+> j=1
+
+˜q 2 
+
+> j
+
+v−1 
+
+> j
+
+, ˜qj = qj −
+
+> J
+
+X
+
+> ℓ=1
+
+qℓu⊤
+
+> ℓ
+
+vℓ
+
+! JX
+
+> ℓ=1
+
+uℓu⊤
+
+> ℓ
+
+vℓ
+
+!−1
+
+uj .
+
+In practice, when the variance vj is unknown, it can be replaced by a √J-consistent estimate 
+
+ˆvj (De Santis et al., 2025b). 
+
+Assumption 3. Denote by c∗ 
+
+> j
+
+the oracle score contribution, obtained by replacing all estimated second-stage quantities in (7) by their population counterparts under H0. As J → ∞ ,
+
+1
+
+J
+
+> J
+
+X
+
+> j=1
+
+Var( c∗ 
+
+> j
+
+) → c
+
+for some constant c > 0. Moreover, for every ε > 0,
+
+1
+
+J
+
+> J
+
+X
+
+> j=1
+
+E
+
+
+
+(c∗ 
+
+> j
+
+)21
+
+ |c∗ 
+
+> j
+
+|√J > ε 
+
+ 
+
+→ 0.
+
+Assumption 3 imposes regularity conditions on the cluster-wise score contributions. It requires the effective score S to have a nondegenerate asymptotic variance and rules out settings in which the limiting behavior of the test is driven by only a few clusters. A resampling-based test is then constructed by approximating the null distribution of the standardized score statistic T by randomly flipping the signs of the cluster-wise score contri-butions cj .
+
+Definition 5 (Standardized score test) . Fix a number of transformations B ∈ N. For any 
+
+j = 1 , . . . , J , let fj1 = 1 and, for b = 2 , . . . , B , let fjb ∈ {− 1, +1 } be independent Rademacher random variables. The bth sign-flipped version of the effective score is 
+
+Sb = J−1/2
+
+> J
+
+X
+
+> j=1
+
+fjb cj . (8) 
+
+Its standardized version is 
+
+Tb = Sb
+
+pVar( Sb | f1b, . . . , f Jb ) , (9) 
+
+with 
+
+Var( Sb | f1b, . . . , f Jb ) = J−1
+
+> J
+
+X
+
+> j=1
+> J
+
+X
+
+> ℓ=1
+
+˜qj v−1/2 
+
+> j
+
+ˆa(b) 
+
+> jℓ
+
+v−1/2 
+
+> ℓ
+
+˜qℓ (10) 
+
+and 
+
+ˆa(b) 
+
+> jℓ
+
+=
+
+> J
+
+X
+
+> r=1
+
+
+
+1{j = r} − ˆhjr 
+
+
+
+frb JX
+
+> s=1
+
+
+
+1{r = s} − ˆhrs 
+
+
+
+fsb 
+
+
+
+1{s = ℓ} − ˆhsℓ 
+
+
+
+.
+
+where ˆhjr denotes the (j, r )th entry of the weighted hat matrix. Then H0 is rejected at level α if 
+
+T1 < T (⌈αB/ 2⌉) or T1 > T (⌈(1 −α/ 2) B⌉)
+
+8where T1 is the observed statistic, and T(1) ≤ · · · ≤ T(B) are the ordered values of the B
+
+sign-flipped statistics. A corresponding two-sided p-value is given by 
+
+p = 1
+
+B
+
+> B
+
+X
+
+> b=1
+
+1 {| Tb| ≥ | T1|} .
+
+One-sided p-values and rejection rules are obtained analogously. In the special case with no nuisance covariates in the second-stage model, the test simplifies significantly, as the score contributions (7) reduce to cj = qj tj /v j while the variance (10) becomes Var( Sb | f1b, . . . , f Jb ) = J−1
+
+> J
+
+X
+
+> j=1
+
+˜q 2 
+
+> j
+
+v−1
+
+> j
+
+and no longer depends on the sign-flip transformation. 
+
+Theorem 1. Under Assumptions 1–3, the sign-flipping test of Definition 5 is a valid α-level test for H0, asymptotically as J → ∞ .
+
+This construction combines the asymptotic validity of sign-flipping score tests with a two-stage summary-statistics representation that shifts dependence from the observation level to the cluster level without requiring specification of the random-effects distribution or covariance structure. The validity of the test is asymptotic in the number of clusters J, while it remains exact for any fixed number of sign-flip transformations B. Large values of B tend to provide higher power; to ensure a non-degenerate test with positive power, it is required that B ≥ 1/α 
+
+(Hemerik et al., 2020). Importantly, Proposition 2 ensures robustness to small first-stage biases, provided that their cumulative effect is asymptotically negligible, and no distributional assumptions are imposed on the second-stage residuals beyond cluster-level independence and moment conditions. 
+
+# 4 Inference in a multiverse of mixed-effects models 
+
+Consider the multiverse of candidate specifications (3) and the model-specific null hypotheses (4). The corresponding global null hypothesis is the intersection null 
+
+HM =
+
+> K
+
+\
+
+> k=1
+
+H0k ,
+
+that is, the hypothesis that the effect of interest is zero in all candidate specifications. A global test for HM is constructed by combining information from the K candidate specifications via model-specific standardized scores, following a procedure similar to PIMA (Girardi et al., 2024). 
+
+Definition 6 (Global test) . Draw B random sign-flipping transformations as in Definition 5: for each cluster j = 1 , . . . , J , fj1 = 1 , while fjb ∈ {− 1, +1 } are independent Rademacher random variables for b = 2 , . . . , B . For each specification mk and each transformation b, let 
+
+Tkb be the corresponding standardized score (9) . Then define the bth combined test statistic as 
+
+Gb = ψ (|T1b|, . . . , |TKb |) ,
+
+where ψ : RK → R is a combining function that is non-decreasing in each argument, such as the mean and the maximum. The global null HM is rejected at level α if 
+
+G1 > G (⌈(1 −α)B⌉)
+
+9where G(1) ≤ · · · ≤ G(B). The corresponding global p-value is 
+
+pM = 1
+
+B
+
+> B
+
+X
+
+> b=1
+
+1{Gb ≥ G1}.
+
+The use of common sign-flip transformations across specifications preserves the dependence among model-specific score statistics and provides a resampling approximation to their joint null distribution. The combining function ψ must be specified a priori, and its choice may impact the power properties of the global test. It may be defined directly on the standardized score statistics T1b, . . . , T Kb or, alternatively, obtained by transforming them into p-values 
+
+p1b, . . . , p Kb , either via parametric inversion or rank-based methods, and then applying classical 
+
+p-value combination rules such as Fisher’s method (Pesarin, 2001; Girardi et al., 2024). 
+
+Theorem 2. Suppose that Assumptions 1–3 hold for every specification mk ∈ M . Then the global test based on Definition 6 is a valid α-level test for HM, asymptotically as J → ∞ .
+
+Theorem 2 extends local validity of inference in flip2sss to the multiverse level. Rejection of the global null hypothesis indicates evidence that the effect of interest is non-null in at least one of the considered specifications, with weak FWER control. The same approach extends to arbitrary subsets of specifications. For any non-empty index set I ⊆ { 1, . . . , K }, define the sub-collection I = {mk ∈ M : k ∈ I} and the corresponding intersection null hypothesis 
+
+HI = \
+
+> k∈I
+
+H0k .
+
+A global test for HI is obtained analogously to Definition 6, by computing a subset-specific combined statistic 
+
+GIb = ψI (( |Tkb |)k∈I ) ,
+
+where ψI : R|I| → R, and comparing the observed value GI 
+
+> 1
+
+with the sign-flip distribution. Under the same conditions as in Theorem 2, this yields an asymptotically valid test of HI .These subset tests provide the building blocks for closed testing procedures (Marcus et al., 1976). As the tests are asymptotically valid, closed testing yields asymptotically valid multiplicity-adjusted p-values for each specification, with strong control of the FWER over M. In this way, it allows researchers to identify the specifications with a non-zero effect. Closed testing enjoys an optimality property in the sense that any multiple testing method controlling the FWER or related error measures is either equivalent to a closed testing procedure or can be improved by one (Goeman et al., 2021). In practice, full closed testing can be computationally demanding and may become infeasible when the number K of specifications is large. In such cases, one can adopt the combination function ψ = max and rely on the corresponding maxT algorithm, which represents a computationally efficient shortcut (Westfall and Young, 1993). Furthermore, closed testing and its shortcuts provide a multiverse-level summary of the evidence, as they can be used to derive simultaneous lower confidence bounds on the number of false null hypotheses, either in M or within subsets I ⊆ M (Goeman and Solari, 2011; Blanchard et al., 2020; Blain et al., 2022; Andreella et al., 2023; Vesely et al., 2023). Simul-taneity ensures validity even when the subset is selected post hoc. This allows one to quantify how many candidate specifications support the presence of an effect. Although this approach may appear less informative than the maxT procedure, alternative choices of ψ may be more sensitive to different signal structures and gain higher power in certain settings. Guidance on selecting the combining function based on the expected type of signal can be found in Vesely et al. (2023). Finally, the same approach extends directly to multiple parameters of interest. As argued by Girardi et al. (2024), global test statistics can be defined for all individual parameters of 
+
+10 interest by applying the same random sign-flipping transformations. This allows one to test an overall global null hypothesis of no effect in any model. Moreover, the resulting tests can be embedded within a closed testing framework to obtain multiplicity-adjusted p-values for each parameter and each model, as well as simultaneous lower confidence bounds on the number of true effects, both overall and stratified by model or by coefficient. To summarize, PIMAX combines the cluster-level robustness of the two-stage sign-flipping approach of flip2sss with the multiverse resampling and post-selection guarantees of PIMA. The resulting procedure extends multiverse inference to clustered-data settings without requiring a fully specified random-effects distribution or covariance structure. We next examine the empirical behavior of PIMAX and compare it with existing alternatives. 
+
+# 5 Simulations 
+
+The performance of PIMAX is evaluated in terms of type I error control and power and com-pared with GLMM-based inference (Bolker et al., 2009). Since the latter yields model-specific inference, multiplicity within the multiverse is handled by Holm-Bonferroni adjustment (Holm, 1979). We examine two data-generating scenarios, corresponding to the within- and between-cluster settings considered in Definitions 1–3. For each design condition, the number of clusters is set to J ∈ { 20 , 30 , 40 } and the common cluster size to nj ∈ { 10 , 20 }. The response Yij follows a Bernoulli distribution with success probability πij ∈ (0 , 1) and canonical parameter ηij = logit( πij ) generated according to model (1), with nuisance covariates zij , w j ∈ R (q = p = 1) and nuisance fixed effects ξ = γ = δ =0.5. Cluster-specific random effects are generated from a trivariate Gaussian distribution as (Uj , G j , D j )⊤ ∼ N (0, Σ) where Σ = ARA , with A = diag(1 .0, 0.7, 0.4) and R an equicorrelation matrix with off-diagonal entries equal to 0 .3. To mimic a multiverse of plausible and highly related models, we follow the latent-variable construction used in Simonsohn et al. (2020) and subsequently in Girardi et al. (2024). In each setting, the response is simulated from an underlying latent variable of interest ℓij , together with the nuisance covariates zij and wj , each correlated at level 0 .60 with ℓij . The latent variable is not directly observed; inference is instead based on proxy covariates derived from it. A multiverse of K = 100 specifications is constructed, each defined by an alternative proxy 
+
+xkij having correlation 0 .85 with ℓij . Operationally, the data are simulated in a sequential way, starting from wj ∼ N (0 , 1); then ℓij is generated conditionally on wj , and finally zij and xkij 
+
+as noisy transformations of ℓij . Table 2 summarizes this mechanism, presenting the variables in the order in which they are computed. In the within-cluster scenario, ℓij and xkij vary at the observation level, and the linear predictor is 
+
+ηij = ξ + γz ij + δw j + βℓ ij + Uj + Gj ℓij + Dj zij .
+
+In contrast, in the between-cluster scenario, ℓj and xkj vary only at the cluster level, and 
+
+ηij = ξ + γz ij + δw j + βℓ j + Uj + Dj zij .
+
+Each design condition is replicated 1000 times. Inference on the effect of interest at significance level α = 0 .05 is then carried out using PIMAX, with first-stage summary statistics estimated by Firth-corrected logistic regression (Firth, 1993). This choice aims at reducing small-sample bias and separation issues in the cluster-specific binary regressions. At the multiverse level, the global null hypothesis of absence of any effect is tested with the test of Definition 6, taking B = 1000 transformations and both ψ = mean and ψ = max as combining functions. As described above, the competing GLMM-based inferential procedure is applied separately to each specification and adjusted 
+
+11 Table 2: Simulations: data-generating mechanism. Here, fρ(t) = ρt + p1 − ρ2 ε, with ε ∼ N (0 , 1). The errors ε vary within- or between-cluster, according to the variable that is generated via fρ.
+
+Quantity Formula Level 
+
+Between-cluster nuisance wj ∼ N (0 , 1) between Latent variable ℓij = f0.60 (wj ) within ( ℓij ) / between ( ℓj )Within-cluster nuisance zij = f0.60 (ℓij ) within Target proxy xkij = f0.85 (ℓij ) same as the latent variable nJ = 10 n J = 20            
+
+> 20 25 30 35 40 20 25 30 35 40
+> 0.050 0.075 0.100 0.125
+> J
+> Empirical type I error
+> GLMM Bonferroni PIMAX max PIMAX mean
+
+Figure 1: Simulations: empirical type I error in the within-cluster scenario. The shaded horizontal band represents the 95% simulation interval around the nominal level α = 0 .05. 
+
+across specifications using Holm-Bonferroni. The fitted GLMM includes a random intercept and a random slope for zij ; in the within-cluster scenario, it additionally includes a random slope for xkij .First, the type I error is evaluated under β = 0, with results displayed in Figures 1 and 2. In both settings, GLMM-based inference exhibits substantial inflation of the type I error rate, especially for smaller values of J, with the problem being particularly severe in the between-cluster case. PIMAX, in both its mean and max versions, never exceeds the nominal level, after accounting for the 95% simulation confidence interval. Subsequently, statistical power is assessed by taking β = 0 .5 and reporting the proportion of simulations where the global null hypothesis is rejected, as shown in Figures 3 and 4. The mean version of PIMAX is uniformly the most powerful procedure. The max version is more conservative, but still remains competitive in many settings; GLMM-based inference is both valid and superior to the latter only in the within-cluster case with nj = 20. Overall, the simulations suggest that PIMAX attains the intended balance between error control and sensitivity, with the mean combining function appearing particularly effective in the considered designs. 
+
+12 nJ = 10 nJ = 20          
+
+> 20 25 30 35 40 20 25 30 35 40
+> 0.05 0.10 0.15 0.20
+
+J  
+
+> Empirical type I error
+> GLMM Bonferroni PIMAX max PIMAX mean
+
+Figure 2: Simulations: empirical type I error in the between-cluster scenario. The shaded horizontal band represents the 95% simulation interval around the nominal level α = 0 .05. n J = 10 nJ = 20          
+
+> 20 25 30 35 40 20 25 30 35 40
+> 0.2 0.4 0.6 0.8
+
+J  
+
+> Empirical Power
+> GLMM Bonferroni PIMAX max PIMAX mean
+
+Figure 3: Simulations: empirical power in the within-cluster scenario. Shaded bands represent pointwise 95% simulation intervals. 13 n J = 10 nJ = 20           
+
+> 20 25 30 35 40 20 25 30 35 40
+> 0.2 0.3 0.4
+> J
+> Empirical Power
+> PIMAX max PIMAX mean
+
+Figure 4: Simulations: empirical power in the between-cluster scenario. Shaded bands represent pointwise 95% simulation intervals. Results for GLMM-based inference are omitted, as it fails to control the type I error rate in all considered settings. 
+
+# 6 SHARE data analysis 
+
+We illustrate the proposed methodology using data from SHARE (B¨ orsch-Supan et al., 2013), a longitudinal survey collecting socio-demographic information on individuals aged 50 years and older in Europe. Our goal is to identify individual characteristics associated with disability among older adults in Italy. We study all available SHARE waves from 2004 to 2022 (waves 1– 9), excluding wave 3, for which the imputed datasets required for the analysis are not available. The study is restricted to the main Italian respondents, yielding a sample of 5 ,325 subjects. As is typical in longitudinal surveys, participants may enter the study after the first wave or leave before its conclusion, resulting in an unbalanced panel. As the response, we take the global activity limitation indicator (GALI), a binary measure of long-term activity limitations due to health problems that is widely used as a proxy for disability in population health research (Van Oyen et al., 2018). As potential predictors, we examine sex, age, their interaction, education level, partnership status (capturing daily social support), financial distress (as a proxy for economic status), and chronic morbidity. These variables admit several operationalizations, as follows. First, age is modeled either as a linear or a quadratic effect; more flexible parameterizations, such as spline-based effects or age categories, were not considered because they frequently re-sulted in unstable estimates or convergence issues. Second, education is reported according to the international standard classification of education (UNESCO, 2003, ISCED), which distin-guishes several ordered levels of educational attainment. We consider two codings: a three-level ordinal variable (primary, secondary, and post-secondary) and a binary indicator for having at least a secondary education. Partnership status is derived from the SHARE marital-status variable, which distinguishes several legal and living arrangements; we examine the presence of either any partner or a cohabiting partner. Financial distress is measured using the question on how easily households make ends meet, with four ordered response categories ranging from living comfortably to experiencing great difficulty. This variable is dichotomized to account for either any financial difficulty or only severe distress. Finally, chronic morbidity is specified in 
+
+14 1 + 2 + number          
+
+> −1.5 −1.0 −0.5 −1.2 −0.8 −0.4 0.0 0.1 0.2 0.3
+> 0123
+> Estimate
+> −log(p−value)
+
+Figure 5: SHARE data: estimated effect of chronic morbidity across the multiverse versus 
+
+− log 10 (p), where p denotes the raw p-value. The horizontal line indicates the significance level 
+
+α = 0 .05; points above it correspond to significant effects. 
+
+three different ways: the total count of chronic illnesses, an indicator for at least one condition, and an indicator for at least two conditions, capturing alternative cumulative and threshold effects. With the exception of age, the predictors exhibit little or no within-subject variation over time and can be regarded as approximately time-invariant (i.e., between-subject) characteris-tics. To improve estimation stability and simplify model specification, we therefore summarize these covariates at the subject level. Specifically, for each individual, we use the average num-ber of chronic illnesses across observed waves and the median value of the remaining covariates, corresponding to the individual’s typical state during follow-up. Age is the only time-varying covariate and thus the only within-subject predictor. The resulting multiverse consists of 48 models, each corresponding to a distinct combination of the alternative variable specifications described above. Since inference is performed for all regression coefficients, the analysis comprises a total of 408 hypothesis tests. We apply PIMAX using Firth-corrected logistic regression in the first stage, and B = 5000 sign-flip transformations in the second stage, obtaining multiplicity-adjusted p-values for each model-coefficient pair via the maxT shortcut procedure. We set α = 0 .05. The multiverse could be expanded further by including additional modeling choices, such as alternative summary statistics. Here, we focus on estimates from Firth-corrected logistic regression, since standard maximum likelihood estimation in logistic regression can be unstable in small-sample settings with sparse binary outcomes or quasi-complete separation (Firth, 1993; Heinze, 2006). The estimated effects vary substantially across specifications, highlighting the importance of accounting for specification uncertainty. Figure 5 reports the estimated effects of chronic morbidity under the different models, where, depending on the specification of chronic mor-bidity itself and the other covariates, the estimated association with the GALI ranges from the expected positive effect to an apparently protective (negative) effect. This variability illustrates how conventional analyses based on a single specification may lead to substantially different scientific conclusions. In some specifications, the estimated effects become particularly coun-terintuitive: for example, Table 3 reports a model in which a higher number of chronic illnesses is associated with lower disability, while higher educational attainment appears to increase the GALI score. Table 4 summarizes the results of the full analysis by reporting, for each predictor, the 
+
+15 Table 3: SHARE data: coefficient estimates and raw p-values from a single selected model specifi-cation. 
+
+Predictor Estimate p-value 
+
+sex 2.34 0.0002 age (linear) 0.07 0.0002 sex:age −0.03 0.0004 education (secondary) 0.62 0.3712 education (post-secondary) 2.22 0.0428 partner (cohabiting) −0.23 0.7360 financial stress (medium/strong) 1.79 0.0158 chronic (1+) −1.71 0.0064 Table 4: SHARE data: proportion of model specifications in which each predictor is significant before (raw p-values) and after multiplicity adjustment (PIMAX). 
+
+Predictor % Models (raw) % Models (adj.) 
+
+sex 100 .0 70 .8age 100 .0 100 .0sex : age 100 .0 0.0education 20 .8 0.0partner 0.0 0.0financial stress 50 .0 0.0chronic 33 .3 0.0
+
+percentage of model specifications in which its effect is declared significant before and after multiplicity adjustment. After multiplicity correction, only age and sex remain significant in most model specifications. This is consistent with epidemiological evidence identifying older age and female sex as the most robust predictors of disability in later life (Istat, 2021). In contrast, the evidence for the remaining socio-economic and health-related predictors is substantially attenuated once specification uncertainty is accounted for, suggesting that their associations are less robust and more sensitive to modeling choices. We underline that this application is intended as a simple illustrative example to demon-strate how the proposed method operates in practice. However, as emphasized by Girardi et al. (2024), multiverse analysis is not an invitation to indiscriminately expand the model space. A proper multiverse should not be constructed from all possible combinations of covariate defini-tions, but rather restricted to a small set of scientifically plausible models that are expected to reasonably approximate the data-generating reality. In other words, one must think carefully before testing. 
+
+# 7 Discussion 
+
+We propose PIMAX, a method for post-selection inference in multiverse analysis with clustered observations. The method combines the two-stage summary-statistics framework of flip2sss (Andreella et al., 2025) with the multiverse inference approach of PIMA (Girardi et al., 2024). 
+
+16 In this way, PIMAX extends PIMA to settings where observations within the same cluster may be dependent. The method handles unbalanced clusters and heteroscedasticity, and does not require specifying a full random-effects covariance structure. From a methodological perspective, the main contribution of PIMAX is to separate the two sources of complexity that typically occur together in clustered-data applications: dependence and model multiplicity. Dependence is handled through the cluster-level reduction induced by the first-stage summaries, whereas multiplicity is addressed through common sign-flip trans-formations across specifications and the closed-testing principle. This yields a framework that supports both global and post-selection inference across a multiverse of plausible mixed models. A useful feature of our proposal is that it avoids making inference depend on a single, fully specified random-effects structure. This is important because the specification of the random component in mixed models is often difficult, can be unstable, and is rarely unique in practice. PIMAX shifts the focus to the fixed-effects specifications that define the scientific multiverse, while accounting for clustering through its two-stage construction. In this sense, it allows researchers to explore different plausible fixed-effects models without having to resolve the random-effects specification problem within each candidate model. As with related resampling-based and post-selection methods, some points should be kept in mind. The theoretical results are asymptotic in the number of clusters, so the method is expected to provide a better approximation and more accurate inference when the number of clusters is sufficiently large. The performance also depends on the first-stage summaries. If these summaries are unstable or strongly biased, for example, in very small or sparse clus-ters, the second-stage test may be affected. Finally, as in any multiverse analysis, the set of candidate specifications and all components of the multiverse design (including first-stage sum-maries, number of sign-flip transformations, combining function, and significance level) should be defined a priori, before any results are inspected (Girardi et al., 2024). These requirements are not specific to PIMAX, but reflect standard conditions for valid resampling-based and post-selection inference. Finally, future work could investigate extensions of PIMAX to more complex forms of dependence, including crossed random-effects structures. 
+
+# Declarations 
+
+Funding Anna Vesely acknowledges financial support from the Italian Complementary Na-tional Plan PNC-I.1 “Research initiatives for innovative technologies and pathways in the health and welfare sector” D.D. 931 of 06/06/2022, “DARE - DigitAl lifelong pRevEntion” initiative, code PNC0000002, CUP: B53C22006450001. 
+
+Conflict of interest The authors declare no conflict of interest. 
+
+Ethics approval and consent to participate Not applicable. 
+
+Consent for publication Not applicable. 
+
+Data availability The SHARE data used in this study are publicly available from the SHARE Research Data Center: https://share-eric.eu/ .
+
+Code availability The code used for the simulation study and the SHARE data analysis is available at: https://github.com/angeella/PIMAX .
+
+Author contributions Both authors contributed equally to this work. 
+
+17 A Proofs 
+
+# A.1 Proposition 1 
+
+Proof. We first prove that H0 : β = 0 implies eH0 : eβ = 0. Under H0, the covariate of interest has no systematic effect on the response. Hence, in the within-cluster case, where tj = bβj ,the population summaries have no systematic component associated with the effect of xij . In the between-cluster case, where tj = bξj and qj = xj , the population summaries do not depend systematically on xj .By Assumption 1, 
+
+E(tj | qj , uj ) = eβq j + u⊤ 
+
+> j
+
+φ.
+
+Therefore, if the population summaries contain no systematic target component, the coefficient of qj in this conditional mean must be zero, that is eβ = 0. Conversely, suppose that eβ = 0. Then, by Assumption 1, 
+
+E(tj | qj , uj ) = u⊤ 
+
+> j
+
+φ,
+
+so the conditional mean of the cluster summaries contains no systematic component associated with qj . Since, by construction, qj represents the effect of the covariate of interest in the second-stage model, this implies absence of the corresponding effect in the original model, namely β = 0. 
+
+# A.2 Proposition 2 
+
+Proof. Since fj is linear, we can write fj (t) = aj t + bj , with C = sup j |aj | < ∞. By definition, 
+
+S∗ = J−1/2 PJj=1 fj (t∗ 
+
+> j
+
+). Therefore, 
+
+E(S) − E(S∗) = J−1/2
+
+> J
+
+X
+
+> j=1
+
+E[fj (tj )] − fj (t∗ 
+
+> j
+
+) = J−1/2
+
+> J
+
+X
+
+> j=1
+
+aj {E(tj ) − t∗ 
+
+> j
+
+},
+
+and so 
+
+|E(S) − E(S∗)| ≤ CJ −1/2
+
+> J
+
+X
+
+> j=1
+
+E(tj ) − t∗ 
+
+> j
+
+.
+
+The right-hand side converges to zero by assumption, and therefore E(S) − E(S∗) → 0, as 
+
+J → ∞ .
+
+# A.3 Theorem 1 
+
+Proof. By Proposition 1, under Assumption 1, H0 : β = 0 is equivalent to eH0 : eβ = 0 in the second-stage working model. It is therefore sufficient to prove the validity of the second-stage score test. Under Assumption 2, the cluster-level score contributions are mutually independent. Assumption 3 gives the Lindeberg condition and a non-degenerate limiting variance for the oracle effective score. Thus, applying Theorem 2 from De Santis et al. (2025b) to the cluster-level second-stage score contributions, the sign-flipping distribution consistently approximates the null distribution of the standardized score statistic under eH0. Hence the rejection rule in Definition 5 has asymptotic level α under eH0, and therefore, by Proposition 1, under H0.
+
+18 A.4 Theorem 2 
+
+Proof. Under HM = TKk=1 H0k , all model-specific null hypotheses are true. By Theorem 1, the standardized sign-flipping score statistic is asymptotically valid for each specification. Definition 6 applies the same cluster-level sign-flips to all specifications and combines the resulting statistics through a pre-specified non-decreasing function ψ. Therefore, Theorem 3.2 from De Santis et al. (2025a) applies, with clusters as independent units and specifications as parallel models. It follows that the sign-flipping distribution of Gb consistently approximates the null distribution of G1 under HM, and the test has asymptotic level α.
+
+# References 
+
+Andreella, A. and Finos, L. (2025). Blockwise resampling for robust fixed effects inference in linear mixed models. In Scientific Meeting of the Italian Statistical Society , pages 46–51. Springer. Andreella, A. and Finos, L. (2026). Multivariate mixed models with model-free random effects. 
+
+arXiv preprint arXiv:2604.27907 .Andreella, A., Goeman, J., Hemerik, J., and Finos, L. (2025). Robust inference for generalized linear mixed models: a “two-stage summary statistics” approach based on score sign flipping. 
+
+Psychometrika , 90(2):531–553. Andreella, A., Hemerik, J., Finos, L., Weeda, W., and Goeman, J. (2023). Permutation-based true discovery proportions for functional magnetic resonance imaging cluster analysis. 
+
+Statistics in Medicine , 42(14):2311–2340. Barr, D. J., Levy, R., Scheepers, C., and Tily, H. J. (2013). Random effects structure for confir-matory hypothesis testing: Keep it maximal. Journal of Memory and Language , 68(3):255– 278. Bates, D., Kliegl, R., Vasishth, S., and Baayen, H. (2015). Parsimonious mixed models. arXiv preprint arXiv:1506.04967 .Benjamini, Y. (2020). Selective inference: The silent killer of replicability. Harvard Data Science Review , 2(4). Blain, A., Thirion, B., and Neuvial, P. (2022). Notip: Non-parametric true discovery proportion control for brain imaging. NeuroImage , 260:119492. Blanchard, G., Neuvial, P., and Roquain, E. (2020). Post hoc confidence bounds on false positives using reference families. The Annals of Statistics , 48(3):1281–1303. Bolker, B. M., Brooks, M. E., Clark, C. J., Geange, S. W., Poulsen, J. R., Stevens, M. H. H., and White, J.-S. S. (2009). Generalized linear mixed models: a practical guide for ecology and evolution. Trends in ecology & evolution , 24(3):127–135. B¨ orsch-Supan, A., Brandt, M., Hunkler, C., Kneip, T., Korbmacher, J., Malter, F., Schaan, B., Stuck, S., and Zuber, S. (2013). Data resource profile: the Survey of Health, Ageing and Retirement in Europe (SHARE). International journal of epidemiology , 42(4):992–1001. Breslow, N. E. and Clayton, D. G. (1993). Approximate inference in generalized linear mixed models. Journal of the American Statistical Association , 88(421):9–25. 
+
+19 Cnaan, A., Laird, N., and Slasor, P. (1997). Tutorial in biostatistics: Using the general linear mixed model to analyse unbalanced repeated measures and longitudinal data. Statistics in Medicine , 16(20):2349–2380. De Santis, R., Goeman, J. J., Davenport, S., Hemerik, J., and Finos, L. (2025a). Permutation-based multiple testing when fitting many generalized linear models. Electronic Journal of Statistics , 19(2):3317–3332. De Santis, R., Goeman, J. J., Hemerik, J., Davenport, S., and Finos, L. (2025b). Inference in generalized linear models with robustness to misspecified variances. Journal of the American Statistical Association , 120(552):2762–2771. Finos, L., Girardi, P., Gambarota, F., Vesely, A., Calignano, G., Pastore, M., and Alto` e, G. (2022). pima: Post-selection Inference in Multiverse Analysis . R package. Firth, D. (1993). Bias reduction of maximum likelihood estimates. Biometrika , pages 27–38. Gelman, A. and Loken, E. (2014). The statistical crisis in science. American Scientist ,102(6):460–465. Girardi, P., Vesely, A., Lakens, D., Alto` e, G., Pastore, M., Calcagn` ı, A., and Finos, L. (2024). Post-selection Inference in Multiverse Analysis (PIMA): An inferential framework based on the sign flipping score test. Psychometrika , 89(2):542–568. Goeman, J. J., Hemerik, J., and Solari, A. (2021). Only closed testing procedures are admissible for controlling false discovery proportions. The Annals of Statistics , 49(2):1218–1238. Goeman, J. J. and Solari, A. (2011). Multiple testing for exploratory research. Statistical Science , pages 584–597. Heagerty, P. J. and Kurland, B. F. (2001). Misspecified maximum likelihood estimates and generalised linear mixed models. Biometrika , 88(4):973–985. Heinze, G. (2006). A comparative investigation of methods for logistic regression with separated or nearly separated data. Statistics in Medicine , 25(24):4216–4226. Hemerik, J., Goeman, J. J., and Finos, L. (2020). Robust testing in generalized linear models by sign flipping score contributions. Journal of the Royal Statistical Society: Series B ,82(3):841–864. Holm, S. (1979). A simple sequentially rejective multiple test procedure. Scandinavian Journal of Statistics , pages 65–70. Istat (2021). Le condizioni di salute della popolazione anziana in Italia. Technical report, Istituto Nazionale di Statistica, Roma. Lin, D.-Y. and Zeng, D. (2010). On the relative efficiency of using summary statistics versus individual-level data in meta-analysis. Biometrika , 97(2):321–332. Marcus, R., Eric, P., and Gabriel, K. R. (1976). On closed testing procedures with special reference to ordered analysis of variance. Biometrika , 63(3):655–660. Matuschek, H., Kliegl, R., Vasishth, S., Baayen, H., and Bates, D. (2017). Balancing type I error and power in linear mixed models. Journal of Memory and Language , 94:305–315. 
+
+20 McCulloch, C. E., Searle, S. R., and Neuhaus, J. M. (2008). Generalized, Linear, and Mixed Models . Wiley Series in Probability and Statistics. John Wiley & Sons, Hoboken, NJ, 2 edition. Nosek, B. A. and Lakens, D. (2014). Registered reports: A method to increase the credibility of published results. Social Psychology , 45(3):137–141. Pesarin, F. (2001). Multivariate Permutation Tests: With Applications in Biostatistics . John Wiley & Sons, Chichester. Senn, S. (1990). Analysis of serial measurements in medical research. BMJ: British Medical Journal , 300(6725):680. Simmons, J. P., Nelson, L. D., and Simonsohn, U. (2011). False-positive psychology: Undis-closed flexibility in data collection and analysis allows presenting anything as significant. 
+
+Psychological Science , 22(11):1359–1366. Simonsohn, U., Simmons, J. P., and Nelson, L. D. (2020). Specification curve analysis. Nature Human Behaviour , 4(11):1208–1214. Steegen, S., Tuerlinckx, F., Gelman, A., and Vanpaemel, W. (2016). Increasing transparency through a multiverse analysis. Perspectives on Psychological Science , 11(5):702–712. UNESCO (2003). International Standard Classification of Education, ISCED 1997. In Hoffmeyer-Zlotnik, J. H. P. and Wolf, C., editors, Advances in Cross-National Comparison: A European Working Book for Demographic and Socio-Economic Variables , pages 195–220. Springer, Boston, MA. Van Oyen, H., Bogaert, P., Yokota, R. T., and Berger, N. (2018). Measuring disability: asystematic review of the validity and reliability of the global activity limitations indicator (GALI). Archives of Public Health , 76(1):25. Vesely, A., Finos, L., and Goeman, J. J. (2023). Permutation-based true discovery guarantee by sum tests. Journal of the Royal Statistical Society Series B: Statistical Methodology ,85(3):664–683. Westfall, P. H. and Young, S. S. (1993). Resampling-Based Multiple Testing: Examples and Methods for p-Value Adjustment . John Wiley & Sons, New York. 
+
+21
