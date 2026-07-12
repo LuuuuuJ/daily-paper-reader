@@ -1,0 +1,3768 @@
+Title: Finite-Population Inference for Heterogeneity in Many-Group Synthetic Difference-in-Differences
+
+URL Source: https://arxiv.org/pdf/2607.08324v1
+
+Published Time: Fri, 10 Jul 2026 00:59:31 GMT
+
+Number of Pages: 83
+
+Markdown Content:
+# Finite-Population Inference for Heterogeneity in Many-Group Synthetic Difference-in-Differences 
+
+## Takahiro Hoshino ∗ Makoto Nakakita †
+
+## July 10, 2026 
+
+Abstract 
+
+Synthetic difference-in-differences is widely used to estimate treatment effects for many treated groups against a common donor pool. When the same donors are reused across groups, the group-specific estimates are cross-sectionally dependent, and plug-in second moments overstate effect heterogeneity. We develop finite-population inference for heterogeneity in many-group synthetic difference-in-differences: the projection of realized group effects on observed group covariates, the projected group-effect curve, the between-group variance, and the explained share. The theory combines a mod-ular first-stage representation, a joint covariance kernel for donor sharing and block dependence, analytic and leave-out corrections for second moments, and calibrated om-nibus and directed tests under explicit exchangeability or fit-matching conditions. In an American Community Survey application to the Affordable Care Act Medicaid ex-pansion, whose estimand is the incremental effect of expansion status, pre-expansion uninsured rates explain much of the state-level effect variation on the percentage-point scale, household split-samples validate the decomposition, and donor sharing materi-ally increases the standard error for the average effect. In a county-level Clean Air Act application, groupwise estimates are noisy, but a pre-specified projection on baseline fine-particulate pollution reveals a sign-stable directed component under state and di-vision block covariance; placebo analyses attribute part of the raw gradient to regional convergence. 
+
+Key Words: synthetic control; treatment effect heterogeneity; donor sharing; variance component; finite-population inference. 
+
+> ∗
+
+Faculty of Economics, Keio University; RIKEN Center for Advanced Intelligence Project (AIP). E-mail: 
+
+bayesian@keio.jp .
+
+> †
+
+RIKEN Center for Advanced Intelligence Project (AIP). 
+
+1arXiv:2607.08324v1 [econ.EM] 9 Jul 2026 1 Introduction 
+
+In the evaluation of policies and interventions, it is common for treatment to be assigned at the unit of a group (states, municipalities, school districts, hospitals, firms, regional markets, and so on) rather than individuals. In many such settings the treated groups share a common policy shock—in our applications, Medicaid expansion in 2014 and Clean Air Act nonattain-ment designation in 2005—forming a cohort across which one asks how the effect varies; we develop inference for this common-cohort case and defer staggered adoption to the conclu-sion. In this setting, what the researcher wants to know is often not only the average effect but the structure of heterogeneity— for which kinds of groups is the effect large (or small) .Examples include whether the coverage effect of a health-insurance expansion depends on a state’s pre-expansion coverage gap, or whether an environmental regulation reduces pollu-tion more strongly in counties with higher baseline pollution. These are first-order concerns that bear directly on the external validity, generalizability, and optimal targeting of effects. We target data with the following structure. Among groups g = 1 , . . . , G , both the treated-group set T (|T | = G1) and the control-group set C (|C| = G0) are numerous ( G1, G 0
+
+large), and units i = 1 , . . . , n g belonging to each group g are observed. Each unit carries 
+
+unit covariates Xgi , and each group carries group covariates Wg. Treatment is assigned at the group level, and we write the group-specific ATT of group g ∈ T as τg. Individual-level effects may vary within a group: writing Ygit (1) = Ygit (0) + ∆ git , the group-specific ATT is the post-period average τg = |T 1|−1 P 
+
+> t∈T 1
+
+E(∆ git | g, t ), so all finite-population objects below are functions of these group-level averages rather than of any constant individual effect. The interest lies in the dependence of τg on Wg (first moment) and in the share of the dispersion of τg that can be explained by observed group characteristics (second moment). This question faces two obstacles. First, because of group-level assignment, estimating each τg requires constructing the counterfactual for treated group g from the control groups, so the estimation of synthetic-control weights and the residualization of covariates are un-avoidable. When the estimation errors of these nuisances propagate into the second stage (projection and variance decomposition), inference is easily distorted. Second, when esti-mating the variance of τg, the sampling error contained in each bτg systematically biases the variance estimator upward (effects appear more dispersed than they are). This is a problem well known in the variance estimation of teacher value-added and establishment effects, and overestimation is unavoidable with naive plug-in estimation. There is, moreover, a methodological tension: an aversion to random effects . Hierarchical models (random-effects models) that impose a prior or an exchangeable stochastic structure on τg are efficient through partial pooling, but in realistic situations where τg is correlated 2with Wg or with treatment selection, they invite the criticism that the exchangeability as-sumption (unconditional independence) itself may drive the estimator. This paper responds to this tension head-on. 
+
+## 1.1 Approach and Contributions 
+
+We adopt a finite-population standpoint that regards the group-effect sequence {τg}g∈T as fixed parameters, and we define two estimands without imposing distributional assumptions. One is the finite-population best linear predictor γ∗ = arg min γ
+
+P 
+
+> g∈T
+
+(τg −W⊤ 
+
+> g
+
+γ)2 of {τg} onto the group covariates {Wg} (first moment); the other is the between-group variance V , the group covariance C, and the explained share R2 = Vexpl /V by observed group characteristics (second moment). 
+
+Remark 1 (Projected group-effect curve, not a nonparametric conditional mean) . For a co-variate value w we write mT (w) = w⊤γ∗ and call it the projected group-effect curve (a projected group-ATT curve). It is the value at w of the finite-population best linear projec-tion of the realized treated-group effects onto the chosen basis Wg. It should not be read as a nonparametric conditional mean E(τg | Wg = w); the two coincide only if that conditional mean is linear in the chosen basis. We display mT (w) only over the empirical support of 
+
+{Wg} among treated groups. The methodological core consists of three central contributions and the test theory that supports them. We use a self-contained orthogonalized SDID first stage to obtain a linear representation of the group-specific estimates; orthogonality is conditional on a local bridge/balance condi-tion, and online Appendix A gives primitive sufficient conditions and a basis-augmented vari-ant that enforces it by design. The contribution of the paper begins from this representation and lies in the second-stage finite-population inference. Three contributions form a single moment system, without distributional assumptions. (i) Projected group-effect curve and variance decomposition. We define and estimate the projection γ∗ of the group effects onto observed group covariates and the induced projected group-effect curve mT (w) = w⊤γ∗—the effect predicted for a group with covariate value w—together with pointwise and finite-grid simultaneous confidence bands (Corollary 1), as well as the between-group variance V , the directed covariance C, and the explained share R2, treating the group-effect sequence as fixed parameters. (ii) Joint covariance under shared donors. Because every treated group is synthesized from the same donors, the estimated effects are cross-sectionally dependent; we derive the joint covariance kernel that carries this dependence—and, more generally, block and spatial cross-dependence—into the second-stage inference, with donor sharing a special 3case. (iii) Noise correction and calibrated tests. The plug-in second moments are biased upward by first-stage estimation noise; we remove the bias by an analytic correction and a household A/B leave-out, and we calibrate omnibus H0 : V = 0 and directed H0 : C = 0 
+
+tests that remain valid when counterfactual construction is imperfect. A directed test robust to the equilibration residual is the practically important instrument when the omnibus test is under-powered. A central message is methodological: existing group-wise DiD or SDID regressions may deliver similar point estimates for the projection slope and the projected group-effect curve mT (w), but they do not deliver the joint donor-sharing covariance, the noise-corrected second moments, or calibrated inference for V , C, and the curve. The distinc-tive contribution is therefore not the point estimates but the valid uncertainty quantification 
+
+for group-level heterogeneity—confidence bands and tests that carry the shared-donor de-pendence and remove the estimation-noise bias. The projected group-effect curve is the object most directly interpretable to applied researchers: rather than a single average or an abstract slope, it answers “what effect should be expected for a group with this characteristic?” In the Medicaid application it answers what uninsured-rate reduction to expect for a state with a given pre-expansion uninsured rate; in the Clean Air Act application, how much PM 2.5 reduction is associated with a county’s baseline pollution level. The novelty is not merely estimating the slope of this curve, but attaching a confidence band that accounts for the fact that all points on the curve are built from group effects sharing the same donors—a band that is wider than, and not recoverable from, the one an independent-outcome regression would report. Monte Carlo experiments quantify the stakes: naive independence-based inference over-rejects the no-heterogeneity null severely and undercovers the projection intercept, and the joint covariance kernel together with the affine-calibrated placebo restores near-nominal size and coverage (Section 4, Table 1). The Medicaid estimand is the incremental effect associated with expansion status relative to non-expansion states exposed to the other nationwide Affordable Care Act components (exchanges, subsidies, mandate), not the effect of the Act as a whole. The Medicaid application (Section 5) exhibits a large and robust bite gradient whose numerical explained share is scale-dependent; a household A/B leave-out validates the variance decomposition against an independent analytic correction, and donor sharing inflates the average-effect standard error by a factor of 1.8 while leaving the centered slope nearly unaffected. The Clean Air Act application (Section 6) illustrates the Type II-CD regime: county-wise estimates are individually noisy and the omnibus test is low-powered, yet the pre-specified directed projection on baseline PM 2.5 is sign-stable under state- and division-block covariance, survives pre-trend adjustment, and is corroborated by a placebo-calibrated excess and a baseline-matched county-donor design; an exploratory extension to 4county mortality is directionally consistent but lower-powered. 
+
+## 1.2 Related Work 
+
+The foundation of this paper is synthetic difference-in-differences (Arkhangelsky et al., 2021), which balances pre-treatment trends with donor and time weights and extends synthetic control (Abadie et al., 2010, 2015; Ben-Michael et al., 2021) and the difference-in-differences tradition (Abadie, 2005; Sant’Anna & Zhao, 2020). Estimation with many or disaggregated treated units is developed by penalized synthetic control (Abadie & L’Hour, 2021) and micro-level synthetic control (Robbins et al., 2017), and inference for synthetic-control estimates has been developed mainly for a single treated unit or a pooled average—placebo permutations (Abadie et al., 2010), conformal prediction (Chernozhukov et al., 2021), prediction intervals (Cattaneo et al., 2021), and subsampling for the average effect (Li, 2020). None of these targets the joint distribution of the whole cross-section of group effects, its second moments, or the dependence induced when every treated group is synthesized from the same donor pool, which are the objects of this paper. Orthogonal and debiased estimation of conditional average treatment effects (CATE) builds on the double machine learning of Chernozhukov et al. (2018a); its low-dimensional projection (BLP) and group average effects (GATES) are treated by Chernozhukov et al. (2018b), and orthogonal estimation and uniform inference of debiased CATE by Semenova & Chernozhukov (2021). Orthogonal and debiased estimation in the DiD setting is given by Chang (2020). These are mainly at the individual level and cross-sectional, with the conditioning target being a function of continuous covariates. This paper, by contrast, targets a finite-population projection across groups and its variance decomposition , and is differentiated by integrating group-level assignment, two-stage nuisances, group-wise cross-fitting, and G1 → ∞ double asymptotics. Between-site variance estimation and empirical-Bayes inference (FIRC-type random-effects models, EB confidence intervals with frequentist guarantees, and Bayesian hierar-chical and semiparametric approaches; Bloom et al., 2017; Armstrong et al., 2022; Ignatiadis & Wager, 2022), together with correlated-random-coefficient formulations, are reviewed in online Appendix G. The contrast that matters for this paper is invariant across that litera-ture: those methods take the first-stage noise distribution as known and independent across groups, whereas our first stage generates heteroskedastic, donor-sharing-dependent noise whose covariance must itself be estimated. Closest to our second-moment construction, un-biased (leave-out) estimation of variance components in high-dimensional fixed-effects models was established by Kline et al. (2020), and variance estimation of teacher effects by Chetty 5et al. (2014). We transplant this to the between-group variance of group effects estimated by SDID, but because the projection (hat) matrix in the weighted regression of SDID de-pends on the estimated weights , an extension of the leave-out algebra of quadratic forms is required. This extension, and the simultaneous handling of between-group dependence induced by donor sharing, are the theoretical core of this paper. In short, this paper has its novelty in integrating (i) the projection of group effects (a group-level, finite-population version of the Semenova & Chernozhukov, 2021 line), (ii) the 
+
+variance decomposition of group effects (an SDID, between-group version of Kline et al., 2020), and (iii) joint inference under donor-sharing dependence (a refinement of the pooling of Dube & Zipperer, 2015) into a single moment system based on SDID , giving joint inference of (γ∗, V, C, R 2) without distributional assumptions. 
+
+# 2 Setup and Identification 
+
+## 2.1 Notation and Data Structure 
+
+Groups g ∈ { 1, . . . , G }, treated-group set T (|T | = G1), control-group set C (|C| = G0), 
+
+G = G0 + G1. The notation used throughout is collected in online Appendix A. Units 
+
+i = 1 , . . . , n g belong to group g, and the total number of units is N = P 
+
+> g
+
+ng. Among time points t = 1 , . . . , T , the pre-treatment period is T0 = {1, . . . , T 0} and the post-treatment period is T1 = {T0 + 1 , . . . , T } (we take simultaneous adoption by all treated groups as the baseline, and defer the extension to staggered adoption to the conclusion). We write the outcome of unit (g, i ) at time t as Ygit and the group-average trajectory as ¯Ygt = n−1
+
+> g
+
+P 
+
+> i
+
+Ygit .The treatment indicator is at the group level, Dg = 1{g ∈ T } (units of treated groups are all treated post-treatment). Unit covariates Xgit ∈ Rdx (possibly time-varying) are used for adjustment by orthogonalization (residualization), and group covariates Wg ∈ Rp (Wg
+
+includes an intercept) are used for the projection of τg.Each unit has potential outcomes  Ygit (1) , Y git (0) , and the observed outcome is 
+
+Ygit = Dg 1{t ∈ T 1} Ygit (1) +  1 − Dg 1{t ∈ T 1} Ygit (0) 
+
+(pre-treatment, all units are untreated; no anticipation). Our framework admits two data regimes. In the micro-replication regime (Type I), the outcomes Ygit of multiple units within each group g are observed, and the group-average trajectory ¯Ygt can be split into nearly independent subsamples. In this regime, the all-group 
+
+A/B leave-out variance decomposition of Section 3.2 can be implemented directly . In the 
+
+aggregate regime (Type II), only the group-average series ¯Ygt is observed. The first-stage 6SDID can be defined in the same way, but because A/B leave-out cannot be executed, V is replaced by analytic noise subtraction (or model-based covariance estimation). When units within a group are spatially or economically correlated (e.g., i =county), the A/B split is done at the spatial-block level rather than for individual units, or an analytic correction based on a spatial-HAC-type covariance is used—that is, units are not treated as independent replicates. Because ω(g) weights donor groups h ∈ C and not units i, we call these donor-group weights . In Section 5, we present the Medicaid expansion application ( i =household) as a full-fledged Type I application. In the spatially correlated version of Type I, where microdata are aggregated to correlated units such as counties, we use block-level splitting and covariance rather than individual units (our county aggregation layer corresponds to this). In repeated-cross-section Type I data—such as the ACS microdata of Section 5—the primitive sampling units are i ∈ I gt , drawn independently within each group–time cell (g, t ),rather than persistent units observed for all t; we write ngt = |I gt | and ¯Ygt = n−1
+
+> gt
+
+P 
+
+> i∈I gt
+
+Ygit .The all-group A/B construction of Section 3.2 then splits the sampling units within each cell into halves IAgt and IBgt and builds two group–time trajectories ¯Y Agt and ¯Y Bgt that are independent conditional on the cell composition. All results below are stated at the level of the group-average trajectories and their half-sample versions, and therefore apply verbatim to persistent panels (splitting units i) and to repeated cross sections (splitting Igt within each cell) alike. 
+
+## 2.2 Model and Estimands 
+
+Using unit covariates Xgit and unobserved factors, we posit an additively separable interactive fixed-effects model for the potential outcomes, 
+
+Ygit (0) = m(Xgit ) + αg + ξt + Γ ⊤ 
+
+> g
+
+Ft + εgit , E[εgit | g, t, X git ] = 0 , (1) 
+
+Ygit (1) = Ygit (0) + τg, g ∈ T , t ∈ T 1. (2) in which a common covariate function h0(Xgit ) is removed by residualization and the group-time factor structure is spanned, approximately, by the donor groups. The group covariate 
+
+Wg enters only the effect-heterogeneity projection, not identification. The primitive factor-model formulation, the concentration of the group-average trajectory on its mean, the resid-ualization projection, and the repeated-cross-section notation are given in online Appendix A. 72.3 Estimands 
+
+Definition 1 (Group-specific ATT) . We define the group-specific average treatment effect of group g ∈ T as the average over the post-treatment period, 
+
+τg = 1
+
+|T 1|
+
+X
+
+> t∈T 1
+
+E[ Ygit (1) − Ygit (0) | g ]
+
+where E[· | g] is the (super-)population expectation over the units of group g.Hereafter, let ¯τ = G−11
+
+P 
+
+> g∈T
+
+τg, W = G−11
+
+P 
+
+> g∈T
+
+Wg, the centered group covariate 
+
+fWg = Wg − W , and the (finite-population) variance matrix of the group covariates ΣW =
+
+G−11
+
+P 
+
+> g∈T
+
+fWg fW⊤ 
+
+> g
+
+.
+
+Definition 2 (Finite-population projection and variance decomposition) . Regarding 
+
+{τg, W g}g∈T as fixed, define (projection) γ∗ = arg min 
+
+> γ∈Rp
+
+X
+
+> g∈T
+
+(τg − W⊤ 
+
+> g
+
+γ)2, (3) 
+
+=
+
+P 
+
+> g∈T
+
+WgW⊤
+
+> g
+
+−1 P 
+
+> g∈T
+
+Wgτg, (4) (between-group variance) V = 1
+
+G1
+
+X
+
+> g∈T
+
+(τg − ¯τ )2, C = 1
+
+G1
+
+X
+
+> g∈T
+
+fWg(τg − ¯τ ) ∈ Rp,
+
+(5) (explained variance and share) Vexpl = C⊤Σ−1 
+
+> W
+
+C = β∗⊤ ΣW β∗, R2 = Vexpl /V, (6) where β∗ = Σ −1 
+
+> W
+
+C is the slope part of the centered projection, and γ∗ is the full vector combining the intercept ¯τ − W⊤β∗ and the slope β∗. We assume P 
+
+> g
+
+WgW⊤ 
+
+> g
+
+and ΣW are nonsingular. 
+
+Remark 2 (No random effects) . None of the quantities in Definition 2 contains any stochas-tic assumption on τg (exchangeability, normality, or independence from Wg). τg may be arbitrarily correlated with treatment selection or with Wg. In this sense our estimands are “random-effects free” and do not run afoul of the standard aversion in econometrics. R2
+
+is a summary statistic with a clear interpretation—“the share of the dispersion of group ATTs that can be explained by a linear combination of observed group characteristics Wg.” The projection (2) does not assume a functional relationship of τg on Wg: the estimand is the best linear prediction itself, and the true τg may be any (nonlinear) function of 
+
+Wg or may depend on factors outside Wg. “Linear” here means linear in the chosen ba-sis Wg, not linear in the raw covariates, and nonlinearity is captured by enriching the basis (Wg = (1 , Z g, Z 2 
+
+> g
+
+, spline( Zg), Z g ⊗ Z′
+
+> g
+
+, . . . )). The requirements are the nonsingularity of ΣW
+
+8(covariates not collinear) and p ≪ G1 (the basis dimension is small relative to the num-ber of treated groups; an excessive basis leads to mechanical overfitting with R2 → 1 and breakdown of the second-stage CLT). If the true relationship is nonlinear but the basis is coarse, γ∗ remains the best linear approximation while R2 underestimates the explainable heterogeneity (improved by enriching the basis; we verify the robustness of a polynomial basis in Section 5). 
+
+Remark 3 (Two-stage probabilistic framework) . We distinguish two inferential stages. The first stage is the identification and estimation of each τg by SDID, a super-population prob-lem that regards the primitive shocks εgit as stochastic under ng → ∞ (within-group units), 
+
+T0 → ∞ (pre-treatment length), and G0 → ∞ (donors). The second stage, by contrast, is the inference on the heterogeneity projection γ∗, V, R 2, a finite-population (design-based) prob-lem that regards {τg, W g}g∈T as fixed. Hence we impose no random-effects or distributional assumptions on τg. The randomness in the second stage arises only from the estimation error bτg − τg, and its between-group dependence—induced by shared donors—is the central inferential issue of this paper. 
+
+## 2.4 Identification: Assumptions and Orthogonality 
+
+The counterfactual of each treated group g ∈ T is constructed from the donor pool C. Let the pre-treatment period set be T0 and the post-treatment set be T1.
+
+Assumption 1 (No anticipation) . For all g, i , Ygi 0 = Ygi 0(0) , and the treatment effect is zero in all pre-treatment periods. 
+
+Assumption 2 (Additively separable factor model with covariates) . The untreated potential outcome follows model (1): the covariate effect m(Xgit ) and the factor structure αg + ξt +Γ⊤ 
+
+> g
+
+Ft are additively separable, m : Rdx → R is common across groups and times, and 
+
+E[εgit | g, t, X git ] = 0 . The residualization nuisance h0 coincides with this covariate function (h0 = m). 
+
+Assumption 3 (Approximate balance (donor span)) . For each g ∈ T , there exist donor weights ω(g) = ( ω(g) 
+
+> h
+
+)h∈C (P 
+
+> h
+
+ω(g) 
+
+> h
+
+= 1 , ω(g) 
+
+> h
+
+≥ 0) and pre-treatment time weights λ(g) =(λ(g) 
+
+> t
+
+)t∈T 0 such that the synthetic control reproduces the factor loadings, intercept, and trend of treated group g:
+
+X
+
+> h∈C
+
+ω(g) 
+
+> h
+
+Γh = Γ g, X
+
+> h∈C
+
+ω(g) 
+
+> h
+
+αh = αg, X
+
+> t∈T 0
+
+λ(g) 
+
+> t
+
+Ft = ¯FT1 ,
+
+where ¯FT1 = |T 1|−1 P 
+
+> t∈T 1
+
+Ft. That is, the latent trend of the treated group is spanned by a (weighted) convex combination of the control groups. 9Assumption 4 (Regularity conditions) . Pre-treatment length T0 = |T 0| → ∞ ; number of donors G0 → ∞ ; {αg, Γg, F t} bounded; εgit has, conditional on group and time, zero mean and bounded moments, and is weakly dependent. (The correspondence of Assumptions 2–3 to the standard SDID/synthetic-control identifica-tion conditions is discussed in online Appendix A.) Next, we show the orthogonality of this estimand. We define the SDID estimand (popu-lation version) of treated group g by the weighted double difference 
+
+τg =
+
+
+
+¯μg, T1 − X
+
+> h∈C
+
+ω(g) 
+
+> h
+
+¯μh, T1
+
+| {z }
+
+> post-treatment
+
+− X
+
+> t∈T 0
+
+λ(g)
+
+> t
+
+
+
+μgt − X
+
+> h∈C
+
+ω(g) 
+
+> h
+
+μht 
+
+| {z }
+
+> pre-treatment (weighted)
+
+(7) where ¯μg, T1 = |T 1|−1 P 
+
+> t∈T 1
+
+μgt . Under Assumptions 1–3, αg, ξ t, Γ⊤ 
+
+> g
+
+Ft cancel from the right-hand side of (7) and it coincides with τg.To adjust for observed covariates, we residualize the outcome as Y ⊥ 
+
+> git
+
+= Ygit − h0(Xgit ).Here h0(·) is the projection of Y onto X (the orthogonalization nuisance), which by Assump-tion 2 coincides with the true covariate function m. The orthogonalized SDID moment is constructed by treating the weights (ω(g), λ (g)) and the residualization h0 as nuisance param-eters, applying (7) to the residualized outcome, and adding a correction derived from the first-order condition of the weight estimation. 
+
+Lemma 1 (Orthogonality under local bridge balance) . Under Assumptions 1–4 and the local bridge/balance condition of the assumption in online Appendix A, the orthogonalized SDID moment is Neyman orthogonal with respect to the nuisances (ω(g), λ (g), h 0). That is, the Gateaux derivative in the nuisance direction at the true balancing weights and true residualization is zero. In particular, the donor-group weights ω(g) are the minimizer of the pre-treatment fit P 
+
+> t∈T 0
+
+λ(g) 
+
+> t
+
+(μgt − P 
+
+> h
+
+ωhμht )2, and by its first-order condition the weight estimation error affects the estimation of τg only at second order. 
+
+online Appendix A provides the full primitive formulation—the outer-product Riesz repre-sentation, the mixed-remainder expansion, and the simplex-boundary argument—together with the proof; a sketch is reproduced there. 
+
+Theorem 1 (Identification) . Under Assumptions 1–4, each τg (g ∈ T ) is point-identified by (7) (covariate-adjusted version). Therefore γ∗, V , C, Vexpl , R2 in Definition 2 are all point-identified as well. Proof. By the argument of the lemma, each τg is identified. Since γ∗, V, C are known (con-tinuous) functions of {τg, W g}, and Vexpl , R 2 are further known functions through ΣW (de-pending only on Wg), identification propagates. 10 3 Estimation and Statistical Theory 
+
+## 3.1 Estimation Procedure 
+
+As explained in Section 1, the first stage is any group-wise estimator of τg admitting the linear representation (14); we use group-wise orthogonalized SDID. We residualize the outcome by a cross-fitted covariate function bh0, form the residualized group-time trajectory ¯Y ⊥ 
+
+> gt
+
+, and for each treated group solve for donor and time weights following Arkhangelsky et al. (2021), 
+
+bω(g) = arg min 
+
+> ω0∈R, ω ∈∆G0
+
+X
+
+> t∈T 0
+
+
+
+ω0 + P 
+
+> h∈C
+
+ωh ¯Y ⊥ 
+
+> ht
+
+− ¯Y ⊥
+
+> gt
+
+2
+
++ ζ2T0∥ω∥22, (8) 
+
+bλ(g) = arg min 
+
+> λ0∈R, λ ∈∆T0
+
+X
+
+> h∈C
+
+
+
+λ0 + P 
+
+> t∈T 0
+
+λt ¯Y ⊥ 
+
+> ht
+
+− ¯Y ⊥
+
+> h, T1
+
+2
+
+(9) where ∆ is the simplex, ζ is a regularization parameter, and ¯Y ⊥ 
+
+> k, T1
+
+= |T 1|−1 P
+
+> t∈T 1
+
+¯Y ⊥ 
+
+> kt
+
+. The group-ATT estimator is the weighted double difference 
+
+bτg =
+
+ ¯Y ⊥ 
+
+> g, T1
+
+− X
+
+> t∈T 0
+
+bλ(g) 
+
+> t
+
+¯Y ⊥
+
+> gt
+
+
+
+− X
+
+> h∈C
+
+bω(g)
+
+> h
+
+ ¯Y ⊥ 
+
+> h, T1
+
+− X
+
+> t∈T 0
+
+bλ(g) 
+
+> t
+
+¯Y ⊥
+
+> ht
+
+
+
+(10) By the orthogonality of Lemma 1, the estimation errors of (bω(g), bλ(g), bh0) affect bτg only at higher order. In the second estimation stage, we project the group effects {bτg} onto the group covariates. The projection coefficient is given by: 
+
+bγ =
+
+P 
+
+> g∈T
+
+WgW⊤
+
+> g
+
+−1 P 
+
+> g∈T
+
+Wg bτg. (11) We perform the variance decomposition in the same second stage. In SDID, the sampling error of bτg arises from both the treated side and the donor side , and the donor-side error is shared across all treated groups. Therefore the naive plug-in variance is biased not only through the variance of each bτg but also through Cov( bτg, bτg′ ). To remove this all at once, we randomly split the units of all groups (both treated and donor) into two halves A, B , and compute bτ Ag , bτ Bg by completing everything from residualization and weight estimation (8)– (9) to the double difference (10) within each half-sample only. By construction, the vectors 
+
+(bτ Ag )g∈T and (bτ Bg )g∈T are mutually independent conditional on the groups. Using these, 
+
+bV = 1
+
+G1
+
+X
+
+> g∈T
+
+bτ Ag bτ Bg − 1
+
+G21
+
+X 
+
+> g∈T
+
+bτ Ag
+
+X 
+
+> g∈T
+
+bτ Bg
+
+
+
+, (12) 
+
+bC = 1
+
+G1
+
+X
+
+> g∈T
+
+fWg bτg, bVexpl = bCA⊤Σ−1 
+
+> W
+
+bCB , bR2 = bVexpl 
+
+bV , (13) 11 where bCA = G−11
+
+P 
+
+> g
+
+fWg bτ Ag , and similarly bCB . Since C is linear in τg, bC itself is unbiased, but V and Vexpl are quadratic functionals of τg, and we use the cross product (leave-out) to remove the upward bias due to sampling error. 
+
+Proposition 1 (Conditional unbiasedness of the variance decomposition) . Conditional on the groups, suppose bτ Ag , bτ Bg are each conditionally unbiased for τg, and the vectors (bτ Ag )g∈T and 
+
+(bτ Bg )g∈T are mutually independent. Then E[ bV | { τg, W g}] = V and E[ bVexpl | { τg, W g}] = Vexpl .
+
+Proposition 1 formalizes the elementary but crucial point: if the two half-sample effect vectors are conditionally independent and unbiased, their cross-product removes the noise bias in the quadratic functionals. The proof is in online Appendix B. The premise of Proposition 1 is stated at the level of the half-sample vectors and therefore covers both data regimes: in a persistent panel the split is over units, and in a repeated cross section it is performed within each group–time cell (Section 2), which is what delivers the conditional independence of bτ A and bτ B in the ACS application. The all-group split (splitting every group, treated and donor, into halves) is necessary for the leave-out variance to be unbiased under the nonlinearity of the weights, and centering absorbs the common donor shock; a formal statement is in online Appendix B. 
+
+## 3.2 Asymptotic Theory and Decomposition of Variance Compo-nents 
+
+We state the asymptotic theory in a form that allows cross-sectional dependence among the primitive group-level shocks from the outset; the donor-sharing-only kernel of the baseline theory is the special case in which the primitive shocks are cross-sectionally independent, and the state- and division-block covariances used in the Type II application are alternative implementations of the same kernel. As the asymptotic framework, we take G1 → ∞ ,
+
+G0 → ∞ , T0 → ∞ (|T 1| may be fixed) as the baseline, and take the number of units ng in each group to be bounded below ( ng ≥ nmin ). The primitive shock of series k ∈ T ∪ C is the vector of group-average errors εk = (¯ εkt )t with ¯εkt = n−1
+
+> k
+
+P 
+
+> i
+
+εkit ; weak dependence across time points within a series is allowed, and we write the cross-sectional covariance kernel as 
+
+Ωkℓ = Cov( εk, ε ℓ | F ), with Ωkℓ = 0 for k̸ = ℓ under cross-sectional independence. We use the linear representation that pushes the estimation errors of the weights and residualization into the remainder, 
+
+bτg − τg = ug − X
+
+> h∈C
+
+ω(g) 
+
+> h
+
+¯ε λ(g) 
+
+> h
+
++ Rg, ug := ¯ ε λ(g) 
+
+> g
+
+, ¯ε λ(g) 
+
+> k
+
+:= ¯ εk, T1 − X
+
+> t∈T 0
+
+λ(g) 
+
+> t
+
+¯εkt , (14) 12 where ¯εk, T1 = |T 1|−1 P 
+
+> t∈T 1
+
+¯εkt and σ2 
+
+> g
+
+:= Var( ug). The first term is specific to treated group 
+
+g, but the donor-side shock in the second term is shared across all treated groups , and here lies the source of between-group dependence. Rg is the remainder arising from the weights, residualization, and balancing error, and is higher order by orthogonality (Lemma 1) and group-wise cross-fitting. The joint covariance of the group effects follows from this representation by bilinearity, for any cross-sectional dependence structure. 
+
+Proposition 2 (Joint covariance kernel under cross-sectional dependence) . Write the linear representation (14) compactly as bτg = τg + P 
+
+> k
+
+a⊤
+
+> gk
+
+εk + op(G−1/21 ) (the sum runs over the own series k = g and the donors k ∈ C , and agk is the time-contrast vector determined by the realized weights (bλ(g), bω(g))), and let the untreated-residual covariance between series be 
+
+Ωkℓ = Cov( εk, ε ℓ). Then 
+
+Στgg ′ = X
+
+> k,ℓ
+
+a⊤ 
+
+> gk
+
+Ωkℓ ag′ℓ.
+
+The between-group independence assumption is the special case k̸ = ℓ ⇒ Ωkℓ = 0 , under which Στgg ′ reduces to the donor-sharing-only kernel used in Theorem 2 below; a state block allows arbitrary Ωkℓ within the same state, and a Census-division block allows arbitrary 
+
+Ωkℓ within the same division. Both can be implemented by the block-constrained plug-in 
+
+bΣτ = AbΩA⊤, and the state/division-block standard errors of Section 6 and online Appendix C are implementations of this kernel. Proof. Follows immediately from the bilinearity of the linearization. For the baseline joint central limit theorem we now specialize to cross-sectional inde-pendence, Ωkℓ = 0 for k̸ = ℓ; the dependence between the estimated group effects then arises solely through the shared donor coefficients agk , k ∈ C , and Στ takes the explicit donor-sharing form of Theorem 2. Corollary 2 below extends the central limit theorem to block-dependent shocks, the case used in the Type II application of Section 6. 
+
+Assumption 5 (Regularity conditions for inference) . (a) (cross-fitting) The residualiza-tion nuisance bh0 and the weights (bω(g), bλ(g)) are estimated by group-wise cross-fitting. (b) (remainder) max g∈T |Rg| = op(G−1/21 ). A high-level condition that the balancing error, weight estimation error, and residualization error (and their products) are small, achieved under orthogonality, T0 → ∞ , and the regularization (8). (c) (donor dilution) max h∈C 
+
+P 
+
+> g∈T
+
+ω(g) 
+
+> h
+
+= op
+
+ √G1
+
+. That is, the weight of the whole treated set does not concentrate on a single donor. 13 (d) (moments, Lindeberg) sup k,t E|¯εkt |2+ δ < ∞ (∃δ > 0), ΣW → Σ∞ 
+
+> W
+
+≻ 0, MW := 
+
+G−11
+
+P 
+
+> g
+
+WgW⊤ 
+
+> g
+
+→ M ∞ 
+
+> W
+
+≻ 0, and {Wg} bounded. 
+
+Theorem 2 (Joint asymptotic normality under shared donors) . Under Assumptions 1–5, conditional on the groups, 
+
+pG1 (bγ − γ∗) d
+
+→ N  0, Ωγ
+
+, Ωγ = ( M ∞ 
+
+> W
+
+)−1 ΛW (M ∞ 
+
+> W
+
+)−1,
+
+ΛW = plim 1
+
+G1
+
+X
+
+> g,g ′∈T
+
+WgW⊤ 
+
+> g′
+
+Στgg ′ , Στgg ′ = X
+
+> k,ℓ ∈T ∪C
+
+a⊤ 
+
+> gk
+
+Ωkℓ ag′ℓ,
+
+where agk are the influence coefficients of (14) and Ωkℓ = Cov( εk, ε ℓ | F ) is the cross-sectional covariance kernel of the primitive group-level shocks (Proposition 2). When the primitive shocks are cross-sectionally independent, Ωkℓ = 0 for k̸ = ℓ, and this reduces to the 
+
+donor-sharing-only kernel 
+
+Στgg ′ = 1{g = g′} σ2 
+
+> g
+
++ X
+
+> h∈C
+
+ω(g) 
+
+> h
+
+ω(g′) 
+
+> h
+
+υ(g,g ′) 
+
+> h
+
+, υ(g,g ′) 
+
+> h
+
+= Cov  ¯ε λ(g) 
+
+> h
+
+, ¯ε λ(g′)
+
+> h
+
+,
+
+in which dependence between the estimated group effects arises solely through the shared donors h ∈ C . The block- and spatially-dependent covariances used in the Type II-CD ap-plication (Corollaries 2 and 3) are the general kernel evaluated at a block-structured Ω.Moreover, the all-group leave-out estimators (12) –(13) are asymptotically unbiased and 
+
+pG1 ( bV − V ) d
+
+→ N (0 , ΩV ), pG1 ( bC − C) d
+
+→ N (0 , ΩC ),
+
+and (bγ, bV , bC) are jointly asymptotically normal, with asymptotic covariance given explicitly from the influence representation of the primitive shocks (14) (Supplement). The fully diag-onal approximation Στgg ′ = 1{g = g′}σ2 
+
+> g
+
+—dropping both the cross-sectional dependence and the donor-sharing terms—generally underestimates ΛW .Which regime applies. The main central limit theorem is a many-treated, many-donor ap-proximation. When the donor pool is small we retain the donor shocks as finite-rank common components rather than averaging them away (Corollary 3). This is the regime used for the Clean Air application, where G0 = 23 and the donor-leverage diagnostics of Section 6 indi-cate that donor dilution is not a good approximation. The Medicaid application has only 
+
+G1 = 25 treated states; there we report finite-sample diagnostics, leave-one-state sensitivity, and design-based rather than super-population interpretations. 
+
+Corollary 1 (Projected group-effect curve and confidence bands) . For a group-covariate value w ∈ Rp, define the projected group-effect value as the value of the finite-population projection at w,
+
+mT (w) = w⊤γ∗, estimated by bmT (w) = w⊤bγ. 
+
+14 This is a best-linear-projection summary of the realized treated-group effects, not a nonpara-metric conditional mean E(τg | Wg = w) (see Remark 1). Under the conditions of Theorem 2, for any fixed w, pG1
+
+  bmT (w) − mT (w) d
+
+→ N  0, w ⊤Ωγ w,
+
+so that an asymptotic (1 − α) pointwise confidence interval is 
+
+bmT (w) ± z1−α/ 2
+
+q
+
+w⊤ bΩγ w / G 1, bΩγ = bQ−1 
+
+> W
+
+bΛW bQ−1 
+
+> W
+
+,
+
+bQW = 1
+
+> G1
+
+P 
+
+> g∈T
+
+WgW⊤ 
+
+> g
+
+, bΛW = 1 
+
+> G1
+
+W⊤ bΣτ W. 
+
+Because bΛW carries the shared-donor and cross-sectional dependence of Theorem 2, this in-terval is generally wider than—and not recoverable from—the interval obtained by treating the 
+
+bτg as independent, precision-weighted, or homoskedastic regression outcomes, as in two-way fixed effects, difference-in-differences, or standard synthetic-control regressions. We report 
+
+mT (w) only over the empirical support of {Wg}g∈T ; outside this support it is an extrapolation of the projection. 
+
+(b) The interval in part (a) is pointwise in w. When the curve is displayed over several co-variate values, a fixed-grid simultaneous band and simultaneous intervals for high-versus-low contrasts wq2 − wq1 are available from the same joint covariance via a max-t critical value; the formal statement, proof, and a multiplier-bootstrap implementation are given in online Appendix B. 
+
+The proofs of Theorem 2, Corollaries 2 and 3, and the theorem in online Appendix H are collected in online Appendix B. 
+
+Corollary 2 (Joint CLT under block dependence) . Suppose that, in place of cross-sectional independence, the series {εk}k∈T ∪C are independent across known blocks b = 1 , . . . , B n (ar-bitrary dependence within a block), with block sizes bounded, Bn → ∞ , and the moment and donor-dilution conditions of Assumption 5 holding at the block level. Then the conclusions of Theorem 2 hold with Σgg ′ replaced by the kernel Στgg ′ of Proposition 2 computed under the block-constrained Ω.
+
+Corollary 3 (Joint limit with a fixed donor pool) . Suppose instead that the donor pool is fixed, G0 = O(1) , while G1 → ∞ , and write the linearization as bτc −τc = uc −PG0 
+
+> h=1
+
+ωch vh +rc
+
+with max c |rc| = op(G−1/21 ), where uc is the own sampling error and vh the donor-h shock. For a projection direction q = ( qc) with G−11
+
+P 
+
+> c
+
+q2 
+
+> c
+
+→ ¯q2, let Ah(q) = G−1/21
+
+P 
+
+> c
+
+qc ωch and suppose Ah(q) → Ah for each h = 1 , . . . , G 0. Then 
+
+G−1/21
+
+X
+
+> c
+
+qc(bτc − τc) ⇒ N
+
+
+
+0, σ 2
+
+> u
+
+(q) + 
+
+> G0
+
+X
+
+> h,ℓ =1
+
+AhAℓ Ωhℓ 
+
+
+
+, Ωhℓ = Cov( vh, v ℓ | F ), (15) 15 where σ2
+
+> u
+
+(q) = lim G−11
+
+P 
+
+> c
+
+q2 
+
+> c
+
+Var( uc | F ). The donor block contributes a finite-rank com-mon component P 
+
+> h,ℓ
+
+AhAℓΩhℓ that does not vanish, and is consistently estimated by the block/plug-in kernel bΣτ = AbΩA⊤ of Proposition 2. 
+
+Corollary 3 is the regime of the Clean Air Act application, where the donor pool is 
+
+G0 = 23 state aggregates against G1 = 177 treated counties. There the large-G0 dilution condition of Assumption 5 is not in force—the donor-leverage diagnostic of Section 6 reports 
+
+G1/G 0 = 7 .70 and max h Lh/√G1 ≈ 1.08 with Lh = P 
+
+> c
+
+bωch —so we rely on this fixed-donor limit rather than on donor dilution, and the state- and division-block standard errors are exactly the implementation of the finite-rank common component in (15) together with the regional correlation among the vh.
+
+Corollary 4 (Inference on R2). Suppose V > 0. Under Assumptions 1–5, √G1( bR2 − R2) d
+
+→N (0 , ΩR2 ) holds, where ΩR2 is obtained by the delta method from the joint asymptotic variance of ( bVexpl , bV ). When V is close to zero (weak heterogeneity), it is irregular and requires separate inference (Section 3.3). Remark 4 (Boundary inference for R2 and reporting policy) . Since R2 = Vexpl /V is irreg-ular at V ≈ 0, in the main tables we report the untruncated ( bV , bVexpl , bC) and their joint confidence region, and use the usual delta-method CI for R2 only when bV > c · bse( bV ) (suf-ficient heterogeneity). In general, we invert a grid test of H0(r) : Vexpl − rV = 0 (r ∈ [0 , 1] )with a Fieller-type statistic based on the joint asymptotic normality of ( bVexpl , bV ), and take 
+
+CR2 = {r : H0(r) is not rejected } as the confidence set (construction and coverage proof in online Appendix E). We do not truncate negative bV , bVexpl or bR2 > 1 in the main tables, and project only the interpretive figures onto [0 , 1] .Next, we separate the estimation-error component ΛW contained in the variance from the true heterogeneity component (design vs. sampling). Theorem 2 is inference conditional on the groups , and Ωγ contains the estimation-error component ΛW arising from the sampling on the treated and donor sides (including between-group dependence via shared donors) (fixed residuals do not contribute). This is the appropriate variance when the estimand is “γ∗ specific to the observed treated groups.” If instead one adopts a super-population estimand γ∞ = E[W W ⊤]−1E[W τ ], the pro-jection residual becomes stochastic and an Eicker–White between-group term is added to the variance, Ωsuper-pop  
+
+> γ
+
+= ( M ∞ 
+
+> W
+
+)−1(Λ W + Ψ between )( M ∞ 
+
+> W
+
+)−1; this is the design-based versus sampling-based distinction (Abadie et al., 2020, 2023). We report the finite-population vari-ance (using ΛW only) as primary—consistent with not imposing random effects—and give the super-population version in online Appendix F. 16 3.3 Test of No Heterogeneity: Placebo Calibration 
+
+The null hypothesis H0 : V = 0 (all τg equal, no group heterogeneity) is, in applications, the first gate—“is the between-group difference just noise?” The naive statistic 
+
+TV = bV
+
+bse 0( bV ), bse 0( bV )2 = 1
+
+G21
+
+tr  eΣA eΣB , eΣH = H bΣH H, H = I − 1 
+
+> G1
+
+11 ⊤, (16) where bΣH is the plug-in covariance kernel of Section 3.4 for half-sample H ∈ { A, B } (the variance formula follows immediately from bV = G−11 (Hbτ A)⊤(Hbτ B ) and A ⊥ B), and by the boundary V ≥ 0 we construct a one-sided test that rejects when TV is large. bse 0 permits both the heteroskedasticity of σ2 
+
+> g
+
+and donor-sharing dependence. However, the validity of (16) depends critically on Assumption 5(b). Let us write the half-sample estimator as bτ Hg = τg + bg + eHg . Here bg is the approximation error arising from the limits of weight estimation (regularization and finiteness of the donor pool), and enters 
+
+commonly in both half-samples, conditional on the realized factor path . Unlike the sampling noise eHg , bg does not cancel in the cross product, so even under H0,
+
+E bV design  ≈ 1
+
+G1
+
+∥Hb ∥2 ≥ 0
+
+and since b further varies with the realization of the factor path, the denominator (16) that counts only sampling noise underestimates the variability of bV . That is, the effective null of the naive test is “ V + Var g(bg) = 0 ,” and it over-rejects when balance is imperfect (Section 4: measured 28–34% against a nominal 5%). This distortion is not resolved no matter how much bse 0 is made robust. We therefore take as the main test an affine-calibrated leave-out test that extends the placebo inference of synthetic control (Abadie et al., 2010; Arkhangelsky et al., 2021) to the variance decomposition. For b = 1 , . . . , B , we randomly draw without replacement a set Jpb of size Gp = ⌊G0/2⌋ from the donor set C as a pseudo-treatment set, use the rest as the donor pool, and apply a pipeline exactly identical to the actual one (all-group A/B splitting, group-wise orthogonalized SDID, (12)) to obtain bV pb = bV (Jpb ). For a general candidate set J (|J| = m), with the centering matrix Mm = Im − m−111 ⊤ (MG1 = H), we write 
+
+bV (J) = m−1(Mmbτ A(J)) ⊤(Mmbτ B (J)) . Since the true effect of the pseudo-treatment groups is identically zero, { bV pb } are draws from the H0 distribution conditional on the realized factor path , automatically including the bias and variability arising from the equilibration residual 
+
+bg. The test statistic incorporates the imbalance in group counts, the finite-population 17 correction of sampling without replacement, and the finite repetitions B:
+
+T pc  
+
+> V
+
+= bVT − ¯V p
+
+spB
+
+κG + B−1 1/2 , κG = Gp/G 1
+
+1 − Gp/G 0
+
+,
+
+¯V p = 1
+
+B
+
+X
+
+> b
+
+bV pb , (spB )2 = 1
+
+B − 1
+
+X
+
+> b
+
+  bV pb − ¯V p2,
+
+(17) where bVT = bV (T ). The correction factor κG arises because the variances of the numerator and denominator are both of order G−1 (online Appendix D), and for the baseline design 
+
+G1 ≃ G0, G p ≃ G0/2 it becomes κG ≃ 1—the recentered statistic of the current Monte Carlo (Section 4) coincides with this special case ( κG = 1 , excluding B−1). 
+
+Assumption 6 (Regularity conditions for placebo calibration) . Let Fn be the σ-field con-taining the realized factor path, tuning, group-size sequence, group covariates, and donor-pool quality indicators, and assume H0 : V = 0 .(PC1) (common effect and centering invariance) τg = τ0 for all g ∈ T , and the true effect of the pseudo-treatment groups h ∈ C is zero. Since bV (J) is defined through M|J|, the common effect does not affect the null distribution. (PC2) (null linearization including the equilibration residual) For each candidate group j and half-sample S ∈ { A, B }, bτ Sj (J) = aSJ + bj + eSj + rSj (J). Here bj is the equilibration residual common across half-samples, and eAj , e Bj are half-sample-specific sampling errors, with 
+
+max  
+
+> |J|∈{ G1,G p}
+
+|J|−1 X
+
+> j∈J
+
+(rAj )2 + ( rBj )2 = op(G−11 ).
+
+(PC3) (conditional exchangeability of the mismatch mechanism) Conditional on Fn, {(bg +
+
+eAg , b g + eBg )}g∈T can be approximated by an independent sample from the donor reference distribution PC,n (treatment selection does not systematically shift the factor loadings outward). (PC4) (CLT of the centered product score) Let θSj = bj + eSj , mS = EC [θS ] (S ∈ { A, B }), 
+
+μn = EC [( θA − mA)( θB − mB )] , ϕj = ( θAj − mA)( θBj − mB ) − μn, and assume EC ϕj = 0 ,
+
+0 < σ ≤ σϕ,n ≤ ¯σ < ∞, the (2 + δ)-th moment, and the Lindeberg condition. Under donor dilution (Assumption 5(c)), bV (J) = μn + |J|−1 P 
+
+> j∈J
+
+ϕj + op(|J|−1/2) holds uniformly for |J| ∈ { G1, G p} (centering removes the set-common level and the mean mismatch component mAmB ). (PC5) (group-count ratios and repetitions) G1, G 0, G p → ∞, Gp/G 1 → κ ∈ (0 , ∞),
+
+Gp/G 0 → π ∈ [0 , 1) . Jpb is drawn from C conditionally independently without replacement. 18 Theorem 3 (Conditional size validity of the placebo-calibrated test) . Suppose H0 : V = 0 
+
+holds under Assumptions 1–5 and 6. For T pc  
+
+> V
+
+in (17) :
+
+(i) (finite B) Fixing B and letting G1, G 0, G p → ∞ gives T pc 
+
+> Vd
+
+→ tB−1. With the critical value tB−1,1−α, lim n PH0 (T pc  
+
+> V
+
+> t B−1,1−α) = α.
+
+(ii) ( B → ∞ ) If further B → ∞ , then T pc 
+
+> Vd
+
+→ N (0 , 1) , so the asymptotic size with z1−α is 
+
+α.
+
+(iii) (local power) Under the local alternative Vn = ∆ /√G1 (∆ > 0), if the cross terms between heterogeneity and the equilibration residual / sampling error are op(G−1/21 ),then ( B → ∞ ) T pc 
+
+> Vd
+
+→ N (∆ /σ ϕ, 1) , with asymptotic power 1 − Φ( z1−α − ∆/σ ϕ). Under a fixed alternative V > 0, the power converges to 1.
+
+We emphasize that this is an empirical calibration of the null dispersion of bV , not a randomization or permutation test: the donor pseudo-treatments are used to estimate the sampling variability of the second moment under H0, and validity comes from the conditional-exchangeability condition rather than from exchangeability of treatment assignment. The proof is in online Appendix D (a one-paragraph sketch opens the appendix). The coefficient κG = ( Gp/G 1)/{1 − Gp/G 0} converts the dispersion of placebo subsets (drawn without replacement from the donor pool) into the dispersion of the treated set, and the finite number of repetitions B adds a 1/B term to the reference variance; the finite-B
+
+behavior, the full-enumeration variant, and the resulting asymptotic pivotality of T pc  
+
+> V
+
+are developed in online Appendix D. A super-population version of the calibration, in which the donor pool is itself sampled, is given in online Appendix F. Complementary to the omnibus test H0 : V = 0 , we define a heterogeneity test for a pre-specified direction . For the covariance C = G−11
+
+P 
+
+> g∈T
+
+fWg(τg − ¯τ ) with respect to a scalar-standardized group covariate fWg, we test H0 : C = 0 (equivalent to zero projection slope; also C̸ = 0 ⇒ Vexpl > 0 ⇒ V > 0) with the Wald statistic TC = bC/ bse( bC) based on the joint covariance kernel. The variance is constructed from the bΣτ of Theorem 2 (including the shared-donor off-diagonal) through the linear representation G−11
+
+P 
+
+> g
+
+fWg beg of 
+
+bC, superimposing state and regional blocks as needed. Because it is a centered contrast, the common shock due to shared donors cancels to first order (isomorphic to the slope SE of Section 5.3), and it is more robust than level quantities. The practical division of labor is clear: in noisy aggregated county data (Type II-CD), the omnibus test tends to be limited in information, but the pre-specified TC can detect the directional component stably—in the environmental application of Section 6 we take this as the main test, reporting the calibrated test and the rank p-value of the donor-state placebo alongside. Note that when 19 TC is significant and the omnibus is not, the correct reading is not “ V = 0 is true” but “the omnibus test lacks power in finite samples.” The omnibus H0 : V = 0 and the directed 
+
+H0 : C = 0 are two distinct pre-specified hypotheses, not a search over many directions; when a single moderator W is fixed in advance (as in both applications), no multiplicity correction is needed, whereas an analyst screening several moderators should control family-wise error via the max-t statistic of Section 3.3. The directed test is valid for a single pre-specified moderator. When several moderators are screened, we control family-wise error with the max-t statistic Tmax = max j | bCj |/ bse( bCj )
+
+whose null quantile is read from the joint covariance kernel; in both applications a single moderator is fixed in advance, so no adjustment is needed. 
+
+Remark 5 (Fit-matched calibration) . When treated groups fit systematically worse than donor placebos—larger pre-treatment RMSPE, smaller effective sample size, or heavier donor leverage—conditional exchangeability (PC3) is doubtful and the sim-ple placebo distribution is too optimistic. If overlap holds in a fit-diagnostic vector 
+
+Dj = (log RMSPE j , log ESS j , baseline j , pretrend j , leverage j ), the placebo draws can be reweighted to match the treated fit distribution, giving a calibrated statistic T fmp  
+
+> V
+
+(online Appendix H). This is a partial repair: in Monte Carlo under a PC3 violation the naive 
+
+V =0 test rejects 36 –50% of the time and simple placebo calibration halves this to 20 –24% ,while fit-matching further improves size only when treated fit lies within the donor support (20% → 16% ) and does not fully restore the nominal level otherwise; in that regime the conservative bias-aware bracket (reject only if bV − κ [noise > 0) is the fallback. 
+
+## 3.4 Variance Estimation under Shared-Donor Dependence and Im-plementation 
+
+The ΛW of Theorem 2 contains the cross term P 
+
+> h
+
+ω(g) 
+
+> h
+
+ω(g′) 
+
+> h
+
+υ(g,g ′) 
+
+> h
+
+via shared donors. We provide the following two implementations. The joint covariance kernel can be estimated in two ways. In the first, the plug-in covariance kernel, for each group k ∈ T ∪ C we estimate the across-time covariance matrix of the within-group deviations bεkit = Y ⊥ 
+
+> kit
+
+− ¯Y ⊥ 
+
+> kt
+
+across units, and multiply by n−1 
+
+> k
+
+to obtain 
+
+bΞk ≈ Cov  (¯ εkt )t
+
+ (within-group serial correlation is automatically incorporated as across-time covariance). Using the time contrast c(g) (|T 1|−1 for t ∈ T 1, −bλ(g) 
+
+> t
+
+for t ∈ T 0), bσ2 
+
+> g
+
+=
+
+c(g)⊤ bΞgc(g), bυ(g,g ′) 
+
+> h
+
+= c(g)⊤ bΞhc(g′) we set these and substitute bΣgg ′ into the sandwich form to obtain bΩγ , bΩV , etc. In the second, the multiplier bootstrap, the independent unit of the primitive shock is the group (treated group g ∈ T and donor h ∈ C ). By multiplying each group k by an 20 independent multiplier ηk (Eηk = 0 , Var ηk = 1 ) and reconstructing the influence repre-sentation (14), we can approximate the joint distribution of (bγ, bV , bC, bR2) while preserving donor-sharing dependence. 
+
+Remark 6 (Failure of naive standard errors) . Standard errors assuming independence of bτg,and robust variances merely clustered at the treated group, both drop the cross term υ(g,g ′)
+
+> h
+
+via shared donors and are thus generally underestimates (quantified in Section 4). This point—“the meta-analytic aggregation of many-treated-group SDID is not independent”—is also meaningful as a justification and correction of Dube & Zipperer (2015)-type pooling of multiple cases. 
+
+Remark 7 (Analytic leave-out without sample splitting) . All-group A/B splitting is simple to implement and gives conditional unbiasedness exactly, but entails an efficiency loss from using only half-samples. A split-free alternative is to generalize the quadratic-form leave-out of Kline et al. (2020) to the hat matrix depending on the estimated weights of SDID, and this algebraic extension is itself a separate theoretical task (Section 7). 
+
+# 4 Monte Carlo Experiments 
+
+In this section we verify the claims of the preceding sections in finite samples. The imple-mentation is in Python (fixed random seeds, 2,990 replications in total), and the code, raw data, and aggregates are included in the replication package. 
+
+## 4.1 Design 
+
+The baseline design is G1 = G0 = 50 , T0 = 20 , |T 1| = 5 . There are two latent factors (a linear-trend factor and a stationary AR factor), Ygit (0) = αg +ξt +Γ ⊤ 
+
+> g
+
+Ft +X⊤
+
+> git
+
+β +εgit (εgit is within-group AR(1)), group covariates are Wg ∈ R2 plus an intercept, and τg = γ0 + W⊤ 
+
+> g
+
+γ + νg (by default V = Var( τg) = 0 .5, R2 = 0 .5). Treatment is determined by group-level selection , the top G1 groups by the latent score a1zW,g +a2zΓ,g +( logistic disturbance ), and a2̸ = 0 generates factor selection (parallel-trends violation). Main settings: FA0 (parallel trends hold: a2 = 0 ,
+
+Γ ⊥ W , low noise ng = 24 , σε = 1 .2), FA2 (strong factor selection: a2 = 2 , corr(Γ , W ) = 0.5), NB (high-noise baseline: ng = 16 , σε = 2 .5, a2 = 0 ), NULL/NULL0 (τg ≡ constant, 
+
+V = 0 ; NB-type and FA0-type), POW1–3 (V ∈ { 0.05 , 0.15 , 0.40 }), FSTR (heteroskedastic 
+
+σε,g ∈ { 1.2, 3.5} and corr( νg, group precision ) ≈ 0.7), LEAK (donor concentration: G0 = 30 ,regularization ×0.3, effective number of donors 5.6). R = 100 –400 replications per setting, and placebo calibration uses B = 59 . The comparison methods are DiD (equal weights), DR-DiD (group-level AIPW: outcome regression on W plus propensity-score odds weighting), 21 Table 1: Monte Carlo summary: what breaks under the naive treatment and what the proposed procedure repairs (representative designs; full tables in online Appendix H). The calibration trades size for power away from the null (e.g., at V = 0 .145 : naive 90% vs. calibrated 52% ).                                    
+
+> Quantity Naive / independence Proposed First-stage ATT bias (factor design FA2)
+> 0.94 (DiD) 0.09 (orthogonalized SDID) Bias of bV(across designs) +0 .07 to +0 .37 (plug-in) +0 .02 to +0 .11 (A/B
+> leave-out)
+> 95% coverage, projection intercept
+> 73 –81% (independence SE) 87 –95% (joint kernel) Size of H0:V=0 (nominal 5% )25 –34% (naive TV)4.1–6.5% (calibrated) Small G1≈25 (Medicaid-like) undercoverage improved, finite-sample caution
+
+the proposal (orthogonalized SDID), and, as a random-effects benchmark for the second stage, FIRC-type precision-weighted GLS. An overview of the group-wise estimates in a representative replication is shown in the figure in online Appendix H. 
+
+## 4.2 Main Results 
+
+As shown in online Appendix H, under FA0 where parallel trends hold, all three methods are unbiased, but SDID reduces the RMSE by about a factor of five because it matches the factor path group by group. Under FA2 with factor selection, DiD breaks down substantially in both level and slope, and DR-DiD corrects only the slope component explained by W
+
+while the level remains (the loading gap orthogonal to W cannot be removed by covariate conditioning). Orthogonalized SDID reduces both by about 90%. The residual (intercept 
+
++0 .083 ) arises from the limit of balancing due to the regularization ζ, and we make it explicit as a finite-sample implication of Assumption 5(b). As shown in online Appendix H, the plug-in bV counts the estimation-error variance directly and is 54–75% too large relative to V , whereas leave-out removes 60–90% of this regardless of the splitting scheme. There are two additional findings. First, the linear donor-sharing leakage of treated-only splitting (the G−11 tr( HKH ) of the remark in online Appendix B) was second-order at 0.002 –0.008 in the plug-in evaluation—because centering absorbs the common donor shock. Second, the remaining small positive bias is common to both splitting schemes and reduces to the between-group variance of the equilibration residual bg (the mean 22 of bV in a V = 0 design is +0 .024 for the good design NULL0 and +0 .069 for the high-noise NULL; the all-group split side is slightly larger because weight estimation degrades on half-samples). This is a direct quantification of the fact that Assumption 5(b) is binding in finite samples. As shown in online Appendix H, for the intercept the independence (diagonal-kernel) SE gives 11–16pp undercoverage, and the joint kernel of Theorem 2 recovers near the nominal level (NULL 94.3%, POW2 95.4%, LEAK 95.5%). For the slope , in this design where the weight profiles are similar across groups, the cross term cancels through the centering of fWg,and the two SEs almost coincide—consistent with the theoretical implication that shared-donor dependence mainly distorts the inference of levels . The slope undercoverage in the NB-type settings (74–85%) arises from first-stage bias rather than variance, and in NULL0 where the bias vanishes both SEs achieve about 92%. As shown in online Appendix H, the bare TV is severely distorted with size 28–34% (nominal 5%). As discussed in Section 3.3, the cause is not the bias of bV (small at +0 .024 
+
+in NULL0) but that factor mismatch generates variability not contained in the denominator (mean of the statistic 1.67 , standard deviation 3.4 in the good design; the figure in online Appendix H). The affine-calibrated statistic (17) recovers the size to nearly the nominal level at 6.5% and 4.1% (Figure 1), and this is retained even in the NB-type (PN) settings where selection shifts the loadings. Since this design has G1 = G0 = 50 , G p = 25 , the correction factor is κG = (25 /50) /(1 − 25 /50) = 1 , and the measured values coincide with the special case of Theorem 3 (excluding B−1 = 1 /59 )—that is, the theorem shows that the calibration of the current MC is a consequence of the theoretical correction rather than working by chance. The permutation p-value version improves to 12 .4% and 10 .6% , but an overshoot due to the group-count scale difference ( G1 = 50 vs. Gp = 25 ) remains (the remark in online Appendix D). Under honest size, the power at V = 0 .05 /0.15 /0.39 is 12% /52% /86% .The per-group caterpillar plot and the null-distribution diagnostic are in online Appendix H. In FSTR ( corr( νg, precision ) ≈ 0.7), the intercept bias of FIRC-type precision-weighted GLS was +0 .109 , whereas the proposal’s equal-weight projection was −0.002 (the slopes are comparable: +0 .061 vs. +0 .064 ). When exchangeability breaks, precision weighting systematically distorts the level —a numerical corroboration of the stance of Section 3.2. 
+
+## 4.3 Robustness of the Monte Carlo evidence 
+
+To avoid over-fitting to the baseline design (G1, G 0, T 0) = (50 , 50 , 20) , we vary each design axis a referee would probe—the group-count ratio G1/G 0, the observation length T0, the R2
+
+23 0.0 0.1 0.2 0.3 0.4      
+
+> heterogeneity V= Var( g)
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> rejection rate  (nominal 0.05)
+> nominal 5%
+> naive TV
+> placebo-calibrated Tpc
+> V
+
+Figure 1: Rejection rates of the H0 : V = 0 test (nominal 5% , one-sided, B = 59 ). The bare 
+
+TV (red ×) over-rejects at V = 0 with size 25 –34% , whereas the placebo-calibrated T pc  
+
+> V
+
+(navy 
+
+•) is controlled near the nominal 5% and its power rises as the heterogeneity V = Var( τg)
+
+increases ( 86% at V = 0 .39 ). boundary, alternative V estimators, calibration failure modes, and the number of placebo repetitions B. The qualitative conclusions are unchanged: the orthogonalized first stage removes first-stage bias, the analytic and leave-out corrections remove the upward bias of 
+
+bV , the donor-sharing kernel restores coverage of γ, and the affine-calibrated placebo restores the size of the V = 0 test. Full tables with Monte Carlo standard errors appear in online Appendix H. 
+
+# 5 Empirical Application I: Heterogeneity in the Effect of the Medicaid Expansion on Insurance Coverage 
+
+This is the paper’s principal Type I application. The primary moderator is pre-specified: the pre-expansion uninsured rate for Medicaid and baseline fine-particulate pollution for Clean Air. The mT (w) analysis is confirmatory for this primary moderator; any secondary moder-ators are exploratory, and multiple-moderator searches use a max -t adjustment reported in the online supplement. The 2014 ACA Medicaid expansion is a common-cohort policy shock whose average coverage effects are well documented (Courtemanche et al., 2017; Miller et al., 2021); our object is the structure of the heterogeneity of those effects across states. Because 24 the ACS provides household microdata, the household A/B leave-out validates the variance decomposition against an independent analytic correction—the feature that distinguishes the Type I regime. 
+
+## 5.1 Data and Design 
+
+The outcome is the uninsured rate of low-income adults (ages 19–64, income below 138% FPL) constructed from the ACS 1-Year PUMS 2008–2019 (U.S. Census Bureau, 2024) ( 4.97 
+
+million person–year records); the groups are states and the units are households, split within each state–year cell into A/B halves. We adopt common-timing SDID ( τ0 = 2014 ): the treated set is the G1 = 25 states (with the District of Columbia) that expanded Medicaid in January 2014, and the donor pool is the G0 = 17 states that had not expanded by the end of the window (expansion status as compiled by KFF, 2024). The estimand is not the effect of the ACA relative to no ACA—the exchanges, subsidies, and mandate took effect nationwide in 2014—but the incremental effect of Medicaid-expansion status relative to non-expansion states exposed to those components. The group covariate Wg is the pre-expansion (2013) uninsured rate, the “bite” of the expansion. Early- and late-2014 through 2019 expanders outside this clean design are excluded; further detail is in online Appendix J. 
+
+## 5.2 First Stage: Pre-Trends, Group ATTs, and the Bite Slope 
+
+The figure in online Appendix J shows the treated-group means and SDID synthetic controls for four representative states. The two series overlap well over the six pre-treatment years (the pre-treatment RMSPE across the 25 states has median 1.1pp and maximum 3.0pp), and after τ0 large divergences arise in states with high pre-expansion uninsured rates (KY, WV, CA). The figure in online Appendix J is a caterpillar plot of the group ATTs bτg, contrasting the joint-kernel SE with the independence (diagonal) approximation. bτg ranges from −18 .1pp in KY to small values (which can be positive near the floor) in states that already had low pre-expansion uninsured rates (MA, DC, VT), with a mean ATT of −6.2pp. The central finding of this application is the bite slope (Figure 2). States with higher pre-treatment uninsured rates have larger reductions in the uninsured rate, and the projection coefficient onto standardized bite is bγbite = −5.86 pp (joint-kernel SE 0.23, t = −25 .2)—a state with a pre-expansion uninsured rate one standard deviation higher has a reduction 5.9pp larger. The bite gradient is large and robust, and is strongest on the percentage-point scale, where the point estimate is bR2 = 0 .826 (rounded to 0.83 ). We report the delta-method interval [0 .75 , 0.90] , computed from the noise-corrected variance components, as the primary confidence set for the explained share; because the denominator is well separated from zero 25 Table 2: Projected group-effect curve mT (w) = w⊤γ∗ for the Medicaid application, evaluated at percentiles of the pre-expansion uninsured rate Wg (the object plotted in Figure 2). The high-versus-low contrast uses the shared-donor covariance of Corollary 1; because it is a centered contrast, the intercept cancels.                             
+
+> Wgpercentile Pre-expansion uninsured rate Predicted reduction bmT(w)
+> 25th 27 .3pp −2.6pp 50th (median) 34 .7pp −6.7pp 75th 41 .6pp −10 .4pp Contrast mT(w75 )−mT(w25 )−7.8pp shared-donor 95% CI [−8.4,−7.2]
+
+(tV ≈ 13 ), the Fieller/test-inversion interval agrees to two decimals. The explained share is a finite-population, percentage-point-scale descriptive summary, not a scale-invariant causal constant, and the inference below is based on (V, V expl , C ). The explained share attenuates to 0.72 on the relative-reduction scale and 0.40 on the log-odds scale; that it persists after attenuation is evidence that it is not an artifact of mechanical room for improvement (Sec-tion 5.4). That the effect is nearly zero in states with low pre-expansion uninsured rates ( =
+
+small room) is not a failure of extrapolation but the reality of the bite (these states also have good pre-treatment fit; Section 5.4). 
+
+## 5.3 Shared-Donor Dependence and the Variance Decomposition of Heterogeneity 
+
+The effective number of donors per group is 10.4. For individual groups bτg, the joint-kernel SE exceeds the independence approximation (e.g., 0.44 vs. 0.29 in CA, +52% ), and for the 
+
+average effect the difference is even more pronounced: the joint-kernel SE 0.44pp is 1.83 times the independence SE 0.26pp—the independence assumption overestimates precision by about 45%. This is because the shared-donor disturbance acts as a common factor ,inflating the variance for level quantities like the mean and intercept while nearly cancelling for a mean-zero contrast (the bite slope) (the joint-kernel SE 0.23 of the slope is nearly equal to the diagonal 0.25). Restricting donors to the 12 always-non-expansion states strengthens the shared dependence further (SE ratio 1.92; Section 5.4). The heterogeneity variance is estimated twice, independently (Figure 3, left). Against the plug-in bVplug = 43 .0 (pp 2 × 10 −4), an analytic noise subtraction using the household-cluster sampling variance and a household A/B leave-out give nearly identical 26 corrected values (about 34 –35 ), confirming that the between-state variation is real hetero-geneity rather than estimation noise. The two routes rest on different assumptions—the analytic route on the survey variance, the leave-out route on within-cell independence (on-line Appendix C)—so their agreement is a strong internal check unavailable without micro-replication. On the same percentage-point scale the explained share is bR2 = 0 .83 , and donor sharing inflates the average-effect standard error to 1.8 times its independence-based value while leaving the centered bite slope nearly unchanged. 
+
+## 5.4 Validity Checks and Robustness 
+
+We first conduct the test of no heterogeneity. Here the heterogeneity is real and large. In addition to the bare statistic TV = 13 .0, the placebo-calibrated statistic is T pc  
+
+> V
+
+= 24 .7
+
+(correction factor κG = 0 .60 ) with rank p-value 0.005, strongly rejecting V = 0 (Figure 3, right). Furthermore, as a robustness check on the definition of the explained share, the 
+
+uncorrected raw R2 is 0.80 with test-inversion Fieller set [0 .70 , 0.91] (online Appendix E; grid inversion, leave-one-donor jackknife variance) and the analytic-noise-corrected R2 is 0.87 
+
+with Fieller set [0 .76 , 1.00] , so these bracket the noise-corrected headline 0.826 ; the upper bound 0.91 < 1 of the uncorrected set implies that residual heterogeneity not explained by bite is real (not sampling noise)—suggesting other factors such as implementation, prior Medicaid generosity, and take-up. We address the donor-halving confound with a pool-size-matched placebo. In the placebo test, because the synthetic control of the pseudo-treatment units is constructed from fewer donors than the actual treatment, the dispersion of the equilibration residual can change mechanically (a confound pointed out in review). Against this, we implemented a pool-size-matched placebo: in each replication we draw Gp = 8 pseudo-treatment donors and recompute the actual-treatment bV on the same residual donor sub-pool (size m = 9 ) for comparison. The figure in online Appendix J is the result. The pseudo-treatment null distri-bution bV p (mean 2.6) and the actual-treatment bV mT recomputed on the same-size sub-pool (mean 43.2; nearly unchanged from the full-donor-pool value 41.6) are completely separated 
+
+(TPM = 634 , rank p = 0 .001 ). Even with matched pool sizes, the effect variance of the actual treatment overwhelms the pseudo, and the rejection of V = 0 is not a product of donor halving. With G0 = 17 , G p = 8 , all  17 8
+
+ = 24 ,310 pseudo-assignments can be enumerated, and the rank p-value is based on that conditional reference distribution. The projected group-effect curve mT (w) = w⊤γ∗, its confidence band, the between-state variance, and the explained share R2 with a valid confidence interval are delivered only by the proposed joint donor-sharing kernel; two-way fixed effects, difference-in-differences, doubly 27 robust DiD, and precision-weighted GLS may reproduce the average effect and even the point estimate of the bite slope, but none provides correct standard errors or calibrated hetero-geneity tests for these objects, because they ignore the cross-sectional dependence induced by shared donors and the estimation-noise bias in the second moments. The comparison table and figure are in online Appendix J. We check robustness to specification changes. The figure in online Appendix J shows the robustness of the bite slope and R2. Under the core 12 donors, WI excluded, ridge 
+
+ζ (×0.5, ×2), pre-treatment window (2010–2013), long-term post (adding 2021–2024), and top-fit only (excluding the worst quartile of pre-treatment RMSPE), bγbite ∈ [−6.5, −5.6] pp, 
+
+bR2 ∈ [0 .83 , 0.87] , all stable with t < −21 , and the agreement of leave-out and analytic 
+
+bV is preserved. The only case that behaves differently is the level convex-hull restriction (excluding the 8 states whose pre-treatment uninsured rate falls below the donor level range), where bR2 drops to 0.46, but this is because excluding low-bite states (which anchor the low end of the slope) mechanically compresses the range of bite—the excluded states have good pre-treatment fit and their exclusion is unjustified on fit grounds—and even so the slope is significant with t = −9.0. In short, the bite slope is significant in all specifications, and its magnitude depends on whether low-bite states are included. Finally, we verify that R2 = 0 .83 is not an artifact of mechanical explanation. We successively exclude, through five checks, the possibility that the bite slope is an artifact of common sampling error, scale dependence, pre-treatment contamination of early-expansion states, or mere “room for improvement” (the table in online Appendix J). First, since Wg (pre-expansion uninsured rate) is estimated from the same ACS sample as 
+
+bτg, there is a concern that common sampling error inflates the negative slope. Against this, constructing Wg from the A half-sample and bτg from the B half-sample (and averaging over swaps) and re-estimating the slope under independent sampling error gives bγbite = −6.00 pp (R2 = 0 .79 ), nearly unchanged from the baseline ( −5.86 pp, 0.83), so the contribution of common sampling noise is negligible. Second, because the projection could be driven by a few high-coverage floor states with small positive bτg (Massachusetts +6 .2pp, DC +4 .1,Vermont +2 .1; the figure in online Appendix J), we re-estimate the slope excluding them: dropping Massachusetts gives bγbite = −5.4pp and dropping Massachusetts, DC, and Vermont gives −4.5pp; the plug-in explained share moves from 0.80 to 0.76 and 0.68 in the same unweighted projection (the headline R2 = 0 .83 is the noise-corrected Vexpl /V ). The slope and the significant heterogeneity survive, and the attenuation quantifies how much of the descriptive share rides on the low-bite floor. The remaining checks—split-sample stability, exclusion of the 2010–2013 early expanders, the secondary-outcome mechanism (Medicaid/public coverage gains mirror the uninsured 28 reductions), and nonlinearity of the bite relation—leave the slope and the significant het-erogeneity intact; the full six-point list with all numbers is reproduced in online Appendix J. Finally, we report bias-aware intervals that allow the equilibration residual bg (|bg| ≤ 
+
+κ RMSPE g) representing the incompleteness of counterfactual construction. At κ = 1 ,where the residual is bounded by the pre-treatment RMSPE, the 95% interval of bγbite is 
+
+[−7.28 , −4.45] , and even at the looser κ = 2 it is [−8.23 , −3.49] , excluding 0, and the bias-aware bracket of V at κ = 2 is [12 .8, 86 .7] , excluding V = 0 . Even allowing the equilibration residual, the existence of the bite slope and the effect heterogeneity is robust. In summary, this application exercises all three pillars and clarifies its unique value in comparison with existing methods. The object displayed in Figure 2 and Table 2 is the projected group-effect curve mT (w), not merely the slope coefficient: it answers the policy question of what uninsured-rate reduction to expect for a state with a given pre-expansion uninsured rate. A high-bite state (75th percentile) is predicted to see a 7.8 pp larger reduction than a low-bite state (25th percentile), with a 95% confidence interval [−8.4, −7.2] that reflects donor sharing; treating the state-specific estimates as independent would give a different uncertainty statement. We stress that R2 = 0 .83 is not a universal explanatory share: it is the percentage-point-scale explained share for this finite population of states, and it attenuates on the relative and log-odds scales. First, it estimated an interpretable and strong heterogeneity slope (bite; bγbite = −5.9pp, R2 = 0 .83 on the percentage-point scale) as a projection. Second, it showed that donor-sharing dependence enlarges the SE of aggregate quantities to 1.8 times the independence assumption. Third, the heterogeneity variance from household A/B leave-out agreed with the analytic estimate, independently verifying that the heterogeneity is real—this is possible only with Type I micro-replication and is absent from any of TWFE/DiD/standard SCM. Correct inference for the heterogeneity objects—valid R2 confidence intervals, the projected group-effect curve and its confidence band, shared-dependence standard errors, and leave-out verification—is obtained only with the proposed method; that the point estimates happen to agree with existing regressions is incidental and does not confer valid uncertainty quantification on them. A high-resolution version aggregating the individual-level analysis to counties (1,097 counties, SAHIE) is given in online Appendix C: the aggregation invariance that the state aggregation of county effects coincides with the state-level estimate at correlation 1.00 (the proposition in online Appendix C), the three-column standard errors of county-independent, state-block, and division-block (up to 1.7 times the independence assumption), the measurement-error propagation of the published MOE, and the auxiliary specifications (aggregation consistency, contextual effect, and between–within decomposition). 29 10 20 30 40 50          
+
+> pre-expansion uninsured rate Wg(%, low-income 138% FPL)
+> 20
+> 15
+> 10
+> 5
+> 0
+> 5
+> 10
+> state ATT  g (pp)
+> AR
+> CA
+> CT
+> DC
+> KY
+> MA
+> MN
+> NV NM
+> NY
+> ND
+> OR
+> VT
+> WA WV
+> ACA Medicaid expansion: group ATT vs group covariate Wg
+> projection R2=0.826, donor-sharing slope SE 0.23pp
+> projection 95% CI band
+> projection Wg
+> *
+> per-state g± 1.96 SE (donor jackknife)
+
+Figure 2: Relationship between the group ATT bτg and the group covariate Wg (main applica-tion). Horizontal axis = pre-expansion (2008–2013) uninsured rate Wg, vertical axis = group ATT bτg. Each point has a 95% confidence interval (error bar) from donor leave-one-out jack-knife, the solid line is the projection W⊤ 
+
+> g
+
+bγ, and the light band is its pointwise 95% confidence band (Corollary 1), not simultaneous over the continuum. States with higher pre-expansion uninsured rates have larger reductions ( R2 = 0 .83 , shared-donor SE (slope) 0.23), and states that are already low (MA, DC, VT) have smaller expected reductions (MA’s positive point estimate reflects the estimation instability near the floor). Wg can affect both the baseline level μgt (0) and the effect τg (Section 2.2), but the first-stage SDID removes the former and the second-stage projection extracts only the latter. 30 analytic 
+
+> (survey var)
+> leave-out
+> (household A/B)
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+> V (pp 2 × 10 4)
+
+Two variance routes agree       
+
+> 010 20 30 40
+> V(pp 2× 10 4)
+> 0
+> 5
+> 10
+> 15
+> 20
+
+Placebo V=0: Tpc V =24.7, p=0.005  
+
+> placebo null
+> V(data)
+
+Figure 3: Left: the two paths for bV (analytic = household-cluster survey variance; leave-out 
+
+= household A/B ) nearly agree. Right: the placebo null distribution of H0 : V = 0 and the observed bV (vertical line). Strongly rejected with T pc  
+
+> V
+
+= 24 .7, rank p = 0 .005 .31 6 Empirical Application II: Directed Heterogeneity in Environmental and Health Responses to Clean Air Act PM 2.5 Nonattainment Designations 
+
+The second application is an implementation on aggregated county public data without micro-replication (Type II-CD). Here household A/B leave-out is unavailable, and the basis of inference is placed on the integration of analytic noise correction, shared-donor dependence, and state/regional-block dependence, together with the pre-specified directed test H0 : C = 0 
+
+of Section 3.3. Environmental regulation has a clear prior direction—“it works more strongly where the standard is exceeded more”—making it a good place for a directed test. Because the county-level PM 2.5 effect is noisy, the omnibus V = 0 test has limited power against diffuse heterogeneity—whereas the H0 : C = 0 test along the pre-specified direction of the baseline pollution level has high power against a policy-relevant alternative. This is the design principle of this section. Note that the outcome is the PM 2.5 concentration itself, that is, the first-stage environmental response to regulation, and we present this section as an environmental-policy / environmental-exposure application (the bridge to health outcomes is described at the end of the section). 
+
+## 6.1 Data and Design 
+
+The treatment is the 2005 nonattainment designation under the 1997 PM 2.5 NAAQS (U.S. EPA, 2005, 2026); such designations have long served as quasi-experimental variation in environmental economics (Chay & Greenstone, 2005). The treated set is the 177 coun-ties designated whole-county nonattainment, and the donor pool is the 23 states with no designated county, aggregated to state-level PM 2.5 series from satellite-derived county con-centrations (van Donkelaar et al., 2019; Wu et al., 2020); the pre period is 2000–2004 and the post period 2006–2012. The group covariate Wc is the county’s baseline (pre-period) PM 2.5 level, an empirical proxy for the regulatory bite with the monotone property that higher Wc means a larger reduction obligation. The county-wise orthogonalized SDID fits the pre-period well (median RMSPE 0.33 μg/m 3, about 2.6% of the baseline level). Full institutional detail is in online Appendix I. Donor-leverage diagnostics confirm that this is not a donor-dilution regime: G1/G 0 = 7 .70 and max h Lh/√G1 = 1 .08 , so inference is based on the fixed-donor/common-shock approximation (Corollary 3) rather than the many-donor dilution approximation. Because the donor pool is small ( G0 = 23 state aggregates against G1 = 177 treated 32 counties), we first check which asymptotic regime governs the inference (online Appendix I). The donor-sharing ratio is G1/G 0 = 7 .7, and the maximum donor leverage Lh = P 
+
+> c
+
+bωch 
+
+satisfies max h Lh/√G1 = 1 .08 —the large-G0 dilution condition of Assumption 5 is therefore 
+
+not in force, and we rely on the fixed-donor finite-rank limit of Corollary 3 rather than on donor dilution. At the same time the counterfactual support is broad: the effective donor count per county (inverse Herfindahl of the weights) is 11 .6, the average largest-donor share is only 0.16 , and just 0.6% of counties place more than half their weight on a single donor. The common donor shock is thus a finite-rank object with well-spread loadings, exactly the case in which the state- and division-block covariances of Proposition 2 estimate the non-vanishing component P 
+
+> h,ℓ
+
+AhAℓΩhℓ of (15). The directed conclusion is unchanged under the baseline-matched county-donor design (Table 3). 
+
+## 6.2 Environmental Exposure Response: PM 2.5 Concentration 
+
+The central number of this subsection is the directed slope, and we first organize its estimand 
+
+(Table 3). We do not interpret the uncalibrated raw slope as a county-level causal effect: the Clean Air application illustrates Type II-CD inference in aggregate public data, where directed contrasts must be read relative to placebo convergence benchmarks. The main-specification slope −0.372 /SD is the total slope that includes the broad convergence of non-designated regions; the excess component obtained by calibrating and subtracting this convergence with a donor-state placebo is −0.255 /SD, and the value that the baseline-matched county-level donor gives by constructively deducting the convergence is −0.206 /SD. The directed component attributable to regulation is honestly read as a band of −0.21 to 
+
+−0.26 /SD, and the robustness analysis below (the table in online Appendix I) corroborates this band. The timing of the directed effect is also informative (Figure 4). Tracing the event-time directed slope bC(e) = G−11
+
+P
+
+> c
+
+(Wc − ¯W ) bτc(e) across post years e = 2006 , . . . , 2012 , the effect is weak immediately after the 2005 designation ( −0.16 in 2006, t = −2.1), strengthens as State Implementation Plans and attainment obligations bind ( −0.43 to −0.48 over 2008– 2011, |t| up to 4.6), and attenuates by 2012 ( −0.35 )—a profile consistent with a regulation that acts with a multi-year lag rather than an instantaneous jump, and whose seven-year average is the −0.372 reported above. Figure 5(A) shows the starting point of this design: the county-wise bτc scatter widely around a mean of −1.13 μg/m 3 (V = 0 .52 ), and since the pointwise analytic noise is not small, it is hard to read “where it worked” from the list of group-wise estimates alone. In contrast, the directed projection of Figure 5(B) is clear: a county with baseline PM 2.5 one 33 2006 2007 2008 2009 2010 2011 2012  
+
+> event year e
+> 0.7
+> 0.6
+> 0.5
+> 0.4
+> 0.3
+> 0.2
+> 0.1
+> 0.0
+> directed slope on baseline PM 2.5  ( g/m 3/SD)
+> designation
+> (2005)
+> Clean Air Act: event-time directed slope
+> C(e) (directed slope)
+
+Figure 4: Event-time directed slope of the Clean Air Act application. bC(e) = G−11
+
+P
+
+> c
+
+(Wc −
+
+¯W )bτc(e) is the projection of the county gap at post year e onto baseline PM 2.5; bars are ±1.96 
+
+county-level standard errors. The directed reduction is weak in 2006, strengthens through 2008–2011, and attenuates by 2012, consistent with a lagged regulatory effect. Table 3: Application IIa: summary of the directed slope by estimand (units μg/m 3/SD) 
+
+Estimand Slope Main specification: total slope including convergence −0.372 
+
+Donor-state placebo mean (regional-convergence benchmark) −0.117 
+
+Excess after donor-state placebo calibration −0.255 
+
+Baseline-matched county donor specification −0.206 
+
+Pre-trend-adjusted total slope −0.365 
+
+SD higher has a reduction 0.372 μg/m 3 larger. Table 4 summarizes the second-stage inference, and three points stand out. First, for 
+
+level quantities such as the mean ATT the dependence structure is decisive: relative to the county-independent standard error, the state block is 2.7 times and the division block 
+
+4.4 times larger (Proposition 2, Corollary 2). Second, the omnibus H0 : V = 0 test is low-powered here—the group-wise estimates are individually noisy—so a non-rejection is uninformative. Third, and by contrast, the pre-specified directed statistic on baseline PM 2.5
+
+is stable and informative, because it is a centered contrast in which the common donor shock cancels to first order (as in the Medicaid slope, Section 5.3). The directed slope is the scientifically meaningful quantity in this Type II-CD application. Equivalently, this directed slope traces a projected group-effect curve mT (w) over baseline PM 2.5: the county-level estimates are too noisy to read one by one, but mT (w) summarizes where the regulation was 34 0 25 50 75 100 125 150 175               
+
+> county rank by baseline PM 2.5
+> 5
+> 4
+> 3
+> 2
+> 1
+> 0
+> 1
+> 2
+> county SDID effect  c ( g/m 3)
+> (A) groupwise estimates with analytic noise
+> 910 11 12 13 14 15
+> baseline PM 2.5 2000--2004 ( g/m 3)
+> 3
+> 2
+> 1
+> 0
+> c ( g/m 3)
+> slope per SD = -0.37
+> (donor-kernel t=8.7, div.-block t=4.9)
+> (B) directed projection with donor-kernel band
+
+Figure 5: Application II (Clean Air Act). (A) County-wise SDID effects bτc sorted by baseline PM 2.5. Error bars are ±1.96 SE of the analytic noise based on the pre-treatment residuals, and the red dashed line is the mean −1.13 μg/m 3. County by county the noise is large, and the structure of heterogeneity is hard to read from the list of group-wise estimates. (B) Scatter of bτc against baseline PM 2.5 (2000–2004 mean) and the directed projection. The solid line is the projection, and the band is the 95% band from the shared-donor kernel. Higher-baseline counties have larger reductions. most effective. A county at the 75th percentile of baseline PM 2.5 is predicted to experience about 0.50 μg/m 3 larger reduction than a county at the 25th percentile (shared state-block 
+
+95% CI [−0.74 , −0.26] ); the placebo-calibrated excess component of this contrast, net of regional convergence, is about 60 –70% of it. This curve, reported with state/division-block covariance and compared with donor-state placebo and matched county-donor benchmarks, is invisible to a conventional group-wise SDID that treats the county effects as independent. The leave-one-donor-state placebo ( K = 22 ) gives a one-sided rank p = 0 .087 , which is suggestive rather than decisive; the main evidence for the directed component comes from the sign-stable slope under state and division block covariance, the pre-trend adjustment, and the baseline-matched county-donor design. The finite-donor diagnostics (Section 6.1) confirm that the inference operates in the fixed-donor regime of Corollary 3 rather than relying on donor dilution. A natural concern is mean reversion : high-baseline counties might have declined any-way. Three pieces of evidence separate the regulatory effect from convergence. First, the placebo distribution of the directed slope is itself centered below zero, so we report the placebo-calibrated excess (−0.26 /SD, Table 3) as the component attributable to regulation. Second, a baseline-matched county-donor design—restricting each treated county’s donors to 35 Table 4: Application IIa main inference: second-stage inference of the PM 2.5 exposure re-sponse and multi-column standard errors (units μg/m 3; G1 = 177 , states 20, divisions 7, donors 23)                                                   
+
+> Estimate Independent (HC) State block Division Donor kernel Mean ATT −1.127 0.054 0.148 0.238 0.074
+> Directed slope (/SD) −0.372 0.050 0.091 0.076 0.043
+> corresponding t-value −7.4−4.1−4.9−8.7
+> V(bare) / VAN 0.522 /0.393 self-noise 0.129 (pre-treatment-residual based)
+> Vexpl ,AN /C0.139 /−0.37 explained variance and directed covariance
+> R2/R2AN (descriptive) 0.27 /0.35 scale-free summary, reported last Placebo rank p(leave-one-donor-state, K= 22 )mean ATT 0.043 ,V0.043 (both the lower bound), slope one-sided 0.087
+
+attainment counties with similar baseline PM 2.5—yields a similar directed slope ( −0.21 /SD). Third, the slope is essentially unchanged after adjusting for a linear pre-trend ( −0.365 /SD). The directed component is therefore sign-stable across state-block and division-block co-variances and robust to the mean-reversion critique; the full audit is in online Appendix I. 
+
+## 6.3 Exploratory Downstream Health Outcomes: County Mortality 
+
+PM 2.5 concentration is the first-stage environmental response the regulation targets; whether those reductions propagate to mortality is the downstream question. Applying the same Type II-CD machinery to IHME county age-standardized mortality (IHME, 2017), ex-ploratory estimates are directionally consistent for cardiovascular mortality—strengthening in lag-adjusted windows, in line with the event-time profile of the concentration response (Figure 4)—weaker for ischemic heart disease, and near zero for cerebrovascular mortality. Because the IHME estimates are model-based and spatially smoothed (with smoothing that can correlate with baseline PM 2.5), we report block standard errors and treat these results as exploratory rather than confirmatory; full tables by cause and post-anchor window are in online Appendix I. The table in online Appendix I contrasts what conventional analysis and the proposed method each give in this application—an organization isomorphic to the Medicaid compar-ison (online Appendix I): a conventional group-wise SDID reports a noisy list of county effects and a low-powered omnibus test, whereas the directed projection recovers a stable baseline-pollution gradient. 36 7 Conclusion 
+
+This paper proposed a framework for inferring the heterogeneity of group-level treatment effects as a single moment system with orthogonalized SDID as the first stage . The paper’s central point is that many-group SDID estimates are not independent, because they share donors: once these estimates are used to study effect heterogeneity, the shared-donor covari-ance, the upward bias of second moments from estimation noise, and persistent mismatch must all be carried into the inference. Consequently the projection coefficients, the projected group-effect curve mT (w) = w⊤γ∗ and its confidence band, the between-group variance, and the explained share admit valid inference only through the joint-covariance framework de-veloped here, and not through two-way fixed effects, difference-in-differences, or standard synthetic-control regressions that treat the group effects as independent. Feeding the same 
+
+{bτg} into both the projection (first moment) and the all-group leave-out variance decomposi-tion (second moment), and placing the between-group dependence induced by shared donors at the center, we derived the joint asymptotic distribution of (bγ, bV , bC, bR2). To the aversion to random effects, we responded in a frequentist manner on three points: (i) defining the es-timands as fixed quantities, (ii) explicitly decomposing the variance into the estimation-error component and the true heterogeneity component, and (iii) validly constructing the V = 0 
+
+test under unknown, heteroskedastic, and between-group-dependent variance—and, for the equilibration residual, by placebo calibration. The Monte Carlo experiments (Section 4) quantitatively confirmed the robustness of the first stage under factor selection (about 90% bias reduction), the removal of variance bias by leave-out (60–90%), the recovery of intercept coverage by the joint covariance kernel (near the nominal level), and the recovery of test size by placebo calibration (28–34% → near 5%). On the empirical side, we added an exploratory downstream health outcome (Applica-tion IIb) using IHME county mortality to the Clean Air Act application of Section 6, but this is suggestive, not confirmatory—a systematic exploration of annual panels, finer causes of death, and lag structures, and a full development via a Poisson-offset-type rate contrast based on death counts and population, is a natural extension requiring restricted-use vital statistics. As limitations and extensions remaining on the methodological side, there are: (i) efficiency : a split-free analytic leave-out and data-fission constructions (Leiner et al., 2025) that avoid the efficiency loss of sample splitting; (ii) weaker calibration assumptions :explicit corrections for systematically inferior treated fit beyond the fit-matched device, and uniformly valid inference in the weak-heterogeneity region where V is near zero; and (iii) 
+
+staggered adoption and alternative first stages : cohort-wise donor pools with clean com-parisons, and matrix-completion, proximal, or Bayesian first stages plugged into the same 37 second-stage moment system. These directions—together with the semiparametric efficiency bound and a cut/modular Bayesian extension—are discussed further in online Appendix G. 
+
+Supplementary Materials. The online supplement contains online Appendices A–J (in-cluded after the references in this file): the self-contained first-stage theory, the Section 3 proofs, the county aggregation layer, the complete proof of Theorem 3, the Fieller-type 
+
+R2 inference, the super-population calibration, extended related work and discussion, the additional Monte Carlo experiments, and the supplementary application tables. The repli-cation package provides a single-command workflow, staged public-data inputs, scripts for all figures and tables, and machine-readable result files used to populate the manuscript ta-bles, together with the implementation of the analytic noise correction, the household A/B 
+
+leave-out, and the bias-aware intervals. A smoke-test workflow is provided for continuous verification, and every result is reproducible from public data (ACS PUMS, SAHIE, EPA Green Book, satellite-derived county PM 2.5, and IHME county mortality estimates). 
+
+Acknowledgments. We thank all those concerned for helpful discussions. 
+
+Funding. This research was supported by JSPS KAKENHI Grant Number 25K21651 and the RIKEN Center for Advanced Intelligence Project (AIP). 
+
+Disclosure Statement. The authors report there are no competing interests to declare. 
+
+# References 
+
+Abadie, A. (2005). Semiparametric difference-in-differences estimators. Review of Economic Studies , 72(1), 1–19. Abadie, A., Diamond, A., & Hainmueller, J. (2010). Synthetic control methods for compar-ative case studies. Journal of the American Statistical Association , 105(490), 493–505. Abadie, A., Diamond, A., & Hainmueller, J. (2015). Comparative politics and the synthetic control method. American Journal of Political Science , 59(2), 495–510. Abadie, A., Athey, S., Imbens, G. W., & Wooldridge, J. M. (2020). Sampling-based versus design-based uncertainty in regression analysis. Econometrica , 88(1), 265–296. Abadie, A., Athey, S., Imbens, G. W., & Wooldridge, J. M. (2023). When should you adjust standard errors for clustering? Quarterly Journal of Economics , 138(1), 1–35. Abadie, A., & L’Hour, J. (2021). A penalized synthetic control estimator for disaggregated data. Journal of the American Statistical Association , 116(536), 1817–1834. Arkhangelsky, D., Athey, S., Hirshberg, D. A., Imbens, G. W., & Wager, S. (2021). Synthetic difference-in-differences. American Economic Review , 111(12), 4088–4118. 38 Armstrong, T. B., Kolesár, M., & Plagborg-Møller, M. (2022). Robust empirical Bayes con-fidence intervals. Econometrica , 90(6), 2567–2602. Athey, S., Bayati, M., Doudchenko, N., Imbens, G., & Khosravi, K. (2021). Matrix comple-tion methods for causal panel data models. Journal of the American Statistical Association ,116(536), 1716–1730. Ben-Michael, E., Feller, A., & Rothstein, J. (2021). The augmented synthetic control method. 
+
+Journal of the American Statistical Association , 116(536), 1789–1803. Ben-Michael, E., Feller, A., & Rothstein, J. (2022). Synthetic controls with staggered adop-tion. Journal of the Royal Statistical Society: Series B , 84(2), 351–381. Bloom, H. S., Raudenbush, S. W., Weiss, M. J., & Porter, K. (2017). Using multisite experi-ments to study cross-site variation in treatment effects. Journal of Research on Educational Effectiveness , 10(4), 817–842. Bonhomme, S., & Manresa, E. (2015). Grouped patterns of heterogeneity in panel data. 
+
+Econometrica , 83(3), 1147–1184. Breunig, C., Liu, R., & Yu, Z. (2025). Double robust Bayesian inference on average treatment effects. Econometrica , forthcoming. Callaway, B., & Sant’Anna, P. H. C. (2021). Difference-in-differences with multiple time periods. Journal of Econometrics , 225(2), 200–230. Cattaneo, M. D., Feng, Y., & Titiunik, R. (2021). Prediction intervals for synthetic control methods. Journal of the American Statistical Association , 116(536), 1865–1880. Chamberlain, G. (1992). Efficiency bounds for semiparametric regression. Econometrica ,60(3), 567–596. Chang, N.-C. (2020). Double/debiased machine learning for difference-in-differences models. 
+
+Econometrics Journal , 23(2), 177–191. Chay, K. Y., & Greenstone, M. (2005). Does air quality matter? Evidence from the housing market. Journal of Political Economy , 113(2), 376–424. Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W., & Robins, J. (2018). Double/debiased machine learning for treatment and structural param-eters. Econometrics Journal , 21(1), C1–C68. Chernozhukov, V., Demirer, M., Duflo, E., & Fernández-Val, I. (2018). Generic machine learning inference on heterogeneous treatment effects in randomized experiments. Working paper (Fisher–Schultz Lecture), arXiv:1712.04802. Chernozhukov, V., Wüthrich, K., & Zhu, Y. (2021). An exact and robust conformal infer-ence method for counterfactual and synthetic controls. Journal of the American Statistical 
+
+39 Association , 116(536), 1849–1864. Chetty, R., Friedman, J. N., & Rockoff, J. E. (2014). Measuring the impacts of teachers I: Evaluating bias in teacher value-added estimates. American Economic Review , 104(9), 2593–2632. Chib, S., & Shimizu, K. (2025). Bayesian estimation of cohort-time-stratum specific effects in staggered difference-in-differences. Working paper, arXiv:2505.18391. Cui, Y., Pu, H., Shi, X., Miao, W., & Tchetgen Tchetgen, E. (2024). Semiparametric proximal causal inference. Journal of the American Statistical Association , 119(546), 1348–1359. de Chaisemartin, C., & D’Haultfœuille, X. (2020). Two-way fixed effects estimators with heterogeneous treatment effects. American Economic Review , 110(9), 2964–2996. Dube, A., & Zipperer, B. (2015). Pooling multiple case studies using synthetic controls: An application to minimum wage policies. IZA Discussion Paper No. 8944. Goodman-Bacon, A. (2021). Difference-in-differences with variation in treatment timing. 
+
+Journal of Econometrics , 225(2), 254–277. Graham, B. S., & Powell, J. L. (2012). Identification and estimation of average partial effects in irregular correlated random coefficient panel data models. Econometrica , 80(5), 2105– 2152. Ignatiadis, N., & Wager, S. (2022). Confidence intervals for nonparametric empirical Bayes analysis (with discussion). Journal of the American Statistical Association , 117(539), 1149– 1166. Institute for Health Metrics and Evaluation (IHME) (2017). United States Cardiovascu-lar Disease Mortality Rates by County 1980–2014 . Seattle, WA: IHME (age-standardized county-level mortality rates; small-area estimation by GBD methods). Koenker, R., & Mizera, I. (2014). Convex optimization, shape constraints, compound deci-sions, and empirical Bayes rules. Journal of the American Statistical Association , 109(506), 674–685. Kline, P., Saggio, R., & Sølvsten, M. (2020). Leave-out estimation of variance components. 
+
+Econometrica , 88(5), 1859–1898. Meager, R. (2019). Understanding the average impact of microcredit expansions: A Bayesian hierarchical analysis of seven randomized experiments. American Economic Journal: Ap-plied Economics , 11(1), 57–91. Meager, R. (2022). Aggregating distributional treatment effects: A Bayesian hierarchical analysis of the microcredit literature. American Economic Review , 112(6), 1818–1847. Ray, K., & van der Vaart, A. (2020). Semiparametric Bayesian causal inference. Annals of 
+
+40 Statistics , 48(5), 2999–3020. Robbins, M. W., Saunders, J., & Kilmer, B. (2017). A framework for synthetic control meth-ods with high-dimensional, micro-level data: Evaluating a neighborhood-specific crime intervention. Journal of the American Statistical Association , 112(517), 109–126. Robinson, P. M. (1988). Root-N -consistent semiparametric regression. Econometrica , 56(4), 931–954. Leiner, J., Duan, B., Wasserman, L., & Ramdas, A. (2025). Data fission: Splitting a single data point. Journal of the American Statistical Association , 120(549), 135–146. Li, K. T. (2020). Statistical inference for average treatment effects estimated by synthetic control methods. Journal of the American Statistical Association , 115(532), 2068–2083. Sant’Anna, P. H. C., & Zhao, J. (2020). Doubly robust difference-in-differences estimators. 
+
+Journal of Econometrics , 219(1), 101–122. Semenova, V., & Chernozhukov, V. (2021). Debiased machine learning of conditional average treatment effects and other causal functions. Econometrics Journal , 24(2), 264–289. Sun, L., & Abraham, S. (2021). Estimating dynamic treatment effects in event studies with heterogeneous treatment effects. Journal of Econometrics , 225(2), 175–199. Shi, X., Li, K., Miao, W., Hu, M., & Tchetgen Tchetgen, E. (2026). Theory for identification and inference with synthetic controls: A proximal causal inference framework. Journal of the American Statistical Association , forthcoming. Walters, C. R. (2024). Empirical Bayes methods in labor economics. In Handbook of Labor Economics , Vol. 5 (pp. 183–260). Elsevier. Wooldridge, J. M. (2021). Two-way fixed effects, the two-way Mundlak regression, and difference-in-differences estimators. Working paper (SSRN 3906345). Xu, Y. (2017). Generalized synthetic control method: Causal inference with interactive fixed effects models. Political Analysis , 25(1), 57–76. U.S. Environmental Protection Agency (2005). Air quality designations and classifications for the fine particles (PM 2.5) National Ambient Air Quality Standards. Federal Register ,70(3), 944–1019 (promulgated January 5, 2005; effective April 5 of the same year). U.S. Environmental Protection Agency (2026). Green Book: PM-2.5 (1997) designated ar-eas by state/county/area. https://www3.epa.gov/airquality/greenbook/qbcty.html 
+
+(accessed July 6, 2026). van Donkelaar, A., Martin, R. V., Li, C., & Burnett, R. T. (2019). Regional estimates of chemical composition of fine particulate matter using a combined geoscience-statistical method with information from satellites, models, and monitors. Environmental Science & 
+
+41 Technology , 53(5), 2595–2611. Courtemanche, C., J. Marton, B. Ukert, A. Yelowitz, and D. Zapata. 2017. Early Impacts of the Affordable Care Act on Health Insurance Coverage in Medicaid Expansion and Non-Expansion States. Journal of Policy Analysis and Management 36(1): 178–210. Miller, S., N. Johnson, and L. R. Wherry. 2021. Medicaid and Mortality: New Evidence from Linked Survey and Administrative Data. Quarterly Journal of Economics 136(3): 1783–1829. U.S. Census Bureau. 2008–2024. American Community Survey 1-Year Public Use Microdata Sample (PUMS). Kaiser Family Foundation. 2024. Status of State Medicaid Expansion Decisions. KFF State Health Facts. Wu, X., Nethery, R. C., Sabath, M. B., Braun, D., & Dominici, F. (2020). Air pollution and COVID-19 mortality in the United States: Strengths and limitations of an ecological regression analysis. Science Advances , 6(45), eabd4049 (county-aggregated PM 2.5 public data, updated_data branch, 2000–2018). 42 Appendix A Self-Contained Theory of the Orthogonalized SDID First Stage 
+
+This appendix gives the identification, Neyman orthogonality, and linearization of the or-thogonalized SDID used as the first stage in the main text, self-containedly and without relying on external literature. 
+
+Sketch of proof of Lemma 1 (main text). The derivative of τg along ω(g) 7 → ω(g) +t δ vanishes at the balancing point by the first-order condition of the pre-treatment fit (under Assump-tion 3, because the pre- and post-treatment factor structures coincide, a perturbation of the weights does not propagate to first order into the post-treatment difference). The derivative along the residualization h0 7 → h0 + t δ h cancels because the double difference of SDID acts linearly on h0 and commonly on the treated and control groups. The same holds for the time weights (following the reasoning of Arkhangelsky et al., 2021; details of orthogonalization in Appendix A). More precisely, for the estimation errors of the weights and residualization to affect the estimation of τg only at second order , it suffices to have the product-type rate 
+
+∥bω(g) − ω⋆(g)∥ · ∥ bh0 − m∥ = op(G−1/21 ) (each factor may be slower than √n), group-wise cross-fitting, and sufficient smoothness of m; these high-level conditions and a weighted-residual CLT allowing the simplex boundary are collected in Appendix A. 
+
+Correspondence to standard SDID identification. 
+
+Remark A.1 . Assumptions 2–3 correspond to the standard formulation of identification in SDID, synthetic control, and generalized synthetic control (Abadie et al., 2010; Xu, 2017; Arkhangelsky et al., 2021; Athey et al., 2021). Parallel trends (conditional DiD) reduces to the special case r = 0 (no factors). Assumption 3 imposes no restriction whatsoever on the between-group heterogeneity of τg. Orthogonalization by X removes in advance part of the loadings attributable to observed covariates, lightening the burden of balancing. The additive separability of covariates and the common function m are the standard structure of the partially linear model (Robinson, 1988; Chernozhukov et al., 2018a), and group-specific and time-specific covariate effects are absorbed into the factor loadings Γ⊤ 
+
+> g
+
+Ft and the fixed effects; by orthogonality, first-order misspecification of m does not propagate into the estimation of τg.43 Table S.1: Main notation 
+
+Symbol Meaning 
+
+g, i, t Group, unit, time 
+
+T , C Treated-group set ( |T | = G1), control (donor) group set ( |C| = G0)
+
+T0, T1 Pre- and post-treatment period sets 
+
+Ygit , ¯Ygt Unit outcome, group-average trajectory 
+
+Xgit ∈ Rdx Unit covariates (used for residualization for identification) 
+
+Wg ∈ Rp Group covariates (used for the projection of heterogeneity; includes intercept) 
+
+m(·), h 0(·) Common covariate function, residualization nuisance ( h0 = m)
+
+αg, ξ t, Γ⊤ 
+
+> g
+
+Ft Group fixed effect, time fixed effect, interactive fixed effect 
+
+ω(g), λ (g) Donor-group weights and pre-treatment time weights of group gτg, ¯τ Group-specific ATT and its (treated-group) mean 
+
+γ∗, β ∗ Projection coefficients of τg on Wg (full vector incl. intercept; slope part) 
+
+V, V expl , R 2 Total variance, explained variance, and coefficient of determination of ATT 
+
+ΣW (Finite-population) variance matrix of group covariates 
+
+Factor model and residualization (moved from Section 2.2). Using unit covariates 
+
+Xgit ∈ Rdx (possibly time-varying) and unobserved factors Ft ∈ Rr with loadings Γg ∈ Rr, we assume the following additively separable model with covariates for the potential outcomes: 
+
+Ygit (0) = m(Xgit ) + αg + ξt + Γ ⊤ 
+
+> g
+
+Ft + εgit , E[εgit | g, t, X git ] = 0 , (A.1) 
+
+Ygit (1) = Ygit (0) + τg, g ∈ T , t ∈ T 1. (A.2) Here m : Rdx → R is an unknown covariate function common across groups and times, αg
+
+is a group fixed effect, ξt is a time fixed effect, and Γ⊤ 
+
+> g
+
+Ft is an interactive fixed effect. The group mean of the untreated potential outcome is 
+
+μgt (0) ≡ E[Ygit (0) | g, t ] = ¯ mgt + αg + ξt + Γ ⊤ 
+
+> g
+
+Ft, ¯mgt = E[m(Xgit ) | g, t ], (A.3) Model (1)–(2) imposes three substantive restrictions. First, the covariate effect m(·) and the factor structure αg + ξt + Γ ⊤ 
+
+> g
+
+Ft are additively separable. Second, the covariate function 
+
+m may take a flexible form but is common across groups and times, and group-specific and time-specific covariate slopes are absorbed into the factor term. Third, τg is the group-level ATT: individual treatment effects may vary within a group and are averaged into τg,which is all identification requires; distributional and within-group effects are outside the scope of this paper. We do not specify the functional form of m, and make it robust to first-order misspecification through orthogonalization (residualization Y ⊥ 
+
+> git
+
+= Ygit − bm(Xgit )); the required smoothness, product-type convergence rates, and cross-fitting conditions are 44 collected in Appendix A. Throughout, we treat R2 = Vexpl /V as a scale-free descriptive summary and base inference on the joint distribution of (V, V expl , C ), because the ratio is sensitive to a small or weakly identified denominator; the empirical tables report V , Vexpl ,and C first and R2 last. The group-average trajectory ¯Ygt = n−1
+
+> g
+
+P 
+
+> i
+
+Ygit = μgt + ¯ εgt (sampling error ¯εgt =
+
+Op(n−1/2 
+
+> g
+
+)) concentrates on μgt as the group size grows. The idea of SDID is to se-lect donor-group weights ω(g) and time weights λ(g) that balance the pre-treatment of the covariate-adjusted series with the control groups, and to separate τg by removing 
+
+αg + ξt + Γ ⊤ 
+
+> g
+
+Ft through a weighted double difference. Here the unit covariates Xgit and the group covariates Wg ∈ Rp (including an intercept) play different roles. Xgit contributes to identification through loading removal by residualization, whereas Wg is used for the projection describing the heterogeneity of τg (Section 2.3 onward) and does not play an identification role. The group covariate Wg enters the model in two places—the baseline factor loadings and the effect equation; the identification-irrelevant baseline role and the projection role are distinguished in detail in Appendix A. 
+
+The two roles of the group covariate. The group covariate Wg itself appears in two places in the model. First, high-Wg groups may differ in the level and trend of the untreated potential outcome μgt (0) through fixed effects and factor loadings. Formally, it may depend on unknown functions a(·), c (·) of Wg, as in αg = a(Wg) + ˜ αg, Γg = c(Wg) + ˜Γg. Second, the treatment effect τg depends on Wg through the projection W⊤ 
+
+> g
+
+γ∗. That is, we assume that Wg may affect both the untreated potential outcome Ygit (0) (its expectation μgt (0) )and the treatment effect τg, and we do not impose exogeneity of Wg. The first-stage SDID differences out αg and Γ⊤ 
+
+> g
+
+Ft no matter how strongly they are correlated with Wg. Therefore the contribution a(·), c (·) of Wg to the baseline does not contaminate identification, and the second-stage projection extracts only the contribution γ∗ of Wg to effect heterogeneity. This is why (γ∗, V, R 2) can be estimated without imposing either exogeneity of Wg or random effects. The central results—Lemma A.1 (outer-product Riesz representation), Theorem A.1 (Neyman orthogonality), Theorem A.2 (mixed-remainder expansion) with Corollary A.1, and Theorem A.3 (asymptotic normality robust to the simplex boundary)—rigorously justify the linear representation of the main text for each treated group g’s bτg,
+
+bτg − τg = bg + ug − X
+
+> h∈C
+
+ω(g) 
+
+> h
+
+vhg + rg (A.4) In particular, we show that even when the estimated weights bω(g), bλ(g) lie on the simplex boundary with many components zero—that is, without assuming the stability of the KKT 45 active set or the differentiability of the weight map—the remainder rg is negligible relative to the stochastic term, and the premises of the second-stage inference (Theorem 2, Theorem 3) hold. Below, we fix a single treated group g and make the subscript g explicit only when needed. We range over donor groups h ∈ C (|C| = G0) and time points t.
+
+## A.1 SDID Functional and Linearization by Realized Cell Weights 
+
+Taking the residualized (orthogonalized) group mean as the estimand of mkt = E[ ¯Ykt | Z ],we write the residualized outcome as ¯Y mkt = ¯Ykt − m(Xkt ) (k ∈ { g} ∪ C ). Let the post-treatment mean be ¯Y mk,T 1 = |T 1|−1 P
+
+> t∈T 1
+
+¯Y mkt . We define the SDID functional of treated group 
+
+g as 
+
+ψg(ω, λ, m ) = 
+
+ ¯Y mg,T 1 − P 
+
+> t∈T 0
+
+λt ¯Y mgt 
+
+
+
+− P 
+
+> h∈C
+
+ωh
+
+ ¯Y mh,T 1 − P 
+
+> t∈T 0
+
+λt ¯Y mht 
+
+
+
+(A.5) where ω ∈ ∆G0 , λ ∈ ∆T0 are simplices. The estimator is bτg = ψg(bω, bλ, bm). We define the 
+
+signed group contrast a(ω) over the augmented group index k ∈ { g} ∪ C and the signed time contrast b(λ) over time points as 
+
+ak(ω) = 
+
+
+
+1, k = g, 
+
+−ωk, k ∈ C ,bt(λ) = 
+
+
+
+|T 1|−1, t ∈ T 1,
+
+−λt, t ∈ T 0,
+
+(A.6) so that P 
+
+> k
+
+ak(ω) = 0 and P 
+
+> t
+
+bt(λ) = 0 . We use the matrix F = ( ¯Y mkt )k∈{ g}∪C , t .
+
+Lemma A.1 (Outer-product Riesz representation of SDID) . For any matrix F and any 
+
+(ω, λ ) ∈ ∆G0 × ∆T0 ,
+
+ψg(ω, λ, m ) = a(ω)⊤F b (λ). (A.7) 
+
+Proof. Split the right-hand side into four blocks: 
+
+a(ω)⊤F b (λ) = X 
+
+> t∈T 1
+> 1
+> |T 1|
+
+Fgt − X
+
+> t∈T 0
+
+λtFgt − X
+
+> h∈C
+
+ωh
+
+X 
+
+> t∈T 1
+> 1
+> |T 1|
+
+Fht + X
+
+> h∈C
+
+ωh
+
+X
+
+> t∈T 0
+
+λtFht .
+
+The first two terms equal ¯Y mg,T 1 − P 
+
+> t∈T 0
+
+λt ¯Y mgt , and the third and fourth terms equal 
+
+− P 
+
+> h
+
+ωh( ¯Y mh,T 1 − P 
+
+> t∈T 0
+
+λt ¯Y mht ), coinciding with (A.5). Lemma A.1 is the foundation of this appendix. Whereas ordinary SDID introduces the counterfactual mean as a counterfactual operator, here we view the residual —the post-treatment treated-group mean minus the SDID reconstruction—as the outer prod-uct a(ω)⊤F b (λ) of the two-way signed contrasts. This lets the insensitivity to first-stage nuisances be read directly from the outer-product structure. 46 Next, we give the linearization by realized cell weights. Defining the cell weights 
+
+skt (ω, λ ) = ak(ω) bt(λ) (A.8) , by Lemma A.1, for any F we have ψg(ω, λ, m ) = P
+
+> k
+
+P 
+
+> t
+
+skt (ω, λ )Fkt . Since ¯Y mkt = μkt (0) −
+
+m(Xkt ) + ¯ εkt (¯εkt is the group-average sampling error, E[¯ εkt | Z ] = 0 ), the stochastic term of 
+
+bτg conditional on the first stage is 
+
+X
+
+> k
+
+X
+
+> t
+
+skt (bω, bλ) ¯ εkt (A.9) . That is, the inference is based on a central limit theorem for a weighted sum of the realized 
+
+weight coefficients skt , not on the derivative of the weight map. This viewpoint is the key to avoiding non-differentiability at the simplex boundary. 
+
+## A.2 Neyman Orthogonality and Mixed-Remainder Expansion 
+
+Let the reference point η⋆ = ( m⋆, ω ⋆, λ ⋆) be the population-version balancing weights and residualization. Let e⋆ = m0 − m⋆ be the reference error of outcome residualization, and let 
+
+Tm, Tω, Tλ be the respective admissible perturbation directions (tangent cones). We assume the following. 
+
+Assumption A.1 (Local bridge equations) . At the reference point η⋆,
+
+a(ω⋆)⊤hm b(λ⋆) = 0 , ∀hm ∈ T m, (A.10) 
+
+h⊤
+
+> ω
+
+e⋆ b(λ⋆) = 0 , ∀hω ∈ T ω, (A.11) 
+
+a(ω⋆)⊤e⋆ hλ = 0 , ∀hλ ∈ T λ. (A.12) Equation (A.10) means that the SDID contrast annihilates the first-order error direction of outcome estimation—that is, that the weight-estimation problem is balanced by includ-ing the outcome-model basis, pre-treatment residuals, and factor scores. Equations (A.11) and (A.12) mean that the residual e⋆ is bridged with respect to weight perturbations. The bridge condition of Assumption A.1 is not a primitive that the analyst must merely hope holds: it is implied by an explicitly implementable basis-augmented weight program. Suppose the nuisance estimation error lies, up to a negligible remainder, in a known low-dimensional basis, 
+
+bh − h0 =
+
+> K
+
+X
+
+> k=1
+
+ak bk + rh, ∥rh∥∆,g = op(G−1/21 ), (A.13) 47 where b1, . . . , b K collect the outcome-model basis, the pre-period residual basis, and the estimated factor scores, and ∥ · ∥ ∆,g is the seminorm induced by the SDID contrast of group 
+
+g. Replace the plain donor program by the balancing program 
+
+bωg = arg min 
+
+> ω∈∆G0
+
+hX 
+
+> t∈T 0
+
+  ¯Y ⊥ 
+
+> gt
+
+− P 
+
+> h∈C
+
+ωh ¯Y ⊥
+
+> ht
+
+2 + ηB Bg − P 
+
+> h∈C
+
+ωhBh 
+
+> 2
+
++ ζ2∥ω∥22
+
+i
+
+, (A.14) where Bk = (∆ kb1, . . . , ∆kbK ) stacks the pre-/post contrasts of the same basis evaluated at series k, so that balancing Bg against the donor combination balances exactly the directions that the nuisance error can occupy. 
+
+Proposition A.1 (Basis-augmented balance implies local bridge balance) . Under (A.13) ,if the augmented program (A.14) attains basis balance Bg − P 
+
+> h∈C
+
+bωgh Bh = op(G−1/21 ),then the SDID contrast annihilates the first-order outcome error, ∆g(bh − h0) = op(G−1/21 ),so that the m-direction bridge equation (A.10) holds at the estimated weights and the Ney-man orthogonality of Theorem A.1 is implemented by the estimation procedure rather than assumed. Proof. By (A.13), ∆g(bh − h0) = PKk=1 ak ∆gbk + ∆ grh. Writing ∆gbk as the SDID contrast applied to basis element k, the vector  ∆gb1, . . . , ∆gbK
+
+ equals Bg − P 
+
+> h∈C
+
+bωgh Bh evaluated along the realized contrast, so the first sum is bounded by ∥a∥·∥ Bg −P 
+
+> h
+
+bωgh Bh∥ = op(G−1/21 )
+
+by basis balance, and the second term is op(G−1/21 ) by the remainder condition. Hence 
+
+∆g(bh − h0) = op(G−1/21 ), which is exactly the m-direction requirement (A.10); the ω- and 
+
+λ-direction equations are unaffected. The conclusion then follows from Theorem A.1. The penalty weight ηB trades exact balance against variance; taking ηB → ∞ slowly enforces basis balance while the ridge term ζ2∥ω∥22 keeps the weights well defined on the simplex boundary. Our main empirical implementation uses the baseline residualized SDID; Proposition A.1 shows that the augmented variant constructively satisfies Assumption A.1, and we report it as the recommended implementation when the analyst wishes to discharge the bridge condition by design rather than by assumption. 
+
+Theorem A.1 (Neyman orthogonality) . Under Assumption A.1, the population score 
+
+Ψ( τg, η ) = ψg(ω, λ, m )−τ sdid  
+
+> g
+
+is Neyman orthogonal with respect to the nuisance η = ( m, ω, λ ):for any h = ( hm, h ω, h λ) ∈ T m × T ω × T λ, ∂ηΨ( τg, η ⋆)[ h] = 0 .Proof. Differentiate (A.7) in each direction. The m direction is −a(ω⋆)⊤hm b(λ⋆), the ω
+
+direction, absorbing the sign definition, is h⊤
+
+> ω
+
+e⋆b(λ⋆), and the λ direction is a(ω⋆)⊤e⋆hλ. All are zero by Assumption A.1. 48 Remark A.2 (Why the m-direction condition is needed) . Orthogonality in the m direction does not generally hold from a(ω⋆)⊤e⋆ = 0 or e⋆b(λ⋆) = 0 alone, because the m-direction derivative depends on hm rather than e⋆. Therefore, in orthogonalized SDID, the basis to which the error of bm belongs must be balanced during weight estimation, and this is the essential difference from “SDID with an outcome regression merely added.” We evaluate the mixed remainder. Set ∆m = bm − m⋆, ∆a = a(bω) − a(ω⋆), ∆b =
+
+b(bλ) − b(λ⋆), a⋆ = a(ω⋆), b⋆ = b(λ⋆).
+
+Theorem A.2 (Mixed-remainder expansion) . Suppose Ψ( τg, η ⋆) = 0 . Then 
+
+Ψ( τg, bη) = a⋆⊤e⋆∆b + ∆ ⊤ 
+
+> a
+
+e⋆b⋆ − a⋆⊤∆mb⋆
+
+| {z }
+
+> first-order terms
+
++∆ ⊤ 
+
+> a
+
+e⋆∆b − ∆⊤ 
+
+> a
+
+∆mb⋆ − a⋆⊤∆m∆b − ∆⊤ 
+
+> a
+
+∆m∆b,
+
+(A.15) 
+
+and by Assumption A.1 the first-order terms vanish (in the admissible perturbation direc-tions), 
+
+Ψ( τg, bη) = ∆ ⊤ 
+
+> a
+
+e⋆∆b − ∆⊤ 
+
+> a
+
+∆mb⋆ − a⋆⊤∆m∆b − ∆⊤ 
+
+> a
+
+∆m∆b. (A.16) 
+
+Proof. Substituting a(bω) = a⋆ + ∆ a, b(bλ) = b⋆ + ∆ b, m0 − bm = e⋆ − ∆m into Ψ( τg, bη) = (a⋆ + ∆ a)⊤(e⋆ − ∆m)( b⋆ + ∆ b), expanding, and subtracting a⋆⊤e⋆b⋆ = 0 gives (A.15). By Assumption A.1 the first-order terms vanish, giving (A.16). 
+
+Corollary A.1 (Product-type upper bound) . When |u⊤Hv | ≤ ∥ u∥A∥H∥M ∥v∥B holds for mutually dual norms ∥ · ∥ A, ∥ · ∥ M , ∥ · ∥ B ,
+
+|Ψ( τg, bη)| ≤ ∥ ∆a∥A∥e⋆∥M ∥∆b∥B + ∥∆a∥A∥∆m∥M ∥b⋆∥B
+
++ ∥a⋆∥A∥∆m∥M ∥∆b∥B + ∥∆a∥A∥∆m∥M ∥∆b∥B . (A.17) Equation (A.16) is an estimation remainder distinct from the equilibration residual bg of the main text, and the vanishing of the first-order terms shows that the estimation errors of the weights and residualization propagate into bτg only at second order. bg itself (the coun-terfactual incompleteness of the population version) is handled by the placebo calibration and bias-aware inference of the main text. 
+
+## A.3 Asymptotic Normality Robust to the Simplex Boundary and Implications for the Second Stage 
+
+Let s⋆kt = skt (ω⋆, λ ⋆) and σ2 
+
+> n
+
+= Var  P  
+
+> k,t
+
+s⋆kt ¯εkt | Z .
+
+Assumption A.2 (Weighted-residual CLT) . σ2 
+
+> n
+
+> 0 and σ−1
+
+> n
+
+P 
+
+> k,t
+
+s⋆kt ¯εkt ⇒ N (0 , 1) (the Lindeberg condition for independent clusters or a weakly dependent triangular array suffices). 49 Assumption A.3 (Leverage condition) . max k,t |s⋆kt | P 
+
+> k,t
+
+(s⋆kt )21/2 → 0.
+
+Assumption A.4 (Negligibility of the mixed remainder) . Letting the right-hand side of (A.16) be Rn, Rn = op(σn), and for the difference between the estimated and reference weights, Var  P 
+
+> k,t
+
+(bskt − s⋆kt )¯ εkt | Z  = op(σ2
+
+> n
+
+).Assumption A.4 does not require an asymptotically linear representation of bω, bλ. All that is needed is that the weighted residual sum using the estimated weights has the same first-order distribution as that using the reference weights. 
+
+Theorem A.3 (Asymptotic normality robust to the simplex boundary) . Under Assump-tions A.2–A.4, 
+
+bτg − τ sdid 
+
+> g
+
+σn
+
+⇒ N (0 , 1) . (A.18) 
+
+This conclusion holds even when bω or bλ lies on the simplex boundary with many components zero, and does not assume the asymptotic stability of the active set of the weight optimization or the differentiability of the weight map. Proof. bτg − τ sdid  
+
+> g
+
+= P 
+
+> k,t
+
+bskt ¯εkt + Rn. Split the first term into P 
+
+> k,t
+
+s⋆kt ¯εkt + P
+
+> k,t
+
+(bskt − s⋆kt )¯ εkt .By the latter part of Assumption A.4 the second sum is op(σn), and by the former part 
+
+Rn = op(σn). Hence bτg − τ sdid  
+
+> g
+
+= P 
+
+> k,t
+
+s⋆kt ¯εkt + op(σn). By Assumption A.2 (Lindeberg CLT; Assumption A.3 guarantees the Lindeberg condition), σ−1
+
+> n
+
+P s⋆kt ¯εkt ⇒ N (0 , 1) . By Slutsky we obtain (A.18). Finally, we state the implications for the second-stage inference. Collecting the lineariza-tion of Theorem A.3 group by group, from the expansion of (A.9) for the difference between the post-treatment mean and the time-weighted pre-treatment mean, the linear representa-tion of the main text (A.4), 
+
+bτg − τg = bg + ug − X
+
+> h∈C
+
+ω(g) 
+
+> h
+
+vhg + rg
+
+follows. Here bg = ψg(ω⋆(g), λ ⋆(g), m 0) − τg is the population-version equilibration resid-ual, ug = ¯ελg 
+
+> g
+
+is the (time-weighted) sampling error on the treated side, vhg = ¯ελg 
+
+> h
+
+is the sampling error on the donor-h side, ¯ελg 
+
+> k
+
+= ¯ εk,T 1 − P 
+
+> t∈T 0
+
+λ(g) 
+
+> t
+
+¯εkt , and rg = R(g) 
+
+> n
+
+is the second-order remainder of Theorem A.2. Theorem A.3 guarantees rg = op(σn,g ), which is the premise for the joint CLT of the second stage (Theorem 2) and the validity of the donor-sharing-dependent variance. When a donor h is shared in the synthesis of multi-ple treated groups g, g ′, vhg and vhg ′ are correlated through the common ¯εh·, producing 
+
+Cov( bτg, bτg′ ) = P 
+
+> h∈C
+
+ω(g) 
+
+> h
+
+ω(g′) 
+
+> h
+
+υ(g,g ′)
+
+> h
+
+̸ = 0 —this is the source of the donor-sharing dependence of the main text. In the fully balanced regime ( max g |bg| = op(G−1/21 )), τ sdid  
+
+> g
+
+= τg, and in the mismatch-tolerant regime we retain bg and handle it by calibration and bias-aware inference. 50 B Proofs of the Joint Limit Theorems of Section 3 
+
+This appendix collects the proofs of Theorem 2, Corollaries 2 and 3, and Theorem H.1, stated in Sections 3 and 3.3. 
+
+Proof of Theorem 2. [Sketch of proof] Substitute (14) into (11). Because the normal equa-tion of the finite-population projection P 
+
+> g
+
+Wg(τg − W⊤ 
+
+> g
+
+γ∗) = 0 holds identically , the fixed residuals do not contribute to bγ − γ∗. Rearranging the nuisance-induced variation by prim-itive shock ,
+
+1
+
+G1
+
+X
+
+> g∈T
+
+Wg(bτg − τg) = 1
+
+G1
+
+X
+
+> g∈T
+
+Wg ug − 1
+
+G1
+
+X
+
+> h∈C
+
+X
+
+> t
+
+X 
+
+> g∈T
+
+Wg ω(g) 
+
+> h
+
+c(g)
+
+> t
+
+
+
+¯εht + op(G−1/21 ),
+
+where c(g) is the time contrast ( |T 1|−1 for t ∈ T 1, −λ(g) 
+
+> t
+
+for t ∈ T 0), and we used Assump-tion 5(b) for the uniform evaluation of the remainder. The right-hand side is a weighted sum over independent group-wise shocks ( g ∈ T and h ∈ C ), and since the contribution of a single donor is asymptotically negligible by the donor-dilution condition of Assumption 5(c), the Lindeberg–Feller central limit theorem (independent, non-identically distributed) ap-plies. Organizing the variance yields ΛW consisting of the diagonal term σ2 
+
+> g
+
+and the cross term via donors. For bV , bC, under the conditional unbiasedness from all-group A/B splitting (Proposition 1), we expand as quadratic and linear functionals of the same primitive shocks and apply the joint CLT. bR2 is by the delta method (Corollary 4). The detailed variance formulas are given in the Supplement. 
+
+Proof of Corollary 2. Group the terms of the linear representation by block: bγ − γ∗ is a weighted sum of independent block aggregates ζb = P
+
+> k∈b
+
+(·) εk. Bounded block sizes pre-serve the (2 + δ) moment bound, and the block-level donor-dilution condition preserves Lindeberg negligibility, so the Lindeberg–Feller argument in the proof of Theorem 2 applies to the block aggregates; the limiting variance rearranges to ΛW built from Στ by bilinearity (Proposition 2). 
+
+Proof of Corollary 3. Collect terms by source: G−1/21
+
+P 
+
+> c
+
+qc(bτc − τc) = G−1/21
+
+P 
+
+> c
+
+qcuc −
+
+PG0 
+
+> h=1
+
+Ah(q) vh + op(1) . The first term is a triangular-array sum of G1 conditionally inde-pendent contributions and obeys a Lindeberg CLT with limit variance σ2
+
+> u
+
+(q); the second term is a fixed finite linear combination of the G0 donor shocks vh, jointly asymptotically normal with covariance P 
+
+> h,ℓ
+
+AhAℓΩhℓ . The own and donor components are asymptotically independent because uc and vh are drawn from disjoint series, giving (15). Consistency of 
+
+AbΩA⊤ follows from bΩ →p Ω and A(q) → A.51 Proof of Theorem H.1. [Proof sketch] Under the given conditional independence, the cen-tered product score ϕj of Appendix D has the same conditional law given Dj for treated and pseudo-treated groups. Matching the D-distribution therefore equalizes Eq[ϕ | donors ] with the treated mean μn up to op(G−1/21 ), so the numerator bVT − ¯V pq is centered; the variance-ledger and scale-correction argument of Theorem 3 then applies to the reweighted draws. 
+
+Remark B.1 (Necessity of all-group splitting and the absorbing effect of centering) . Due to the nonlinearity of the estimated weights, the conditional bias of bτ Ag is not exactly zero, but by the orthogonality of Lemma 1 it is higher order, and asymptotic unbiasedness is preserved. More essential is the scope of the splitting: if only the units of the treated groups are split while donors are shared between A, B , then Cov( bτ Ag , bτ Bg′ )̸ = 0 remains via shared donors, the independence of Proposition 1 is broken, and the bias removal of (12) fails. All-group splitting is the construction that confines this dependence to the interior of each half-sample. Quantitatively, however, the following refinement is important: because the centering H = I − 11 ⊤/G 1 in (12) absorbs the between-group common component of the shared donor shock, the bias remaining under treated-only splitting is exactly equal to 
+
+G−11 tr( HKH ), Kgg ′ = P 
+
+> h∈C
+
+ω(g),A h ω(g′),B h υh (υh is the time-contrast variance of donor h;Theorem 2), and if the weight profile is common across groups ( ω(g) ≡ ¯ω), then HKH = 0 .That is, the leakage is limited to the component corresponding to between-group heterogeneity in donor usage , and may be second-order in designs with similar weights (verified numerically in Section 4). The precise claim of this remark is that all-group splitting is necessary for exact unbiasedness. 
+
+Proof of Proposition 1. bτ Ag = τg + εAg , bτ Bg = τg + εBg , E[εAg ] = E[εBg ] = 0 , and since A, B are independent, E[εAg εBh ] = 0 (for all g, h ). Therefore E[bτ Ag bτ Bg ] = τ 2 
+
+> g
+
+and E[( P 
+
+> g
+
+bτ Ag )( P 
+
+> h
+
+bτ Bh )] = 
+
+P 
+
+> g,h
+
+τgτh = ( P 
+
+> g
+
+τg)2. Substituting into (12) gives E[ bV ] = G−11
+
+P 
+
+> g
+
+τ 2 
+
+> g
+
+− G−21 (P 
+
+> g
+
+τg)2 = V .For Vexpl , E[ bCA⊤Σ−1 
+
+> W
+
+bCB ] = C⊤Σ−1 
+
+> W
+
+C = Vexpl follows similarly. 
+
+## Finite-grid simultaneous confidence bands for the projected group-effect curve 
+
+This subsection proves the simultaneous-band claim of Corollary 1(b). Recall mT (w) = 
+
+w⊤γ∗, bmT (w) = w⊤bγ, bΩγ = bQ−1 
+
+> W
+
+bΛW bQ−1 
+
+> W
+
+with bΛW built from the joint kernel bΣτ .
+
+Theorem B.1 (Finite-grid simultaneous band) . Suppose √G1(bγ − γ∗) d
+
+→ N (0 , Ωγ ) (The-orem 2) and bΩγ →p Ωγ . Let WL = {w1, . . . , w L} be a fixed finite grid with 0 < σ ≤
+
+min ℓ σℓ ≤ max ℓ σℓ ≤ σ < ∞, σ2 
+
+> ℓ
+
+= w⊤ 
+
+> ℓ
+
+Ωγ wℓ. Let c1−α be the conditional (1 − α) quantile of 
+
+52 max ℓ≤L |w⊤ 
+
+> ℓ
+
+Z/ 
+
+q
+
+w⊤ 
+
+> ℓ
+
+bΩγ wℓ| with Z ∼ N (0 , bΩγ ). Then 
+
+¶
+
+h
+
+mT (wℓ) ∈ bmT (wℓ) ± c1−α
+
+q
+
+w⊤ 
+
+> ℓ
+
+bΩγ wℓ/G 1 ∀ ℓ ≤ L
+
+i
+
+→ 1 − α. 
+
+The same holds for any fixed finite collection of contrasts a⊤ 
+
+> k
+
+γ∗, k ≤ K (e.g., ak = wq2 − wq1 ), with cA 
+
+> 1−α
+
+the quantile of max k≤K |a⊤ 
+
+> k
+
+Z/ 
+
+q
+
+a⊤ 
+
+> k
+
+bΩγ ak|.Proof. Stack the grid into AL = ( w1, . . . , w L)⊤ ∈ RL×p, so √G1(cm−m) = AL
+
+√G1(bγ −γ∗) d
+
+→N (0 , A LΩγ A⊤
+
+> L
+
+). With DΩ = diag( σ1, . . . , σ L) nonsingular by nondegeneracy, D−1Ω
+
+√G1(cm −
+
+m) d
+
+→ N (0 , R Ω), RΩ = D−1Ω ALΩγ A⊤
+
+> L
+
+D−1Ω . Since x 7 → max ℓ |xℓ| is continuous, TL =max ℓ |√G1( bmℓ − mℓ)/σ ℓ| d
+
+→ MΩ = max ℓ |w⊤ 
+
+> ℓ
+
+Z/σ ℓ|, Z ∼ N (0 , Ωγ ). By bΩγ →p Ωγ and finiteness of WL with variances bounded away from zero, the plug-in correlation matrix 
+
+bR →p RΩ; the distribution of the maximum absolute value of a nondegenerate Gaussian vector is continuous in its correlation matrix and has no atoms, so c1−α →p c1−α(Ω γ ). Re-placing σℓ by bσℓ is justified by the same consistency and Slutsky’s theorem, giving the stated coverage. The contrast statement is identical with AL replaced by (a1, . . . , a K )⊤.A multiplier-bootstrap implementation draws Z∗ 
+
+> γ
+
+= G−1/21
+
+P 
+
+> k∈T ∪C
+
+ηk bψγ,k with i.i.d. mean-zero unit-variance ηk and estimated influence contributions bψγ,k , and uses the conditional quantile of max ℓ |w⊤ 
+
+> ℓ
+
+Z∗ 
+
+> γ
+
+/
+
+q
+
+w⊤ 
+
+> ℓ
+
+bΩγ wℓ|; aggregating the influence contributions at the primitive-shock level preserves the donor-sharing and block dependence. 
+
+# C County-Level SAHIE Analysis: Geographic-Resolution Robustness 
+
+We give a high-resolution version of the individual (household) level analysis of Section 5, aggregated to counties. This (i) depicts the effect heterogeneity at county resolution, (ii) demonstrates the aggregation invariance that aggregating county effects to the state co-incides with the state-level estimate, and (iii) provides three-column standard errors that explicitly handle cross-sectional dependence between counties (correlation of untreated po-tential outcomes within the same state or region). The design is as follows. The outcome is the SAHIE (Small Area Health Insurance Esti-mates) county-level uninsured rate of low-income adults (ages 18–64, ≤ 138% FPL) (model-based estimates, 2008–2019). The treated set is the 1,097 counties of the 25 states that expanded in 2014, and the donor pool is the state-level series of the 17 non-expansion states. We construct the counterfactual of each treated county c as a synthesis of the 17 donor states 53 (ω(c)) and estimate the group ATT bτc. State effects are re-aggregated by the weighted mean 
+
+bτs = P 
+
+> c∈s
+
+πsc bτc using the pre-treatment population share πsc . This design, aggregating mi-crodata to counties, does not treat individual units as independent replicates, and by taking counties as the analysis groups allows spatial correlation to be handled by a cross-sectional-dependence covariance. 
+
+bτc is distributed with mean −7.7pp, standard deviation 5.7pp, and range [−23 .3, +10 .7] pp (Figure S.1A). The median pre-treatment RMSPE is a good 1.5pp. Aggregating county effects to the state, they coincide with the SDID estimate bτs of state-level SAHIE with 
+
+correlation 1.00 and mean absolute difference 0.10pp (Figure S.1B). The state pattern (KY 
+
+−15 .5pp the largest, MA +6 .6, DC +4 .1, VT +2 .1pp) is consistent with the individual-level analysis of Section 5. This agreement is a demonstration of the following aggregation invariance. 
+
+Proposition C.1 (County-to-state aggregation invariance) . Let the county effect estimate be bτ cell = τ cell + ecell , Cov( ecell | F ) = Σ cell , and define the state-aggregation matrix L by 
+
+(Lτ cell )s = P 
+
+> c∈s
+
+πsc τc. Then the state effect estimate bτ state = Lbτ cell is conditionally unbiased and satisfies Σstate = Cov( bτ state | F ) = LΣcell L⊤. Therefore the second-stage inference of Sections 2–3.2 (projection, variance decomposition, joint CLT) applies directly at both the county and state levels. Proof. From bτ state = L(τ cell + ecell ) = τ state + Lecell , E[bτ state | F ] = τ state . The covariance is Cov( Lecell | F ) = L Cov( ecell | F ) L⊤ = LΣcell L⊤. Since the second-stage functionals are functions of bτ , it suffices to replace Στ with Σstate .We turn to inference under cross-sectional dependence. Because untreated potential outcomes are correlated within the same state or region across counties, standard errors assuming independence are understated. Table S.2 reports the standard error of the county bite slope ( −4.10 pp/standard deviation, R2 = 0 .68 ) under three dependence structures: (1) county-independent (heteroskedasticity-robust), (2) state block (arbitrary correlation among counties within the same state), and (3) Census-division block. Relative to the independence assumption, state clustering enlarges the standard error by a factor of 1.42 and division clus-tering by 1.73. The slope is highly significant even under the most conservative division clustering ( t = −12 .2). This three-column reporting implements the principle of handling donor-sharing dependence and spatial/block dependence with the same covariance kernel 
+
+Στcc ′ = P 
+
+> k,ℓ
+
+a⊤
+
+> ck
+
+Ωkℓ ac′ℓ (allowing cross-sectional dependence Ωkℓ ̸ = 0 ; Proposition 2), and forecloses the misreading that “standard errors are small because the microdata are large.” Against this section, whose main specification is county effect × county bite, we give the state-aggregate consistency (specification B), the state-level contextual effect (specification 54 Table S.2: Three-column standard errors of the county bite slope (cross-sectional depen-dence) 
+
+Dependence structure SE t 95% CI (1) County-independent (HC-robust) 0.194 −21 .1 [−4.48 , −3.72] 
+
+(2) + state block 0.276 −14 .8 [−4.64 , −3.56] 
+
+(3) + Census-division block 0.335 −12 .2 [−4.76 , −3.44] 10 20 30 40 50 60           
+
+> pre-expansion county uninsured rate (%, <=138%FPL 18-64)
+> 25
+> 20
+> 15
+> 10
+> 5
+> 0
+> 5
+> 10
+> county ATT  c (pp)
+> (A) County-level heterogeneity: 1097 counties
+> bite gradient, R2=0.68 (marker size pop )
+> pop-wtd slope
+> 15 10 505
+> state-level SDID s(pp)
+> 15
+> 10
+> 5
+> 0
+> 5
+> county-aggregated  s = c sc  c (pp)
+> CA
+> CT
+> KY
+> MD
+> MA
+> NY
+> (B) Aggregation invariance:
+> county state reproduces state-level (corr 1.00)
+> 45°
+
+Figure S.1: County-level analysis. (A) Bite slope of the 1,097 counties ( R2 = 0 .68 ; marker area ∝ √population, color = bτc). (B) Aggregation invariance: aggregating county effects to the state ( bτs = P 
+
+> c
+
+πsc bτc) coincides with the state-level SDID with correlation 1.00 and mean absolute difference 0.10pp ( 45 ◦ line). C), and the Mundlak decomposition of county bite into between-state and within-state com-ponents (specification D) in the latter half of this appendix. Using the county uninsured rates of ≤ 138% FPL (Medicaid-eligible) and 139 –400% FPL (exchange-eligible, Medicaid-ineligible; from 2012 onward in SAHIE), a triple-difference di-agnostic that partially subtracts the common response of the exchange and subsidies can be constructed from the same data. Additional dependence specifications including a spatial HAC (county-centroid distance kernel), and a design that includes counties in the donor pool, are future tasks. We also confirm the propagation of published error. SAHIE publishes a 90% MOE for the county estimates, and taking qct = (MOE ct /1.645) 2 as the measurement variance and substituting it into each county’s SDID contrast (post-treatment mean − uniform-time-weighted pre-treatment mean; on the donor side, the MOE of the state series is propagated with the weights bω(c)), the measurement variance per county effect is on average 1.60pp 2 (self 55 term 1.57 + donor term 0.04), only 4.9% of the county-effect variance V = 32 .8. Therefore, even after analytic subtraction, VAN = 31 .2 and R2 is nearly unchanged at 0.59 → 0.62 
+
+(equal-weight specification; slope −4.40 /SD). Furthermore, the lower bound of the slope SE consisting only of the measurement variance is 0.038, less than one-fifth of the HC-robust SE 0.194 of Table S.2—the inflation of the independence SE (state 1.42 ×, division 1.73 ×)cannot be explained by the published measurement error and reduces to real cross-sectional dependence and effect heterogeneity. Since SAHIE is a model-based estimate that may have smoothing correlation across counties, it is safe to regard the published MOE as a lower bound 
+
+of the independent measurement error, and on this point too the reporting of block-type SEs is essential. As auxiliary specifications, we contrast four second-stage specifications using the county effects bτc (Table S.3) and decompose whether the R2 of the main specification (county effect 
+
+× county bite) arises from between-state or within-state differences. The standardization is the same as in the first half (unweighted standard deviation of bite), the regression is pre-treatment population-weighted, and the standard errors are state-clustered. The main specification (A) is bτc = α + βcounty Bc + uc of the first half ( Bc is the county pre-expansion uninsured rate), giving R2 = 0 .67 . Specification B confirms aggregation con-sistency, regressing the state-aggregated county effects bτs = P 
+
+> c∈s
+
+πsc bτc on the state-mean bite ¯Bs = P 
+
+> c∈s
+
+πsc Bc. The estimated slope reproduces the state-level slope with R2 = 0 .76 ,consistent with the individual-level state application of Section 5 ( R2 = 0 .83 ); this confirms that the individual-level ACS PUMS application and the county SAHIE application carry the same empirical message. Specification C measures the contextual effect, taking the ex-planatory variable as the mean bite ¯Bs(c) of the state to which the county belongs, and estimates the between-state relationship of “whether counties belonging to high-bite states have larger effects” ( R2 = 0 .65 , state-cluster t = −13 .5). Since all counties within the same state have the same ¯Bs(c), the effective number of independent units is close to the number of states, and state-cluster standard errors are essential. Finally, specification D is a Mundlak-type regression that decomposes the county bite into the state mean ¯Bs(c) and the within-state deviation Bc − ¯Bs(c),
+
+bτc = α + βbetween ¯Bs(c) + βwithin 
+
+ Bc − ¯Bs(c)
+
+ + uc
+
+. Under pre-treatment population weights, the two explanatory variables are orthogonal (P 
+
+> c∈s
+
+πsc (Bc − ¯Bs) = 0 ), so R2 decomposes cleanly into R2between + R2within . The results are 
+
+bβbetween = −4.33 pp/SD ( t = −13 .5), bβwithin = −1.43 pp/SD ( t = −7.6), R2between = 0 .65 ,
+
+R2within = 0 .06 (R2total = 0 .71 ). That is, most of the county effect heterogeneity is explained between states (higher-bite states have larger effects), but a significant within-state slope 56 Table S.3: Contrast of second-stage specifications in the county application (projection onto standardized bite; state-cluster SE)                                         
+
+> Specification Effect level / covariate level Slope (pp/SD) R2
+> A. county ×county bite (main) county / county −4.10 ( t=−14 .8) 0.67
+> B. State-aggregate ×state bite state (25) / state −5.64 ( t=−8.6) 0.76
+> C. county ×state bite (context) county / state −4.33 ( t=−13 .5) 0.65
+> D. Mundlak (county effect ×[state-mean bite +within-state deviation bite]): between (state-mean bite) county / state mean −4.33 ( t=−13 .5) R2between = 0 .65
+> within (within-state deviation bite) county / within-state dev. −1.43 ( t=−7.6) R2within = 0 .06
+
+remains whereby, even within the same state, counties with higher pre-expansion uninsured rates have larger effects. The latter is the component of greatest interest in county-level public-health applications, and the slope of the main specification A ( −4.10 ) corresponds to the population-weighted mean of this steep between slope and gentle within slope. 
+
+# D Complete Proof of Theorem 3 
+
+Sketch of proof of Theorem 3. Centering M|J| eliminates any common effect (PC1), giving 
+
+bV (J) = μn + |J|−1 P 
+
+> j∈J
+
+ϕj + op(|J|−1/2) (PC2, PC4; ¯˜θAJ
+
+¯˜θBJ = Op(|J|−1) is higher order, ˜θSj =
+
+θSj −mS ). By conditional exchangeability (PC3), the null distribution of the actual-treatment statistic can be approximated by the sample mean from the donor reference distribution, and 
+
+Var( bVT − μn) ≈ σ2
+
+> ϕ,n
+
+/G 1. From the finite-population variance formula of sampling without replacement, Var p( bV pb | C ) ≈ σ2
+
+> ϕ,n
+
+(G−1 
+
+> p
+
+− G−10 ), and the conversion factor expressing the numerator standard deviation by spB is κG + B−1. For fixed B, the independence of the sample mean and sample variance in a normal sample gives the tB−1 limit, and B → ∞ 
+
+gives the standard normal limit. The local power follows by substituting the signal Vn into the numerator. The complete proof (Steps 1–8) is given in Appendix D. 
+
+## Properties of the calibrated statistic 
+
+The following discussion, moved from Section 3.3, records the interpretation of the correction 
+
+κG, the finite-B behavior, and the full-enumeration variant. The technical point is that the placebo statistic estimates the null distribution of the centered product score ϕj = ( θAj − mA)( θBj − mB ) − μn, which contains not only sampling noise but also the equilibration residual bj that remains common across half-samples. The coefficient 
+
+κG = {Gp/G 1}/{1 − Gp/G 0} is the correction that converts the variance of the placebo 57 statistic—drawn without replacement at size Gp from G0 donors—into the variance of the actual-treatment statistic over G1 groups. Concretely, under the exchangeability condition the two statistics have variances 
+
+Var( bVT ) ≈ σ2
+
+> ϕ
+
+/G 1, Var p( bV p) ≈ σ2 
+
+> ϕ
+
+(G−1 
+
+> p
+
+− G−10 ),
+
+so matching the placebo spread to the actual-treatment spread requires scaling by 
+
+κG = Var( bVT )Var p( bV p) = Gp/G 1
+
+1 − Gp/G 0
+
+.
+
+If the donor pool itself is regarded as a sample from a super-population, an additional term 
+
+Gp/G 0 enters the numerator of κG, as shown in Appendix F. Theorem 3 clarifies what the calibration guarantees . The claim is not that the placebo distribution is unconditionally correct under arbitrary treatment selection, but that it has asymptotically correct size for H0 : V = 0 under the conditional exchangeability (PC3) that, after removing the common effect by centering, the mismatch and sampling-error mecha-nism can be approximated by a sample from the donor reference distribution. Because the naive statistic (16) puts only sampling noise in the denominator, it misses the between-group variation of the equilibration residual bg that remains common across half-samples, whereas bV pb simultaneously contains b2 
+
+> j
+
+, b j eSj , e Aj eBj arising from the same SDID pipeline, and thus automatically calibrates the center and scale of the null distribution. The coefficient 
+
+{κG + B−1}1/2 simultaneously adjusts for the imbalance in group counts between the ac-tual and pseudo-treatment groups, the finite-population correction due to sampling without replacement, and the Monte Carlo uncertainty due to B placebo repetitions. 
+
+Remark D.1 (Failure modes of calibration and diagnostics) . PC3 can only be verified indi-rectly: if the pre-treatment fit of the actual treated groups is systematically worse than that of the pseudo-treatment donor groups, the placebo distribution underestimates bg and the test may over-reject. Therefore, alongside the calibrated p-value, we always report the distri-bution of pre-treatment RMSPE, effective number of donors, and placebo-fit diagnostics. As a strict finite-sample safeguard, we can also report the rank p-value from a leave-one-placebo version of the same corrected placebo statistic, prank = (1 + # {T p, ∗ 
+
+> b
+
+≥ T pc  
+
+> V
+
+})/(B + 1) (conser-vative in finite samples in an ideal design where exchangeability holds exactly; Appendix D). The super-population version that also incorporates the sampling variation of the donor set itself ( κSP  
+
+> G
+
+= {Gp/G 1 + Gp/G 0}/{1 − Gp/G 0}) is given in Appendix F. 
+
+Remark D.2 (Comparison with the classical Q statistic) . Cochran’s Q statistic and I2 in meta-analysis regard the within-sample variance of each “study” as known . Our test gen-eralizes the Q statistic in that it incorporates, via placebo calibration, (i) unknown and 58 heteroskedastic within-group sampling variance σ2 
+
+> g
+
+, (ii) between-group dependence induced by the shared control pool, and additionally (iii) the equilibration residual of counterfactual construction—an error source that does not exist in the world of the Q statistic. We note that the validity claim of the bare (16) is limited to the case under Assumption 5(b). The notation is as in Section 3.3: for any candidate set J (|J| = m), Mm = Im−m−11m1⊤
+
+> m
+
+,the group-wise estimate sequence of half-sample S ∈ { A, B } is bτ S (J), and the leave-out variance statistic is 
+
+bV (J) = 1
+
+m
+
+Mm bτ A(J) ⊤Mm bτ B (J) , (D.1) The actual-treatment statistic is bVT = bV (T ), the placebo repetition is bV pb = bV (Jpb ) (Jpb ⊂ C ,
+
+|Jpb | = Gp, without replacement), and ¯V p, (spB )2 are as defined in (17). The assumptions are Assumption 6 (PC1–PC5) of the main text, and in particular we use the centered product score of PC4, 
+
+θSj = bj + eSj , mS = EC [θS ], μn = EC
+
+(θA − mA)( θB − mB ),ϕj = ( θAj − mA)( θBj − mB ) − μn
+
+(D.2) . We write ˜θSj = θSj − mS .
+
+Proof of Theorem 3. Step 1 (centering eliminates the common effect). Under H0 :
+
+V = 0 , τg = τ0 for all g ∈ T , and the true effect of the pseudo-treatment groups is zero. Since Mm(x + c1m) = Mmx for any constant c, bV (J) is invariant to the common level within the candidate set, and τ0, the zero effect of the pseudo-treatment, and the set-common level 
+
+aSJ all vanish from (D.1). The null distribution is determined only by the between-group variation of the centered θSj .
+
+Step 2 (first-order expansion of bV (J)). By the linearization of PC2 and centering invariance, 
+
+bV (J) = 1
+
+m
+
+ MmθAJ
+
+⊤ MmθBJ
+
+ + RJ , (D.3) 
+
+RJ = 1
+
+m
+
+n
+
+(MmrAJ )⊤MmθBJ + ( MmθAJ )⊤MmrBJ + ( MmrAJ )⊤MmrBJ
+
+o
+
+.
+
+By Cauchy–Schwarz and the remainder condition of PC2, 
+
+sup 
+
+> |J|∈{ G1,G p}
+
+|RJ | = op(G−1/21 ). (D.4) Since the centering matrix eliminates constants, MmθSJ = Mm ˜θSJ , and 
+
+1
+
+m
+
+ MmθAJ
+
+⊤ MmθBJ
+
+ = 1
+
+m
+
+X
+
+> j∈J
+
+˜θAj ˜θBj − ¯˜θAJ
+
+¯˜θBJ , ¯˜θSJ = 1
+
+m
+
+X
+
+> j∈J
+
+˜θSj . (D.5) 59 By the moment condition of PC4, ¯˜θSJ = Op(m−1/2), so ¯˜θAJ
+
+¯˜θBJ = Op(m−1) = op(m−1/2). Also, since m−1 P 
+
+> j∈J
+
+˜θAj ˜θBj = μn + m−1 P 
+
+> j∈J
+
+ϕj ,
+
+bV (J) = μn + 1
+
+m
+
+X
+
+> j∈J
+
+ϕj + op(m−1/2) (D.6) holds uniformly for |J| ∈ { G1, G p}—this is the expansion of PC4. Note that ϕj contains the components b2 
+
+> j
+
+, b j eAj , b j eBj , e Aj eBj , showing at the level of the formula that the placebo distribution incorporates into the null distribution not only sampling noise but also the variation of the equilibration residual that remains common across half-samples. 
+
+Step 3 (null distribution of the actual-treatment statistic). By PC3 and Step 2, 
+
+bVT = μn + G−11
+
+P 
+
+> g∈T
+
+ϕg + op(G−1/21 ), and by the CLT of PC4, 
+
+bVT − μn
+
+σϕ,n /√G1
+
+> d
+
+→ N (0 , 1) . (D.7) 
+
+Step 4 (conditional distribution of the placebo statistic). At each repetition, 
+
+bV pb = μn + G−1
+
+> p
+
+P
+
+> j∈Jpb
+
+ϕj + op(G−1/2 
+
+> p
+
+). By the variance formula of simple random sampling without replacement conditional on the donor set, 
+
+Var p
+
+  bV pb | C  = σ2
+
+> ϕ,n
+
+ 1
+
+Gp
+
+− 1
+
+G0
+
+
+
++ op(G−1 
+
+> p
+
+), (D.8) Therefore, as B → ∞, (spB )2 = σ2
+
+> ϕ,n
+
+(G−1 
+
+> p
+
+− G−10 ){1 + op(1) }, and Var p( ¯V p | C) =
+
+B−1σ2
+
+> ϕ,n
+
+(G−1 
+
+> p
+
+− G−10 ) + op(G−1 
+
+> p
+
+/B ).
+
+Step 5 (variance ledger and correction factor). By Steps 3 and 4, the leading variance of the numerator bVT − ¯V p is 
+
+σ2
+
+> ϕ,n
+
+h 1
+
+G1
+
++ 1
+
+B
+
+ 1
+
+Gp
+
+− 1
+
+G0
+
+i 
+
+, (D.9) whereas (spB )2 estimates σ2
+
+> ϕ,n
+
+(G−1 
+
+> p
+
+− G−10 ). Therefore the conversion ratio expressing the numerator standard deviation in units of spB is 
+
+G−11 + B−1(G−1 
+
+> p
+
+− G−10 )
+
+G−1 
+
+> p
+
+− G−10
+
+= Gp/G 1
+
+1 − Gp/G 0
+
++ 1
+
+B = κG + 1
+
+B , (D.10) which is the scale correction of (17). 
+
+Step 6 ( t limit at fixed B). Under fixed B, the finite-dimensional convergence of Steps 3 and 4 can be expressed as 
+
+bV pb = μn + σϕ,n (G−1 
+
+> p
+
+− G−10 )1/2Zb + op(G−1/2 
+
+> p
+
+), bVT = μn + σϕ,n 
+
+√G1
+
+Z0 + op(G−1/21 ), (D.11) 60 (Z0, Z 1, . . . , Z B are asymptotically independent standard normals; the independence of Z0
+
+is because the actual-treatment groups and the placebo draws are non-overlapping sample means under PC3 and PC5). Therefore 
+
+bVT − ¯V p = σϕ,n 
+
+h 1
+
+G1
+
++ 1
+
+B
+
+ 1
+
+Gp
+
+− 1
+
+G0
+
+i 1/2
+
+Z + op(G−1/21 ), Z ∼ N (0 , 1) , (D.12) and Z is independent of the limit of the placebo sample variance. Since the sample mean and sample variance are independent in a normal sample, 
+
+T pc  
+
+> V
+
+= bVT − ¯V p
+
+spB {κG + B−1}1/2
+
+> d
+
+→ tB−1, (D.13) which is claim (i). 
+
+Step 7 ( B → ∞ ). Since spB /{σϕ,n (G−1 
+
+> p
+
+− G−10 )1/2} → p 1 and B−1 → 0, by Slutsky’s theorem T pc 
+
+> Vd
+
+→ N (0 , 1) —claim (ii). 
+
+Step 8 (power under the local alternative). Let τg = τ0 + δg, G−11
+
+P 
+
+> g
+
+δg = 0 ,
+
+G−11
+
+P 
+
+> g
+
+δ2 
+
+> g
+
+= Vn = ∆ /√G1. Under the theorem’s condition that the cross terms between the heterogeneity and (bg, e Sg ) are op(G−1/21 ),
+
+bVT = Vn + μn + 1
+
+G1
+
+X
+
+> g∈T
+
+ϕg + op(G−1/21 ), (D.14) As B → ∞ , the denominator becomes spB κ1/2 
+
+> G
+
+= {σϕ,n /√G1}{ 1 + op(1) }, so T pc  
+
+> V
+
+= ∆ /σ ϕ,n +
+
+Z + op(1) d
+
+→ N (∆ /σ ϕ, 1) , with power 1 − Φ( z1−α − ∆/σ ϕ). Under a fixed alternative V > 0,the signal in the numerator is V and the denominator is Op(G−1/21 ), so T pc  
+
+> V
+
+→p +∞ and the power converges to 1. A word on the rank p-value of Remark D.1. In an ideal design where exchangeability holds exactly and each placebo statistic follows the same distribution as the actual-treatment statistic ( Gp = G1 and an identical pipeline), the exchangeability of (TT , T p 
+
+> 1
+
+, . . . , T pB ) makes the rank p-value valid in finite samples (size ≤ α). In the practical design with Gp̸ = G1,the distributions do not coincide by the scale difference of (D.10), and the rank p-value can be conservative when κG < 1 and anti-conservative when κG > 1—the Monte Carlo of the main text (permutation-version size 10–12%) is a quantitative example of the latter, which is the reason for using the calibrated statistic for the main inference. 61 E Fieller-Type Test Inversion for R2: Construction and Coverage 
+
+For inference on R2 = Vexpl /V (V > 0), we use test inversion rather than the delta method for a ratio. Set bA = bVexpl , bB = bV (in the analytic-noise-corrected version, bA = bVexpl ,AN ,
+
+bB = bVAN ), and assume the joint asymptotic normality 
+
+pG1
+
+h bA
+
+bB
+
+!
+
+− AB
+
+!i d
+
+→ N (0 , ΩAB ), bΩAB →p ΩAB (E.1) (A = Vexpl , B = V ; following from the joint linearization of Theorem 2). The Wald statistic of the null H0(r) : A − rB = 0 for any r ∈ [0 , 1] is 
+
+W (r) = G1{ bA − r bB}2
+
+bω(r) , bω(r) = (1 , −r)bΩAB (1 , −r)⊤ = bΩAA − 2r bΩAB + r2 bΩBB , (E.2) and we define the confidence set as 
+
+CR2 (1 − α) = r ∈ [0 , 1] : W (r) ≤ χ21,1−α (E.3) . Setting qα = χ21,1−α, (E.3) is equivalent to the quadratic inequality aF r2 + bF r + cF ≤ 0
+
+with 
+
+aF = bB2 − qα
+
+G1
+
+bΩBB , bF = −2 bA bB + 2qα
+
+G1
+
+bΩAB , cF = bA2 − qα
+
+G1
+
+bΩAA , (E.4) By the discriminant DF = b2 
+
+> F
+
+− 4aF cF : (a) if DF ≥ 0, a F > 0, the interval {− bF −√DF }/2aF , {− bF + √DF }/2aF
+
+ ∩ [0 , 1] ; (b) if DF ≥ 0, a F < 0, the intersection of the two outer intervals and [0 , 1] ; (c) if DF < 0, a F < 0, all of [0 , 1] ; (d) if DF < 0, a F > 0, the empty set (we prefer grid inversion because numerical and variance-estimation errors are possible). In implementation, grid inversion (subdividing r over [0 , 1] and evaluating (E.2)) is stable, and the intervals of Section 5.4 of the main text use this scheme (with bΩAB from leave-one-donor jackknife). When V is small the set widens and often approaches all of [0 , 1] , but this is not a failure but the correct display of the weak identification of R2—in contrast to the delta-method interval becoming irregular in a boundary / weak-heterogeneity sequence 
+
+V → 0.
+
+Theorem E.1 (Coverage of the Fieller set) . Suppose (E.1) holds and V > 0. For r0 = R2 =
+
+A/B ,
+
+lim inf  
+
+> n→∞
+
+P  r0 ∈ C R2 (1 − α) ≥ 1 − α. (E.5) 
+
+Proof. From A − r0B = 0 , √G1( bA − r0 bB) = (1 , −r0)√G1{( bA, bB)⊤ − (A, B )⊤} d
+
+→ N (0 , ω (r0)) ,
+
+ω(r0) = (1 , −r0)Ω AB (1 , −r0)⊤. By bω(r0) →p ω(r0) and Slutsky’s theorem, W (r0) d
+
+→ χ21,hence P {W (r0) ≤ qα} → 1 − α. Since r0 ∈ C R2 ⇔ W (r0) ≤ qα, (E.5) follows. 62 F Super-Population Version of Placebo Calibration 
+
+Theorem 3 (finite-population version) conditions on the realized donor pool and regards the placebo mean ¯V p as estimating the reference mean within the same pool—it does not include the sampling variation of the donor set itself in the denominator. In contrast, the super-population version regards the donor set C itself as a sample from a population and includes the fluctuation μC − μ of the donor empirical mean μC = G−10
+
+P 
+
+> h∈C
+
+ϕh as a first-order term in the numerator of the inference. 
+
+Assumption F.1 (Super-population conditions) . (SP1) The product scores {ϕg}g∈T of the actual treated groups and {ϕh}h∈C of the donor groups can be approximated by independent samples from a common super-population distribution P, with EP[ϕ] = μ, Var P(ϕ) = σ2 
+
+> ϕ
+
+∈
+
+(0 , ∞). (SP2) √G0(μC − μ) d
+
+→ N (0 , σ 2
+
+> ϕ
+
+). (SP3) Each Jpb is drawn from the realized C
+
+conditionally independently, at size Gp, without replacement. The statistic replaces only the denominator correction: 
+
+T pc  
+
+> V, SP
+
+= bVT − ¯V p
+
+spB {κSP  
+
+> G
+
++ B−1}1/2 , κSP  
+
+> G
+
+= Gp/G 1 + Gp/G 0
+
+1 − Gp/G 0
+
+. (F.1) Compared with the κG of the finite-population version, Gp/G 0—the sampling variation of the donor set itself—is added to the numerator. 
+
+Theorem F.1 (Validity of the super-population version) . Under Assumption 6 (PC1–PC5) and Assumption F.1, suppose H0 : V = 0 . (i) If B → ∞ , then T pc 
+
+> V, SP
+> d
+
+→ N (0 , 1) . (ii) At fixed B, if the asymptotic independence of the normal leading component of the numerator (the actual-treatment mean of ϕ and μC ) and the placebo sample variance additionally holds, then T pc 
+
+> V, SP
+> d
+
+→ tB−1.Proof. Without loss of generality, center at μ = 0 . As in Step 2, bVT = μ + G−11
+
+P 
+
+> g∈T
+
+ϕg +
+
+op(G−1/21 ) with Var( bVT ) = σ2
+
+> ϕ
+
+/G 1 + o(G−11 ), and by SP2, Var( μC ) = σ2
+
+> ϕ
+
+/G 0 + o(G−10 ). The placebo is, conditionally, 
+
+bV pb = μC + 1
+
+Gp
+
+X
+
+> h∈Jpb
+
+(ϕh −μC )+ op(G−1/2 
+
+> p
+
+), Var p( bV pb | C ) = σ2
+
+> ϕ
+
+ 1
+
+Gp
+
+− 1
+
+G0
+
+
+
++op(G−1 
+
+> p
+
+), (F.2) and ¯V p = μC + ( Monte Carlo error ) + op(G−1/2 
+
+> p
+
+). Therefore 
+
+bVT − ¯V p =
+
+ 1
+
+G1
+
+X
+
+> g∈T
+
+ϕg
+
+
+
+− μC − (MC error ) + op(G−1/21 ), (F.3) 63 The variances of the three components are σ2
+
+> ϕ
+
+/G 1, σ2
+
+> ϕ
+
+/G 0, and B−1σ2
+
+> ϕ
+
+(G−1 
+
+> p
+
+− G−10 ) respec-tively, and since the actual-treatment mean, donor mean, and conditional MC error are asymptotically uncorrelated, 
+
+Var( bVT − ¯V p) = σ2
+
+> ϕ
+
+h 1
+
+G1
+
++ 1
+
+G0
+
++ 1
+
+B
+
+ 1
+
+Gp
+
+− 1
+
+G0
+
+i 
+
++ o(G−11 ). (F.4) On the other hand, since (spB )2 →p σ2
+
+> ϕ
+
+(G−1 
+
+> p
+
+− G−10 ), the required scale-correction ratio is 
+
+G−11 + G−10 + B−1(G−1 
+
+> p
+
+− G−10 )
+
+G−1 
+
+> p
+
+− G−10
+
+= Gp/G 1 + Gp/G 0
+
+1 − Gp/G 0
+
++ 1
+
+B = κSP  
+
+> G
+
++ 1
+
+B , (F.5) which is (F.1). As B → ∞ , (i) follows by Slutsky. At fixed B, the independence of the limiting normal variable of the numerator and the limit of (spB )2 does not follow automatically as in the finite-population version (because μC enters the numerator), and assuming this additionally, the mean-variance independence argument for a normal sample goes through directly, giving (ii). In empirical work, to avoid this additional condition, it is safe to take 
+
+B sufficiently large or to also report a full-enumeration rank p-value. 
+
+# G Extended Related Work and Discussion 
+
+This appendix expands the related-work discussion of Section 1.2: between-site variance and empirical-Bayes inference, correlated-random-coefficient formulations, and Bayesian semi-parametric approaches. The estimation of between-site effect variance in multi-site experiments is represented by the FIRC (fixed intercepts, random coefficients) model of Bloom et al. (2017), a formulation with site fixed intercepts and only the treatment coefficient random. Bayesian frameworks for distributional aggregation are given by Meager (2019, 2022). Empirical Bayes (EB) shrink-age of group effects and regression on group characteristics are comprehensively organized by Walters (2024), who treats the attenuation bias when shrinkage estimates are used in regression and its correction. As statistical foundations of EB, there are the nonparametric maximum likelihood of Koenker & Mizera (2014) and EB confidence intervals with frequen-tist coverage guarantees of Armstrong et al. (2022). Confidence intervals for nonparametric empirical Bayes functionals (Ignatiadis & Wager, 2022) likewise take the first-stage noise distribution as known and independent across groups, whereas our first stage generates het-eroskedastic, donor-sharing-dependent noise whose covariance must itself be estimated. This paper shares the concerns of EB/value-added (the distribution and ranking of group effects, and explanation by group characteristics) while being complementary in that it assumes no distributional form and secures the causal first stage with orthogonalized SDID .64 As lineages that regard τg as a group-specific coefficient coexisting with fixed effects, there are correlated random-coefficient panels (Chamberlain, 1992; Graham & Powell, 2012), latent group structures (Bonhomme & Manresa, 2015), and two-way Mundlak regression (Wooldridge, 2021). Our finite-population projection and variance decomposition connect with this lineage without imposing any exchangeability, giving a frequentist answer to the aversion to random effects. Semiparametric-Bayes doubly robust inference and the Bernstein–von Mises theorem are treated by Ray & van der Vaart (2020); Breunig et al. (2025), and Bayesian hierarchical modeling of staggered DiD by Chib & Shimizu (2025). Although this paper is based on frequentist inference, we describe the connection with these (a future Bayesian extension) in Section 7. The distinction between design-based and sampling-based criteria for variance is given by Abadie et al. (2020), and the justification of clustering by Abadie et al. (2023), and our variance decomposition is consistent with this distinction. 
+
+Extended discussion of future directions (moved from the conclusion). (1) ef-ficiency improvement via split-free analytic leave-out—a generalization of the Kline et al. (2020)-type quadratic-form algebra under a hat matrix depending on the estimated weights; (2) relaxation of the reliance of Theorem 3 on conditional exchangeability (PC3)—an explicit correction for fit quality to handle systematically inferior pre-treatment fit, and uniformly valid inference in the weak-heterogeneity region where V is near zero; (3) derivation and attainment of the semiparametric efficiency bound; (4) identification and robustness when proximal causal inference (Shi et al., 2026; Cui et al., 2024) replaces the first stage, and the avoidance of the efficiency loss of sample splitting via data fission (Leiner et al., 2025); and (5) connection with a Bayesian extension (Ray & van der Vaart, 2020; Breunig et al., 2025; Chib & Shimizu, 2025)—in particular, a cut/modular scheme so that the prior on the effect distribution does not contaminate the causal first stage, and nonparametric decon-volution of the group-effect distribution. (6) extending the common-cohort framework to staggered adoption: for each adoption cohort one forms the donor pool from the groups still untreated at that time (Arkhangelsky et al., 2021; Ben-Michael et al., 2022), applies the group-wise orthogonalized SDID at the event time of interest, combines the cohort-specific cross-sections in the spirit of Callaway & Sant’Anna (2021), and avoids two-way-fixed-effects contamination under heterogeneous effects by using only clean comparisons (de Chaisemartin & D’Haultfœuille, 2020; Goodman-Bacon, 2021; Sun & Abraham, 2021). These can be nat-urally developed on the basis of the moment system of this paper. 65 Table S.4: First-stage performance: mean bias and RMSE of the group ATT, and bias of the projection coefficients 
+
+Setting Method bτg bias bτg RMSE bγ0 bias bγ1 bias FA0 DiD 0.017 1.293 0.015 −0.000 
+
+DR-DiD 0.021 1.336 0.015 0.020 
+
+Orthogonalized SDID 0.001 0.264 0.001 −0.005 
+
+FA2 DiD 0.941 1.607 0.835 0.447 
+
+DR-DiD 0.779 1.401 0.776 0.009 
+
+Orthogonalized SDID 0.094 0.316 0.083 0.039 
+
+Table S.5: Mean bias of bV (with the true value V )
+
+Setting V Plug-in Treated-only split All-group split Linear-leak prediction FA0 0.497 +0 .065 +0 .016 +0 .019 —FA2 0.495 +0 .119 +0 .070 +0 .080 —NB 0.499 +0 .331 +0 .098 +0 .138 0.004 
+
+NULL0 0 +0 .071 +0 .021 +0 .024 0.002 
+
+LEAK 0.489 +0 .267 +0 .091 +0 .118 0.008 
+
+FSTR 0.731 +0 .374 +0 .113 +0 .160 — 
+
+> Note: MC standard errors are 0.002 –0.018 . The linear-leak prediction is measured only for settings where the diagnostic column was implemented.
+
+# H Additional Monte Carlo Experiments 
+
+This appendix reports the design-axis robustness summarized in Section 4.3, and the fit-matched placebo and calibration-variant material referenced in Section 3.3. 
+
+## Baseline Monte Carlo: full tables 
+
+To avoid being biased toward the baseline design (G1, G 0, T 0) = (50 , 50 , 20) , we conduct additional experiments along the design axes important for review—group-count ratio, ob-servation length, R2 boundary, alternative estimators, calibration failure modes, and number of placebo repetitions. We attach Monte Carlo standard errors (in parentheses) to all aggre-gates (random-seed base 20260704 ). The implementation is sdid_mc_ext.py (reusing the core functions of sdid_mc.py ) and is included in the replication package. The results of varying the group-count ratio (G1, G 0) are shown in Table S.8. The severity of donor-sharing dependence depends on G1/G 0. The more treated groups there are relative 66 Table S.6: Empirical coverage of the 95% confidence intervals for γ∗ (%)                                  
+
+> Intercept Slope ( W1)Setting Diagonal Joint Diagonal Joint NULL0 77 .889 .592 .892 .0
+> FA0 73 .386 .793 .993 .9
+> NB 79 .591 .579 .880 .8
+> NULL 81 .394 .383 .083 .5
+> POW2 83 .895 .483 .185 .4
+> LEAK 79 .595 .577 .580 .5
+> FSTR 79 .592 .081 .582 .5
+
+Table S.7: Rejection rates of the H0 : V = 0 test (%, nominal 5%, one-sided, B = 59 )                                  
+
+> Setting VBare TV(16) Placebo permutation pAffine-calibrated (17) PN0 (good design, H0)034 .112 .46.5
+> PN (NB-type, H0)025 .310 .64.1
+> PP1( V= 0 .049 )—55 .021 .012 .0
+> PP2( V= 0 .145 )—90 .061 .052 .0
+> PP3( V= 0 .393 )—100 .094 .086 .0
+> Note: the MC standard error of size is ±1.7–1.9pp ( R= 170 /100 ).
+
+to donors (large G1/G 0), the more many treated groups share a small number of donors, increasing the off-diagonal covariance and enlarging the undercoverage of the diagonal (in-dependence) SE ( 0 → 15 → 27 .5pp). The joint kernel consistently maintains 0.88 –0.95 . On the test side, at (25 , 75) with κG = 2 .92 , naive recentering (implicitly κG = 1 ) over-rejects (0.225 ), whereas the κG correction of Theorem 3 recovers to the nominal 5% —a demonstra-tion that the correction factor is actually necessary . At (75 , 25) , the donors G0 = 25 are scarce and even the corrected version over-rejects ( 0.150 )—calibration degradation under scarce donors, of the same root as the failure mode (Table S.12). The results of varying the observation length T0 are shown in Table S.9. We check whether the equilibration residual shrinks with T0. Increasing T0 monotonically decreases the first-stage RMSE, the upward bias of bV at V = 0 (= the equilibration residual Var( bg)), and the size of the bare TV (the premise of Assumption 5(b)). However, even at T0 = 40 
+
+the bare TV exceeds the nominal, and the residual remains at finite T0—corroborating why placebo calibration is necessary in implementation. The behavior when R2 is near the boundary is shown in Table S.10. R2 is irregular at 67 Table S.8: Group-count-ratio (G1, G 0) grid: scaling of donor-sharing dependence and the κG
+
+correction ( R = 40 , B = 39 )
+
+Intercept coverage (nominal 95% ) V = 0 size (nominal 5% )
+
+(G1, G 0) κG Joint Diagonal Naive recentering κG correction 
+
+(25 , 75) 2.92 0.875 ( .05) 0.875 ( .05) 0.225 ( .07) 0.050 (.03) (50 , 50) 1.00 0.950 ( .03) 0.800 ( .06) 0.000 0.000 (75 , 25) 0.31 0.925 ( .04) 0.650 ( .08) 0.025 0.150 ( .06)        
+
+> Note: intercept coverage is measured over all replications regardless of V. The undercoverage of the diagonal SE enlarges with G1/G 0. The V= 0 size is one-sided nominal 5% .
+
+Table S.9: Observation-length T0 grid: shrinkage of the equilibration residual (factor selection 
+
+a2 = 1 , R = 150 )
+
+T0 First-stage RMSE bV bias at V = 0 Bare TV size 
+
+10 0.474 ( .012) 0.083 ( .009) 0.507 ( .041) 20 0.425 ( .011) 0.047 ( .007) 0.300 ( .037) 40 0.388 ( .007) 0.024 ( .004) 0.227 ( .034) 
+
+V ≈ 0 (Corollary 4). Away from the boundary, both the delta method and Fieller are near-nominal with narrow widths, but near V ≈ 0 (R2bnd) the delta CI breaks down and its mean width diverges to 16 , whereas the Fieller/test-inversion set is unbounded in 58% of cases, honestly displaying the non-identification of R2. The second-stage variance is constructed analytically from the joint influence-function variance of (V, V expl ) (including donor-sharing dependence). Alternative estimators of V are compared in Table S.11. This answers the question about the efficiency loss of all-group A/B splitting. All debiasing methods remove 55–70% of the upward bias of the plug-in, and the remaining +0 .11 –0.15 positive bias is the equilibration residual (real mismatch, not sampling noise) that no method removes. Analytic noise sub-traction bVplug − G−11 tr( H bΣ) achieves the smallest bias and smallest RMSE ( 0.243 vs 0.198 ), motivating analytic leave-out (Section 7). DerSimonian–Laird and REML (meta-analysis ignoring off-diagonal dependence) are comparable to leave-out in the point estimation of V ,corroborating that the off-diagonal matters for inference (the coverage in Table S.8) rather than point estimation. A situation where calibration fails is examined in Table S.12. We honestly show the case where PC3 (conditional exchangeability) breaks. When the treated groups’ factor loadings are outside the donor range (FM_fail), the placebo distribution built from donors underesti-68 Table S.10: Confidence intervals for R2: delta method vs Fieller (test inversion), 95% ,
+
+R = 250                                 
+
+> Setting V(approx) R2true Delta coverage Fieller coverage Delta mean width Fieller unbounded rate R2sep 0.75 0.36 0.864 ( .02) 0.856 ( .02) 0.23 0%
+> R2mid 0.40 0.63 0.936 ( .02) 0.948 ( .01) 0.37 0%
+> R2low 0.30 0.83 0.896 ( .02) 0.928 ( .02) 0.49 0.8%
+> R2bnd 0.05 0.41 0.892 ( .02) 0.904 ( .02) 16 .058 %
+
+Table S.11: Alternative estimators of V : efficiency loss of A/B splitting ( Vtrue ≈ 0.74 , high noise, R = 200 , multiple splits M = 8 )
+
+Estimator Bias RMSE Plug-in +0 .333 ( .013) 0.378 
+
+Leave-out (single split) +0 .153 ( .013) 0.243 
+
+Leave-out (multiple splits M =8 ) +0 .155 ( .014) 0.246 
+
+Analytic noise subtraction +0.107 (.012) 0.198 
+
+DerSimonian–Laird +0 .137 ( .014) 0.237 
+
+REML +0 .127 ( .012) 0.215     
+
+> Note: the remaining +0 .11 –0.15 is the equilibration residual bg(real mismatch, removed by no method).
+
+mates the treated groups’ mismatch and the calibrated test over-rejects ( 0.18 )—reproducing the PC3 failure of Remark D.1. Crucially, the pre-treatment RMSPE ratio of treated/placebo (1.50 vs 1.01 ) detects this failure—showing that our recommended diagnostic, to report RM-SPE, the effective number of donors, and the placebo-fit distribution alongside the calibrated 
+
+p-value, works. The effect of the number of placebo repetitions B is shown in Table S.13. The size of the calibrated test is stable down to B = 19 —by the finite-B correction (the tB−1 reference plus the B−1 term; Theorem 3(i)), we confirm that a modest B suffices. This is practically important from the standpoint of computational cost. In summary, only the orthogonalized SDID first stage retains robustness in both level and slope under factor selection, and leave-out substantially removes the upward bias of the plug-in, with the residual reducing to the finite-sample slack of the remainder condition. The joint covariance kernel recovers the intercept coverage to the nominal level, and its effect on the slope was minor as predicted by the theory. In the test of no heterogeneity, placebo calibration is essentially indispensable, and the exchangeability dependence of FIRC was also quantitatively confirmed. These conclusions are robust in the additional experiments along the group-count ratio, observation length, R2 boundary, alternative estimators, failure 69 Table S.12: Failure mode: the case where PC3 (conditional exchangeability) breaks ( V = 0 ,
+
+R = 60 , B = 39 )                 
+
+> Setting Selection strength a2Calibrated size Rank pRMSPE ratio (treated/placebo) FM_ok 1.00.083 ( .036) 0.100 ( .039) 1.01 ( .01)
+> FM_fail 5.00.183 (.050) 0.250 (.056) 1.50 (.04)
+
+Table S.13: Sensitivity to the number of placebo repetitions B (V = 0 , (G1, G 0) = (50 , 50) ,
+
+R = 40 )                 
+
+> BNaive recentering κGcorrection ( tB−1)Rank p
+> 19 0.100 ( .047) 0.075 ( .042) 0.125 ( .052) 39 0.075 ( .042) 0.050 ( .034) 0.125 ( .052) 59 0.075 ( .042) 0.075 ( .042) 0.125 ( .052) 99 0.075 ( .042) 0.075 ( .042) 0.125 ( .052)
+
+modes, and number of repetitions B (Section 4.3), and in particular it was demonstrated that the undercoverage of the diagonal SE enlarges with G1/G 0, that the κG correction is necessary when κG̸ = 1 , and that the pre-treatment RMSPE diagnostic detects calibration failures. 
+
+## Fit-matched placebo and calibration-variant choice 
+
+Table S.14 reports the size of the V = 0 test under a PC3 violation (Theorem H.1), and Table S.15 summarizes when to use each calibration variant. A Monte Carlo design in Appendix H (Table S.14) evaluates this that violates PC3 by giving treated groups extra idiosyncratic loadings that spill outside the donor convex hull, so treated pre-treatment fit is worse than donor fit (true V = 0 ). The naive test rejects 
+
+36 –50% of the time; simple placebo calibration roughly halves this to 20 –24% ; fit-matched calibration adds a further correction when the treated fit lies within the donor fit range (mild case, 20% → 16% ) but is bounded when treated fit lies beyond donor support (moderate case, no further gain), because reweighting cannot manufacture donor placebos worse-fitting than the worst donor. In that regime the conservative bias-aware bracket—which rejects only when bV − κ [noise > 0—is the safe fallback ( 23 –17% , and shrinking further as κ grows). The practical rule is: use fit-matched calibration when a fit diagnostic can be balanced, and report the bias-aware bracket whenever treated fit falls outside the donor range. A practical guide to the calibration variants is given in Appendix H (Table S.15). 70 Table S.14: Rejection rate of the V = 0 test under a PC3 violation (true V = 0 ; treated fit worse than donor placebos). Mild/moderate refer to the treated-to-donor RMSPE ratio (1.03 /1.13 ). 
+
+Test Mild violation Moderate violation Naive TV (independence) 0.36 0.50 
+
+Simple placebo T pc  
+
+> V
+
+0.20 0.24 
+
+Fit-matched placebo T fmp  
+
+> V
+
+0.16 0.24 
+
+Bias-aware V bracket ( κ = 1 ) 0.17 0.23 
+
+Formal fit-matched placebo theorem (Remark 5 in the main text). For each candidate group j define the fit-diagnostic vector 
+
+Dj =  log RMSPE j , log ESS j , baseline j , pretrend j , donor leverage j
+
+, (H.1) and draw donor placebos with weights qj matching the treated fit distribution, P 
+
+> j∈C
+
+qj f (Dj ) ≈
+
+G−11
+
+P 
+
+> g∈T
+
+f (Dg) for a basis f .
+
+Theorem H.1 (Fit-matched placebo validity) . Replace PC3 by the weaker conditional-exchangeability-given-fit condition (θAj , θ Bj ) ⊥ Aj | Dj , where Aj indicates actual-treatment versus pseudo-treatment status, and suppose the matching weights satisfy G−11
+
+P 
+
+> g∈T
+
+f (Dg)−
+
+P 
+
+> j∈C
+
+qj f (Dj ) = op(G−1/21 ) for the moment basis f entering the leading term of bV . Then, under H0 : V = 0 , the fit-matched statistic T fmp  
+
+> V
+
+is asymptotically size-correct with the scale correction of Theorem 3. 
+
+71 Table S.15: Choosing a calibration variant for the V = 0 and directed tests. 
+
+Variant When to use Finite-population κG (Theo-rem 3, default) Donors exchangeable with treated given fit; the reference set is the fixed donor pool. Super-population κSP  
+
+> G
+
+(Ap-pendix F) Donors themselves sampled from a larger population; adds donor-sampling variance. Full enumeration of donor subsets Small G0 (e.g.  17 8
+
+ = 24 ,310 ): exact permutation, avoiding the sub-sampling approximation. Leave-one-donor-state (K
+
+folds) Small or blocked donor pools (Clean Air Act, K = 22 ): gives a conservative rank lower bound on the p-value. Fit-matched T fmp  
+
+> V
+
+(Theo-rem H.1) Treated and donor fit diagnostics differ but treated fit lies within the donor range. Bias-aware bracket Treated fit lies outside the donor range; reject only if bV −
+
+κ [noise > 0.0 10 20 30 40 50      
+
+> treated group, ordered by g
+> 1
+> 0
+> 1
+> 2
+> 3
+> 4
+> group effect  g
+> mean g
+> true g
+> g± 1.96 se g(joint kernel)
+
+Figure S.2: Group-wise treatment-effect estimates in a representative replication (setting FA0, G1 = 50 ). The horizontal axis is the treated groups sorted in ascending order of bτg,and the vertical axis is the group effect. The navy dots and vertical lines are bτg and the 
+
+95% confidence interval bτg ± 1.96 bse g based on the joint covariance kernel, the red diamonds are the true values τg, and the dashed line is the mean of bτg. The estimates capture the heterogeneity of the group effects ( bV = 0 .78 ), and the pointwise coverage is 92% (46/50). 72 4 2 0 2 4 6 8        
+
+> studentized statistic under H0:V= 0
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> density
+> z0.95
+> naive TV(sd 4.7)
+> calibrated Tpc
+> V
+> (0, 1)
+
+Figure S.3: Sample distribution of the studentized statistic under H0 : V = 0 (setting PN0, 
+
+R = 170 ). The bare TV (red) has a long right tail (standard deviation ≈ 4.7), and the probability of exceeding z0.95 greatly exceeds the nominal 5% . The affine-calibrated T pc 
+
+> V
+
+(navy) almost coincides with N (0 , 1) (black line). The display is truncated to [−4.5, 8.5] .73 I Clean Air Act: Additional Tables and Exploratory Mortality 
+
+This appendix collects the exploratory mortality results summarized in Section 6.3 and the conventional-SDID comparison referenced in Section 6.3. It also contains the donor-leverage diagnostics and the robustness table for the exposure response referenced in Sections 6.1 and 6.2. 
+
+Post-anchor detail (moved from Section 6.3). The directed CVD slope grows with the length of the post window: −1.69 /SD using 2010 alone (state-block t = −1.4), −3.26 
+
+using 2014 alone ( t = −3.2, division-block t = −6.0), and −2.48 for the lag-adjusted mean (t = −2.5), so the borderline significance of the averaged design reflects the length of the mortality lag rather than an artifact of averaging, mirroring the event-time profile of the concentration response. 74 Table S.16: Clean Air Act donor-leverage diagnostics ( G1 = 177 treated counties, G0 = 23 
+
+donor states). Lh = P 
+
+> c
+
+bωch is the total leverage of donor h.
+
+Diagnostic Value Interpretation 
+
+G1 / G0 177 / 23 treated counties / donor states 
+
+G1/G 0 7.70 high donor sharing 
+
+max h Lh (√G1 = 13 .3) 14 .4 (MS) largest single-donor leverage 
+
+max h Lh/√G1 1.08 dilution fails; fixed-donor regime 
+
+G−11
+
+P 
+
+> h
+
+L2 
+
+> h
+
+9.28 finite-rank common-shock concentration effective donors per county 11 .6 broad counterfactual support mean top-donor share 0.16 no single-donor domination counties with top share > 0.5 0.6% leverage well spread 
+
+Table S.17: Application IIa: donor design and mean-reversion audit (units μg/m 3/SD)                                            
+
+> Specification Slope Independent (HC) State Division Notes A. Main (state-aggregate donors) −0.372 0.050 0.091 0.076 donor kernel 0.043 A′.+pre-trend control −0.365 0.050 0.088 0.065 donor kernel 0.056; trend coef. +0 .02
+> B. County donors (40 nearest-baseline) −0.206 0.051 0.071 0.054 corr( bτA,bτB) = 0 .89 ; ATT −0.67
+> Donor-state placebo mean ( K= 22 )−0.117 (between-state SD 0.172) excess −0.255 ; one-sided rank p= 0 .087
+> False-treatment window: 2003 cut −0.168 0.044 0.050 0.052 existence of pre-treatment convergence False-treatment window: 2002 cut (ref.) −0.465 0.036 0.040 0.049 T0= 2 : fragile to extrapolation
+
+Table S.18: Application IIb (exploratory downstream outcomes): second-stage inference of health outcomes (mortality units per 10 5; post = average of 2010 and 2014; W = baseline PM 2.5)
+
+Outcome Mean ATT Directed slope (/SD) State-block t Division t V
+
+PM 2.5 concentration (Application IIa, ref.) −1.13 −0.372 −4.1 −4.9 0.52 
+
+Cardiovascular disease CVD (I00–I99) −10 .9 −2.48 −2.5 −3.4 188 
+
+Ischemic heart disease IHD (I20–I25) −10 .0 −2.00 −1.5 −1.3 190 
+
+Cerebrovascular disease (I60–I69) +0 .3 +0 .05 +0 .1 +0 .1 31 
+
+75 Table S.19: Exploratory mortality: directed slope on baseline PM 2.5 by post-anchor window (age-standardized deaths per 100 ,000 per SD; G1 = 177 ). The effect grows with the length of the post window, consistent with a multi-year mortality lag; results remain exploratory. 
+
+Cardiovascular (CVD) IHD / Cerebro. Post window slope tstate tdiv slope ( tstate )2010 only −1.69 −1.4 −1.6 −1.36 (−1.0) / +0 .08 
+
+2014 only −3.26 −3.2 −6.0 −2.65 (−1.8) / +0 .02 
+
+mean(2010,2014) −2.48 −2.5 −3.4 −2.00 (−1.5) / +0 .05 PM 2.5 CVD IHD Cerebro          
+
+> 5
+> 4
+> 3
+> 2
+> 1
+> 0
+> 1
+> 2
+> directed-test  t on baseline PM 2.5
+> exposure
+> health (lagged, noisier)
+> (A) Directed heterogeneity: exposure vs health
+> state-block t
+> division-block t
+> 12 10 864202
+> mean ATT (deaths per 100,000), ±1.96 state-block SE
+> CVD
+> IHD
+> Cerebro
+> (B) Mortality ATT by cause
+
+Figure S.4: Application IIb (exploratory downstream outcomes). (A) State- and division-block t-values of the baseline PM 2.5 directed test, contrasting environmental exposure (PM 2.5)with three mortality outcomes (post = average of 2010 and 2014). PM 2.5 is clearly detected with |t| > 4, lag-adjusted CVD mortality reaches |t| > 2 with the same sign, IHD stays at 
+
+|t| < 2, and cerebrovascular is nearly zero—even under the same inferential machinery, more downstream, noisier outcomes have lower power. Dashed lines are ±1.96 . (B) Mean ATT by cause of death and ±1.96 state-block SE. CVD and IHD are negative (mortality reduction), and cerebrovascular is nearly zero. 76 Table S.20: Application II: what conventional group-wise SDID misses (conceptual organi-zation) 
+
+Analysis What is learned in this application Conventional county-wise SDID (point estimates) Only individual bτc. Noisy, and the overall picture is unclear Caterpillar plot (Figure 5A) Suggests larger reductions on the high-baseline side, but error bars are wide Independent meta-regression (HC) Yields the slope, but the SE of level quantities is understated (Table 4) Proposed: directed test H0:C=0 Detects the directional component including shared-donor / state/division dependence Proposed: VAN , V expl , R 2 Magnitude and explained share of heterogeneity after noise subtraction Calibrated V =0 omnibus Low power against diffuse alternatives (rank p is the lower bound, limited information) 
+
+77 J Medicaid: Additional Tables 
+
+This appendix reports the method comparison referenced in Section 5.4. It also contains the six-point defense of the R2 = 0 .83 headline summarized in Section 5.4. 
+
+Auxiliary Medicaid figures (moved from Section 5). Figures S.5–S.10 display the per-state caterpillar, pre-trend fit, the two variance routes, pool-size–matched placebo, method comparison, robustness, and secondary-outcome mechanism referenced in the main text. 
+
+The six-point defense (original numbering). Second, to verify that the effect is not mere proportional scaling, we recomputed the slope on different scales. On the log-odds scale 
+
+R2 = 0 .40 (t = −71 .9) and on the relative-reduction scale R2 = 0 .72 : the slope attenuates but persists. Under a homogeneous proportional effect, the slope should vanish on the relative scale, and this persistence shows that the effect heterogeneity is not a product of scale. Third, since states that implemented adult expansion early before 2014 via §1115 waivers etc. (CA, CT, DC, MN, NJ, WA) may violate the no-anticipation assumption, we re-estimated the slope excluding them. Even after exclusion, bγbite = −5.76 pp ( R2 = 0 .80 ), and adding an early-expansion indicator to Wg leaves R2 = 0 .83 unchanged, so early expansion is not the main driver of the slope. Fourth, because the projection could be driven by a few high-coverage floor states with small positive bτg (Massachusetts +6 .2pp, DC +4 .1, Vermont +2 .1;Figure S.5 in Appendix J), we re-estimate the slope excluding them: dropping Massachusetts gives bγbite = −5.4pp and dropping Massachusetts, DC, and Vermont gives −4.5pp; the plug-in explained share moves from 0.80 to 0.76 and 0.68 in the same unweighted projection (the headline R2 = 0 .83 is the noise-corrected Vexpl /V ). The slope and the significant heterogeneity survive, and the attenuation quantifies how much of the descriptive share rides on the low-bite floor. Fifth, we confirm with secondary outcomes that the reduction in the uninsured rate is driven by an increase in Medicaid enrollment rather than mere “room for improvement” (Figure S.10 in Appendix J). In states with bite one standard deviation higher, the Medicaid enrollment rate rises by +5 .6pp ( R2 = 0 .63 ) and the public-insurance rate by +5 .4pp ( R2 =0.63 ), mirroring the reduction in the uninsured rate ( −5.9pp). Therefore the uninsured reduction in high-bite states has Medicaid take-up—not the exchange—as its mechanism. Sixth, given that R2 is the explained share of the linear projection of τg (Section 2.2), we examined the point that R2 could be underestimated if the true relationship τg( ¯Bg) is nonlinear. Recomputing while enriching the group-covariate basis from linear (1 , ¯Bg) to 78 20 15 10 5 0 5 
+
+> g(pp change in uninsured)
+> KY
+> NV
+> NM
+> AR
+> OR
+> WV
+> WA
+> CA
+> RI
+> CO
+> IL
+> AZ
+> OH
+> NJ
+> IA
+> CT
+> MD
+> DE
+> NY
+> ND
+> MN
+> HI
+> VT
+> DC
+> MA
+
+Group ATTs: donor-sharing inflates SEs vs naive 
+
+> joint (donor-sharing) 95%
+> naive diagonal 95%
+
+Figure S.5: Group ATTs bτg (ascending). Thin band = joint kernel (donor-sharing depen-dence) 95%, thick light band = independence (diagonal) 95%. For individual groups, shared dependence enlarges the SE. quadratic, cubic, and natural cubic spline (2 interior knots, 5 degrees of freedom), the plug-in R2 is 0.799 , 0.800 , 0.806 , 0.812 respectively, and even with the richest basis the increment from linear is only +0 .013 (maintaining p ≪ G1 with 5 degrees of freedom against G1 = 25 ). Therefore the relationship between the pre-expansion uninsured rate and the state ATT is essentially linear, and the R2 of the linear projection is not an underestimate due to a coarse basis. 79 10               
+
+> 20
+> 30
+> 40
+> uninsured (%)
+> KY: =-18.1pp
+> KY
+> synthetic
+> 10
+> 20
+> 30
+> 40
+> uninsured (%)
+> WV: =-13.2pp
+> WV
+> synthetic
+> 2008 2010 2012 2014 2016 2018
+> 20
+> 25
+> 30
+> 35
+> 40
+> 45
+> uninsured (%)
+> CA: =-11.7pp
+> CA
+> synthetic
+> 2008 2010 2012 2014 2016 2018
+> 10
+> 20
+> 30
+> 40
+> uninsured (%)
+> MA: =+6.2pp
+> MA
+> synthetic
+
+Treated vs synthetic control (low-income uninsured rate) Figure S.6: Four representative states: treated group (solid) vs. SDID synthetic control (dashed). They overlap well pre-treatment and diverge in 2014. Large in KY/WV/CA (high bite), and small in MA (a low-bite state that was low from before the expansion). Table S.21: Exclusion of mechanical explanations of R2 = 0 .83 (projection onto standardized bite) 
+
+Specification bγbite (pp) R2 Concern addressed Baseline (uninsured, pp) −5.86 0.83 —Split-sample W (A half) → bτ (B half) −6.00 0.79 Common sampling error Log-odds scale −17 .25 0.40 Scale dependence Relative-reduction scale −18 .47 0.72 Proportional scaling Excluding 6 early-expansion states −5.76 0.80 Anticipation Early-expansion indicator −5.84 0.83 Anticipation Medicaid enrollment rate (secondary) +5 .57 0.63 Mechanism Public-insurance rate (secondary) +5 .44 0.63 Mechanism 
+
+80 0 10 20 30 40 50     
+
+> between-group variance V(pp 2× 10 4)
+> 0.00
+> 0.05
+> 0.10
+> 0.15
+> 0.20
+> 0.25
+> 0.30
+> 0.35
+> 0.40
+> density
+> placebo null
+> (mean 2.6)
+> real effect variance
+> (mean 43.2)
+
+Pool-matched placebo: real-treated heterogeneity dominates the placebo null 
+
+even at matched donor-pool size (Medicaid application)        
+
+> pseudo-treated Vp(size-msubpool)
+> real-treated VmT(size-msubpool)
+> VT(full donor pool)
+
+Figure S.7: Pool-size-matched placebo. The pseudo-treatment bV p (gray; size-m sub-pool) and the actual-treatment bV mT (red; same-size sub-pool) are completely separated. Dashed line = full-donor-pool bVT . Even with matched pool sizes, the heterogeneity of the actual treatment overwhelms the null. 20 15 10 5 0 5
+
+2×2 DiD g (pp) 
+
+20 
+
+15 
+
+10 
+
+5
+
+0
+
+5
+
+> proposed SDID  g (pp)
+
+Point estimates agree (r=0.97) 
+
+plug-in 
+
+(naive) 
+
+analytic 
+
+(survey var) 
+
+leave-out 
+
+(household A/B) 
+
+0
+
+10 
+
+20 
+
+30 
+
+40 
+
+50 
+
+> V (pp 2 × 10 4)
+
+Heterogeneity is real & cross-validated 
+
+Figure S.8: Left: the bτg of 2 × 2 DiD and the proposed SDID agree on the 45 ◦ line ( r = 0 .97 ). Right: the three estimates of bV (plug-in / analytic / household leave-out) agree, mutually verifying that the heterogeneity is real. 81 7 6 5 4 3 
+
+> bite
+
+(pp per 1 SD) 
+
+> baseline
+> well-fit only
+> core-12 donors
+> drop WI
+> ridge x0.5
+> ridge x2.0
+> pre 2010-13
+> long-run post
+> level-hull (drops low-bite anchor)
+
+Bite gradient across specifications 
+
+0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 
+
+R2
+
+R2 (share of heterogeneity explained) Figure S.9: Robustness to specification changes. Left = bγbite , right = bR2 (both 95%; red =
+
+baseline). Stable except for the level convex-hull restriction (bottom row); that restriction too retains significance despite the compression from the mechanical exclusion of low-bite states. 10 20 30 40 50 
+
+> pre-expansion uninsured %
+> 15
+> 10
+> 5
+> 0
+> 5
+> group ATT  g (pp)
+
+Uninsured 
+
+slope -0.55pp per pp bite     
+
+> 10 20 30 40 50
+> pre-expansion uninsured %
+> 0
+> 5
+> 10
+> 15
+> 20
+
+Medicaid coverage 
+
+slope +0.52pp per pp bite     
+
+> 10 20 30 40 50
+> pre-expansion uninsured %
+> 0
+> 5
+> 10
+> 15
+> 20
+
+Public coverage 
+
+slope +0.51pp per pp bite 
+
+Mechanism: higher-bite states saw larger uninsured reductions AND larger Medicaid/public coverage gains 
+
+Figure S.10: Mechanism: higher-bite states have larger reductions in the uninsured rate (−0.55 pp/pp) and simultaneously larger increases in Medicaid enrollment ( +0 .52 ) and public insurance ( +0 .51 ). The mirror-image relationship shows that the uninsured reduction is driven by Medicaid take-up. 82 Table S.22: Comparison with existing methods (Medicaid application). Point estimates agree; correct inference only with the proposed method. 
+
+Quantity Standard/naive method Proposed method Average effect (pp) TWFE-DiD −6.34 (SE 1.44) SDID −6.25 
+
+Average-effect SE (pp) Independence 0.26 Shared dependence 0.44 ( 1.83 ×)Group-wise bτg 2 × 2 DiD (correlation 0.97) SDID (agree) Between-group variance bV (×10 −4) Plug-in 43.0 Analytic 41.6 ≈ leave-out 43.9 
+
+R2 Naive 0.80, boot CI [0 .63 , 0.91] 0.83, Fieller CI [0 .70 , 0.91] 
+
+γbite SE (pp) OLS 0.61 / diagonal 0.25 Shared dependence 0.23 
+
+83
