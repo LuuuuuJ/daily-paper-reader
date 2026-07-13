@@ -1,0 +1,1934 @@
+Title: A Machine-Learning-Compatible Omnibus Test for Treatment Effect Heterogeneity
+
+URL Source: https://arxiv.org/pdf/2607.06412v1
+
+Published Time: Wed, 08 Jul 2026 01:14:06 GMT
+
+Number of Pages: 42
+
+Markdown Content:
+# A Machine-Learning-Compatible Omnibus Test for Treatment Effect Heterogeneity ∗
+
+## Elia Lapenta University of Exeter and CREST Anthony Strittmatter UniDistance Suisse and CREST Pedro Vergara Merino CREST and ENSAE Paris July 8, 2026 
+
+Abstract 
+
+This study proposes a formal, computationally efficient nonparametric omnibus test for treatment-effect heterogeneity that is compatible with a broad class of estima-tors, including modern machine-learning methods. The test is designed for settings in which identification can rely on high-dimensional controls while heterogeneity is assessed with respect to a low-dimensional subset of covariates. We derive the test statistic’s asymptotic null distribution and develop a bootstrap procedure that is ef-ficient because it avoids re-estimating nuisance parameters in each iteration. The testing approach applies to multiple empirical designs, including randomized exper-iments, selection-on-observables, difference-in-differences, and instrumental-variables settings. Monte Carlo simulations show that the test attains near-nominal size un-der the null and exhibits good power against heterogeneous alternatives. We further illustrate the procedure using two empirical applications on retirement savings and trade liberalization. 
+
+Keywords: Average Treatment Effects, Heterogeneity, Machine Learning 
+
+JEL classification: C12, C14, C21, C23, C26 
+
+> ∗
+
+Elia Lapenta acknowledges funding from the French National Research Agency (ANR) under grant ANR-23-CE26-0008-01. Anthony Strittmatter acknowledges funding from the Swiss National Science Foun-dation (SNSF) under grant 10006811. The authors are grateful for helpful comments and discussions from Laurent Davezies and Xavier D’Haultfœuille and seminar participants at CREST. All remaining errors are ours. arXiv:2607.06412v1 [econ.EM] 7 Jul 2026 1 Introduction 
+
+Understanding whether treatment effects vary is central to policy evaluation because aver-age effects may conceal differences in how policies, programs, or interventions affect different groups. Heterogeneous effects are relevant in many fields, including economics, political science, and health sciences, where researchers routinely investigate whether an interven-tion benefits some groups more than others. For example, one may want to assess whether a job-training program improves employment differently across skill levels, whether the ef-fectiveness of a medical treatment varies by the age of patients, or whether an educational intervention influences learning gains differently across socioeconomic groups. In all these cases, a valid hypothesis test for treatment effect heterogeneity is essential. In recent years, machine learning (ML) methods have become increasingly popular for uncovering such heterogeneity (see, e.g., Athey and Imbens, 2019 and Chernozhukov et al., 2024). Compared with traditional econometric approaches such as interacted models or subgroup analysis, ML-based techniques typically require fewer parametric assumptions, offer more flexible modeling with safeguards against overfitting, and can accommodate large sets of control variables, often high-dimensional ones. Many of these methods were originally developed for prediction problems. In many empirical applications, however, re-searchers are interested in causal parameters that are directly relevant for policy evaluation, such as average treatment effects (ATEs) and their variation across groups. Traditional econometric methods therefore place particular emphasis on identification and valid statis-tical inference for such quantities. Recent advances in Causal-ML combine the flexibility of ML with the inferential objectives of econometrics by using ML methods to estimate high-dimensional nuisance functions while preserving valid inference for causal effects. Despite this progress, there remains a need for formal procedures that can assess treatment-effect heterogeneity while retaining the flexibility of modern ML methods and that can be readily implemented in practice. This study contributes to the small but growing literature on detecting systematic treat-ment effect heterogeneity with ML (see literature review below). It develops a nonparamet-ric omnibus test for treatment-effect heterogeneity that can be combined in a modular way with a wide range of estimators, including modern ML methods. The test provides a single global assessment of whether treatment effects exhibit systematic variation with respect to a chosen low-dimensional set of covariates, while allowing identification to rely on high-dimensional controls. We construct a locally robust test statistic that remains valid under flexible nuisance estimation and pair it with a computationally efficient bootstrap. The bootstrap requires nuisance functions to be estimated only once, avoiding repeated first-stage estimation in each iteration. Together, these features yield a practical tool for large empirical applications and for settings where heterogeneity is of interest but conventional low-dimensional methods are inadequate. The broad applicability of the procedure is illustrated across several common empirical designs. We first consider heterogeneity in ATEs under conditional unconfoundedness, the standard identifying assumption in observational studies. The same framework naturally 2covers randomized experiments as a special case in which treatment is independent of covariates and nuisance functions are either known or estimated only to improve precision (for example, List et al., 2025, shows that ML-based covariate adjustment in experiments can enhance efficiency without affecting identification). We then extend the approach to difference-in-differences (DiD) designs to test heterogeneity in average treatment effects on the treated (ATT) under conditional parallel trends, accommodating both panel data and repeated cross-sections. Finally, we adapt the method to instrumental-variables settings to test for heterogeneity in local average treatment effects (LATE) when instruments are valid conditional on covariates. For each design, we derive the corresponding test statistic and establish its asymptotic null distribution. The construction follows Integrated Conditional Moment principles in the spirit of Bierens (2016). We reformulate the conditional null of no treatment-effect heterogeneity as a continuum of unconditional moment restrictions and integrate these moments to obtain a feasible test. Because the limiting distribution is not directly useful for implementation, we introduce a bootstrap approximation that is asymptotically valid under the null. The procedure requires estimating nuisance components only once, which we do using ML methods with cross-fitting. Neyman orthogonality of the statistic ensures local robustness to regularization bias, so small first-stage errors do not affect the asymptotic distribution. Estimating nuisances a single time and relying on simple matrix operations within the bootstrap makes the method computationally efficient. Simulation results confirm the practical performance of the test. Across a range of sample sizes, covariate dimensions, and ML estimators for the nuisance components, the procedure attains close-to-correct size under the null and exhibits high power against rele-vant heterogeneous alternatives. We illustrate the empirical relevance of the procedure using two applications. The first revisits the effect of eligibility for a 401(k) retirement savings plan on household finan-cial assets under conditional unconfoundedness, following Poterba et al. (1995) and Cher-nozhukov et al. (2018). The second considers treatment effect heterogeneity in a difference-in-differences setting studying the impact of tariff reductions on corruption along the South Africa–Mozambique trade corridor, building on Sequeira (2016) and Chang (2020). Across both applications, the proposed test detects economically meaningful heterogeneity while remaining computationally feasible in settings with flexible ML-based nuisance estimation. 
+
+Related Literature. This study contributes to a growing body of work on testing and estimating heterogeneous treatment effects using semi- and nonparametric tools, often combined with modern ML. We situate our approach within three related strands of the literature: a smaller literature on global inference for systematic heterogeneity, a smaller literature on tests of identical unit-level effects, and a large literature that uses ML under unconfoundedness to estimate heterogeneous treatment effects through conditional average treatment effects (CATEs) in high-dimensional settings. A first strand develops global procedures for testing whether treatment effects vary sys-tematically with observed covariates. Early work such as Crump et al. (2008) proposes non-parametric homogeneity tests across covariate-defined subpopulations, but these methods 3are mainly designed for low-dimensional covariates and classical estimators. More recent contributions combine global heterogeneity assessment with ML methods. Chernozhukov et al. (2025) develop a general sample-splitting framework for inference on low-dimensional summaries of treatment-effect variation, including best-linear predictors and sorted effects. In this framework, heterogeneity is assessed through an ML-generated score, either by testing whether the score is linearly related to treatment-effect variation or by comparing average effects across groups ranked by the score. Building on related ideas, Imai and Li (2025b) propose a nonparametric heterogeneity test for randomized experiments based on sorted effects. Our approach differs from these contributions in three main respects. First, our objective is to test directly whether treatment effects vary systematically with a chosen set of covariates, without requiring heterogeneity to be summarized by a linear projection or a small number of ranked groups. Second, while these approaches focus primarily on randomized experiments or settings under unconfoundedness, our framework extends to several empirical designs, including difference-in-differences and instrumental-variables set-tings. Third, our procedure remains computationally efficient because the bootstrap avoids repeated re-estimation of nuisance components. A second strand of research studies randomization-based tests built for the sharp hy-pothesis of identical unit-level effects. Key contributions include Heckman et al. (1997) and Ding et al. (2016, 2019). These tests are designed to detect any deviation from con-stant individual effects, including purely idiosyncratic variation. In contrast, our target is a weaker but empirically relevant null, namely the absence of explainable heterogeneity with respect to observed covariates. This distinction matters in applications where the goal is to determine whether effects differ across observable groups in a learnable and actionable way, rather than whether unit-level heterogeneity is driven by potentially idiosyncratic and unpredictable variation. A third strand examines effect heterogeneity under unconfoundedness using flexible ML methods, focusing primarily on the estimation and inference of CATEs and related func-tionals in high-dimensional settings. This literature includes tree-based methods such as causal trees and causal forests (Athey and Imbens, 2016; Wager and Athey, 2018; Athey et al., 2019; Friedberg et al., 2021; Lechner and Mareckova, 2022), debiased, orthogonalized, and partialling-out approaches for high-dimensional CATE inference (Semenova and Cher-nozhukov, 2021; Chernozhukov et al., 2022, 2023; Fan et al., 2022; Lechner and Zimmert, 2019; Semenova et al., 2023; Nekipelov et al., 2022; Foster and Syrgkanis, 2023; Kennedy, 2023; Nie and Wager, 2020; Scheidegger et al., 2026), approaches imposing additional struc-ture on effect modifiers, such as sparsity in targeted undersmoothing (Hansen et al., 2023), and Bayesian models for CATE heterogeneity based on hierarchical or prior-driven struc-ture (Green and Kern, 2012; Taddy et al., 2016; Hahn et al., 2020). Taken together, this strand provides powerful tools for estimating and interpreting heterogeneous effects, pri-marily under unconfoundedness, but it does not provide a general omnibus test of whether systematic heterogeneity is present with respect to observed covariates. Finally, our paper is related to Escanciano (2026), who develops a specification test for moment restrictions using Reproducing Kernel Hilbert Spaces, in settings where the 4null hypothesis is characterized in terms of high-dimensional nuisance parameters. 1 Our contribution differs from his along three dimensions. First, we focus on a specific class of moment restrictions arising from treatment-effect heterogeneity, rather than on conditional moment restrictions more broadly. Second, we establish an expansion of the empirical process underlying our test statistic that is uniform with respect to the indexing parameter 
+
+t, which underlies our asymptotic results. Third, whereas Escanciano (2026) obtains critical values through a multiplier bootstrap based on the influence-function representation of the test statistic, we propose a weighted bootstrap that departs from the multiplier scheme; in our empirical applications, this construction avoids the computation of certain terms that would otherwise complicate implementation. 
+
+Outline. Section 2 provides an intuitive overview of the proposed testing framework and its motivation. Section 3 develops the test for heterogeneity in ATEs under uncon-foundedness, including the locally robust statistic and bootstrap procedure. Section 4 extends the framework beyond unconfoundedness to difference-in-differences designs with panel and repeated cross-section data, as well as to LATEs identified through instrumental variables. Section 5 reports simulation evidence on size and power. Section 6 presents two empirical applications illustrating the proposed procedure in observational and difference-in-differences settings. The final section concludes. 
+
+# 2 Intuition and Overview of the Test 
+
+Researchers are often interested not only in whether an intervention affects outcomes on average, but also in whether its effects differ across groups. The potential-outcomes frame-work provides a natural way to formalize this question. Let Di ∈ { 0, 1} denote a binary treatment indicator, where Di = 1 if unit i receives the treatment and Di = 0 otherwise. Depending on the application, the treatment may represent participation in a job-training program, eligibility for a tax-advantaged savings plan, access to a microcredit program, or exposure to a policy reform. Let Yi(d) denote the potential outcome under treatment status d ∈ { 0, 1}, such as employment, household income, savings, or firm performance. Thus, Yi(1) is the outcome that would be observed if unit i received the treatment, whereas 
+
+Yi(0) is the outcome that would be observed if the same unit did not receive the treatment. The difference Yi(1) − Yi(0) is the individual treatment effect. Let Xi denote a vector of observed pre-treatment covariates, such as age, education, earnings and employment his-tories, household characteristics, or pre-treatment measures of business performance. For notational convenience, let ( Y (1) , Y (0) , D, X ) denote generic population random variables corresponding to the unit-level quantities ( Yi(1) , Y i(0) , D i, X i). A fundamental challenge of causal inference is that only one of the two potential out-comes is observed for any given unit. Individual treatment effects are therefore not directly observed. Nevertheless, averages of these individual effects can be identified from observed 
+
+> 1This paper was presented under the title ”Kernel-Based Specification Testing with High-Dimensional Nuisance Parameters” at the ISNPS Conference in Thessaloniki, June 2026. A written version of the paper was not yet available at the time of writing.
+
+5data under appropriate assumptions. A central example is the ATE, δ0 = E {Y (1) − Y (0) },which measures the average impact of the intervention in the population. For example, in an evaluation of a job-training program, δ0 captures the average change in employment that would occur if everyone in the population participated in the program rather than if no one did. In many empirical applications, researchers face two related but distinct tasks. The first is identification: estimating causal effects may require adjusting for a rich set of covariates. The second is interpretation of treatment-effect heterogeneity: substantive interest is often focused on whether effects differ across a smaller set of policy-relevant characteristics. We therefore distinguish between the full covariate vector X, which is used for identification, and the lower-dimensional subvector Xc ⊆ X, which contains the covariates with respect to which heterogeneity is assessed. This distinction arises naturally in practice. In evaluations of job-training programs, identification may require controlling for detailed labor-market histories, demographic char-acteristics, regional indicators, and prior earnings, while the main question may be whether effects differ by age or educational attainment. In studies of medical treatments, adjust-ment may require many clinical and behavioral variables, while interest may center on whether treatment effects vary with baseline health status. In educational applications, researchers may control for a rich set of student, family, and school characteristics, while examining whether an intervention has different effects by gender, migration background, or socioeconomic status. In each case, the full vector X may be high-dimensional, whereas the heterogeneity question concerns a lower-dimensional set of covariates Xc.Treatment effects may also be summarized conditionally on observed characteristics. We write 
+
+δ(X) := E {Y (1) − Y (0) | X}
+
+for the CATE conditional on the full covariate vector X. Since our test focuses on hetero-geneity with respect to the lower-dimensional covariate vector Xc, we also define 
+
+δc(Xc) := E {Y (1) − Y (0) | Xc}.
+
+Thus, δ(X) describes treatment-effect variation with respect to the full set of covariates, whereas δc(Xc) describes treatment-effect variation with respect to the covariates used in the heterogeneity test. Our objective is to test whether treatment effects vary systematically with Xc. Formally, for the ATE, we consider the null hypothesis 
+
+H0 : δc(Xc) = δ0 for some fixed constant δ0 ∈ R , (1) versus H1 : Hc 
+
+> 0
+
+,
+
+where Hc 
+
+> 0
+
+denotes the logical complement of H0. Under the null hypothesis, the CATE indexed by Xc is constant and equals the ATE, δ0. The null does not require δ0 to be zero, nor does it require all individual treatment effects to be identical. Rather, it states that the conditional average effect with respect to Xc is constant. Under the alternative, the 6conditional average treatment effect varies systematically with at least one component of 
+
+Xc.This null is the analogue, for the chosen heterogeneity covariates Xc, of the treatment-effect homogeneity null considered by Crump et al. (2008), under which CATEs are iden-tical across covariate-defined subpopulations. In contrast to their setting, our procedure allows identification to rely on a potentially high-dimensional vector of controls X, with the required nuisance functions estimated flexibly using ML methods. A common alternative way to study treatment-effect heterogeneity is to estimate the CATEs, because they describe how treatment effects differ by observed characteristics and can therefore help identify which groups benefit more or less from an intervention. Modern examples include tree- and forest-based methods, as well as debiased and orthogonalized approaches for high-dimensional settings (e.g., Athey and Imbens, 2016; Wager and Athey, 2018; Athey et al., 2019; Semenova and Chernozhukov, 2021; Fan et al., 2022). Our goal is different. Estimating the full conditional effect function is more ambitious than testing whether systematic heterogeneity is present. In addition, inference on CATEs is often used to test whether the treatment effect is zero at particular covariate values, for example 
+
+Hzero 0 (x) : E {Y (1) − Y (0) | X = x} = 0 .
+
+This is not a general test of heterogeneity. A treatment effect may be constant and nonzero for all groups. In that case, a zero-effect null can be rejected even though there is no treatment-effect heterogeneity. Our test instead asks whether the conditional average effect differs across values of Xc, while allowing the average effect itself to be nonzero. Recent ML-based approaches also provide formal tests for treatment-effect heterogeneity through summaries of treatment-effect variation (Chernozhukov et al., 2025; Imai and Li, 2025a). Best-linear-predictor (BLP) methods first use ML to construct a score, denoted by S(X), that is intended to predict the CATE δ(X). This score is not the true CATE, which is unobserved, but a first-stage proxy for heterogeneity. The BLP approach then asks whether actual treatment effects are systematically related to this score by considering the population projection BLP {δ(X) | S(X)} = β1 + β2{S(X) − E[ S(X)] }.
+
+The corresponding null hypothesis is 
+
+HBLP 0 : β2 = 0 .
+
+This null asks whether the ML score is linearly related to treatment-effect variation. Thus, a rejection provides evidence of heterogeneity captured by the score S(X). Sorted-effect methods use the same general logic but test for heterogeneity across groups rather than through a linear slope. Let G1, . . . , G K denote groups formed by sorting ob-servations according to the ML score S(X), and let 
+
+δk := E {δ(X) | X ∈ Gk}
+
+7denote the average treatment effect in group k. The corresponding homogeneity null is 
+
+Hsorted 0 : δ1 = · · · = δK .
+
+This null asks whether average treatment effects are the same across the groups induced by the ML score. Both approaches, BLP and sorted-effects methods, therefore test whether heterogeneity is detectable through a particular ML-generated summary, a linear projection in the BLP case or ranked groups in the sorted-effect case. The objective of our test is more basic. We ask whether the data provide evidence that systematic heterogeneity with respect to Xc is present at all. The test therefore does not require heterogeneity to be captured by a linear projection or by a small number of ranked groups. The null hypothesis considered here also differs from sharp hypotheses of identical unit-level effects studied in randomization-based tests, such as 
+
+Hsharp 0 : Var {Y (1) − Y (0) } = 0 (e.g., Heckman et al., 1997; Ding et al., 2016, 2019). Those hypotheses ask whether ev-ery individual treatment effect is the same. They can therefore be violated even when treatment-effect variation is idiosyncratic and unrelated to observable characteristics. By contrast, our null is weaker and more targeted. It asks whether the average treatment effect varies in a way that is explainable by the observed covariates Xc. This distinction is important in empirical work, where researchers are often interested in whether effects differ across observable and policy-relevant groups rather than whether all individuals have exactly the same effect. Thus, the proposed test addresses a simple question: do treatment effects vary sys-tematically with Xc? The test is omnibus in the sense that it is designed to detect many forms of heterogeneity, including nonlinearities, threshold effects, and interactions among the components of Xc. At the same time, it does not require researchers to estimate or interpret the full heterogeneity function. The test can therefore serve as a first step before more detailed analyses of which covariates drive heterogeneity and which groups are most affected. 
+
+# 3 Testing Heterogeneity under Unconfoundedness 
+
+Consider the potential-outcomes framework introduced in Section 2. We now formalize the proposed test for treatment-effect heterogeneity under unconfoundedness. Our objective is to construct a test that remains valid when treatment effects are identified using a potentially high-dimensional set of controls and auxiliary quantities are estimated using flexible ML methods. The development of the test proceeds in four steps. First, we rewrite the null hypothesis of homogeneous treatment effects as a conditional moment restriction involving observable quantities. Second, we transform this conditional restriction into an equivalent collection of unconditional moment conditions that can be tested in practice. Third, we construct locally 8robust moments that remain valid when the required auxiliary quantities are estimated using ML methods. Fourth, we combine these moments into a test statistic and develop a computationally efficient bootstrap procedure for inference. The resulting procedure provides an omnibus test for treatment-effect heterogeneity that is flexible, computationally tractable, and compatible with a broad class of modern ML estimators. 
+
+## 3.1 Reformulating the Null Hypothesis 
+
+Throughout this section, we use the notation introduced in Section 2. The observed outcome for unit i is Yi = DiYi(1) + (1 − Di)Yi(0), and we observe a random sample 
+
+{(Yi, D i, X i)}ni=1 , where n denotes the sample size. We first state the identifying assump-tions and then rewrite the null hypothesis in a form that can be tested using observed data. 
+
+Assumption 3.1. 
+
+(Y (1) , Y (0)) ⊥⊥ D | X. 
+
+Assumption 3.1 requires that, after conditioning on the observed covariates X, treat-ment assignment is independent of the potential outcomes. For this to be the case, X must contain all variables that jointly influence treatment assignment and potential outcomes. Let 
+
+mD(X) := E {D | X}
+
+denote the propensity score, that is, the conditional probability of treatment given the observed covariates. 
+
+Assumption 3.2. There exists ϵ > 0 such that 
+
+ϵ < m D(X) < 1 − ϵ. 
+
+Assumption 3.2 is a common-support condition. It requires that, for every value of 
+
+X, both treated and untreated units occur with positive probability. This ensures that meaningful comparisons between treated and untreated units can be made. The null hypothesis in (1) is formulated in terms of potential outcomes, which are only partially observed. We therefore derive an equivalent representation based on quantities that can be estimated from the data. Define 
+
+μd(X) := E {Y | X, D = d}, d = 0 , 1.
+
+Under Assumption 3.1, these conditional outcome regressions identify the corresponding conditional potential outcomes: 
+
+μ1(X) = E {Y (1) | X} and μ0(X) = E {Y (0) | X}.
+
+9Hence, the CATE is identified as 
+
+δ(X) = E {Y (1) − Y (0) | X} = μ1(X) − μ0(X),
+
+and the ATE is identified as 
+
+δ0 = E {μ1(X) − μ0(X)}.
+
+Let Xc be a subvector of X, with Xc ∈ Rc. The full covariate vector X is used for identification, whereas Xc contains the covariates with respect to which treatment-effect heterogeneity is evaluated. Applying the Law of Iterated Expectations yields E{Y (1) − Y (0) | Xc} = E {μ1(X) − μ0(X) | Xc}.
+
+Consequently, the null hypothesis in (1) is equivalent to 
+
+H0 : E {μ1(X) − μ0(X) − δ0 | Xc} = 0 . (2) Equation (2) states that, after removing the average treatment effect δ0, the remain-ing treatment-effect variation is conditionally mean independent of Xc. This conditional moment restriction is the starting point for the test. Directly testing (2) is difficult because it involves a conditional expectation given Xc. We therefore use a strategy from the conditional moment literature and replace the conditional restriction by a collection of unconditional moment restrictions. Intuitively, if treatment effects do not vary systematically with Xc, then {μ1(X)−μ0(X)−δ0} should be uncorrelated with any function of Xc.Assume, without loss of generality, that Xc has bounded support. Then, by Bierens (2016, Theorem 2.2), the null hypothesis (2) is equivalent to 
+
+H0 : E [μ1(X) − μ0(X) − δ0]φ(tT Xc) = 0 ∀t ∈ T , (3) where φ is an analytic non-polynomial function satisfying ∂lφ(0) ̸ = 0 for all l ∈ N, and T
+
+is a subset of Rdim( Xc) containing a neighborhood of the origin. See Assumption 3.3 for the precise conditions. To understand this equivalence, note that (2) is equivalent to E {[μ1(X) − μ0(X) − δ0]f (Xc)} = 0 for every square-integrable function f . Verifying this condition directly is infeasible because it requires considering an infinite collection of arbitrary functions. The result of Bierens (2016) shows that it is sufficient to focus on the structured family, {φ(tT ·) : t ∈ T } . This reduction is useful because it leads to a test statistic with a simple closed-form representa-tion. The moment conditions in (3) provide a testable characterization of the null hypothesis. A direct implementation, however, would require estimating the unknown functions μ0 and 
+
+μ1. If estimation errors from these first-stage quantities enter the test statistic too strongly, 10 standard inference can fail. To address this issue, we replace the treatment-effect residual in (3) by a locally robust score. This construction also uses the propensity score mD.Consider the doubly robust score 
+
+V := μ1(X) − μ0(X) + [ Y − μ1(X)] DmD(X) − [Y − μ0(X)] 1 − D
+
+1 − mD(X),U := V − δ0.
+
+The quantity V combines outcome-regression adjustment through μ0 and μ1 with propensity-score adjustment through mD. Such doubly robust scores are widely used in modern causal inference because they are stable under flexible first-stage estimation (see, for example, Chernozhukov et al., 2018). The score U is constructed so that its conditional expectation recovers the treatment-effect residual appearing in (3). Specifically, E{U | X} = μ1(X) − μ0(X) − δ0.
+
+This follows from E{Y D | X} = μ1(X)mD(X) and E {(1 − D)Y | X} = μ0(X){1 − mD(X)}.
+
+Thus, U captures deviations of the conditional treatment effect from the average treatment effect. Under the null hypothesis of homogeneous treatment effects, these deviations should not vary systematically with Xc.Combining this result with (3) and the Law of Iterated Expectations yields 
+
+H0 ⇔ E{U φ (tT Xc)} = 0 ∀t ∈ T . (4) Equation (4) provides the locally robust moment representation used below. Unlike the direct moments in (3), the moments based on U are locally robust with respect to μ0, μ1,and mD. Intuitively, small errors in estimating these functions have only a negligible effect on the resulting moments, which makes the construction well suited for flexible ML-based estimation. 
+
+## 3.2 Locally Robust Test Statistic 
+
+Let us now construct a feasible test statistic based on the robust moments in (4). If the score 
+
+U were observed, testing H0 would be straightforward. In particular, we could measure the extent to which the sample moments En{Uiφ(tT Xc,i )}
+
+deviate from zero across values of t, where E n denotes the empirical mean operator, En g(ζi) := 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+g(ζi),
+
+11 ζi := ( Yi, D i, X i). Following the integrated conditional moment literature, a natural test statistic is Z √n En{Uiφ(tT Xc,i )} 2 dρ (t),
+
+where ρ is a probability measure supported on T .The challenge is that U depends on the unknown functions μ0, μ1, and mD, which must be estimated from the data. To estimate these quantities while avoiding overfitting, we employ cross-fitting. This is particularly important when the nuisance functions are estimated using flexible ML methods. The basic idea is that each observation is evaluated using models that were estimated without using that observation. This reduces overfitting and helps ensure valid inference. Formally, let {ζi}ni=1 denote the observed sample and partition it into N mutually exclusive folds {K1, . . . , K N }.2 Let K(i) denote the fold containing observation i, and let 
+
+K(−i) := K −K(i) denote the remaining observations. We estimate the nuisance functions using only the observations in K(−i). Specifically, let bmDK(−i), bμ0,K (−i), and bμ1,K (−i) denote the corresponding estimators of mD, μ0, and μ1.Using these estimators, we construct 
+
+bUi := bVi − bδ, (5) where 
+
+bVi := bμ1,K (−i)(Xi) − bμ0,K (−i)(Xi)+ [ Yi − bμ1,K (−i)(Xi)] Di
+
+bmDK(−i)(Xi)
+
+− [Yi − bμ0,K (−i)(Xi)] 1 − Di
+
+1 − bmDK(−i)(Xi),
+
+bδ := E n{ bVi}.
+
+Note that the estimator bδ is not simply the sample analogue of 
+
+δ0 = E {μ1(X) − μ0(X)}.
+
+A natural plug-in estimator would replace μ0 and μ1 with estimated versions and then average the resulting treatment effects. However, when these quantities are estimated using flexible ML methods, estimation errors can propagate into later stages of the analysis and invalidate standard inference procedures. We therefore use the estimator bδ because it is locally robust to small errors in the estimation of μ0, μ1, and mD; see Chernozhukov et al. (2018). This robustness property plays a key role in ensuring valid inference while retaining the flexibility of ML estimation.                  
+
+> 2Each observation ζiwill belong to a unique fold and the union of such folds gives the entire sample. Formally, ∪Ns=1 Ks={ζi}ns=1 =: Kand Ks∩Kj=∅for s̸=j.
+
+12 Our feasible test statistic is 
+
+Sn =
+
+Z √n En bUiϕt(Xc,i ) 2
+
+dρ (t),
+
+where, for notational convenience, we define ϕt(·) := φ(tT ·). Intuitively, the statistic measures the extent to which the estimated treatment-effect residuals bUi are systematically related to functions of the heterogeneity covariates Xc.Under the null hypothesis, these empirical moments should be close to zero for all values of t. Large values of Sn therefore provide evidence against treatment-effect homogeneity. Under suitable choices of ρ and ϕt, the statistic admits a simple closed-form represen-tation. In particular, suppose that ρ has a symmetric Fourier transform, denoted by Fρ,and let 
+
+ϕt(·) = exp( itT ·),
+
+where i denotes the imaginary unit. Then 
+
+Sn = 1
+
+n
+
+X
+
+> i,j
+
+bUi bUj Fρ(Xc,i − Xc,j ) = 1
+
+n bU T Fρ bU , (6) where bU = ( bU1, . . . , bUn)T and Fρ denotes the n × n matrix with generic element Fρ(Xc,i −
+
+Xc,j ). Equation (6) is particularly attractive from a computational perspective. The statis-tic depends only on the estimated quantities bμ0, bμ1, and bmD, and does not require any nonparametric smoothing with respect to Xc.We now introduce the regularity conditions required for the asymptotic analysis of the test statistic. 
+
+Assumption 3.3. 
+
+(i) {Yi, D i, X i}ni=1 is an iid sample; (ii) Y , μ0, and μ1 are bounded; (iii) T is a compact and convex subset of Rdim( Xc) containing a neighborhood of the origin and Xc is bounded; (iv) φ is an analytic non-polynomial function with ∂lφ(0) ̸ = 0 for all l ∈ N.
+
+Parts (i) and (ii) of Assumption 3.3 are standard regularity conditions. Parts (iii) and (iv) ensure that the continuum of unconditional moments in (4) provides a complete charac-terization of the original conditional moment restriction. In particular, they guarantee the equivalence between the null hypothesis and the integrated moment conditions used by the test; see Bierens (2016, Theorem 2.2). The bounded-support assumption on Xc is without loss of generality, since any unbounded covariate can be transformed through a bounded one-to-one mapping without changing the underlying conditional moment restriction. For any function f (ζ), with ζ := ( Y, D, X ), define the L2(P ) norm as 
+
+∥f ∥2  
+
+> L2(P)
+
+=
+
+Z
+
+f (ζ)2dP (ζ),
+
+13 where P denotes the probability law of ζ. Let bμ1,K −Kj denote the estimator of μ1 computed on the subsample K − Kj , that is, on the sample excluding the observations contained in fold Kj . The estimators bμ0,K −Kj and bmDK−Kj are defined analogously. Finally, let X denote the support of X.
+
+Assumption 3.4. 
+
+(i) For any j ∈ { 1, ..., N },
+
+∥ bmDK−Kj − mD∥L2(P ) + ∥bμ0,K −Kj − μ0∥L2(P ) + ∥bμ1,K −Kj − μ1∥L2(P ) = oP (n−1/4).
+
+(ii) There exists a constant C > 0 such that for any j ∈ { 1, ..., N } and d ∈ { 0, 1},
+
+lim  
+
+> n
+
+P
+
+
+
+sup 
+
+> x∈X
+
+|bμd,K −Kj (x)| < C 
+
+
+
+= 1 .
+
+(iii) There exists ϵ > 0 such that for any j ∈ { 1, ..., N },
+
+lim  
+
+> n
+
+P
+
+
+
+ϵ < inf  
+
+> x∈X
+
+bmDK−Kj (x)
+
+
+
+= lim  
+
+> n
+
+P
+
+
+
+sup 
+
+> x∈X
+
+bmDK−Kj (x) < 1 − ϵ
+
+
+
+= 1 .
+
+Assumption 3.4 concerns the quality of the estimators used for the nuisance functions μ0,
+
+μ1, and mD. Part (i) requires these estimators to be sufficiently accurate in large samples. Formally, the estimation error must converge to zero at a rate faster than n−1/4 in the 
+
+L2(P ) norm. Similar conditions are standard in the double ML literature. For example, the required convergence rates have been established for neural networks by Farrell et al. (2021) and for random forests by Scornet et al. (2015). Part (ii) requires the estimated outcome regressions bμd,K −Kj to remain uniformly bounded over the support X . Part (iii) requires the estimated propensity score bmDK−Kj to remain bounded away from zero and one. This condition ensures that the inverse-probability weights appearing in (5) remain well behaved and do not become excessively large. The following proposition characterizes the large-sample behavior of the test statistic 
+
+Sn. To state the result, let 
+
+ιt := E {ϕt(Xc)} with t ∈ T 
+
+and recall that ζi = ( Yi, D i, X i). 
+
+Proposition 3.1. Let Assumptions 3.1, 3.2, 3.3, and 3.4 hold. Then, (a) Under H0, for ft(ζ) = U [ϕt(Xc) − ιt],
+
+Snd
+
+→
+
+Z
+
+|G(ft)|2dρ (t) ,
+
+where {G(ft) : t ∈ T } is a zero-mean tight Gaussian process taking values on ℓ∞(T ),the space of uniformly bounded functionals on T , and characterized by the collection of covariances 
+
+{E ft1 (ζ)ft2 (ζ) : t1, t 2 ∈ T } 
+
+(b) Under H1, SnP
+
+→ ∞ .
+
+14 Part (a) of Proposition 3.1 establishes the asymptotic distribution of the test statistic under the null hypothesis of homogeneous treatment effects. Part (b) shows that the test statistic diverges under the alternative hypothesis, implying that the proposed test is consistent against fixed alternatives. The proof is provided in the supplementary material. Although the limiting distribution in Part (a) is well defined, it depends on unknown features of the data-generating process and is therefore difficult to use directly for inference. In the next subsection, we develop a bootstrap procedure that provides a practical way to approximate the distribution of the test statistic and obtain critical values. 
+
+## 3.3 A Simple Bootstrap Test 
+
+To obtain the critical values necessary for testing, we bootstrap our test statistic. Let 
+
+{ξi}ni=1 be a sequence of iid bootstrap weights independent from the sample data, with E{ξ} = 1 and Var {ξ} = 1. We define the bootstrap counterpart of our statistic as 
+
+S∗ 
+
+> n
+
+=
+
+Z
+
+|√n En{[ bU ∗ 
+
+> i
+
+− eU ∗ 
+
+> i
+
+]ϕt(Xc,i )}| 2dρ (t)where 
+
+bU ∗ 
+
+> i
+
+=ξi[ bVi − bδ∗]
+
+eU ∗ 
+
+> i
+
+= bVi − eδ∗
+
+bδ∗ = E n{ξi bVi}
+
+eδ∗ =bδ En{ξi} .
+
+When ρ has a symmetric Fourier transform, Fρ, and ϕt(·) = exp( itT ·), the bootstrapped statistic S∗ 
+
+> n
+
+has a simple expression given by 
+
+eS∗ 
+
+> n
+
+= 1
+
+n( bU ∗ − eU ∗)T Fρ( bU ∗ − eU ∗) , (7) where bU ∗ = ( bU ∗ 
+
+> 1
+
+, . . . , bU ∗ 
+
+> n
+
+)T and eU ∗ = ( eU ∗ 
+
+> 1
+
+, . . . , eU ∗ 
+
+> n
+
+)T .In practice, to obtain the critical value necessary for testing, we can apply the following steps: 15 Bootstrap test for ATE heterogeneity 
+
+Inputs : bU , Fρ, Sn.1. For b = 1 : B
+
+(a) Draw an iid sample ( ξ1, . . . , ξ n) from the distribution of ξ such that E {ξ} =1 and Var {ξ} = 1 (b) Compute the bootstrapped statistic S∗ 
+
+> n,b
+
+according to the expression in (7) 
+
+EndFor Output {S∗ 
+
+> n,b
+
+: b = 1 , . . . , B }.2. Compute the 1 − α quantile of {S∗ 
+
+> n,b
+
+: b = 1 , . . . , B }, say bq1−α.3. If Sn > bq1−α reject H0.
+
+The above procedure is based on vector and quadratic forms computations, so it is straightforward to implement. Note that it does not require to compute the ML estimators at each bootstrap iteration. This is computationally convenient. We next establish the validity of this bootstrap procedure. Let us denote with Pr ∗ the prob-ability that considers as random only the bootstrap weights {ξi}ni=1 , that is, the probability conditional to the sample data. We define formally the 1 − α quantile of the bootstrap distribution of S∗
+
+> n
+
+, bq1−α, as 
+
+bq1−α = inf {q : Pr ∗(S∗ 
+
+> n
+
+≤ q) ≥ 1 − α} . (8) 
+
+Proposition 3.2. Let Assumptions 3.1, 3.2, 3.3, and 3.4 hold. Then, (a) Under H0,
+
+Pr( Sn > bq1−α) → α
+
+(b) Under H1,
+
+Pr( Sn > bq1−α) → 1 .
+
+The above result is shown in the supplementary material. Part (a) of the above propo-sition shows that our bootstrap test controls the size asymptotically. Part (b) shows that it can detect violations of the null hypothesis. 
+
+# 4 Beyond Unconfoundedness 
+
+Section 3 develops our testing procedure under identification by unconfoundedness. The same ideas, however, extend naturally to other widely used causal inference frameworks. In this section, we consider Difference-in-Differences (DiD) models with panel and repeated cross section data, as well as Local Average Treatment Effects (LATE) identified through instrumental variables. 16 The construction closely parallels that developed in Section 3. In each case, we reformu-late the null hypothesis of homogeneous treatment effects in terms of observable quantities, construct locally robust moment conditions, and build a test statistic based on cross-fitted estimators of the required nuisance functions. The resulting procedures retain the same ability to accommodate flexible ML estimators while maintaining valid inference. To avoid repetition, we focus on the framework-specific assumptions and formal results. Detailed derivations of the moment conditions, test statistics, asymptotic distributions, and bootstrap procedures are provided in the Appendix. 
+
+## 4.1 Difference-in-Differences with Panel Data 
+
+We first consider a Difference-in-Differences (DiD) design with two periods, t = 0 , 1, and panel data. Let Gi ∈ { 0, 1} indicate whether unit i belongs to the treated group. Treated units receive treatment only in period 1, while control units are never treated. Let Yi,t (d)denote the potential outcome in period t under treatment status d ∈ { 0, 1}, and let Yi,t 
+
+denote the observed outcome. We observe 
+
+{Yi, 0, Y i, 1, G i, X i}ni=1 ,
+
+where Xi is a vector of pre-treatment covariates. Define ∆Yi := Yi, 1 − Yi, 0, π0 := E {Gi}, mG(X) := E {G | X}.
+
+Our objective is to test whether the average treatment effect on the treated varies systematically with the heterogeneity covariates Xc ⊆ X. Formally, we consider 
+
+HDiD  
+
+> 0
+
+: E {Y1(1) − Y1(0) | G = 1 , X c} = δ0 for some δ0 ∈ R, (9) versus HDiD  
+
+> 1
+
+: HDiD,c  
+
+> 0
+
+,
+
+where HDiD,c  
+
+> 0
+
+denotes the logical complement of HDiD  
+
+> 0
+
+.Identification relies on the standard conditional parallel-trends assumption. 
+
+Assumption 4.1. 
+
+E{Y1(0) − Y0(0) | G = 1 , X } = E {Y1(0) − Y0(0) | G = 0 , X }.
+
+Assumption 4.2. (i) π0 > 0; (ii) there exists ϵ ∈ (0 , 1) such that mG(X) < 1 − ϵ.
+
+Assumption 4.3. 
+
+E{G | Xc} > 0.
+
+Assumption 4.1 requires that, after conditioning on X, treated and control units would have experienced the same average outcome trend in the absence of treatment. Assumption 4.2 ensures that treated units exist and that suitable control units are available across the relevant support of X. Assumption 4.3 ensures that the conditional treatment effect for the treated is well defined for the values of Xc considered in the test. 17 Define 
+
+μY1−Y0 
+
+> 0
+
+(X) := E {∆Y | G = 0 , X }.
+
+Following the same logic as in Section 3, the null hypothesis can be written as a collection of locally robust moment restrictions. Let 
+
+V DiD := ∆Y − μY1−Y0 
+
+> 0
+
+(X) G − mG(X)1 − mG(X) ,U DiD := V DiD − δ0G. (10) Then 
+
+HDiD  
+
+> 0
+
+⇔ E{U DiD φ(tT Xc)} = 0 ∀t ∈ T . (11) A detailed derivation of Equation (11) is provided in Appendix A. As in Section 3.2, we estimate the nuisance functions using cross-fitting. Let bμY1−Y0 
+
+> 0,K (−i)
+
+and bmGK(−i) denote estimators obtained without using the fold containing observation i. Define 
+
+bV DiD i := 
+
+h
+
+∆Yi − bμY1−Y0
+
+> 0,K (−i)
+
+(Xi)
+
+i Gi − bmGK(−i)(Xi)1 − bmGK(−i)(Xi) ,
+
+bπ := E n{Gi}, bδDiD := En{ bV DiD i }
+
+bπ ,
+
+bU DiD i := bV DiD i − bδDiD Gi.
+
+The resulting test statistic is 
+
+SDiD n =
+
+Z √n En{ bU DiD i ϕt(Xc,i )} 2
+
+dρ (t), (12) where ϕt(Xc) = φ(tT Xc). As in Section 3.2, choosing 
+
+ϕt(·) = exp( itT ·)yields the computationally convenient representation 
+
+SDiD n = 1
+
+n( bU DiD )T Fρ bU DiD ,
+
+where 
+
+bU DiD = ( bU DiD  
+
+> 1
+
+, . . . , bU DiD n )T
+
+and Fρ is defined in Section 3.2. We impose the following regularity conditions. Let 
+
+ζ := ( Y0, Y 1, G, X ), let P denote the distribution of ζ, and let X denote the support of X.The norm ∥ · ∥ L2(P ) is defined as in Section 3.2. 
+
+Assumption 4.4. 
+
+(i) {Y0,i , Y 1,i , G i, X i}ni=1 is an iid sample; (ii) Y1 − Y0 and μY1−Y0 
+
+> 0
+
+are bounded; (iii) T is a compact subset of Rdim( Xc) containing a neighborhood of the origin and Xc is bounded; (iv) φ is an analytic non-polynomial function with ∂lφ(0) ̸ = 0 for all l ∈ N.
+
+18 Assumption 4.5. 
+
+(i) For any j ∈ { 1, . . . , N },
+
+∥ bmGK−Kj (X) − mG(X)∥L2(P ) + ∥bμY1−Y0 
+
+> 0,K −Kj
+
+(X) − μY1−Y0 
+
+> 0
+
+(X)∥L2(P ) = oP (n−1/4).
+
+(ii) There exists a constant C > 0 such that for any j ∈ { 1, . . . , N },
+
+lim  
+
+> n
+
+P
+
+
+
+sup 
+
+> x∈X
+
+|bμY1−Y0 
+
+> 0,K −Kj
+
+(x)| + sup 
+
+> x∈X
+
+| bmGK−Kj (x)| < C 
+
+
+
+= 1 .
+
+(iii) There exists ϵ > 0 such that for any j ∈ { 1, . . . , N },
+
+lim  
+
+> n
+
+P
+
+
+
+sup 
+
+> x∈X
+
+bmGK−Kj (x) < 1 − ϵ
+
+
+
+= 1 .
+
+Assumptions 4.4 and 4.5 are the DiD analogues of the regularity conditions imposed in the unconfoundedness setting. They ensure that the integrated moment representation characterizes the null hypothesis and that the nuisance estimators are sufficiently accurate for locally robust inference. As before, the required convergence rates can be satisfied by a broad class of modern ML estimators. 
+
+Proposition 4.1. Let Assumptions 4.1, 4.2, 4.3, 4.4, and 4.5 hold. Then: (a) For 
+
+ft(ζ) := U DiD ϕt(Xc) − [E {Gϕ t(Xc)}]
+
+V DiD 
+
+π0
+
+− δ0 − δ0
+
+π0
+
+(G − π0)
+
+
+
+,
+
+under HDiD  
+
+> 0
+
+,
+
+SDiD nd
+
+→
+
+Z
+
+|G(ft)|2dρ (t),
+
+where {G(ft) : t ∈ T } is a zero-mean tight Gaussian process taking values on ℓ∞(T )
+
+and characterized by the collection of covariances 
+
+{E ft1 (ζ)ft2 (ζ) : t1, t 2 ∈ T } .
+
+(b) Under HDiD  
+
+> 1
+
+,
+
+SDiD nP
+
+→ ∞ .
+
+Part (a) establishes the asymptotic distribution of the test statistic under the null hypothesis of homogeneous average treatment effects on the treated. Part (b) shows that the statistic diverges under the alternative, implying that the test is consistent against fixed alternatives. The proof is provided in the supplementary material. We obtain critical values using a bootstrap procedure analogous to that in Section 3.3. The nuisance functions are estimated only once and are kept fixed across bootstrap iterations. The bootstrap recomputes the low-dimensional quantities that enter the DiD 19 score, namely the treated share and the ATT estimate. Let {ξi}ni=1 be an iid sequence of bootstrap weights independent from the sample data, with E {ξ} = Var {ξ} = 1. We define 
+
+bπ∗ := E n{ξiGi} , bδ∗ := E n{ξi bVi}/bπ∗ , bU DiD ∗ 
+
+> i
+
+:= ξi[ bVi − bδ∗Gi] .
+
+Then, the bootstrap counterpart of the test statistic SDiD n is 
+
+SDiD ∗ 
+
+> n
+
+=
+
+Z √n En{[ bU DiD ∗ 
+
+> i
+
+− bU DiD i ]ϕt(Xc,i )} 2
+
+dρ (t) , (13) By setting ϕt(·) = exp( itT ·), the bootstrapped statistic SDID ∗ 
+
+> n
+
+can be computed similarly to SDiD n , as follows 
+
+SDiD ∗ 
+
+> n
+
+= 1
+
+n( bU DiD ∗ − bU DiD )T Fρ( bU DiD ∗ − bU DiD ) ,
+
+where bU DiD ∗ = ( bU DiD ∗ 
+
+> 1
+
+, . . . , bU DiD ∗ 
+
+> n
+
+)T and bU DiD = ( bU DiD  
+
+> 1
+
+, . . . , bU DiD n )T . The bootstrap test can be implemented by the Monte Carlo procedure described in Section 3.3. Let bqDiD  
+
+> 1−α
+
+denote the empirical (1 − α) quantile of the bootstrap statistics generated by the procedure above. The following proposition establishes the validity of this design-specific bootstrap critical value. 
+
+Proposition 4.2. Let Assumptions 4.1, 4.2, 4.3, 4.4, and 4.5 hold. Then: (a) Under HDiD  
+
+> 0
+
+,
+
+Pr( SDiD n > bqDiD  
+
+> 1−α
+
+) → α. 
+
+(b) Under HDiD  
+
+> 1
+
+,
+
+Pr( SDiD n > bqDiD  
+
+> 1−α
+
+) → 1.
+
+Proposition 4.2 establishes that the bootstrap test has asymptotically correct size under the null hypothesis and is consistent under fixed alternatives. The proof is provided in the supplementary material. 
+
+## 4.2 Difference-in-Differences with Repeated Cross Sections 
+
+We next consider a Difference-in-Differences design with repeated cross sections. In contrast to the panel-data setting, the same unit is not observed before and after treatment. Instead, the data contain different units observed either in the pre-treatment period or in the post-treatment period. Let Ti ∈ { 0, 1} indicate whether unit i is observed in the post-treatment period, and let Gi ∈ { 0, 1} indicate whether unit i belongs to the treated group. We observe 
+
+{Yi, G i, T i, X i}ni=1 ,
+
+where Yi is the observed outcome and Xi is a vector of pre-treatment covariates. We maintain the conditional parallel-trends and support conditions from Assumptions 4.1, 4.2, and 4.3. As before, let 
+
+mG(X) := E {G | X}, π0 := E {G}.
+
+The repeated-cross-section sampling scheme is formalized as follows. 20 Assumption 4.6. The observed sample is iid from 
+
+Pr( Y = y, G = g, X = x, T = t) = λ · t · Pr 1(Y1 = y, G = g, X = x)+ (1 − λ) · (1 − t) · Pr 0(Y0 = y, G = g, X = x),
+
+where λ ∈ (0 , 1) , Pr 1 is the distribution of (Y1, G, X ) conditional on T = 1 , and Pr 0 is the distribution of (Y0, G, X ) conditional on T = 0 .
+
+Assumption 4.6 states that the observed data combine two cross sections: one from the pre-treatment period and one from the post-treatment period. In particular, λ = Pr( T = 1) denotes the population share of observations from the post-treatment period. Our objective is again to test whether the treatment effect on the treated varies sys-tematically with Xc. Formally, we consider 
+
+HDiDrcs  
+
+> 0
+
+: E {Y1(1) − Y1(0) | G = 1 , X c} = δ0 for some δ0 ∈ R, (14) versus HDiDrcs  
+
+> 1
+
+: HDiDrcs,c  
+
+> 0
+
+,
+
+where HDiDrcs,c  
+
+> 0
+
+denotes the logical complement of HDiDrcs  
+
+> 0
+
+.Following the same logic as in Section 4.1, the null hypothesis can be represented through locally robust moments. Define 
+
+μY 
+
+> 0
+
+(X) := E {Y | X, G = 0 }, μY T  
+
+> 0
+
+(X) := E {Y T | X, G = 0 }.
+
+Let 
+
+W (λ) := 
+
+Y T − μY T  
+
+> 0
+
+(X)
+
+λ(1 − λ) − Y − μY 
+
+> 0
+
+(X)1 − λ
+
+ G − mG(X)1 − mG(X) ,U DiDrcs := W (λ) − δ0G. (15) Then 
+
+HDiDrcs  
+
+> 0
+
+⇔ E{U DiDrcs φ(tT Xc)} = 0 ∀t ∈ T . (16) A detailed derivation of Equation (16) is provided in Appendix A. The score U DiDrcs 
+
+plays the same role as U DiD in the panel-data case. It converts the null hypothesis into moments that can be estimated using observed data and remains locally robust with respect to the first-stage nuisance estimates. The additional feature in the repeated-cross-section setting is that the score depends on the sampling share λ, which also has to be estimated. We estimate μY 
+
+> 0
+
+, μY T  
+
+> 0
+
+, and mG by cross-fitting. Let bμY
+
+> 0,K (−i)
+
+, bμY T 
+
+> 0,K (−i)
+
+, and bmGK(−i) denote estimators obtained without using the fold containing observation i. Define 
+
+bλ := E n{Ti}, bπ := E n{Gi},
+
+cWi(bλ) := 
+
+"YiTi − bμY T 
+
+> 0,K (−i)
+
+(Xi)
+
+bλ(1 − bλ) − Yi − bμY
+
+> 0,K (−i)
+
+(Xi)1 − bλ
+
+# Gi − bmGK(−i)(Xi)1 − bmGK(−i)(Xi) ,
+
+bδDiDrcs := En{cWi(bλ)}
+
+bπ , bU DiDrcs i := cWi(bλ) − bδDiDrcs Gi.
+
+21 The resulting test statistic is 
+
+SDiDrcs n =
+
+Z √n En{ bU DiDrcs i ϕt(Xc,i )} 2
+
+dρ (t), (17) where ϕt(Xc) = φ(tT Xc). As before, choosing 
+
+ϕt(·) = exp( itT ·)gives the closed-form expression 
+
+SDiDrcs n = 1
+
+n( bU DiDrcs )T Fρ bU DiDrcs ,
+
+where 
+
+bU DiDrcs = ( bU DiDrcs  
+
+> 1
+
+, . . . , bU DiDrcs n )T .
+
+We impose the following regularity conditions. Let ζ := ( Y, G, T, X ), let P denote the distribution of ζ, and let X denote the support of X. The norm ∥ · ∥ L2(P ) is defined as in Section 3.2. 
+
+Assumption 4.7. 
+
+(i) {Yi, T i, G i, X i}ni=1 is an iid sample; (ii) Y , μY 
+
+> 0
+
+, and μY T  
+
+> 0
+
+are bounded; (iii) T is a compact subset of Rc containing a neighborhood of the origin and Xc is bounded; (iv) φ is an analytic non-polynomial function with ∂lφ(0) ̸ = 0 for all l ∈ N.
+
+Assumption 4.8. 
+
+(i) For any j ∈ { 1, . . . , N },
+
+∥ bmGK−Kj (X) − mG(X)∥L2(P ) + ∥bμY 
+
+> 0,K −Kj
+
+(X) − μY 
+
+> 0
+
+(X)∥L2(P )
+
++ ∥bμY T  
+
+> 0,K −Kj
+
+(X) − μY T  
+
+> 0
+
+(X)∥L2(P ) = oP (n−1/4); 
+
+(ii) there exists a constant C > 0 such that for any j ∈ { 1, . . . , N },
+
+lim  
+
+> n
+
+P
+
+
+
+sup 
+
+> x∈X
+
+|bμY 
+
+> 0,K −Kj
+
+(x)| + sup 
+
+> x∈X
+
+|bμY T  
+
+> 0,K −Kj
+
+(x)| + sup 
+
+> x∈X
+
+| bmGK−Kj (x)| < C 
+
+
+
+= 1; 
+
+(iii) there exists ϵ > 0 such that for any j ∈ { 1, . . . , N },
+
+lim  
+
+> n
+
+P
+
+
+
+sup 
+
+> x∈X
+
+bmGK−Kj (x) < 1 − ϵ
+
+
+
+= 1 .
+
+Assumptions 4.7 and 4.8 are the repeated-cross-section analogues of the regularity con-ditions used above. They ensure that the integrated moment representation remains valid, that the nuisance estimators are sufficiently accurate for locally robust inference, and that the inverse-probability weights remain stable. 22 Proposition 4.3. Let Assumptions 4.1, 4.2, 4.3, 4.6, 4.7, and 4.8 hold. Then: (a) For 
+
+ft(ζ) := U DiDrcs ϕt(Xc) + 
+
+
+
+E
+
+ ∂∂λ W (λ)ϕt(Xc)
+
+ 
+
+(T − λ)
+
+− [E {Gϕ t(Xc)}]
+
+W (λ)
+
+π0
+
+− δ0 − δ0
+
+π0
+
+(G − π0) + 
+
+
+
+E
+
+ ∂∂λ W (λ)
+
+ T − λπ0
+
+
+
+,
+
+under HDiDrcs  
+
+> 0
+
+,
+
+SDiDrcs nd
+
+→
+
+Z
+
+|G(ft)|2dρ (t),
+
+where {G(ft) : t ∈ T } is a zero-mean tight Gaussian process taking values on ℓ∞(T )
+
+and characterized by the collection of covariances 
+
+{E ft1 (ζ)ft2 (ζ) : t1, t 2 ∈ T } .
+
+(b) Under HDiDrcs  
+
+> 1
+
+,
+
+SDiDrcs nP
+
+→ ∞ .
+
+Part (a) establishes the asymptotic distribution of the test statistic under the null hypothesis of homogeneous treatment effects on the treated, accounting for estimation of λ and π0. Part (b) shows that the statistic diverges under the alternative, implying consistency against fixed alternatives. The proof is provided in the supplementary material. We obtain critical values using a bootstrap procedure analogous to that in Section 3.3. The nuisance functions are estimated only once and are kept fixed across bootstrap iterations. Compared with the panel-data case, the bootstrap must also account for the estimation of the post-treatment sampling share λ, which enters the score W (λ). Let {ξi}ni=1 
+
+be a sequence of iid bootstrap weights independent from the sample data, with E {ξ} = 1 and Var {ξ} = 1. We define 
+
+bλ∗ := E n{ξi Ti} , bπ∗ := E n{ξiGi} , bδ∗ := E n{ξi cWi(bλ∗)}/bπ∗ ,
+
+bU DiDrcs ∗ 
+
+> i
+
+:= ξi[cWi(bλ∗) − bδ∗Gi] ,
+
+and 
+
+eλ∗ := E n{ξi}bλ , eπ∗ := E n{ξi}bπ , eδ∗ := E n{ξi} En{cWi(eλ∗)}/eπ∗ = E n{cWi(eλ∗)}/bπ , 
+
+eU DiDrcs ∗ 
+
+> n
+
+:= cWi(eλ∗) − eδ∗Gi .
+
+Then, the bootstrap counterpart of our statistic is 
+
+SDiDrcs ∗ 
+
+> n
+
+:= 
+
+Z
+
+|√n En[ bU DiDrcs ∗ 
+
+> i
+
+− eU DiDrcs ∗ 
+
+> i
+
+]ϕt(Xc,i )|2dρ (t) . (18) By setting ϕt(·) = exp( itT ·), we obtain the following simple expression for the boot-strapped statistic 
+
+SDiDrcs ∗ 
+
+> n
+
+= 1
+
+n( bU DiDrcs ∗ − eU DiDrcs ∗)T Fρ ( bU DiDrcs ∗ − eU DiDrcs ∗) ,
+
+23 where [ bU DiDrcs ∗ = ( bU DiDrcs ∗ 
+
+> 1
+
+, . . . , bU DiDrcs ∗ 
+
+> n
+
+)T and eU DiDrcs ∗ = ( eU DiDrcs ∗ 
+
+> 1
+
+, . . . , eU DiDrcs ∗ 
+
+> n
+
+)T .The bootstrap scheme can then be implemented by the Monte Carlo procedure described in Section 3.3. We remark that the above bootstrap scheme is not based on a multiplier bootstrap version of the influence function representation of the empirical process at the basis of the test statistic. Such a version would have a rather complicated expression. The bootstrap scheme in the present section can be seen as a hybrid between a weighed bootstrap and a multiplier bootstrap. Let bqDiDrcs  
+
+> 1−α
+
+denote the empirical (1 − α) quantile of the bootstrap statistics generated by the procedure above. The following proposition establishes the validity of this repeated-cross-section bootstrap critical value. 
+
+Proposition 4.4. Let Assumptions 4.1, 4.2, 4.3, 4.6, 4.7, and 4.8 hold. Then: (a) Under HDiDrcs  
+
+> 0
+
+,
+
+Pr( SDiDrcs n > bqDiDrcs  
+
+> 1−α
+
+) → α. 
+
+(b) Under HDiDrcs  
+
+> 1
+
+,
+
+Pr( SDiDrcs n > bqDiDrcs  
+
+> 1−α
+
+) → 1.
+
+Proposition 4.4 establishes that the bootstrap test has asymptotically correct size under the null hypothesis and is consistent under fixed alternatives. The proof is provided in the supplementary material. 
+
+## 4.3 Local Average Treatment Effects 
+
+We finally consider settings with a binary instrumental variable. In contrast to the un-confoundedness case, treatment assignment may be endogenous even after conditioning on 
+
+X. Identification instead relies on an instrument Z ∈ { 0, 1} that affects treatment take-up while satisfying the conditions stated below. Let Y (d) denote the potential outcome under treatment status d ∈ { 0, 1}, and let D(z) ∈ { 0, 1} denote the potential treatment status under instrument value z ∈ { 0, 1}. We observe an iid sample 
+
+{Yi, D i, Z i, X i}ni=1 ,
+
+where Di = Di(Zi) and 
+
+Yi = DiYi(1) + (1 − Di)Yi(0) .
+
+Define the instrument propensity score 
+
+mZ (X) := E {Z | X}.
+
+The target parameter is the Local Average Treatment Effect (LATE), that is, the aver-age treatment effect for compliers, defined as units whose treatment status is shifted by the instrument. Our objective is to test whether this local treatment effect varies systematically with the heterogeneity covariates Xc ⊆ X.24 Assumption 4.9. 
+
+(Y (1) , Y (0) , D (1) , D (0)) ⊥⊥ Z | X. 
+
+Assumption 4.10. 
+
+Pr( D(1) < D (0)) = 0 .
+
+Assumption 4.11. 
+
+Pr( D(1) > D (0) | Xc = u) > 0 for all u ∈ Support( Xc).
+
+Assumption 4.9 requires the instrument to be conditionally exogenous given X. As-sumption 4.10 rules out defiers. Assumption 4.11 ensures that compliers exist for each value of Xc, so that the conditional LATE is well defined. Our null hypothesis is 
+
+HLAT E  
+
+> 0
+
+: E {Y (1) − Y (0) | D(1) > D (0) , X c} = δ0 for some fixed constant δ0 ∈ R, (19) versus HLAT E  
+
+> 1
+
+: HLAT E,c  
+
+> 0
+
+,
+
+where HLAT E,c  
+
+> 0
+
+denotes the logical complement of HLAT E  
+
+> 0
+
+. Under the null hypothesis, the conditional LATE is constant in Xc and coincides with the unconditional LATE, δ0.We also impose a common-support condition for the instrument. 
+
+Assumption 4.12. There exists ϵ > 0 such that 
+
+ϵ < m Z (X) < 1 − ϵ. 
+
+Define, for z ∈ { 0, 1},
+
+μYZ=z (X) := E {Y | Z = z, X }, μDZ=z (X) := E {D | Z = z, X }.
+
+Following the same logic as in Section 3, the null hypothesis can be represented through locally robust moments. Let 
+
+U LAT E := V Y − δ0V D, (20) 
+
+V Y := μYZ=1 (X) − μYZ=0 (X) + [ Y − μYZ=1 (X)] ZmZ (X) − [Y − μYZ=0 (X)] 1 − Z
+
+1 − mZ (X),
+
+(21) 
+
+V D := μDZ=1 (X) − μDZ=0 (X) + [ D − μDZ=1 (X)] ZmZ (X) − [D − μDZ=0 (X)] 1 − Z
+
+1 − mZ (X).
+
+(22) Here, V Y is the locally robust analogue of the reduced-form effect of the instrument on the outcome, while V D is the corresponding first-stage effect on treatment take-up. The null hypothesis is equivalently characterized by 
+
+HLAT E  
+
+> 0
+
+⇔ E{U LAT E φ(tT Xc)} = 0 ∀t ∈ T .
+
+25 We estimate mZ , μYZ=z , and μDZ=z using the same cross-fitting procedure as in Section 3.2. Given the fitted values 
+
+bμYZ=1 ,K (−i)(Xi), bμYZ=0 ,K (−i)(Xi), bμDZ=1 ,K (−i)(Xi), bμDZ=0 ,K (−i)(Xi), bmZK(−i)(Xi) ni=1 ,
+
+define 
+
+bU LAT E i := bV Yi − bδLAT E bV Di , (23) 
+
+bV Yi := bμYZ=1 ,K (−i)(Xi) − bμYZ=0 ,K (−i)(Xi) (24) + [ Yi − bμYZ=1 ,K (−i)(Xi)] Zi
+
+bmZK(−i)(Xi) − [Yi − bμYZ=0 ,K (−i)(Xi)] 1 − Zi
+
+1 − bmZK(−i)(Xi),
+
+bV Di := bμDZ=1 ,K (−i)(Xi) − bμDZ=0 ,K (−i)(Xi) (25) + [ Di − bμDZ=1 ,K (−i)(Xi)] Zi
+
+bmZK(−i)(Xi) − [Di − bμDZ=0 ,K (−i)(Xi)] 1 − Zi
+
+1 − bmZK(−i)(Xi),
+
+bδLAT E := En{ bV Yi }
+
+En{ bV Di }. (26) The estimator bδLAT E is the locally robust analogue of the unconditional LATE estimator. It equals the ratio of the reduced-form and first-stage components, while allowing both components to be estimated flexibly. The resulting test statistic is 
+
+SLAT E n =
+
+Z √n En{ bU LAT E i ϕt(Xc,i )} 2
+
+dρ (t), (27) where ϕt(Xc) := φ(tT Xc). As before, choosing 
+
+ϕt(·) = exp( itT ·)yields the closed-form expression 
+
+SLAT E n = 1
+
+n( bU LAT E )T Fρ bU LAT E ,
+
+where 
+
+bU LAT E := ( bU LAT E  
+
+> 1
+
+, . . . , bU LAT E n )T .
+
+We impose the following regularity conditions. Let ζ := ( Y, D, Z, X ), let P denote the distribution of ζ, and let X denote the support of X. The norm ∥ · ∥ L2(P ) is defined as in Section 3.2. 
+
+Assumption 4.13. 
+
+(i) {Yi, D i, Z i, X i}ni=1 is an iid sample; (ii) Y is bounded; (iii) T is a compact subset of Rc containing a neighborhood of the origin and Xc is bounded; (iv) φ is an analytic non-polynomial function with ∂lφ(0) ̸ = 0 for all l ∈ N.
+
+26 Assumption 4.14. 
+
+(i) For any j ∈ { 1, . . . , N },
+
+∥ bmZK−Kj (X) − mZ (X)∥L2(P ) + ∥bμYZ=0 ,K −Kj (X) − μYZ=0 (X)∥L2(P )
+
++ ∥bμYZ=1 ,K −Kj (X) − μYZ=1 (X)∥L2(P ) + ∥bμDZ=0 ,K −Kj (X) − μDZ=0 (X)∥L2(P )
+
++ ∥bμDZ=1 ,K −Kj (X) − μDZ=1 (X)∥L2(P ) = oP (n−1/4); 
+
+(ii) There exists a constant C > 0 such that for any j ∈ { 1, . . . , N },
+
+lim  
+
+> n
+
+P sup 
+
+> x∈X
+
+|bμDZ=0 ,K −Kj (x)| + sup 
+
+> x∈X
+
+|bμDZ=1 ,K −Kj (x)|
+
++ sup 
+
+> x∈X
+
+|bμYZ=0 ,K −Kj (x)| + sup 
+
+> x∈X
+
+|bμYZ=1 ,K −Kj (x)| < C 
+
+!
+
+= 1; 
+
+(iii) There exists ϵ > 0 such that for any j ∈ { 1, . . . , N },
+
+lim  
+
+> n
+
+P
+
+
+
+ϵ < inf  
+
+> x∈X
+
+bmZK−Kj (x)
+
+
+
+= lim  
+
+> n
+
+P
+
+
+
+sup 
+
+> x∈X
+
+bmZK−Kj (x) < 1 − ϵ
+
+
+
+= 1 .
+
+Assumptions 4.13 and 4.14 are the LATE analogues of the regularity conditions used above. They ensure that the reduced-form and first-stage nuisance functions are estimated accurately enough and that the estimated instrument propensity score remains bounded away from zero and one. 
+
+Proposition 4.5. Let Assumptions 4.9, 4.10, 4.11, 4.12, 4.13, and 4.14 hold. Then: (a) For 
+
+ft(ζ) := U LAT E ϕt(Xc) − [E {V Dϕt(Xc)}]V Y − E{V Y } − δ0
+
+ V D − E{V D}
+
+E{μDZ=1 (X) − μDZ=0 (X)} ,
+
+under HLAT E  
+
+> 0
+
+,
+
+SLAT E nd
+
+→
+
+Z
+
+|G(ft)|2dρ (t),
+
+where {G(ft) : t ∈ T } is a zero-mean tight Gaussian process taking values in ℓ∞(T )
+
+and characterized by the collection of covariances 
+
+{E ft1 (ζ)ft2 (ζ) : t1, t 2 ∈ T } .
+
+(b) Under HLAT E  
+
+> 1
+
+,
+
+SLAT E nP
+
+→ ∞ .
+
+Part (a) establishes the asymptotic distribution of the test statistic under the null hypothesis of homogeneous local treatment effects. Part (b) shows that the statistic diverges under the alternative, implying consistency against fixed alternatives. The proof is provided in the supplementary material. 27 We obtain critical values using a bootstrap procedure analogous to that in Section 3.3. The nuisance functions are estimated only once and are kept fixed across bootstrap iterations. Since the LATE parameter is a ratio, the bootstrap recomputes the reduced-form and first-stage components in each iteration. Let {ξi}ni=1 be an iid sequence of bootstrap weights independent from the sample data, with E {ξ} = Var {ξ} = 1. We define 
+
+bδLAT E ∗ := En{ξi bV Yi }
+
+En{ξi bV Di } , bU LAT E ∗ 
+
+> i
+
+:= ξi[ bV Yi − bδLAT E ∗ bV Di ] .
+
+The bootstrap counterpart of the test statistic is 
+
+SLAT E ∗ 
+
+> n
+
+:= 
+
+Z √n En{[ bU LAT E ∗ 
+
+> i
+
+− bU LAT E i ]ϕt(Xc,i )} 2
+
+μ(dt ) .
+
+By setting ϕt(·) = exp( i·), the above statistic has the following simple expression 
+
+SLAT E ∗ 
+
+> n
+
+= 1
+
+n( bU LAT E ∗ − bU LAT E )T Fρ( bU LAT E ∗ − bU LAT E ) ,
+
+where bU LAT E ∗ := ( bU LAT E ∗ 
+
+> 1
+
+, . . . , bU LAT E ∗ 
+
+> n
+
+)T and bU LAT E := ( bU LAT E  
+
+> 1
+
+, . . . , bU LAT E n )T . In prac-tice, to implement the bootstrap test, we can use the Monte Carlo procedure described in Section 3.3. Let bqLAT E  
+
+> 1−α
+
+denote the empirical (1 − α) quantile of the bootstrap statistics generated by the procedure above. The following proposition establishes the validity of this LATE bootstrap critical value. 
+
+Proposition 4.6. Let Assumptions 4.9, 4.10, 4.11, 4.12, 4.13, and 4.14 hold. Then: (a) Under HLAT E  
+
+> 0
+
+,
+
+Pr( SLAT E n > bqLAT E  
+
+> 1−α
+
+) → α. 
+
+(b) Under HLAT E  
+
+> 1
+
+,
+
+Pr( SLAT E n > bqLAT E  
+
+> 1−α
+
+) → 1.
+
+Proposition 4.6 establishes that the bootstrap test has asymptotically correct size under the null hypothesis and is consistent under fixed alternatives. The proof is provided in the supplementary material. 
+
+# 5 Simulations 
+
+This section evaluates the finite-sample performance of our bootstrap test for DiD with repeated cross-sections. Appendix B provides additional simulations for the ATE under conditional unconfoundedness. 28 5.1 Data-generating Process 
+
+We use a data-generating process (DGP) similar to that in Chang (2020), adapted to feature conditional, but not unconditional, parallel trends, different levels of treatment-effect heterogeneity, and common support. We first simulate X ∼ N (0 , I 10 ) and set θ1 =  1, 12 , 13 , 14 , 15 , 0, 0, 0, 0, 0′. We then define 
+
+mG(Xi) = 
+
+
+
+1 + exp 
+
+−X′ 
+
+> i
+
+θ1
+
+2√5
+
+ −1
+
+,Gi|Xi ∼ Bern  mG(Xi) ,Ti|Xi ∼ Bern (1 /2) .
+
+Thus, assignment to the treated group depends on the first five covariates, with the first covariate receiving the largest weight. By contrast, whether a unit is observed in the post-treatment period is independent of its covariates. Next, we generate εi,k ∼ N (0 , 0.01) for k ∈ { 1, 2, 3} and set θ2 =  32 , 1, 56 , 34 , 710 , 0, 0, 0, 0, 0′.Potential and observed outcomes are generated as follows: 
+
+Yi, 0(0) = X′ 
+
+> i
+
+θ2 + εi, 1,Yi, 1(0) = 1 + (1 + ξ)Yi, 0(0) + εi, 2,Yi, 1(1) = 3 + (1 + γ)Yi, 1(0) + εi, 3,Yi = Yi, 0(0)(1 − Ti) +  Yi, 1(0)(1 − Gi) + Yi, 1(1) Gi
+
+Ti.
+
+When ξ̸ = 0, the parallel-trends assumption holds only conditionally. We therefore fix 
+
+ξ = 1 /2. The parameter γ controls the degree of heterogeneity in the ATT. In particular, for any subset Xc, if γ = 0, then E [ Yi, 1(1) − Yi, 1(0) | Gi = 1 , X c,i ] = 3 ,
+
+so the null hypothesis of no ATT heterogeneity with respect to Xc holds. If γ̸ = 0 and θ2,c 
+
+denotes the subvector of θ2 corresponding to the covariates in Xc, then E [ Yi, 1(1) − Yi, 1(0) | Gi = 1 , X c,i ] = 3 + γ  1 + 1 .5X′
+
+> c,i
+
+θ2,c 
+
+ .
+
+Thus, whenever Xc contains at least one of the first five covariates in X, the null hypothesis is violated. 
+
+## 5.2 Performance 
+
+We evaluate rejection rates under the null and alternative hypotheses across 1,000 Monte Carlo simulations. We consider sample sizes n ∈ { 500 , 1000 } and use B = 499 bootstrap iterations. We test for heterogeneity with respect to subsets Xc containing the first d ∈{2, 5} components of X, that is, Xc = ( X1, X 2) or Xc = ( X1, . . . , X 5). For nuisance estimation, we use lasso and random forests. Cross-fitting is implemented with five equally 29 Table 1: Rejection Rate under the Null Hypothesis 
+
+α = 5% α = 10% 
+
+n Method d = 2 d = 5 d = 2 d = 5 500 Lasso 0.052 0.036 0.095 0.079 RF 0.051 0.046 0.103 0.091 1000 Lasso 0.052 0.043 0.105 0.092 RF 0.054 0.052 0.104 0.098               
+
+> Note: This table reports rejection rates across 1,000 Monte Carlo simulations under the null hypothesis for the bootstrap test in the DiD model with repeated cross-sections. The sample size is
+> n∈ { 500 ,1000 }.Nuisance functions are estimated using either lasso or random forests. Cross-fitting is performed with five folds. For each Monte Carlo iteration, we use 499 bootstrap replications. We report rejection rates for significance levels α∈ { 5% ,10% }and for different dimensions d∈ { 2,5}of the vector Xc.The Fourier matrix is computed using a Gaussian kernel with bandwidth 1.
+
+sized random folds. We set ϕt(·) = exp( it⊤·) and let ρ(·) be the standard Gaussian density, so that Fρ corresponds to a Gaussian kernel with bandwidth h = 1. We first evaluate the validity of the bootstrap test under the null hypothesis, corre-sponding to γ = 0. Table 1 reports rejection rates under the null for significance levels of 5% and 10%. For d = 2, the test is close to correctly sized. For d = 5, it becomes slightly conservative. This pattern is stable across sample sizes and nuisance-estimation methods. We next examine power under the alternative by evaluating rejection rates for different values of γ. Figure 1 displays the corresponding power curves at the 5% significance level. As expected, rejection rates increase with γ and approach one. Power is lower for n = 500, but including more heterogeneity covariates, d = 5, does not substantially affect rejection rates. Finally, lasso and random forests yield nearly identical results. 
+
+# 6 Empirical Applications 
+
+We illustrate the proposed test using two established empirical applications. The first studies heterogeneity in the effect of 401(k) eligibility on household financial assets under conditional unconfoundedness. The second studies heterogeneity in the effect of tariff reductions on corruption in a difference-in-differences setting with repeated cross-sections. In both applications, our goal is not to revisit the original identification arguments in detail, but to demonstrate how the proposed test can be implemented with flexible ML-based nuisance estimation. 30 Figure 1: Rejection Rates across Heterogeneity Levels 2 Covariates 5 Covariates           
+
+> n = 500 n = 1000
+> 0.00 0.25 0.50 0.75 1.00 0.00 0.25 0.50 0.75 1.00 0.00 0.25 0.50 0.75 1.00 0.00 0.25 0.50 0.75 1.00 Heterogeneity Parameter γ
+> Rejection Probability Method
+> Lasso Random Forest
+
+Note: This figure reports rejection rates at the 5% significance level for different values of γ, which controls heterogeneity in the ATT, for the bootstrap test in the DiD model with repeated cross-sections. Rejection rates are computed from 1,000 Monte Carlo simulations. The sample size is n ∈ { 500 , 1000 }. Nuisance functions are estimated using either lasso or random forests. Cross-fitting is performed with five folds, and 499 bootstrap replications are used in each iteration. We consider different dimensions d ∈ { 2, 5} of the vector Xc. The Fourier matrix is computed using a Gaussian kernel with bandwidth 1. 
+
+## 6.1 401(k) Eligibility and Financial Assets 
+
+The first application considers the effect of eligibility for a 401(k) retirement savings plan on household financial asset accumulation. We follow the empirical setting of Poterba et al. (1995), which was later revisited in the double ML framework of Chernozhukov et al. (2018). Eligibility for a 401(k) plan is not randomly assigned, since workers employed at firms offering such plans may differ systematically from other workers. Following this literature, we treat eligibility as conditionally exogenous after controlling for income and demographic characteristics related to job choice and saving behavior. The data come from the 1991 Survey of Income and Program Participation (SIPP), using the sample analyzed in Chernozhukov et al. (2018). The outcome is net financial assets, defined as household financial assets net of non-mortgage debt, and the treatment is an indicator for 401(k) eligibility. The covariates include age, income, education, family size, marital status, two-earner status, defined benefit pension status, IRA participation, and home ownership. We estimate the nuisance functions using lasso and random forests. Figure 2 reports p-values as the set of heterogeneity variables is expanded sequentially, beginning with age and income and then adding further demographic and financial charac-teristics. The results provide evidence of treatment-effect heterogeneity across observable household characteristics for both nuisance-estimation methods. The p-values are gener-ally smaller in lower-dimensional specifications and increase as more heterogeneity variables 31 Figure 2: Heterogeneity Test: 401(k) Eligibility and Financial Assets 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1 2 3 4 5 6 7 8 9Number of covariates p-value Method Lasso Random Forest   
+
+> Note: The figure reports p-values from the proposed heterogeneity test for the effect of 401(k) eligibility on net financial assets. The heterogeneity variables are added sequentially using observable household characteristics. Nuisance functions are estimated using lasso and random forests. The Fourier matrix is computed using a Gaussian kernel.
+
+are included, especially with lasso. This pattern is consistent with the simulation evidence, where increasing the dimension of Xc reduces power. The random forest results are more stable across specifications. The findings are economically plausible. The effect of access to a tax-advantaged re-tirement account may differ by income, age, and pre-existing savings opportunities. The application therefore illustrates how the proposed procedure can detect systematic hetero-geneity in an observational setting while allowing for flexible adjustment for confounding. 
+
+## 6.2 Trade Liberalization and Corruption 
+
+The second application studies treatment-effect heterogeneity in the difference-in-differences setting analyzed by Sequeira (2016). The application examines how reductions in import tariffs affected corruption along the South Africa–Mozambique trade corridor. The empiri-cal design exploits the Southern African Development Community (SADC) Trade Protocol, which gradually reduced tariffs on South African imports into Mozambique and generated a large tariff reduction in 2008. We use the sample from Chang (2020), which combines disaggregated customs data with audit data on shipments passing through the port of Maputo and the Mozambique–South 32 Africa border crossing. The outcome is the log bribe amount associated with a shipment. Treatment is defined by whether a product category experienced a tariff reduction in 2008, and the post-treatment indicator captures the period after the reform. The covariates include shipment characteristics, product categories, inspection indicators, shipment values, tariff levels, and other controls related to the import process. We estimate the nuisance functions using lasso and random forests in the repeated-cross-section DiD framework. Figure 3: Heterogeneity Test: Trade Liberalization and Corruption 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 1 2 3 4 5 6 7 8 9 10 Number of covariates p-value Method Lasso Random Forest   
+
+> Note: The figure reports p-values from the proposed heterogeneity test for the effect of tariff reductions on log bribe payments. The heterogeneity variables are added sequentially using observable shipment and product characteristics. Nuisance functions are estimated using lasso and random forests. The Fourier matrix is computed using a Gaussian kernel.
+
+Figure 3 reports p-values as the set of heterogeneity variables is expanded sequentially. The random forest specification detects significant heterogeneity across several specifica-tions, whereas the lasso specification generally does not. This difference suggests that flexible nuisance estimation may be important in this application, where the relevant ad-justment functions may involve nonlinearities or interactions. As in the 401(k) application, p-values tend to increase as the dimension of Xc grows, in line with the finite-sample patterns documented in the simulations. The evidence is consistent with economically meaningful heterogeneity. The effect of tariff reductions on bribe payments may vary with shipment characteristics, product types, tariff exposure, and monitoring intensity. The application shows that the proposed test can be implemented in repeated-cross-section DiD designs and can reveal systematic het-erogeneity while preserving the use of flexible ML-based nuisance estimation. 33 7 Conclusions 
+
+This paper develops a nonparametric omnibus test for assessing whether treatment effects vary systematically with observed characteristics. The procedure is designed for settings in which identification may rely on a rich, potentially high-dimensional set of controls, while heterogeneity is evaluated with respect to a lower-dimensional subset of covariates. The test is compatible with flexible nuisance estimation, including modern ML methods, and is based on locally robust moments that reduce sensitivity to first-stage estimation error. The framework applies to several common empirical designs. We first develop the test for average treatment effects under conditional unconfoundedness and then extend it to treatment effects on the treated in difference-in-differences designs and to local average treatment effects in instrumental-variables settings. For each design, inference is imple-mented using a computationally efficient bootstrap that keeps the nuisance estimates fixed across bootstrap iterations. Monte Carlo simulations show that the proposed test attains near-nominal size under the null and has good power against heterogeneous alternatives. The empirical applications illustrate how the procedure can be used to detect systematic treatment-effect heterogene-ity in observational and difference-in-differences settings with flexible ML-based nuisance estimation. Several extensions are left for future work. In particular, it would be useful to study settings in which both identification and heterogeneity are governed by high-dimensional covariates, as well as data structures beyond the designs considered here. Overall, the proposed method provides a practical tool for researchers who want to formally assess whether treatment effects differ across observable and policy-relevant characteristics. 34 References 
+
+Abadie, A. (2005). Semiparametric difference-in-differences estimators. The review of economic studies , 72(1):1–19. Athey, S. and Imbens, G. (2016). Recursive partitioning for heterogeneous causal effects. 
+
+Proceedings of the National Academy of Sciences , 113(27):7353–7360. Athey, S. and Imbens, G. W. (2019). Machine learning methods that economists should know about. Annual Review of Economics , 11(1):685–725. Athey, S., Tibshirani, J., and Wager, S. (2019). Generalized random forests. Annals of Statistics , 47(2):1148–1178. Bierens, H. J. (2016). Econometric Model Specification . World Scientific. Chang, N.-C. (2020). Double/debiased machine learning for difference-in-differences mod-els. The Econometrics Journal , 23(2):177–191. Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W., and Robins, J. (2018). Double/debiased machine learning for treatment and structural pa-rameters. Chernozhukov, V., Demirer, M., Duflo, E., and Fern´ andez-Val, I. (2025). Fisher-Schultz Lecture: Generic machine learning inference on heterogenous treatment effects in ran-domized experiments, with an application to immunization in India. Econometrica ,93(4):1121–1164. Chernozhukov, V., Hansen, C., Kallus, N., Spindler, M., and Syrgkanis, V. (2024). Applied causal inference powered by ML and AI. arXiv:2403.02467 .Chernozhukov, V., Newey, W. K., and Singh, R. (2022). De-biased machine learning of global and local parameters using regularized riesz representers. The Econometrics Journal , 25(3):576–601. Chernozhukov, V., Newey, W. K., and Singh, R. (2023). A simple and general debiased machine learning theorem with finite-sample guarantees. Biometrika , 110(1):257–264. Crump, R. K., Hotz, V. J., Imbens, G. W., and Mitnik, O. A. (2008). Nonparametric tests for treatment effect heterogeneity. The Review of Economics and Statistics , 90(3):389– 405. Ding, P., Feller, A., and Miratrix, L. (2016). Randomization inference for treatment effect variation. Journal of the Royal Statistical Society Series B: Statistical Methodology ,78(3):655–671. Ding, P., Feller, A., and Miratrix, L. (2019). Decomposing treatment effect variation. 
+
+Journal of the American Statistical Association , 114(525):304–317. 35 Escanciano, J. C. (2026). Kernel-based specification testing with high-dimensional nuisance parameters. Working paper, presented at the ISNPS Conference, June 2026. Fan, Q., Hsu, Y.-C., Lieli, R. P., and Zhang, Y. (2022). Estimation of conditional average treatment effects with high-dimensional data. Journal of Business & Economic Statistics ,40(1):313–327. Farrell, M. H., Liang, T., and Misra, S. (2021). Deep neural networks for estimation and inference. Econometrica , 89(1):181–213. Foster, D. J. and Syrgkanis, V. (2023). Orthogonal statistical learning. Annals of Statistics ,51(3):879–908. Friedberg, R., Tibshirani, J., Athey, S., and Wager, S. (2021). Local linear forests. Journal of Computational and Graphical Statistics , 30(2):503–517. Green, D. P. and Kern, H. L. (2012). Modeling heterogeneous treatment effects in survey ex-periments with bayesian additive regression trees. Public Opinion Quarterly , 76(3):491– 511. Hahn, P. R., Murray, J. S., and Carvalho, C. (2020). Bayesian regression tree models for causal inference: Regularization, confounding, and heterogeneous effects. Bayesian Analysis , 15(3):965–1056. Hansen, C., Kozbur, D., and Misra, S. (2023). Targeted undersmoothing: Sensitivity analysis for sparse estimators. Review of Economics and Statistics , 105(1):101–118. Heckman, J., Smith, J., and Clements, N. (1997). Making the Most Out of Programme Evaluations and Social Experiments: Accounting for Heterogeneity in Programme Im-pacts. Review of Economic Studies , 64(4):487–535. Imai, K. and Li, M. L. (2025a). A comment on: “Fisher–Schultz Lecture: Generic machine learning inference on heterogeneous treatment effects in randomized experiments, with an application to immunization in India” by Victor Chernozhukov, Mert Demirer, Esther Duflo, and Iv´ an Fern´ andez-Val. Econometrica , 93(4):1165–1170. Imai, K. and Li, M. L. (2025b). Statistical inference for heterogeneous treatment effects discovered by generic machine learning in randomized experiments. Journal of Business & Economic Statistics , 43(1):256–268. Kennedy, E. H. (2023). Towards optimal doubly robust estimation of heterogeneous causal effects. Electronic Journal of Statistics , 17(2):3008–3049. Lechner, M. and Mareckova, J. (2022). Modified causal forest. arXiv:2209.03744 .Lechner, M. and Zimmert, M. (2019). Nonparametric estimation of causal heterogeneity under high-dimensional confounding. arXiv: 1908.08779 .36 List, J. A., Muir, I., and Sun, G. (2025). Using machine learning for efficient flexible regression adjustment in economic experiments. Econometric Reviews , 44(1):2–40. Nekipelov, D., Semenova, V., and Syrgkanis, V. (2022). Regularised orthogonal machine learning for nonlinear semiparametric models. The Econometrics Journal , 25(1):233–255. Nie, X. and Wager, S. (2020). Quasi-oracle estimation of heterogeneous treatment effects. 
+
+Biometrika , 108(2):299––319. Poterba, J. M., Venti, S. F., and Wise, D. A. (1995). Do 401(k) contributions crowd out other personal saving? Journal of Public Economics , 58(1):1–32. Scheidegger, C., Guo, Z., and B¨ uhlmann, P. (2026). Inference for heterogeneous treatment effects with efficient instruments and machine learning. Electronic Journal of Statistics ,20(1):718–770. Scornet, E., Biau, G., and Vert, J.-P. (2015). Consistency of random forests. Annals of Statistics , 43(4). Semenova, V. and Chernozhukov, V. (2021). Debiased machine learning of conditional aver-age treatment effects and other causal functions. The Econometrics Journal , 24(2):264– 289. Semenova, V., Goldman, M., Chernozhukov, V., and Taddy, M. (2023). Inference on hetero-geneous treatment effects in high-dimensional dynamic panels under weak dependence. 
+
+Quantitative Economics , 14(2):471–510. Sequeira, S. (2016). Corruption, Trade Costs, and Gains from Tariff Liberalization: Evi-dence from Southern Africa. American Economic Review , 106(10):3029–3063. Tabord-Meehan, M. (2023). Stratification trees for adaptive randomisation in randomised controlled trials. Review of Economic Studies , 90(5):2646–2673. Taddy, M., Gardner, M., Chen, L., and Draper, D. (2016). A nonparametric bayesian anal-ysis of heterogeneous treatment effects in digital experimentation. Journal of Business & Economic Statistics , 34(4):661–672. Wager, S. and Athey, S. (2018). Estimation and inference of heterogeneous treatment effects using random forests. Journal of the American Statistical Association , 113(523):1228– 1242. 37 A Derivations of Equations (11) and (16) 
+
+To obtain the equivalence in (11), define μY1−Y0 
+
+> 1
+
+(X) = E {∆Y |X, G = 1 } and recall that 
+
+μY1−Y0 
+
+> 0
+
+(X) = E {∆Y |X, G = 0 }. We have the following: 
+
+HDiD 
+
+> 0(a)
+
+⇔ E{[Y1(1) − Y1(0)] G|Xc} = δ0 E{G|Xc}
+
+> (b)
+
+⇔ E
+
+n
+
+E{[Y1(1) − Y1(0)] G | X} Xc
+
+o
+
+= δ0 E{G | Xc}⇔ E
+
+n
+
+E{Y1(1) − Y1(0) |G = 1 , X } E{G|X} Xc
+
+o
+
+= δ0 E{G | Xc}
+
+> (c)
+
+⇔ E
+
+n
+
+E{Y1(1) − Y1(0) |G = 1 , X } mG(X) − δ0G Xc
+
+o
+
+= 0 
+
+> (d)
+
+⇔ E
+
+n
+
+[μY1−Y0 
+
+> 1
+
+(X) − μY1−Y0 
+
+> 0
+
+(X)] mG(X) − δ0G Xc
+
+o
+
+= 0 
+
+> (e)
+
+⇔ E
+
+n
+
+E{∆Y G |X} − E{∆Y (1 − G)|X} mG(X)1 − mG(X) − δ0G Xc
+
+o
+
+= 0  
+
+> (f)
+
+⇔ E
+
+n
+
+∆Y G − ∆Y (1 − G) mG(X)1 − mG(X) − δ0G Xc
+
+o
+
+= 0 
+
+> (g)
+
+⇔ E
+
+n
+
+∆Y [G − mG(X)] 1 − mG(X) − δ0G Xc
+
+o
+
+= 0 .
+
+Equivalence ( a) is a direct consequence of HDiD  
+
+> 0
+
+: E {Y1(1) − Y1(0) |G = 1 , X c} = δ0
+
+for some δ0 ∈ R. Equivalence ( b) follows from the Law of Iterated Expectations, while equivalence ( c) uses the definition mG(X) = E {G|X}. For equivalence ( d), first observe that μY1−Y0 
+
+> 1
+
+(X) − μY1−Y0 
+
+> 0
+
+(X) = E {Y1(1) − Y0(0) |G = 1 , X } − E{Y1(0) − Y0(0) |G = 0 , X }
+
+= E {Y1(1) − Y1(0) |G = 1 , X } + E {Y1(0) − Y0(0) |G = 1 , X } − E{Y1(0) − Y0(0) |G = 0 , X }
+
+= E {Y1(1) − Y1(0) |G = 1 , X }, where the last equality follows from Assumption 4.1. Hence, equivalence ( d) follows. Equivalence ( e) follows from the definitions of μY1−Y0 
+
+> 0
+
+(X) and 
+
+μY1−Y0 
+
+> 1
+
+(X). Equivalence ( f ) follow from the Law of Iterated Expectations. Equivalence ( g)follows from re-arranging terms. Finally, since E{U DiD |X} = E 
+
+
+
+∆Y G − mG(X)1 − mG(X) − δ0G X
+
+
+
+and E {U DiD |Xc} = 0 ⇔ E{U DiD φ(tT Xc)} = 0 ∀t ∈ T , Equation (11) follows. We now derive Equation (16). Under Assumptions 4.1 and 4.2, Abadie (2005) identifies the conditional treatment effect on the treated units, E {Yi, 1(1) − Yi, 1(0) |Gi = 1 , X i}, as follows E{Yi, 1(1) − Yi, 1(0) |Xi, G i = 1 } = E 
+
+
+
+Yi · Ti − λλ (1 − λ) · Gi − mG(Xi)
+
+mG(Xi)[1 − mG(Xi)] Xi
+
+
+
+. (28) 38 We then obtain the following reformulation of the null hypothesis (see the comments below): 
+
+HDiDrcs  
+
+> 0
+
+⇔ E{[Yi, 1(1) − Yi, 1(0)] · Gi|Xc,i } = E {Gi|Xc,i }δ0
+
+⇔ E{ E{[Yi, 1(1) − Yi, 1(0)] · Gi|Xi} | Xc,i } = E {Gi|Xc,i }δ0
+
+⇔ E  E{Yi, 1(1) − Yi, 1(0) |Xi, G i = 1 } · mG(Xi) | Xc,i = E {Gi|Xc,i }δ0(a)
+
+⇔ E
+
+
+
+E
+
+
+
+Yi · Ti − λλ (1 − λ) · Gi − mG(Xi)
+
+mG(Xi)[1 − mG(Xi)] Xi
+
+
+
+· mG(Xi) Xc,i 
+
+
+
+= E {Gi|Xc,i }δ0
+
+⇔ E
+
+
+
+Yi · Ti − λλ (1 − λ) · Gi − mG(Xi)1 − mG(Xi) Xc,i 
+
+
+
+= E {Gi|Xc,i }δ0
+
+⇔ E
+
+
+
+Yi · Ti − λλ (1 − λ) · Gi − mG(Xi)1 − mG(Xi) − δ0Gi Xc,i 
+
+
+
+= 0 , (29) where the equivalence ( a) follows from Equation (28). Since E{U DiDrcs |X} = E 
+
+
+
+Y · T − λλ (1 − λ) · G − mG(X)1 − mG(X) − δ0G X
+
+
+
+and E {U DiDrcs |Xc} = 0 ⇔ E{U DiDrcs φ(tT Xc)} = 0 ∀t ∈ T , Equation (16) follows. 
+
+# B Simulations for ATE 
+
+We test the performance of our bootstrap test, the feasible and oracle, against the best linear predictor method (BLP) in Chernozhukov et al. (2025). We propose two different DGPs, and test each method with different ML algorithms. 
+
+## B.1 Data-generating Processes 
+
+In these simulations we test two different designs, to better illustrate the performance of different ML estimators. For each design, we generate μ0(X) and mD(X) as particular functions of the covariates, and construct 
+
+μ1(X) = (1 + γ)μ0(X),
+
+for γ ∈ [0 , 1]. We take Y (1) = μ1(X) + ε(1) and Y (0) = μ0(X) + ε(0), with ε(d) ∼ N (0 , 1), independently across d = 0, 1. Hence, for γ = 0, there is no treatment effect het-erogeneity ( H0 holds), and as γ increases we deviate from H0. Moreover, we consider 
+
+D|X ∼ Bern  mD(X) .
+
+Design 1: We first test a sparse model, so algorithms such as lasso should perform well. The model is largely based in the second model in Kennedy (2023). We here consider 
+
+X ∼ N (0 , I 10 ); 
+
+μ0(X) = X1 + X2
+
+√2 ;
+
+mD(X) = 
+
+
+
+1 + exp 
+
+X1 + X2
+
+8√2
+
+ −1
+
+39 Design 2: We then test a second model, based in Tabord-Meehan (2023), that is close to sparsity, but presents non-linearities. Other methods, such as random forest, should perform better under this DGP. Here we take, 
+
+Xj ∼ Beta(2 , 5) independently across j = 1 , . . . , 10; 
+
+μ0(X) = 
+
+> 10
+
+X
+
+> j=1
+
+1{Xj > 0.4}X2 
+
+> j
+
+× (−1) j−1 × 10 2−j ;
+
+mD(X) = 0 .4 + 
+
+> 2
+
+X
+
+> j=1
+
+×1{Xj > 0.1}Xj
+
+6 .
+
+## B.2 Performance 
+
+We evaluate the rejection rate under the null and alternative hypotheses over 1,000 sim-ulations. We consider sample sizes n ∈ { 500 , 1000 }, with B = 499 bootstrap iterations. We test for different subsets Xc containing the first d ∈ { 2, 5} components of X, i.e., 
+
+Xc = ( X1, X 2) or Xc = ( X1, . . . , X 5). As ML algorithms for the nuisance functions, we use lasso and random forests. Cross-fitting is performed with five equally sized random folds. Moreover, we set ϕt(·) = exp( it⊤·) and let ρ(·) be the Gaussian density, so that Fρ
+
+corresponds to a Gaussian kernel function with bandwidth h = 1. Table B.1 shows the rejection probabilities under the null ( γ = 0) for α = 5% and 
+
+α = 10%. Notice, that the BLP performs highly conservative tests, whereas our test is almost exactly valid across different sample sizes, ML estimators and number of covariates 
+
+d.3 However, increasing the number of covariates makes the test slightly more conservative. Figures B.1 and B.2 show the power curves for different values of γ. We see that, as predicted lasso performs better under Design 1 and random forests under Design 2. Moreover, we see that in general, the rejection of our tests is greater than when using the BLP method in Chernozhukov et al. (2025), especially when there is a smaller level of heterogeneity. Notably, the bootstrap test is less sensible to the ML method used to estimate the nuisance functions. 
+
+> 3Imai and Li (2025a) find in simulations also conservative confidence intervals of Chernozhukov et al. (2025) approach.
+
+40 Table B.1: Rejection Rate under the Null Hypothesis 
+
+α = 0 .05 α = 0 .1Design 1 Design 2 Design 1 Design 2 
+
+n Method d = 2 d = 5 d = 2 d = 5 d = 2 d = 5 d = 2 d = 5 FICM Lasso 0.050 0.045 0.038 0.028 0.105 0.088 0.076 0.067 FICM RF 0.037 0.034 0.046 0.033 0.096 0.087 0.095 0.069 500 OICM 0.046 0.041 0.040 0.036 0.097 0.088 0.091 0.082 BLP Lasso 0.005 – 0.009 – 0.013 – 0.021 –BLP RF 0.001 – 0.001 – 0.002 – 0.009 –FICM Lasso 0.050 0.048 0.041 0.030 0.090 0.084 0.081 0.078 FICM RF 0.042 0.042 0.049 0.034 0.081 0.095 0.108 0.081 1000 OICM 0.050 0.046 0.047 0.037 0.094 0.090 0.100 0.080 BLP Lasso 0.006 – 0.006 – 0.015 – 0.017 –BLP RF 0.003 – 0.003 – 0.011 – 0.009 –
+
+This table reports rejection rates across 1,000 Monte Carlo simulations under the null hypothesis for the bootstrapped test for ATE under un-confoundedness. The sample size is n ∈ { 500 , 1000 }. Nuisance functions are estimated using either lasso or random forests. Cross-fitting is performed with five folds. For each Monte Carlo iteration, we perform 499 bootstrap replications. We report rejection rates for significance levels 
+
+α ∈ { 5% , 10% } and for different dimensions of the vector Xc (d = 2 , 5). The Fourier matrix is computed using a Gaussian kernel with bandwidth 1. We compare the results of our test to the case where we use the Oracle statistic and to the BLP test in Chernozhukov et al. (2025), with lasso and random forests. 
+
+Figure B.1: Rejection Rates under Design 1 2 Covariates 5 Covariates           
+
+> n = 500 n = 1000
+> 0.00 0.25 0.50 0.75 1.00 0.00 0.25 0.50 0.75 1.00
+> 0.00 0.25 0.50 0.75 1.00
+> 0.00 0.25 0.50 0.75 1.00
+> Heterogeneity Parameter γ
+> Rejection Probability
+> Method
+> BLP Lasso
+> BLP RF
+> FICM Lasso
+> FICM RF
+> OICM
+
+This figure shows rejection in Design 1 rates of 95% confidence intervals for different values of γ, which control the heterogeneity of the ATE, for the bootstrapped test in the ATE under unconfoundeness. Rejec-tion rates are computed from 1,000 Monte Carlo simulations. The sample size is n ∈ { 500 , 1000 }. Nuisance functions are estimated using either lasso or random forests. Cross-fitting is performed with five folds, and 499 bootstrap replications are used in each iteration. We consider different dimensions of the vector Xc
+
+(d = 2 , 5). The Fourier matrix is computed using a Gaussian kernel with bandwidth 1. We compare the results of our test to the case where we use the Oracle statistic and to the BLP test in Chernozhukov et al. (2025), with lasso and random forests. 
+
+41 Figure B.2: Rejection Rates under Design 2 2 Covariates 5 Covariates           
+
+> n = 500 n = 1000
+> 0.00 0.25 0.50 0.75 1.00 0.00 0.25 0.50 0.75 1.00
+> 0.00 0.25 0.50 0.75 1.00
+> 0.00 0.25 0.50 0.75 1.00
+> Heterogeneity Parameter γ
+> Rejection Probability
+> Method
+> BLP Lasso
+> BLP RF
+> FICM Lasso
+> FICM RF
+> OICM
+
+This figure shows rejection in Design 2 rates of 95% confidence intervals for different values of γ, which control the heterogeneity of the ATE, for the bootstrapped test in the ATE under unconfoundeness. Rejec-tion rates are computed from 1,000 Monte Carlo simulations. The sample size is n ∈ { 500 , 1000 }. Nuisance functions are estimated using either lasso or random forests. Cross-fitting is performed with five folds, and 499 bootstrap replications are used in each iteration. We consider different dimensions of the vector Xc
+
+(d = 2 , 5). The Fourier matrix is computed using a Gaussian kernel with bandwidth 1. We compare the results of our test to the case where we use the Oracle statistic and to the BLP test in Chernozhukov et al. (2025), with lasso and random forests. 
+
+42
