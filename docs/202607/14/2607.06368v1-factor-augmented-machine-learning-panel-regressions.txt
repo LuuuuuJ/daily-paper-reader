@@ -1,0 +1,1430 @@
+Title: Factor-Augmented Machine Learning Panel Regressions
+
+URL Source: https://arxiv.org/pdf/2607.06368v1
+
+Published Time: Wed, 08 Jul 2026 01:10:12 GMT
+
+Number of Pages: 16
+
+Markdown Content:
+# Factor-Augmented Machine Learning Panel Regressions 
+
+Andrii Babii Department of Economics, University of North Carolina – Chapel Hill and Luca Barbaglia European Commission, Joint Research Centre (JRC) and Eric Ghysels Department of Economics and Kenan-Flagler Business School, University of North Carolina – Chapel Hill and Jonas Striaukas Department of Finance, Copenhagen Business School July 8, 2026 
+
+Abstract 
+
+This paper develops the asymptotic theory for high-dimensional panel data regressions in settings with cross-sectionally dependent errors driven by common shocks. We consider a factor-augmented sparse-group LASSO estimator that combines MIDAS aggregation with latent fac-tors. The estimator can take advantage of the mixed-frequency group structure in the time-series dimension. Theory shows that it can outperform the standard LASSO estimator both for pre-diction and estimation while allowing for cross-sectional dependence. 
+
+Keywords: factor-augmented panel regressions; sparse-group LASSO; MIDAS; mixed-frequency data; high-dimensional forecasting; cross-sectional dependence. 
+
+JEL classification: C23; C32; C53; C55; C58. 
+
+# 1 Introduction 
+
+Modern nowcasting and forecasting problems often rely on high-dimensional panel datasets with many cross-sectional units, a large number of predictors, and mixed-frequency data arriving in real time. Such panels typically exhibit strong cross-sectional dependence, reflecting common shocks in macroeconomic and financial time series. At the same time, the predictive component is often both sparse and dense: a few observed predictors may be important, after controlling for common factors generating broad comovement across units and variables. This paper develops asymptotic theory for a factor-augmented sparse-group LASSO frame-work for nowcasting and forecasting with mixed-frequency panels. The previous literature on 1arXiv:2607.06368v1 [econ.EM] 7 Jul 2026 mixed-frequency regressions includes the low-dimensional MIDAS regressions introduced in Ghy-sels, Santa-Clara, and Valkanov (2006), Ghysels, Sinko, and Valkanov (2007), and Andreou, Ghy-sels, and Kourtellos (2010). There is also a large literature on high-dimensional machine learning methods for i.i.d. data, e.g. Bickel, Ritov, and Tsybakov (2009), Belloni, Chernozhukov, and Hansen (2014), and Cai, Zhang, and Zhou (2022). Babii, Ghysels, and Striaukas (2022) proposed to use the sparse-group LASSO of Simon, Fried-man, Hastie, and Tibshirani (2013) for high-dimensional time series and developed the asymptotic theory. Mogliani and Simoni (2021) proposed a Bayesian version of the group LASSO for MIDAS regressions. Existing high-dimensional panel regression methods, such as Babii, Ball, Ghysels, and Striaukas (2023), allow for high-dimensional covariates under approximate sparsity but do not ex-ploit factor structure to capture cross-sectional dependence in the errors. Related sparse-plus-dense and factor-based panel approaches, see Hansen and Liao (2019), R¨ ucker, Vogt, Linton, and Walsh (2025), and Fan, Masini, and Medeiros (2023), do not cover the mixed-frequency nowcasting prob-lem with MIDAS aggregation and sparse-group regularization. The closest work to this paper is Beyhum and Striaukas (2026), which studies factor-augmented sparse MIDAS regressions for time series, but not panel data regressions. 
+
+Notation For an integer N ∈ N, let [ N ] = {1, . . . , N }. For a finite set C, let |C| denote its cardinality. For a vector v ∈ Rp, let |v|q = ( Ppj=1 |vj |q)1/q denote the ℓq-norm with |v|∞ =max j∈[p] |vj | and |v|0 = Ppj=1 1vj̸ =0 . A group is defined as a set of indices G ⊂ [p]. Let vG ∈ Rp
+
+be a vector such that ( vG)i = vi if i ∈ G and ( vG)i = 0 otherwise. For vectors v, w ∈ Rn, let 
+
+⟨v, w ⟩n = n−1⟨v, w ⟩, where ⟨· , ·⟩ denotes the Euclidean inner product, and let ∥ · ∥ n = p⟨· , ·⟩ n be the associated norm. For a matrix A ∈ Rn×m, let ∥A∥op = sup |v|2=1 |Av |2. For a collection of groups G = {G1, . . . , G K }, let ∥v∥2,1 = PKk=1 |vGk |2 and vG be the vector such that ( vG )i = vi if 
+
+i ∈ G and ( vG )i = 0 otherwise. The quantity n1 ∨ n2 is the maximum of n1 and n2. For a matrix 
+
+A, let σr(A), σ min (A) and σmax (A) denote the rth largest, smallest, and largest singular values of 
+
+A, respectively. 
+
+# 2 Factor-Augmented Machine Learning Panel Regressions 
+
+Consider the following factor-augmented predictive regression: 
+
+yi,t +1 = q⊤
+
+> i,t
+
+δ + ei,t +1 , ei,t +1 = f ⊤
+
+> i,t
+
+γ + ai,t + εi,t +1 , i ∈ [N ], t ∈ [T ], (1) where qi,t ∈ Rp includes all observed covariates, fi,t ∈ RR are latent factors, and ai,t ∈ R is a misspecification error due to approximate sparsity or misspecified factor structure. The latent factors fi,t and the misspecification error ai,t can generate the cross-sectional dependence in errors. 1
+
+Therefore, the model represents a flexible specification with approximately sparse signals, dense          
+
+> 1This covers, for example, the interactive-effects specification fi,t = Λ igt, where gt∈Rris a common factor and Λi∈RR×ris a unit-specific loading matrix. Cross-sectional dependence then arises through the common factor; see also Babii, Ghysels, and Pan (2025) for a more refined tensor factor model analysis.
+
+2components, and cross-sectional dependence. 
+
+2.1 MIDAS 
+
+Covariates may be measured at higher frequencies than the outcome yi,t +1 . In this case we will transform the high-frequency data into Equation (1) using the MIDAS approach of Babii et al. (2022). Consider a panel of Kx covariates for N units observed over T low-frequency periods, with 
+
+mx high-frequency observations for each low-frequency period: 2
+
+n
+
+xHi,t −(j−1) /m x,k : i ∈ [N ], t ∈ [T ], j ∈ [mx], k ∈ [Kx]
+
+o
+
+.
+
+Suppose this panel follows the approximate factor model: 
+
+xHi,t −(j−1) /m x,k = b⊤ 
+
+> k
+
+f Hi,t −(j−1) /m x + uHi,t −(j−1) /m x,k , (2) where bk ∈ RKf is the loading vector, f Hi,t −(j−1) /m x ∈ RKf is the high-frequency factor, and 
+
+uHi,t −(j−1) /m x,k is the idiosyncratic component. A second panel of Kz high-frequency covariates 
+
+n
+
+zHi,t −(j−1) /m z ,k : i ∈ [N ], t ∈ [T ], j ∈ [mz ], k ∈ [Kz ]
+
+o
+
+need not follow a factor model and will enter Equation (1) only through the approximately sparse coefficients. For each unit i and covariate k, collect the high-frequency observations in matrices XHi,k := (xHi,t −(j−1) /m x,k )t∈[T ], j ∈[mx] and ZHi,k := ( zHi,t −(j−1) /m z ,k )t∈[T ], j ∈[mz ]. These high-frequency obser-vations can be mapped with MIDAS weights into the regression model in Equation (1) as fol-lows. Let wl : [0 , 1] → R for l ∈ [L] be a dictionary of functions used to approximate the MI-DAS weights. Define the weighting matrices W x := ( wl(( j − 1) /m x)/m x)j∈[mx],l ∈[L] and W z := (wl(( j − 1) /m z )/m z )j∈[mz ],l ∈[L] . Then XHi,k W x ∈ RT ×L and ZHi,k W z ∈ RT ×L are the MIDAS-weighted versions of high-frequency observations. Define 
+
+xi := ( XHi, 1W x, . . . , X Hi,K x W x) ∈ RT ×px , zi := ( ZHi, 1W z , . . . , Z Hi,K z W z ) ∈ RT ×pz , (3) where px = LK x and pz = LK z . Let xi,t ∈ Rpx and zi,t ∈ Rpz be the tth rows of xi and zi transposed, respectively. The aggregated covariates are collected in a vector qi,t := (1 , z ⊤
+
+> i,t
+
+, x ⊤
+
+> i,t
+
+)⊤ ∈ Rp, where 
+
+p = pz + px + 1, and we assume that the initial observations of lagged variables are available. Then 
+
+qi,t corresponds to the vector of covariates in Equation (1). 
+
+2.2 Factor-Augmented sg-LASSO 
+
+For estimation purposes, using matrix notation, define qi := ( qi, 1, . . . , q i,T )⊤ ∈ RT ×p, yi := (yi, 2, . . . , y i,T +1 )⊤ ∈ RT , and stack y := ( y⊤ 
+
+> 1
+
+, . . . , y⊤ 
+
+> N
+
+)⊤ ∈ RN T , Q := ( q⊤ 
+
+> 1
+
+, . . . , q⊤ 
+
+> N
+
+)⊤ ∈ RN T ×p, 
+
+> 2For simplicity of presentation, we assume that the number of high-frequency observations is the same across all low-frequency periods. This assumption can be easily relaxed, and the observations can also be allowed to extend forward into the nowcasting period.
+
+3and X := ( x⊤ 
+
+> 1
+
+, . . . , x⊤ 
+
+> N
+
+)⊤ ∈ RN T ×px . Let also A ∈ RN T and E ∈ RN T be the stacked versions of 
+
+ai,t and εi,t +1 . Using matrix notation, Equation (1) becomes 
+
+y = Qδ + Fγ + A + E.
+
+The factor structure of covariates, see Equation (2), implies that the dense block of covariates can be written as 
+
+X = FB⊤ + U, E[U|F, B ] = 0 , (4) where F ∈ RN T ×R are the (MIDAS-aggregated) factors with R = LK f , B ∈ Rpx×R are the factor loadings, and U ∈ RN T ×px are the idiosyncratic components. The MIDAS aggregation introduces a group structure in the regression model, where each original predictor contributes a group of L
+
+dictionary coefficients; see Babii et al. (2022). The group structure with K groups is described as a partition {G1, . . . , G K } of [ p] = {1, . . . , p }.We extract factors from X using PCA. Let the columns of ˆF/√N T be the eigenvectors as-sociated with the largest R eigenvalues of XX ⊤, so that 1 
+
+> N T
+
+ˆF⊤ ˆF = IR. The factor-augmented sg-LASSO estimator is (ˆδ, ˆγ) ∈ argmin 
+
+> (d,c )∈Rp×RR
+
+∥y − Qd − ˆFc∥2 
+
+> N T
+
++ 2 λ1|d|1 + 2 λ2∥d∥2,1, (5) where |d|1 = Ppj=1 |dj | and ∥d∥2,1 = PKk=1 |dGk |2 are the ℓ1 and ℓ2,1 norms, respectively, and 
+
+λ1, λ 2 ≥ 0 are tuning parameters. The factor-augmented sg-LASSO thus captures both the dense component of the covariates through the factors and the approximately sparse component through the penalized regression on Q. The ℓ1 LASSO penalty encourages sparsity at the coordinate level, while the ℓ2,1 group LASSO penalty encourages sparsity at the group level. The estimator in Equation (5) combines a dense component, represented by the factors esti-mated from X, with a sparse component, represented by the penalized regression on Q; see also Beyhum and Striaukas (2026). We consider an asymptotic regime in which N, T → ∞ , the number of covariates p → ∞ may grow with N and T , and the number of factors R remains fixed. The fixed-R assumption can also be relaxed; see Babii et al. (2025), Beyhum and Gautier (2023), and Freeman and Weidner (2023). Let S = {j ∈ [p] : δj̸ = 0 } be the active coordinates in the true parameter δ ∈ Rp and let 
+
+A = {k ∈ [K] : δGk̸ = 0 } be the active group indices. Put s = |S|, m = |A| , and for an integer 
+
+ℓ ≥ 1, let 
+
+d(ℓ) = max 
+
+> I⊂[K]: |I|=ℓ
+
+X
+
+> k∈I
+
+|Gk|
+
+be the total number of elements in the largest ℓ groups. Let PˆF = ( N T )−1 ˆF ˆF⊤, MˆF = IN T − PˆF,and ˜Q = MˆFQ.
+
+Assumption 1. ∃σ > 0 such that E
+
+h
+
+eua ⊤ ˜Q⊤E|Q
+
+i
+
+≤ exp 
+
+ u2σ2N T |a|22
+
+> 2
+
+
+
+, ∀u ∈ R, a ∈ Rp.
+
+Assumption 2. ∃κ > 0 such that ∥ ˜Qv∥2 
+
+> N T
+
+≥ κ2|v|22, ∀v ∈ Rp such that |v|1/√s + ∥v∥2,1/√m ≤
+
+10 |v|2 with probability approaching one. 4Assumption 3. The tuning parameters are such that λ1 = rs,m /√s and λ2 = rs,m /√m with 
+
+rs,m = 4 √2σ
+
+r m log( eK/m ) + s log(5 ed (m)/s ) + log(2 /ϵ )
+
+N T , ϵ ∈ (0 , 1) .
+
+Assumption 1 requires that regression errors are sub-Gaussian conditionally on the covariates. It can be relaxed in several different ways, e.g. winsorizing the data or robustifying the least-squares objective function with Huber or median-of-means losses; see Lugosi and Mendelson (2019) for more details. Assumption 2 is a restricted eigenvalue condition and allows for singularity of the design matrix. Assumption 3 requires the oracle rates for tuning parameters. It is also known that the LASSO estimator with tuning parameters selected by cross-validation achieves similar results as the oracle LASSO estimator; see Chetverikov, Liao, and Chernozhukov (2021). The following result holds: 
+
+Theorem 1. Suppose that Assumptions 1, 2, and 3 hold. Then with probability 1 − ϵ − o(1) ,
+
+Qˆδ + ˆFˆγ − Qδ − Fγ N T ≤ 3.5rs,m 
+
+κ + √2∥A∥N T + 2 ∥MˆFFγ∥N T + ∥PˆFE∥N T 
+
+and 
+
+s−1/2|ˆδ − δ|1 + m−1/2∥ˆδ − δ∥2,1 ≤ 40 rs,m 
+
+κ2 + 5
+
+rs,m 
+
+∥MˆFFγ + MˆFA∥2 
+
+> N T
+
+.
+
+Theorem 1 states the oracle inequality for the factor-augmented sg-LASSO estimator. The proof of this and other results can be found in the Appendix. Next, we deduce the convergence rate of the factor-augmented sg-LASSO estimator under additional assumptions. Let ui,t ∈ Rpx be a column vector corresponding to the row for observation ( i, t ) in U.
+
+Assumption 4. The following conditions hold: (i) 1 
+
+> N T
+
+F⊤F p
+
+−→ IR and 1 
+
+> px
+
+B⊤B p
+
+−→ D, where D is a diagonal, positive definite matrix; (ii) ∃C < ∞ such that sup i,t λmax 
+
+
+
+E
+
+
+
+ui,t u⊤ 
+
+> i,t
+
+| B
+
+ 
+
+≤ C;(iii) |γ|2 = O(1); (iv) ∃σ > 0 with E[eua ⊤E|X] ≤ exp  σ2u2|a|22/2 , ∀u ∈ R, a ∈ RN T ;(v) ∃C < ∞ such that ∥Var( E | X)∥op ≤ C and the entries of E are independent given X;(vi) max i,s E|ui,s |42 = O(p2
+
+> x
+
+) and max (i,s )̸=( j,t ) E(u⊤
+
+> i,s
+
+uj,t )2 = O(px). Assumption 4 imposes a set of restrictions needed to characterize the estimation error in factors; see Bai (2003). Some of the more high-level conditions in this assumption can also be reduced to a set of more primitive conditions; see e.g. Beyhum and Striaukas (2026) and references therein. 
+
+Corollary 2. Suppose that Assumptions 1, 2, 3, and 4 hold. Then 
+
+∥Qˆδ + ˆFˆγ − Qδ − Fγ∥2 
+
+> N T
+
+= OP
+
+ m log( eK/m ) + s log( ed (m)/s )
+
+N T 
+
+
+
+5and 
+
+|ˆδ − δ|1 = OP
+
+s
+
+sm log( eK/m ) + s2 log( ed (m)/s )
+
+N T 
+
+ ,
+
+provided that ∥A∥N T = O(rs,m ) and p−1 
+
+> x
+
+= O(r2
+
+> s,m
+
+).Remark 3. Theorem 1 and Corollary 2 extend the time-series framework of Beyhum and Striaukas (2026) to panel data. That framework extends Babii et al. (2022). These papers derive the rate for time-series data when N = 1, which under comparable assumptions has order OP
+
+ (s∨m) log pT
+
+
+
+.For panel data, Babii et al. (2023) derive the rate of order OP
+
+ (s∨m) log pN T 
+
+
+
+. Neither of these rates reflects the advantage of the sparse-group structure of the regression model, and both rates are slower than the rate in Corollary 2. 
+
+Remark 4. For cross-sectional data when T = 1, Theorem 5 of Cai et al. (2022) derives the minimax lower bound on the convergence rate in ℓ2 norm for any estimator of order 
+
+OP
+
+ m log( eK/m ) + s log( emG ∗/s )
+
+N
+
+
+
+,
+
+provided that all groups have the same size G∗. In this case, the size of m largest groups becomes 
+
+d(m) = mG ∗. This rate can be faster than the optimal OP (s log( p/s )/N ) rate of the LASSO estimator obtained in Bellec, Lecu´ e, and Tsybakov (2018). 6APPENDIX A Proofs 
+
+A.1 Proof of Theorem 1 
+
+Lemma A.1. Under Assumptions 1 and 3, we have with probability at least 1 − ϵ,
+
+D ˜Q⊤E, v 
+
+E 
+
+> N T
+
+≤ rs,m 
+
+2
+
+
+
+|v|2 + |v|1
+
+√s + ∥v∥2,1
+
+√m
+
+
+
+, ∀v ∈ Rp.
+
+Proof of Lemma A.1. Let ξ := ˜Q⊤E 
+
+> N T
+
+denote the score. Let {G1, . . . , G K } denote the groups corre-sponding to the population parameter δ ∈ Rp. For v ∈ Rp, let A(v) := {k ∈ [K] : vGk̸ = 0 } be the groups touched by v. Define the following norm of ξ:
+
+ρs,m (ξ) := sup 
+
+n
+
+|v⊤ξ| : v ∈ V s,m 
+
+o
+
+, Vs,m := {v ∈ Rp : |v|2 = 1 , |A (v)| ≤ m, |v|0 ≤ s}.
+
+We will show first the following deterministic inequality 
+
+|v⊤ξ| ≤ ρs,m (ξ)
+
+
+
+|v|2 + |v|1
+
+√s + ∥v∥2,1
+
+√m
+
+
+
+, ∀v ∈ Rp. (6) Fix v ∈ Rp and order the groups as follows: 
+
+|vG(1) |2 ≥ | vG(2) |2 ≥ · · · ≥ | vG(K) |2.
+
+Split the ordered groups into consecutive blocks of size m with ℓ = 0 , 1, . . . Bℓ := {k ∈ [K] : ℓm < k ≤ min {(ℓ + 1) m, K }} , Gℓ := [
+
+> k∈Bℓ
+
+G(k) ⊆ [p].
+
+Then X
+
+> ℓ≥0
+
+|vGℓ |2 = |vG0 |2 + X
+
+> ℓ≥1
+
+|vGℓ |2 ≤ | v|2 + ∥v∥2,1
+
+√m , (7) where the inequality follows from the fact that the groups are ordered by ℓ2 norm: 
+
+|vGℓ |2 ≤ √m max 
+
+> k∈Bℓ
+
+|vG(k) |2 ≤ √m min 
+
+> k∈Bℓ−1
+
+|vG(k) |2 ≤ 1
+
+√m
+
+X
+
+> k∈Bℓ−1
+
+|vG(k) |2.
+
+Now fix ℓ, order the coordinates in Gℓ by decreasing absolute value of vj , and split them into consecutive coordinate blocks 
+
+Jℓ, 0, J ℓ, 1, J ℓ, 2, . . . , 
+
+each of cardinality at most s. Then each Jℓ,q is contained in at most m groups and has at most s
+
+7coordinates. By a similar argument as above, 
+
+X
+
+> q≥0
+
+|vJℓ,q |2 ≤ | vGℓ |2 + |vGℓ |1
+
+√s .
+
+Summing over ℓ and using the bound in Equation (7) gives 
+
+X
+
+> ℓ≥0
+
+X
+
+> q≥0
+
+|vJℓ,q |2 ≤ | v|2 + ∥v∥2,1
+
+√m + |v|1
+
+√s .
+
+Since each vJℓ,q is supported on at most s coordinates and at most m groups, we have 
+
+|ξ⊤v| ≤ X
+
+> ℓ≥0
+
+X
+
+> q≥0
+
+|ξ⊤vJℓ,q | ≤ ρs,m (ξ) X
+
+> ℓ≥0
+
+X
+
+> q≥0
+
+|vJℓ,q |2 ≤ ρs,m (ξ)
+
+
+
+|v|2 + |v|1
+
+√s + ∥v∥2,1
+
+√m
+
+
+
+,
+
+which proves the inequality in Equation (6). It remains to show that ρs,m (ξ) ≤ rs,m /2 with probability at least 1 − ϵ. To that end, fix 
+
+B ⊂ [K] with |B| = m, and write GB := S 
+
+> g∈B
+
+Gg. By definition of d(m), we have 
+
+|G B | ≤ max 
+
+> B⊂[K]: |B|=m
+
+[
+
+> k∈B
+
+Gk = d(m).
+
+For every J ⊂ G B with |J| ≤ s, let NJ be a 1 /2-net of {v ∈ Rp : |v|2 = 1 , supp( v) ⊂ J} with respect to ℓ2 norm. We can choose NJ so that its covering number is |N J | ≤ 5s; see Vershynin (2026), Corollary 4.2.11. Let 
+
+N := [
+
+> B⊂[K]
+> |B|=m
+
+[
+
+> J⊂G B
+> |J|≤ s
+
+NJ .
+
+The cardinality of this net satisfies 
+
+|N | ≤ 
+
+Km
+
+
+
+max 
+
+> B⊂[K]: |B|=ms
+
+X
+
+> j=1
+
+|G B |
+
+j
+
+
+
+5s ≤
+
+ eK m
+
+m  5ed (m)
+
+s
+
+s
+
+,
+
+where we use  nk
+
+ ≤ Pkj=0 
+
+ nj
+
+ ≤   en k
+
+k since s ≤ d(m); see Vershynin (2026), Exercise 0.6. For every v ∈ Rp satisfying |v|2 = 1, |v|0 ≤ s, and |A (v)| ≤ m, its support is contained in GB
+
+for some B ⊂ [K] with |B| = m. Let J := supp( v), so that J ⊂ G B and |J| ≤ s. Since NJ is a 1/2-net, there exists b ∈ N J ⊂ N such that |v − b|2 ≤ 1/2. Moreover, v − b is supported on J, and therefore it is supported on at most s coordinates and touches at most m groups. Hence, 
+
+|v⊤ξ| ≤ | b⊤ξ| + |(v − b)⊤ξ| ≤ max  
+
+> c∈N
+
+|ξ⊤c| + ρs,m (ξ)|v − b|2 ≤ max  
+
+> c∈N
+
+|ξ⊤c| + 12 ρs,m (ξ).
+
+Taking the supremum over all such v gives 
+
+ρs,m (ξ) ≤ 2 max  
+
+> c∈N
+
+|ξ⊤c|.
+
+8Therefore, by the union bound, for any u > 0Pr( ρs,m (ξ) > 2u) ≤ Pr 
+
+
+
+max  
+
+> c∈N
+
+|c⊤ξ| > u 
+
+
+
+≤ |N | max  
+
+> c∈N
+
+Pr 
+
+
+
+|c⊤ξ| > u 
+
+
+
+,
+
+where |N | ≤   eK m
+
+m  5ed (m)
+
+> s
+
+s
+
+. Under Assumption 1, Pr 
+
+
+
+|c⊤ξ| > u 
+
+
+
+≤ 2 exp 
+
+
+
+− N T u 2
+
+2σ2
+
+
+
+, ∀c ∈ N .
+
+Choosing u = σ
+
+q 2 log |N | +2 log(2 /ϵ ) 
+
+> N T
+
+, we obtain with probability at least 1 − ϵ,
+
+ρs,m (ξ) ≤ 2√2σ
+
+r m log( eK/m ) + s log(5 ed (m)/s ) + log(2 /ϵ )
+
+N T = rs,m 
+
+2 .
+
+Proof of Theorem 1. By the definition of MˆF, concentrating out the factors gives ˆδ ∈ arg min  
+
+> d∈Rp
+
+∥˜y − ˜Qd∥2 
+
+> N T
+
++ 2Ω( d),
+
+where Ω( d) := λ1|d|1 + λ2∥d∥2,1, ˜Q = MˆFQ, and ˜y = MˆFy = ˜Qδ + MˆFFγ + MˆFA
+
+| {z }
+
+> =: η
+
++MˆFE. (8) By Fermat’s rule, ˆδ satisfies 1
+
+N T ˜Q⊤( ˜Qˆδ − ˜y) + z∗ = 0 , z∗ ∈ ∂Ω( ˆδ),
+
+where ∂Ω( ˆδ) is the subdifferential of Ω at ˆδ. The inner product with δ − ˆδ and convexity of d 7 → Ω( d)give D
+
+˜y − ˜Qˆδ, ˜Q(δ − ˆδ)
+
+E 
+
+> N T
+
+=
+
+D
+
+z∗, δ − ˆδ
+
+E
+
+≤ Ω( δ) − Ω( ˆδ), (9) Setting ∆ := ˆδ − δ and substituting the expression for ˜ y in Equation (8), we obtain 
+
+∥ ˜Q∆∥2 
+
+> N T
+
+≤
+
+D
+
+E, ˜Q∆
+
+E 
+
+> N T
+
++
+
+D
+
+η, ˜Q∆
+
+E 
+
+> N T
+
++ Ω( δ) − Ω( ˆδ)
+
+≤
+
+D
+
+E, ˜Q∆
+
+E 
+
+> N T
+
++
+
+D
+
+η, ˜Q∆
+
+E 
+
+> N T
+
++ λ1{| ∆S |1 − | ∆Sc |1} + λ2{∥ ∆A∥2,1 − ∥ ∆Ac ∥2,1},
+
+where the second line follows since δSc = 0 and δAc = 0, so by the reverse triangle inequality 
+
+|δ|1 − | δ + ∆ |1 ≤ | ∆S |1 − | ∆Sc |1,
+
+∥δ∥2,1 − ∥ δ + ∆ ∥2,1 ≤ ∥ ∆A∥2,1 − ∥ ∆Ac ∥2,1.
+
+9Moreover, under Assumption 1 by Lemma A.1, with probability at least 1 − ϵ,
+
+D
+
+E, ˜Qv
+
+E 
+
+> N T
+
+≤ rs,m 
+
+2
+
+
+
+|v|2 + |v|1
+
+√s + ∥v∥2,1
+
+√m
+
+
+
+for all v ∈ Rp.
+
+Using λ1 = rs,m  
+
+> √s
+
+and λ2 = rs,m  
+
+> √m
+
+, under Assumption 3, and |∆S |1 ≤ √s|∆|2, ∥∆A∥2,1 ≤ √m|∆|2, we obtain 
+
+∥ ˜Q∆∥2 
+
+> N T
+
+≤ 3.5rs,m |∆|2 − rs,m 
+
+2
+
+ |∆Sc |1
+
+√s + ∥∆Ac ∥2,1
+
+√m
+
+
+
++ ˜Q∆ N T ∥η∥N T . (10) 
+
+Case 1: Suppose that 
+
+|∆|1
+
+√s + ∥∆∥2,1
+
+√m ≤ 10 |∆|2
+
+Assumption 2 then gives κ|∆|2 ≤ ∥ ˜Q∆∥N T . Dropping the term with negative sign in Equation (10) gives 
+
+∥ ˜Q∆∥2 
+
+> N T
+
+≤ 3.5rs,m 
+
+κ ∥ ˜Q∆∥N T + ∥ ˜Q∆∥N T ∥η∥N T .
+
+Then 
+
+∥ ˜Q∆∥N T ≤ 3.5rs,m 
+
+κ + ∥η∥N T 
+
+and |∆|1
+
+√s + ∥∆∥2,1
+
+√m ≤ 35 rs,m 
+
+κ2 + 10 
+
+κ ∥η∥N T ≤ 40 rs,m 
+
+κ2 + 5
+
+rs,m 
+
+∥η∥2 
+
+> N T
+
+,
+
+where the last inequality follows from 2 ab ≤ a2 + b2.
+
+Case 2: Now suppose that 
+
+|∆|1
+
+√s + ∥∆∥2,1
+
+√m > 10 |∆|2.
+
+Since |∆S |1
+
+√s + ∥∆A∥2,1
+
+√m ≤ 2|∆|2,
+
+we have 
+
+∥ ˜Q∆∥2 
+
+> N T
+
+≤ 4.5rs,m |∆|2 − rs,m 
+
+2
+
+ |∆|1
+
+√s + ∥∆∥2,1
+
+√m
+
+
+
++ ˜Q∆ N T ∥η∥N T 
+
+≤ − rs,m 
+
+20 
+
+ |∆|1
+
+√s + ∥∆∥2,1
+
+√m
+
+
+
++ ˜Q∆ N T ∥η∥N T .
+
+This shows that ∥ ˜Q∆∥N T ≤ ∥ η∥N T and that 
+
+|∆|1
+
+√s + ∥∆∥2,1
+
+√m ≤ 20 
+
+rs,m 
+
+
+
+˜Q∆ N T ∥η∥N T − ˜Q∆ 2
+
+> N T
+
+
+
+≤ 5∥η∥2
+
+> N T
+
+rs,m 
+
+.
+
+To sum up, in both cases, we have 
+
+∥ ˜Q∆∥N T ≤ 3.5rs,m 
+
+κ + ∥η∥N T 
+
+10 and |∆|1
+
+√s + ∥∆∥2,1
+
+√m ≤ 40 rs,m 
+
+κ2 + 5∥η∥2
+
+> N T
+
+rs,m 
+
+.
+
+Next, ˆFˆγ = PˆF(y − Qˆδ) = PˆFQ(δ − ˆδ) + PˆF(Fγ + A) + PˆFE,
+
+so that 
+
+Q(ˆδ − δ) + ˆFˆγ − Fγ = MˆFQ(ˆδ − δ) + MˆF( ˆFˆγ − Fγ) + PˆFQ(ˆδ − δ) + PˆF( ˆFˆγ − Fγ)= ˜Q(ˆδ − δ) − MˆFFγ + PˆFQ(ˆδ − δ) + ˆFˆγ − PˆFFγ
+
+= ˜Q(ˆδ − δ) − MˆFFγ + PˆFA + PˆFE.
+
+Therefore, by the triangle inequality, 
+
+Qˆδ + ˆFˆγ − Qδ − Fγ N T ≤ 3.5rs,m 
+
+κ + 2 ∥MˆFFγ∥N T + √2∥A∥N T + ∥PˆFE∥N T .
+
+A.2 Proof of Corollary 2 
+
+Let ˆD = diag( σ21 (X), . . . , σ 2
+
+> R
+
+(X)) be a diagonal matrix with diagonal entries equal to the squares of the largest R singular values of X.
+
+Lemma A.2. Under Assumption 4 (i) and (ii), we have (i) ∥UB∥2op = OP (pxN T );(ii) ∥U∥2op = OP
+
+
+
+px(N T )1/2 + p1/2 
+
+> x
+
+N T 
+
+
+
+;(iii) ∥ ˆD−1∥op = OP
+
+ 1
+
+> pxN T
+
+
+
+.Proof of Lemma A.2. We prove each of the claims separately. 
+
+Proof of (i). Write B = [ b1, . . . , b R]. Under Assumption 4 (ii), we have 
+
+E ∥UB∥2op | B ≤ E ∥UB∥2 
+
+> F
+
+| B = X
+
+> i,t,r
+
+E(u⊤
+
+> i,t
+
+br|B)2 = X
+
+> i,t,r
+
+b⊤ 
+
+> r
+
+E(ui,t u⊤
+
+> i,t
+
+|B)br ≤ CN T 
+
+> R
+
+X
+
+> r=1
+
+b⊤ 
+
+> r
+
+br.
+
+The result then follows under Assumption 4 (i) and Markov’s inequality. 
+
+Proof of (ii). The result follows by Markov’s inequality and 
+
+E∥U∥4op = E∥U⊤U∥2op ≤ E∥U⊤U∥2 
+
+> F
+
+= Etr( UU ⊤UU ⊤) = X
+
+> i,s
+
+X
+
+> j,t
+
+E(u⊤
+
+> i,s
+
+uj,t )2
+
+=
+
+> N
+
+X
+
+> i=1
+> T
+
+X
+
+> s=1
+
+E|ui,s |42 + X
+
+> (i,s )̸=( j,t )
+
+E(u⊤
+
+> i,s
+
+uj,t )2 = O(p2
+
+> x
+
+N T ) + O(pxN 2T 2),
+
+11 where the last line follows by Assumption 4 (vi). 
+
+Proof of (iii). By Weyl’s inequality for singular values, see Horn and Johnson (2012), Corollary 7.3.5, 
+
+σR(X) − σR(FB⊤) ≤ ∥ U∥op = oP
+
+p pxN T 
+
+
+
+, px, N T → ∞ ,
+
+which follows by (ii). Therefore, under Assumption 4 (i), we have 
+
+σR(X) ≥ σR(FB⊤) − oP
+
+p pxN T 
+
+
+
+≥ σR(F)σR(B) − oP
+
+p pxN T 
+
+
+
+≥ cppxN T 
+
+with probability approaching one. The result follows since ∥ ˆD−1∥op = 1 
+
+> σ2
+> R(X)
+
+.
+
+Lemma A.3. Under the assumptions of Lemma A.2, we have 
+
+1
+
+√N T ∥ ˆF − FH⊤∥op = OP
+
+ 1
+
+√px
+
++ 1
+
+√N T 
+
+
+
+,
+
+where H⊤ = B⊤BF⊤ ˆF ˆD−1, ˆD = diag(ˆ σ21 (X), . . . , ˆσ2
+
+> R
+
+(X)) .Proof. Using the factor model in Equation (4), expand 
+
+XX ⊤ = FB⊤BF⊤ + FB⊤U⊤ + UBF⊤ + UU ⊤.
+
+Since the columns of ˆF/√N T are the eigenvectors associated with ˆD, we have XX ⊤ ˆF = ˆF ˆD, and ˆF = FB⊤BF⊤ ˆF ˆD−1 + FB⊤U⊤ ˆF ˆD−1 + UBF⊤ ˆF ˆD−1 + UU ⊤ ˆF ˆD−1.
+
+or equivalently, ˆF − FH⊤ = FB⊤U⊤ ˆF ˆD−1 + UBF⊤ ˆF ˆD−1 + UU ⊤ ˆF ˆD−1
+
+=: A1 + A2 + A3.
+
+We bound each of the three terms separately. First, by Lemma A.2 (i) and (iii), we have 
+
+∥A1∥op ≤ ∥ F∥op ∥B⊤U⊤∥op ∥ ˆF∥op ∥ ˆD−1∥op 
+
+= OP (√RN T )OP (ppxN T R )OP (√N T )OP
+
+ 1
+
+pxN T 
+
+
+
+= OP R
+
+s
+
+N T px
+
+!
+
+,
+
+where the second line follows from ∥ ˆF∥2op = ∥ ˆF⊤ ˆF∥op = N T , and 
+
+∥F∥2op ≤ ∥ F∥2 
+
+> F
+
+= tr( F⊤F) = OP (RN T )under Assumption 4 (i). 12 Second, by Lemma A.2 (i) and (iii), we have 
+
+∥A2∥op ≤ ∥ UB∥op ∥F⊤∥op ∥ ˆF∥op ∥ ˆD−1∥op 
+
+= OP
+
+p pxN T R 
+
+
+
+OP (√RN T )OP (√N T )OP
+
+ 1
+
+pxN T 
+
+
+
+= OP R
+
+s
+
+N T px
+
+!
+
+.
+
+Third, by Lemma A.2 (ii) and (iii), we have 
+
+∥A3∥op ≤ ∥ UU ⊤∥op ∥ ˆF∥op ∥ ˆD−1∥op 
+
+= OP
+
+
+
+p1/2 
+
+> x
+
+N T + px(N T )1/2
+
+OP (√N T )OP
+
+ 1
+
+pxN T 
+
+
+
+= OP
+
+s
+
+N T px
+
++ 1 
+
+!
+
+.
+
+Combining the bounds for A1, A2, and A3 yields the desired result. 
+
+Lemma A.4. Under Assumptions 1 and 4, we have (i) ∥MˆFFγ∥2 
+
+> N T
+
+= OP
+
+ 1 
+
+> px
+
++ 1
+
+> N T
+
+
+
+;(ii) ∥PˆFE∥2 
+
+> N T
+
+= OP
+
+  1
+
+> N T
+
+.Proof of Lemma A.4. We prove the two claims separately. 
+
+Proof of (i). Since PFF = F, we have 
+
+∥MˆFFγ∥2 
+
+> N T
+
+= ∥(PF − PˆF)Fγ∥2 
+
+> N T
+
+≤ ∥ PF − PˆF∥2op ∥Fγ∥2 
+
+> N T
+
+,
+
+where ∥Fγ∥2 
+
+> N T
+
+= 1 
+
+> N T
+
+γ⊤F⊤Fγ = OP (1) under Assumption 4 (i) and (iii). Next, by Stewart and Sun (1990), Theorem I.5.5, 
+
+∥PˆF − PF∥op = √2∥PˆFMF∥op =
+
+√2
+
+N T ∥ ˆF ˆF⊤MF∥op ≤√2
+
+√N T ∥ ˆF⊤MF∥op 
+
+=
+
+√2
+
+√N T ∥( ˆF⊤ − HF⊤)MF∥op ≤√2
+
+√N T ∥ ˆF − FH⊤∥op 
+
+= OP
+
+ R
+
+√px
+
++ 1
+
+√N T 
+
+
+
+,
+
+where the last line follows by Lemma A.3. 
+
+Proof of (ii). We now prove part (ii). Conditionally on X, the matrix PˆF is a deterministic projection matrix. Under Assumption 4 (iv), by the Hanson-Wright inequality, see Vershynin 13 (2026), Theorem 6.2.2, there exists c > 0 such that for every u > 0Pr 
+
+
+
+E⊤PˆFE − E[E⊤PˆFE | X] ≥ u | X
+
+
+
+≤ 2 exp 
+
+
+
+−c min 
+
+ u2
+
+σ4∥PˆF∥2
+
+> F
+
+, uσ2∥PˆF∥op 
+
+ 
+
+,
+
+where ∥PˆF∥2 
+
+> F
+
+= R and ∥PˆF∥op = 1 by the properties of projection matrices. Moreover, 
+
+E
+
+h
+
+E⊤PˆFE | X
+
+i
+
+= tr  PˆF Var( E | X) ≤ C tr( PˆF) = CR, 
+
+where the last line follows under Assumption 4 (v). This shows that 
+
+∥PˆFE∥2 
+
+> N T
+
+= 1
+
+N T E⊤PˆFE = OP
+
+ RN T 
+
+
+
+.
+
+Proof of Corollary 2. By Theorem 1 and Assumptions 3, we have 
+
+∥Qˆδ + ˆFˆγ − Qδ − Fγ∥2 
+
+> N T
+
+= OP
+
+ m log( eK/m ) + s log( ed (m)/s )
+
+N T + ∥MˆFFγ∥2 
+
+> N T
+
++ ∥PˆFE∥2
+
+> N T
+
+
+
+.
+
+By Lemma A.4, ∥MˆFFγ∥2 
+
+> N T
+
++ ∥PˆFE∥2 
+
+> N T
+
+= OP (p−1 
+
+> x
+
+). The result follows since p−1 
+
+> x
+
+= O(r2
+
+> s,m
+
+). 
+
+# References 
+
+Elena Andreou, Eric Ghysels, and Andros Kourtellos. Regression models with mixed sampling frequencies. Journal of Econometrics , 158(2):246–261, 2010. doi: 10.1016/j.jeconom.2010.01.004. Andrii Babii, Eric Ghysels, and Jonas Striaukas. Machine learning time series regressions with an application to nowcasting. Journal of Business & Economic Statistics , 40(3):1094–1106, 2022. doi: 10.1080/07350015.2021.1899933. Andrii Babii, Ryan T Ball, Eric Ghysels, and Jonas Striaukas. Machine learning panel data regres-sions with heavy-tailed dependent data: Theory and application. Journal of Econometrics , 237 (2):105315, 2023. doi: 10.1016/j.jeconom.2022.07.001. Andrii Babii, Eric Ghysels, and Junsu Pan. Tensor PCA for factor models. Journal of Econometrics ,page 106077, 2025. doi: 10.1016/j.jeconom.2025.106077. Forthcoming. Jushan Bai. Inferential theory for factor models of large dimensions. Econometrica , 71(1):135–171, 2003. doi: 10.1111/1468-0262.00392. Pierre C Bellec, Guillaume Lecu´ e, and Alexandre B Tsybakov. Slope meets LASSO: improved oracle bounds and optimality. The Annals of Statistics , 46(6B):3603–3642, 2018. doi: 10.1214/ 17-AOS1670. 14 Alexandre Belloni, Victor Chernozhukov, and Christian Hansen. Inference on treatment effects after selection among high-dimensional controls. The Review of Economic Studies , 81(2):608– 650, 2014. doi: 10.1093/restud/rdt044. Jad Beyhum and Eric Gautier. Factor and factor loading augmented estimators for panel regression with possibly nonstrong factors. Journal of Business & Economic Statistics , 41(1):270–281, 2023. doi: 10.1080/07350015.2021.2011300. Jad Beyhum and Jonas Striaukas. Factor-augmented sparse MIDAS regressions with an application to nowcasting. Journal of Business & Economic Statistics , 2026. Forthcoming. Peter J. Bickel, Ya’acov Ritov, and Alexandre B. Tsybakov. Simultaneous analysis of LASSO and Dantzig selector. The Annals of Statistics , 37(4):1705–1732, 2009. doi: 10.1214/08-AOS620. T Tony Cai, Anru R Zhang, and Yuchen Zhou. Sparse group LASSO: Optimal sample complexity, convergence rate, and statistical inference. IEEE Transactions on Information Theory , 68(9): 5975–6002, 2022. doi: 10.1109/TIT.2022.3175455. Denis Chetverikov, Zhipeng Liao, and Victor Chernozhukov. On cross-validated LASSO in high dimensions. The Annals of Statistics , 49(3):1300–1317, 2021. doi: 10.1214/20-AOS2000. Jianqing Fan, Ricardo Masini, and Marcelo C. Medeiros. Bridging factor and sparse models. The Annals of Statistics , 51(4):1692–1717, 2023. doi: 10.1214/23-AOS2304. Hugo Freeman and Martin Weidner. Linear panel regressions with two-way unobserved heterogene-ity. Journal of Econometrics , 237(1):105498, 2023. doi: 10.1016/j.jeconom.2023.105498. Eric Ghysels, Pedro Santa-Clara, and Rossen Valkanov. Predicting volatility: Getting the most out of return data sampled at different frequencies. Journal of Econometrics , 131(1-2):59–95, 2006. doi: 10.1016/j.jeconom.2005.01.004. Eric Ghysels, Arthur Sinko, and Rossen Valkanov. MIDAS regressions: Further results and new directions. Econometric Reviews , 26(1):53–90, 2007. doi: 10.1080/07474930600972467. Christian Hansen and Yuan Liao. The factor-LASSO and K-Step bootstrap approach for inference in high-dimensional economic applications. Econometric Theory , 35(3):465–509, 2019. doi: 10. 1017/S0266466618000245. Roger A. Horn and Charles R. Johnson. Matrix Analysis . Cambridge University Press, 2 edition, 2012. doi: 10.1017/CBO9781139020411. Gabor Lugosi and Shahar Mendelson. Mean estimation and regression under heavy-tailed distri-butions: A survey. Foundations of Computational Mathematics , 19(5):1145–1190, 2019. doi: 10.1007/s10208-019-09427-x. Matteo Mogliani and Anna Simoni. Bayesian MIDAS penalized regressions: estimation, selection, and prediction. Journal of Econometrics , 222(1):833–860, 2021. doi: 10.1016/j.jeconom.2020.07. 022. 15 Maximilian R¨ ucker, Michael Vogt, Oliver Linton, and Christopher Walsh. Estimation and inference in high-dimensional panel data models with interactive fixed effects. Quantitative Economics , 16 (4):1457–1509, 2025. doi: 10.3982/QE2308. Noah Simon, Jerome Friedman, Trevor Hastie, and Robert Tibshirani. A sparse-group Lasso. 
+
+Journal of Computational and Graphical Statistics , 22(2):231–245, 2013. doi: 10.1080/10618600. 2012.681250. G. W. Stewart and Ji-Guang Sun. Matrix Perturbation Theory . Computer Science and Scientific Computing. Academic Press, Boston, 1990. ISBN 9780126702309. Roman Vershynin. High-Dimensional Probability: An Introduction with Applications in Data Sci-ence . Cambridge Series in Statistical and Probabilistic Mathematics. Cambridge University Press, Cambridge, 2 edition, 2026. doi: 10.1017/9781009490672. 16
