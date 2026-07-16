@@ -6,58 +6,61 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-15
-- 运行时间：2026-07-15 19:58:15 UTC
+- 最新运行日期：2026-07-16
+- 运行时间：2026-07-16 20:52:02 UTC
 - 运行状态：成功
-- 本次总论文数：12
-- 精读区：1
+- 本次总论文数：13
+- 精读区：2
 - 速读区：11
 
 ### 今日简报（AI）
-今日深度研读加权估计量的稳健性推断等 12 篇前沿成果，聚焦因果推断与社会经济模型的交叉创新。
-核心结论突破了加权估计量的推断稳健性难题，并对合成控制法中的供体集选择及多组异质性分析给出了新方案。
-建议优先掌握高分论文中的稳健推断工具，并关注合成控制法在复杂政策评估中的实操优化。
-- 详情：[/202607/15/README](/202607/15/README)
+今日深度研读 13 篇前沿文献，聚焦合成双重差分法的异质性推断与 AI 证据合成中的偏见识别。
+核心结论揭示了多组别合成控制法的稳健推断路径，并警示了 AI 在处理生育率等社会科学议题时的元数据偏差。
+建议读者重点关注因果推断工具的稳健性优化，以及医疗保障政策对公共卫生干预的实际效能。
+- 详情：[/202607/16/README](/202607/16/README)
 
 ### 精读区论文标签
-1. [Robust Inference for Weighted Estimands](/202607/15/2607.07524v1-robust-inference-for-weighted-estimands)  
-   标签：评分：8.5/10、query:profile-1
-   evidence：具有队列效应的事件研究的稳健推断
+1. [Finite-Population Inference for Heterogeneity in Many-Group Synthetic Difference-in-Differences](/202607/16/2607.08324v1-finite-population-inference-for-heterogeneity-in-many-group-synthetic-difference-in-differences)  
+   标签：评分：8.0/10、query:q9
+   evidence：多组合成双重差分法的有限总体推理
+2. [Two Vocabularies, One Phenomenon: Metadata Bias in AI Evidence Synthesis on Fertility Decline](/202607/16/2607.09409v1-two-vocabularies-one-phenomenon-metadata-bias-in-ai-evidence-synthesis-on-fertility-decline)  
+   标签：评分：8.0/10、query:profile-1
+   evidence：关于生育率下降的AI证据合成及社会科学中的元数据偏差
 
 ### 速读区论文标签
-1. [Finite-Population Inference for Heterogeneity in Many-Group Synthetic Difference-in-Differences](/202607/15/2607.08324v1-finite-population-inference-for-heterogeneity-in-many-group-synthetic-difference-in-differences)  
-   标签：评分：7.5/10、query:q9
-   evidence：用于处理效应和异质性分析的合成双重差分法
-2. [Can looser ties sustain marriage? A dynamic matching model of specialisation and divorce](/202607/15/2607.11268v1-can-looser-ties-sustain-marriage-a-dynamic-matching-model-of-specialisation-and-divorce)  
-   标签：评分：7.5/10、query:profile-1
-   evidence：使用行政数据研究家庭分工与离婚的动态匹配模型
-3. [Bayesian Donor Set Selection in Synthetic Controls](/202607/15/2607.08142v1-bayesian-donor-set-selection-in-synthetic-controls)  
+1. [Robust Inference for Weighted Estimands](/202607/16/2607.07524v1-robust-inference-for-weighted-estimands)  
    标签：评分：7.0/10、query:profile-1
-   evidence：合成控制法中用于因果效应评估的贝叶斯供体集选择
-4. [Causal Effects of Protocol-Fee Changes on Liquidity Provision in Automated Market Makers](/202607/15/2607.08525v1-causal-effects-of-protocol-fee-changes-on-liquidity-provision-in-automated-market-makers)  
+   evidence：针对具有队列效应的事件研究的稳健推断
+2. [Helping Hands, Healthier Infants: The Effect of Medicaid Doula Coverage Mandates on Birth Outcomes](/202607/16/2607.07770v1-helping-hands-healthier-infants-the-effect-of-medicaid-doula-coverage-mandates-on-birth-outcomes)  
    标签：评分：7.0/10、query:profile-1
-   evidence：金融因果效应的事件研究双重差分设计
-5. [Bayesian Robustness Values for Modern Causal Panel Estimators via Riesz Representations](/202607/15/2607.10276v1-bayesian-robustness-values-for-modern-causal-panel-estimators-via-riesz-representations)  
+   evidence：利用面板数据研究生育相关政策对出生结果的因果影响
+3. [Bayesian Robustness Values for Modern Causal Panel Estimators via Riesz Representations](/202607/16/2607.10276v1-bayesian-robustness-values-for-modern-causal-panel-estimators-via-riesz-representations)  
    标签：评分：7.0/10、query:profile-1
-   evidence：因果面板估计量（包括合成双重差分法）的敏感性分析
-6. [A Machine-Learning-Compatible Omnibus Test for Treatment Effect Heterogeneity](/202607/15/2607.06412v1-a-machine-learning-compatible-omnibus-test-for-treatment-effect-heterogeneity)  
+   evidence：因果面板估计量的敏感性分析，包括合成双重差分法
+4. [KRAFT: A Transaction-Level Dataset for Korean Apartment Sales Integrated with Contextual Indicators](/202607/16/2607.11961v1-kraft-a-transaction-level-dataset-for-korean-apartment-sales-integrated-with-contextual-indicators)  
+   标签：评分：7.0/10、query:q2
+   evidence：包含人口结构和公寓交易的家庭财务数据集
+5. [A Unified Credit Expansion Theory on Housing Cycle: Causal Evidence for Within- and Cross-Metro Patterns in the Prior, Boom, Bust, and Recovery Periods](/202607/16/2607.12205v1-a-unified-credit-expansion-theory-on-housing-cycle-causal-evidence-for-within--and-cross-metro-patterns-in-the-prior-boom-bust-and-recovery-periods)  
+   标签：评分：7.0/10、query:profile-1
+   evidence：使用双重差分法研究住房和信贷扩张的因果证据
+6. [Beta Regression with Autoregressive Errors for Interrupted Time Series Analysis of Proportion and Rate Outcomes: A Simulation Study](/202607/16/2607.07914v1-beta-regression-with-autoregressive-errors-for-interrupted-time-series-analysis-of-proportion-and-rate-outcomes-a-simulation-study)  
    标签：评分：6.5/10、query:profile-1
-   evidence：包含双重差分在内的处理效应异质性综合检验
-7. [Beta Regression with Autoregressive Errors for Interrupted Time Series Analysis of Proportion and Rate Outcomes: A Simulation Study](/202607/15/2607.07914v1-beta-regression-with-autoregressive-errors-for-interrupted-time-series-analysis-of-proportion-and-rate-outcomes-a-simulation-study)  
-   标签：评分：6.5/10、query:q8
-   evidence：用于比例和比率结果的中断时间序列分析
-8. [A Design-Based Approach to Testing and Inference in (Quasi-)Experiments with Spillovers](/202607/15/2607.08640v1-a-design-based-approach-to-testing-and-inference-in-quasi-experiments-with-spillovers)  
+   evidence：针对比例结果的中断时间序列分析
+7. [Orthogonal Integrated Conditional Moment Tests for Treatment Effect Heterogeneity](/202607/16/2607.12622v1-orthogonal-integrated-conditional-moment-tests-for-treatment-effect-heterogeneity)  
    标签：评分：6.5/10、query:profile-1
-   evidence：准实验中的因果推断
-9. [Inference for Fixed Effects Estimators when Panels are Unbalanced](/202607/15/2607.10246v1-inference-for-fixed-effects-estimators-when-panels-are-unbalanced)  
-   标签：评分：6.5/10、query:profile-1
-   evidence：提供了不平衡面板中双向固定效应估计量的计量经济学理论，这对于家庭金融研究中的因果识别至关重要。
-10. [A Unified Credit Expansion Theory on Housing Cycle: Causal Evidence for Within- and Cross-Metro Patterns in the Prior, Boom, Bust, and Recovery Periods](/202607/15/2607.12205v1-a-unified-credit-expansion-theory-on-housing-cycle-causal-evidence-for-within--and-cross-metro-patterns-in-the-prior-boom-bust-and-recovery-periods)  
-   标签：评分：6.5/10、query:q9
-   evidence：住房和信贷的双重差分因果证据
-11. [Sensitivity and Early Detection of Bayesian Causal Impact Models for Marketing Interventions](/202607/15/2607.05646v1-sensitivity-and-early-detection-of-bayesian-causal-impact-models-for-marketing-interventions)  
+   evidence：针对不同子群体处理效应异质性的非参数检验
+8. [Causal Inference for Case Studies in Behavioral Health](/202607/16/2607.06912v1-causal-inference-for-case-studies-in-behavioral-health)  
    标签：评分：6.0/10、query:profile-1
-   evidence：用于估计干预效果的贝叶斯因果影响模型
+   evidence：未测量混杂下的因果推断
+9. [Which Regularized Propensity-Score and Doubly Robust Methods Are Best Calibrated When Exposures or Outcomes Are Rare? A Plasmode Study of Proxy-Based Confounding Adjustment](/202607/16/2607.07065v1-which-regularized-propensity-score-and-doubly-robust-methods-are-best-calibrated-when-exposures-or-outcomes-are-rare-a-plasmode-study-of-proxy-based-confounding-adjustment)  
+   标签：评分：6.0/10、query:profile-1
+   evidence：数据库研究中混杂调整的双重稳健方法
+10. [Workload-Preserving Differentially Private Synthetic Data for Causal Inference via Maximum-Entropy Calibration](/202607/16/2607.08122v1-workload-preserving-differentially-private-synthetic-data-for-causal-inference-via-maximum-entropy-calibration)  
+   标签：评分：6.0/10、query:profile-1
+   evidence：通过合成数据和平均处理效应进行因果推断
+11. [Bayesian Donor Set Selection in Synthetic Controls](/202607/16/2607.08142v1-bayesian-donor-set-selection-in-synthetic-controls)  
+   标签：评分：6.0/10、query:profile-1
+   evidence：用于评估干预效果的合成控制法
 
 
 <div class="dpr-home-promo-card">
