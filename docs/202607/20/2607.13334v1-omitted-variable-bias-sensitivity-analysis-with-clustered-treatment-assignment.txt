@@ -1,0 +1,2018 @@
+Title: Omitted variable bias sensitivity analysis with clustered treatment assignment
+
+URL Source: https://arxiv.org/pdf/2607.13334v1
+
+Published Time: Thu, 16 Jul 2026 00:28:59 GMT
+
+Number of Pages: 27
+
+Markdown Content:
+# Omitted variable bias sensitivity analysis with clustered treatment assignment 
+
+Anton Strezhnev *
+
+University of Wisconsin-Madison, Department of Political Science. strezhnev@wisc.edu 
+
+July 13, 2026 
+
+Abstract 
+
+Cinelli and Hazlett (2020) develops a sensitivity analysis method for the linear regression model that parameterizes omitted variable bias in terms of two partial R2 parameters capturing the residual variation explained by an omitted confounder in the treatment and outcome respectively. This method is often applied to regressions fit to unit-level data when treatment is assigned at a higher level of aggregation - as in clustered observational designs. This paper shows that despite the numerical equivalence of the unit-level regression and an appropriately weighted cluster-aggregated regression for estimating the treatment effect, the sensitivity analysis procedure yields different conclusions depending on the chosen level of analysis. The outcome-confounder partial R2 reflects both between- and within- group variation but the latter is irrelevant to omitted variable bias as it by construction cannot be explained by a group-level confounder. Straightforward corrections to the robustness value and the extreme scenario analysis from the unit-level regression using Pearson’s partial-η recover equivalence between these two approaches. The paper concludes with a point of caution when benchmarking against unit-level covariates and recommends always including cluster-level averages of these covariates as regressors (Mundlak 1978). 
+
+Keywords: sensitivity analysis, linear regression, omitted variable bias, causal inference, clustered obser-vational design, within-between estimator, mundlak device 
+
+# 1. Introduction 
+
+One of the central challenges facing researchers when estimating causal effects using selection-on-observables designs is defending the core identifying assumption that there are no unobserved confounders of treatment and outcome. Typically such designs will attempt to control for as many observed confounders as possible, but unlike randomized experiments there is no guarantee that treated and control groups are balanced on unadjusted-for correlates of the outcome. Given an estimated effect, it is common to ask how “strong” of an unobserved confounder would explain away the result. Sensitivity analysis methods provide a structured way for researchers to quantify this by introducing a parameter or set of parameters that define the degree of confounding present. Such approaches date back to Cornfield et al. (1959) which asked how 
+
+*. First draft: July 13, 2026. Support for this research was provided by the Office of the Vice Chancellor for Research at the University of Wisconsin-Madison with funding from the Wisconsin Alumni Research Foundation (WARF). Claude Opus 4.8 was used to assist with developing the software implementation, writing the replication code, reviewing the math and porting from Typst to .tex. All errors are my own. A fork of the sensemakr R package implementing the cluster adjustment methods in this paper is available at github.com/astrezhnev/sensemakr. 
+
+1arXiv:2607.13334v1 [stat.ME] 14 Jul 2026 strongly an unobserved trait would have to be associated with both smoking and lung cancer to account for their observed association. This paper focuses on sensitivity analysis for the linear regression model, a ubiquitous method in applied research. Researchers regress an outcome on the treatment of interest and some set of observed covariates and wish to interpret the coefficient on treatment as a causal effect. In this setting, the familiar omitted vari-ables bias formula characterizes how the estimated effect would change if a relevant confounder happened to be excluded from the regression. It is common to see researchers informally “sign the bias” by reason-ing about the directions of the two components of omitted variables bias – the treatment-confounder and outcome-confounder associations. Formal sensitivity analysis methods within the linear regression frame-work provide a means of quantifying how large the confounding would have to be to substantially alter the result (Frank 2000; Frank et al. 2013; Hosman, Hansen, and Holland 2010). Alternatively, a number of papers have proposed methods of benchmarking against some observed baseline (Altonji, Elder, and Taber 2005; Oster 2019). However, until recently, such sensitivity analyses had seen little adoption among applied researchers due to the difficulties in selecting sensitivity parameters that could be reasoned about substan-tively, the challenges of informal benchmarking, the absence of standardized reporting statistics that could be compared across studies and existing methods’ reliance on strong parametric assumptions. Cinelli and Hazlett (2020) provides the first formal treatment of the linear regression omitted variables bias that requires no parametric assumptions on the unobserved confounder and allows researchers to rea-son about the confounder in terms of scale-free and bounded partial-R2 parameters – a parameterization first introduced by Imbens (2003) – which capture the share of residual variation in treatment and in outcome explained by a hypothetical confounder. It develops a set of formal bounds for benchmarking the strength of a hypothetical confounder against the variation explained by the observed covariates, and gives a standard set of simple to report robustness statistics that can accompany any regression table. One such statistic is the 
+
+robustness value which reports the minimum strength that a confounder equally associated with treatment and outcome would need in order to reduce the estimate to zero. Implemented in the easy to use sensemakr 
+
+software (Cinelli and Hazlett 2019), this method has seen significantly wider adoption than many of the ear-lier methods, particularly in the social sciences where linear regression remains a standard tool for covariate adjustment. Other sensitivity analysis methods outside of the OLS tradition use alternative parameterizations for other estimation strategies. Design-based bounds for the matched pair design (Rosenbaum 1987, 2002, 2005) consider deviations from a hypothetical ideal randomized experiment. Sensitivity to unobserved con-founding is parameterized by bounding the ratio Γ by which the odds of treatment assignment may differ between two units with identical observed covariates. The analysis reports the range of randomization-inference p-values consistent with that bound. A second family addresses the sensitivity of weighting esti-mators by assessing the extent to which the estimated weights diverge from the “ideal” weights necessary to eliminate confounding. These approaches include the marginal sensitivity model (Tan 2006; Zhao, Small, and Bhattacharya 2019) and the variance-based sensitivity model (Huang and Pimentel 2025). A third fam-ily parameterizes the bias directly through the confounding function , the difference in common potential outcomes among units with different observed treatment assignments (Robins 1999; Robins, Rotnitzky, and 2Scharfstein 2000; Brumback et al. 2004; Blackwell 2014). The sensitivity analysis is conducted by ad-justing the outcome by subtracting this function, evaluated at varying levels of the sensitivity parameter, and re-estimating. A fourth approach directly parameterizes the latent confounder and its joint relationship with treatment and outcome (Rosenbaum and Rubin 1983; Imbens 2003; Carnegie, Harada, and Hill 2016; Zheng, D’Amour, and Franks 2025). Conversely, a fully model-agnostic approach is the E-value (Ding and VanderWeele 2016; VanderWeele and Ding 2017), the modern descendant of Cornfield et al. (1959) and the analogue of the Cinelli and Hazlett (2020) robustness value for the risk ratio scale. The primary contribution of this paper is to study the application of the Cinelli and Hazlett (2020) ap-proach to the clustered observational design where units are grouped into some higher level of aggregation (e.g. school, county, village) at which treatment is assigned. Units that share a cluster share the same treatment. In this setting, it is not uncommon for applied researchers to estimate treatment effects with regressions fit to unit-level data. For example, Reny, Reeves, and Christenson (2026), re-analyzed in Sec-tion 5, estimates the effect of a county-level measure of exposure to rising sea levels on an individual-level measure of support for climate mitigation measures using a regression fit to the individual survey responses and incorporating individual level covariates such as partisanship. Although most of these studies now cor-rectly address the variance estimation issues that clustering creates by using an appropriate estimator for the standard errors (Liang and Zeger 1986; Abadie et al. 2023), there is less clarity regarding how one should approach the sensitivity analysis for such a regression. Many studies simply apply the Cinelli and Hazlett (2020) method directly to the unit-level regression, report robustness values, and benchmark confounding against other covariates from that regression. I show that such commonly-reported summaries are misleading and can actually understate the robust-ness of the design. This is because the unit-level regression involves two partial-R2 sensitivity parameters measured on asymmetric scales. In a clustered observational design, confounding can only come from between-cluster variation. Therefore, while a worst-case confounder can explain 100% of treatment varia-tion, it cannot explain 100% of outcome variation. The upper bound on the unit-level partial-R2 between out-come and confounder is the ratio of between-cluster outcome variation to the total variation. Because of this unaccounted-for compression in the range of the outcome-confounder sensitivity parameter, the Cinelli and Hazlett (2020) robustness value , which sets the two partial-R2 sensitivity parameters equal to one another, does not truly reflect “equal confounding.” At every given partial-R2, the outcome-confounder strength is 
+
+greater than the treatment-confounder strength except when there is absolutely no within-cluster variation in the outcome. Likewise, the extreme scenario analysis, considers the impossible case where a confounder explains all residual outcome variation rather than just the remaining variation across clusters. Two earlier papers study the same setting of cluster-level treatment assignment, but come from different sensitivity analysis traditions. Hansen, Rosenbaum, and Small (2014) considers a Rosenbaum-style sensi-tivity analysis and reaches a conclusion similar to that of this paper. It shows that clustering in treatment systematically reduces sensitivity to unmeasured confounding, because such a confounder is constrained by the structure of treatment assignment in seeking out the most favorable individuals for treatment. I obtain an analogous result for the omitted variables bias sensitivity analysis. Clustered treatment assignment limits the variation that the confounder can explain and improves “robustness” much in the same way that residualizing 3the outcome on a purely prognostic covariate would. A more recent paper, Huang et al. (2026) works in the weighting tradition and is the closest paper to this one in that it analyzes the clustered observational design and extends the variance-based sensitivity model to weighting-based adjustments, distinguishing between unit-level and cluster-level covariates in the construction of the weights. I further show that the entire discrepancy between the unit-level and cluster-level sensitivity analyses is governed by a single quantity η2 that denotes the share of the regression’s residual outcome variance that can be explained by the cluster indicators. This quantity originates in the statistics literature as Pearson’s “correlation ratio” (Pearson 1905) and has a deep history in ANOVA (Kennedy 1970; Cohen 1973) as well as non-parametric regression (Doksum and Samarov 1995). Correcting the proposed “routine reporting” measures obtained from unit-level regression using this scaling factor yields exact equivalence between the unit-level and cluster-level sensitivity analyses and illustrates that the uncorrected unit-level sensitivity analyses are overly conservative. I then show that the proposed benchmarking bounds in (Cinelli and Hazlett 2020) are equivalent when applied to the unit-level and cluster-level regressions as long as the covariate used for benchmarking is measured at the cluster level. However, this equivalence breaks down when benchmarking against a unit-level covariate that varies both within and between clusters. A simple fix to conventional practice – including group-level averages of individual-level covariates as an additional regressor (Mundlak 1978) – makes the within-cluster variation irrelevant and facilitates valid benchmarking against a cluster-level confounder. I apply the proposed correction to a sensitivity analysis conducted in Reny, Reeves, and Christenson (2026), which estimates the effect of county-level sea rise exposure on individual attitudes towards climate mitigation. The reported robustness value of 7 .4% for the main analysis is very conservative since only about a third of the residual outcome variation is between counties ( η2 = 0.32). Correcting for this raises the robustness value from 7 .4% to 12 .7% and the extreme scenario threshold from 0 .59% to 1 .83%, lifting the latter far above the treatment-outcome benchmark covariate: party identification. Benchmarking against the raw individual-level covariate is, in this case, conservative relative to benchmarking against the cluster means due to the high degree of within-county correlation between party ID and climate attitudes. The remainder of the paper proceeds as follows. Section 2 sets up the clustered observational design and reviews the Cinelli and Hazlett (2020) framework as applied to the cluster-level regression. Section 3 derives the correction factor η2 for the unit-level regression and the corresponding adjustments to the robust-ness value and the extreme scenario analysis. Section 4 turns to benchmarking, establishing the equivalence of benchmarks against group-level covariates under either regression and characterizing the distortions in-duced by benchmarking against individual-level covariates included in the regression without their cluster-averages. Section 5 presents the reanalysis and illustrates how published sensitivity analyses for regressions with clustered treatment likely understate robustness. Section 6 concludes with implications for related settings and recommendations for researcher practice. 42. Setup 
+
+I start by reviewing the OVB sensitivity analysis setup introduced in Cinelli and Hazlett (2020) in the setting with a cluster-level treatment. When applied to a cluster-level regression, the sensitivity analysis procedure remains unchanged. Imagine that researchers are interested in comparing the coefficient estimates from two regression specifications, a full model that would include a hypothetical confounder Z and a 
+
+restricted specification that omits it. The data consist of N observations nested into C clusters, N > C. Index units by i and clusters by g with g(i) denoting the cluster that unit i is a member of. Let Ng denote the number of units in cluster g. For simplicity, I will focus on the design with balanced cluster sizes, such that C × Ng = N, but extension to an unbalanced design is straightforward by weighting the cluster-level regression by Ng. An outcome Yi is observed for each unit and treatment Dg for each cluster. I study the clustered observational design characterized in Huang et al. (2026), focusing specifically on the “cluster only design” in which units’ cluster memberships are unaffected by treatment assignment. Under this design, treatment-outcome confounding is driven by cluster-level covariates (which can include aggregates of individual-level covariates). Let X denote the C by P matrix of observed cluster-level co-variates (including the intercept) and Xg denote the P-length vector of observed cluster-level covariates for cluster g. Zg denotes a cluster-level “unobserved” confounder. First consider the cluster-level regression which regresses the cluster averages ¯ Yg = 1 
+
+> Ng
+
+∑i:g(i)= g Yi on the treatment and covariates. A researcher wishing to control for all sources of confounding would estimate the 
+
+full ordinary least squares regression: ¯Yg = ˆτDg + XTg ˆβ + ˆγZg + ˆεfull  
+
+> g
+
+(1) However, because Z is unobserved, the researcher instead estimates the restricted regression: ¯Yg = ˆτres Dg + XTg ˆβres + ˆεres  
+
+> g
+
+(2) Cinelli and Hazlett (2020) characterize the discrepancy between the unrestricted and restricted coeffi-cient estimates on the treatment dbias = ˆτ − ˆτres . Applying the classic Frisch-Waugh-Lovell theorem (Frisch and Waugh 1933; Lovell 1963), they derive the classic omitted variables bias formula in terms of sample covariances and variances. Following the original notation, let ⊥ denote the residual of the variable from its linear projection onto the variables denoted in the superscript. ˆτres = cov  D⊥X 
+
+> g
+
+, ¯Y ⊥X
+
+> g
+
+
+
+var  D⊥X
+
+> g
+
+
+
+= cov  D⊥X 
+
+> g
+
+, ˆτD⊥X 
+
+> g
+
++ ˆγZ⊥X
+
+> g
+
+
+
+var  D⊥X
+
+> g
+
+
+
+= ˆτ + ˆγ cov  D⊥X 
+
+> g
+
+, Z⊥X
+
+> g
+
+
+
+var  D⊥X
+
+> g
+
+
+
+= ˆτ + ˆγ ˆθ
+
+(3) 5where ˆ θ ≡ cov (D⊥X  
+
+> g,Z⊥X
+> g
+
+)
+
+> var
+
+(D⊥X 
+
+> g
+
+) is the coefficient on treatment from a cluster-level regression of the unobserved confounder on treatment and the observed covariates. The OVB formula gives us dbias = ˆγ ˆθ , the product of the association between the unobserved confounder and the outcome net of the observed covariates ˆ γ and the association between treatment and the unobserved confounder ˆ θ . While it is possible to implement a sensitivity analysis in terms of these two parameters directly, the major innovation of Cinelli and Hazlett (2020) is to re-parameterize the OVB into a scale-invariant form using partial R2s. Denote the partial R2 of the regression of Zg on Dg adjusting for X as R2
+
+> Zg∼Dg|X
+
+. The absolute omitted variables bias can be written as: 
+
+dbias =
+
+vuutR2¯Yg∼Zg|D,X × R2
+
+> Dg∼Zg|X
+
+1 − R2
+
+> Dg∼Zg|X
+
+×
+
+sd 
+
+ ¯Y ⊥D,X
+
+> g
+
+
+
+sd  D⊥X
+
+> g
+
+ (4) The re-parameterization yields two sensitivity analysis parameters R2¯Yg∼Zg|D,X and R2 
+
+> Dg∼Zg|X
+
+that are bounded between 0 and 1. The first reflects the proportion of the variance explained in the cluster-averaged outcome by a hypothetical unobserved confounder, conditional on treatment and observed covariates. The second reflects the proportion that confounder explains in treatment conditional on observed covariates. Cinelli and Hazlett (2020) characterize this as a scale invariant “bias factor” BF ≡ R ¯Yg∼Zg|D,X × RDg∼Zg|X
+
+q
+
+1 − R2
+
+> Dg∼Zg|X
+
+= R ¯Yg∼Zg|D,X × fDg∼Zg|X (5) where f =
+
+q R2 
+
+> 1−R2
+
+denotes Cohen’s f (Cohen 1988). This bias factor is multiplied by a scale correction sd ( ¯Y ⊥Dg,X 
+
+> g
+
+)/ sd (D⊥X 
+
+> g
+
+), the ratio of the residual standard deviations of outcome and treatment, to yield the omitted variable bias on the level of the original outcome. Furthermore, the relative size of the bias induced by confounding compared to the magnitude of the estimate dbias / ˆτres can be written in terms of this bias factor scaled by the partial- f of the outcome on treatment and observed covariates. relative bias =
+
+R ¯Yg∼Zg|D,X × fDg∼Zg|X
+
+f ¯Yg∼Dg|X
+
+(6) In addition to the popular contour plot, which summarizes the adjusted treatment effect under each hypothetical combination of the two sensitivity parameters, Cinelli and Hazlett (2020) define two sum-mary robustness statistics that are recommended as a standard reporting diagnostic alongside regression estimates: the robustness value and the extreme scenario analysis . The robustness value RV q is defined as the strength of association that a confounder equally associated with treatment and outcome (RV q =
+
+R2¯Yg∼Zg|D,X = R2
+
+> Dg∼Zg|X
+
+) would need to reduce the estimated effect by a factor of 100% × q.1 They show that this can be straightforwardly computed using Cohen’s f of the outcome on treatment given observed covariates scaled by the reduction factor q. Define fq ≡ q × f ¯Yg∼Dg|X . The robustness value is then equal to     
+
+> 1. sensemakr defaults to q=1 in its standard reporting.
+
+6RV q = 12
+
+q 
+
+f 4 
+
+> q
+
++ 4 f 2 
+
+> q
+
+− f 2
+
+> q
+
+
+
+(7) This quantity is related to other single-number robustness quantities such as the “E-value” (VanderWeele and Ding 2017), which capture the general notion of a “minimum strength” confounder necessary to overturn the results. That is, to achieve the necessary amount of bias, a confounder could not have a lower partial-R2
+
+than RV q with respect to the outcome without compensating by having a higher partial-R2 than RV q with respect to the treatment (and vice-versa). The other proposed reporting diagnostic, the extreme scenario analysis, instead considers robustness to a “worst case” threat to identification: one where the confounder is assumed to explain the entire residual variation in the outcome: R ¯Yg∼Zg|D,X = 1. In this case, it is straightforward to obtain this quantity, denoted XRV from Equation 6. Setting R ¯Yg∼Zg|D,X and solving for the value of R2 
+
+> Dg∼Zg|X
+
+that would set the relative bias to 1 yields XRV = R2¯Yg∼Dg|X.
+
+# 3. Adjusting sensitivity parameters for clustered designs 
+
+I now consider the application of the OVB sensitivity analysis to the unit-level regression in which vari-ables are indexed by i. Note that any terms indexed only by g refer to the cluster-level regression while those that include i correspond to the unit-level regression. I again evaluate the bias in terms of the differ-ence in coefficient estimates across a full specification and a restricted specification. Denote coefficients estimated with the unit-level regression via the superscript U. Suppose instead of Equation 2, the analyst fit the following restricted regression: 
+
+Yi = ˆτUres Dg(i) + XTg(i) ˆβ Ures + ˆεres  
+
+> i
+
+(8) Write the omitted variable bias for ˆ τUres as before, applying Frisch-Waugh-Lovell to the unit level re-gression. Write the outcome in terms of its between cluster variation ¯ Yg(i) and its within cluster residual 
+
+eYi = Yi − ¯Yg(i). Note that the sample covariance of a cluster-level variable (e.g Dg(i)) and a within-cluster residual eYi is zero. 7ˆτUres =
+
+cov 
+
+
+
+D⊥X
+
+> g(i)
+
+,Y ⊥X
+
+> i
+
+
+
+var 
+
+
+
+D⊥X
+
+> g(i)
+
+
+
+=
+
+cov 
+
+
+
+D⊥X
+
+> g(i)
+
+, eY ⊥X 
+
+> i
+
++ ¯Y ⊥X
+
+> g(i)
+
+
+
+var 
+
+
+
+D⊥X
+
+> g(i)
+
+
+
+=
+
+cov 
+
+
+
+D⊥X
+
+> g(i)
+
+, eY ⊥X 
+
+> i
+
++ ˆτD⊥X 
+
+> g(i)
+
++ ˆγZ⊥X
+
+> g(i)
+
+
+
+var 
+
+
+
+D⊥X
+
+> g(i)
+
+
+
+=
+
+cov 
+
+
+
+D⊥X
+
+> g(i)
+
+, eY ⊥X
+
+> i
+
+
+
+var 
+
+
+
+D⊥X
+
+> g(i)
+
+ + ˆτ
+
+cov 
+
+
+
+D⊥X
+
+> g(i)
+
+, D⊥X
+
+> g(i)
+
+
+
+var 
+
+
+
+D⊥X
+
+> g(i)
+
+ + ˆγ
+
+cov 
+
+
+
+D⊥X
+
+> g(i)
+
+, Z⊥X
+
+> g(i)
+
+
+
+var 
+
+
+
+D⊥X
+
+> g(i)
+
+
+
+= ˆτ + ˆγ ˆθ
+
+(9) The last step follows from the equivalence of cluster-aggregated and individual regressions under a balanced cluster design (Kloek 1981; Moulton 1986, 1990; Wooldridge 2003). Therefore cov  D⊥X 
+
+> g
+
+, Z⊥X
+
+> g
+
+ =
+
+cov 
+
+
+
+D⊥X
+
+> g(i)
+
+, Z⊥X
+
+> g(i)
+
+
+
+.2 The estimated treatment effects and the magnitude of omitted variable bias are the same for the individual-level and the cluster-level regression and ˆ τUres = ˆτres .But directly applying the Cinelli and Hazlett (2020) re-parameterization to the unit-level regression yields an expression in terms of unit-level partial R2 values. The outcome-confounder sensitivity parameter is not equivalent to the corresponding group-level partial-R2 as it incorporates otherwise irrelevant variation that cannot be a source of confounding: variation within-cluster. 
+
+dbias =
+
+vuutR2 
+
+> Yi∼Zg(i)|D,X
+
+×
+
+R2
+
+> Dg(i)∼Zg(i)|X
+
+1 − R2
+
+> Dg(i)∼Zg(i)|X
+
+×
+
+sd 
+
+
+
+Y ⊥D,X
+
+> i
+
+
+
+sd 
+
+
+
+D⊥X
+
+> g(i)
+
+ (10) relative bias =
+
+RYi∼Zg(i)|D,X × fDg(i)∼Zg(i)|X
+
+fYi∼Dg(i)|X
+
+(11) As before, it is possible to substitute R2 
+
+> Dg(i)∼Zg(i)|X
+
+= R2 
+
+> Dg∼Zg|X
+
+and sd 
+
+
+
+D⊥X
+
+> g(i)
+
+
+
+= sd  D⊥X
+
+> g
+
+. However, the partial-R2 involving the unit-level outcome Yi includes both the within-cluster and between-cluster variation. Only the latter can be explained by a cluster-level confounder Z. As a result, the two R2 parameters sit on different scales. While treatment-confounder partial R2 can plausibly range from 0 to 1, the outcome-confounder partial R2 is constrained to a quantity that can be written as the square of a Pearson “correlation ratio” η2 (Pearson 1905, 1915; Kennedy 1970; Cohen 1973). Let G denote the set of cluster indicators. Define η2  
+
+> Y|D,X
+
+≡ 1 − var    
+
+> 
+> Y⊥G,D,X
+> i
+> 
+> var
+> 
+> Y⊥D,X
+> i
+> 
+
+= R2 
+
+> Yi∼G|D,X
+
+as the share of the variation in the outcome that is explained by conditioning on the cluster indicators beyond conditioning on   
+
+> 2. With imbalanced clusters, the individual-level covariance equals to the Ngweighted group-level covariance, as in the standard group-/unit-level regression equivalence.
+
+8the cluster-level treatment and observed covariates. This is the “non-parametric” R2 of Doksum and Samarov (1995) and in the case where all covariates are measured at the cluster level is equal to var       
+
+> ¯Y⊥D,X
+> g
+> 
+> var
+> ¯Y⊥D,X
+> g
+> 
+> +var
+> eY⊥D,X
+> i
+> 
+
+:the ratio of the between-cluster residual variance to the total (between-cluster plus within-cluster) residual variance. However, introducing individual-level covariates complicates this interpretation slightly as shown later in Section 4. This η2 is straightforward to compute from an auxiliary regression of the residuals of Equation 8 on the cluster dummies. The unit-level outcome partial-R2 is equal to the cluster-average partial R2 re-scaled by the squared partial-η. Using the definition of the partial R2 in terms of variance explained 
+
+R2 
+
+> Yi∼Zg(i)|D,X
+
+= 1 −
+
+var 
+
+
+
+Y ⊥Z,D,X
+
+> i
+
+
+
+var 
+
+
+
+Y ⊥D,X
+
+> i
+
+
+
+= 1 −
+
+var 
+
+ ¯Y ⊥Z,D,X
+
+> g
+
+
+
++ var 
+
+eY ⊥Z,D,X
+
+> i
+
+
+
+var 
+
+ ¯Y ⊥D,X
+
+> g
+
+
+
++ var 
+
+eY ⊥D,X
+
+> i
+
+
+
+= 1 −
+
+var 
+
+ ¯Y ⊥Z,D,X
+
+> g
+
+
+
++ var 
+
+eYi
+
+
+
+var 
+
+ ¯Y ⊥D,X
+
+> g
+
+
+
++ var 
+
+eYi
+
+
+
+=
+
+var 
+
+ ¯Y ⊥D,X
+
+> g
+
+
+
+− var 
+
+ ¯Y ⊥Z,D,X
+
+> g
+
+
+
+var 
+
+ ¯Y ⊥D,X
+
+> g
+
+
+
++ var 
+
+eYi
+
+
+
+=
+
+var 
+
+ ¯Y ⊥D,X
+
+> g
+
+
+
+− var 
+
+ ¯Y ⊥Z,D,X
+
+> g
+
+
+
+var 
+
+ ¯Y ⊥D,X
+
+> g
+
+
+
++ var 
+
+eY ⊥D,X
+
+> i
+
+
+
+=
+
+var 
+
+ ¯Y ⊥D,X
+
+> g
+
+
+
+var 
+
+ ¯Y ⊥D,X
+
+> g
+
+
+
++ var 
+
+eY ⊥D,X
+
+> i
+
+ ×
+
+1 −
+
+var 
+
+ ¯Y ⊥Z,D,X
+
+> g
+
+
+
+var 
+
+ ¯Y ⊥D,X
+
+> g
+
+
+
+= η2  
+
+> Y|D,X
+
+× R2¯Yg∼Zg|D,X
+
+(12) Substituting back into the bias expression yields 
+
+dbias =
+
+vuutη2  
+
+> Y|D,X
+
+× R2¯Yg∼Zg|D,X × R2
+
+> Dg∼Zg|X
+
+1 − R2
+
+> Dg∼Zg|X
+
+×
+
+sd 
+
+
+
+Y ⊥D,X
+
+> i
+
+
+
+sd  D⊥X
+
+> g
+
+
+
+=
+
+vuutη2  
+
+> Y|D,X
+
+× R2¯Yg∼Zg|D,X × R2
+
+> Dg∼Zg|X
+
+1 − R2
+
+> Dg∼Zg|X
+
+×
+
+sd 
+
+ ¯Y ⊥D,X
+
+> g
+
+
+
+sd  D⊥X
+
+> g
+
+ × 1
+
+ηY |D,X
+
+(13) Therefore, rescaling from the bias factor returned by the unit-level regression BF U = RYi∼Zg(i)|Dg(i),X ×
+
+fDg∼Zg|X to the cluster-level bias factor requires simply dividing by the partial correlation ratio of the out-come given X and D.9BF = 1
+
+ηY |D,X
+
+× BF U (14) While it is still possible to conduct a sensitivity analysis using the unit-level rather than cluster-level partial-R2 values to generate plots of the bias contours, interpreting the parameters substantively is more difficult. Moreover, both of the proposed “minimal reporting” quantities in Cinelli and Hazlett (2020) are potentially misleading in this setting. The raw robustness value computed from this regression RV U posits a confounder that is “equally strong” on the treatment and outcome sides by setting the unit level R2
+
+> Yi∼Zg(i)|Dg(i),X
+
+equal to the cluster-level R2
+
+> Dg(i)∼Zg(i)|X
+
+. However, as Equation 12 shows, this is not an “equal strength” scenario. Setting the unit-level outcome-confounder partial-R2 equal to the cluster-level treatment-confounder par-tial R2 actually implies a confounder that is 1 /η2  
+
+> Y|D,X
+
+times stronger with respect to the outcome compared to treatment. Because the unit-level R2 is contaminated by irrelevant within-cluster variance, the analysis ascribes more influence to the confounder than it can actually have. R2 
+
+> Yi∼Zg(i)|Dg(i),X
+
+and R2 
+
+> Dg(i)∼Zg(i)|X
+
+are not on comparable scales. Furthermore, the extreme scenario analysis considers a scenario that is so extreme as to be impossible : a cluster-level confounder that explains all of the between and within-cluster variation. The correct upper bound on the unit-level outcome-confounder sensitivity parameter is η2 
+
+> Y|D,X
+
+, not 1. Luckily it is very simple to recover both of these summary statistics from the cluster-level analysis using the reported unit-level regression without needing to actually fit a regression at the cluster-aggregated level. The correction factor is identical across both minimal reporting quantities and depends entirely on η2 
+
+> Y|D,X
+
+.For the robustness value, it suffices to simply correct the unit-level partial- f f Yi∼Dg(i)|X for the outcome on treatment conditional on observed covariates such that it equals f ¯Yg∼Dg|X.10 f 2 
+
+> Yi∼Dg(i)|X
+
+=
+
+R2
+
+> Yi∼Dg(i)|X
+
+1 − R2
+
+> Yi∼Dg(i)|X
+
+=
+
+var  Y ⊥X
+
+> i
+
+ − var 
+
+
+
+Y ⊥D,X
+
+> i
+
+
+
+var 
+
+
+
+Y ⊥D,X
+
+> i
+
+
+
+=
+
+var   ¯Y ⊥X
+
+> g
+
+ + var 
+
+eY ⊥X
+
+> i
+
+
+
+− var 
+
+ ¯Y ⊥D,X
+
+> g
+
+
+
+− var 
+
+eY ⊥D,X
+
+> i
+
+
+
+var 
+
+ ¯Y ⊥D,X
+
+> g
+
+
+
++ var 
+
+eY ⊥D,X
+
+> i
+
+
+
+=
+
+var   ¯Y ⊥X
+
+> g
+
+ + var 
+
+eYi
+
+
+
+− var 
+
+ ¯Y ⊥D,X
+
+> g
+
+
+
+− var 
+
+eY ⊥D,X
+
+> i
+
+
+
+var 
+
+ ¯Y ⊥D,X
+
+> g
+
+
+
++ var 
+
+eYi
+
+
+
+=
+
+var   ¯Y ⊥X
+
+> g
+
+ − var 
+
+ ¯Y ⊥D,X
+
+> g
+
+
+
+var 
+
+ ¯Y ⊥D,X
+
+> g
+
+
+
++ var 
+
+eYi
+
+
+
+=
+
+var 
+
+ ¯Y ⊥D,X
+
+> g
+
+
+
+var 
+
+ ¯Y ⊥D,X
+
+> g
+
+
+
++ var 
+
+eY ⊥D,X
+
+> i
+
+ ×
+
+var   ¯Y ⊥X
+
+> g
+
+ − var 
+
+ ¯Y ⊥D,X
+
+> g
+
+
+
+var 
+
+ ¯Y ⊥D,X
+
+> g
+
+
+
+= η2  
+
+> Y|D,X
+
+× f 2¯Yg∼Dg|X
+
+(15) The adjusted robustness value can therefore be obtained by computing fq = q 1/ηY |D,X × fYi∼Dg(i)|X and substituting into Equation 7. Since ηY |D,X ≤ 1, this adjustment will always have the effect of inflating the robustness value (except in the edge case where there is no within-cluster variation in outcome) RV U
+
+> q
+
+q
+
+1 − RV U
+
+> q
+
+= ηY |D,X × RV q
+
+p1 − RV q
+
+(16) An identical correction can be applied to the extreme scenario analysis and follows from the relationship between the cluster-level and unit-level bias factors (Equation 14). Setting RYi∼Zg(i)|D,X in Equation 11 to its largest possible value, ηY |D,X and solving for the value of fDg(i)∼Zg(i)|X needed to set the relative bias to 1 yields 1 /ηY |D,X × fYi∼Dg(i)|X. As with Equation 16, this re-scales the extreme robustness value as: XRV U
+
+> q
+
+1 − XRV U
+
+> q
+
+= η2  
+
+> Y|D,X
+
+× XRV q
+
+1 − XRV q
+
+(17) 
+
+# 4. Benchmarking with clustered treatment assignment and the problems of individual-level covariates 
+
+While the reparameterization of the omitted variables bias into scale-invariant R2 terms provides some improvement in interpretability, researchers still often have difficulty in reasoning about these quantities directly. In some settings, theory might suggest many hypothetical confounders that could reach the nec-essary treatment and outcome R2 thresholds to overturn the findings. In others, researchers might believe 11 that the number of potential threats to identification is limited. Researchers typically have a sense of which confounders are most relevant and have already attempted to control for them in X. Therefore, a common sensitivity analysis question is to ask whether a hypothetical confounder as strong as an observed confounder already accounted for would be enough to overturn the results. Cinelli and Hazlett (2020) introduces a bounding approach to compare the partial-R2 of the unobserved confounder to the partial-R2 of some set of observed confounders, conditional on treatment and the remain-ing included covariates. Let X j denote the set of observed confounders against which a researcher wishes to benchmark and X− j the remaining covariates. Cinelli and Hazlett (2020) defines the relative strength of the omitted confounder relative to the observed confounders with respect to the treatment kD and outcome kY .For the cluster-level regression, write these as: 
+
+kD ≡ R2 
+
+> Dg∼Zg|X−j
+
+R2   
+
+> Dg∼Xj|X−j
+
+kY ≡ R2¯Yg∼Zg|D,X− j
+
+R2¯Yg∼X j |D,X− j
+
+(18) Given researcher choices of kD and kY , which capture the notion of a confounder kD times as strong as X j with respect to treatment and kY times as strong with respect to outcome, Cinelli and Hazlett (2020) shows that the omitted confounder strength can be bounded by 
+
+R2 
+
+> Dg∼Zg|X
+
+= kD × f 2   
+
+> Dg∼Xj|X−j
+
+R2¯Yg∼Zg|D,X ≤ λ 2 × f 2¯Yg∼X j |D,X− j
+
+(19) where λ ≡               
+
+> √kY+fkD×fDg ∼Xj|X−j
+> q1−f2
+> kD×f2
+> Dg ∼Xj|X−j
+
+and f 2 
+
+> kD
+
+≡ kD×R2      
+
+> Dg ∼Xj|X−j
+> 1−kD×R2
+> Dg ∼Xj|X−j
+
+.The bounds therefore only require f 2¯Yg∼X j |D,X− j and R2    
+
+> Dg∼Xj|X−j
+
+. The former can be read directly from the outcome regression while the latter requires an auxiliary regression of the treatment indicator on the benchmark covariates after partialling out the remaining observed confounders. What happens when one instead fits the unit-level regression rather than the cluster-level regression? Since the treatment-side partial-R2 are equivalent with a cluster-level confounder, R2 
+
+> Dg(i)∼Zg|X
+
+= R2
+
+> Dg∼Zg|X
+
+.Likewise, λ remains unchanged as it is composed of researcher-specified constants and regressions involving only cluster-level variables. However, the bound on the unit-level outcome-confounder partial-R2 is 
+
+R2 
+
+> Yi∼Zg(i)|D,X
+
+≤ λ 2 × f 2    
+
+> Yi∼Xj|D,X−j
+
+(20) From Equation 15, f 2    
+
+> Yi∼Xj|D,X−j
+
+= η2  
+
+> Y|D,X
+
+× f 2¯Yg∼X j |D,X− j and from Equation 12, R2 
+
+> Yi∼Zg(i)|D,X
+
+= η2  
+
+> Y|D,X
+
+×
+
+R2¯Yg∼Zg|D,X. The bound is deflated by exactly the same factor that deflates the partial-R2 from the group-level regression. Therefore, for a cluster-level covariate, applying the bounding exercise yields the same adjusted effect estimate for a given kD and kY under either the unit-level or the cluster-level regression. But one of the primary reasons researchers fit the unit-level regression is that it permits easy inclusion of covariates measured for each unit i. However, the purpose of this is often unclear. Individual-level factors 12 under the clustered observational design can act as confounders only through their cluster-level aggregates. The covariance of the within-cluster residual with any cluster-level confounder is 0. Moreover, the within-cluster variation in these covariates net of their cluster-level averages contributes nothing to the estimation of the treatment effect ˆ τ and when clustering standard errors, nothing to variance estimation (Liang and Zeger 1986). Despite this, it is common to see regressions that include a mix of covariates measured at both the cluster and the unit level. I consider two ways of adding an individual-level covariate denoted Wi to the “restricted” regression specification in Equation 8. The first, following Mundlak (1978), involves including the cluster-level mean ¯Wg and the within-cluster deviation eWi = Wi − ¯Wg(i) as separate regressors. 3
+
+Yi = ˆτMres Dg(i) + ˆωMres eWi + ˆαMres ¯Wg(i) + XTg(i) ˆβ Mres + ˆεres ,M (21) ˆτMres is unchanged if one omits eWi from the regression as it is orthogonal to all other cluster-level regres-sors by construction. By Frisch-Waugh-Lovell ˆτMres =
+
+cov 
+
+
+
+D⊥ eW , ¯W ,X 
+
+> g(i)
+
+,Y ⊥ eW , ¯W ,X
+
+> i
+
+
+
+var 
+
+
+
+D⊥ eW , ¯W ,X
+
+> g(i)
+
+
+
+=
+
+cov 
+
+
+
+D⊥ eW , ¯W ,X 
+
+> g(i)
+
+, eY ⊥ eW , ¯W ,X 
+
+> i
+
++ ¯Y ⊥ eW , ¯W ,X
+
+> g(i)
+
+
+
+var 
+
+
+
+D⊥ eW , ¯W ,X
+
+> g(i)
+
+
+
+=
+
+cov 
+
+
+
+D⊥ ¯W ,X 
+
+> g(i)
+
+, eY ⊥ eWi + ¯Y ⊥ ¯W ,X
+
+> g(i)
+
+
+
+var 
+
+
+
+D⊥ ¯W ,X
+
+> g(i)
+
+
+
+=
+
+cov 
+
+
+
+D⊥ ¯W ,X 
+
+> g(i)
+
+, eY ⊥ eWi
+
+
+
+var 
+
+
+
+D⊥ ¯W ,X
+
+> g(i)
+
+ +
+
+cov 
+
+
+
+D⊥ ¯W ,X 
+
+> g(i)
+
+, ¯Y ⊥ ¯W ,X
+
+> g(i)
+
+
+
+var 
+
+
+
+D⊥ ¯W ,X
+
+> g(i)
+
+
+
+=
+
+cov 
+
+
+
+D⊥ ¯W ,X 
+
+> g(i)
+
+, ¯Y ⊥ ¯W ,X
+
+> g(i)
+
+
+
+var 
+
+
+
+D⊥ ¯W ,X
+
+> g(i)
+
+
+
+(22) Omitting the within-unit variation eWi also yields a specification equivalent to Equation 8 in which all covariates, including ¯Wg, vary only between clusters. Therefore, all of the prior results apply cleanly to including cluster-level averages among the set of unit-level covariates irrespective of whether the regression does or does not also include eWi. In fact, the adjusted robustness values and extreme scenario analysis remain the same even though η2     
+
+> Y|D,eW,¯W,X
+
+̸ = η2   
+
+> Y|D,¯W,X
+
+. Adding eWi scales η2 and the unit-level partial- f 2 by a common factor, leaving the ratio that enters into RV q and the extreme scenario analysis unchanged.   
+
+> 3. By Frisch-Waugh-Lovell, it is equivalent to just include ¯ Wgalongside Wi
+
+13 η2      
+
+> Y|D,eW,¯W,X
+
+= 11 − R2   
+
+> Yi∼eWi|D,¯W,X
+
+× η2   
+
+> Y|D,¯W,X
+
+f 2     
+
+> Yi∼Dg(i)|eW,¯W,X
+
+= 11 − R2   
+
+> Yi∼eWi|D,¯W,X
+
+× f 2  
+
+> Yi∼Dg(i)|¯W,X
+
+(23) In applied practice, the Mundlak (1978) within-between specification is unfortunately rare. Instead, researchers will typically fit a regression including only Wi without the group-level means. 
+
+Yi = ˆτpool res Dg(i) + ˆαpool res Wi + XTg(i) ˆβ pool res + ˆεres ,pool  
+
+> i
+
+(24) This is equivalent to imposing an additional constraint on Equation 21 that the coefficients on the be-tween variation and the within variation are equivalent ˆ ωMres = ˆαMres . Mundlak (1978) shows that the pooled coefficient ˆ αpool res is the variance-weighted average of the coefficients from the unconstrained regression ˆαpool res =
+
+var 
+
+ ¯W ⊥D,X
+
+> g
+
+
+
+ˆαMres + var 
+
+ eWi
+
+
+
+ˆωMres 
+
+var 
+
+
+
+W ⊥D,X
+
+> i
+
+
+
+= η2  
+
+> W|D,X
+
+× ˆαMres + ( 1 − η2 
+
+> W|D,X
+
+) × ˆωMres 
+
+(25) where η2  
+
+> W|D,X
+
+is now the within-between partial correlation ratio for covariate W . This affects the sen-sitivity analysis in two ways. First, it leaves an additional source of variation for an unobserved confounder 
+
+Zg to explain, the mis-specification resulting from adjusting for Wi rather than ¯ Wg. Including the individual-level covariate into the adjustment set for η2  
+
+> Y|D,W,X
+
+means that it now encompasses both the between-within cluster variation in the outcome as well as a term reflecting the discrepancy between the pooled coefficient ˆαpool res and the coefficient on the within-variation ˆ ωMres of W from the Mundlak regression. 
+
+η2  
+
+> Y|D,W,X
+
+= 1 −
+
+var 
+
+
+
+Y ⊥G,D,W,X
+
+> i
+
+
+
+var 
+
+
+
+Y ⊥D,W,X
+
+> i
+
+
+
+= 1 −
+
+var 
+
+eY ⊥Wi
+
+
+
+var 
+
+
+
+Y ⊥D,W,X
+
+> i
+
+
+
+=
+
+var 
+
+ ¯Y ⊥D,W,X
+
+> g
+
+
+
++ var 
+
+eY ⊥D,W,X
+
+> i
+
+
+
+var 
+
+
+
+Y ⊥D,W,X
+
+> i
+
+ −
+
+var 
+
+eY ⊥Wi
+
+
+
+var 
+
+
+
+Y ⊥D,W,X
+
+> i
+
+
+
+=
+
+var 
+
+ ¯Y ⊥D,W,X
+
+> g
+
+
+
+var 
+
+
+
+Y ⊥D,W,X
+
+> i
+
+ +
+
+var 
+
+eY ⊥D,W,X
+
+> i
+
+
+
+− var 
+
+eY ⊥Wi
+
+
+
+var 
+
+
+
+Y ⊥D,W,X
+
+> i
+
+
+
+(26) Because ˆ ωMres is the least-squares slope of eYi on eWi whereas Equation 24 fixes the within-cluster variation to ˆ αpool res , the within-cluster residual variances differ by var 
+
+eY ⊥D,W,X
+
+> i
+
+
+
+−var 
+
+eY ⊥Wi
+
+
+
+= ( ˆαpool res − ˆωMres )2 var 
+
+ eWi
+
+
+
+.Substituting into Equation 26, 14 η2  
+
+> Y|D,W,X
+
+=
+
+var 
+
+ ¯Y ⊥D,W,X
+
+> g
+
+
+
+var 
+
+
+
+Y ⊥D,W,X
+
+> i
+
+| {z }
+
+> between-cluster share
+
++( ˆαpool res − ˆωMres )2 var 
+
+ eWi
+
+
+
+var 
+
+
+
+Y ⊥D,W,X
+
+> i
+
+| {z }
+
+> Mundlak discrepancy
+
+(27) Second, benchmarking against the raw unit-level confounder Wi as opposed to the cluster mean ¯ Wg can yield potentially misleading conclusions regarding the strength of the confounder. Suppose a researcher fitting Equation 24 considers a confounder kD times as strong as Wi in explaining treatment and kY times as strong as Wi in explaining the outcome. How does this compare to the strength of confounding if instead the researcher had benchmarked against the relevant confounder ¯ Wg? Denote these factors k∗ 
+
+> D
+
+and k∗ 
+
+> Y
+
+and write the ratios 
+
+k∗
+
+> D
+
+kD
+
+=
+
+R2
+
+> Dg(i)∼Wi|X
+
+R2 
+
+> Dg∼¯Wg|X
+
+k∗
+
+> Y
+
+kY
+
+= R2
+
+> Yi∼Wi|D,X
+
+R2 
+
+> Yi∼¯Wg(i)|D,X
+
+(28) The treatment-side partial R2 follows from an argument similar to Equation 12 as the only variance in 
+
+W that explains treatment is the between-cluster variance 
+
+R2 
+
+> Dg(i)∼Wi|X
+
+= η2  
+
+> W|X
+
+× R2  
+
+> Dg∼¯Wg|X
+
+(29) The outcome-confounder relationship is a bit more complex as it involves η2  
+
+> W|D,X
+
+and a covariance ratio term. Writing the partial-R2 values as squared correlation coefficients: 
+
+R2
+
+> Yi∼Wi|D,X
+
+R2 
+
+> Yi∼¯Wg(i)|D,X
+
+=
+
+cov 
+
+
+
+Y ⊥D,X 
+
+> i
+
+,W ⊥D,X
+
+> i
+
+2
+
+var 
+
+
+
+Y ⊥D,X
+
+> i
+
+
+
+var 
+
+
+
+W ⊥D,X
+
+> i
+
+ ×
+
+var 
+
+
+
+Y ⊥D,X
+
+> i
+
+
+
+var 
+
+ ¯W ⊥D,X
+
+> g(i)
+
+
+
+cov 
+
+
+
+Y ⊥D,X 
+
+> i
+
+, ¯W ⊥D,X
+
+> g(i)
+
+2
+
+=
+
+ cov 
+
+
+
+Y ⊥D,X 
+
+> i
+
+,W ⊥D,X
+
+> i
+
+
+
+cov 
+
+
+
+Y ⊥D,X 
+
+> i
+
+, ¯W ⊥D,X
+
+> g(i)
+
+
+
+> 2
+
+× η2 
+
+> W|D,X
+
+=
+
+ cov 
+
+ ¯Y ⊥D,X 
+
+> g
+
+, ¯W ⊥D,X
+
+> g
+
+
+
++ cov 
+
+eYi, eWi
+
+
+
+cov 
+
+ ¯Y ⊥D,X 
+
+> g
+
+, ¯W ⊥D,X
+
+> g
+
+
+
+> 2
+
+× η2 
+
+> W|D,X
+
+=
+
+1 +
+
+cov 
+
+eYi, eWi
+
+
+
+cov 
+
+ ¯Y ⊥D,X 
+
+> g
+
+, ¯W ⊥D,X
+
+> g
+
+
+
+> 2
+
+× η2 
+
+> W|D,X
+
+(30) Intuitively, the cluster means of the covariate can only covary with the cluster means of the outcome, while the individual-level covariate covaries with both. Substituting both into the expression for the ratios of k yields 15 k∗
+
+> D
+
+kD
+
+= η2 
+
+> W|X
+
+k∗
+
+> Y
+
+kY
+
+=
+
+1 +
+
+cov 
+
+eYi, eWi
+
+
+
+cov 
+
+ ¯Y ⊥D,X 
+
+> g
+
+, ¯W ⊥D,X
+
+> g
+
+
+
+> 2
+
+× η2 
+
+> W|D,X
+
+(31) On the treatment side, positing a hypothetical confounder “as strong as” Wi is equivalent to assuming a confounder that is only η2  
+
+> W|X
+
+times as strong as ¯ Wg. Benchmarking against Wi as opposed to the group-level averages always yields a “weaker” test with respect to the treatment side relationship. On the outcome side, benchmarking against Wi could be either a “stronger” or “weaker” test, depending on within-cluster covariance of the covariate and outcome. In the simplest case where the covariate is irrelevant within cluster and only relevant between cluster, the benchmark is weaker on both dimensions. Evaluating against a confounder as strong as Wi is anti-conservative compared to evaluating against ¯ Wg. However, if Wi explains a substantial amount of within-cluster variation in Yi, treating this as “confounding strength” on the outcome side may offset the treatment side deflation and yield an overly severe test of robustness compared to just benchmarking versus the group means. 
+
+# 5. Replication: Reny, Reeves, and Christenson (2026) on climate vulnerabil-ity 
+
+I illustrate the problems with the unit-level sensitivity analysis through a re-analysis of Reny, Reeves, and Christenson (2026), which studies the effects of individuals’ vulnerability to risks from climate change on their attitudes towards climate mitigation policies. The study focuses specifically on U.S. residents’ exposure to sea level rise, which they measure using a continuous risk score calculated at the county level .Data on climate attitudes was collected via a large-N national online survey of adult U.S. residents who were geo-located to their respective counties of residence. The primary analysis is an individual-level regression of the outcome of interest, an eight-item scale of support for climate mitigation policies, on the county-level risk score and observed covariates. Although the survey contains N = 2845 respondents, they are nested within C = 932 total counties with variation in the number of respondents per county. Reported standard errors are clustered at the county level (CR2 correction). The regression contains no cluster-level confounders and includes nine unit-level covariates measured in the survey directly in the regression model (as in Equation 24). These covariates are party identification, conservative ideology, age, gender, college, race/ethnicity and income level (3 dummy indicators). The study estimates a positive and statistically significant effect, finding that a one unit increase in exposure to sea level rise increases a respondent’s support for climate mitigation policies by 0 .095 points (SE = 0 .029) on average. Appendix C4 of Reny, Reeves, and Christenson (2026) presents the standard reporting output from sensemakr applied to this regression. I reproduce the relevant features of this table in Table 1. 4  
+
+> 4. I omit the standard errors/t-statistics and quantile robustness statistics that are default in the sensemakr output and presented in Appendix C4 as these are computed under the classical OLS assumptions rather than cluster-robust standard errors presented in the main text.
+
+16 Outcome: policy scale 
+
+Treatment: Est. R2  
+
+> Y∼D|X
+
+RV q=1
+
+sea level rise 0.095 0.6% 7.4%        
+
+> Bound (1x pid7_r): R2
+> Y∼Z|D,X=6.6%, R2
+> D∼Z|X=0.5%
+
+Table 1: Replication of Appendix table C4 in Reny, Reeves, and Christenson (2026) The original sensitivity analysis concludes that a confounder would have to explain 7 .4% of the variation in both the outcome and the treatment in order to drive the estimate to zero. Benchmarking against the included party ID scale suggests that a confounder of comparable strength would be insufficient to break the result. Notably, while party ID is fairly well correlated with the outcome, its correlation with treatment is quite minimal. A comparable confounder on the treatment side would need a significantly larger correlation with the outcome to explain away the results. The extreme sensitivity analysis is a much harder test: a confounder that explained 100% of the outcome variance would need to only explain .6% of the variation in treatment to eliminate the result. This is very close to the party ID benchmark. But both of these statistics incorporate irrelevant within-cluster variation in the confounders. While one might be concerned that coastal and inland counties vary in the overall composition of respondents (e.g. if coastal counties are less Republican on average), the intra-cluster correlation between partisanship and outcome poses no omitted variable bias threat. Therefore the reported sensitivity statistics in Table 1 need to be adjusted by η2  
+
+> Y|D,W
+
+. Calculating this quantity for the original regression specification (with individual-level covariates) yields an adjustment factor of 1 /ηY |D,W ≈ 1.77. Applying this to Equation 15 yields a cluster-adjusted robustness value of RV C1 = 12 .7%. A county-level confounder must explain about 12 .7% of the between-county variation in both exposure to sea level rise and policy support to drive the estimate to zero. The results are nearly twice as “robust” as originally reported. 17 Figure 1: Sensitivity contour plot for main results of Reny, Reeves, and Christenson (2026)     
+
+> Note: Dashed blue line denotes the equiconfounding line for a cluster-level confounder. It intersects the red zero-effect contour at the adjusted robustness value for q=1.
+
+Figure 1 displays the conventional contour plot of the original sensitivity analysis along with the author’s chosen covariate benchmark. I overlay a dashed blue line to denote the true “equiconfounding” line implied by the estimated adjustment for the between-cluster variation. The slope of this line is equal to η2  
+
+> Y|D,W
+
+and it intersects the red line denoting zero effect at exactly RV C1 .18 Figure 2: Extreme scenario analysis for main results of Reny, Reeves, and Christenson (2026) Figure 2 applies the same correction to the extreme robustness value to reflect the fact that a confounder cannot explain 100% of the outcome variance, it can explain at most 100% × η2  
+
+> Y|D,W
+
+= 32% of it. This increases the necessary partial-R2 between treatment and outcome from 0 .59% – alarmingly close to the party ID benchmark 0 .51% – to 1 .83%. But as Section 4 illustrates, benchmarking against the raw individual covariates can be very misleading. I re-estimate the unit-level regression from the original analysis including only the cluster-level averages of each covariate. In addition, I estimate the equivalent cluster-level regression of ¯ Yg on the cluster-averaged covariates, weighted by cluster size to illustrate the equivalence of these two approaches. 
+
+Outcome: policy scale Naive (unit level) Cluster-adjusted Treatment: Est. S.E. R2  
+
+> Y∼D|X
+
+RV U 
+
+> q=1
+
+η2  
+
+> Y|D,X
+
+XRV C 
+
+> q=1
+
+RV C
+
+> q=1
+
+sea level rise 0.0837 0.0275 0.36% 5.8% 0.27 1.33% 10.9%             
+
+> N=2845 respondents, C=932 counties. CR2 standard error. Bound (1x county-mean pid7_r), cluster scaled: R2
+> Y∼Z|X,D=5.85%, R2
+> D∼Z|X=0.50%
+
+Table 2: Unit-level regression of support for climate mitigation on county sea level rise and covariate county means. Table 2 presents the estimated treatment effect and robustness summaries from the unit-level regression. Adjusting for the county-level means attenuates the point estimate slightly, suggesting that some of the omitted variables bias was not being fully accounted for in the original analysis. Nevertheless, the treatment 19 effect remains positive (0 .0837) and statistically significant (robust SE 0 .0275). A naive application of the robustness value to this regression would conclude that a confounder that explains only 5 .8% of the variance in treatment and outcome would break the result. However, only 27% of the variation in the residual outcome is between county. Most of what that hypothetical confounder would need to explain is entirely irrelevant variation! Applying the correction 1 /η2  
+
+> Y|D,X
+
+yields an adjusted robust-ness value of 10 .9% – smaller than in the original regression but still sizeable. Moreover, the benchmarking results remain essentially the same - a confounder that is as strong as party ID would fail to eliminate the re-sults. Party ID remains strongly predictive of the outcome but surprisingly not well correlated with exposure to sea level rise. 
+
+Outcome: county-mean policy scale 
+
+Treatment: Est. S.E. R2  
+
+> Y∼D|X
+
+RV q=1
+
+sea level rise 0.0837 0.0275 1.33% 10.9%          
+
+> C=932 counties. HC2 standard error. Weighted by number of units in county Bound (1x county-mean pid7_r): R2
+> Y∼Z|D,X=5.85%, R2
+> D∼Z|X=0.50%
+
+Table 3: County-level regression of county-average support for climate mitigation on county sea level rise and covariate county means. Table 3 shows that the equivalent county-level regression yields point estimates, standard errors (HC2 robust), robustness values and covariate benchmarks identical to those from the unit-level regression. Fig-ure 3 presents the contour plots from these two analyses side-by-side, showing that the only difference between the two is essentially a re-scaling of the relevant Y-axis from [0, η2 
+
+> Y|D,X
+
+] on the unit-regression side to [0, 1] on the cluster-regression side. 20 Figure 3: Sensitivity contour plots for the regressions with cluster-level covariates only     
+
+> Note: Dashed blue line denotes the equiconfounding line for a cluster-level confounder. It intersects the red zero-effect contour at the adjusted robustness value for q=1. Left panel denotes the regression run at the unit level. Right panel presents the regression run at the cluster level weighted by cluster size.
+
+The replication is consistent with the broader conclusion of this paper. Although properly accounting for the between-cluster variation in the covariates attenuates the point estimates slightly, correcting the reported 
+
+sensemakr robustness statistics to account for clustering of treatment suggests that the results are actually more robust to omitted confounding than originally presented. A confounder that genuinely explains an equivalent amount of outcome and treatment variation would need to explain 10 .9% of that variation to eliminate the effect. The 7 .4% figure from Reny, Reeves, and Christenson (2026) was conservative in that it incorrectly attributed explanatory power to the confounder that it could never possibly have. 
+
+# 6. Conclusion 
+
+Analyzing the effects of cluster-level treatments using individual-level regressions remains common in applied work. The results of this paper show that applying a unit-level sensitivity analysis for omitted vari-able bias leads to much more conservative assessment of robustness when treatment assignment is clustered. Standard practice is, if anything, overly pessimistic. This suggests some cause for relief as applying a unit-level analysis in a setting where treatment was actually clustered will not make researchers overconfident in the robustness of their findings. As Hansen, Rosenbaum, and Small (2014) note, there are many cases where such an analytical decision is necessary. For example, clusters may not be observed directly due to deidentification in public-use datasets. While this also poses a separate challenge for statistical inference, the results for sensitivity to unobserved confounding are more promising. The findings here echo the earlier conclusions of Hansen, Rosenbaum, and Small (2014) that clustered designs are less sensitive to unobserved confounding as a hypothetical confounder is restricted in how it can act on the observations. Confounding can only explain variation between clusters, not within. 21 These results also have straightforward implications for extensions of the Cinelli and Hazlett (2020) OVB formula to the instrumental variables setting (Cinelli and Hazlett 2025) and to the generalization of the linear model OVB to the partially linear model (and to other nonparametric causal models) via the Riesz representation (Chernozhukov et al. 2022). The ratio of the between-cluster variance to the total variance serves as a further bound on how much bias a hypothetical cluster-level outcome confounder could produce. An interesting and perhaps more ubiquitous case of applying a unit-level sensitivity analysis to a clustered-treatment design is the two-way fixed effects (TWFE) regression estimator for differences-in-differences (DiD). It remains common in applied work to estimate causal effects for DiD designs using a unit-time TWFE linear model with group and time fixed effects parameters. Because the estimator is a typical OLS regression, researchers often apply the Cinelli and Hazlett (2020) regression OVB to the TWFE model as a way of assessing robustness to a hypothetical confounder that induces a violation of parallel trends. 5 With a single treatment initiation time, TWFE is identical to a simple 2 × 2 difference-in-differences and has an equivalent cluster-level regression which regresses the first-difference in the average outcome observed be-fore and after treatment on an indicator for treatment. There is a similar discrepancy in applying regression OVB sensitivity to the TWFE and first-differences regressions, with the latter avoiding the deflation factors identified here. The cluster-level regression averages over two elements of the unit-level regression that exhibit no variation in treatment: repeated observations over time in the pre-treatment and post-treatment windows and clustering in treatment assignment (as in a repeated cross-section design). 6 Researchers should therefore apply similar caution when interpreting results the Cinelli and Hazlett (2020) sensitivity analysis for TWFE regressions. I have focused here only on sensitivity for the point estimate, although Cinelli and Hazlett (2020) also consider sensitivity for upper and lower confidence bounds to evaluate the minimum amount of confounding needed to make a result “insignificant” rather than “zero”. However, the expressions derived for this assume a homoskedastic error structure and use the conventional OLS estimate of the standard error using the pooled standard deviation of the residuals. In practice, most modern regression analyses use a heteroskedasticity-robust variance estimator due to the implausibility of the constant error variance assumption. In the context of clustered treatment assignment, valid inference from a unit-level regression requires a cluster-robust vari-ance estimator that permits error correlation among units that share a cluster (Abadie et al. 2023). Currently, there is no such extension of the OVB sensitivity analysis to either form of robust confidence intervals. This paper has proposed simple corrections to regression OVB sensitivity analysis when analyzing clus-tered designs with unit-level regressions, but perhaps the simplest solution for applied researchers is to just run the regression at the level of treatment assignment. There appear to be minimal drawbacks from doing so and, as shown in this paper, a risk of over-optimism when benchmarking against unit-level covariates included without their covariate means. While there are efficiency drawbacks from an unweighted cluster-level regression with imbalanced clusters, the solution is to simply weight by cluster size (Wooldridge 2003). 
+
+> 5. Only recently has the OVB-style sensitivity analysis been formally applied to the difference-in-differences setting. See Wang et al. (2026) which extends the approach of Chernozhukov et al. (2022) to the doubly-robust difference-in-differences estimator (Sant’Anna and Zhao 2020; Callaway and Sant’Anna 2021). 6. Beyond the problem of clustering, first-differences regressions also allow researchers to more easily include and benchmark against time-invariant threats to parallel trends. These are commonly omitted from TWFE regressions due to collinearity with the unit fixed effects (Caetano and Callaway 2024).
+
+22 Both from the standpoint of identification and efficiency in the linear regression framework, there is no need to include unit-level covariates net of their cluster-level summaries. If unit-level factors influence treatment assignment, they matter only in the degree to which they vary between clusters and not within. 23 References 
+
+Abadie, Alberto, Susan Athey, Guido W Imbens, and Jeffrey M Wooldridge. 2023. “When should you adjust standard errors for clustering?” The Quarterly Journal of Economics 138 (1): 1–35. Altonji, Joseph G, Todd E Elder, and Christopher R Taber. 2005. “An evaluation of instrumental variable strategies for estimating the effects of catholic schooling.” Journal of Human Resources 40 (4): 791– 821. Blackwell, Matthew. 2014. “A selection bias approach to sensitivity analysis for causal effects.” Political Analysis 22 (2): 169–182. Brumback, Babette A, Miguel A Hernán, Sebastien JPA Haneuse, and James M Robins. 2004. “Sensitivity analyses for unmeasured confounding assuming a marginal structural model for repeated measures.” 
+
+Statistics in Medicine 23 (5): 749–767. Caetano, Carolina, and Brantly Callaway. 2024. “Difference-in-Differences when parallel trends holds con-ditional on covariates.” arXiv preprint arXiv:2406.15288. 
+
+Callaway, Brantly, and Pedro HC Sant’Anna. 2021. “Difference-in-differences with multiple time periods.” 
+
+Journal of econometrics 225 (2): 200–230. Carnegie, Nicole Bohme, Masataka Harada, and Jennifer L Hill. 2016. “Assessing sensitivity to unmeasured confounding using a simulated potential confounder.” Journal of Research on Educational Effective-ness 9 (3): 395–420. Chernozhukov, Victor, Carlos Cinelli, Whitney Newey, Amit Sharma, and Vasilis Syrgkanis. 2022. Long story short: Omitted variable bias in causal machine learning. Technical report. National Bureau of Economic Research. Cinelli, Carlos, and Chad Hazlett. 2019. sensemakr: Sensitivity Analysis Tools for OLS. R package version 0.1.2. . 2020. “Making sense of sensitivity: Extending omitted variable bias.” Journal of the Royal Statisti-cal Society Series B: Statistical Methodology 82 (1): 39–67. . 2025. “An omitted variable bias framework for sensitivity analysis of instrumental variables.” 
+
+Biometrika 112 (2): asaf004. Cohen, Jacob. 1973. “Eta-squared and partial eta-squared in fixed factor ANOVA designs.” Educational and psychological measurement 33 (1): 107–112. . 1988. Statistical Power Analysis for the Behavioral Sciences. 2nd. Hillsdale, NJ: Lawrence Erlbaum Associates. 24 Cornfield, Jerome, William Haenszel, E Cuyler Hammond, Abraham M Lilienfeld, Michael B Shimkin, and Ernst L Wynder. 1959. “Smoking and lung cancer: recent evidence and a discussion of some questions.” 
+
+Journal of the National Cancer Institute, no. 23, 173–203. Ding, Peng, and Tyler J VanderWeele. 2016. “Sensitivity analysis without assumptions.” Epidemiology 27 (3): 368–377. Doksum, Kjell, and Alexander Samarov. 1995. “Nonparametric estimation of global functionals and a mea-sure of the explanatory power of covariates in regression.” The Annals of Statistics, 1443–1473. Frank, Kenneth A. 2000. “Impact of a confounding variable on a regression coefficient.” Sociological Meth-ods & Research 29 (2): 147–194. Frank, Kenneth A, Spiro J Maroulis, Minh Q Duong, and Benjamin M Kelcey. 2013. “What would it take to change an inference? Using Rubin’s causal model to interpret the robustness of causal inferences.” 
+
+Educational Evaluation and Policy Analysis 35 (4): 437–460. Frisch, Ragnar, and Frederick V Waugh. 1933. “Partial time regressions as compared with individual trends.” 
+
+Econometrica: Journal of the Econometric Society, 387–401. Hansen, Ben B, Paul R Rosenbaum, and Dylan S Small. 2014. “Clustered treatment assignments and sen-sitivity to unmeasured biases in observational studies.” Journal of the American Statistical Association 
+
+109 (505): 133–144. Hosman, Carrie A, Ben B Hansen, and Paul W Holland. 2010. “The sensitivity of linear regression coef-ficients’ confidence limits to the omission of a confounder.” The Annals of Applied Statistics 4 (2): 849–870. Huang, Melody, Eli Ben-Michael, Matthew McHugh, and Luke Keele. 2026. “Sensitivity analysis for clus-tered observational studies with an application to the effectiveness of magnet nursing hospitals.” Jour-nal of the Royal Statistical Society Series A: Statistics in Society, qnag002. Huang, Melody, and Samuel D Pimentel. 2025. “Variance-based sensitivity analysis for weighting estima-tors results in more informative bounds.” Biometrika 112 (1). Imbens, Guido W. 2003. “Sensitivity to exogeneity assumptions in program evaluation.” The American Economic Review 93 (2): 126–132. Kennedy, John J. 1970. “The eta coefficient in complex ANOVA designs.” Educational and Psychological measurement 30 (4): 885–889. Kloek, Teunis. 1981. “OLS estimation in a model where a microvariable is explained by aggregates and contemporaneous disturbances are equicorrelated.” Econometrica, 205–207. Liang, Kung-Yee, and Scott L Zeger. 1986. “Longitudinal data analysis using generalized linear models.” 
+
+biometrika, 13–22. 25 Lovell, Michael C. 1963. “Seasonal adjustment of economic time series and multiple regression analysis.” 
+
+Journal of the American Statistical Association 58 (304): 993–1010. Moulton, Brent R. 1986. “Random group effects and the precision of regression estimates.” Journal of econometrics 32 (3): 385–397. . 1990. “An illustration of a pitfall in estimating the effects of aggregate variables on micro units.” 
+
+The review of Economics and Statistics, 334–338. Mundlak, Yair. 1978. “On the pooling of time series and cross section data.” Econometrica: journal of the Econometric Society, 69–85. Oster, Emily. 2019. “Unobservable selection and coefficient stability: Theory and evidence.” Journal of Business & Economic Statistics 37 (2): 187–204. Pearson, Karl. 1905. On the general theory of skew correlation and non-linear regression. 14. Dulau / Company. . 1915. “On the partial correlation ratio.” Proceedings of the Royal Society of London. Series A, Containing Papers of a Mathematical and Physical Character 91 (632): 492–498. Reny, Tyler, Andrew Reeves, and Dino Christenson. 2026. “Rising seas, rising concerns: how climate change vulnerability shapes opinions towards policy.” Environmental Politics 35 (2): 293–314. Robins, James M. 1999. “Association, causation, and marginal structural models.” Synthese 121 (1): 151– 179. Robins, James M, Andrea Rotnitzky, and Daniel O Scharfstein. 2000. “Sensitivity analysis for selection bias and unmeasured confounding in missing data and causal inference models.” In Statistical models in epidemiology, the environment, and clinical trials, 1–94. Springer. Rosenbaum, Paul R. 1987. “Sensitivity analysis for certain permutation inferences in matched observational studies.” Biometrika 74 (1): 13–26. . 2002. “Observational studies.” In Observational studies, 1–17. Springer. . 2005. “Heterogeneity and causality: Unit heterogeneity and design sensitivity in observational stud-ies.” The American Statistician 59 (2): 147–152. Rosenbaum, Paul R, and Donald B Rubin. 1983. “Assessing sensitivity to an unobserved binary covari-ate in an observational study with binary outcome.” Journal of the Royal Statistical Society. Series B (Methodological), 212–218. Sant’Anna, Pedro HC, and Jun Zhao. 2020. “Doubly robust difference-in-differences estimators.” Journal of econometrics 219 (1): 101–122. Tan, Zhiqiang. 2006. “A distributional approach for causal inference using propensity scores.” Journal of the American Statistical Association 101 (476): 1619–1637. 26 VanderWeele, Tyler J, and Peng Ding. 2017. “Sensitivity analysis in observational research: introducing the E-value.” Annals of Internal Medicine 167 (4): 268–274. Wang, Juejue, Pedro HC Sant’Anna, Victor Chernozhukov, and Carlos Cinelli. 2026. “Omitted Variable Bias in Difference-in-Differences Designs.” Wooldridge, Jeffrey M. 2003. “Cluster-sample methods in applied econometrics.” American Economic Re-view 93 (2): 133–138. Zhao, Qingyuan, Dylan S Small, and Bhaswar B Bhattacharya. 2019. “Sensitivity analysis for inverse prob-ability weighting estimators via the percentile bootstrap.” Journal of the Royal Statistical Society Series B: Statistical Methodology 81 (4): 735–761. Zheng, Jiajing, Alexander D’Amour, and Alexander Franks. 2025. “Copula-based sensitivity analysis for multi-treatment causal inference with unobserved confounding.” Journal of Machine Learning Re-search 26 (36): 1–60. 27
