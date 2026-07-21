@@ -6,56 +6,56 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-20
-- 运行时间：2026-07-20 21:33:28 UTC
+- 最新运行日期：2026-07-21
+- 运行时间：2026-07-21 20:24:59 UTC
 - 运行状态：成功
 - 本次总论文数：11
 - 精读区：0
 - 速读区：11
 
 ### 今日简报（AI）
-今日速览 11 篇前沿文献，重点涵盖韩国房产交易大数据及因果推断方法论的最新进展。
-推荐关注集成了宏观指标的 KRAFT 韩国公寓销售数据集，以及针对处理效应异质性的正交条件矩检验技术。
-建议对量化分析或政策评估感兴趣的读者，深入探索这些结合了上下文指标的结构化数据与因果识别框架。
-- 详情：[/202607/20/README](/202607/20/README)
+今日速览 11 篇前沿文献，重点攻克异质性处理效应（HTE）的统计检验与婚姻匹配的动态建模。
+推荐关注基于方差和正交矩的 HTE 检验新方法，以及探讨分工模式如何通过动态匹配模型影响婚姻稳定性。
+建议计量经济学研究者优先研读高分论文中的方差检验框架，以提升因果推断中异质性分析的严谨度。
+- 详情：[/202607/21/README](/202607/21/README)
 
 ### 精读区论文标签
 - 本次无精读推荐。
 
 ### 速读区论文标签
-1. [KRAFT: A Transaction-Level Dataset for Korean Apartment Sales Integrated with Contextual Indicators](/202607/20/2607.11961v1-kraft-a-transaction-level-dataset-for-korean-apartment-sales-integrated-with-contextual-indicators)  
-   标签：评分：7.5/10、query:q2
-   evidence：数据集包含公寓销售的家庭财务指标和人口结构
-2. [Orthogonal Integrated Conditional Moment Tests for Treatment Effect Heterogeneity](/202607/20/2607.12622v1-orthogonal-integrated-conditional-moment-tests-for-treatment-effect-heterogeneity)  
-   标签：评分：7.0/10、query:q7
-   evidence：子群体间处理效应异质性的检验
-3. [Proximal Identification and Estimation in Front-Door Causal Structures with Unobserved Confounding of the Mediator](/202607/20/2607.10515v1-proximal-identification-and-estimation-in-front-door-causal-structures-with-unobserved-confounding-of-the-mediator)  
+1. [A Variance-Based Test for Heterogeneous Treatment Effects](/202607/21/2607.17451v1-a-variance-based-test-for-heterogeneous-treatment-effects)  
+   标签：评分：7.5/10、query:profile-1
+   evidence：异质性处理效应检验与因果推断
+2. [Can looser ties sustain marriage? A dynamic matching model of specialisation and divorce](/202607/21/2607.11268v1-can-looser-ties-sustain-marriage-a-dynamic-matching-model-of-specialisation-and-divorce)  
    标签：评分：6.5/10、query:profile-1
-   evidence：存在未观测混杂因素时的因果识别
-4. [The Spectral Structure of Latent Treatment Effects](/202607/20/2607.10926v1-the-spectral-structure-of-latent-treatment-effects)  
+   evidence：家庭分工与婚姻决策的动态匹配模型
+3. [Orthogonal Integrated Conditional Moment Tests for Treatment Effect Heterogeneity](/202607/21/2607.12622v1-orthogonal-integrated-conditional-moment-tests-for-treatment-effect-heterogeneity)  
    标签：评分：6.5/10、query:profile-1
-   evidence：在观察性因果推断中识别异质性处理效应
-5. [CDFM: Towards a General-Purpose Causal Discovery Foundation Model](/202607/20/2607.11508v1-cdfm-towards-a-general-purpose-causal-discovery-foundation-model)  
+   evidence：使用正交分数的处理效应异质性非参数检验
+4. [Omitted variable bias sensitivity analysis with clustered treatment assignment](/202607/21/2607.13334v1-omitted-variable-bias-sensitivity-analysis-with-clustered-treatment-assignment)  
    标签：评分：6.5/10、query:profile-1
-   evidence：用于观测数据的通用因果发现框架
-6. [Omitted variable bias sensitivity analysis with clustered treatment assignment](/202607/20/2607.13334v1-omitted-variable-bias-sensitivity-analysis-with-clustered-treatment-assignment)  
+   evidence：针对聚类观察设计中因果推断的敏感性分析
+5. [Improving Mendelian Randomization Analysis by Instrument Borrowing from Auxiliary Outcome Traits](/202607/21/2607.16086v1-improving-mendelian-randomization-analysis-by-instrument-borrowing-from-auxiliary-outcome-traits)  
+   标签：评分：6.5/10、query:q7
+   evidence：孟德尔随机化用于推断暴露对结果的因果影响
+6. [Compositional Synthetic Controls](/202607/21/2607.16991v1-compositional-synthetic-controls)  
    标签：评分：6.5/10、query:profile-1
-   evidence：聚类设计中因果估计和敏感性分析的方法论桥梁
-7. [Causal Inference for Sequential Settings under Interference and Latent Confounding](/202607/20/2607.14940v1-causal-inference-for-sequential-settings-under-interference-and-latent-confounding)  
+   evidence：用于成分结果和因果推断的合成控制估计量
+7. [The Resolution of Causal Heterogeneity](/202607/21/2607.17280v1-the-resolution-of-causal-heterogeneity)  
    标签：评分：6.5/10、query:profile-1
-   evidence：针对具有潜在混杂因素的序列设置的因果推断
-8. [Age-specific demographic modeling and forecasting: Rolling window, expanding window, or both?](/202607/20/2607.10527v1-age-specific-demographic-modeling-and-forecasting-rolling-window-expanding-window-or-both)  
-   标签：评分：6.0/10、query:q4
-   evidence：对特定年龄生育率进行建模和预测
-9. [Representation Learning for Semiparametric Causal Mediation Analysis under No Essential Heterogeneity](/202607/20/2607.10540v1-representation-learning-for-semiparametric-causal-mediation-analysis-under-no-essential-heterogeneity)  
+   evidence：因果子群分析和处理效应异质性的方法
+8. [The Spectral Structure of Latent Treatment Effects](/202607/21/2607.10926v1-the-spectral-structure-of-latent-treatment-effects)  
    标签：评分：6.0/10、query:q7
-   evidence：因果中介分析用于处理效应
-10. [When Screening Misleads: A Robust Mendelian Randomization Test for Reliable Causal Discovery](/202607/20/2607.10755v1-when-screening-misleads-a-robust-mendelian-randomization-test-for-reliable-causal-discovery)  
-   标签：评分：6.0/10、query:q7
-   evidence：可靠因果发现和识别因果效应的稳健检验
-11. [Causal Estimation of Share-Induced Engagement with Flywheel Effects](/202607/20/2607.10820v1-causal-estimation-of-share-induced-engagement-with-flywheel-effects)  
+   evidence：在因果推断中识别未观察到的混杂因素下的异质性处理效应
+9. [A Unified Credit Expansion Theory on Housing Cycle: Causal Evidence for Within- and Cross-Metro Patterns in the Prior, Boom, Bust, and Recovery Periods](/202607/21/2607.12205v1-a-unified-credit-expansion-theory-on-housing-cycle-causal-evidence-for-within--and-cross-metro-patterns-in-the-prior-boom-bust-and-recovery-periods)  
+   标签：评分：6.0/10、query:q9
+   evidence：信贷和住房周期的双重差分因果证据
+10. [Bayesian Risk Preference Persuasion](/202607/21/2607.13810v2-bayesian-risk-preference-persuasion)  
+   标签：评分：6.0/10、query:q5
+   evidence：根据外部信息和系统状态修正风险偏好
+11. [Estimation and Inference for Latent Dual Networks Using High-Dimensional IV Screening](/202607/21/2607.13862v1-estimation-and-inference-for-latent-dual-networks-using-high-dimensional-iv-screening)  
    标签：评分：6.0/10、query:profile-1
-   evidence：复杂社交网络效应和干扰的因果估计框架
+   evidence：面板数据中用于因果推断的高维工具变量筛选
 
 
 <div class="dpr-home-promo-card">
