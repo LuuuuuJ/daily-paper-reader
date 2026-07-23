@@ -6,56 +6,58 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-21
-- 运行时间：2026-07-21 20:24:59 UTC
+- 最新运行日期：2026-07-23
+- 运行时间：2026-07-23 20:26:03 UTC
 - 运行状态：成功
-- 本次总论文数：11
-- 精读区：0
+- 本次总论文数：12
+- 精读区：1
 - 速读区：11
 
 ### 今日简报（AI）
-今日速览 11 篇前沿文献，重点攻克异质性处理效应（HTE）的统计检验与婚姻匹配的动态建模。
-推荐关注基于方差和正交矩的 HTE 检验新方法，以及探讨分工模式如何通过动态匹配模型影响婚姻稳定性。
-建议计量经济学研究者优先研读高分论文中的方差检验框架，以提升因果推断中异质性分析的严谨度。
-- 详情：[/202607/21/README](/202607/21/README)
+今日精选 12 篇因果推断前沿论文，重点攻克了局部干扰效应下的双重差分（DiD）高效估计难题。
+核心突破在于利用增量倾向得分策略优化政策评估效率，并同步更新了合成控制法与遗漏变量偏差的敏感性分析工具。
+建议处理复杂政策溢出效应或群体干预数据的研究者优先研读 8.5 分的 DiD 精读篇目。
+- 详情：[/202607/23/README](/202607/23/README)
 
 ### 精读区论文标签
-- 本次无精读推荐。
+1. [Efficient difference-in-differences estimation under partial interference with incremental propensity score policies](/202607/23/2607.19925v1-efficient-difference-in-differences-estimation-under-partial-interference-with-incremental-propensity-score-policies)  
+   标签：评分：8.5/10、query:q9
+   evidence：高效的双重差分(DID)估计和家庭内部溢出效应
 
 ### 速读区论文标签
-1. [A Variance-Based Test for Heterogeneous Treatment Effects](/202607/21/2607.17451v1-a-variance-based-test-for-heterogeneous-treatment-effects)  
+1. [Omitted variable bias sensitivity analysis with clustered treatment assignment](/202607/23/2607.13334v1-omitted-variable-bias-sensitivity-analysis-with-clustered-treatment-assignment)  
    标签：评分：7.5/10、query:profile-1
-   evidence：异质性处理效应检验与因果推断
-2. [Can looser ties sustain marriage? A dynamic matching model of specialisation and divorce](/202607/21/2607.11268v1-can-looser-ties-sustain-marriage-a-dynamic-matching-model-of-specialisation-and-divorce)  
+   evidence：因果识别策略和遗漏变量偏差的敏感性分析
+2. [Compositional Synthetic Controls](/202607/23/2607.16991v1-compositional-synthetic-controls)  
+   标签：评分：7.5/10、query:profile-1
+   evidence：成分结果的合成控制估计量与因果推断
+3. [Adaptive Penalization and Bootstrap-Smoothed Inference for Two-Sample Mendelian Randomization with Summary Data](/202607/23/2607.18503v1-adaptive-penalization-and-bootstrap-smoothed-inference-for-two-sample-mendelian-randomization-with-summary-data)  
+   标签：评分：7.0/10、query:q7
+   evidence：利用工具变量从观察数据中进行因果效应估计的孟德尔随机化
+4. [A Fixed-Effects Causal Forest for Staggered Adoption, with an Application to Medicaid Expansion](/202607/23/2607.19644v1-a-fixed-effects-causal-forest-for-staggered-adoption-with-an-application-to-medicaid-expansion)  
+   标签：评分：7.0/10、query:profile-1
+   evidence：交错采用和双重差分法的因果推断方法
+5. [Learning Who to Treat When Treatment is Missing](/202607/23/2607.14346v1-learning-who-to-treat-when-treatment-is-missing)  
    标签：评分：6.5/10、query:profile-1
-   evidence：家庭分工与婚姻决策的动态匹配模型
-3. [Orthogonal Integrated Conditional Moment Tests for Treatment Effect Heterogeneity](/202607/21/2607.12622v1-orthogonal-integrated-conditional-moment-tests-for-treatment-effect-heterogeneity)  
+   evidence：平均处理效应(ATE)和条件平均处理效应(CATE)的高效估计量
+6. [CausalGraphX: A Counterfactual Graph Neural Network Framework for Explainable Systemic Risk Assessment](/202607/23/2607.14416v1-causalgraphx-a-counterfactual-graph-neural-network-framework-for-explainable-systemic-risk-assessment)  
    标签：评分：6.5/10、query:profile-1
-   evidence：使用正交分数的处理效应异质性非参数检验
-4. [Omitted variable bias sensitivity analysis with clustered treatment assignment](/202607/21/2607.13334v1-omitted-variable-bias-sensitivity-analysis-with-clustered-treatment-assignment)  
+   evidence：系统性风险评估的反事实推理
+7. [The Resolution of Causal Heterogeneity](/202607/23/2607.17280v1-the-resolution-of-causal-heterogeneity)  
    标签：评分：6.5/10、query:profile-1
-   evidence：针对聚类观察设计中因果推断的敏感性分析
-5. [Improving Mendelian Randomization Analysis by Instrument Borrowing from Auxiliary Outcome Traits](/202607/21/2607.16086v1-improving-mendelian-randomization-analysis-by-instrument-borrowing-from-auxiliary-outcome-traits)  
-   标签：评分：6.5/10、query:q7
-   evidence：孟德尔随机化用于推断暴露对结果的因果影响
-6. [Compositional Synthetic Controls](/202607/21/2607.16991v1-compositional-synthetic-controls)  
+   evidence：因果子群分析与处理效应异质性
+8. [A Variance-Based Test for Heterogeneous Treatment Effects](/202607/23/2607.17451v1-a-variance-based-test-for-heterogeneous-treatment-effects)  
    标签：评分：6.5/10、query:profile-1
-   evidence：用于成分结果和因果推断的合成控制估计量
-7. [The Resolution of Causal Heterogeneity](/202607/21/2607.17280v1-the-resolution-of-causal-heterogeneity)  
+   evidence：使用CATE方差检验异质性处理效应
+9. [Interrupted Time Series Analysis Of Count Data With Nuisance Interruptions](/202607/23/2607.19493v1-interrupted-time-series-analysis-of-count-data-with-nuisance-interruptions)  
    标签：评分：6.5/10、query:profile-1
-   evidence：因果子群分析和处理效应异质性的方法
-8. [The Spectral Structure of Latent Treatment Effects](/202607/21/2607.10926v1-the-spectral-structure-of-latent-treatment-effects)  
-   标签：评分：6.0/10、query:q7
-   evidence：在因果推断中识别未观察到的混杂因素下的异质性处理效应
-9. [A Unified Credit Expansion Theory on Housing Cycle: Causal Evidence for Within- and Cross-Metro Patterns in the Prior, Boom, Bust, and Recovery Periods](/202607/21/2607.12205v1-a-unified-credit-expansion-theory-on-housing-cycle-causal-evidence-for-within--and-cross-metro-patterns-in-the-prior-boom-bust-and-recovery-periods)  
-   标签：评分：6.0/10、query:q9
-   evidence：信贷和住房周期的双重差分因果证据
-10. [Bayesian Risk Preference Persuasion](/202607/21/2607.13810v2-bayesian-risk-preference-persuasion)  
-   标签：评分：6.0/10、query:q5
-   evidence：根据外部信息和系统状态修正风险偏好
-11. [Estimation and Inference for Latent Dual Networks Using High-Dimensional IV Screening](/202607/21/2607.13862v1-estimation-and-inference-for-latent-dual-networks-using-high-dimensional-iv-screening)  
-   标签：评分：6.0/10、query:profile-1
-   evidence：面板数据中用于因果推断的高维工具变量筛选
+   evidence：用于干预措施因果识别的中断时间序列分析
+10. [GAUGER: Generalized Regression Adjustment via Graph-Weighted Exposure-Level Residualization for Design-Based Inference Under Interference](/202607/23/2607.19627v1-gauger-generalized-regression-adjustment-via-graph-weighted-exposure-level-residualization-for-design-based-inference-under-interference)  
+   标签：评分：6.5/10、query:profile-1
+   evidence：社会科学和经济学的因果推断框架
+11. [Identifying Treatment and Spillover Effects with Control-Based and Forecast-Based Counterfactuals](/202607/23/2607.20156v1-identifying-treatment-and-spillover-effects-with-control-based-and-forecast-based-counterfactuals)  
+   标签：评分：6.5/10、query:profile-1
+   evidence：处理效应和溢出效应的因果推断方法
 
 
 <div class="dpr-home-promo-card">

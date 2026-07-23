@@ -1,0 +1,3589 @@
+Title: 2607.20156v1.pdf
+
+URL Source: https://arxiv.org/pdf/2607.20156v1
+
+Published Time: Thu, 23 Jul 2026 00:56:39 GMT
+
+Number of Pages: 51
+
+Markdown Content:
+Acknowledgments: We are grateful to Manuela Angelucci, Martin Huber, and Pedro Sant’Anna for their valuable feedback.       
+
+> We also thank participants at the COMPIE Conference, the AISRe Conference, and the International Conference on
+> Economic Statistics for helpful comments and suggestions.
+> * Department of Statistical Sciences, Sapienza University of Rome, Italy. Email: viviana.celli@uniroma1.it
+> ‡Department of Social Sciences and Economics, Sapienza University of Rome, Italy. Email: augusto.cerqua@uniroma1.it
+> §Department of Social Sciences and Economics, Sapienza University of Rome, Italy. Email: guido.pellegrini@uniroma1.it
+
+## Identifying Treatment and Spillover Effects with Control -Based and Forecast -
+
+## Based Counterfactuals 
+
+## Viviana Celli*, Augusto Cerqua ‡, Guido Pellegrini §
+
+## This version: 22/07/2026 
+
+Abstract:  Spillovers and interference pose fundamental challenges for causal inference, as treatment assigned to one unit 
+
+may affect the outcome of others, violating the no -interference assumption underlying most empirical strategies. Existing 
+
+approaches, based on p artial interference, exposure mapping, spatial, network, or structural frameworks, typically rely on 
+
+strong assumptions about interaction structures or require the existence of uncontaminated control units  to estimate relevant 
+
+causal parameters . We revisit this identification challenge within the potential outcomes framework and compare the 
+
+conditions under which causal effects can be identified using two broad classes of counterfactual methods : control -based 
+
+counterfactual methods (CBCMs), such as  matching and  difference -in -differences  designs , and forecast -based counterfactual 
+
+methods (FBCMs), including interrupted time -series and machine learning control methods.  We show under which 
+
+circumstances CBCMs and FBCMs identify average direct and spillover effects.  Through simulations and an empirical 
+
+application, we illustrate the main advantages and limitations of each approach. We show that, in the presence of pervasive 
+
+or ill -defined spillover effects, CBCMs either cannot be used or entail severe identification c oncerns, whereas FBCMs can 
+
+more credibly identify  some of  the causal parameters of interest, at least in the short term. 
+
+Keywords : potential outcomes framework; spillovers; counterfactual forecasting;  difference -in -
+
+differences design ; causal inference 
+
+JEL Codes : C18; C21; C53; D62 1
+
+1. Introduction 
+
+Spillovers are one of the main unresolved challenges in modern policy evaluation. When the treatment 
+
+assigned to one unit affects the outcomes of other units, the counterfactual outcomes required for causal 
+
+inference become harder to define, because untrea ted observations may themselves be affected by the 
+
+intervention. As a result, the standard comparison between treated and untreated units no longer 
+
+identifies the causal effects of interest. Incorporating spillovers into a policy evaluation framework is 
+
+in herently complex. For tractability, most empirical applications therefore rely on the no -interference 
+
+assumption, first formalized by Cox (1958) and later incorporated into Rubin’s Stable Unit Treatment 
+
+Value Assumption (SUTVA) (Rubin, 1974, 1980). 1 In this study, we focus exclusively on the  no -
+
+interference  component  of SUTVA , which rules out spillovers, externalities, general equilibrium effects, 
+
+or any form of treatment diffusion across units. While this assumption provides a tractable basis for 
+
+defining causal effects, it is often unrealistic in settings characterized by so cial, spatial, or market 
+
+interactions (Manski, 2013). As a result, reliance on the no -interference assumption may lead to two 
+
+severe consequences: (i) failure to identify the magnitude and scope of spillover effects, yielding only a 
+
+partial assessment of t he policy under analysis; and (ii) biased estimates of the average treatment effects 
+
+of interest. As many policies, particularly in public health, education, innovation, and place -based 
+
+interventions, are explicitly designed to generate spillovers, failing  to account for interference may result 
+
+in misleading inferences.  For instance, Sobel (2006) shows that ignoring relevant spillover effects can 
+
+lead researchers to conclude that an intervention is beneficial, even when it generates adverse effects for 
+
+both treated and indirectly exposed units. 
+
+The existing literature has mainly addressed this problem by explicitly modeling the interference structure 
+
+through exposure mappings, social networks, spatial interaction matrices or partial interference 
+
+assumptions. While these approaches differ substant ially, they all share a common feature: they require 
+
+the researcher to specify, either explicitly or implicitly, how spillovers propagate across units before causal 
+
+effects can be identified.  Unfortunately, the interaction structure is rarely observed and is often only 
+
+imperfectly understood. Geographic proximity, administrative borders or social networks are only 
+
+proxies for the true transmission mechanism, which is generally unknown and may i tself evolve after the 
+
+intervention. 
+
+A seminal contribution highlighting the empirical consequences of interference is Sobel (2006), who 
+
+shows that , when interference is present, standard difference -in -means estimators no longer identify 
+
+interpretable causal parameters , even under random treatment assignment , because  they confound direct 
+
+and spillover effects. To address this issue, Sobel introduces the concept of partial interference, whereby 
+
+interference is allowed within predefined  clusters  but ruled out across them. Building on this framework, 
+
+Hudgens and Halloran (2008) develop formal definitions of causal estimands and estimators for direct, 
+
+indirect, total, and overall effects under partial interference . They  propose a two -stage randomization 
+
+design that allows  both group -level and individual -level treatment assignment to vary. Relatedly, Huber 
+
+and Steinmayr (2021) extend the analysis of interference to observational settings by developing a 
+
+framework for separating individual -level treatment effects from spillov er effects under selection on 
+
+observables and difference -in -differences  (DiD)  designs . 
+
+> 1SUTVA consists of two components: (i) the absence of interference, meaning that a unit’s potential outcome depends solely
+> on its own treatment assignment; and (ii) the absence of hidden variations in the treatment itself.
+
+2
+
+A growing  literature seeks to operationalize interference by mapping neighbors’ treatments into exposure 
+
+measures that define causal estimands under structured interdependence (Halloran and Struchiner, 1995). 
+
+A fundamental contribution is provided by  Aronow and Samii (2017), who show that causal effects 
+
+remain well defined under interference by indexing potential outcomes not only to a unit ’s own treatment 
+
+status but also to an  exposure mapping, namely a function that summarizes how treatment assignments 
+
+received by other units determine the unit ’s degree of exposure. This framework generalizes earlier work 
+
+on partial interference and provides a unified representation of direct, indirect, total and overall causal 
+
+effects . However , existing approaches typically rely on strong and largely untestable assumptions about 
+
+the structure of interactions and the correct specification of exposure mappings, 2 which are often based 
+
+on group membership, spatial proximity, social networks, or saturation -based measures defined by the 
+
+proportion of treated units within a reference group ( Tchetgen Tchetgen and VanderWeele, 2012; 
+
+Angelucci and Di Maro, 2016; For astiere et al., 202 1; Sävje et al., 2021; Leung, 2022;  Di Stefano and 
+
+Mellace , 2024 ; Grossi et al., 2025;  Debarsy and Le Gallo, 2025). 
+
+Beyond the partial interference framework, alternative strategies have emerged to operationalize and 
+
+model interdependence across units. Spatial econometrics provides an alternative framework by explicitly 
+
+modeling cross -sectional dependence through spatia l lag or spatial Durbin specifications (Anselin, 1988; 
+
+LeSage and Pace, 2009). In these models, spillovers are treated as structural components of the data -
+
+generating process, allowing researchers to estimate interaction effects directly through spatial 
+
+co nnectivity matrices. However, these models are primarily designed to fit a spatial structure rather than 
+
+to identify causal estimands, and causal interpretation is often limited (Gibbons and Overman, 2012; 
+
+Debarsy and Le Gallo, 2025). Their reliance on exo genously specified interaction matrices, typically based 
+
+on geographic proximity, may fail to capture true transmission channels, and they remain vulnerable to 
+
+spatial confounding, endogenous sorting, and common shocks (Bai and Li, 2021; Shi and Lee, 2018) .
+
+Within this same spatial  econometric  framework, instrumental  variables have been proposed to address 
+
+endogeneity concerns; however,  finding credible instruments for endogenous spatial lags  remains 
+
+generally difficult (Kelejian and Prucha, 2010; Agrawal et al., 2022). 
+
+Closely related, network -based frameworks conceptualize interference as arising from explicitly defined 
+
+relational structures among units. By allowing treatment effects to propagate along network edges, these 
+
+approaches accommodate heterogeneous and locali zed spillover effects and offer a richer representation 
+
+of interaction mechanisms compared to purely spatial approaches (Bramoullé et al., 2009; Jackson, 2010). 
+
+At the same time, causal interpretation often depends on assumptions about the observability, stability, 
+
+and exogeneity of the network structure. These assumptions may be demanding in settings where 
+
+networks are shaped by social or economic selection proce sses, although a growing econometric literature 
+
+explicitly models endogenous network formation (Goldsmith -Pinkham and Imbens, 2013; de Paula, 
+
+2017). In such cases, endogenous network formation, measurement error in relational data, and network 
+
+evolution ov er time can complicate identification. Moreover, separating peer influence from correlated    
+
+> 2Sävje (2024) is an important exception. In randomized experiments, he shows that misspecified exposure mappings can still
+> define estimable expected exposure effects, provided the induced specification errors are weakly dependent and standard
+> design conditi ons hold. These effects, however, are defined relative to the researcher’s exposure labels and the implemented
+> assignment design, not necessarily to the true interference structure. Leung (2024) and Auerbach et al. (2024) raise importan t
+> concerns about the ir causal interpretation and policy relevance under misspecification, highlighting an interpretability –
+> estimability trade -off in the choice of estimand: effects that are easier to estimate under weak assumptions may be harder to
+> interpret causally, while m ore clearly interpretable causal effects typically require stronger assumptions about the interference
+> structure. Similarly, Mealli and Viviens (2025) show that, under unknown interference, the conventional DiD estimator
+> identifies a contrast between the total effect on treated units and the spillover effect on control units, rather than either effect
+> separately. 3
+
+and contextual effects generally requires either strong structural assumptions, prior information on 
+
+reference groups, or exogenous variation in network exposure (Manski, 1993; Ogburn and VanderWeele, 
+
+2017). 
+
+Finally, structural modeling approaches embed interference mechanisms within fully specified behavioral 
+
+or equilibrium models (Heckman and Vytlacil, 2007; Aguirregabiria and Mira, 2010). By explicitly 
+
+modeling decision -making processes, strategic interacti ons, or market equilibria, these models provide 
+
+theoretically coherent interpretations of spillover effects and allow counterfactual simulations under 
+
+alternative policy scenarios (Blundell and Costa Dias, 2009).  Meanwhile , their causal interpretation 
+
+depends on the credibility of the underlying behavioral assumptions, functional -form choices, and 
+
+restrictions used to identify the relevant structural parameters (Lewbel, 2019; Debarsy and Le Gallo, 
+
+2025). When these assumpti ons are difficult to validate empirically, inference on spillover effects may 
+
+become  highly  sensitive to model specification. 
+
+Overall, existing approaches typically require an explicit specification of the interaction structure or rely 
+
+on strong structural assumptions. Point identification of policy -relevant causal effects remains difficult 
+
+under pervasive or poorly understood in terference without restrictive design or modeling conditions. 
+
+Moreover, much of this literature constructs counterfactual outcomes through comparison units that are 
+
+assumed to be unaffected by the intervention. An alternative approach uses time -series or p anel -data 
+
+dynamics to construct counterfactuals through forecasts (Box and Tiao, 1975; Menchetti et al., 2023; 
+
+Cerqua et al., 2024; Botosaru et al., 2026). To our knowledge, however, the role of forecast -based 
+
+counterfactuals for identifying treatment and  spillover effects has received  no  explicit attention. The 
+
+objective of this paper is not to propose another model of interference, but to show that, for total policy 
+
+effects, explicit modeling of the interference mechanism is not  even  required. By replacing cross -sectional 
+
+comparisons with forecast -based counterfactuals, causal effects can be identified under weaker 
+
+assumptions about the propagation of spillovers. 
+
+Our methodological approach presents  treatment and spillover effects in  the potential outcomes 
+
+framework, as  it strikes a balance between model complexity, credibility of the identifying assumptions, 
+
+and the ability to recover the causal estimands of interest.  We characterize identification under different 
+
+interference scenarios for two broad classes of counterfactual methods: control -based counterfactual 
+
+methods (CBCMs), such as difference -in -differences (DiD) and matching estimators, and forecast -based 
+
+counter factual methods (FBCMs), including interrupted time -series (ITS) designs and the machine 
+
+learning control method (MLCM).  By relying on model -based forecasts of Y, rather than on outcomes 
+
+observed for untreated units, FBCMs can estimate counterfactual outcomes even when untreated units 
+
+are themselves exposed to spillovers, thereby relaxing the need for policy -unaffected units . This 
+
+flexibility, however, comes at the cost of assumptions about the temporal stability and predictability of 
+
+untreated outcomes, which must be assessed case by case and may be difficult to sustain for long -term 
+
+effects. 
+
+In summary, this paper makes three main  contributions to the causal inference literature.  First, we show 
+
+that aggregate effects defined relative to the no -treatment/no -exposure counterfactual  can be identified 
+
+without specifying an exposure mapping, whereas exposure -specific effects continue to require 
+
+information on the exposure structure.  Second,  we  develop  a unified identification framework that 
+
+accommodates both control -based and forecast -based counterfactual approaches within the potential 
+
+outcomes setting.  Third,  we  formally demonstrates that FBCMs  can  identify  relevant causal estimands 
+
+even when interference is pervasi ve  and  all units are affected directly or indirectly by the treatment  (no 
+
+clean control) , a setting in which  CBCMs  are not suitable without additional  strong  assumptions .4
+
+To examine how CBCMs and FBCMs perform when the exposure mapping is misspecified, we conduct 
+
+a simulation study based on the actual geography of U.S. counties. In each Monte Carlo replication, 200 
+
+counties are randomly assigned to treatment, while spillove rs propagate according to queen contiguity 
+
+and increase with the number of treated neighboring counties. We compare a benchmark in which the 
+
+researcher observes the true exposure mapping with two misspecified mappings that classify counties 
+
+according to wh ether their  centroids  lie within 30 or 60 km of a treated county. The balanced panel 
+
+contains five pre -treatment periods and one post -treatment period, and outcomes exhibit systematic level 
+
+differences, persistent covariates, nonlinearities, and autoregressive adjustment while  preserving parallel 
+
+untreated -outcome trends in expectation. The simulations assess the performance of a doubly robust 
+
+control -based estimator and two forecast -based approaches. They show how mapping errors 
+
+contaminate apparently clean controls and alter  the composition of exposure -specific target groups. 
+
+Forecast -based unit -level counterfactuals do not depend on the assumed mapping, although estimates of 
+
+exposure -specific effects remain sensitive to how those effects are aggregated, whereas the full -
+
+popul ation policy effect does not. 
+
+In the empirical application, we revisit the natural experiment studied by Di Tella and Schargrodsky 
+
+(2004) on police protection and car theft in Buenos Aires after the 1994 terrorist attack against the 
+
+A.M.I.A. Jewish center. This setting provides a natur al testing ground for our framework: police 
+
+protection may reduce theft in directly protected blocks, but it may also displace crime or generate 
+
+deterrence spillovers in surrounding areas, making uncontaminated controls difficult to define. We 
+
+compare cont rol -based DiD estimates based on distance -defined exposure groups with forecast -based 
+
+estimates from the  MLCM . The results highlight the main empirical trade -off analyzed in the paper: 
+
+CBCMs are informative when clean controls can be credibly identified, whereas FBCMs remain useful 
+
+when the spatial structure of spillovers is uncertain. 
+
+The rest of the paper proceeds as follows: Section 2 introduces the  potential outcomes  framework in the 
+
+presence of spillovers, Section 3 presents the proposed control -based and forecast -based counterfactual 
+
+methodologies, Section 4 reports the simulation design and results, Section 5 discusses the empirical 
+
+application, and Section 6 concl udes. 
+
+2. The potential outcomes framework with spillovers 
+
+Consider a balanced panel of units  𝑖  = 1, … , 𝑁  observed over periods  𝑡  = 1, … , 𝑇 0, … , 𝑇 . Let  𝑇 0 denote 
+
+the common treatment adoption date. 3 All units are untreated for  𝑡  < 𝑇 0, while a subset of units becomes 
+
+treated from  𝑇 0 onward. Let  𝐷 𝑖  ∈ {0,1} be a time -invariant treatment assignment indicator, with realized 
+
+treatment status 
+
+𝐷 𝑖𝑡  = 𝐷 𝑖 𝟏 {𝑡  ≥ 𝑇 0}.
+
+We explicitly allow for non -random treatment assignment. In particular, treated and untreated units may 
+
+differ in outcome levels prior to treatment, while sharing a common pre -treatment trend. This would be 
+
+an ideal setting for a difference -in -differences  design, except for the potential presence of spillover 
+
+effects.  
+
+> 3For simplicity, we use notation based on a common treatment date. The same framework can be readily extended to cases
+> of staggered treatment adoption.
+
+5
+
+We also allow for interference among units. Let  𝑊  = (𝑤 𝑖𝑗 ) be a time -invariant spatial or network weight 
+
+matrix, with  𝑤 𝑖𝑗  measuring the strength of interaction between units  𝑖  and  𝑗 , and  𝑤 𝑖𝑖  = 0 ruling out self -
+
+interaction. The matrix allows interactions between both treated and untreated units. 
+
+Define post -treatment exposure to treated neighbors as 
+
+𝑆 𝑖  = ∑ 𝑤 𝑖𝑗 
+
+> 𝑗 ≠𝑖
+
+𝐷 𝑗  = (𝑊 𝐃 )𝑖 ,
+
+where  𝐃  is the vector of time -invariant treatment assignments. Let  𝒮  denote the support of  𝑆 𝑖  in the 
+
+population, and let  𝒮 1 and  𝒮 0 denote the supports of exposure among treated and untreated units, 
+
+respectively. Exposure summarizes the intensity of unit  𝑖 ’s exposure to treatment received by other units 
+
+and provides an exposure mapping in the sense of Aronow and Samii (2017). Exposure  𝑆 𝑖  is time 
+
+invariant because it is determined by the fixed cross -sectional configuration of treated units and by the 
+
+spatial or network structure encoded in  𝑊 .4 However, its effect on outcomes is realized only in periods 
+
+𝑡  ≥ 𝑇 0, when the treatment becomes active. We therefore define the effective exposure entering the 
+
+observed outcome as 
+
+𝑆 𝑖𝑡  = 𝑆 𝑖 𝟏 {𝑡  ≥ 𝑇 0}.
+
+In the presence of interference, the potential outcome of unit  𝑖  at time  𝑡  is written as 
+
+𝑌 𝑖𝑡 (𝑑 , 𝑠 ), 𝑑  ∈ {0,1}, 𝑠  ∈ 𝒮 ,
+
+where  𝑑  denotes own treatment status and  𝑠  denotes exposure to treated neighbors. The observed 
+
+outcome is 
+
+𝑌 𝑖𝑡  = 𝑌 𝑖𝑡 (𝐷 𝑖𝑡 , 𝑆 𝑖𝑡 ).
+
+This formulation allows spillovers to affect both untreated and treated units and nests the standard no -
+
+interference framework as a special case. Interference may arise through two distinct, potentially 
+
+coexisting channels. The first is treated -to -untreate d interference, whereby treatment assigned to treated 
+
+units affects the outcomes of untreated units, making some or all untreated units indirectly exposed to 
+
+the treatment. The second is within -treated interference, whereby treatment assigned to one treate d unit 
+
+affects the outcomes of other treated units, so that treated units may be affected not only by their own 
+
+treatment status but also by the treatment status of other treated units. Importantly, this second form of 
+
+interference complicates both the int erpretation and identification of average treatment effects, even 
+
+when attention is restricted to treated units. 5
+
+The general framework above encompasses four empirically relevant scenarios.     
+
+> 4We focus on the realized treatment assignment vector observed in the data. In the presence of interference, exposure status
+> and exposure intensity are functions of this realized assignment configuration. Hence, different realizations of 𝐃 could imply
+> different exposure mappings, different shares of treated and exposed units, and different aggregate estimands. The effects
+> studied here are therefore conditional on the observed realization of the policy.
+> 5Even in the limiting case where all units are treated, spillover effects may still arise through interactions among treated u nits.
+> For example, in studies of excess mortality during the COVID -19 pandemic, areas with limited intensive care capacity were
+> co mpelled to transfer patients to neighboring hospitals, potentially inducing indirect increases in mortality in the receiving
+> facilities as well (see Cerqua et al., 2021).
+
+6
+
+Case (i): No spillovers. 
+
+If outcomes do not depend on exposure, 
+
+𝑌 𝑖𝑡 (𝑑 , 𝑠 ) = 𝑌 𝑖𝑡 (𝑑 , 0) for all  𝑠  ∈ 𝒮 ,
+
+the model collapses to the standard no -interference framework. The primary causal estimand of interest 
+
+is the Average Treatment Effect on the Treated (ATT): 6
+
+𝐴𝑇 𝑇 𝑡  ≡ 𝐸 [𝑌 𝑖𝑡 (1,0) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 1], 𝑡  ≥ 𝑇 0.
+
+In such a scenario, there is no need to estimate average spillover effects, as they are absent by assumption. 
+
+In Section 3, we show that both CBCMs and FBCMs can point  identify  𝐴𝑇 𝑇 𝑡  under their respective 
+
+identifying assumptions. 
+
+Case (ii.a): Spillovers affecting a subset of units (selective interference). 
+
+In many applications, spillovers  affect only a subset of units. To capture selective interference, we 
+
+distinguish between exposed units  (𝑆 𝑖  > 0) and unexposed units  (𝑆 𝑖  = 0). By definition, spillover 
+
+effects on outcomes are realized only for  𝑡  ≥ 𝑇 0, when the treatment becomes active. This setting 
+
+combines selective exposure with partial interference in the sense of Sobel (2006), provided that the 
+
+interaction matrix  𝑊  is block diagonal with respect to the predefined clusters, so that spillovers may 
+
+occur within, but not across, clusters . Information is assumed to be available on which untreated units 
+
+are exposed, on their exposure intensity  𝑠 , an d on which units remain unexposed. Importantly, spillovers 
+
+may affect both treated and untreated units. 
+
+Within this framework, several causal estimands can be defined at a given exposure level  𝑠 . Let us start 
+
+by considering the subgroup of treated units. The direct effect at exposure level  𝑠  for these units, also 
+
+known as the ATT conditional on exposure  𝑠 , is defined as 
+
+𝐷 𝐸 𝑡 (𝑠 ) ≡ 𝐴𝑇 𝑇 𝑡 (𝑠 ) ≡ 𝐸 [𝑌 𝑖𝑡 (1, 𝑠 ) − 𝑌 𝑖𝑡 (0, 𝑠 ) ∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ], 𝑠  ∈ 𝒮 1,
+
+where  𝒮 1 denotes the support of observed exposure levels among treated units.  𝐷 𝐸 𝑡 (𝑠 ) captures the 
+
+effect of own treatment while holding exposure fixed at level  𝑠 .
+
+Treated units may also be subject to indirect spillover effects from other treated units. In this case, we 
+
+can define the indirect effect on the treated as 
+
+𝐼 𝐸 𝑡 (𝑠 ) ≡ 𝐸 [𝑌 𝑖𝑡 (1, 𝑠 ) − 𝑌 𝑖𝑡 (1,0) ∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ], 𝑠  ∈ 𝒮 1,
+
+measuring the effect of exposure among treated units while holding own treatment status fixed at  𝑑  = 1.
+
+The total effect at exposure level  𝑠  for the treated is then given by 
+
+𝑇 𝐸 𝑡 (𝑠 ) ≡ 𝐸 [𝑌 𝑖𝑡 (1, 𝑠 ) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ], 𝑠  ∈ 𝒮 1. 
+
+> 6For simplicity, we abstract from treatment -effect heterogeneity driven by interactions between treatment and unit -specific
+> characteristics (e.g., age or gender), typically captured by conditional average treatment effects (CATEs). Such heterogeneit y
+> can b e incorporated straightforwardly within our framework.
+
+7
+
+To decompose this total effect, define the direct effect in the absence of exposure for the same subgroup 
+
+of treated units as 
+
+𝐷 𝐸 𝑡 
+
+> 0
+
+(𝑠 ) ≡ 𝐸 [𝑌 𝑖𝑡 (1,0) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ], 𝑠  ∈ 𝒮 1.
+
+Then the total effect can be written as the sum of the direct effect in the absence of exposure and the 
+
+indirect effect among treated units: 
+
+𝑇 𝐸 𝑡 (𝑠 ) = 𝐷 𝐸 𝑡 
+
+> 0
+
+(𝑠 ) + 𝐼 𝐸 𝑡 (𝑠 ).
+
+Hence, the total effect combines the effect of own treatment when exposure is set to zero and the 
+
+additional effect of exposure among treated units. 7
+
+Proposition 1.  Fix a period  𝑡  ≥ 𝑇 0 and an exposure level  𝑠  ∈ 𝒮 1. Recall the definitions 
+
+𝐷 𝐸 𝑡 
+
+> 0
+
+(𝑠 ) ≡ 𝐸 [𝑌 𝑖𝑡 (1,0) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ],
+
+𝐼 𝐸 𝑡 (𝑠 ) ≡ 𝐸 [𝑌 𝑖𝑡 (1, 𝑠 ) − 𝑌 𝑖𝑡 (1,0) ∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ],
+
+𝑇 𝐸 𝑡 (𝑠 ) ≡ 𝐸 [𝑌 𝑖𝑡 (1, 𝑠 ) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ].
+
+Then 
+
+𝑇 𝐸 𝑡 (𝑠 ) = 𝐷 𝐸 𝑡 
+
+> 0
+
+(𝑠 ) + 𝐼 𝐸 𝑡 (𝑠 ).
+
+The proof is reported in Appendix A. 
+
+Averaging the total effect over the realized exposure distribution among treated units yields the Average 
+
+Total Effect on the Treated (ATOT), 
+
+𝐴𝑇𝑂 𝑇 𝑡  ≡ 𝐸 [𝑌 𝑖𝑡 (1, 𝑆 𝑖 ) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 1],
+
+that is, the expectation averages  𝑇 𝐸 𝑡 (𝑠 ) over the empirical distribution of exposure on  𝒮 1. 𝐴𝑇𝑂 𝑇 𝑡 
+
+captures the overall impact of the treatment on treated units, inclusive of the indirect effects they 
+
+experience. 8
+
+The indirect spillover effect on untreated exposed units is defined as 
+
+𝑆 𝐸 𝑡 (𝑠 ) ≡ 𝐸 [𝑌 𝑖𝑡 (0, 𝑠 ) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 𝑠 ], 𝑠  ∈ 𝒮 0, 𝑠  > 0,
+
+measuring the impact of exposure in the absence of direct treatment and where  𝒮 0 denotes the support 
+
+of observed exposure levels among untreated units. 9 
+
+> 7
+
+When  𝑠  = 0, treated units are not exposed to spillovers, and the total effect coincides with the ATT conditional on treated 
+
+units having zero exposure. It coincides with the unconditional  𝐴𝑇 𝑇 𝑡  defined in Case (i) only if all treated units are unexposed 
+
+or treatment effects are homogeneous across exposure groups.  
+
+> 8
+
+One could also define average direct effects and average indirect effects by averaging ( 𝐷𝐸 𝑡  (𝑠 ) and  𝐼 𝐸 𝑡 (𝑠 )), respectively, over 
+
+the relevant exposure distribution. We do not report these additional aggregate estimands here to avoid further burdening the 
+
+notation.  
+
+> 9
+
+We use different notation for indirect spillover effects on treated and untreated exposed units.  𝐼 𝐸 𝑡 (𝑠 ) refers to the effect of 
+
+exposure among treated units, holding own treatment status fixed at  𝐷 𝑖  = 1, while  𝑆 𝐸 𝑡 (𝑠 ) refers to the spillover effect on 
+
+untreated exposed units, holding own treatment status fixed at  𝐷 𝑖  = 0. This distinction avoids conflating within -treated 
+
+interference with spillovers affecting untreated units, as the two objects require different identifying assumptions. It also 
+
+reflects the fact that we do not restrict the effect of exposure to be the sam e when it is combined with direct treatment and 
+
+when it occurs in the absence of direct treatment. 8
+
+These exposure -specific estimands can be aggregated to obtain policy -relevant average effects. Averaging 
+
+the spillover effect over the realized distribution of exposure among affected untreated units yields the 
+
+Average Spillover Effect on the Exposed Untre ated (ASEU), 
+
+𝐴𝑆𝐸 𝑈 𝑡  ≡ 𝐸 [𝑌 𝑖𝑡 (0, 𝑆 𝑖 ) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 0, 𝑆 𝑖  > 0],
+
+which integrates  𝑆 𝐸 𝑡 (𝑠 ) over the distribution of  𝑆 𝑖  on  {𝑠  ∈ 𝒮 0: 𝑠  > 0}.
+
+Finally, one may also be interested in the overall average impact of the treatment on the entire population, 
+
+not only on treated units or on exposed untreated units. Following the logic of the overall causal effect 
+
+proposed by Hudgens and Halloran (2008),  we define the Population Average Policy Effect (PAPE) as 
+
+𝑃𝐴𝑃 𝐸 𝑡  ≡ 𝐸 [𝑌 𝑖𝑡 (𝐷 𝑖 , 𝑆 𝑖 ) − 𝑌 𝑖𝑡 (0,0)].
+
+This estimand compares the realized treatment and exposure configuration with a counterfactual scenario 
+
+in which no unit is treated and no unit is exposed to spillovers. From a policy perspective, this is arguably 
+
+the most relevant causal estimand, as it e ncompasses the average impact of the treatment on the whole 
+
+population. 10  This population -level estimand is related to the welfare -based perspective of Viviano (2025), 
+
+who studies policy targeting under network interference. In our setting,  𝑃𝐴𝑃 𝐸 𝑡  is the natural evaluation 
+
+counterpart of that perspective, as it measures the average effect of the realized policy configuration on 
+
+the whole population. 
+
+Under the selective -interference structure considered here, the population can be partitioned into three 
+
+mutually exclusive groups: directly treated units, untreated exposed units, and untreated unexposed units. 
+
+Directly treated units are kept as a single  group, despite possible heterogeneity in their exposure levels, 
+
+because  𝐴𝑇𝑂 𝑇 𝑡  averages total effects over the realized exposure distribution among them. Therefore, the 
+
+overall effect can be written as the weighted average of the average total effect on treated units, the 
+
+average spillover effect on exposed untreated units, and the  zero effect on untreated unexposed 
+
+units: 𝑃𝐴𝑃 𝐸 𝑡  = Pr (𝐷 𝑖  = 1) 𝐴𝑇𝑂 𝑇 𝑡  + Pr (𝐷 𝑖  = 0, 𝑆 𝑖  > 0) 𝐴𝑆𝐸 𝑈 𝑡  + Pr (𝐷 𝑖  = 0, 𝑆 𝑖  = 0) ⋅ 0.
+
+Although the last term is equal to zero in light of the zero impact of the treatment on untreated unexposed 
+
+units, it should not be ignored conceptually. Untreated and unexposed units are part of the population 
+
+over which the average is computed, and there fore their presence dilutes the population -level treatment 
+
+effect toward zero. 
+
+Equivalently, if we define the average policy effect among directly or indirectly exposed units (ATTE) as 
+
+𝐴𝑇𝑇 𝐸 𝑡  ≡ 𝐸 [𝑌 𝑖𝑡 (𝐷 𝑖 , 𝑆 𝑖 ) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 1 ∪ 𝑆 𝑖  > 0],
+
+then the PAPE can be written as 
+
+𝑃𝐴𝑃 𝐸 𝑡  = Pr (𝐷 𝑖  = 1 ∪ 𝑆 𝑖  > 0) 𝐴𝑇𝑇 𝐸 𝑡 .
+
+These estimands are well defined once potential outcomes are indexed by both treatment and exposure. 
+
+As discussed in Section 3, under selective interference and perfect knowledge of the exposure mapping, 
+
+the identification of  𝑇 𝐸 𝑡 (𝑠 ), 𝐴𝑇𝑂 𝑇 𝑡 , 𝑆 𝐸 𝑡 (𝑠 ), 𝐴𝑆𝐸 𝑈 𝑡 , 𝐴𝑇𝑇 𝐸 𝑡 , and  𝑃𝐴𝑃 𝐸 𝑡  can be achieved under a  
+
+> 10 We use the label PAPE to emphasize that the estimand refers to the average effect of the realized policy configuration,
+> including both direct treatment and spillover exposure, rather than to the standard no -interference population average
+> treatment effect .
+
+9
+
+reasonable set of assumptions by both CBCMs and FBCMs. At the same time, identifying  𝐷 𝐸 𝑡 (𝑠 ) and 
+
+𝐼 𝐸 𝑡 (𝑠 ) in practice may be more challenging, as it requires sufficient overlap between exposed and 
+
+unexposed treated units, as well as between treated and untreated units at comparable exposure levels. 
+
+Case (ii.b): Latent selective interference. 
+
+A conceptually distinct situation arises when spillovers affect only a subset of units, but the researcher 
+
+cannot observe which units are exposed. In this setting, untreated and unexposed units still exist in the 
+
+population, and exposure remains heterogene ous across units, but exposure status is unobserved or 
+
+measured with substantial error. Formally, there exist units satisfying  𝑆 𝑖  = 0 and units satisfying  𝑆 𝑖  > 0,
+
+but the researcher cannot reliably distinguish between them. This situation may arise when spillovers 
+
+diffuse through unobserved social, economic, or geographic networks, or when the available exposure 
+
+measure is affected by substantial measurement error .
+
+We are interested in the same causal estimands as in Case (ii.a). However, as shown in Section 3, these 
+
+estimands cannot generally be point identified using CBCMs. Consequently, the existence of clean 
+
+controls is not sufficient for point identification: re searchers must also be able to correctly identify which 
+
+units are uncontaminated. 11 
+
+Conversely, under latent selective interference, FBCMs can still point identify aggregate total effects, such 
+
+as  𝐴𝑇𝑂 𝑇 𝑡  and  𝑃𝐴𝑃 𝐸 𝑡 , while it is no longer possible to point identify exposure -specific or exposure -
+
+status -dependent objects such as  𝑇 𝐸 𝑡 (𝑠 ), 𝑆 𝐸 𝑡 (𝑠 ), 𝐴𝑆𝐸 𝑈 𝑡 , or  𝐴𝑇𝑇 𝐸 𝑡 .
+
+Case (iii): Spillovers affecting all units. 
+
+In some settings, such as those characterized by general equilibrium effects or highly interconnected 
+
+systems, spillovers may affect all units, both treated and untreated, so that  𝑆 𝑖  > 0 for all  𝑖 . Suppose a 
+
+large infrastructure program improves public transportation in one part of a metropolitan area. Even if 
+
+the policy is geographically targeted, it may increase overall citywide accessibility, affect commuting 
+
+patterns, and change housing demand  across all neighborhoods. As a result, rents and property values 
+
+may adjust not only in treated areas but also in untreated ones, because households reallocate in response 
+
+to new relative prices and commuting costs. In this case, all units are indirectly e xposed to the treatment 
+
+through market -clearing mechanisms in the housing and labor markets. Hence,  𝑆 𝑖  > 0 for all  𝑖  and 
+
+𝑃𝐴𝑃 𝐸 𝑡  = 𝐴𝑇𝑇𝐸 𝑡 .12 
+
+As shown in Section 3, reduced -form approaches based on cross -unit comparisons including CBCMs 
+
+break down in this setting, since all untreated units are themselves affected by spillovers and no control     
+
+> 11 Auerbach et al. (2024) note that, even when the exposure mapping is misspecified, an exposure -based comparison may still
+> be useful for the narrower purpose of testing the null hypothesis that all spillover effects are zero. In this case, a statis tically
+> significant nonzero misspecified exposure effect provides evidence against the absence of spillovers, although it cannot
+> generally be interpreted as a policy -relevant measure of the magnitude or spatial structure of spillover effects.
+> 12 Cerqua et al. (202 4) study an extreme version of Case (iii), in which all units are simultaneously exposed to treatment. In
+> such circumstances, CBCMs cannot be used to identify the causal estimands of interest because they require untreated
+> observations to identify the count erfactual path. 10
+
+group remains unaffected by the treatment, provided that the available data cover only the metropolitan 
+
+area under study. 13 
+
+If the exposure mapping is known and there is sufficient common support in exposure between treated 
+
+and untreated units, CBCMs may still identify a more limited causal object: the direct effect on the treated 
+
+at a given exposure level,  𝐷𝐸 𝑡 (𝑠 ), under a parallel -trends assumption conditional on  𝑠 ; see Xu (2025) for 
+
+an example. This estimand compares treated and untreated units facing the same exposure level and 
+
+therefore does not recover total effects relative to a no -treatment/no -exposure counterfactual, nor 
+
+spillover effects on untreated exposed  units. Under the same known -exposure setting, FBCMs can 
+
+identify causal estimands defined relative to  𝑌 𝑖𝑡 (0,0), such as  𝑇𝐸 𝑡 (𝑠 ), 𝐴𝑇𝑂𝑇 𝑡 , 𝑆𝐸 𝑡 (𝑠 ), 𝐴𝑆𝐸𝑈 𝑡 , and 
+
+𝑃𝐴𝑃𝐸 𝑡 , but they do not generally identify  𝐷𝐸 𝑡 (𝑠 ) or  𝐼𝐸 𝑡 (𝑠 ) without additional structure.  Since all units 
+
+are exposed in this case, the population of directly or indirectly exposed units coincides with the entire 
+
+population. Therefore,  𝐴𝑇𝑇𝐸 𝑡  coincides with  𝑃𝐴𝑃𝐸 𝑡  and can be identified whenever  𝑃𝐴𝑃𝐸 𝑡  is identified. 
+
+If the exposure mapping is instead unknown, in Section 3 we show that CBCMs cannot identify any of 
+
+the causal estimands defined here, while FBCMs can still point  identify aggregate effects such as  𝐴𝑇𝑂 𝑇 𝑡 ,
+
+𝐴𝑆𝐸 𝑈 𝑡 , and  𝑃𝐴𝑃 𝐸 𝑡 .
+
+3. The control -based and forecast -based counterfactual approaches 
+
+This section describes two broad classes of approaches for constructing counterfactual outcomes in panel 
+
+data settings: control -based counterfactual methods (CBCMs) and forecast -based counterfactual 
+
+methods (FBCMs). The key distinction between the two lies  in how the post -treatment counterfactual 
+
+potential outcomes are recovered. Control -based approaches rely on cross -unit comparisons, whereas 
+
+forecast -based approaches recover counterfactual outcomes from the pre -treatment dynamics of the 
+
+units for which co unterfactual outcomes are needed, using information on their past outcomes and 
+
+covariates. As we show below, this distinction is crucial for identification, especially in the presence of 
+
+interference. 
+
+3.1. Control -based counterfactual approaches 
+
+CBCMs recover the counterfactual outcome  𝑌 𝑖𝑡 (0,0) by leveraging outcomes of untreated units that are 
+
+assumed to be unaffected by the policy. Difference -in -differences (DiD) is the canonical example. 
+
+Identification relies on assumptions linking observed untreated outcomes to the untreated and unexposed 
+
+po tential outcome. We distinguish between four interference regimes corresponding to the interference 
+
+structures described in Section 2. 
+
+3.1.1. CBCMs assumptions 
+
+Assumption CBCM1 (No anticipation). For all  𝑡  < 𝑇 0,
+
+𝑌 𝑖𝑡 (𝑑 , 𝑠 ) = 𝑌 𝑖𝑡 (0,0) ∀𝑑  ∈ {0,1}, 𝑠  ∈ 𝒮 
+
+Pre -treatment outcomes are therefore realizations of the untreated and unexposed potential outcome. 
+
+This assumption ensures that pre -treatment outcomes provide valid information about the untreated  
+
+> 13 If comparable untreated and unaffected units are observed outside the metropolitan area under study, for example in other
+> cities not affected by the policy, the setting becomes analogous to Case (ii.a). 11
+
+outcome process, as it guarantees that pre -treatment data are not contaminated by behavioral or 
+
+equilibrium responses to the anticipated policy. 
+
+Assumption CBCM2 (No interference with control units). For all untreated units, 
+
+𝑌 𝑖𝑡 (0, 𝑠 ) = 𝑌 𝑖𝑡 (0,0) ∀𝑖 : 𝐷 𝑖  = 0, ∀𝑠  ∈ 𝑆 0,
+
+so that observed outcomes for untreated units coincide with  𝑌 𝑖𝑡 (0,0), i.e., with the untreated and 
+
+unexposed potential outcome. 
+
+When interference affects some untreated units, Assumption CBCM2 is violated: spillovers contaminate 
+
+untreated outcomes, breaking the link between observed untreated outcomes and  𝑌 𝑖𝑡 (0,0) when  𝑡  ≥ 𝑇 0,
+
+and thereby invalidating the cross -unit comparisons that underpin any control -based approach. However, 
+
+some relevant causal estimands may still be identified by relying on the following weaker version of 
+
+Assumption CBCM2. 
+
+Assumption CBCM2_v2 (Existence of clean controls). There exists a non -empty subset of untreated 
+
+units such that, 
+
+𝑌 𝑖𝑡  = 𝑌 𝑖𝑡 (0,0) ∀𝑖 : 𝐷 𝑖  = 0, 𝑆 𝑖  = 0.
+
+Moreover, the researcher must observe which units satisfy  𝑆 𝑖  = 0.
+
+Then, assumption CBCM2_v2 has two components: 
+
+(i) existence of untreated and unexposed units; 
+
+(ii) observability of such units by the researcher. 
+
+When condition (i) holds but condition (ii) fails, we obtain the latent selective interference setting 
+
+introduced in Section 2 (Case ii.b). 
+
+Because different estimands use different comparison groups, we distinguish three parallel -trends 
+
+conditions. 
+
+Assumption CBCM3(a)  (Parallel trends: treated units versus the relevant valid -control group). In the 
+
+absence of treatment and spillovers, the untreated potential outcomes of treated units and those of the 
+
+relevant valid -control units would have evolved in parallel. The releva nt control group depends on the 
+
+interference regime. Formally: 
+
+Case (i):  No spillo vers.  For  𝑡  ≥ 𝑇 0, 𝑡 ′ < 𝑇 0,
+
+𝐸 [𝑌 𝑖𝑡 (0,0) − 𝑌 𝑖 𝑡 ′ (0,0) ∣ 𝐷 𝑖  = 1] = 𝐸 [𝑌 𝑖𝑡 (0,0) − 𝑌 𝑖 𝑡 ′ (0,0) ∣ 𝐷 𝑖  = 0].
+
+Case (ii.a): Selective  spillo vers.  For  𝑡  ≥ 𝑇 0, 𝑡 ′ < 𝑇 0, and for any exposure level  𝑠  ∈ 𝑆 1,
+
+𝐸 [𝑌 𝑖𝑡 (0,0) − 𝑌 𝑖 𝑡 ′ (0,0) ∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ] = 𝐸 [𝑌 𝑖𝑡 (0,0) − 𝑌 𝑖 𝑡 ′ (0,0) ∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 0].12 
+
+In Case (i), all untreated units constitute valid controls because their outcomes are unaffected by 
+
+exposure. In Case (ii.a), the valid -control group must instead be restricted to untreated and unexposed 
+
+units. Condition (ii.a) imposes parallel untreated -outcome trends within each exposure stratum among 
+
+treated units. Under the remaining identifying assumptions, it supports identification of  𝑇 𝐸 𝑡 (𝑠 );
+
+averaging over the realized exposure distribution among treated units yields identification of  𝐴𝑇𝑂 𝑇 𝑡 .
+
+Assumption CBCM3(b) (Parallel trends: exposed untreated units vs clean controls). For any positive 
+
+exposure level  𝑠  ∈ 𝑆 0 and for  𝑡  ≥ 𝑇 0, 𝑡 ′ < 𝑇 0,
+
+𝐸 [𝑌 𝑖𝑡 (0,0) − 𝑌 𝑖 𝑡 ′ (0,0) ∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 𝑠 ] = 𝐸 [𝑌 𝑖𝑡 (0,0) − 𝑌 𝑖 𝑡 ′ (0,0) ∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 0].
+
+This condition ensures that clean controls provide a valid counterfactual trend for exposed untreated 
+
+units. 
+
+Assumption CBCM3(c) (Exposure -specific parallel trends). For any exposure level  𝑠  ∈ 𝒮 1 ∩ 𝒮 0 with 
+
+common support among treated and untreated units, and for  𝑡  ≥ 𝑇 0, 𝑡 ′ < 𝑇 0,
+
+𝐸 [𝑌 𝑖𝑡 (0, 𝑠 ) − 𝑌 𝑖𝑡 ′(0,0) ∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ] = 𝐸 [𝑌 𝑖𝑡 (0, 𝑠 ) − 𝑌 𝑖𝑡 ′(0,0) ∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 𝑠 ].
+
+This condition requires that, conditional on the same exposure level  𝑠 , treated and untreated units would 
+
+have followed parallel trends in the potential outcome corresponding to no own treatment and exposure 
+
+level  𝑠 . It is the additional parallel -trends condition needed when the comparison is made between treated 
+
+and untreated units facing the same exposure level. 
+
+The no -anticipation and clean -control conditions are common to CBCMs, including designs relying on 
+
+random treatment assignment, whereas CBCM3(a), CBCM3(b) and CBCM3(c) are specific to DiD -type 
+
+estimators. 
+
+These parallel -trends assumptions are primarily used to identify estimands defined relative to  𝑌 𝑖𝑡 (0,0),
+
+such as  𝑇 𝐸 𝑡 (𝑠 ), 𝐴𝑇𝑂 𝑇 𝑡 , 𝑆 𝐸 𝑡 (𝑠 ), 𝐴𝑆𝐸 𝑈 𝑡 , and  𝑃𝐴𝑃 𝐸 𝑡 . By contrast,  𝐷 𝐸 𝑡 (𝑠 ) and  𝐼 𝐸 𝑡 (𝑠 ) require additional 
+
+overlap and exposure -specific parallel -trends conditions, because they involve counterfactual outcomes 
+
+at nonzero exposure levels. 
+
+Remark (Latent Selective Interference).  Assumptions CBCM3(a) -CBCM3(c) are formulated in terms 
+
+of exposure status and may therefore hold at the population level even when exposure is not observed 
+
+by the researcher. In the latent selective interference setting, however, exposure status cannot be u sed to 
+
+partition observations into clean controls and exposed units. As a result, even if these assumptions remain 
+
+valid features of the data -generating process, they cannot be implemented empirically for identification. 
+
+The failure of CBCMs in Case (ii.b)  therefore stems not from a violation of parallel trends, but from the 
+
+inability to identify the exposure regimes required by these assumptions. 
+
+The credibility of these assumptions depends on the institutional context and the structure of interactions 
+
+across units. Assumption CBCM1 may fail when agents adjust their behavior in anticipation of the policy. 
+
+In such cases, the researcher should treat  as the last pre -treatment period the final period in which it is 
+
+reasonable to assume that agents could not yet respond to the forthcoming policy change. Assumptions 
+
+CBCM2 and CBCM2_v2 require that all or some untreated units remain unaffected by spillover s and that 13 
+
+the researcher can correctly identify them, conditions that may be implausible in highly interconnected 
+
+settings. Finally, the parallel -trends assumptions (CBCM3(a) -CBCM3(c)) are more credible when treated 
+
+and comparison groups share similar pre -treatment  dynamics and are exposed to common shocks, and 
+
+less credible when treatment assignment or exposure is correlated with differential underlying trends. 
+
+3.1.2. The difference -in -differences design in the presence of interference 
+
+A common empirical strategy for studying spillovers in observational settings is to combine a control -
+
+based causal design with an explicit exposure mapping. The researcher first identifies the directly treated 
+
+units and then defines untreated units that ma y be indirectly exposed to the treatment, typically based on 
+
+geographic proximity, adjacency, network links, or other theoretically motivated measures of exposure. 
+
+Units that are sufficiently far from the treatment source, or otherwise plausibly disconnect ed from it, are 
+
+used as clean controls. This leads to a spatial difference -in -differences design, also known as a difference -
+
+in -differences design with interference, in which the post -treatment change in outcomes for exposed 
+
+untreated units is compared wit h the corresponding change for untreated and unexposed units (see Butts, 
+
+202 3). This method is described in Appendix B. More flexible versions estimate separate coefficients for 
+
+different exposure bins, such as distance rings around the treated location, allowing the researcher to 
+
+assess how effects decay with exposure intensity. T he key identifying assumptions are that, absent 
+
+treatment and spillovers, exposed and unexposed untreated units would have followed parallel trends, 
+
+and that the clean -control group is not itself affected by the treatment. 
+
+Recent applications illustrate how this logic is implemented in practice. Garin and Rothbaum (2025) 
+
+adopt a control -based design in which treated units are counties where large government -financed plants 
+
+were built, while clean controls are defined as simi larly populated counties located outside major 
+
+manufacturing centers and not adjacent to treated counties. Since plant construction may generate 
+
+spillovers across county borders, adjacent counties are excluded from the clean control group and treated 
+
+as po tentially exposed units. Using the clean controls as the relevant counterfactual group, the authors 
+
+estimate both the average treatment effect on treated counties and the average spillover effect on adjacent 
+
+counties. 
+
+Bradt and Aldy (2025) study the housing -market effects of US Army Corps of Engineers levee 
+
+construction. Their design distinguishes between homes located inside levee -protected areas, which 
+
+receive direct protection benefits, and homes outside protected ar eas but close to waterways, which may 
+
+be exposed to adverse spillover flood risks. They estimate difference -in -differences models using repeat 
+
+residential property transactions and compare price changes around levee construction across protected, 
+
+spillover -exposed, and unaffected parcels. They also vary the distance -to -water bandwidth used to define 
+
+spillover exposure, thereby assessing the spatial reach of spillover effects. 
+
+Diamond and McQuade (2019) provide another prominent example in the context of affordable housing. 
+
+They study Low -Income Housing Tax Credit developments and estimate their spillover effects on nearby 
+
+neighborhoods using a nonparametric difference -in -differ ences style estimator. Their approach 
+
+generalizes the standard “ring” method, which compares properties close to the treated site with 
+
+properties located in an outer control ring. Rather than imposing a single treatment radius, they recover 
+
+how house -price  effects vary flexibly with distance from the LIHTC site and time since development, 
+
+thereby estimating the spatial reach of the spillover effect. 
+
+Together, these examples show that CBCMs can be adapted to spillover settings when the researcher can 
+
+credibly define exposure regimes. Identification depends not only on standard parallel -trends -type 
+
+assumptions, but also on the credibility of the exposur e mapping used to separate indirectly exposed 14 
+
+units from clean controls. Clean controls must be comparable to treated and exposed units in the absence 
+
+of the intervention while also being plausibly unaffected by the treatment, so that they provide valid 
+
+counterfactuals without being contaminated by sp illovers. This requirement involves a clear trade -off: 
+
+defining exposure too broadly may unnecessarily exclude unaffected units from the control group, 
+
+reducing statistical power and the pool of comparable controls, whereas defining exposure too narrowly 
+
+may leave contaminated units among the clean controls, leading to biased estimates. 
+
+3.1.3. CBCMs identification results 
+
+We now establish identification under the four interference regimes introduced in Section 2. 
+
+Case (i): No spillovers. 
+
+When potential outcomes do not depend on exposure, 
+
+𝑌 𝑖𝑡 (𝑑 , 𝑠 ) = 𝑌 𝑖𝑡 (𝑑 , 0) for all  𝑠  ∈ 𝒮 ,
+
+Proposition CBCM1.  Under Assumptions CBCM1, CBCM2, and CBCM3(a), the standard DiD 
+
+estimator identifies  𝐴𝑇 𝑇 𝑡 .
+
+Case (ii.a): Spillovers affecting a subset of units (selective interference). 
+
+Under this selective -interference structure, untreated and unexposed units, i.e.  units with  𝐷 𝑖  = 0 and 
+
+𝑆 𝑖  = 0, are the natural candidate control group for recovering the counterfactual outcome  𝑌 𝑖𝑡 (0,0),
+
+namely the outcome in the absence of both direct and spillover effects. 
+
+When spillovers affect only a subset of units and untreated unexposed units can be observed, CBCMs 
+
+can still be applied by restricting the comparison group to untreated and unexposed units. In this setting, 
+
+under no anticipation and the existence and obser vability of clean controls, DiD -type estimators can 
+
+identify  𝑇 𝐸 𝑡 (𝑠 ) and  𝐴𝑇𝑂 𝑇 𝑡  under CBCM3(a), and  𝑆 𝐸 𝑡 (𝑠 ) and  𝐴𝑆𝐸 𝑈 𝑡  under CBCM3(b). The 
+
+identification of  𝐴𝑇𝑇 𝐸 𝑡  and  𝑃𝐴𝑃 𝐸 𝑡  then follows from the identification of  𝐴𝑇𝑂 𝑇 𝑡  and  𝐴𝑆𝐸 𝑈 𝑡 , together 
+
+with the relevant population shares. 
+
+Proposition CBCM2.  Fix  𝑡  ≥ 𝑇 0 and  𝑠  ∈ 𝒮 1. Under Assumptions CBCM1, CBCM2_v2, and 
+
+CBCM3(a), a DiD estimator comparing treated units with exposure  𝑠  to untreated and unexposed units 
+
+identifies  𝑇 𝐸 𝑡 (𝑠 ).
+
+Corollary CBCM1.  A practically relevant special case is the coincidence of the total effect with the direct 
+
+effect for unexposed treated units, that is, when  𝑠  = 0:
+
+𝑇 𝐸 𝑡 (0) = 𝐷 𝐸 𝑡 (0).
+
+Proposition CBCM3.  Under Assumptions CBCM1, CBCM2_v2, and CBCM3(a), DiD comparing all 
+
+treated units to untreated unexposed units identifies  𝐴𝑇𝑂 𝑇 𝑡 .
+
+Proposition CBCM4.  Fix  𝑡  ≥ 𝑇 0 and a positive exposure level  𝑠  with  𝑠  ∈ 𝒮 0. Under Assumptions 
+
+CBCM1, CBCM2_v2, and CBCM3(b), DiD comparing exposed untreated units with exposure  𝑠  to 
+
+unexposed untreated units identifies  𝑆 𝐸 𝑡 (𝑠 ).15 
+
+Proposition CBCM5.  If the conditions of Proposition CBCM4 hold for all relevant positive exposure 
+
+levels, CBCMs identify  𝐴𝑆𝐸 𝑈 𝑡  by averaging  𝑆 𝐸 𝑡 (𝑠 ) over the realized distribution of exposure among 
+
+untreated exposed units. 
+
+Corollary CBCM2.  If  𝐴𝑇𝑂 𝑇 𝑡  and  𝐴𝑆𝐸 𝑈 𝑡  are identified and the relevant population shares are observed, 
+
+then CBCMs also identify  𝐴𝑇𝑇 𝐸 𝑡  and  𝑃𝐴𝑃 𝐸 𝑡 .
+
+Finally,  𝐷 𝐸 𝑡 (𝑠 ) and  𝐼 𝐸 𝑡 (𝑠 ) require additional conditions. Identifying  𝐷 𝐸 𝑡 (𝑠 ) requires common support 
+
+between treated and untreated units at the same exposure level and Assumption CBCM3(c). Identifying 
+
+𝐼 𝐸 𝑡 (𝑠 ) is more demanding, because it requires recovering  𝑌 𝑖𝑡 (1,0), which, in practice, requires overlap 
+
+between exposed and unexposed treated units and a parallel -trends condition across exposure strata .
+
+Absent these conditions, these estimands are not generally point  identified by CBCMs. 
+
+Case (ii.b): Latent selective interference. 
+
+When untreated and unexposed units exist but exposure status is unobserved, CBCMs cannot generally 
+
+poin t identify the causal estimands of interest because the researcher cannot isolate the clean -control 
+
+group required to recover  𝑌 𝑖𝑡 (0,0). The failure is therefore not necessarily due to the absence of clean 
+
+controls in the population, but to the inability to identify them in the observed data. 
+
+Proposition CBCM6.  Suppose untreated unexposed units exist but exposure status is not observed by 
+
+the researcher. Then CBCMs cannot generally point  identify  𝑇 𝐸 𝑡 (𝑠 ), 𝐴𝑇𝑂 𝑇 𝑡 , 𝑆 𝐸 𝑡 (𝑠 ), 𝐴𝑆𝐸 𝑈 𝑡 , 𝐴𝑇𝑇 𝐸 𝑡 ,
+
+or  𝑃𝐴𝑃 𝐸 𝑡 .
+
+Case (iii): Spillovers affecting all units. 
+
+When all units are exposed to spillovers, no untreated and unexposed units are available within the 
+
+observed population. Hence, untreated outcomes no longer provide observations of  𝑌 𝑖𝑡 (0,0), and cross -
+
+unit comparisons cannot recover the no -treatment/no -exposure counterfactual. 
+
+Proposition CBCM7.  If all units are exposed to spillovers post -treatment, so that no unit satisfies  𝐷 𝑖  =
+
+0 and  𝑆 𝑖  = 0, CBCMs cannot generally point  identify estimands defined relative to  𝑌 𝑖𝑡 (0,0), including 
+
+𝑇 𝐸 𝑡 (𝑠 ), 𝐴𝑇𝑂 𝑇 𝑡 , 𝑆 𝐸 𝑡 (𝑠 ), 𝐴𝑆𝐸 𝑈 𝑡 , 𝐴𝑇𝑇 𝐸 𝑡 , or  𝑃𝐴𝑃 𝐸 𝑡 .
+
+Proposition CBCM8.  Suppose that the exposure mapping is known and that, for some  𝑠 , there is 
+
+sufficient common support between treated and untreated units at the same exposure level. Under 
+
+assumption  CBCM3(c) , a DiD estimator comparing treated and untreated units with  𝑆 𝑖  = 𝑠 ,
+
+𝛥 𝑡  
+
+> 𝐷𝐸
+
+(𝑠 ) = 𝐸 [𝑌 𝑖𝑡  − 𝑌 𝑖 ,𝑇 0−1 ∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ] − 𝐸 [𝑌 𝑖𝑡  − 𝑌 𝑖 ,𝑇 0−1 ∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 𝑠 ],
+
+identifies the direct effect  𝐷 𝐸 𝑡 (𝑠 ).
+
+> The identification proofs presented in Section 3.1.3 are reported in Appendix C.
+
+3.2. Forecast -based counterfactual approaches 
+
+Forecast -based counterfactual methods (FBCMs) recover the no -treatment, no -exposure potential 
+
+outcome by extrapolating from pre -treatment outcome and covariate dynamics rather than from cross -16 
+
+unit comparisons. This is a model -based counterfactual approach: counterfactual outcomes are 
+
+constructed through an explicit statistical model of the baseline data -generating process, and 
+
+identification relies on the stability and predictability of that pr ocess. We use the Machine Learning 
+
+Control Method (MLCM) (Cerqua et al., 2024) as a leading example of an FBCM. Other approaches, 
+
+such as interrupted time -series analysis, belong to the same broad family when they recover 
+
+counterfactual outcomes from pre -treatment dynamics rather than from post -treatment controls. 
+
+The core idea of MLCM is to treat counterfactual construction as a forecasting problem. Using only pre -
+
+treatment observations, the method estimates a flexible prediction rule for the evolution of outcomes 
+
+under no treatment and no exposure. Let  ℋ𝑖 ,𝑡 −1 denote the pre -treatment history of unit  𝑖 , including 
+
+lagged outcomes and predetermined covariates. The baseline outcome process can be written as 
+
+𝑌 𝑖𝑡 (0,0) = 𝑚 𝑡 (ℋ𝑖 ,𝑡 −1) + 𝑢 𝑖𝑡 , 𝑡  < 𝑇 0,
+
+where  𝑚 𝑡 (⋅) is an unknown forecasting function, which can be approximated using flexible prediction 
+
+methods such as random forests, gradient boosting, or LASSO. MLCM estimates  𝑚 𝑡 (⋅) using pre -
+
+treatment data only, selecting the prediction algorithm and its tuning parameters through rolling panel 
+
+cross -validation. The estimated model is then used to forecast the post -treatment baseline counterfactual 
+
+𝑌 ̂𝑖𝑡 (0,0) = 𝑚 ̂ 𝑡 (ℋ𝑖 ,𝑇 0−1), 𝑡  ≥ 𝑇 0,
+
+where the forecast relies only on information that is not contaminated by treatment or spillovers. Causal 
+
+effects are obtained by comparing the observed outcome with the forecasted baseline outcome. For any 
+
+post -treatment period  𝑡  ≥ 𝑇 0, the unit -level forecast -based gap is 
+
+𝜏 ̂ 𝑖𝑡  = 𝑌 𝑖𝑡  − 𝑌 ̂𝑖𝑡 (0,0).
+
+Because FBCMs do not rely on post -treatment observations of untreated units to construct 
+
+counterfactuals, they remain applicable even when interference contaminates all cross -sectional 
+
+comparisons. However, they identify only causal objects that can be exp ressed relative to  𝑌 𝑖𝑡 (0,0). They 
+
+do not, without additional structure, recover potential outcomes under alternative nonzero exposure 
+
+regimes, such as  𝑌 𝑖𝑡 (0, 𝑠 ) or  𝑌 𝑖𝑡 (1,0).
+
+3.2.1. FBCMs assumptions 
+
+Assumption FBCM1 (No anticipation).  For all units and all  𝑡  < 𝑇 0,
+
+𝑌 𝑖𝑡  = 𝑌 𝑖𝑡 (0,0).
+
+Pre -treatment outcomes are therefore realizations of the no -treatment, no -exposure potential outcome. 
+
+This is the same no -anticipation condition used for CBCMs. 
+
+Assumption FBCM2 (Structural stability of the baseline outcome process).  In the absence of 
+
+treatment and spillovers, the law of motion of the baseline potential outcome  𝑌 𝑖𝑡 (0,0) is stable over time. 
+
+In particular, the relationship linking  𝑌 𝑖𝑡 (0,0) to its pre -treatment history and predetermined covariates 
+
+remains valid after  𝑇 0.
+
+This assumption rules out structural breaks or other shocks that would alter the baseline outcome process 
+
+independently of the policy. It is the forecast -based counterpart of the comparability requirement 
+
+imposed on control units in CBCMs. 17 
+
+Assumption FBCM3 (Sufficient predictability).  Pre -treatment outcomes and covariates contain 
+
+enough information to approximate  𝑌 𝑖𝑡 (0,0) with sufficiently small prediction error in the post -treatment 
+
+period. Formally, for the relevant units and post -treatment periods, 
+
+𝑌 ̂𝑖𝑡 (0,0) − 𝑌 𝑖𝑡 (0,0) → 0
+
+in the relevant probability or mean -square sense as the amount of usable pre -treatment information 
+
+grows. 
+
+In practice, FBCM3 requires that the baseline outcome process be persistent and forecastable. The 
+
+assumption is more plausible when outcomes display stable dynamics and when the pre -treatment period 
+
+is long enough to validate predictive performance out of  sample. It is less plausible when outcomes are 
+
+dominated by large idiosyncratic shocks or when the post -treatment period is far away from the pre -
+
+treatment window. 
+
+The credibility of FBCMs therefore depends primarily on the stability and predictability of the untreated 
+
+and unexposed outcome process. FBCM1 may fail when agents anticipate the policy and adjust behavior 
+
+before  𝑇 0. FBCM2 may fail in the presence of structural breaks, regime shifts, or time -varying shocks 
+
+that alter the law of motion of  𝑌 𝑖𝑡 (0,0) independently of the treatment. FBCM3 may fail when the 
+
+available pre -treatment history is not informative enough to generate accurate counterfactual forecasts. 
+
+3.2.2. FBCMs identification results 
+
+We now summarize the identifying content of FBCMs under the four interference regimes introduced in 
+
+Section 2. 
+
+Case (i): No spillovers. 
+
+When potential outcomes do not depend on exposure, the forecasted baseline outcome  𝑌 ̂𝑖𝑡 (0,0) directly 
+
+provides the counterfactual needed to estimate the standard ATT. 
+
+Proposition FBCM1.  Suppose outcomes do not depend on exposure, so that  𝑌 𝑖𝑡 (𝑑 , 𝑠 ) = 𝑌 𝑖𝑡 (𝑑 , 0) for 
+
+all  𝑠  ∈ 𝒮 . Under Assumptions FBCM1 -FBCM3, FBCMs recover  𝑌 𝑖𝑡 (0,0) for treated units and identify 
+
+𝐴𝑇 𝑇 𝑡  = 𝐸 [𝑌 𝑖𝑡 (1,0) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 1].
+
+Case (ii.a): Spillovers affecting a subset of units (selective interference). 
+
+When exposure is observed, FBCMs can identify causal estimands defined relative to the no -treatment, 
+
+no -exposure baseline. For treated units, the forecast -based gap recovers the total effect of treatment and 
+
+exposure relative to  𝑌 𝑖𝑡 (0,0). For untreated exposed units, it recovers the spillover effect relative to the 
+
+same baseline. 
+
+Proposition FBCM2.  Suppose exposure is observed and potential outcomes are indexed by  (𝐷 𝑖 , 𝑆 𝑖 ).
+
+Under Assumptions FBCM1 -FBCM3, FBCMs recover  𝑌 𝑖𝑡 (0,0) and identify, for  𝑠  ∈ 𝒮 1,
+
+𝑇 𝐸 𝑡 (𝑠 ) = 𝐸 [𝑌 𝑖𝑡 (1, 𝑠 ) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ],
+
+as well as 18 
+
+𝐴𝑇𝑂 𝑇 𝑡  = 𝐸 [𝑌 𝑖𝑡 (1, 𝑆 𝑖 ) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 1].
+
+If Assumptions FBCM1 -FBCM3 also hold for untreated units, FBCMs identify, for any positive exposure 
+
+level  𝑠  ∈ 𝒮 0,
+
+𝑆 𝐸 𝑡 (𝑠 ) = 𝐸 [𝑌 𝑖𝑡 (0, 𝑠 ) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 𝑠 ],
+
+and therefore 
+
+𝐴𝑆𝐸 𝑈 𝑡  = 𝐸 [𝑌 𝑖𝑡 (0, 𝑆 𝑖 ) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 0, 𝑆 𝑖  > 0].
+
+Because  𝐴𝑇𝑂 𝑇 𝑡  and  𝐴𝑆𝐸 𝑈 𝑡  are identified, and because untreated unexposed units have zero contribution 
+
+by definition, FBCMs also identify aggregate policy effects such as  𝐴𝑇𝑇 𝐸 𝑡  and  𝑃𝐴𝑃 𝐸 𝑡  when the relevant 
+
+population shares are observed. 
+
+By contrast, FBCMs do not generally identify the direct effect  𝐷 𝐸 𝑡 (𝑠 ) or the indirect effect among treated 
+
+units  𝐼 𝐸 𝑡 (𝑠 ), because these estimands require counterfactual outcomes under nonzero exposure regimes, 
+
+namely  𝑌 𝑖𝑡 (0, 𝑠 ) and  𝑌 𝑖𝑡 (1,0), which are not learned from pre -treatment dynamics in which treatment 
+
+and exposure are inactive. 
+
+Case (ii.b): Latent selective interference. 
+
+When exposure exists but is unobserved, FBCMs can still recover baseline counterfactual outcomes from 
+
+pre -treatment dynamics. Hence, they can identify aggregate effects that do not require knowing which 
+
+units are exposed. However, they cannot generally rec over exposure -specific or exposure -status -
+
+dependent objects. 
+
+Proposition FBCM3.  Suppose untreated unexposed units exist but exposure status is not observed by 
+
+the researcher. Under Assumptions FBCM1 -FBCM3, FBCMs identify aggregate total effects on treated 
+
+units, 
+
+𝐴𝑇𝑂 𝑇 𝑡  = 𝐸 [𝑌 𝑖𝑡 (1, 𝑆 𝑖 ) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 1],
+
+and the population average policy effect, 
+
+𝑃𝐴𝑃 𝐸 𝑡  = 𝐸 [𝑌 𝑖𝑡 (𝐷 𝑖 , 𝑆 𝑖 ) − 𝑌 𝑖𝑡 (0,0)].
+
+However, exposure -specific or exposure -status -dependent estimands such as  𝑇 𝐸 𝑡 (𝑠 ), 𝑆 𝐸 𝑡 (𝑠 ), 𝐴𝑆𝐸 𝑈 𝑡 ,
+
+and  𝐴𝑇𝑇 𝐸 𝑡  are not generally identifiable because the researcher cannot observe the exposure strata or 
+
+the set of untreated exposed units. 
+
+Case (iii): Spillovers affecting all units. 
+
+When all units are exposed to spillovers, FBCMs remain useful because they do not require untreated 
+
+and unexposed post -treatment controls. Their identifying content depends on whether exposure intensity 
+
+is observed. 
+
+Proposition FBCM4.  Suppose all units are exposed to spillovers in the post -treatment period and 
+
+exposure levels are observed. Under Assumptions FBCM1 -FBCM3, FBCMs recover  𝑌 𝑖𝑡 (0,0) and 19 
+
+identify total effects on treated units and spillover effects on untreated units, including  𝑇 𝐸 𝑡 (𝑠 ), 𝐴𝑇𝑂 𝑇 𝑡 ,
+
+𝑆 𝐸 𝑡 (𝑠 ), 𝐴𝑆𝐸 𝑈 𝑡 , 𝐴𝑇𝑇 𝐸 𝑡 , and  𝑃𝐴𝑃 𝐸 𝑡 , whenever the corresponding conditioning groups are observed. 
+
+Proposition FBCM5.  Suppose all units are exposed to spillovers in the post -treatment period but 
+
+exposure intensity is unobserved. Under Assumptions FBCM1 -FBCM3, FBCMs still identify aggregate 
+
+effects defined relative to  𝑌 𝑖𝑡 (0,0), such as  𝐴𝑇𝑂 𝑇 𝑡 , 𝐴𝑆𝐸 𝑈 𝑡 , 𝐴𝑇𝑇 𝐸 𝑡 , and  𝑃𝐴𝑃 𝐸 𝑡 , provided the relevant 
+
+treated and untreated groups are observed. They do not generally identify exposure -specific estimands 
+
+such as  𝑇 𝐸 𝑡 (𝑠 ) or  𝑆 𝐸 𝑡 (𝑠 ).
+
+As in Case (ii.a), FBCMs do not generally identify direct -effect -type estimands such as  𝐷 𝐸 𝑡 (𝑠 ) or indirect 
+
+effects among treated units such as  𝐼 𝐸 𝑡 (𝑠 ) without additional structure, because these objects require 
+
+counterfactual outcomes under alternative exposure regimes. 
+
+> The identification proofs presented in Section 3.2.2 are reported in Appendix D.
+
+To summarize, when spillovers are absent or sufficiently localized, identification is feasible via CBCMs 
+
+under relatively standard assumptions. By contrast, when interference is widespread or its structure is 
+
+unknown, CBCMs cannot identify the causal estim ands of primary interest. This limitation motivates the 
+
+use of alternative approaches that do not rely on the existence of uncontaminated control units, such as 
+
+FBCMs. Indeed, across these settings, FBCMs can recover most of the estimands of interest under 
+
+comparatively credible assumptions, particularly for short - and medium -term effects. Table 1 summarizes 
+
+the scenarios discussed above and the causal estimands that CBCMs and FBCMs can identify under the 
+
+assumptions described in this section. 20 
+
+Table 1 . Causal estimands under alternative spillover scenarios 
+
+Scenario  Clean controls 
+
+exist? 
+
+Are Exposed 
+
+units known?  Identifiable causal estimands 
+
+No spillovers  Yes  Not applicable  CBCMs:  𝐴𝑇 𝑇 𝑡 
+
+FBCMs:  𝐴𝑇 𝑇 𝑡 
+
+Selective interference  Yes  Yes  CBCMs:  𝐷𝐸 𝑡  (𝑠 ), 𝑇𝐸 𝑡 (𝑠 ), 𝐴𝑇𝑂 𝑇 𝑡 ,
+
+𝑆𝐸 𝑡 (𝑠 ), 𝐴𝑆𝐸 𝑈 𝑡 , 𝐴𝑇 𝑇𝐸 𝑡  , and  𝑃𝐴𝑃𝐸 𝑡 
+
+FBCMs:  𝑇𝐸 𝑡  (𝑠 ), 𝐴𝑇𝑂 𝑇 𝑡 , 𝑆𝐸 𝑡 (𝑠 ),
+
+𝐴𝑆𝐸 𝑈 𝑡 , 𝐴𝑇 𝑇𝐸 𝑡 , and  𝑃𝐴𝑃𝐸 𝑡 
+
+Yes  No  CBCMs: none 
+
+FBCMs:  𝐴𝑇𝑂 𝑇 𝑡  and  𝑃𝐴𝑃𝐸 𝑡 
+
+Widespread spillovers: All 
+
+units exposed to 
+
+spillovers 
+
+No  Yes  CBCMs:  𝐷𝐸 𝑡  (𝑠 )
+
+FBCMs:  𝑇𝐸 𝑡  (𝑠 ), 𝐴𝑇𝑂 𝑇 𝑡 , 𝑆𝐸 𝑡 (𝑠 ),
+
+𝐴𝑆𝐸 𝑈 𝑡 , 𝐴𝑇 𝑇𝐸 𝑡 , and  𝑃𝐴𝑃𝐸 𝑡 
+
+No  No  CBCMs: none 
+
+FBCMs:  𝐴𝑇𝑂 𝑇 𝑡 , 𝐴𝑆𝐸 𝑈 𝑡 , 𝐴𝑇 𝑇𝐸 𝑡 , and 
+
+𝑃𝐴𝑃𝐸 𝑡 
+
+The data -generating process introduced in the next section instantiates all spillover scenarios within a unified panel 
+
+framework, allowing us to assess how identification and estimator performance evolve as interference becomes 
+
+increasingly pervasive. 
+
+4. Simulations 
+
+4.1. Simulated design 
+
+This section describes the data -generating process (DGP) used to evaluate alternative estimators when 
+
+the researcher either correctly observes or misspecifies the exposure mapping. The design uses the actual 
+
+geography of counties in the contiguous United S tates and the District of Columbia. 14  In each Monte 
+
+Carlo replication, 200 counties are randomly selected for direct treatment. The balanced panel contains 
+
+five pre -treatment periods and one post -treatment period, with treatment beginning in period  𝑇 0 = 6.
+
+Let  𝐷 𝑖  denote the time -invariant treatment -group indicator. The realized treatment status is therefore 
+
+𝐷 𝑖𝑡  = 𝐷 𝑖  𝟏 {𝑡  ≥ 𝑇 0}, 𝑇 0 = 6. 
+
+> 14
+
+Researcher -defined distance mappings are constructed from centroids measured in a common projected coordinate system. 
+
+County and county -equivalent boundaries are drawn from the 2023 TIGER/Line files; Alaska, Hawaii, Puerto Rico, and the 
+
+other U.S. territor ies are excluded, and geometries are projected to EPSG:5070. 21 
+
+The true spillover propagation mechanism is queen contiguity: county  j can affect county  i when the two 
+
+counties share at least one boundary point. Let  𝒩 𝑖  
+
+> 𝑄
+
+denote the set of queen -contiguous neighbors of 
+
+county  i. True exposure intensity is the number of directly treated counties in this set: 
+
+𝑆 𝑖  = ∑ 𝐷 𝑗   
+
+> 𝑗 ∈𝒩 𝑖
+> 𝑄
+
+.
+
+Untreated counties with  𝑆 𝑖  > 0 are exposed to spillovers, whereas untreated counties with  𝑆 𝑖  = 0 are 
+
+unexposed and constitute clean controls under the true mapping. Directly treated counties may also be 
+
+exposed when they share a border with other treated counties. The benchmark scenario, labeled 
+
+“exposure mapping known,” gives the researcher this tr ue queen -contiguity mapping. 
+
+The two misspecified scenarios leave the DGP unchanged but classify exposure using distance thresholds 
+
+𝑐  ∈ {30 , 60 } km . For every county, the researcher counts treated counties whose  centroids  are within 
+
+𝑐  kilomet er s, excluding the county itself: 
+
+𝒩 𝑖 obs (𝑐 ) = {𝑗  ≠ 𝑖 : dist (𝑝 𝑖 , 𝑝 𝑗 ) ≤ 𝑐 }.
+
+𝑆 𝑖 
+
+> obs
+
+(𝑐 ) = ∑ 𝐷 𝑗   
+
+> 𝑗 ∈𝒩 𝑖 obs (𝑐 )
+
+, 𝑐  ∈ {30 , 60 } km .
+
+A county is researcher -classified as exposed when  𝑆 𝑖 
+
+> obs
+
+(𝑐 ) > 0. Outcomes are always generated by true 
+
+queen exposure, but the estimators use the researcher -observed mapping to define exposure -specific 
+
+target groups and apparently clean controls.  Misspecification therefore produces two types of 
+
+classification error: false negatives, consisting of truly exposed counties classified as unexposed, and false 
+
+positives, consisting of truly unexposed counties classified as exposed. 
+
+County -specific baseline heterogeneity depends on standardized log area and standardized projected 
+
+coordinates. Let  𝐴 𝑖 , 𝐿𝑂𝑁 𝑖 , and  𝐿𝐴𝑇 𝑖  denote these standardized characteristics. The unit effect is 
+
+𝛼 𝑖  = 5 + 0.55 𝐴 𝑖  − 0.30 𝐿𝑂𝑁 𝑖  + 0.25 𝐿𝐴𝑇 𝑖  + 𝑢 𝑖 , 𝑢 𝑖  ∼ N(0,4).
+
+Directly treated counties also receive a persistent level gap of 0.5. This generates systematic pre -treatment 
+
+level differences between treated and untreated counties while preserving parallel untreated -outcome 
+
+trends in expectation. There is no determinis tic common trend in the calibration; common time shocks 
+
+are independently drawn from a normal distribution with standard deviation 1. 
+
+Two time -varying covariates, indexed by k = 1, 2, follow autoregressive processes with persistence 
+
+parameter  𝜌 𝑥  = 0.5. Their initial states and innovations are independently drawn from a standard normal 
+
+distribution: 
+
+𝑥 𝑘 ,𝑖𝑡  = 𝜌 𝑥  𝑥 𝑘 ,𝑖 ,𝑡 −1 + 𝜀 𝑘 ,𝑖𝑡 
+
+Here,  𝑋 𝑖𝑡  = (𝑥 1,𝑖 ,𝑡 −1, 𝑥 1,𝑖 ,𝑡 −2, 𝑥 2,𝑖 ,𝑡 −1, 𝑥 2,𝑖 ,𝑡 −2)′ collects the four lagged covariates, with coefficient vector 
+
+𝛽  = (0.4, 0.2, −0.3, 0.1)′. Let  Post 𝑡  = 1{𝑡  ≥ 𝑇 0}. The structural mean combines unit heterogeneity, 22 
+
+common time shocks, the treatment -group level gap, direct treatment, spillovers, lagged covariates, and 
+
+a nonlinear covariate component: 
+
+𝜇 𝑖𝑡  = 𝛼 𝑖  + 𝜆 𝑡  + 0.5𝐷 𝑖  + direct 𝑖𝑡  + spillover 𝑖𝑡  + 𝛽 ′𝑋 𝑖𝑡  + ℎ(𝑋 𝑖𝑡 ).
+
+direct 𝑖𝑡  = 𝐷 𝑖 Post 𝑡 
+
+𝜏 
+
+1 − 𝜌  , 𝜏  = 5,
+
+spillover 𝑖𝑡  = Post 𝑡  𝑆 𝑖  𝛾 0 𝛿 , 𝛾 0 = 1, 𝛿  = 3.
+
+ℎ(𝑋 𝑖𝑡 ) = 0.35 (𝑥 1,𝑖 ,𝑡 −12 − 𝑥 2,𝑖 ,𝑡 −12) + 0.25 𝑥 1,𝑖 ,𝑡 −1𝑥 2,𝑖 ,𝑡 −1.
+
+The linear lag coefficients are 0.4 and 0.2 for the first two lags of  𝑥 1, and −0.3 and 0.1 for the first two 
+
+lags of  𝑥 2, respectively. Observed outcomes follow an AR(1) process with  𝜌  = 0.60  and Gaussian 
+
+innovations with standard deviation 1: 
+
+𝑌 𝑖 1 = 𝜇 𝑖 1 + 𝜀 𝑖 1; 𝑌 𝑖𝑡  = 𝜌 𝑌 𝑖 ,𝑡 −1 + (1 − 𝜌 )𝜇 𝑖𝑡  + 𝜀 𝑖𝑡 , 𝑡  ≥ 2.
+
+Because the direct -treatment shift in the structural mean is scaled by  1/(1 − 𝜌 ), its realized effect in the 
+
+first post -treatment period is 5. The realized spillover contribution per treated queen -contiguous 
+
+neighbor is  (1 − 𝜌 )𝛾 0 𝛿  = 1.2. Since the design contains a single post -treatment period, the true unit -
+
+level policy effect is therefore 
+
+𝜃 𝑖  = 5𝐷 𝑖  + 1.2𝑆 𝑖 .
+
+Simulation truths are always computed using the true queen -contiguity exposure count. The reported 
+
+estimands are TE(1), the mean total effect among directly treated counties with true exposure count S = 
+
+1; ATOT, the mean total effect among all directly tre ated counties; SE(1), the mean spillover effect among 
+
+untreated counties with true S = 1; ASEU, the mean spillover effect among truly exposed untreated 
+
+counties; and PAPE, the population average policy effect. 
+
+PAPE  = 1
+
+𝑁  ∑ 𝜃 𝑖 
+
+> 𝑁
+> 𝑖 =1
+
+= 1
+
+𝑁  ∑(5𝐷 𝑖  + 1.2𝑆 𝑖 )
+
+> 𝑁
+> 𝑖 =1
+
+.
+
+Under the 30 km and 60 km scenarios, all estimators use the researcher -observed exposure count to 
+
+define the TE(1), SE(1), and ASEU target groups. Estimates are evaluated against the corresponding 
+
+truths defined by the queen -contiguity mapping. The design  therefore captures two distinct consequences 
+
+of misspecification: contamination of the apparently clean control group and changes in the composition 
+
+of exposure -specific target populations. ATOT is unaffected by target -group reclassification because it 
+
+ave rages over all directly treated counties, although its control -based estimate remains vulnerable to 
+
+contaminated controls. 
+
+The control -based estimator is the doubly robust Callaway –Sant’Anna estimator (CS -DR). It uses 
+
+counties classified by the researcher as untreated and unexposed as never -treated controls and adjusts for 
+
+the first two lags of both time -varying covariates, st andardized log area, and standardized projected 
+
+coordinates. With one post -treatment period, the reported simple aggregate is the period -6 group -time 
+
+effect. The control -based PAPE combines the estimated ATOT and ASEU using the researcher -defined 
+
+populatio n shares and assigns zero effect to counties classified as clean. 23 
+
+Forecast -based effects are estimated using two approaches. First, the MLCM predicts the untreated 
+
+outcome in the post -treatment period using the two most recent outcome lags, time, four lagged 
+
+covariates, and three fixed county characteristics. The model u ses a random forest with  500  trees and 
+
+considers three of the ten predictors as candidates at each split.  Second, we use the Forecasted Average 
+
+Treatment effect (FAT) estimator proposed by Botosaru et al. (2026). For each county, FAT fits a linear 
+
+time trend to the five pre -treatment outcomes and extrapolates it to period 6 to estimate the outcome 
+
+that would h ave occurred in the absence of the policy.  For both methods, the unit -level effect is the 
+
+observed outcome minus its forecast. Exposure -specific averages use the researcher’s target classification, 
+
+whereas forecast -based PAPE is the mean forecast error over the full county population and therefore 
+
+does not depend on the assumed exposure mapping. 
+
+Table 2 compares the researcher’s  centroid  distance classifications with the true spillover exposure 
+
+generated by queen contiguity. Entries report the average number of counties in each classification 
+
+category across 200 Monte Carlo replications. In every replication, 200 counties are directly tre ated and 
+
+2,909 are untreated. Figure 1 illustrates one representative replication, showing the same treatment 
+
+assignment under the true exposure mapping and under the 30 km and 60 km distance -based mappings. 
+
+The figure highlights correctly classified expos ed and unexposed counties, as well as false negatives and 
+
+false positives generated by the misspecified mappings. 
+
+Table  2. Average numbers of counties by treatment group and exposure -classification outcome                      
+
+> Scenario Group
+> Correctly
+> exposed
+> False
+> negative
+> False
+> positive
+> Correctly
+> unexposed
+> 30 km Treated 6.995 56.270 0.395 136.340
+> 30 km Untreated 102.085 826.105 6.840 1,973.970
+> 60 km Treated 49.610 13.655 13.015 123.720
+> 60 km Untreated 722.655 205.535 189.945 1,790.865
+> Notes: “Correctly exposed” and “false negative” counties are truly exposed under queen contiguity; “false positive” and “corr ectly
+> unexposed” counties are truly unexposed. The researcher classifies exposure using centroid distance thresholds of 30 or 60 km .
+
+24 
+
+Figure 1. Exposure classification under alternative researcher mappings     
+
+> Notes: All panels use the same simulated assignment of 200 directly treated counties. True spillover exposure is generated by queen contiguity. The
+> first panel gives the researcher the true mapping; the remaining panels classify exposure using 30 km and 60 km distance bands between county
+> centroids . Orange counties are truly exposed and correctly classified, blue counties are false negatives, purple counties are false po sitives, and light gr ay
+> counties are truly unexposed and correctly classified. For visual clarity, directly treated counties are always shown in dark red regardless of their own
+> exposure classification.
+
+The 30 km mapping is highly conservative. Among untreated counties, on average, it correctly identifies 
+
+only 102.085 of the 928.190 counties that are truly exposed, while 826.105 are misclassified as unexposed. 
+
+This corresponds to a sensitivity of approxim ately 11.0%. Its specificity is nevertheless very high: only 
+
+6.840 truly unexposed untreated counties are incorrectly labeled as exposed. The same pattern appears 
+
+among treated counties. Consequently, the 30 km rule leaves a large number of spillover -affec ted counties 
+
+in the apparently clean group.  Expanding the distance threshold to 60 km substantially improves the 
+
+detection of true exposure. For untreated counties, correctly classified exposed units rise to 722.655, 
+
+producing a sensitivity of approximately 77.9%. This gain comes at the cost of more  false positives: 
+
+189.945 truly unexposed untreated counties are classified as exposed. A similar trade -off is observed 
+
+among treated counties, where false negatives decline sharply but false positives increase.  Overall, the 30 
+
+km mapping mainly understates the reach of spillovers, whereas the 60 km mapping provides a more 
+
+balanced approximation but still differs materially from the true border -based propagation mechanism. 
+
+For CBCMs, false negatives are especially consequential because truly exposed untreated counties may 
+
+enter the comparison group as apparently clean controls. The 30 km mapping therefore generates 
+
+substantial control -group contamination, while the 60 km map ping reduces, but does not eliminate, this 
+
+problem. More generally, both false negatives and false positives alter the composition of the groups used 
+
+to estimate  𝑇𝐸 (1), 𝑆𝐸 (1), and  𝐴𝑆𝐸𝑈 , so the resulting estimates may refer to parameters that differ from 
+
+the corresponding estimands defined under the true queen -contiguity mapping. For forecast -based 25 
+
+methods, exposure -map misspecification does not affect the construction of unit -level no -policy 
+
+forecasts or the full -population  𝑃𝐴𝑃𝐸 , but it does affect the aggregation of exposure -specific effects 
+
+whenever target groups are defined using the researcher’s mapping. 
+
+4.2. Simulation results 
+
+Table 3 reports the Monte Carlo results for the county -based exposure -mapping experiment, averaged 
+
+over 200 replications. The first block corresponds to the benchmark in which the researcher observes 
+
+the true queen -contiguity mapping, while the 30 km and 6 0 km blocks leave the outcome DGP 
+
+unchanged but define exposure, target groups, and apparently clean controls using the researcher’s 
+
+representative -point distance mapping. The first numeric column reports the average true effect across 
+
+replications, and al l remaining entries report Monte Carlo bias, with the standard deviation of the 
+
+estimates in parentheses. The simulation code also records mean estimates, root mean squared errors, 
+
+and the number of valid replications. 26 
+
+Table  3. Monte Carlo bias relative to the true -mapping estimands and standard deviation under known and misspecified exposure mappings 
+
+Exposure mapping known  30 km mapping  60 km mapping 
+
+Estimand 
+
+True 
+
+value  CS -DR  MLCM  FAT  CS -DR  MLCM  FAT  CS -DR  MLCM  FAT 
+
+TE(1)  6.200  0.009 (0.157)  0.097 (0.583)  0.062 (0.679)  −0.064 (0.601)  0.303 (0.828)  0.277 (0.967)  −0.287 (0.196)  −0.119 (0.587)  −0.139 (0.692) 
+
+ATOT  5.453  0.009 (0.114)  0.094 (0.566)  0.065 (0.649)  −0.405 (0.117)  0.094 (0.566)  0.065 (0.649)  −0.107 (0.118)  0.094 (0.566)  0.065 (0.649) 
+
+SE(1)  1.200  0.003 (0.050)  0.026 (0.552)  0.060 (0.627)  −0.129 (0.164)  0.185 (0.551)  0.231 (0.646)  −0.314 (0.062)  −0.202 (0.549)  −0.166 (0.622) 
+
+ASEU  1.414  0.001 (0.051)  0.026 (0.551)  0.060 (0.625)  −0.299 (0.167)  0.011 (0.557)  0.059 (0.650)  −0.376 (0.071)  −0.260 (0.550)  −0.220 (0.624) 
+
+PAPE  0.772  0.001 (0.017)  0.028 (0.551)  0.058 (0.625)  −0.408 (0.011)  0.028 (0.551)  0.058 (0.625)  −0.124 (0.023)  0.028 (0.551)  0.058 (0.625) 
+
+Notes: The True  value  column reports the average causal estimand under the true queen -contiguity mapping. All other entries are Monte Carlo bias, with the standard deviation of the estimates in parentheses. In t he 30 km and 
+
+60 km scenarios, exposure -specific targets and CS -DR  controls are defined using the researcher's  centroid  distance mapping. For TE(1), SE(1), and ASEU, bias is measured relative to the intended estimand under the true 
+
+mapping and therefore also captures target -group mismatch. Forecast -based PAPE is always averaged over the full population. 27 
+
+When the true mapping is observed, CS -DR is essentially unbiased for every estimand and is more precise 
+
+than the forecast -based alternatives. Its absolute bias never exceeds 0.00 9, and its standard deviations 
+
+range from 0.017 for PAPE to 0.15 7 for TE(1). MLCM and FAT are also  centered  close to the truth, but 
+
+their standard deviations are substantially larger. This is the setting in which CBCMs have their strongest 
+
+comparative advantage: clean controls exist, are correctly identified, and can be used efficiently in cross -
+
+unit comparison s. 
+
+The 30 km rule misses most truly exposed counties and therefore leaves many spillover -affected 
+
+untreated units in the apparently clean comparison group. Consistent with this contamination 
+
+mechanism, CS -DR underestimates ATOT, ASEU, and PAPE, with biases of  -0.4 05,  -0. 299 , and  -0.40 8,
+
+respectively. The smaller bias for TE(1) and SE(1) should not be read as evidence that the mapping is 
+
+adequate: the corresponding target groups are also redefined by the observed exposure count, and the 
+
+standard deviation of TE(1) rises sharply. 
+
+For MLCM and FAT, ATOT and PAPE are unchanged across mappings because the treated population 
+
+and the full -population forecast average do not depend on the exposure classification. Exposure -specific 
+
+estimands are different. Their aggregation uses the resear cher -defined groups, so misspecification can 
+
+generate bias even though the unit -level no -policy forecasts themselves are unaffected. The near -zero 
+
+ASEU bias at 30 km is therefore specific to this calibration and reflects offsetting classification errors 
+
+ra ther than general robustness of exposure -specific effects. Their invariance for ATOT and PAPE across 
+
+mappings is mechanical in this design and should not be interpreted as an additional robustness result. 
+
+Expanding the radius to 60 km reduces the number of false negatives and improves the CS -DR estimates 
+
+of ATOT and PAPE: their biases fall in absolute value from 0.4 05  to 0.1 07  and from  0.4 08  to 0.1 24. This 
+
+improvement comes at the cost of many more false positives. As a result, the composition of the 
+
+exposure -specific target groups diverges from the true queen -contiguity groups, producing sizeable 
+
+negative biases for TE(1), SE(1), and ASEU across all  three methods. The simulation thus reveals a non -
+
+monotonic trade -off: a broader mapping can reduce control -group contamination while simultaneously 
+
+worsening the match between the estimated and intended exposure -specific estimands. Overall, mapping 
+
+misspec ification affects CBCMs through contamination of the comparison group and affects all methods 
+
+through the redefinition of exposure -specific target populations, whereas full -population forecast -based 
+
+estimands do not depend on the assumed mapping. 
+
+To complement the selective -interference analysis in Case (ii), we also consider a Case (iii) design in which 
+
+spillovers reach all counties through a continuous distance -decay function. Appendix E reports additional 
+
+details on the DGP used in these simulat ions. The results in Table 4 illustrate the implications of 
+
+widespread interference. Because every untreated county is exposed to some degree, no genuinely 
+
+unaffected control group exists and the CS -DR estimator cannot be implemented. By contrast, the 
+
+fore cast -based methods remain applicable because they construct the no -policy counterfactual from pre -
+
+treatment outcome dynamics rather than from post -treatment control units. Both MLCM and FAT 
+
+produce relatively small biases for ATOT, ASEU, and PAPE, although  their Monte Carlo standard 
+
+deviations remain sizeable. MLCM is slightly less biased than FAT for ASEU and PAPE, while the two 
+
+methods display broadly similar finite -sample performance. 28 
+
+Table 4. Monte Carlo bias relative to the true -mapping estimands and standard deviation in 
+
+case of widespread spillovers                   
+
+> Estimand True value CS -DR MLCM FAT
+> ATOT 5.932 N.A. 0.094 (0.571) 0.065 (0.662)
+> ASEU 0.937 N.A. 0.024 (0.555) 0.058 (0.627)
+> PAPE 1.259 N.A. 0.028 (0.555) 0.058 (0.628)
+> Notes: The True value column reports the average causal estimand under the true distance decay mapping. All other entries are Monte Carlo bias,
+> with the standard deviation of the estimates in parentheses. Forecast -based PAPE is always averaged over the full population.
+
+5. Empirical application 
+
+We illustrate our identification framework by revisiting the natural experiment studied by Di Tella and 
+
+Schargrodsky (2004). Following the terrorist attack against the A.M.I.A. Jewish center in Buenos Aires in 
+
+July 1994, the federal government assigned pol ice protection to Jewish and Muslim institutions. This 
+
+generated a sudden and geographically concentrated increase in observable police presence around 
+
+protected buildings. Di Tella and Schargrodsky use this shock to estimate the deterrent effect of police 
+
+on car theft, comparing blocks containing protected institutions with other blocks before and after the 
+
+introduction of police protection via a difference -in -differences design. The analysis uses data from three 
+
+noncontiguous neighborhoods in Buenos Aires , which together account for 6.9% of the city’s population. 
+
+The unit of observation is the city block, with 876 blocks observed in total. Di Tella and Schargrodsky 
+
+find that visible police presence sharply reduced car theft in directly protected blocks, by  about 75% 
+
+relative to the control group, while finding no appreciable effect one or two blocks away. The authors 
+
+interpret the estimates as evidence of a strong but highly localized deterrent effect of police on crime. 
+
+However, they explicitly acknowledge  that unobserved displacement of car theft cannot be ruled out. 
+
+Because the location choices of car thieves are unobserved, it is difficult to determine whether thefts 
+
+deterred in protected blocks were displaced to other parts of the city, either inside or  outside the 
+
+neighborhoods included in the sample. Due to the nature of its evaluation strategy, the original study 
+
+therefore provides limited evidence on the extent to which deterrence in protected blocks translated into 
+
+displacement elsewhere. 
+
+This setting is particularly useful for our purposes because it naturally raises the issue of interference. 
+
+Police protection may reduce crime in the protected block, but it may also affect nearby blocks. The sign 
+
+of the spillover effect is theoretically a mbiguous. On the one hand, police presence may generate 
+
+deterrence beyond the protected block, reducing thefts in adjacent locations. On the other hand, 
+
+offenders may displace criminal activity to other unprotected blocks, increasing crime just outside the 
+
+protected area. Moreover, an additional reason why even blocks located farther away from protected 
+
+institutions may not provide perfectly clean controls is that the redeployment of police resources may 
+
+have changed the overall spatial allocation of polici ng. 
+
+In this section, we replicate the original study using both a more recent difference -in -differences 
+
+estimator and an FBCM. As in the original paper, we use the monthly panel of blocks observed before 
+
+and after the introduction of police protection. The out come is the number of car thefts, normalized to 
+
+a 30 -day -equivalent monthly count. Data are available from April 1994 and the first treatment month is 29 
+
+August 1994, the first month in which police protection was fully implemented and known to the public. 15 
+
+We focus on the first two post -treatment months, August and September. 
+
+When applying CBCMs, we must define an exposure mapping. In doing so, we follow the original paper: 
+
+blocks containing protected institutions are treated units, while blocks located one block away and two 
+
+blocks away from protected institutions are consider ed untreated but potentially exposed units. Blocks 
+
+located more than two blocks away are considered the most plausible clean -control group, although their 
+
+validity as truly unaffected controls is ultimately an identifying assumption for CBCMs. 
+
+We first estimate a set of difference -in -differences models using  the estimator proposed by Callaway and 
+
+Sant’Anna (2021) . This exercise extends the original difference -in -differences logic in two directions. 
+
+First, we estimate treated -block contrasts using alternative control groups: all untreated blocks, one -block 
+
+controls, one - and two -block controls, and blocks more than t wo blocks away. In the notation of Sections 
+
+2 and 3, these contrasts recover the average total effect on treated blocks (ATOT) only when the 
+
+comparison group provides a valid no -treatment/no -exposure counterfactual. Second, we estimate 
+
+exposure -specific sp illover effects by comparing one -block and two -block units with blocks more than 
+
+two blocks away, as well as the aggregate ASEU. We then combine these estimates to obtain the PAPE. 
+
+The estimates are reported in Table  5.
+
+Table  5. Control -based estimates of the effects of police protection on car theft                      
+
+> Estimand / comparison August September
+> Treated -block contrast: treated blocks vs all other blocks -0.025 (0.038) -0.049* (0.026)
+> Treated -block contrast: treated blocks vs one -block controls 0.050 (0.050) -0.008 (0.041)
+> Treated -block contrast: treated blocks vs one -and two -block controls -0.014 (0.043) -0.042 (0.032)
+> ATOT under clean -control assumption: treated blocks vs controls more than two
+> blocks away
+> -0.035 (0.045) -0.055** (0.026)
+> SE(1 block): one -block units vs controls more than two blocks away -0.085** (0.039) -0.047 (0.041)
+> SE(2 blocks): two -block units vs controls more than two blocks away 0.023 (0.033) 0.011 (0.028)
+> ASEU: one -and two -block units vs controls more than two blocks away -0.022 (0.027) -0.013 (0.027)
+> PAPE: population average policy effect -0.011 (0.012) -0.008 (0.012)
+> Notes: Standard errors are reported in parentheses. The outcome is the number of car thefts normalized to a 30 -day -equivalent monthly count. The
+> Callaway -Sant'Anna estimates are doubly robust difference -in -differences estimates obtained under alternative d efinitions of the comparison group.
+> The treated -block rows are conventional ATT contrasts; in the notation of Sections 2 and 3, they recover ATOT only when the chosen compar ison
+> group is a valid clean -control group. The number of units in each group is as follows: 37 treated blocks, 161 blocks located one block away from a
+> treated block, 226 blocks located two blocks away from a treated block, and 452 blocks located more than two blocks away from a treated block.
+> The standard error of the PAPE is computed u sing a delta -method approximation that treats the ATOT and ASEU estimates as independent
+> components. *, **, and *** denote statistical significance at the 10%, 5%, and 1% levels, respectively.
+
+The difference -in -differences estimates suggest a negative effect of police protection on car theft in the 
+
+protected block, but the magnitude depends on the control group. When treated blocks are compared 
+
+with all other blocks, the estimated treated -block  contrast is  -0.025 in August and  -0.049 in September 
+
+(the latter statistically significant at the 10% level). When the comparison group is restricted to blocks  
+
+> 15 Following the original study, we exclude car thefts occurring between July 18 and July 31 and use the first 17 days of July
+> as the final pre -treatment period.
+
+30 
+
+more than two blocks away, the estimates become slightly more negative, equal to  -0.035 in August and 
+
+-0.055 in September (the latter statistically significant at the 5% level). By contrast, when treated blocks 
+
+are compared only with one -block controls, th e estimates are not statistically significant and are even 
+
+positive in one case: 0.050 in August and  -0.008 in September. When two -block controls are also included, 
+
+the estimates become more negative, but remain statistically insignificant. This pattern is  informative. If 
+
+one -block or two -block units are themselves affected by police protection, either through deterrence or 
+
+displacement, using them as controls does not recover the untreated and unexposed counterfactual for 
+
+treated blocks, so it delivers a b iased estimate of the ATOT. The treated -block contrast is then likely 
+
+contaminated by spillover effects operating within the control group. 
+
+The estimated exposure -specific spillover effects obtained with the control -based design are also unstable 
+
+across distance groups. One -block units display negative effects relative to blocks more than two blocks 
+
+away, equal to  -0.085 at T and  -0.047 at T+1  (the former statistically significant at the 5% level). Two -
+
+block units instead display small positive but  not  statistically significant effects. These results are 
+
+consistent with a setting in which the spatial reach and even the sign of interference may vary with 
+
+distance from the treated block. However, their causal interpretation relies on the assumption that b locks 
+
+more than two blocks away are valid clean controls. This assumption cannot be directly verified using 
+
+CBCMs: if the policy altered crime opportunities, offender mobility, or police allocation more broadly 
+
+within the neighborhood, then even the “clean ” comparison group may be partially contaminated. 
+
+This is precisely the setting in which CBCMs become fragile. These methods recover the no -
+
+treatment/no -exposure counterfactual by comparing treated or exposed units with observed untreated 
+
+units that are assumed to be unaffected by the policy. Their validi ty therefore requires not only the 
+
+existence of clean controls, but also information on which untreated units are exposed and which are 
+
+unexposed to spillovers. In the present application, distance from the protected institution is an intuitive 
+
+exposure ma pping, but it may be an imperfect one. Criminal displacement and deterrence are behavioral 
+
+responses that need not stop exactly after one or two blocks. As a result, the application is close to the 
+
+latent or widespread interference cases discussed in Secti ons 2 and 3 (Cases ii.b and iii): the researcher 
+
+can define plausible exposure rings, but cannot be certain that the units outside those rings are truly 
+
+unaffected. 
+
+We then estimate the same policy -relevant causal objects using an FBCM: the Machine Learning Control 
+
+Method (MLCM) with bagging. The model uses two lagged values of the outcome as predictors and 
+
+estimates counterfactual car thefts in August and September.  Unlike the control -based estimators, this 
+
+approach does not construct the counterfactual for treated and exposed units from post -treatment 
+
+outcomes observed in a control group. Instead, it forecasts each unit’s no -treatment/no -exposure 
+
+outcome using pre -tr eatment dynamics. This distinction is crucial in settings where most or all potential 
+
+cross -sectional comparisons may themselves be affected, either directly or indirectly, by the treatment. 
+
+The MLCM estimates reported in Table  6 point to a stable negative total effect on directly protected 
+
+blocks. In the notation of Sections 2 and 3, this is an estimate of ATOT rather than a direct -effect 
+
+parameter  𝐷 𝐸 𝑡 (𝑠 ), because the forecast -based gap compares the realized outcome of treated blocks with 
+
+the no -treatment/no -exposure counterfactual  𝑌 𝑖𝑡 (0,0). The estimated ATOT is  -0.049 in August and  -
+
+0.046 in September (the latter statistically significant at the 1% level). It is worth noting that these 
+
+estimates are close to the Callaway and Sant’Anna treated -block contrasts obtained either using all 
+
+untre ated blocks as controls (row 1 of Table  5) or using only blocks more than two blocks away as 31 
+
+controls (row 4 of Table  5). However, unlike those control -based estimates, they do not require these 
+
+blocks to be valid post -treatment controls. 
+
+Table  6. Forecast -based estimates of the effects of police protection on car theft             
+
+> Estimand August September
+> ATOT: directly protected blocks -0.049 (0.034) -0.046*** (0.014)
+> SE(1 block): one block away from treated units -0.035 ** (0.018) -0.032 (0.023)
+> SE(2 blocks): two blocks away from treated units 0.064*** (0.019) 0.054*** (0.017)
+> SE(>2 blocks): more than two blocks away from treated units 0.041*** (0.013) 0.030** (0.012)
+> PAPE 0.029*** (0.009) 0.022** (0.009)
+> Notes: Standard errors are reported in parentheses. The outcome is the number of car thefts normalized to a 30 -day -equivalent
+> monthly count. The MLCM estimates are forecast -based estimates obtained using bagging with two lagged values of the outcome as
+> pre dictors and 1,000 trees. The number of units in each group is as follows: 37 treated blocks, 161 blocks located one block awa y
+> from a treated block, 226 blocks located two blocks away from a treated block, and 452 blocks located more than two blocks aw ay
+> from a treated block. *, **, and *** denote statistical significance at the 10%, 5%, and 1% levels, respectively.
+
+The MLCM also provides estimates of exposure -specific spillover effects by distance group. The 
+
+estimated effect for one -block units is negative, equal to  -0.035 in August and  -0.032 in September (the 
+
+former statistically significant at the 5% level), sugge sting that the deterrent effect of police protection 
+
+may extend slightly beyond the protected block. By contrast, the estimated effects for units two and more 
+
+blocks away are positive and statistically significant at the 1% or 5% level, which is consistent  with sizable 
+
+and detectable displacement of car theft toward slightly more distant blocks. 
+
+Finally, we compute the Population Average Policy Effect (PAPE), which summarizes the average effect 
+
+of the realized policy configuration over the entire population of blocks. The estimated PAPEs are 
+
+statistically significant at the 1% or 5% level and are  equal to 0.029 in August and 0.022 in September. 
+
+This result highlights the difference between the local total effect on directly protected blocks and the 
+
+overall population -level impact of the intervention. Police protection appears to reduce car theft in 
+
+protected blocks, but the population -wide effect is positive because directly treated blocks represent a 
+
+small share of all blocks and because spillover effects across untreated blocks, including units located 
+
+more than two blocks away, more than offset t he reduction among treated blocks. This finding is in line 
+
+with the hypothetical example presented by Auerbach et al. (2024) in an experimental context. 16 
+
+Taken together, the results illustrate the paper’s main message. Control -based methods are informative 
+
+when credible clean controls can be identified, but their interpretation becomes fragile when treatment 
+
+may contaminate the comparison group. In this app lication, DiD estimates vary with the chosen controls, 
+
+and the assumption that blocks more than two blocks away are unaffected is hard to defend. The forecast -
+
+based approach offers a complementary estimate of the total effect under the realized policy 
+
+conf iguration, without relying on untreated post -treatment outcomes as clean counterfactuals. Its 
+
+credibility instead rests on stable and predictable untreated outcome dynamics, an assumption that seems     
+
+> 16 Table F1 reports the MLCM placebo estimates for the last pre -treatment period. Most are small and statistically insignificant,
+> except for a positive estimate for blocks one block away that is marginally significant at the 10% level. Overall, the result s
+> pr ovide little evidence of pre -treatment effects and support the credibility of the main estimates. Appendix Falso provides
+> additional details on the empirical application.
+
+32 
+
+reasonable here given the short post -treatment horizon and the availability of monthly pre -treatment 
+
+crime data. 
+
+6. Conclusions 
+
+This paper studies the identification and estimation of causal effects in the presence of interference, a 
+
+setting in which the treatment assigned to one unit may affect the outcomes of others. We develop a 
+
+unified potential -outcomes framework that clarifie s which causal estimands are well defined under 
+
+alternative spillover regimes, depending on whether the propagation of spillovers is known or latent, and 
+
+under which assumptions these estimands can be identified. In particular, we compare two broad classes 
+
+of counterfactual strategies: control -based counterfactual methods (CBCMs), which rely on cross -unit 
+
+comparisons, and forecast -based counterfactual methods (FBCMs), which recover untreated potential 
+
+outcomes from pre -treatment dynamics. 
+
+Our theoretical results show that the viability of CBCMs hinges critically on the existence and 
+
+observability of clean control units. When spillovers are absent or sufficiently localized and the exposure 
+
+mapping is correctly observed, standard approaches s uch as DiD remain valid under a reasonable set of 
+
+assumptions. However, as interference becomes more pervasive or exposure status is unobserved, the 
+
+identifying variation required by cross -unit comparisons weakens or disappears. In contrast,  FBCMs do 
+
+not require uncontaminated controls and can recover aggregate effects defined relative to the no -
+
+treatment/no -exposure counterfactual even when exposure status is unknown. Exposure -specific 
+
+spillover effects, however, remain unidentified when the  relevant exposure groups cannot be observed. 
+
+This identifying strength comes at a cost: FBCMs rely on the structural stability and predictability of 
+
+untreated outcomes and do not, in general, allow for a clean decomposition of direct and indirect effects. 
+
+The simulation analysis provides evidence consistent with the identification results. In settings with no 
+
+spillovers, or with limited and correctly observed spillovers, both CBCMs and FBCMs deliver 
+
+approximately unbiased estimates of the main causal estima nds of interest.  As the exposure mapping 
+
+becomes misspecified, control -based estimates are affected by contamination of the comparison group. 
+
+Forecast -based estimates of ATOT and PAPE remain centered in this design, whereas exposure -specific 
+
+averages can be biased because  the researcher’s mapping changes the composition of the target groups. 
+
+The empirical application revisits Di Tella and Schargrodsky’s (2004) study of police protection and car 
+
+theft in Buenos Aires after the 1994 terrorist attack against the A.M.I.A. Jewish center. This setting is 
+
+well suited to our framework because police p rotection may have reduced theft in protected blocks while 
+
+displacing crime or generating deterrence spillovers nearby. We compare distance -based DiD estimates 
+
+with forecast -based estimates from the  MLCM . The results illustrate the empirical trade -off: CBCM 
+
+estimates are sensitive to how clean controls are defined, whereas FBCMs provide a complementary 
+
+estimate of the total effect under the realized policy configuration. 
+
+Overall, the paper highlights a fundamental trade -off in causal inference under interference. One can rely 
+
+on assumptions about the structure and reach of spillovers to preserve control -based identification, or 
+
+one can shift the identifying burden toward m odeling and forecasting untreated outcome dynamics.  By 
+
+making this trade -off explicit, we aim to contribute to a more transparent and methodologically coherent 
+
+approach to policy evaluation in settings characterized by interference and spillover effects. 33 
+
+References 
+
+Agrawal, A., McHale, J., & Oettl, A. (2022). How to measure the geographic spillovers of innovation? 
+
+Journal of Urban Economics, 128 , 103389. 
+
+Aguirregabiria, V., & Mira, P. (2010). Dynamic discrete choice structural models: A survey.  Journal of 
+
+Econometrics, 156 (1), 38 –67. 
+
+Angelucci, M., & Di Maro, V. (2016). Program evaluation and spillover effects.  Journal of Development 
+
+Effectiveness, 8 (1), 22 –43. 
+
+Anselin, L. (1988).  Spatial econometrics: Methods and models . Dordrecht: Kluwer Academic Publishers. 
+
+Aronow, P. M., & Samii, C. (2017). Estimating average causal effects under general interference, with 
+
+application to a social network experiment.  The Annals of Applied Statistics, 11 (4), 1912 –1947. 
+
+Auerbach, E., Auerbach, J., & Tabord -Meehan, M. (2024).  Discussion of “Causal inference with 
+
+misspecified exposure mappings: Separating definitions and assumptions.”  Biometrika , 111(1), 21 –24. 
+
+Bai, J., & Li, K. (2021). Dynamic spatial panel data models with common shocks.  Journal of Econometrics, 
+
+222 (1), 172 –196. 
+
+Blundell, R., & Costa Dias, M. (2009).  Alternative approaches to evaluation in empirical microeconomics. 
+
+Journal of Human Resources, 44 (3), 565 –640. 
+
+Botosaru, I., Giacomini, R., & Weidner, M. (2026). Forecasted treatment effects with short panels.  arXiv 
+
+preprint , arXiv:2309.05639.  Available at  https://doi.org/10.48550/arXiv.2309.05639 
+
+Box, G. E. P., & Tiao, G. C. (1975). Intervention analysis with applications to economic and 
+
+environmental problems.  Journal of the American Statistical Association , 70(349), 70 –79. 
+
+Bradt, J. T., & Aldy, J. E. (2025). Private benefits from public investment in climate adaptation and 
+
+resilience.  NBER Working Paper  No. 33633.  Available at  https://www.nber.org/papers/w33633 
+
+Bramoullé, Y., Djebbari, H., & Fortin, B. (2009).  Identification of peer effects through social networks. 
+
+Journal of Econometrics, 150 (1), 41 –55. 
+
+Butts, K. (2023). Difference -in -differences estimation with spatial spillovers.  arXiv preprint ,
+
+arXiv:2105.03737.  Available at  https://doi.org/10.48550/arXiv.2105.03737 
+
+Callaway, B., & Sant’Anna, P. H. C. (2021). Difference -in -differences with multiple time periods.  Journal 
+
+of Econometrics , 225(2), 200 –230. 
+
+Cerqua, A., Di Stefano, R., Letta, M., & Miccoli, S. (2021).  Local mortality estimates during the COVID -
+
+19 pandemic in Italy.  Journal of Population Economics , 34(4), 1189 –1217. 
+
+Cerqua, A., Letta, M., &  Menchetti, F. (2024). Causal inference and policy evaluation without a control 
+
+group . arXiv preprint , arXiv:2 312 .0 5858 . Available at  https://doi.org/10.48550/arXiv.2312.05858 
+
+Cox, D. R. (1958).  Planning of experiments . New York, NY: Wiley. 
+
+Debarsy, N., & Le Gallo, J. (2025).  Spatial Spillovers: Do’s and Don’ts . Journal of Economic Surveys , 39(5), 
+
+2152 –2173 .
+
+de Paula, Á. (2017). Econometrics of network models. In B. Honoré, A. Pakes, M. Piazzesi, & L. 
+
+Samuelson (Eds.),  Advances in Economics and Econometrics: Eleventh World Congress  (Vol. 1, pp. 268 –323). 
+
+Cambridge University Press. 34 
+
+Diamond, R., & McQuade, T. (2019). Who wants affordable housing in their backyard? An equilibrium 
+
+analysis of low -income property development.  Journal of Political Economy , 127(3), 1063 –1117. 
+
+Di Stefano, R., & Mellace, G. (2024).  The inclusive Synthetic Control Method.  arXiv preprint ,
+
+arXiv:2403.17624.  Available at  https://doi.org/10.48550/arXiv.2403.17624 
+
+Di Tella, R., & Schargrodsky, E. (2004).  Do police reduce crime? Estimates using the allocation of police 
+
+forces after a terrorist attack.  American Economic Review , 94(1), 115 –133. 
+
+Forastiere, L., Airoldi, E. M., & Mealli, F. (2021).  Identification and Estimation of Treatment and 
+
+Interference Effects in Observational Studies on Networks.  Journal of the American Statistical 
+
+Association , 116 (534), 901 –918. 
+
+Garin, A., & Rothbaum, J. L. (2025).  The long -run impacts of public industrial investment on local 
+
+development and economic mobility: Evidence from World War II.  The Quarterly Journal of Economics ,
+
+140(1), 459 –520. 
+
+Gibbons, S., & Overman, H. G. (2012). Mostly pointless spatial econometrics?  Journal of Regional Science, 
+
+52 (2), 172 –191. 
+
+Goldsmith -Pinkham, P., & Imbens, G. W. (2013). Social networks and the identification of peer effects. 
+
+Journal of Business & Economic Statistics, 31 (3), 253 –264. 
+
+Grossi, G., Mariani, M., Mattei, A., Lattarulo, P., & Öner, Ö. (2025).  Direct and spillover effects of a new 
+
+tramway line on the commercial vitality of peripheral streets: A synthetic -control approach.  Journal of the 
+
+Royal Statistical Society Series A: Statistics in Society, 188 (1), 223 –240. 
+
+Halloran, M. E., & Struchiner, C. J. (1995). Causal inference in infectious diseases.  Epidemiology, 6 (2), 142 –
+
+151. 
+
+Heckman, J. J., & Vytlacil, E. J. (2007). Econometric evaluation of social programs, Part I: Causal models, 
+
+structural models and econometric policy evaluation.  In J. J. Heckman & E. E. Leamer (Eds.),  Handbook 
+
+of Econometrics  (Vol. 6B, pp. 4779 –4874). Amsterdam: Elsevier. 
+
+Huber, M., & Steinmayr, A. (2021). A framework for separating direct and indirect effects in the presence 
+
+of interference.  Journal of Applied Econometrics, 36 (6), 713 –730. 
+
+Hudgens, M. G., & Halloran, M. E. (2008). Toward causal inference with interference.  Journal of the 
+
+American Statistical Association , 103(482), 832 –842. 
+
+Jackson, M. O. (2010).  Social and economic networks . Princeton, NJ: Princeton University Press. 
+
+Kelejian, H. H., & Prucha, I. R. (2010).  Specification and estimation of spatial autoregressive models with 
+
+autoregressive and heteroskedastic disturbances.  Journal of Econometrics, 157 (1), 53 –67. 
+
+LeSage, J., & Pace, R. K. (2009).  Introduction to spatial econometrics . Boca Raton, FL: CRC Press. 
+
+Leung, M. P. (2022). Causal inference under network interference.  Econometrica, 90 (4), 1719 –1751. 
+
+Leung, M. P. (2024). Discussion of “Causal inference with misspecified exposure mappings: Separating 
+
+definitions and assumptions.”  Biometrika , 111(1), 17 –20. 
+
+Lewbel, A. (2019). The identification zoo: Meanings of identification in econometrics.  Journal of Economic 
+
+Literature, 57 (4), 835 –903. 
+
+Manski, C. F. (1993). Identification of endogenous social effects: The reflection problem.  Review of 
+
+Economic Studies, 60 (3), 531 –542. 35 
+
+Manski, C. F. (2013). Identification of treatment response with social interactions.  The Econometrics Journal, 
+
+16 (1), S1 –S23. 
+
+Mealli, F., & Viviens, J. (2025). Difference -in -differences in the presence of unknown interference.  arXiv 
+
+preprint , arXiv:2512.21176.  Available at  https://doi.org/10.48550/arXiv.2512.21176 
+
+Menchetti, F., Cipollini, F., & Mealli, F. (2023).  Combining counterfactual outcomes and ARIMA models for policy 
+
+evaluation . The Econometrics Journal, 26 (1), 1 –24. 
+
+Ogburn, E. L., & VanderWeele, T. J. (2017). Causal diagrams for interference.  Statistical Science, 32 (1), 62 –
+
+80. 
+
+Rubin, D. B. (1974). Estimating causal effects of treatments in randomized and nonrandomized studies. 
+
+Journal of Educational Psychology, 66 (5), 688 –701. 
+
+Rubin, D. B. (1980). Comment on “Randomization analysis of experimental data in the Fisher 
+
+randomization test” by D. Basu.  Journal of the American Statistical Association, 75 (371), 591 –593. 
+
+Sävje, F. (2024). Causal inference with misspecified exposure mappings: Separating definitions and 
+
+assumptions.  Biometrika , 111(1), 1 –15. 
+
+Sävje, F., Aronow, P. M., & Hudgens, M. G. (2021). Average treatment effects in the presence of 
+
+unknown interference.  The Annals of Statistics, 49 (2), 673 –701. 
+
+Shi, W., & Lee, L. F. (2018). Spatial dynamic panel data models with interactive fixed effects.  Journal of 
+
+Econometrics, 207 (2), 313 –339. 
+
+Sobel, M. E. (2006). What do randomized studies of housing mobility demonstrate?  Journal of the American 
+
+Statistical Association, 101 (476), 1398 –1407. 
+
+Tchetgen Tchetgen, E. J., & VanderWeele, T. J. (2012). On causal inference in the presence of 
+
+interference.  Statistical Methods in Medical Research, 21 (1), 55 –75. 
+
+Viviano, D. (2025). Policy targeting under network interference.  The Review of Economic Studies , 92(2), 
+
+1257 –1292. 
+
+Xu, R. (2025).  Difference -in -Differences with Interference . arXiv preprint , arXiv:23 06 .1 2003 . Available at 
+
+https://doi.org/10.48550/arXiv.2306.12003 Appendix A.  Proof of Proposition 1 
+
+Proof of Proposition 1.  Fix a post -treatment period  𝑡  ≥ 𝑇 0 and an exposure level  𝑠  ∈ 𝒮 1. Recall that 
+
+the total effect at exposure level  𝑠  for treated units is defined as 
+
+𝑇 𝐸 𝑡 (𝑠 ) = 𝔼 [𝑌 𝑖𝑡 (1, 𝑠 ) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ].
+
+Add and subtract  𝑌 𝑖𝑡 (1,0) inside the conditional expectation: 
+
+𝑇 𝐸 𝑡 (𝑠 ) = 𝔼 [𝑌 𝑖𝑡 (1, 𝑠 ) − 𝑌 𝑖𝑡 (1,0) + 𝑌 𝑖𝑡 (1,0) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ].
+
+By linearity of conditional expectation, 
+
+𝑇 𝐸 𝑡 (𝑠 ) = 𝔼 [𝑌 𝑖𝑡 (1,0) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ] + 𝔼 [𝑌 𝑖𝑡 (1, 𝑠 ) − 𝑌 𝑖𝑡 (1,0) ∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ].
+
+Using the definitions of  𝐷 𝐸 𝑡 
+
+> 0
+
+(𝑠 ) and  𝐼 𝐸 𝑡 (𝑠 ), this implies 
+
+𝑇 𝐸 𝑡 (𝑠 ) = 𝐷 𝐸 𝑡 
+
+> 0
+
+(𝑠 ) + 𝐼 𝐸 𝑡 (𝑠 ),
+
+which proves the result.  ▫Appendix B. Difference -in -differences with exposure rings 
+
+This appendix presents a compact difference -in -differences specification with exposure rings. The 
+
+goal is to estimate the effect on directly treated units and the spillover effects on untreated units 
+
+located at different distances from treatment. 
+
+Let the post -treatment indicator be 
+
+𝑃 𝑡  = 𝟏 {𝑡  ≥ 𝑇 0}.
+
+For each untreated unit, let  𝑑 𝑖  denote the distance to the nearest treated unit. Choose  distance  cutoffs 
+
+0 = 𝜌 0 < 𝜌 1 < ⋯ < 𝜌 𝑅 ,
+
+and define  the  mutually exclusive ring indicators 
+
+𝑅 𝑖𝑟  = 𝟏 {𝐷 𝑖  = 0, 𝜌 𝑟 −1 < 𝑑 𝑖  ≤ 𝜌 𝑟 }, 𝑟  = 1, … , 𝑅 .
+
+Untreated units with  𝐷 𝑖  = 0 and  𝑑 𝑖  > 𝜌 𝑅  form the omitted reference group. Directly treated units 
+
+are kept separate from the exposure rings. 
+
+The baseline  difference -in -differences specification is 
+
+𝑌 𝑖𝑡  = 𝛼 𝑖  + 𝜆 𝑡  + 𝛽 (𝐷 𝑖  × 𝑃 𝑡 ) + ∑ 𝛿 𝑟 
+
+> 𝑅
+> 𝑟 =1
+
+(𝑅 𝑖𝑟  × 𝑃 𝑡 ) + 𝜀 𝑖𝑡 .
+
+Here  𝛼 𝑖  are unit fixed effects and  𝜆 𝑡  are time fixed effects. The coefficient  𝛽  can be interpreted as a 
+
+pooled total effect on directly treated units relative to the omitted clean -control group . The 
+
+coefficients  𝛿 𝑟  capture the post -treatment change for untreated units in ring  𝑟  relative to the same 
+
+reference group. The sequence  𝛿 1, … , 𝛿 𝑅  describes how spillover effects vary with distance from 
+
+treated units. 
+
+In the notation of Section 2, the ring indicators are a discretized version of exposure  𝑆 𝑖 . The omitted 
+
+reference group corresponds to  𝑆 𝑖  = 0, while the rings correspond to positive exposure categories 
+
+among untreated units. 
+
+With several pre - and post -treatment periods, the same logic can be written as 
+
+𝑌 𝑖𝑡  = 𝛼 𝑖  + 𝜆 𝑡  + ∑ 𝛽 ℓ
+
+> ℓ≠−1
+
+[𝐷 𝑖  × 𝟏 {𝑡  − 𝑇 0 = ℓ}] + ∑ ∑ 𝛿 𝑟 ℓ
+
+> ℓ≠−1
+> 𝑅
+> 𝑟 =1
+
+[𝑅 𝑖𝑟  × 𝟏 {𝑡  − 𝑇 0 = ℓ}] + 𝜀 𝑖𝑡 .
+
+This corresponds to the event -study version of this design.  The omitted event time is  ℓ = −1. The 
+
+coefficients  𝛽 ℓ trace the dynamic path for directly treated units, while  𝛿 𝑟 ℓ traces the dynamic spillover 
+
+path for untreated units in ring  𝑟 .
+
+Rings  are generally de fined before treatment using geography, network distance, travel time, 
+
+commuting links, or another theoretically motivated measure of exposure. The outer reference group 
+
+should be plausibly far enough from the treated units to be unaffected by the intervention. Standard 
+
+errors should be clustered at the relevant assignment or geographical level; spatially robust standard 
+
+errors may be preferable when residual spatial correlation is likely. This specification keeps potentially exposed untreated units out of the clean -control group and allows 
+
+the researcher to assess whether spillover effects decay, disappear, or change sign with distance from 
+
+treatment. Appendix C. Identification proofs for CBCMs 
+
+This appendix provides the proofs of the identification results reported in Section 3.1.3. Let  𝑡  ≥ 𝑇 0
+
+denote a post -treatment period and let  𝑇 0 − 1 denote the last pre -treatment period. Under no 
+
+anticipation, pre -treatment outcomes satisfy  𝑌 𝑖 t = 𝑌 𝑖 t(0,0). To keep the notation compact, define the 
+
+untreated and unexposed potential outcome as 
+
+𝑌 𝑖𝑡  
+
+> 0
+
+≡ 𝑌 𝑖𝑡 (0,0).
+
+Clean controls are untreated and unexposed units, i.e.  units with  𝐷 𝑖  = 0 and  𝑆 𝑖  = 0.
+
+Throughout, we maintain the consistency relation, Y ᵢₜ = Y ᵢₜ(D ᵢ, S ᵢₜ). Since t ≥ T ₀, S ᵢₜ = S ᵢ, while no 
+
+anticipation implies  𝑌 𝑖 ,𝑇 0−1 = 𝑌 𝑖 ,𝑇 0−1(0,0). We invoke these relations below without repeating them. 
+
+Case (i): No spillovers. 
+
+Proof of Proposition CBCM1 
+
+Under no spillovers, potential outcomes do not depend on exposure, so  𝑌 𝑖𝑡 (𝑑 , 𝑠 ) = 𝑌 𝑖𝑡 (𝑑 , 0) =
+
+𝑌 𝑖𝑡 (𝑑 ) for all  𝑠  ∈ 𝒮 . Consider the standard DiD estimand: 
+
+𝛥 𝑡  
+
+> DID
+
+= 𝔼 [𝑌 𝑖𝑡  − 𝑌 𝑖 ,𝑇 0−1 ∣ 𝐷 𝑖  = 1] − 𝔼 [𝑌 𝑖𝑡  − 𝑌 𝑖 ,𝑇 0−1 ∣ 𝐷 𝑖  = 0].
+
+By no anticipation, and no spillovers, 
+
+𝛥 𝑡  
+
+> DID
+
+= 𝔼 [𝑌 𝑖𝑡 (1,0) − 𝑌 𝑖 ,𝑇 0−1 
+
+> 0
+
+∣ 𝐷 𝑖  = 1] − 𝔼 [𝑌 𝑖𝑡  
+
+> 0
+
+− 𝑌 𝑖 ,𝑇 0−1 
+
+> 0
+
+∣ 𝐷 𝑖  = 0].
+
+Add and subtract  𝔼 [𝑌 𝑖𝑡  
+
+> 0
+
+− 𝑌 𝑖 ,𝑇 0−1 
+
+> 0
+
+∣ 𝐷 𝑖  = 1]. Then 
+
+𝛥 𝑡  
+
+> DID
+
+= ATT 𝑡  + 𝐵 𝑡 ,
+
+where 
+
+ATT 𝑡  = 𝔼 [𝑌 𝑖𝑡 (1,0) − 𝑌 𝑖𝑡  
+
+> 0
+
+∣ 𝐷 𝑖  = 1]
+
+and 
+
+𝐵 𝑡  = 𝔼 [𝑌 𝑖𝑡  
+
+> 0
+
+− 𝑌 𝑖 ,𝑇 0−1 
+
+> 0
+
+∣ 𝐷 𝑖  = 1] − 𝔼 [𝑌 𝑖𝑡  
+
+> 0
+
+− 𝑌 𝑖 ,𝑇 0−1 
+
+> 0
+
+∣ 𝐷 𝑖  = 0].
+
+In Case (i), all untreated units are valid controls because their outcomes are unaffected by exposure. 
+
+Under  assumption CBCM3(a) , 𝐵 𝑡  = 0. Therefore,  𝛥 𝑡  
+
+> DID
+
+= ATT 𝑡  . This proves the result. 
+
+Case (ii.a): Spillovers affecting a subset of units (selective interference). 
+
+Proof of Proposition CBCM2 
+
+Fix  𝑠  ∈ 𝒮 1. Consider the DiD estimand comparing treated units with exposure  𝑠  to untreated and 
+
+unexposed units: 
+
+𝛥 𝑡 
+
+> TE
+
+(𝑠 ) = 𝔼 [𝑌 𝑖𝑡  − 𝑌 𝑖 ,𝑇 0−1 ∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ] − 𝔼 [𝑌 𝑖𝑡  − 𝑌 𝑖 ,𝑇 0−1 ∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 0].By no anticipation, and the existence of clean controls, 
+
+𝛥 𝑡 
+
+> TE
+
+(𝑠 ) = 𝔼 [𝑌 𝑖𝑡 (1, 𝑠 ) − 𝑌 𝑖 ,𝑇 0−1 
+
+> 0
+
+∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ] − 𝔼 [𝑌 𝑖𝑡  
+
+> 0
+
+− 𝑌 𝑖 ,𝑇 0−1 
+
+> 0
+
+∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 0].
+
+Add and subtract  𝔼 [𝑌 𝑖𝑡  
+
+> 0
+
+− 𝑌 𝑖 ,𝑇 0−1 
+
+> 0
+
+∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ]. Then 
+
+𝛥 𝑡 
+
+> TE
+
+(𝑠 ) = TE 𝑡 (𝑠 ) + 𝐵 𝑡 
+
+> TE
+
+(𝑠 ),
+
+where 
+
+TE 𝑡 (𝑠 ) = 𝔼 [𝑌 𝑖𝑡 (1, 𝑠 ) − 𝑌 𝑖𝑡  
+
+> 0
+
+∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ]
+
+and 
+
+𝐵 𝑡 
+
+> TE
+
+(𝑠 ) = 𝔼 [𝑌 𝑖𝑡  
+
+> 0
+
+− 𝑌 𝑖 ,𝑇 0−1 
+
+> 0
+
+∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ] − 𝔼 [𝑌 𝑖𝑡  
+
+> 0
+
+− 𝑌 𝑖 ,𝑇 0−1 
+
+> 0
+
+∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 0].
+
+Assumption CBCM3(a) implies  𝐵 𝑡 
+
+> TE
+
+(𝑠 ) = 0. Therefore,  𝛥 𝑡 
+
+> TE
+
+(𝑠 ) = TE 𝑡 (𝑠 ). This proves the result. 
+
+Proof of Corollary CBCM1 
+
+Set  𝑠  = 0 in Proposition CBCM2. For treated units with zero exposure, 
+
+TE 𝑡 (0) = 𝔼 [𝑌 𝑖𝑡 (1,0) − 𝑌 𝑖𝑡  
+
+> 0
+
+∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 0].
+
+This coincides with the direct effect for treated units with zero exposure, since own treatment 
+
+changes from  0 to  1 while exposure is fixed at  0. Hence, under the assumptions of Proposition 
+
+CBCM2, DiD comparing treated unexposed units to untreated unexposed units identifies  TE 𝑡 (0) =
+
+DE 𝑡 (0). This proves the corollary. 
+
+Proof of Proposition CBCM3 
+
+Consider the DiD estimand comparing all treated units to untreated and unexposed units: 
+
+𝛥 𝑡  
+
+> ATOT
+
+= 𝔼 [𝑌 𝑖𝑡  − 𝑌 𝑖 ,𝑇 0−1 ∣ 𝐷 𝑖  = 1] − 𝔼 [𝑌 𝑖𝑡  − 𝑌 𝑖 ,𝑇 0−1 ∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 0].
+
+By no anticipation, and the existence of clean controls, 
+
+𝛥 𝑡  
+
+> ATOT
+
+= 𝔼 [𝑌 𝑖𝑡 (1, 𝑆 𝑖 ) − 𝑌 𝑖 ,𝑇 0−1 
+
+> 0
+
+∣ 𝐷 𝑖  = 1] − 𝔼 [𝑌 𝑖𝑡  
+
+> 0
+
+− 𝑌 𝑖 ,𝑇 0−1 
+
+> 0
+
+∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 0].
+
+Add and subtract  𝔼 [𝑌 𝑖𝑡  
+
+> 0
+
+− 𝑌 𝑖 ,𝑇 0−1 
+
+> 0
+
+∣ 𝐷 𝑖  = 1]. Then 
+
+𝛥 𝑡  
+
+> ATOT
+
+= ATOT 𝑡  + 𝐵 𝑡 
+
+> ATOT
+
+,
+
+where 
+
+ATOT 𝑡  = 𝔼 [𝑌 𝑖𝑡 (1, 𝑆 𝑖 ) − 𝑌 𝑖𝑡  
+
+> 0
+
+∣ 𝐷 𝑖  = 1]
+
+and 
+
+𝐵 𝑡  
+
+> ATOT
+
+= 𝔼 [𝑌 𝑖𝑡  
+
+> 0
+
+− 𝑌 𝑖 ,𝑇 0−1 
+
+> 0
+
+∣ 𝐷 𝑖  = 1] − 𝔼 [𝑌 𝑖𝑡  
+
+> 0
+
+− 𝑌 𝑖 ,𝑇 0−1 
+
+> 0
+
+∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 0].
+
+Assumption CBCM3(a), applied within exposure strata and averaged over the realized exposure 
+
+distribution among treated units, implies  𝐵 𝑡  
+
+> ATOT
+
+= 0. Therefore,  𝛥 𝑡  
+
+> ATOT
+
+= ATOT 𝑡 . This proves the 
+
+result. Proof of Proposition CBCM4 
+
+Fix  𝑠  ∈ 𝒮 0 with  𝑠  > 0. Consider the DiD estimand comparing untreated units with exposure  𝑠  to 
+
+untreated and unexposed units: 
+
+𝛥 𝑡 
+
+> SE
+
+(𝑠 ) = 𝔼 [𝑌 𝑖𝑡  − 𝑌 𝑖 ,𝑇 0−1 ∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 𝑠 ] − 𝔼 [𝑌 𝑖𝑡  − 𝑌 𝑖 ,𝑇 0−1 ∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 0].
+
+By no anticipation, and the existence of clean controls, 
+
+𝛥 𝑡 
+
+> SE
+
+(𝑠 ) = 𝔼 [𝑌 𝑖𝑡 (0, 𝑠 ) − 𝑌 𝑖 ,𝑇 0−1 
+
+> 0
+
+∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 𝑠 ] − 𝔼 [𝑌 𝑖𝑡  
+
+> 0
+
+− 𝑌 𝑖 ,𝑇 0−1 
+
+> 0
+
+∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 0].
+
+Add and subtract  𝔼 [𝑌 𝑖𝑡  
+
+> 0
+
+− 𝑌 𝑖 ,𝑇 0−1 
+
+> 0
+
+∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 𝑠 ]. Then 
+
+𝛥 𝑡 
+
+> SE
+
+(𝑠 ) = SE 𝑡 (𝑠 ) + 𝐵 𝑡 
+
+> SE
+
+(𝑠 ),
+
+where 
+
+SE 𝑡 (𝑠 ) = 𝔼 [𝑌 𝑖𝑡 (0, 𝑠 ) − 𝑌 𝑖𝑡  
+
+> 0
+
+∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 𝑠 ]
+
+and 
+
+𝐵 𝑡 
+
+> SE
+
+(𝑠 ) = 𝔼 [𝑌 𝑖𝑡  
+
+> 0
+
+− 𝑌 𝑖 ,𝑇 0−1 
+
+> 0
+
+∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 𝑠 ] − 𝔼 [𝑌 𝑖𝑡  
+
+> 0
+
+− 𝑌 𝑖 ,𝑇 0−1 
+
+> 0
+
+∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 0].
+
+Assumption CBCM3(b) implies  𝐵 𝑡 
+
+> SE
+
+(𝑠 ) = 0. Therefore,  𝛥 𝑡 
+
+> SE
+
+(𝑠 ) = SE 𝑡 (𝑠 ). This proves the result. 
+
+Proof of Proposition CBCM5 
+
+By Proposition CBCM4,  SE 𝑡 (𝑠 ) is identified for each relevant positive exposure level  𝑠  ∈ 𝒮 0 with 
+
+𝑠  > 0. The Average Spillover Effect on the Exposed Untreated is 
+
+ASEU 𝑡  = 𝔼 [𝑌 𝑖𝑡 (0, 𝑆 𝑖 ) − 𝑌 𝑖𝑡  
+
+> 0
+
+∣ 𝐷 𝑖  = 0, 𝑆 𝑖  > 0].
+
+Equivalently, 
+
+ASEU 𝑡  = 𝔼 [SE 𝑡 (𝑆 𝑖 ) ∣ 𝐷 𝑖  = 0, 𝑆 𝑖  > 0].
+
+Since the exposure distribution among untreated exposed units is observed under Case (ii.a), 
+
+averaging the identified exposure -specific effects  SE 𝑡 (𝑠 ) over this distribution identifies  ASEU 𝑡 . This 
+
+proves the result. 
+
+Proof of Corollary CBCM2 
+
+Let 
+
+𝜋 𝑇  = Pr (𝐷 𝑖  = 1), 𝜋 𝑈  = Pr (𝐷 𝑖  = 0, 𝑆 𝑖  > 0), 𝜋 𝐶  = Pr (𝐷 𝑖  = 0, 𝑆 𝑖  = 0).
+
+Under selective interference with observed exposure, the population is partitioned into treated units, 
+
+untreated exposed units, and untreated unexposed units. The average policy effect among directly or 
+
+indirectly exposed units is 
+
+ATTE 𝑡  = 𝜋 𝑇  ATOT 𝑡  + 𝜋 𝑈 ASEU 𝑡 
+
+𝜋 𝑇  + 𝜋 𝑈 
+
+.
+
+The Population Average Policy Effect is PAPE 𝑡  = 𝜋 𝑇  ATOT 𝑡  + 𝜋 𝑈 ASEU 𝑡  + 𝜋 𝐶  ⋅ 0.
+
+The last term is zero because untreated and unexposed units experience neither direct treatment nor 
+
+exposure. If  ATOT 𝑡 , ASEU 𝑡 , and the relevant population shares are identified, both  ATTE 𝑡  and 
+
+PAPE 𝑡  are identified by substitution. This proves the corollary. 
+
+Case (ii.b): Latent selective interference. 
+
+Proof of Proposition CBCM6 
+
+Under latent selective interference, untreated and unexposed units exist in the population, but 
+
+exposure status is not observed by the researcher. Hence, the researcher cannot distinguish untreated 
+
+unexposed units  (𝐷 𝑖  = 0, 𝑆 𝑖  = 0) from untreated exposed units  (𝐷 𝑖  = 0, 𝑆 𝑖  > 0). The clean -control 
+
+group required to recover  𝑌 𝑖𝑡  
+
+> 0
+
+therefore cannot be isolated in the observed data. 
+
+The observed untreated group is a mixture of units whose post -treatment outcomes are  𝑌 𝑖𝑡  
+
+> 0
+
+and units 
+
+whose post -treatment outcomes are  𝑌 𝑖𝑡 (0, 𝑆 𝑖 ) with  𝑆 𝑖  > 0. Without observing exposure status, 
+
+different assignments of units to exposed and unexposed regimes can generate the same observed 
+
+distribution of outcomes while implying different values of  TE 𝑡 (𝑠 ), ATOT 𝑡 , SE 𝑡 (𝑠 ), ASEU 𝑡 , ATTE 𝑡 ,
+
+and  PAPE 𝑡 . Therefore, these estimands are not generally point -identified by CBCMs. This proves the 
+
+result. 
+
+Case (iii): Spillovers affecting all units. 
+
+Proof of Proposition CBCM7 
+
+Suppose that all units are exposed to spillovers in the post -treatment period, so that no unit satisfies 
+
+𝐷 𝑖  = 0 and  𝑆 𝑖  = 0. Then no untreated and unexposed observations are available within the observed 
+
+population. For untreated units, the observed post -treatment outcome is 
+
+𝑌 𝑖𝑡  = 𝑌 𝑖𝑡 (0, 𝑆 𝑖 ), 𝑆 𝑖  > 0,
+
+not  𝑌 𝑖𝑡 
+
+> 0
+
+. Hence, untreated outcomes are contaminated by spillovers and cannot be used as 
+
+observations of the no -treatment/no -exposure potential outcome. 
+
+All estimands listed in Proposition CBCM7 are defined relative to  𝑌 𝑖𝑡 
+
+> 0
+
+, either directly or through 
+
+averages involving this baseline counterfactual. Since CBCMs recover counterfactuals from observed 
+
+cross -unit comparisons and no unit reveals  𝑌 𝑖𝑡  
+
+> 0
+
+in the post -treatment period, CBCMs cannot generally 
+
+point -identify  TE 𝑡 (𝑠 ), ATOT 𝑡 , SE 𝑡 (𝑠 ), ASEU 𝑡 , ATTE 𝑡 , or  PAPE 𝑡 . This proves the result. 
+
+Proof of Proposition CBCM8 
+
+Fix an exposure level  𝑠  for which there is common support between treated and untreated units. 
+
+Consider the DiD estimand comparing treated and untreated units with the same exposure level: 
+
+𝛥 𝑡 
+
+> DE
+
+(𝑠 ) = 𝔼 [𝑌 𝑖𝑡  − 𝑌 𝑖 ,𝑇 0−1 ∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ] − 𝔼 [𝑌 𝑖𝑡  − 𝑌 𝑖 ,𝑇 0−1 ∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 𝑠 ].
+
+By no anticipation, 𝛥 𝑡 
+
+> DE
+
+(𝑠 ) = 𝔼 [𝑌 𝑖𝑡 (1, 𝑠 ) − 𝑌 𝑖 ,𝑇 0−1 
+
+> 0
+
+∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ] − 𝔼 [𝑌 𝑖𝑡 (0, 𝑠 ) − 𝑌 𝑖 ,𝑇 0−1 
+
+> 0
+
+∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 𝑠 ].
+
+Add and subtract  𝔼 [𝑌 𝑖𝑡 (0, 𝑠 ) − 𝑌 𝑖 ,𝑇 0−1 
+
+> 0
+
+∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ]. Then 
+
+𝛥 𝑡 
+
+> DE
+
+(𝑠 ) = DE 𝑡 (𝑠 ) + 𝐵 𝑡 
+
+> DE
+
+(𝑠 ),
+
+where 
+
+DE 𝑡 (𝑠 ) = 𝔼 [𝑌 𝑖𝑡 (1, 𝑠 ) − 𝑌 𝑖𝑡 (0, 𝑠 ) ∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ]
+
+and 
+
+𝐵 𝑡 
+
+> DE
+
+(𝑠 ) = 𝔼 [𝑌 𝑖𝑡 (0, 𝑠 ) − 𝑌 𝑖 ,𝑇 0−1 
+
+> 0
+
+∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ] − 𝔼 [𝑌 𝑖𝑡 (0, 𝑠 ) − 𝑌 𝑖 ,𝑇 0−1 
+
+> 0
+
+∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 𝑠 ].
+
+Assumption  CBCM3(c)  sets  𝐵 𝑡 
+
+> DE
+
+(𝑠 ) = 0. Therefore,  𝛥 𝑡 
+
+> DE
+
+(𝑠 ) = DE 𝑡 (𝑠 ). This proves the result. Appendix  D. Identification proofs for  FBCM s
+
+This appendix reports the identification proofs for the FBCMs discussed in Section 3.2. Throughout, 
+
+let  𝑌 ̂𝑖𝑡 (0,0) denote the forecast -based counterfactual outcome constructed using only pre -treatment 
+
+data. Under Assumptions FBCM1 -FBCM3, the forecast recovers the baseline potential outcome for 
+
+the relevant units and post -treatment periods, in the sense that 
+
+𝑌 ̂𝑖𝑡 (0,0) → 𝑌 𝑖𝑡 (0,0).
+
+The corresponding forecast -based gap is 
+
+𝛥 ̂𝑖𝑡  
+
+> 𝐹
+
+= 𝑌 𝑖𝑡  − 𝑌 ̂𝑖𝑡 (0,0).
+
+Case (i): No spillovers. 
+
+Proof of Proposition FBCM1.  Suppose outcomes do not depend on exposure, so that 
+
+𝑌 𝑖𝑡 (𝑑 , 𝑠 ) = 𝑌 𝑖𝑡 (𝑑 , 0) = 𝑌 𝑖𝑡 (𝑑 ) for all  𝑠  ∈ 𝒮 .
+
+For treated units in the post -treatment period, consistency implies 
+
+𝑌 𝑖𝑡  = 𝑌 𝑖𝑡 (1,0) for  𝐷 𝑖  = 1, 𝑡  ≥ 𝑇 0.
+
+By Assumption FBCM1, pre -treatment outcomes are realizations of the baseline process  𝑌 𝑖𝑡 (0,0). By 
+
+Assumptions FBCM2 and FBCM3, this process is stable and sufficiently predictable, so that the 
+
+forecast -based counterfactual recovers 
+
+𝑌 ̂𝑖𝑡 (0,0) → 𝑌 𝑖𝑡 (0,0).
+
+Therefore, for treated units, 
+
+𝛥 ̂ 𝑖𝑡  
+
+> 𝐹
+
+= 𝑌 𝑖𝑡  − 𝑌 ̂𝑖𝑡 (0,0) → 𝑌 𝑖𝑡 (1,0) − 𝑌 𝑖𝑡 (0,0).
+
+Taking expectations conditional on  𝐷 𝑖  = 1 yields 
+
+𝐸 [𝛥 ̂𝑖𝑡  
+
+> 𝐹
+
+∣ 𝐷 𝑖  = 1] → 𝐸 {𝑌 𝑖𝑡 (1,0) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 1} = 𝐴𝑇 𝑇 𝑡 .
+
+Hence, FBCMs identify  𝐴𝑇 𝑇 𝑡 . ▫
+
+Case (ii.a): Selective interference 
+
+Proof of Proposition FBCM2.  Suppose exposure is observed and potential outcomes are indexed 
+
+by  (𝑑 , 𝑠 ). For treated units with exposure level  𝑠  ∈ 𝒮 1, consistency implies 
+
+𝑌 𝑖𝑡  = 𝑌 𝑖𝑡 (1, 𝑠 ) for  𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 , 𝑡  ≥ 𝑇 0.
+
+As before, Assumptions FBCM1 -FBCM3 imply that the forecast -based counterfactual recovers the 
+
+no -treatment, no -exposure baseline, 
+
+𝑌 ̂𝑖𝑡 (0,0) → 𝑌 𝑖𝑡 (0,0).
+
+Therefore, 𝛥 ̂𝑖𝑡  
+
+> 𝐹
+
+= 𝑌 𝑖𝑡  − 𝑌 ̂𝑖𝑡 (0,0) → 𝑌 𝑖𝑡 (1, 𝑠 ) − 𝑌 𝑖𝑡 (0,0)
+
+for treated units with  𝑆 𝑖  = 𝑠 . Taking expectations conditional on  𝐷 𝑖  = 1 and  𝑆 𝑖  = 𝑠  gives 
+
+𝐸 [𝛥 ̂𝑖𝑡  
+
+> 𝐹
+
+∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ] → 𝐸 {𝑌 𝑖𝑡 (1, 𝑠 ) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 } = 𝑇 𝐸 𝑡 (𝑠 ).
+
+Thus, FBCMs identify  𝑇 𝐸 𝑡 (𝑠 ) for all observed exposure levels among treated units. Averaging over 
+
+the realized exposure distribution among treated units yields 
+
+𝐸 [𝛥 ̂𝑖𝑡  
+
+> 𝐹
+
+∣ 𝐷 𝑖  = 1] → 𝐸 {𝑌 𝑖𝑡 (1, 𝑆 𝑖 ) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 1} = 𝐴𝑇𝑂 𝑇 𝑡 .
+
+For untreated exposed units, suppose that Assumptions FBCM1 -FBCM3 also hold for untreated 
+
+units. For  𝐷 𝑖  = 0 and  𝑆 𝑖  = 𝑠  > 0, consistency implies 
+
+𝑌 𝑖𝑡  = 𝑌 𝑖𝑡 (0, 𝑠 ).
+
+Since  𝑌 ̂𝑖𝑡 (0,0) → 𝑌 𝑖𝑡 (0,0), it follows that 
+
+𝐸 [𝛥 ̂𝑖𝑡  
+
+> 𝐹
+
+∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 𝑠 ] → 𝐸 {𝑌 𝑖𝑡 (0, 𝑠 ) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 𝑠 } = 𝑆 𝐸 𝑡 (𝑠 ).
+
+Averaging over the realized distribution of positive exposure among untreated units gives 
+
+𝐸 [𝛥 ̂𝑖𝑡  
+
+> 𝐹
+
+∣ 𝐷 𝑖  = 0, 𝑆 𝑖  > 0] → 𝐸 {𝑌 𝑖𝑡 (0, 𝑆 𝑖 ) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 0, 𝑆 𝑖  > 0} = 𝐴𝑆𝐸 𝑈 𝑡 .
+
+Finally, because  𝐴𝑇𝑂 𝑇 𝑡  and  𝐴𝑆𝐸 𝑈 𝑡  are identified, and because untreated unexposed units have zero 
+
+contribution by definition, the aggregate estimands  𝐴𝑇𝑇 𝐸 𝑡  and  𝑃𝐴𝑃 𝐸 𝑡  are identified whenever the 
+
+relevant population shares are observed. In particular, 
+
+𝑃𝐴𝑃 𝐸 𝑡  = 𝑃𝑟 (𝐷 𝑖  = 1)𝐴𝑇𝑂 𝑇 𝑡  + 𝑃𝑟 (𝐷 𝑖  = 0, 𝑆 𝑖  > 0)𝐴𝑆𝐸 𝑈 𝑡 ,
+
+under selective interference, since the contribution of untreated unexposed units is zero.  ▫
+
+Case (ii.b): Latent selective interference .
+
+Proof of Proposition FBCM3.  Suppose untreated unexposed units exist but exposure status is not 
+
+observed by the researcher. FBCMs do not require identifying untreated unexposed units to recover 
+
+the baseline counterfactual. By Assumptions FBCM1 -FBCM3, 
+
+𝑌 ̂𝑖𝑡 (0,0) → 𝑌 𝑖𝑡 (0,0)
+
+for the relevant units. For treated units, consistency implies 
+
+𝑌 𝑖𝑡  = 𝑌 𝑖𝑡 (1, 𝑆 𝑖 ),
+
+where  𝑆 𝑖  is the realized but unobserved exposure level. Hence, 
+
+𝛥 ̂𝑖𝑡  
+
+> 𝐹
+
+= 𝑌 𝑖𝑡  − 𝑌 ̂𝑖𝑡 (0,0) → 𝑌 𝑖𝑡 (1, 𝑆 𝑖 ) − 𝑌 𝑖𝑡 (0,0).
+
+Taking expectations conditional on  𝐷 𝑖  = 1 yields 
+
+𝐸 [𝛥 ̂𝑖𝑡  
+
+> 𝐹
+
+∣ 𝐷 𝑖  = 1] → 𝐸 {𝑌 𝑖𝑡 (1, 𝑆 𝑖 ) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 1} = 𝐴𝑇𝑂 𝑇 𝑡 .
+
+Thus, FBCMs identify aggregate total effects on treated units even when exposure status is latent. The population average policy effect is also identified because it is defined as the average gap between 
+
+the realized observed outcome and the no -treatment, no -exposure baseline over the whole 
+
+population: 
+
+𝑃𝐴𝑃 𝐸 𝑡  = 𝐸 {𝑌 𝑖𝑡 (𝐷 𝑖 , 𝑆 𝑖 ) − 𝑌 𝑖𝑡 (0,0)}.
+
+Since  𝑌 𝑖𝑡  = 𝑌 𝑖𝑡 (𝐷 𝑖 , 𝑆 𝑖 ) in the post -treatment period and  𝑌 ̂𝑖𝑡 (0,0) → 𝑌 𝑖𝑡 (0,0),
+
+𝐸 [𝛥 ̂𝑖𝑡  
+
+> 𝐹
+
+] → 𝐸 {𝑌 𝑖𝑡 (𝐷 𝑖 , 𝑆 𝑖 ) − 𝑌 𝑖𝑡 (0,0)} = 𝑃𝐴𝑃 𝐸 𝑡 .
+
+However, exposure -specific or exposure -status -dependent estimands require observing the exposure 
+
+strata or the set of exposed untreated units. Since exposure status is unobserved, the researcher 
+
+cannot condition on events such as  𝑆 𝑖  = 𝑠  or  𝑆 𝑖  > 0. Therefore,  𝑇 𝐸 𝑡 (𝑠 ), 𝑆 𝐸 𝑡 (𝑠 ), 𝐴𝑆𝐸 𝑈 𝑡 , and 
+
+𝐴𝑇𝑇 𝐸 𝑡  are not generally identifiable under latent selective interference.  ▫
+
+Case (iii): Spillovers affecting all units .
+
+Proof of Proposition FBCM4.  Suppose all units are exposed to spillovers in the post -treatment 
+
+period and exposure levels are observed. Under Assumptions FBCM1 -FBCM3, FBCMs recover the 
+
+no -treatment, no -exposure baseline, 
+
+𝑌 ̂𝑖𝑡 (0,0) → 𝑌 𝑖𝑡 (0,0),
+
+for the relevant units and post -treatment periods. 
+
+For treated units with exposure level  𝑠 , consistency implies 
+
+𝑌 𝑖𝑡  = 𝑌 𝑖𝑡 (1, 𝑠 ) for  𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 .
+
+Therefore, 
+
+𝐸 [𝛥 ̂𝑖𝑡  
+
+> 𝐹
+
+∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 ] → 𝐸 {𝑌 𝑖𝑡 (1, 𝑠 ) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 1, 𝑆 𝑖  = 𝑠 } = 𝑇 𝐸 𝑡 (𝑠 ).
+
+Averaging over the realized exposure distribution among treated units identifies  𝐴𝑇𝑂 𝑇 𝑡 .
+
+For untreated units with exposure level  𝑠 , consistency implies 
+
+𝑌 𝑖𝑡  = 𝑌 𝑖𝑡 (0, 𝑠 ) for  𝐷 𝑖  = 0, 𝑆 𝑖  = 𝑠 .
+
+Hence, 
+
+𝐸 [𝛥 ̂𝑖𝑡  
+
+> 𝐹
+
+∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 𝑠 ] → 𝐸 {𝑌 𝑖𝑡 (0, 𝑠 ) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 0, 𝑆 𝑖  = 𝑠 } = 𝑆 𝐸 𝑡 (𝑠 ).
+
+Averaging over untreated exposed units identifies  𝐴𝑆𝐸 𝑈 𝑡 . Since in this case all untreated units are 
+
+exposed, the conditioning event  𝐷 𝑖  = 0, 𝑆 𝑖  > 0 coincides with  𝐷 𝑖  = 0. Finally, because  𝐴𝑇𝑂 𝑇 𝑡  and 
+
+𝐴𝑆𝐸 𝑈 𝑡  are identified and the relevant population shares are observed, the aggregate estimands 
+
+𝐴𝑇𝑇 𝐸 𝑡  and  𝑃𝐴𝑃 𝐸 𝑡  are also identified.  ▫
+
+Proof of Proposition FBCM5.  Suppose all units are exposed to spillovers in the post -treatment 
+
+period but exposure intensity is unobserved. By Assumptions FBCM1 -FBCM3, 
+
+𝑌 ̂𝑖𝑡 (0,0) → 𝑌 𝑖𝑡 (0,0).For treated units, the observed post -treatment outcome is  𝑌 𝑖𝑡  = 𝑌 𝑖𝑡 (1, 𝑆 𝑖 ), where  𝑆 𝑖  > 0 is realized 
+
+but unobserved. Thus, 
+
+𝐸 [𝛥 ̂𝑖𝑡  
+
+> 𝐹
+
+∣ 𝐷 𝑖  = 1] → 𝐸 {𝑌 𝑖𝑡 (1, 𝑆 𝑖 ) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 1} = 𝐴𝑇𝑂 𝑇 𝑡 .
+
+For untreated units, universal exposure implies  𝑆 𝑖  > 0 for all  𝐷 𝑖  = 0. Hence, 
+
+𝐸 [𝛥 ̂𝑖𝑡  
+
+> 𝐹
+
+∣ 𝐷 𝑖  = 0] → 𝐸 {𝑌 𝑖𝑡 (0, 𝑆 𝑖 ) − 𝑌 𝑖𝑡 (0,0) ∣ 𝐷 𝑖  = 0, 𝑆 𝑖  > 0} = 𝐴𝑆𝐸 𝑈 𝑡 .
+
+Because treated and untreated groups are observed, and because all untreated units are exposed, the 
+
+relevant aggregate effects defined relative to  𝑌 𝑖𝑡 (0,0), including  𝐴𝑇𝑂 𝑇 𝑡 , 𝐴𝑆𝐸 𝑈 𝑡 , and  𝑃𝐴𝑃 𝐸 𝑡 , are 
+
+identified.  Since all units are exposed in this case,  𝐴𝑇𝑇𝐸 𝑡  coincides with  𝑃𝐴𝑃𝐸 𝑡 .
+
+However, exposure -specific estimands require conditioning on the unobserved exposure level  𝑆 𝑖  = 𝑠 .
+
+Since exposure intensity is not observed, quantities such as  𝑇 𝐸 𝑡 (𝑠 ) and  𝑆 𝐸 𝑡 (𝑠 ) cannot generally be 
+
+recovered. Moreover, direct -effect -type estimands such as  𝐷 𝐸 𝑡 (𝑠 ) and indirect effects among treated 
+
+units such as  𝐼 𝐸 𝑡 (𝑠 ) require counterfactual outcomes under alternative exposure regimes, such as 
+
+𝑌 𝑖𝑡 (0, 𝑠 ) and  𝑌 𝑖𝑡 (1,0), which are not learned from pre -treatment dynamics without additional 
+
+structure.  ▫Appendix  E. Additional details on the simulations 
+
+To represent Case (iii), in which spillovers affect all units, we consider a second simulation design 
+
+based on the actual geography of counties in the contiguous United States and the District of 
+
+Columbia. In each of 200 Monte Carlo replications, 200 counties are randomly assigned to direct 
+
+treatment. The balanced panel contains five pre -treatment periods and one post -treatment period, 
+
+with treatment beginning in period 6. The baseline outcome process is kept comparable to that used 
+
+in the selective -interference simulations, but queen -contiguity exposure is replaced by a continuous 
+
+distance -decay mechanism. 
+
+Let  𝑑 𝑖𝑗  denote the distance in kilometres between the interior representative points of counties  𝑖  and 
+
+𝑗 . The spatial weight connecting the two counties is defined as 
+
+𝑤 𝑖𝑗  = exp  (− 𝑑 𝑖𝑗 
+
+60 ) , 𝑤 𝑖𝑖  = 0,
+
+and the true exposure score of county  𝑖  is 
+
+𝑆 𝑖  = ∑ 𝑤 𝑖𝑗 
+
+> 𝑗 ≠𝑖
+
+𝐷 𝑗 .
+
+Spillovers therefore decline smoothly with distance but never become exactly zero. Since the 
+
+exponential weights are strictly positive, every county receives some exposure from the treated 
+
+counties, although the resulting effect may be extremely small for geographically distant units. Both 
+
+untreated and treated counties can experience spillovers, while the zero diagonal prevents a treated 
+
+county from generating a spillover to itself. 
+
+County -specific baseline heterogeneity depends on standardi zed log area and standardi zed projected 
+
+coordinates. Let  𝐴 ̃𝑖 , 𝑋 ̃𝑖 , and  𝑌 ̃𝑖  denote these characteristics. The unit effect is 
+
+𝛼 𝑖  = 5 + 0.55 𝐴 ̃ 𝑖  − 0.30 𝑋 ̃𝑖  + 0.25 𝑌 ̃𝑖  + 𝑢 𝑖 , 𝑢 𝑖  ∼ 𝒩 (0, 22).
+
+Directly treated counties also receive a persistent level gap of 0.5. This generates systematic pre -
+
+treatment level differences between treated and untreated counties while preserving parallel 
+
+untreated -outcome trends in expectation. There is no deterministic common trend, and common 
+
+time shocks are independently drawn from a normal distribution with standard deviation 1. 
+
+Two time -varying covariates, indexed by  𝑘  = 1,2, follow autoregressive processes, 
+
+𝑥 𝑘𝑖𝑡  = 0.5𝑥 𝑘𝑖 ,𝑡 −1 + 𝜈 𝑘𝑖𝑡 , 𝜈 𝑘𝑖𝑡  ∼ 𝒩 (0,1).
+
+The structural mean includes the first two lags of each covariate, with coefficient vector 
+
+𝛃  = (0.4, 0.2, −0.3, 0.1)′,
+
+and the nonlinear component 
+
+𝑔 𝑖𝑡  = 0.35 (𝑥 1,𝑖 ,𝑡 −1 
+
+> 2
+
+− 𝑥 2,𝑖 ,𝑡 −1 
+
+> 2
+
+) + 0.25 𝑥 1,𝑖 ,𝑡 −1𝑥 2,𝑖 ,𝑡 −1.
+
+Let  𝑃 𝑡  = 𝟙 {𝑡  ≥ 6}. The structural mean is 
+
+𝜇 𝑖𝑡  = 𝛼 𝑖  + 𝜆 𝑡  + 0.5𝐷 𝑖  + 12 .5𝐷 𝑖 𝑃 𝑡  + 3𝑆 𝑖 𝑃 𝑡  + 𝛃 ′𝐗 𝑖𝑡  + 𝑔 𝑖𝑡 ,where  𝜆 𝑡  is the common time shock and  𝐗 𝑖𝑡  collects the four lagged covariates. Observed outcomes 
+
+follow the autoregressive process 
+
+𝑌 𝑖𝑡  = 0.6𝑌 𝑖 ,𝑡 −1 + 0.4𝜇 𝑖𝑡  + 𝜀 𝑖𝑡 , 𝜀 𝑖𝑡  ∼ 𝒩 (0,1).
+
+The treatment component entering the structural mean is scaled so that the reali zed direct effect in 
+
+the first post -treatment period is 5. The reali zed spillover contribution is  0.4 × 3𝑆 𝑖  = 1.2𝑆 𝑖 .
+
+Consequently, the true unit -level policy effect in period 6 is 
+
+𝜃 𝑖  = 5𝐷 𝑖  + 1.2𝑆 𝑖 .
+
+The simulation reports the Average Total Effect on the Treated (ATOT), the Average Spillover 
+
+Effect on Exposed Untreated units (ASEU), and the Population Average Policy Effect (PAPE). Appendix  F. Additional details on the empirical application 
+
+Post -treatment estimation and standard errors.  To prevent post -treatment information from entering 
+
+the construction of the counterfactual outcomes, forecasts are generated recursively using only pre -
+
+treatment information. The August counterfactual is predicted using the two most recent pre -
+
+treatment outcomes. The September counterfactual is then obtained using the predicted August 
+
+counterfactual, rather than the observed August outcome, together with the last available pre -
+
+treatment lag. Thus, realized post -treatment outcomes are never used as predictors of subsequent 
+
+counterfactual outcomes. The bagging model is estimated using only pre -treatment unit -period 
+
+observations for which the required outcome lags are available and employs 1,000 regression trees. 
+
+Statistical uncertainty is quantified through a nonparametric bootstrap that repeats the entire 
+
+estimation procedure, including model training, recursive forecasting, and aggregation of the unit -
+
+level effects. Standard errors are computed as the standard deviation of the resulting bootstrap 
+
+estimates across replications. 
+
+Standard errors are computed from the cross -sectional dispersion of the unit -level forecast -based 
+
+effects. For each target group  𝑔 , the estimated effect is the average of  𝜏 ̂ 𝑖𝑡  = 𝑌 𝑖𝑡  − 𝑌 ̂𝑖𝑡 (0,0), and its 
+
+standard error is calculated as the sample standard deviation of the unit -level effects divided by the 
+
+square root of the number of blocks in the group. 
+
+Table  F1 reports the MLCM placebo estimates for the last pre -treatment period. These estimates are 
+
+generally small and statistically insignificant, providing little evidence of systematic pre -treatment 
+
+effects and thereby corroborating the credibility of the estimates reported in the main analysis. 
+
+Table  F1. Placebo effects for the last pre -treatment period
