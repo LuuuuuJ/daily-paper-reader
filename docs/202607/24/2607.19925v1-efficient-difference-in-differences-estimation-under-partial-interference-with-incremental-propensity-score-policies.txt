@@ -1,0 +1,3664 @@
+Title: Efficient difference-in-differences estimation under partial interference with incremental propensity score policies
+
+URL Source: https://arxiv.org/pdf/2607.19925v1
+
+Published Time: Thu, 23 Jul 2026 00:38:31 GMT
+
+Number of Pages: 43
+
+Markdown Content:
+# Efficient difference-in-differences estimation under partial interference with incremental propensity score policies 
+
+Junjie Li a, Yukitoshi Matsushita a,1 
+
+> aGraduate School of Economics, Hitotsubashi University, 2-1 Naka, Kunitachi, Tokyo 186-8601, Japan.
+
+Abstract 
+
+This paper develops efficient difference-in-differences (DID) estimation under partial interference with a cluster incremental propensity score (CIPS) policy. We define direct and spillover average treatment effects on the treated, establish their identification, and derive their efficient influence functions, from which we construct a cross-fitted estimator. Simulations confirm its finite-sample validity, and an application to China’s New Rural Pension Scheme uncovers a significantly negative within-household spillover of pension participation on co-residents’ labour income. 
+
+Keywords: Difference-in-differences, Partial interference, Incremental propensity score, Stochastic policy, Semiparametric efficiency, Spillover effects 
+
+1. Introduction 
+
+Difference-in-differences (DID) is among the most widely used research designs for evaluating policies with panel or repeated cross-section data. Its standard justification rests on a no-interference (SUTVA) assumption: a unit’s potential outcomes depend only on its own treatment. In many settings this assumption is untenable. When a place-based subsidy is granted to some firms, neighbouring firms may benefit from agglomeration spillovers; when some children in a household are encouraged to attend school, their siblings may be affected through shared resources; when some villages in a county enter a special economic zone, surrounding villages may gain or lose through factor reallocation and local-market linkages. In such cases a unit’s outcome responds both to its own treatment (a direct effect) and to the treatment of its peers (a spillover effect), and     
+
+> Email addresses: junjieli.eco@gmail.com (Junjie Li), matsushita.y@r.hit-u.ac.jp (Yukitoshi Matsushita)
+> 1Matsushita acknowledges financial support from the JSPS KAKENHI (23K01331).
+
+1arXiv:2607.19925v1 [econ.EM] 22 Jul 2026 an analysis that ignores interference both misstates the estimand and discards the spillover, which is often of independent policy interest. This paper studies efficient DID estimation under partial (clustered) interference: units are grouped into clusters, interference is unrestricted within a cluster but absent across clusters, and the number of clusters grows while cluster sizes stay bounded. Two modelling choices set the present paper apart from Park and Kang (2022), and both are imported from Lee et al. (2025) (hereafter LZH). First, we adopt LZH’s data structure . Clusters are independent and identically distributed draws from a super-population, and the cluster size Ni is a bounded random variable that is observed and carried through the analysis. There is no latent cluster type Li, no type-frequency parameters 
+
+pk, and no device that fixes the cluster size at a type-specific constant Mk. Heterogeneity across clusters of different sizes is captured simply by conditioning the nuisance functions on the observed size Ni; arbitrary within-cluster dependence remains permitted. This is both more transparent and closer to applications, in which cluster sizes vary continuously rather than falling into a handful of discrete types. Second, we replace the type-B counterfactual—each peer independently assigned to treatment with the same probability α—by a cluster incremental propensity score (CIPS) policy. As LZH emphasize, the type-B policy can lack real-world relevance because realistic counterfactual scenarios allow the probability of treatment to vary across units according to their covariates, and because, away from the observed treatment saturation, the type-B estimand averages over peer configurations that are essentially never observed. The CIPS policy, extending the incremental propensity score intervention of Kennedy (2019) to clustered interference, instead modulates the observed propensities :it multiplies the odds of each unit’s treatment by a user-chosen factor δ ∈ (0 , ∞). The choice δ = 1 
+
+reproduces the factual allocation, so the policy never overwrites the propensity with an exogenous constant, the unit ranking by treatment probability is preserved, and moderate values of δ keep all probability mass inside the supported region. No parametric model for the propensity is required to define the estimand. We make three contributions. First, under a nonparametric model we define direct and spillover 2average treatment effects on the treated under the CIPS policy, τDAT T (δ) and τSAT T (δ), and establish their identification under conditional parallel trends, no anticipation, overlap, and bounded cluster size (Proposition 1). Second, we derive the efficient influence functions (EIFs) of both estimands, characterizing the semiparametric efficiency bounds under partial interference (Theorem 1). Because the CIPS allocation law is itself a functional of the propensity score, the EIF carries an additional policy-estimation term—the DID analogue of the weight-estimation term ϕQ in Corollary 1 of LZH. This term vanishes identically under the type-B policy, in which case our EIF reduces to the partial-interference efficiency theory of Park and Kang (2022). Third, we propose a cross-fitted estimator that averages the uncentered EIF over held-out folds, with the nuisance functions estimated by arbitrary machine-learning or parametric methods, and show that it is asymptotically normal and attains the efficiency bound under standard rate conditions (Theorem 2). Unlike the type-B case, the required convergence rate for the propensity score cannot be traded off against outcome-model accuracy: the policy-estimation term depends on the assignment mechanism alone and is unaffected by how well the outcome regression is estimated, so an inaccurate propensity estimate cannot be compensated by a more accurate outcome model. This one-sided robustness is the exact DID counterpart of the behaviour reported by LZH for their CIPS estimator. This work connects two strands of literature. On the causal-inference side, it extends the semiparametric efficiency and stochastic-policy machinery for partial interference (Hudgens and Halloran, 2008; Tchetgen and VanderWeele, 2012; Liu et al., 2019; Park and Kang, 2022; Lee et al., 2025) from cross-sectional designs to the difference-in-differences setting, building on the doubly robust DID estimator of Sant’Anna and Zhao (2020) and the incremental propensity score interventions of Kennedy (2019); Muñoz and van der Laan (2012); Wen et al. (2023). On the DID side, it complements recent work on identification and estimation under interference (Xu, 2023; Sun and Xiao, 2025) and on the interpretation of conventional estimators when interference is misspecified (Sävje et al., 2021), by delivering policy-relevant, efficient estimands with explicit influence-function-based inference. The remainder of the paper is organized as follows. Section 2 sets up the model, the CIPS policy, and the estimands. Section 3 states the identifying assumptions and identification result. 3Section 4 develops the global and local efficiency theory (Theorems 1 and 2). Section 5 reports a simulation study and Section 6 presents the empirical application; Section 7 concludes and the appendix collects all proofs. 
+
+2. Set-up 
+
+2.1. Data structure 
+
+We observe M clusters drawn independently from a super-population P. Cluster i has a random size Ni ∈ N and contains units j = 1 , . . . , N i. We focus on two time periods t = 1 , 2, with treatment realized only in period 2; following the DID convention we write the period-2 treatment as Aij ≡ Aij 2 ∈ { 0, 1}. For unit j in cluster i, let Yijt ∈ R be the outcome at time t and Xij ∈ Rp avector of pre-treatment covariates. Stacking units within a cluster, 
+
+Yit = ( Yi1t, . . . , Y iN it)⊤, Ai = ( Ai1, . . . , A iN i )⊤ ∈ A (Ni), Xi = ( X⊤ 
+
+> i1
+
+, . . . , X ⊤ 
+
+> iN i
+
+)⊤,
+
+where A(s) denotes the set of all length-s binary vectors. For unit j in cluster i, let Ai(−j) =(Aik )k̸ =j, 1≤k≤Ni denote the treatment vector of j’s peers, so that Ai = ( Aij , A i(−j)) after a relabeling of coordinates. The observed data for cluster i are 
+
+Oi = ( Yi1, Y i2, A i, X i, N i),
+
+and we assume (O1, . . . , O M ) are independent and identically distributed draws from P, and that there exists a fixed nmax ∈ N with P(Ni ≤ nmax ) = 1 . Asymptotics are driven by M → ∞ with the cluster size bounded, which follows the model of Liu et al. (2019); Park and Kang (2022); Lee et al. (2025). For ease of notation we write 
+
+νn = P(Ni = n), En[·] = E[· | Ni = n], n ≤ nmax .
+
+For unit j define the observed first difference ∆Yij = Yij 2 − Yij 1 and the reduced data 
+
+Wij = (∆ Yij , A ij , A i(−j), X i, N i); 
+
+4the analysis depends on the outcomes only through ∆Yij .
+
+2.2. Potential outcomes 
+
+We use the potential outcome framework for partial interference (Hudgens and Halloran, 2008; Tchetgen and VanderWeele, 2012; Liu et al., 2019; Park and Kang, 2022; Lee et al., 2025). Let 
+
+Yijt (ai) = Yijt (aij , a i(−j)) be the potential outcome of unit j at time t when cluster i receives ai, where 
+
+ai = ( aij , a i(−j)) is a realized cluster treatment vector. Clustered interference is the assumption, embedded in this notation, that a unit’s potential outcome may depend on the treatments of others in the same cluster but not on those in other clusters. 
+
+2.3. The cluster incremental propensity score policy 
+
+A stochastic policy assigns, for a focal unit j in a cluster of size n with covariates x, a counterfactual conditional distribution over the treatment assignments of the remaining n − 1 units, denoted by A(n − 1) . In the presence of interference, such stochastic policies provide a natural framework for defining causal estimands that account for treatment spillovers. Following Tchetgen and VanderWeele (2012); Liu et al. (2019); Park and Kang (2022), we first consider the commonly used type-B policy, which is defined as 
+
+πB (a−j | n; α) = ∏ 
+
+> j′̸=j
+
+αaj′ (1 − α)1−aj′ , a−j ∈ A (n − 1) .
+
+Under this policy, the treatments of all peers are assigned independently with a common probability (α), regardless of their individual characteristics. The type-B policy has been widely adopted as a benchmark for constructing causal estimands under interference. However, this specification imposes a restrictive homogeneity assumption by ignoring potential heterogeneity in treatment assignment across units. In many empirical settings, treatment adoption may depend on observed characteristics, implying that a more realistic stochastic policy should allow treatment probabilities to vary with covariates. Motivated by this consideration, we adopt the 
+
+cluster incremental propensity score (CIPS) policy proposed by Lee et al. (2025), which extends the incremental propensity score framework of Kennedy (2019) to settings with clustered interference. 5Unlike the type-B policy, the CIPS policy accommodates covariate-dependent treatment probabilities and therefore provides a more flexible framework for defining causal effects under interference. Let 
+
+qj (x, n ) = P(Aij = 1 | Xi = x, N i = n)
+
+denote the individual propensity score of unit j. The CIPS policy shifts the odds of treatment by a user-chosen factor δ ∈ (0 , ∞), producing the shifted propensity 
+
+qj,δ (x, n ) = δ q j (x, n )
+
+δ q j (x, n ) + 1 − qj (x, n ), equivalently qj,δ (x, n )1 − qj,δ (x, n ) = δ qj (x, n )1 − qj (x, n ). (1) Assuming that, given (Xi, N i), the treatments of distinct units within a cluster are conditionally independent, so that P(Ai(−j) = a−j | Xi = x, N i = n) = ∏  
+
+> j′̸=j
+
+qj′ (x, n )aj′ {1 − qj′ (x, n )}1−aj′ ,shifting each peer’s odds by δ yields the conditional CIPS policy distribution 
+
+πδ(a−j | x, n ) = ∏ 
+
+> j′̸=j
+
+qj′,δ (x, n )aj′
+
+> (
+
+1 − qj′,δ (x, n ))1−aj′
+
+, a−j ∈ A (n − 1) . (2) The CIPS policy has three properties that the type-B policy lacks. (i) At δ = 1 , qj, 1 = qj , so 
+
+π1(· | x, n ) is the peer law with the factual propensity score, guaranteed to be supported by the data. (ii) As δ ↓ 0 all peers are sent to control and as δ ↑ ∞ all peers are sent to treatment, so δ smoothly indexes a one-parameter family of interventions around the allocation strategy. (iii) The ranking of units by treatment probability is preserved: qj (x, n ) < q j′ (x, n ) implies qj,δ (x, n ) < q j′,δ (x, n ).
+
+2.4. Causal estimands 
+
+The direct and spillover effects for the policy are defined by 
+
+τ •(δ) = E
+
+> 
+
+N −1
+
+> iNi∑
+> j=1
+
+τ • 
+
+> j
+
+(δ, N i) 
+
+> 
+
+, • ∈ { DAT T, SAT T }, (3) where 
+
+τ • 
+
+> j
+
+(δ, n ) = ∑ 
+
+> a−j∈A (n−1)
+
+¯πδ(a−j ; n) θ• 
+
+> j
+
+(a−j , n ), • ∈ { DAT T, SAT T } (4) 6denotes the unit-level effect under the policy, with the average CIPS policy ¯πδ(a−j ; n) = En
+
+> [
+
+πδ(a−j |
+
+Xi, n )]
+
+and the configuration-specific effects θDAT T j and θSAT T j defined below in (5) –(6) . Fix a focal unit j in a cluster of size n. For a peer configuration a−j ∈ A (n−1) , define the configuration-specific direct and spillover average treatment effects on the treated, 
+
+θDAT T j (a−j , n ) = E[
+
+Yij 2(1 , a −j ) − Yij 2(0 , a −j ) | Aij = 1 , A i(−j) = a−j , N i = n]
+
+, (5) 
+
+θSAT T j (a−j , n ) = E[
+
+Yij 2(0 , a −j ) − Yij 2(0 , 0) | Aij = 1 , A i(−j) = a−j , N i = n]
+
+. (6) The construction in Equations (3) and (4) parallels the causal estimands of Park and Kang (2022); Lee et al. (2025), extended here to the DID design. Note that the policy enters through its covariate average ¯πδ(a−j ; n) rather than through the conditional peer law πδ(a−j | Xi, N i) itself. The two estimands admit an exact decomposition of a total effect. Defining the configuration-specific total effect on the treated θT AT T j (a−j , n ) = E[Yij 2(1 , a −j ) − Yij 2(0 , 0) | Aij = 1 , A i(−j) =
+
+a−j , N i = n] = θDAT T j (a−j , n ) + θSAT T j (a−j , n ), aggregation with the common weights in (3) –(4) yields τ T AT T (δ) = τ DAT T (δ) + τ SAT T (δ), for every δ ∈ (0 , ∞). This is the CIPS-policy analogue of the overall ATT decomposition in Equation (14) of Sun and Xiao (2025): there the direct and spillover effects are averaged over the observed neighbourhood treatment distribution among the treated, whereas here the weights are the counterfactual policy ¯πδ, so the decomposition holds along the entire family of interventions indexed by δ. In the no-interference special case Ni ≡ 1, every cluster contains a single unit with no peers, A(0) = {∅} , ¯πδ(∅; 1) = 1 , and Yij 2(aij , a i(−j)) = Yij 2(aij );then τ DAT T (δ) reduces to the standard average treatment effect on the treated (ATT) of Sant’Anna and Zhao (2020) for every δ, and τ SAT T (δ) ≡ 0.
+
+3. Identification 
+
+To identify the configuration-specific treatment effects, we introduce the following outcome regression and treatment assignment nuisance functions. For a ∈ { 0, 1},
+
+ma,j (a−j , x, n ) = E[∆ Yij | Aij = a, A i(−j) = a−j , X i = x, N i = n],
+
+7qj (x, n ) = P(Aij = 1 | Xi = x, N i = n), ea,j (a−j | x, n ) = P(Ai(−j) = a−j | Aij = a, X i = x, N i = n),
+
+and the joint probability of observing unit j treated together with peer configuration a−j
+
+rj (a−j , n ) = P(Aij = 1 , A i(−j) = a−j | Ni = n) = En[qj (Xi, n ) e1,j (a−j | Xi, n )] .
+
+Assumption 1 (Identification assumptions) . For all a−j ∈ A (n−1) , x in the support of Xi | Ni = n,and n ≤ nmax , the following hold. (i) (Consistency) Yijt = ∑ 
+
+> ai∈A (Ni)
+
+1(Ai = ai) Yijt (ai) for all i, j, t .(ii) (No anticipation) Treatment occurs only in period 2, and Yij 1(aij , a i(−j)) = Yij 1(0 , 0) for all 
+
+i, j .(iii) (Conditional parallel trends) For the identification of τ DAT T (δ),
+
+E[Yij 2(0 , a −j ) − Yij 1(0 , 0) | Aij = 1 , A i(−j) = a−j , X i = x, N i = n]= E[Yij 2(0 , a −j ) − Yij 1(0 , 0) | Aij = 0 , A i(−j) = a−j , X i = x, N i = n].
+
+For the identification of τ SAT T (δ), the following two conditions hold: (CPT-S1, standard parallel trends for Y (0 , a −j ))
+
+E[Yij 2(0 , a −j ) − Yij 1(0 , a −j ) | Aij = 1 , A i(−j) = a−j , X i = x, N i = n]= E[Yij 2(0 , a −j ) − Yij 1(0 , a −j ) | Aij = 0 , A i(−j) = a−j , X i = x, N i = n].
+
+(CPT-S2, cross-configuration trend for Y (0 , 0) )
+
+E[Yij 2(0 , 0) − Yij 1(0 , 0) | Aij = 1 , A i(−j) = a−j , X i = x, N i = n]= E[Yij 2(0 , 0) − Yij 1(0 , 0) | Aij = 0 , A i(−j) = 0 , X i = x, N i = n].
+
+CPT-S1 is the usual conditional parallel trends assumption within peer configuration a−j ;CPT-S2 is a cross-configuration restriction stating that treated units with peer configuration 8a−j exhibit the same Y (0 , 0) trend with control units that have no treated peers. (iv) (Overlap) There exists a constant c > 0 such that, for all n ≤ nmax , all j, all a−j ∈ A (n − 1) ,and all x in the support of Xi | Ni = n,
+
+c ≤ qj (x, n ) ≤ 1 − c, ea,j (a−j | x, n ) ≥ c (a ∈ { 0, 1}).
+
+These conditions imply rj (a−j , n ) = En[qj e1,j ] ≥ c2 for every a−j ∈ A (n − 1) , so each configuration cell carries positive treated mass. The requirement is imposed over all of 
+
+A(n − 1) , rather than only over the realized support of Ai(−j) | Ni = n, because the aggregation (4) runs over all configurations and ¯πδ(a−j ; n) > 0 for each of them. (v) (Moments) For every n ≤ nmax and j,
+
+En[∆ Y 2 
+
+> ij
+
+] < ∞, En
+
+> [
+
+max   
+
+> a∈{ 0,1}, a −j∈A (n−1)
+
+|ma,j (a−j , X i, n )|2
+
+> ]
+
+< ∞.
+
+Assumption 1 is used to identify the potential outcomes from the observed data. 
+
+Proposition 1 (Identification) . Under Assumption 1, for every δ ∈ (0 , ∞) the configuration-specific direct and spillover average treatment effects on the treated are identified as 
+
+θDAT T j (a−j , n ) = E[
+
+m1,j (a−j , X i, n ) − m0,j (a−j , X i, n ) | Aij = 1 , A i(−j) = a−j , N i = n]
+
+, (7) 
+
+θSAT T j (a−j , n ) = E[
+
+m0,j (a−j , X i, n ) − m0,j (0 , X i, n ) | Aij = 1 , A i(−j) = a−j , N i = n]
+
+. (8) Consequently the average CIPS policy weights ¯πδ(a−j ; n) = En[πδ(a−j | Xi, n )] are identified through the shifted propensity (1) together with the conditional distribution of Xi given Ni = n.Hence τ DAT T (δ) and τ SAT T (δ) in (3) are identified. A proof is provided in Appendix B.1. 94. Semiparametric efficiency under partial interference 
+
+4.1. Global efficiency 
+
+Let MN P denote the nonparametric model implied by the i.i.d. cluster-sampling structure of Section 2. Throughout this section starred quantities denote evaluation at the truth. Our first main result characterizes the efficient influence function (EIF) of τ •(δ).
+
+Theorem 1 (Global efficiency under the CIPS policy) . Under Assumption 1, for • ∈ { DAT T, SAT T }
+
+the efficient influence function of τ •(δ) under MN P is 
+
+φ•∗ (Oi; δ) = ¯ φ•∗ (Oi; δ) + 
+
+{
+
+¯τ •(δ, N i) − τ •(δ)
+
+}
+
+, ¯τ •(δ, n ) = n−1
+
+> n
+
+∑
+
+> j=1
+
+τ • 
+
+> j
+
+(δ, n ), (9) and 
+
+¯φ•∗ (Oi; δ) = N −1
+
+> iNi
+
+∑
+
+> j=1
+
+∑ 
+
+> a−j∈A (Ni−1)
+
+{
+
+¯π∗ 
+
+> δ
+
+(a−j ; Ni) ϕ•∗  
+
+> j,a −j
+
+(Wij ) + θ•∗  
+
+> j
+
+(a−j , N i) ψδ∗ 
+
+> j,a −j
+
+(Oi)
+
+}
+
+, (10) where ϕ•∗  
+
+> j,a −j
+
+is the EIF of θ• 
+
+> j
+
+(a−j , n ) and ψδ∗ 
+
+> j,a −j
+
+is the EIF of ¯πδ(a−j ; n), given in (11) –(12) and (13) below, respectively. The semiparametric efficiency bound for τ •(δ) under MN P is E[{φ•∗ (Oi; δ)}2].Define the importance weights 
+
+ω∗ 
+
+> j
+
+(a−j , x, n ) = q∗ 
+
+> j
+
+(x, n ) e∗ 
+
+> 1,j
+
+(a−j | x, n )(1 − q∗ 
+
+> j
+
+(x, n )) e∗ 
+
+> 0,j
+
+(a−j | x, n ), ω0∗ 
+
+> j
+
+(a−j , x, n ) = q∗ 
+
+> j
+
+(x, n ) e∗ 
+
+> 1,j
+
+(a−j | x, n )(1 − q∗ 
+
+> j
+
+(x, n )) e∗ 
+
+> 0,j
+
+(0 | x, n ),
+
+and recall r∗ 
+
+> j
+
+(a−j , n ) = P(Aij = 1 , A i(−j) = a−j | Ni = n). The efficient influence functions of the configuration-specific direct and spillover average treatment effects on the treated are 
+
+ϕDAT T ∗ 
+
+> j,a −j
+
+(Wij ) = Aij 1{Ai(−j) = a−j }
+
+r∗ 
+
+> j
+
+(a−j , N i)
+
+{
+
+∆Yij − m∗ 
+
+> 1,j
+
+(a−j , X i, N i)}
+
+− (1 − Aij )1{Ai(−j) = a−j }
+
+r∗ 
+
+> j
+
+(a−j , N i) ω∗ 
+
+> j
+
+(a−j , X i, N i){
+
+∆Yij − m∗ 
+
+> 0,j
+
+(a−j , X i, N i)}
+
++ Aij 1{Ai(−j) = a−j }
+
+r∗ 
+
+> j
+
+(a−j , N i)
+
+{
+
+m∗ 
+
+> 1,j
+
+(a−j , X i, N i) − m∗ 
+
+> 0,j
+
+(a−j , X i, N i) − θDAT T ∗ 
+
+> j
+
+(a−j , N i)}
+
+,
+
+(11) 10 ϕSAT T ∗ 
+
+> j,a −j
+
+(Wij ) = (1 − Aij )1{Ai(−j) = a−j }
+
+r∗ 
+
+> j
+
+(a−j , N i) ω∗ 
+
+> j
+
+(a−j , X i, N i){
+
+∆Yij − m∗ 
+
+> 0,j
+
+(a−j , X i, N i)}
+
+− (1 − Aij )1{Ai(−j) = 0 }
+
+r∗ 
+
+> j
+
+(a−j , N i) ω0∗ 
+
+> j
+
+(a−j , X i, N i){
+
+∆Yij − m∗ 
+
+> 0,j
+
+(0 , X i, N i)}
+
++ Aij 1{Ai(−j) = a−j }
+
+r∗ 
+
+> j
+
+(a−j , N i)
+
+{
+
+m∗ 
+
+> 0,j
+
+(a−j , X i, N i) − m∗ 
+
+> 0,j
+
+(0 , X i, N i) − θSAT T ∗ 
+
+> j
+
+(a−j , N i)}
+
+.
+
+(12) Each ϕ•∗  
+
+> j,a −j
+
+is the efficient influence function of the configuration-specific effect θ• 
+
+> j
+
+(a−j , n ) given 
+
+Ni = n, and has size-conditional mean zero. The EIF of the CIPS policy weight is 
+
+ψδ∗ 
+
+> j,a −j
+
+(Oi) = {
+
+π∗ 
+
+> δ
+
+(a−j | Xi, N i) − ¯π∗ 
+
+> δ
+
+(a−j ; Ni)}
+
++ ∑ 
+
+> j′̸=j
+
+g′ 
+
+> j,a −j
+
+(Xi, N i) (
+
+Aij ′ − q∗ 
+
+> j′
+
+(Xi, N i))
+
+, (13) where the first term is the covariate variation of the peer law and the second is the propensity-estimation correction, with 
+
+g′ 
+
+> j,a −j
+
+(x, n ) = ∂π ∗ 
+
+> δ
+
+(a−j | x, n )
+
+∂q j′ (x, n ) = π∗ 
+
+> δ
+
+(a−j | x, n ) aj′ − q∗
+
+> j′,δ
+
+(x, n )
+
+q∗
+
+> j′,δ
+
+(x, n ){1 − q∗
+
+> j′,δ
+
+(x, n )}
+
+δ
+
+{δq ∗ 
+
+> j′
+
+(x, n ) + 1 − q∗ 
+
+> j′
+
+(x, n )}2 ,
+
+(14) the last factor being ∂q j′,δ /∂q j′ obtained from Equation (1) . The policy-estimation piece θ•∗  
+
+> j
+
+ψδ∗
+
+> j,a −j
+
+in (10) is the DID analogue of the weight-estimation term ϕQ in Corollary 1 of Lee et al. (2025). In addition, if Ni ≡ 1, so that every cluster contains a single unit with no peers (i.e. τ SAT T (δ) ≡ 0), the EIF of DATT stated in Theorem 1 reduces to Proposition 1(a) of Sant’Anna and Zhao (2020). Specifically, in this case A(0) = {∅} , and the CIPS policy and the size law are both degenerate, so that only ϕDAT T ∗ 
+
+> 1,∅
+
+remains. Moreover e∗
+
+> a, 1
+
+(∅ | x, 1) = 1 , r∗ 
+
+> 1
+
+(∅, 1) = E[q∗ 
+
+> 1
+
+(Xi, 1)] = P(Ai1 = 1) ,and ω∗ 
+
+> 1
+
+(∅, x, 1) = q∗ 
+
+> 1
+
+(x, 1) /{1 − q∗ 
+
+> 1
+
+(x, 1) }, and θDAT T ∗ 
+
+> 1
+
+reduces to the standard ATT. The proof of Theorem 1 is given in Appendix B.2. 
+
+Remark 1 (Efficiency under the type-B policy) . Suppose the CIPS policy is replaced by the type-B policy πB (a−j | n; α) = ∏  
+
+> j′̸=j
+
+αaj′ (1 − α)1−aj′ , i.e. the estimands are defined by (3) – (4) with the fixed weight πB (a−j | n; α) in place of ¯πδ(a−j ; n); denote them by τ • 
+
+> B
+
+(α) and ¯τ • 
+
+> B
+
+(α, n ). Because πB
+
+is a known constant that does not depend on the observed-data distribution, the policy-weight influence function vanishes, ψδ∗ 
+
+> j,a −j
+
+≡ 0, and the efficient influence function of τ • 
+
+> B
+
+(α) under MN P 
+
+11 reduces to 
+
+φ•∗  
+
+> B
+
+(Oi; α) = N −1 
+
+> iNi∑
+> j=1
+> ∑
+> a−j∈A (Ni−1)
+
+πB (a−j | Ni; α) ϕ•∗  
+
+> j,a −j
+
+(Wij ) + 
+
+> {
+
+¯τ • 
+
+> B
+
+(α, N i) − τ • 
+
+> B
+
+(α)
+
+> }
+
+, (15) in which only the πB -weighted configuration-specific EIFs ϕ•∗  
+
+> j,a −j
+
+and the size-mean centring survive. This is the difference-in-differences analogue of the type-B efficiency bound of Park and Kang (2022). The proof is given at the end of Appendix B.2. 
+
+4.2. Proposed Estimators 
+
+We collect the nuisances as η = (
+
+qj , e a,j , m a,j , r j , θ • 
+
+> j
+
+, ¯πδ
+
+> )
+
+, based on the EIFs given in the previous section, comprising the regression components (qj , e a,j , m a,j ) and the derived cell-level components (rj , θ • 
+
+> j
+
+, ¯πδ). The weights (ωj , ω 0 
+
+> j
+
+), the shifted propensity qj,δ of (1) , the peer law πδ
+
+of (2) , and the derivative g′ 
+
+> j,a −j
+
+of (14) are explicit functionals of (qj , e a,j ) and are evaluated by substitution. Define the uncentered efficient influence function: 
+
+Γ•(Oi; δ, η ) = φ•(Oi; δ, η ) + τ •(δ; η) = ¯ τ •(δ, N i; η) + ¯ φ•(Oi; δ, η ), (16) where each component is defined as in Section 4.1 with every starred quantity replaced by the corresponding component of η. Note that E[Γ •(Oi; δ, η ∗)] = τ •(δ), which follows from Theorem 1. Then, the estimator of τ •(δ) is constructed as follows. First, cluster-level data (O1, . . . , O M ) are randomly partitioned into K folds of equal size, I1, . . . , IK , with Mk = |I k| = M/K , for each 
+
+k ∈ { 1, . . . , K }, so that 1 
+
+> K
+> 1
+> Mk
+
+= 1 
+
+> M
+
+and the average over folds of the within-fold means equals the overall sample mean, 1  
+
+> K
+> ∑Kk=1 1
+> Mk
+> ∑
+> i∈I k
+
+= 1
+
+> M
+> ∑Mi=1
+
+. Then, for each fold k, the nuisance functions are estimated on the training complement Ick, and the moment function is evaluated on the held-out fold 
+
+Ik, following the sample-splitting strategy of Chernozhukov et al. (2018). The training complement 
+
+Ick is itself split into two halves: the regression nuisances (̂ qj ,̂ ea,j ,̂ ma,j ) are fitted on the first half, while the derived cell-level components (̂rj ,̂ θ• 
+
+> j
+
+,̂ ¯πδ) are formed as empirical means on the second half, so that they are independent of the regression fits. It is a proof device that costs nothing asymptotically; in practice using the full complement for both steps behaves similarly. Finally, the 12 estimator averages over folds: ̂
+
+τ •(δ) = 1
+
+K
+
+> K∑
+> k=1
+
+1
+
+Mk
+
+> ∑
+> i∈I k
+
+Γ•(
+
+Oi; δ, ̂ η(−k))
+
+= 1
+
+K
+
+> K∑
+> k=1
+
+1
+
+Mk
+
+> ∑
+> i∈I k
+
+1
+
+NiNi∑ 
+
+> j=1
+> ∑
+> a−j∈A (Ni−1)
+> {̂
+
+¯πδ(a−j ; Ni)[̂ 
+
+θ• 
+
+> j
+
+(a−j , N i) + ̂ ϕ• 
+
+> j,a −j
+
+(Wij )]
+
++̂ θ• 
+
+> j
+
+(a−j , N i)̂ ψδj,a −j (Oi)
+
+> }
+
+,
+
+(17) where every starred quantity is replaced by the corresponding estimated nuisance ̂ η(−k) trained on 
+
+Ick. Next we discuss the large-sample properties of the estimator ̂ τ •(δ), and we impose the following conditions on the nuisance estimators. 
+
+Assumption 2 (Nuisance estimation) . For f = f (Oi) write ∥f ∥ = {Ef (Oi)2}1/2, the expectation taken over a new observation with the training-fold nuisances held fixed, and set εq = max j,n ∥̂ qj −q∗ 
+
+> j
+
+∥,
+
+εe = max a,j,a −j ,n ∥̂ ea,j − e∗ 
+
+> a,j
+
+∥, εm = max a,j,a −j ,n ∥̂ ma,j − m∗ 
+
+> a,j
+
+∥. For every fold k:(i) (Boundedness) There are constants c′ > 0, C < ∞ with c′ ≤̂ qj ≤ 1 − c′,̂ ea,j ≥ c′,̂ rj ≥ c′,
+
+|̂ma,j | ≤ C, and E[∆ Y 2 
+
+> ij
+
+| Ai, X i, N i] ≤ C almost surely. (ii) (Consistency) εq, ε e, ε m = op(1) .(iii) (Rates) ε2 
+
+> q
+
++ ( εq + εe) εm = op(M −1/2).Condition (iii) holds in particular when every nuisance converges faster than M −1/4, the rate attained by many machine-learning estimators under structure (sparsity, smoothness) and, trivially at M −1/2, by correctly specified parametric models. Note the asymmetry within (iii): the terms 
+
+εqεm and εeεm admit the usual double-robust trade-off between assignment and outcome accuracy, but ε2 
+
+> q
+
+stands alone—the propensity must itself converge faster than M −1/4, and no accuracy in the outcome model can compensate. This is the estimation-level footprint of the policy-estimation term: the CIPS allocation law is a functional of qj alone, exactly as in Lee et al. (2025, §4.2), whose condition rπ = o(M −1/4) plays the same role. 
+
+Theorem 2 (Asymptotic normality and local efficiency) . Suppose Assumptions 1 and 2 hold and 13 K is fixed. Then, as M → ∞ , for • ∈ { DAT T, SAT T },
+
+√M {̂ 
+
+τ •(δ) − τ •(δ)}
+
+= 1
+
+√M
+
+> M∑
+> i=1
+
+φ•∗ (Oi; δ) + op(1) d
+
+−→ N (
+
+0, E[{φ•∗ (Oi; δ)}2])
+
+,
+
+so ̂ τ •(δ) attains the semiparametric efficiency bound of Theorem 1. Moreover, the cross-fitted variance estimator ̂
+
+V •(δ) = 1
+
+M
+
+> K∑
+> k=1
+> ∑
+> i∈I k
+> {
+
+Γ•(Oi; δ, ̂ η(−k)) −̂ τ •(δ)}2
+
+(18) satisfies ̂ V •(δ) →p E[{φ•∗ (Oi; δ)}2], and ̂ τ •(δ) ± z1−γ/ 2
+
+> √̂
+
+V •(δ)/M is, for any γ ∈ (0 , 1) , an asymp-totically valid (1 − γ) confidence interval for τ •(δ). The second-order remainder derived in the proof consists of the product terms of Assumption 2(iii) and nothing else; in particular it contains 
+
+ε2 
+
+> q
+
+with no compensating factor. Consequently, consistent estimation of the propensity is necessary: if ̂ qj is inconsistent (for example, a misspecified parametric model), the estimated weights converge to a wrong allocation law and ̂ τ •(δ) is in general inconsistent, no matter how well the outcome regression is estimated. There is thus no model-type double robustness for the CIPS policy. This property of the CIPS estimator is the exact DID counterpart of the behavior reported in Lee et al. (2025). The proof of Theorem 2 is given in Appendix B.3. 
+
+Remark 2 (Double robustness under the type-B policy) . Under the type-B policy the estimator (17) is doubly robust: because πB (a−j | n; α) is a known constant, the weight ̂ ¯πδ(a−j ; Ni) requires no estimation, and the policy-estimation term ̂ θ• 
+
+> j
+
+(a−j , N i)̂ ψδj,a −j (Oi) vanishes since ψδ∗ 
+
+> j,a −j
+
+≡ 0
+
+(Remark 1). The only surviving nuisance error is then the configuration-specific augmented inverse-probability-weighting remainder En[(1 − q∗)e∗
+
+> 0
+
+{̂ ω − ω∗}{ ̂m0 − m∗
+
+> 0
+
+}], which vanishes whenever 
+
+either the assignment or the outcome model is correctly specified; the configuration-specific double robustness thus passes to the aggregate, giving the difference-in-differences analogue of the doubly robust estimator of Park and Kang (2022). 
+
+5. Simulation 
+
+To assess the finite-sample performance of the proposed estimators (17) , we generate M =
+
+{1000 , 2000 } independent clusters. The cluster size Ni ∈ { 1, 2, 3} is drawn from ν = ( ν1, ν 2, ν 3) = 
+
+14 (0 .30 , 0.40 , 0.30) , and each unit carries a scalar covariate Xij ∼ N (0 , 1) drawn independently across units. The propensity score is logistic, q(x) = expit (a0 + a1x), a 0 = 0 , a 1 = 0 .8, and treatments are assigned independently within a cluster, Aij | Xij ∼ Bernoulli (
+
+q(Xij ))
+
+. Let sij = ∑  
+
+> k̸=j
+
+Aik ,the outcome evolution is generated from ∆Yij = b0 + bAAij + bssij + bAs Aij sij + g X ij + εij ,with (b0, b A, b s, b As , g, σ ) = (0 , 0.30 , 0.15 , 0.10 , 0.50 , 1) , and εij ∼ N (0 , σ 2). The peers’ CIPS policy exposure law is Binomial (
+
+n − 1, ¯qδ
+
+)
+
+with ¯qδ = E[qδ(X)] , with constant δ ∈ { 0.5, 1, 2},and the configuration-specific effects are θDAT T (s) = bA + bAs s and θSAT T (s) = bss. The causal estimands therefore admit the closed forms τ DAT T (δ) = ∑ 
+
+> n
+
+νn
+
+(
+
+bA + bAs (n − 1) ¯qδ
+
+)
+
+, and τ SAT T (δ) = 
+
+∑ 
+
+> n
+
+νn bs(n − 1) ¯qδ. We estimate the nuisances by generalized linear models (a logistic regression for the propensity and a linear regression with an A × s interaction for the outcome, both correctly specified here) with K = 5 cross-fitting folds, and report results over D = 2 ,000 Monte-Carlo replications. Denote the estimator of an estimand τ = τ •(δ) and its standard-error estimator from (18) ,computed on the dth of D simulated datasets, by ̂ τd and ̂ σd. We compute the bias (
+
+Bias = ∑Dd=1 (̂ τd −
+
+τ )/D )
+
+, the root-mean-squared error (
+
+RMSE = {∑Dd=1 (̂τd − τ )2/D }1/2)
+
+, the average standard error 
+
+(
+
+SE = ∑Dd=1 ̂ σd/D )
+
+, the empirical standard deviation of the estimates (
+
+SD = sd {̂τd}Dd=1 
+
+)
+
+, and the coverage of the nominal 95% confidence interval (Cov.). These quantities are reported in Table 1. 
+
+Table 1: Simulation results for CIPS policy with constant δ.
+
+M = 1000 M = 2000 
+
+δ Truth Bias RMSE SD SE Cov. Bias RMSE SD SE Cov. 
+
+Panel A. Direct effect τ DAT T (δ)0.5 0.335 −0.001 0.060 0.060 0.060 0.950 0.000 0.042 0.042 0.042 0.950 1.0 0.350 −0.001 0.059 0.059 0.058 0.950 0.000 0.041 0.041 0.041 0.951 2.0 0.365 −0.001 0.061 0.061 0.060 0.948 0.000 0.042 0.042 0.042 0.954 
+
+Panel B. Spillover effect τ SAT T (δ)0.5 0.053 −0.001 0.042 0.042 0.038 0.957 0.000 0.027 0.027 0.026 0.955 1.0 0.075 −0.001 0.057 0.057 0.052 0.955 0.000 0.037 0.037 0.036 0.954 2.0 0.097 −0.002 0.073 0.073 0.065 0.955 0.000 0.047 0.047 0.045 0.958 
+
+Notes: Results are for the cross-fitted CIPS estimators of the direct effect τ DAT T (δ) (Panel A) and the spillover effect τ SAT T (δ) (Panel B), with M = 1000 and M = 2000 reported side by side. “Bias” is the average of ̂τ − τ
+
+across replications; “RMSE” is the root-mean-squared error {D−1 ∑Dd=1 (̂τ d − τ )2}1/2; SD is the Monte-Carlo standard deviation of the estimates and SE is the average standard error; “Cov.” is the coverage of the nominal 
+
+95% confidence interval. Results are based on D = 2 ,000 Monte-Carlo replications with K = 5 cross-fitting folds. 
+
+15 From Table 1, two conclusions emerge. (i) The proposed estimator has small bias and RMSE and coverage close to the nominal 95% , and all three properties improve as the sample size grows. This confirms the asymptotic normality and efficiency of the proposed estimator established in Theorem 2. (ii) For the direct effect τ DAT T (δ), the empirical standard deviation (SD) and the analytic standard error ( SE ) are very close, so the plug-in variance estimator is well calibrated. For the spillover effect τ SAT T (δ), SD and SE differ somewhat at M = 1000 , but this discrepancy is substantially reduced once the sample size increases to M = 2000 .
+
+6. Application: social pensions and intra-household spillovers 
+
+We illustrate the estimator in the setting of Huang and Zhang (2021), who study the effect of China’s New Rural Pension Scheme (NRPS), a large noncontributory social pension, on the rural elderly. The setting is a difference-in-differences problem with within-household partial interference: a member’s pension may affect that member directly and spillover onto co-resident relatives through shared resources and a reallocation of labour, as pointed out by Huang and Zhang (2021). We re-cast the setting into the framework of Sections 2–4, treating the household as the cluster so that the within-household spillover becomes the object of interest, indexed by the CIPS odds multiplier δ.The NRPS rolled out county-by-county from September 2009 and was near-universal by the end of 2012, and this staggered timing is the identifying variation (Huang and Zhang, 2021): once a county was covered, any rural resident aged 16+ could voluntarily enrol, with a basic pension from age 60 ,so participation varies across units and we take NRPS participation as the unit-level treatment. Following Huang and Zhang (2021), we use the China Family Panel Studies (CFPS), waves 2010 
+
+(pre) and 2012 (post), so treatment is realized only in the second period, and we drop the 55 of 162 
+
+CFPS counties whose rollout year is 2010 or earlier, leaving 107 counties untreated at the 2010 
+
+baseline so that no-anticipation and conditional parallel trends hold cleanly; the treatment Aij = 1 
+
+indicates that member j participates for the first time by 2012 , and the outcome is individual log labour income. Each household is a cluster ( i = 1 , . . . , M ) and each co-resident rural-hukou member aged 60 and over is a unit ( j = 1 , . . . , N i), with households drawn i.i.d., within-household interference unrestricted, and cross-household (village) interference treated as second order. The cluster size Ni (the observed number of co-resident sample members) is a bounded random variable 16 entering (17) directly, and the size law νn is its empirical distribution; the analysis sample has 
+
+2,392 members in 1,821 households. The covariate vector Xi stacks the baseline ( 2010 ) covariates: gender, age, age 2, education. Under Assumption 1, τ DAT T (δ) is then the effect of a member’s own participation on that member, and τ SAT T (δ) the effect on a member’s own labour income of a co-resident’s participation, holding the member’s own participation fixed at non-participation, the intra-household spillover Huang and Zhang (2021) document but avoid estimating as a causal contrast. Figure 1 reports ̂ τ DAT T (δ) and ̂ τ SAT T (δ) on a grid δ ∈ [0 .5, 2] with 95% confidence intervals. The 
+
+direct effect on a participant’s own labour income is negative at every δ but statistically insignificant throughout, with wide intervals ( [−0.87 , 0.63] at δ = 1 ). The sign (participants earn less) matches the labour-supply reduction that Huang and Zhang (2021) document for the age-eligible elderly, while the insignificance is consistent with their observation (their footnote 15) that the reduction is concentrated in farmwork, which brings in little cash, so the labour-supply response “may not end up in lower income.” −1.0  −0.5  0.0  0.5 
+
+Direct effect on the treated τDATT ( δ) δτ^ DATT (δ)    
+
+> 0.5 0.7 11.4 2
+> −0.30  −0.20  −0.10  0.00
+
+Spillover effect on the treated τSATT (δ) δτ^ SATT (δ)             
+
+> 0.5 0.7 11.4 2
+> Figure 1: Cross-fitted CIPS estimates of the direct ( τDAT T (δ), left) and spillover ( τSAT T (δ), right) effects on individual log labour income , over the CIPS odds multiplier δ. Red dots are point estimates and vertical bars are
+> 95% confidence intervals; the dashed line marks the null. The direct effect is negative but insignificant; the spillover effect is significantly negative throughout and strengthens with δ.
+
+The spillover effect is cleaner and, relative to Huang and Zhang (2021), new. A co-resident 17 member’s NRPS participation significantly lowers a member’s own labour income at every policy strength, with the interval excluding zero across the whole range and the effect strengthening as δ
+
+rises. This is the within-household income effect that Huang and Zhang (2021) could only describe qualitatively: they show that age-ineligible co-residents reallocate labour (farm to non-farm) but stop short of an individual-level causal contrast because of such spillovers. Our CIPS DID estimator identifies and quantifies it: a household member’s pension enrolment relaxes the shared budget constraint and induces other members to withdraw labour income, a negative intra-household labour-income spillover that grows as more members are drawn into enrolement. 
+
+7. Discussion 
+
+This paper extended semiparametric efficiency theory for partial interference to the difference-in-differences design and to incremental-propensity-score counterfactuals. The CIPS policy indexes a one-parameter family of interventions around the factual allocation, so the estimands stay inside the support of the data; because the allocation law is a functional of the propensity score, the efficient influence function acquires a policy-estimation term, and the cross-fitted estimator attains the semiparametric efficiency bound while remaining one-sided robust—the propensity rate cannot be traded against outcome-model accuracy. The simulation confirms that the estimator is nearly unbiased with well-calibrated inference at sample sizes typical of applications, and the empirical study delivers a policy-relevant finding that the original analysis could only conjecture: a co-resident’s pension participation significantly lowers a member’s own labour income, a negative within-household spillover that strengthens as take-up is scaled up. Several limitations point to future work. The partial interference assumption restricts spillovers to within-household pairs, and extending the framework to more general network structures would broaden its applicability. The two-period DiD design also abstracts from staggered adoption and time-varying effects, so adapting the CIPS estimand to multi-period settings is a natural next step. Further, one-sided robustness does not protect against outcome-model misspecification the way a doubly robust estimator would; whether a doubly robust policy-estimation term exists without sacrificing efficiency remains open. Finally, the policy parameter—how far to shift the propensity score from the factual allocation—is treated here as fixed rather than chosen; casting it instead as 18 a decision variable to be optimized against a stated welfare or budget criterion would connect the framework to the policy learning literature and yield a data-driven recommendation rather than an estimate at an analyst-specified shift. 19 References 
+
+Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W., Robins, J., 2018. Double/debiased machine learning for treatment and structural parameters. The Econometrics Journal 21, C1–C68. Huang, W., Zhang, C., 2021. The power of social pensions: Evidence from china’s new rural pension scheme. American Economic Journal: Applied Economics 13, 179–205. Hudgens, M.G., Halloran, M.E., 2008. Toward causal inference with interference. Journal of the american statistical association 103, 832–842. Kennedy, E.H., 2019. Nonparametric causal effects based on incremental propensity score interven-tions. Journal of the American Statistical Association 114, 645–656. Lee, C., Zeng, D., Hudgens, M.G., 2025. Efficient nonparametric estimation of stochastic policy effects with clustered interference. Journal of the American Statistical Association 120, 382–394. Liu, L., Hudgens, M.G., Saul, B., Clemens, J.D., Ali, M., Emch, M.E., 2019. Doubly robust estimation in observational studies with partial interference. Stat 8, e214. Muñoz, I.D., van der Laan, M., 2012. Population intervention causal effects based on stochastic interventions. Biometrics 68, 541–549. Park, C., Kang, H., 2022. Efficient semiparametric estimation of network treatment effects under partial interference. Biometrika 109, 1015–1031. Sant’Anna, P.H., Zhao, J., 2020. Doubly robust difference-in-differences estimators. Journal of econometrics 219, 101–122. Sävje, F., Aronow, P., Hudgens, M., 2021. Average treatment effects in the presence of unknown interference. Annals of statistics 49, 673. Sun, K., Xiao, Z., 2025. Difference-in-differences under network interference. arXiv preprint arXiv:2509.24259 . 20 Tchetgen, E.J.T., VanderWeele, T.J., 2012. On causal inference in the presence of interference. Statistical methods in medical research 21, 55–75. Wen, L., Marcus, J.L., Young, J.G., 2023. Intervention treatment distributions that depend on the observed treatment process and model double robustness in causal survival analysis. Statistical Methods in Medical Research 32, 509–523. Xu, R., 2023. Difference-in-differences with interference. arXiv preprint arXiv:2306.12003 . 21 Appendix A. Notation 
+
+To help guide the proof, we introduce all the notations used throughout the paper and the supplementary materials in a table. They are roughly listed in the order of appearance in the main paper. 
+
+Symbol Definition / expression 
+
+M Number of clusters, i.i.d. draws from the super-population P; asymptotics are M → ∞ with the cluster size bounded 
+
+P Super-population distribution from which clusters are drawn 
+
+i Cluster index, i = 1 , . . . , M j Unit index within a cluster, j = 1 , . . . , N i
+
+Ni Random size of cluster i, a bounded random variable with P(Ni ≤ nmax ) = 1 
+
+nmax Fixed finite upper bound on the cluster size 
+
+n Generic value of the cluster size, n ≤ nmax 
+
+A(s) Set of all length-s binary vectors 
+
+t Time period, t ∈ { 1, 2}; treatment is realized only in period 2
+
+Yijt ∈ R Outcome of unit j in cluster i at time tXij ∈ Rp Vector of pre-treatment covariates of unit jAij ≡ Aij 2 ∈ { 0, 1} Period-2 treatment indicator of unit jYit Stacked period-t outcome vector, Yit = ( Yi1t, . . . , Y iN it)⊤
+
+Ai Stacked cluster treatment vector, Ai = ( Ai1, . . . , A iN i )⊤ ∈ A (Ni)
+
+Xi Stacked cluster covariate vector, Xi = ( X⊤ 
+
+> i1
+
+, . . . , X ⊤ 
+
+> iN i
+
+)⊤
+
+Ai(−j) ∈ A (Ni − 1) Treatment vector of all units in cluster i except unit jOi Observed data for cluster i, Oi = ( Yi1, Y i2, A i, X i, N i)∆Yij Within-unit first difference of the outcome, ∆Yij = Yij 2 − Yij 1
+
+22 Symbol Definition / expression 
+
+Wij Reduced unit-level data, Wij = (∆ Yij , A ij , A i(−j), X i, N i)
+
+νn Cluster-size law, νn = P(Ni = n)
+
+En[·] Size-conditional expectation, E[· | Ni = n]
+
+ai = ( aij , a i(−j)) Realized cluster treatment vector, split into unit j’s own treatment aij and its peers’ treatments ai(−j)
+
+Yijt (ai) Potential outcome of unit j at time t when cluster i receives ai = ( aij , a i(−j));depends on peers within the cluster but not across clusters 
+
+qj (x, n ) Individual propensity score of unit j, P(Aij = 1 | Xi = x, N i = n)
+
+δ ∈ (0 , ∞) CIPS odds multiplier; δ = 1 reproduces the factual allocation, δ ↓ 0 sends all peers to control, δ ↑ ∞ to treatment 
+
+qj,δ (x, n ) Shifted propensity, qj,δ (x, n ) = δ q j (x, n )
+
+δ q j (x, n ) + 1 − qj (x, n )
+
+πδ (a−j | x, n ) CIPS peer law, ∏  
+
+> j′̸=j
+
+qj′,δ (x, n )aj′ {1 − qj′,δ (x, n )}1−aj′
+
+¯πδ (a−j ; n) Average CIPS policy, ¯πδ (a−j ; n) = En[πδ (a−j | Xi, n )] 
+
+α Type-B allocation probability (common independent peer treatment proba-bility) 
+
+πB (a−j | n; α) Type-B policy, ∏  
+
+> j′̸=j
+
+αaj′ (1 − α)1−aj′
+
+s(·) Exposure mapping, s(a−j ) = ∑  
+
+> j′̸=j
+
+aj′ , the number of treated peers 
+
+ma,j (a−j , x, n ) Outcome regression, E[∆ Yij | Aij = a, A i(−j) = a−j , X i = x, N i = n],
+
+a ∈ { 0, 1}
+
+∆mj (a−j , x, n ) Difference of outcome regressions, m1,j (a−j , x, n ) − m0,j (a−j , x, n )
+
+ea,j (a−j | x, n ) Peer-configuration law, P(Ai(−j) = a−j | Aij = a, X i = x, N i = n), a ∈ { 0, 1}
+
+rj (a−j , n ) Treated-cell probability, P(Aij = 1, A i(−j) = a−j | Ni = n) =
+
+En[qj (Xi, n ) e1,j (a−j | Xi, n )] 
+
+ωj (a−j , x, n ) Importance weight, qj (x, n ) e1,j (a−j | x, n )(1 − qj (x, n )) e0,j (a−j | x, n )
+
+23 Symbol Definition / expression 
+
+ω0 
+
+> j
+
+(a−j , x, n ) Importance weight with zero-configuration denominator, 
+
+qj (x, n ) e1,j (a−j | x, n )(1 − qj (x, n )) e0,j (0 | x, n )
+
+c Overlap constant, c > 0 with c ≤ qj ≤ 1 − c, ea,j ≥ c, and rj > 0
+
+• Placeholder for the effect type, • ∈ { DAT T, SAT T }
+
+θDAT T j (a−j , n ) Configuration-specific direct effect on the treated, E[Yij 2(1 , a −j ) −
+
+Yij 2(0 , a −j ) | Aij = 1 , A i(−j) = a−j , N i = n]
+
+θSAT T j (a−j , n ) Configuration-specific spillover effect on the treated, E[Yij 2(0 , a −j ) −
+
+Yij 2(0 , 0) | Aij = 1 , A i(−j) = a−j , N i = n]
+
+τ • 
+
+> j
+
+(δ, n ) Unit-level effect under the policy, ∑  
+
+> a−j∈A (n−1)
+
+¯πδ (a−j ; n) θ• 
+
+> j
+
+(a−j , n )
+
+τ •(δ) Aggregate direct/spillover effect, E[N −1
+
+> i
+
+∑Ni 
+
+> j=1
+
+τ • 
+
+> j
+
+(δ, N i)]
+
+¯τ •(δ, n ) Size-conditional mean effect, n−1 ∑nj=1 τ • 
+
+> j
+
+(δ, n )
+
+MN P Nonparametric model implied by i.i.d. cluster sampling  
+
+> ∗
+
+Superscript star denoting evaluation at the true distribution 
+
+φ•(Oi; δ) EIF of τ •(δ), ¯φ•(Oi; δ) + {¯τ •(δ, N i) − τ •(δ)}; the efficiency bound is 
+
+E[{φ•(Oi; δ)}2]¯φ•(Oi; δ) Within-cluster part of the EIF, N −1
+
+> i
+
+∑Ni
+
+> j=1
+
+∑ 
+
+> a−j∈A (Ni−1)
+
+{¯π∗ 
+
+> δ
+
+(a−j ; Ni) ϕ•∗  
+
+> j,a −j
+
+(Wij )+ 
+
+θ•∗  
+
+> j
+
+(a−j , N i) ψδ∗ 
+
+> j,a −j
+
+(Oi)}
+
+ω∗ 
+
+> j
+
+, ω 0∗ 
+
+> j
+
+Importance weights ωj and ω0 
+
+> j
+
+evaluated at the truth 
+
+ϕDAT T ∗ 
+
+> j,a −j
+
+(Wij ) Configuration-specific EIF of θDAT T j (a−j , n ), Aij 1{Ai(−j) = a−j }
+
+r∗
+
+> j
+
+{∆Yij −
+
+m∗ 
+
+> 1,j
+
+} − (1 − Aij )1{Ai(−j) = a−j }
+
+r∗
+
+> j
+
+ω∗ 
+
+> j
+
+{∆Yij − m∗ 
+
+> 0,j
+
+} +
+
+Aij 1{Ai(−j) = a−j }
+
+r∗
+
+> j
+
+{m∗ 
+
+> 1,j
+
+− m∗ 
+
+> 0,j
+
+− θDAT T ∗ 
+
+> j
+
+}
+
+24 Symbol Definition / expression 
+
+ϕSAT T ∗ 
+
+> j,a −j
+
+(Wij ) Configuration-specific EIF of θSAT T j (a−j , n ),
+
+(1 − Aij )1{Ai(−j) = a−j }
+
+r∗
+
+> j
+
+ω∗ 
+
+> j
+
+{∆Yij − m∗ 
+
+> 0,j
+
+(a−j )} −
+
+(1 − Aij )1{Ai(−j) = 0 }
+
+r∗
+
+> j
+
+ω0∗ 
+
+> j
+
+{∆Yij − m∗ 
+
+> 0,j
+
+(0) } +
+
+Aij 1{Ai(−j) = a−j }
+
+r∗
+
+> j
+
+{m∗ 
+
+> 0,j
+
+(a−j ) − m∗ 
+
+> 0,j
+
+(0) − θSAT T ∗ 
+
+> j
+
+}
+
+ψδ∗ 
+
+> j,a −j
+
+(Oi) Policy-weight influence function (EIF of ¯πδ (a−j ; n)), {π∗ 
+
+> δ
+
+(a−j | Xi, N i) −
+
+¯π∗ 
+
+> δ
+
+(a−j ; Ni)} + ∑  
+
+> j′̸=j
+
+g′ 
+
+> j,a −j
+
+(Xi, N i){Aij ′ − q∗ 
+
+> j′
+
+(Xi, N i)}
+
+g′ 
+
+> j,a −j
+
+(x, n ) Derivative of the peer law w.r.t. the peer propensity qj′ , ∂π ∗ 
+
+> δ
+
+(a−j | x, n )
+
+∂q j′ (x, n ) =
+
+π∗ 
+
+> δ
+
+(a−j | x, n ) aj′ − q∗
+
+> j′,δ
+
+q∗ 
+
+> j′,δ
+
+(1 − q∗ 
+
+> j′,δ
+
+)
+
+δ
+
+{δq ∗ 
+
+> j′
+
++ 1 − q∗ 
+
+> j′
+
+}2
+
+τ • 
+
+> B
+
+(α) Type-B aggregate estimand, τ • with πB (a−j | n; α) replacing ¯πδ (a−j ; n)¯τ • 
+
+> B
+
+(α, n ) Type-B size-conditional mean effect 
+
+φ• 
+
+> B
+
+(Oi; α) Type-B EIF, N −1
+
+> i
+
+∑
+
+> j
+
+∑ 
+
+> a−j
+
+πB (a−j | Ni; α) ϕ•∗  
+
+> j,a −j
+
+(Wij )+ {¯τ • 
+
+> B
+
+(α, N i)−τ • 
+
+> B
+
+(α)}
+
+η Nuisance vector, η = ( qj , e a,j , m a,j , r j , θ • 
+
+> j
+
+, ¯πδ )Γ•(Oi; δ, η ) Uncentered EIF (moment function), φ•(Oi; δ, η ) + τ •(δ; η) = ¯τ •(δ, N i; η) + ¯φ•(Oi; δ, η ), with E[Γ •(Oi; δ, η ∗)] = τ •(δ)
+
+K Number of cross-fitting folds (fixed) 
+
+Ik k-th fold of clusters 
+
+Ick Training complement of fold k; split into two halves, regression fits on the first half and cell-level means on the second 
+
+Mk Size of fold k, Mk = |I k| = M/K (equal folds, with K dividing M )̂
+
+E(−k) 
+
+> n
+
+Empirical mean over size-n clusters of the second training half of Ick̂
+
+q j ,̂e a,j ,̂m a,j Estimated regression nuisances (any learners), fitted on the first training half ̂
+
+r j (a−j , n )̂ E(−k) 
+
+> n
+
+[Aij 1{Ai(−j) = a−j }]̂
+
+¯πδ (a−j ; n)̂ E(−k)
+
+> n
+
+[∏  
+
+> j′̸=j
+
+̂q j′,δ (Xi, n )aj′ {1 −̂q j′,δ (Xi, n )}1−aj′ ]
+
+25 Symbol Definition / expression ̂
+
+θ• 
+
+> j
+
+(a−j , n ) Configuration-specific AIPW estimate, obtained by plugging ̂η (−k) into θ•
+
+> j
+
+(sample analogue of ϕ•∗  
+
+> j,a −j
+
+)̂
+
+ω j ,̂ω 0
+
+> j
+
+̂ q ĵe 1,j /{(1 −̂q j )̂e 0,j }; the same with ̂e 0,j (0 | · ) in the denominator ̂
+
+η (−k) Full nuisance vector trained on Ick̂
+
+τ •(δ) Cross-fitted estimator, 1
+
+K
+
+∑Kk=1 
+
+1
+
+Mk
+
+∑ 
+
+> i∈I k
+
+Γ•(Oi; δ, ̂η (−k))
+
+∥f ∥ L2 norm {Ef (Oi)2}1/2 with the training-fold nuisances held fixed 
+
+εq , ε e, ε m Nuisance estimation errors, max j,n ∥̂q j − q∗ 
+
+> j
+
+∥, max a,j,a −j ,n ∥̂e a,j − e∗ 
+
+> a,j
+
+∥,
+
+max a,j,a −j ,n ∥̂m a,j − m∗ 
+
+> a,j
+
+∥
+
+c′ Lower-bound constant for the estimated nuisances 
+
+C Generic finite upper-bound constant ̂
+
+V •(δ) Cross-fitted variance estimator, 1
+
+M
+
+∑Kk=1 
+
+∑ 
+
+> i∈I k
+
+{Γ•(Oi; δ, ̂η (−k)) −̂τ •(δ)}2
+
+γ Nominal error level of the confidence interval, γ ∈ (0 , 1) 
+
+z1−γ/ 2 Standard normal (1 − γ/ 2) quantile 
+
+p(·) Probability density function or probability mass function 
+
+p∗(o) True observed-data density, p∗(y1, y 2 | a, x, n ) p∗(a | x, n ) p∗(x | n) p∗(n)
+
+η; η∗ Parameter of the smooth regular parametric submodel p(·; η); value at which 
+
+p(·; η∗) = p∗(·)
+
+∂η f Derivative of a functional, ∂f (η)/∂η o = ( y1, y 2, a, x, n ) Realized value of Oi
+
+Yt(n); X (n) Supports of the stacked period-t outcome vector and of the covariate vector in a size-n cluster 
+
+w = (∆ y, a, a −j , x, n ) Realized value of Wij 
+
+pW,n (w; η) Conditional density of Wij given Ni = n, p(w | Ni = n; η)
+
+νn(η) Size law along the submodel, Pr( Ni = n; η)
+
+26 Symbol Definition / expression 
+
+pan (∆ y | a−j , x ; η) Conditional density of ∆Yij given (Aij , A i(−j), X i, N i) = ( a, a −j , x, n )
+
+pX,n (x; η) Conditional density of Xi given Ni = ns(Wij ; η) Score, sN (Ni; η) + ∑ 
+
+> n≤nmax
+
+1(Ni = n) sn(Wij ; η)
+
+sN (n; η) Size-law score, ∂η log νn(η)
+
+sn(Wij ; η) Size-conditional score, ∂η log pW,n (Wij ; η)
+
+san ; sea,jn ; sX,n Component scores ∂η log pan ; ∂η log ea,j ; ∂η log pX,n 
+
+˙qj Pathwise derivative of the propensity, ∂η qj
+
+T Tangent space, orthogonal four-block set {LY +LA+LX +LN } of conditionally mean-zero, square-integrable functions 
+
+LY , L A, L X , L N Outcome, assignment, covariate, and cluster-size score blocks 
+
+D1, . . . , D 5 Five terms of ∂θ DAT T j (a−j , n ; η∗)/∂η (two outcome densities, the peer law, the propensity, the covariate law) 
+
+φDAT T ∗ 
+
+> j
+
+(Oi; δ) EIF of τ DAT T j (δ, n ), ∑ 
+
+> a−j
+
+{¯π∗ 
+
+> δ
+
+ϕDAT T ∗ 
+
+> j,a −j
+
++ θDAT T ∗ 
+
+> j
+
+ψδ∗ 
+
+> j,a −j
+
+}
+
+¯τ DAT T ∗(δ, n ) n−1 ∑nj=1 τ DAT T ∗ 
+
+> j
+
+(δ, n )¯φDAT T ∗(Oi; δ) N −1
+
+> i
+
+∑Ni 
+
+> j=1
+
+φDAT T ∗ 
+
+> j
+
+(Oi; δ)
+
+I1; I2 Size-law and within-size components of ∂τ DAT T (δ; η∗)/∂η φ•∗  
+
+> B,j
+
+(Oi; α) Type-B unit-level EIF, ∑ 
+
+> a−j
+
+πB (a−j | n; α) ϕ•∗  
+
+> j,a −j
+
+(Wij )Γ( ·; η); τ ∗; φ∗ Abbreviations of Γ•(·; δ, η ), τ •(δ), and φ•∗ (·; δ)
+
+E(k)[·] Expectation over a new cluster with the trained nuisances ̂η (−k) held fixed 
+
+σ2 Asymptotic variance, σ2 = E[φ∗2]∆Γ k(·) Γ( ·;̂η (−k)) − Γ( ·; η∗)
+
+T1 Leading (CLT) term of ̂τ •(δ) − τ ∗, 1
+
+> M
+
+∑Mi=1 φ∗(Oi)
+
+27 Symbol Definition / expression 
+
+T2; T2,k Empirical-process term, T2 = ∑Kk=1 T2,k with T2,k = 1
+
+> M
+
+∑ 
+
+> i∈I k
+
+[∆Γ k(Oi) −
+
+E(k){∆Γ k(O)}]
+
+T3 Second-order remainder term, ∑Kk=1  
+
+> Mk
+> M
+
+Rk
+
+Rk Conditional bias of fold k, E(k)[Γ( O;̂η (−k))] − τ ∗
+
+R2(x) Second-order Taylor remainder of the peer law in q, with |R2(x)| ≤
+
+C ∑  
+
+> j′̸=j
+
+{q∗ 
+
+> j′
+
+(x) −̂q j′ (x)}2
+
+28 Appendix B. Proofs Notation. Let p(·) denote the probability density function or the probability mass function. For fixed n ≤ nmax and j, let En[·] = E[· | Ni = n] and write 
+
+qj (x, n ) = P(Aij = 1 | Xi = x, N i = n),ea,j (a−j | x, n ) = P(Ai(−j) = a−j | Aij = a, X i = x, N i = n), a ∈ { 0, 1},ma,j (a−j , x, n ) = E[∆ Yij | Aij = a, A i(−j) = a−j , X i = x, N i = n], a ∈ { 0, 1},
+
+∆mj (a−j , x, n ) = m1,j (a−j , x, n ) − m0,j (a−j , x, n ),rj (a−j , n ) = P(Aij = 1 , A i(−j) = a−j | Ni = n) = En[qj (Xi, n ) e1,j (a−j | Xi, n )] .
+
+For each peer-treatment configuration a−j ∈ A (n − 1) , the importance weights are 
+
+ωj (a−j , x, n ) = qj (x, n ) e1,j (a−j | x, n )(1 − qj (x, n )) e0,j (a−j | x, n ), ω0 
+
+> j
+
+(a−j , x, n ) = qj (x, n ) e1,j (a−j | x, n )(1 − qj (x, n )) e0,j (0 | x, n ).
+
+For any parameter η and functional f (η), let ∂ηf denote the derivative of f (η) with respect to η,that is, ∂ηf = ∂f (η) 
+
+> ∂η
+
+.
+
+Appendix B.1. Proof of Proposition 1 (Identification) 
+
+Fix Ni = n throughout. We establish (7) –(8) ; identification of the weights and of τ •(δ) then follows. 
+
+DATT. For each a−j ,
+
+E[Yij 2(1 , a −j ) − Yij 2(0 , a −j ) | Aij = 1 , A i(−j) = a−j , N i = n]= E
+
+[
+
+E[Yij 2(1 , a −j ) − Yij 1(0 , 0) | Aij = 1 , A i(−j) = a−j , X i, n ]
+
+− E[Yij 2(0 , a −j ) − Yij 1(0 , 0) | Aij = 0 , A i(−j) = a−j , X i, n ]
+
+∣∣∣∣ Aij = 1 , A i(−j) = a−j , n 
+
+]
+
+= E[m1,j (a−j , X i, n ) − m0,j (a−j , X i, n ) | Aij = 1 , A i(−j) = a−j , n ],
+
+where the first equality adds and subtracts E[Yij 1(0 , 0) | Aij = 1 , A i(−j) = a−j , X i, n ] inside the inner conditional expectation and then applies Assumption 1(iii) to switch the conditioning event from 29 Aij = 1 to Aij = 0 in the control term, and the second equality follows from Assumption 1(i)–(ii) together with ∆Yij = Yij 2 − Yij 1.
+
+SATT. For each a−j ,
+
+E[Yij 2(0 , a −j ) − Yij 2(0 , 0) | Aij = 1 , A i(−j) = a−j , N i = n]= E
+
+> [
+
+E[Yij 2(0 , a −j ) − Yij 1(0 , a −j ) | Aij = 1 , A i(−j) = a−j , X i, n ]
+
+− E[Yij 2(0 , 0) − Yij 1(0 , 0) | Aij = 1 , A i(−j) = a−j , X i, n ] 
+
+> ∣∣∣∣
+
+Aij = 1 , A i(−j) = a−j , n 
+
+> ]
+
+= E
+
+> [
+
+E[Yij 2(0 , a −j ) − Yij 1(0 , a −j ) | Aij = 0 , A i(−j) = a−j , X i, n ]
+
+− E[Yij 2(0 , 0) − Yij 1(0 , 0) | Aij = 0 , A i(−j) = 0 , X i, n ] 
+
+> ∣∣∣∣
+
+Aij = 1 , A i(−j) = a−j , n 
+
+> ]
+
+= E[m0,j (a−j , X i, n ) − m0,j (0 , X i, n ) | Aij = 1 , A i(−j) = a−j , n ],
+
+where the first equality adds and subtracts E[Yij 1(0 , a −j ) | · ] and E[Yij 1(0 , 0) | · ] and uses no anticipation (Assumption 1(ii)), the second applies (CPT-S1) to the Y (0 , a −j ) trend and (CPT-S2) to the Y (0 , 0) trend, and the last uses Assumption 1(i)–(ii). 
+
+Weights and aggregation. Under overlap (Assumption 1(iv)) the propensity qj (x, n ) is identified from the observed assignment mechanism, hence so is the shifted propensity qj,δ in (1) and the peer law πδ(a−j | x, n ) in (2) ; the size-conditional covariate law is identified, so ¯πδ(a−j ; n) = En[πδ(a−j |
+
+Xi, n )] is identified. The size law νn is identified from the observed Ni. Substituting into (4) –(3) identifies τ DAT T (δ) and τ SAT T (δ). □
+
+Appendix B.2. Proof of Theorem 1 (Global efficiency) 
+
+We give the argument for τ DAT T (δ); the τ SAT T (δ) case is analogous and is indicated at the end. The proof follows an approach similar to Park and Kang (2022) and Lee et al. (2025). The density of the observed data Oi = ( Yi1, Y i2, A i, X i, N i) at o = ( y1, y 2, a, x, n ) ∈ Y 1(n)×Y 2(n)×A (n)×X (n)×N
+
+is 
+
+p∗(o) = p∗(y1, y 2 | a, x, n ) p∗(a | x, n ) p∗(x | n) p∗(n),
+
+30 where Yt(n) denotes the support of the stacked period-t outcome vector Yit and X (n) that of the stacked covariate vector Xi in a cluster of size n. Define a smooth regular parametric submodel parametrized by a possibly multi-dimensional parameter η by 
+
+p(o; η) = p(y1, y 2 | a, x, n ; η) p(a | x, n ; η) p(x | n; η) p(n; η),
+
+where the density of the parametric submodel is assumed to equal the observed-data density at 
+
+η = η∗, i.e. p(·; η∗) = p∗(·). By the identification result of Proposition 1 and Equation (3), 
+
+τ DAT T (δ) = ∑
+
+> n≤nmax
+
+νn n−1
+
+> n
+
+∑
+
+> j=1
+
+τ DAT T j (δ, n ), τ DAT T j (δ, n ) = ∑ 
+
+> a−j∈A (n−1)
+
+¯πδ(a−j ; n) θDAT T j (a−j , n ),
+
+so τ DAT T j (δ, n ) depends on Oi only through Wij . We first derive the EIF of τ DAT T j (δ, n ) (Part 1), then that of τ DAT T (δ) (Part 2). 
+
+Part 1: efficient influence function of τ DAT T j (δ, n ).
+
+Recall the reduced unit data Wij = (∆ Yij , A ij , A i(−j), X i, N i), with realized value w = (∆ y, a, a −j , x, n ).Along the parametric submodel, the joint density of Wij factorizes over the observed size, 
+
+p(w; η) = ∏
+
+> n′≤nmax
+
+{
+
+νn′ (η) pW,n ′ (w; η)}1(n=n′)
+
+, νn(η) = Pr( Ni = n; η), pW,n (w; η) = p(w | Ni = n; η),
+
+and the score decomposes as s(Wij ; η) = sN (Ni; η) + ∑ 
+
+> n≤nmax
+
+1(Ni = n) sn(Wij ; η) with sN (n; η) = 
+
+∂η log νn(η) and sn(Wij ; η) = ∂η log pW,n (Wij ; η). Specifically, 
+
+sn(Wij ; η) = Aij s1n(∆ Yij , A i(−j), X i; η) + (1 − Aij ) s0n(∆ Yij , A i(−j), X i; η)+ Aij se1,jn (Ai(−j), X i; η) + (1 − Aij ) se0,jn (Ai(−j), X i; η)+ Aij − qj (Xi, n ; η)
+
+qj (Xi, n ; η){1 − qj (Xi, n ; η)} ˙qj (Xi, n ; η) + sX,n (Xi; η), (B.1) 31 following the factorization 
+
+pW,n (w; η) = pX,n (x; η){
+
+p1n(∆ y | a−j , x ; η) e1,j (a−j | x, n ; η) qj (x, n ; η)}a
+
+× {
+
+p0n(∆ y | a−j , x ; η) e0,j (a−j | x, n ; η) (1 − qj (x, n ; η)) }1−a
+
+,
+
+where san = ∂η log pan , sea,jn = ∂η log ea,j , ˙qj = ∂ηqj , sX,n = ∂η log pX,n ; here pan (∆ y | a−j , x ; η) is the conditional density of ∆Yij given (Aij , A i(−j), X i, N i) = ( a, a −j , x, n ) and pX,n that of Xi given 
+
+Ni = n. At η = η∗ the component scores satisfy 
+
+En[san (∆ Yij , A i(−j), X i; η∗) | Aij = a, A i(−j), X i] = 0 , a ∈ { 0, 1},
+
+En[se1,jn (Ai(−j), X i; η∗) | Aij = 1 , X i] = 0 , En[se0,jn (Ai(−j), X i; η∗) | Aij = 0 , X i] = 0 ,
+
+En[sX,n (Xi; η∗)] = 0 , E[sN (Ni; η∗)] = 0 . (B.2) The tangent space T is the mean-square closure of all linear combinations of such scores. Following the proof of Theorem 1 in the supplementary material of Lee et al. (2025), it admits the orthogonal four-block representation, mirroring the factorization p(w; η) = p(∆ y | a, a −j , x, n ; η) p(a, a −j |
+
+x, n ; η) p(x | n; η) νn(η) of the density, 
+
+T =
+
+{
+
+LY + LA + LX + LN : E[LY | Aij , A i(−j), X i, N i] = 0 , E[LA | Xi, N i] = 0 ,
+
+E[LX | Ni] = 0 , E[LN ] = 0 
+
+}
+
+,
+
+(B.3) where LY = LY (∆ Yij , A ij , A i(−j), X i, N i), LA = LA(Aij , A i(−j), X i, N i), LX = LX (Xi, N i) and 
+
+LN = LN (Ni) are square-integrable. The four blocks are mutually orthogonal in L2 and correspond, respectively, to the outcome, assignment, covariate, and cluster-size factors of the density. The score s(Wij ; η∗) lies in T with 
+
+LY = Aij s1n + (1 − Aij )s0n, LX = sX,n , LN = sN ,LA = Aij se1,jn + (1 − Aij )se0,jn + Aij − qj (Xi, n )
+
+qj (Xi, n ){1 − qj (Xi, n )} ˙qj (Xi, n ),
+
+32 where each component is defined as above. The product rule gives 
+
+∂τ DAT T j (δ, n ; η∗)
+
+∂η = ∑
+
+> a−j
+
+{
+
+¯π∗ 
+
+> δ
+
+(a−j ; n) ∂θ DAT T j (a−j , n ; η∗)
+
+∂η + θDAT T ∗ 
+
+> j
+
+(a−j , n ) ∂ ¯πδ(a−j ; n, η ∗)
+
+∂η 
+
+}
+
+,
+
+which implies that the EIF of τ DAT T j (δ, n ) is the combination of the EIF of θDAT T j (a−j , n ) and the EIF of ¯πδ(a−j ; n), weighted by ¯π∗ 
+
+> δ
+
+(a−j ; n) and θDAT T ∗ 
+
+> j
+
+(a−j , n ), respectively. 
+
+(1a) The EIF of θDAT T j (a−j , n ).
+
+To prove that 
+
+ϕDAT T ∗ 
+
+> j,a −j
+
+(Wij ) = Aij 1{Ai(−j) = a−j }
+
+r∗ 
+
+> j
+
+(a−j , N i)
+
+{
+
+∆Yij − m∗ 
+
+> 1,j
+
+(a−j , X i, N i)}
+
+− (1 − Aij )1{Ai(−j) = a−j }
+
+r∗ 
+
+> j
+
+(a−j , N i) ω∗ 
+
+> j
+
+(a−j , X i, N i){
+
+∆Yij − m∗ 
+
+> 0,j
+
+(a−j , X i, N i)}
+
++ Aij 1{Ai(−j) = a−j }
+
+r∗ 
+
+> j
+
+(a−j , N i)
+
+{
+
+m∗ 
+
+> 1,j
+
+(a−j , X i, N i) − m∗ 
+
+> 0,j
+
+(a−j , X i, N i) − θDAT T ∗ 
+
+> j
+
+(a−j , N i)}
+
+,
+
+is the EIF of θDAT T j (a−j , n ), we need to show that (A) ∂θ DAT T j (a−j , n ; η∗)/∂η = En
+
+[
+
+ϕDAT T ∗ 
+
+> j,a −j
+
+(Wij ) sn(Wij ; η∗)]
+
+,(B) En[ϕDAT T ∗ 
+
+> j,a −j
+
+] = 0 , (C) Var (
+
+ϕDAT T ∗
+
+> j,a −j
+
+)
+
+< ∞, and (D) ϕDAT T ∗ 
+
+> j,a −j
+
+is included in the tangent space T .It is easy to see that (B)–(D) hold, so we focus on (A). First, the integral form of θDAT T j (a−j , n ; η) is 
+
+θDAT T j (a−j , n ; η) = 
+
+∫∫ ∆y p 1n(∆ y | a−j , x ; η) e1,j (a−j | x, n ; η) qj (x, n ; η) pX,n (x; η) d∆y dx rj (a−j , n ; η)
+
+−
+
+∫∫ ∆y p 0n(∆ y | a−j , x ; η) e1,j (a−j | x, n ; η) qj (x, n ; η) pX,n (x; η) d∆y dx rj (a−j , n ; η) . (B.4) Differentiating (B.4) with respect to η and evaluating at η∗, conditional on Ni = n, yields 
+
+∂θ DAT T j (a−j , n ; η∗)
+
+∂η =
+
+∫∫ ∆y p 1n s1n e∗ 
+
+> 1,j
+
+q∗ 
+
+> j
+
+p∗ 
+
+> X,n
+
+d∆y dx r∗ 
+
+> j
+
+(a−j , n ) −
+
+∫∫ ∆y p 0n s0n e∗ 
+
+> 1,j
+
+q∗ 
+
+> j
+
+p∗ 
+
+> X,n
+
+d∆y dx r∗ 
+
+> j
+
+(a−j , n )+
+
+∫ {∆m∗ 
+
+> j
+
+(a−j , x, n ) − θDAT T ∗ 
+
+> j
+
+(a−j , n )} se1,jn e∗ 
+
+> 1,j
+
+q∗ 
+
+> j
+
+p∗ 
+
+> X,n
+
+dx r∗ 
+
+> j
+
+(a−j , n )+
+
+∫ {∆m∗ 
+
+> j
+
+− θDAT T ∗ 
+
+> j
+
+} e∗ 
+
+> 1,j
+
+˙qj p∗ 
+
+> X,n
+
+dx r∗ 
+
+> j
+
+(a−j , n ) +
+
+∫ {∆m∗ 
+
+> j
+
+− θDAT T ∗ 
+
+> j
+
+} e∗ 
+
+> 1,j
+
+q∗ 
+
+> j
+
+sX,n p∗ 
+
+> X,n
+
+dx r∗ 
+
+> j
+
+(a−j , n ):= D1 − D2 + D3 + D4 + D5.
+
+33 With ϕDAT T ∗ 
+
+> j,a −j
+
+as in (11) , the conditional mean-zero identities En[∆ Yij − m∗ 
+
+> a,j
+
+(a−j , X i, n ) | Aij =
+
+a, A i(−j) = a−j , X i] = 0 , a ∈ { 0, 1}, together with the score identities (B.2) , yield the term-by-term matching 
+
+En
+
+[ Aij 1{Ai(−j)=a−j }   
+
+> r∗
+> j(a−j,n )
+
+{∆Yij − m∗ 
+
+> 1,j
+
+(a−j , X i, n )} sn
+
+]
+
+= D1,
+
+En
+
+[
+
+−(1 −Aij )1{Ai(−j)=a−j }   
+
+> r∗
+> j(a−j,n )
+
+ω∗ 
+
+> j
+
+(a−j , X i, n ){∆Yij − m∗ 
+
+> 0,j
+
+(a−j , X i, n )} sn
+
+]
+
+= −D2,
+
+En
+
+[ Aij 1{Ai(−j)=a−j }   
+
+> r∗
+> j(a−j,n )
+
+{∆m∗ 
+
+> j
+
+(a−j , X i, n ) − θDAT T ∗ 
+
+> j
+
+(a−j , n )} sn
+
+]
+
+= D3 + D4 + D5,
+
+where sn = sn(Wij ; η∗) as defined in (B.1) , and the s0n and se0,jn components drop by Aij (1 −Aij ) = 0 .Hence 
+
+∂θ DAT T j (a−j , n ; η∗)
+
+∂η = En
+
+[
+
+ϕDAT T ∗ 
+
+> j,a −j
+
+(Wij ) sn(Wij ; η∗)]
+
+, En[ϕDAT T ∗ 
+
+> j,a −j
+
+] = 0 .
+
+(1b) The EIF of ¯πδ(a−j ; n).
+
+By a similar argument as above, the conjectured EIF of ¯πδ(a−j ; n) is 
+
+ψδ∗ 
+
+> j,a −j
+
+(Oi) = {
+
+π∗ 
+
+> δ
+
+(a−j | Xi, N i) − ¯π∗ 
+
+> δ
+
+(a−j ; Ni)}
+
++ ∑ 
+
+> j′̸=j
+
+g′ 
+
+> j,a −j
+
+(Xi, N i) (
+
+Aij ′ − q∗ 
+
+> j′
+
+(Xi, N i))
+
+,
+
+with 
+
+g′ 
+
+> j,a −j
+
+(x, n ) = ∂π ∗ 
+
+> δ
+
+(a−j | x, n )
+
+∂q j′ (x, n ) = π∗ 
+
+> δ
+
+(a−j | x, n ) aj′ − q∗
+
+> j′,δ
+
+(x, n )
+
+q∗
+
+> j′,δ
+
+(x, n ){1 − q∗
+
+> j′,δ
+
+(x, n )}
+
+δ
+
+{δq ∗ 
+
+> j′
+
+(x, n ) + 1 − q∗ 
+
+> j′
+
+(x, n )}2 ,
+
+where qj,δ (x, n ) = δ q j (x, n )/{δ q j (x, n )+1 −qj (x, n )} is the shifted propensity of (1) with user-chosen factor δ ∈ (0 , ∞).First, the integral form of ¯πδ(a−j ; n) is 
+
+¯πδ(a−j ; n, η ) = 
+
+∫
+
+πδ(a−j | x, n ; η) pX,n (x; η) dx, πδ(a−j | x, n ; η) = ∏ 
+
+> j′̸=j
+
+qj′,δ (x, n ; η)aj′ {1−qj′,δ (x, n ; η)}1−aj′ ,
+
+where qj′,δ (x, n ; η) depends on η only through the peer propensity qj′ (x, n ; η). The pathwise 34 derivative at η∗ is 
+
+∂ ¯πδ(a−j ; n, η ∗)
+
+∂η =
+
+∫
+
+π∗ 
+
+> δ
+
+(a−j | x, n ) sX,n (x; η∗) p∗
+
+> X,n
+
+(x) dx 
+
+︸ ︷︷ ︸
+
+> covariate-law part
+
++
+
+∫ ∑ 
+
+> j′̸=j
+
+∂π ∗ 
+
+> δ
+
+(a−j | x, n )
+
+∂q j′
+
+˙qj′ (x, n ; η∗) p∗
+
+> X,n
+
+(x) dx 
+
+︸ ︷︷ ︸
+
+> propensity part
+
+.
+
+Because En[sX,n (Xi; η∗)] = 0 , the covariate-law part equals En[{π∗ 
+
+> δ
+
+(a−j | Xi, n ) − ¯π∗ 
+
+> δ
+
+(a−j ; n)} sn].For the propensity part, the residual Aij ′ − q∗ 
+
+> j′
+
+(Xi, n ) is the score representer of the peer propensity 
+
+qj′ , i.e. ∫ h(x) ˙qj′ (x, n ; η∗)p∗
+
+> X,n
+
+(x) dx = En[h(Xi){Aij ′ − q∗ 
+
+> j′
+
+(Xi, n )} sn] for measurable h; taking 
+
+h = ∂π ∗ 
+
+> δ
+
+/∂q j′ = g′ 
+
+> j,a −j
+
+from (14) gives En[∑  
+
+> j′̸=j
+
+g′ 
+
+> j,a −j
+
+(Xi, n )( Aij ′ − q∗ 
+
+> j′
+
+) sn]. Therefore 
+
+∂ ¯πδ(a−j ; n, η ∗)
+
+∂η = En
+
+[
+
+ψδ∗ 
+
+> j,a −j
+
+(Oi) sn(Wij ; η∗)]
+
+, En[ψδ∗ 
+
+> j,a −j
+
+] = 0 .
+
+Under the type-B allocation ¯πδ is the constant πB (a−j | n; α), whose pathwise derivative is zero, so this channel disappears. Combining (1a) and (1b), we have 
+
+∂τ DAT T j (δ, n ; η∗)
+
+∂η = En
+
+[
+
+φDAT T ∗ 
+
+> j
+
+(Oi; δ) sn(Wij ; η∗)]
+
+,φDAT T ∗ 
+
+> j
+
+(Oi; δ) = ∑
+
+> a−j
+
+{
+
+¯π∗ 
+
+> δ
+
+(a−j ; n) ϕDAT T ∗ 
+
+> j,a −j
+
++ θDAT T ∗ 
+
+> j
+
+(a−j , n ) ψδ∗
+
+> j,a −j
+
+}
+
+,
+
+and En[φDAT T ∗ 
+
+> j
+
+] = 0 . Hence φDAT T ∗ 
+
+> j
+
+(Oi; δ) is the efficient influence function of τ DAT T j (δ, n ).
+
+Part 2: efficient influence function of τ DAT T (δ).
+
+Set ¯τ DAT T ∗(δ, n ) = n−1 ∑nj=1 τ DAT T ∗ 
+
+> j
+
+(δ, n ) and ¯φDAT T ∗(Oi; δ) = N −1
+
+> i
+
+∑Ni 
+
+> j=1
+
+φDAT T ∗ 
+
+> j
+
+(Oi; δ), the latter being Equation (10). To prove that 
+
+φDAT T ∗(Oi; δ) = ¯ φDAT T ∗(Oi; δ) + ¯ τ DAT T ∗(δ, N i) − τ DAT T ∗(δ),
+
+which is (9) , is the EIF of τ DAT T (δ), we need to show that (A) ∂τ DAT T (δ; η∗)/∂η = E[
+
+φDAT T ∗(Oi; δ) s(Oi; η∗)]
+
+,(B) E[φDAT T ∗] = 0 , (C) Var (
+
+φDAT T ∗)
+
+< ∞, and (D) φDAT T ∗ is included in the tangent space T .It is easy to see that (C) and (D) hold, so we focus on (A) and (B). 35 First, the mixture form of τ DAT T (δ; η) is 
+
+τ DAT T (δ; η) = ∑
+
+> n
+
+νn(η) ¯ τ DAT T (δ, n ; η),
+
+where each component is defined as above. The pathwise derivative at η∗ is 
+
+∂τ DAT T (δ; η∗)
+
+∂η = ∑
+
+> n
+
+{ ∂ν n(η∗)
+
+∂η ¯τ DAT T ∗(δ, n ) + νn
+
+∂ ¯τ DAT T (δ, n ; η∗)
+
+∂η 
+
+}
+
+=: I1 + I2,
+
+which implies that the EIF of τ DAT T (δ) is the combination of the EIF of the size law νn and the EIF of ¯τ DAT T (δ, n ), weighted by ¯τ DAT T ∗(δ, n ) and νn, respectively. Accordingly, decompose the score as s(Oi; η∗) = sN (Ni; η∗) + ∑ 
+
+> n
+
+1(Ni = n) ∂η log p(Oi | Ni = n; η∗) and match the two channels in turn. We first check I1. The sN contribution equals 
+
+E[φDAT T ∗sN ] = E[{ 
+
+¯φDAT T ∗(Oi; δ) + ¯ τ DAT T ∗(δ, N i) − τ DAT T ∗(δ)}
+
+sN (Ni; η∗)]
+
+= E[
+
+sN (Ni; η∗) E[ ¯ φDAT T ∗ | Ni]]
+
++ E[
+
+{¯τ DAT T ∗(δ, N i) − τ DAT T ∗(δ)} sN (Ni; η∗)]
+
+= ∑
+
+> n
+
+{¯τ DAT T ∗(δ, n ) − τ DAT T ∗(δ)} νn(η∗)sN (n; η∗)= ∑
+
+> n
+
+{¯τ DAT T ∗(δ, n ) − τ DAT T ∗(δ)} ∂ν n(η∗)
+
+∂η 
+
+= ∑
+
+> n
+
+¯τ DAT T ∗(δ, n ) ∂ν n(η∗)
+
+∂η − τ DAT T ∗(δ) ∑
+
+> n
+
+∂ν n(η∗)
+
+∂η = ∑
+
+> n
+
+¯τ DAT T ∗(δ, n ) ∂ν n(η∗)
+
+∂η ,
+
+where the second equality conditions on Ni (sN and ¯τ DAT T ∗(δ, N i) are functions of Ni alone), the third uses En[ ¯φDAT T ∗] = 0 to drop the first term and expands the expectation over the sizes n,the fourth uses the score identity ∂ηνn(η∗) = νn(η∗)sN (n; η∗), and the last uses ∑ 
+
+> n
+
+∂ηνn(η∗) = 
+
+∂η{∑ 
+
+> n
+
+νn(η)}| η∗ = 0 to drop the centring term. This matches I1.36 We next check I2. The corresponding contribution equals 
+
+∑
+
+> n
+
+E[
+
+1(Ni = n) φDAT T ∗(Oi; δ) ∂η log p(Oi | Ni = n; η∗)]
+
+= ∑
+
+> n
+
+νn En
+
+[{ 
+
+¯φDAT T ∗(Oi; δ) + ¯ τ DAT T ∗(δ, n ) − τ DAT T ∗(δ)}
+
+∂η log p(Oi | Ni = n; η∗)]
+
+= ∑
+
+> n
+
+νn En
+
+[
+
+¯φDAT T ∗(Oi; δ) ∂η log p(Oi | Ni = n; η∗)]
+
+= ∑
+
+> n
+
+νn n−1
+
+> n
+
+∑
+
+> j=1
+
+En
+
+[
+
+φDAT T ∗ 
+
+> j
+
+(Oi; δ) sn(Wij ; η∗)]
+
+= ∑
+
+> n
+
+νn n−1
+
+> n
+
+∑
+
+> j=1
+
+∂τ DAT T j (δ, n ; η∗)
+
+∂η = ∑
+
+> n
+
+νn
+
+∂ ¯τ DAT T (δ, n ; η∗)
+
+∂η ,
+
+where the first equality conditions on Ni = n, the second uses En[∂η log p(Oi | Ni = n; η∗)] = 0 
+
+to drop the constant centring ¯τ DAT T ∗(δ, n ) − τ DAT T ∗(δ), the third uses ¯φDAT T ∗ = n−1 ∑ 
+
+> j
+
+φDAT T ∗
+
+> j
+
+together with the projection identity En[h(Wij ) ∂η log p(Oi | Ni = n; η∗)] = En[h(Wij ) sn(Wij ; η∗)] 
+
+for measurable h, the fourth uses the gradient identity of Part 1, and the last is the definition of 
+
+¯τ DAT T (δ, n ; η). This matches I2, which together with I1 establishes (A). For (B), 
+
+E[φDAT T ∗(Oi; δ)] = ∑
+
+> n
+
+νn En[ ¯ φDAT T ∗] + ∑
+
+> n
+
+νn{¯τ DAT T ∗(δ, n ) − τ DAT T ∗(δ)}
+
+= ∑
+
+> n
+
+νn ¯τ DAT T ∗(δ, n ) − τ DAT T ∗(δ) = 0 ,
+
+using En[ ¯φDAT T ∗] = 0 and τ DAT T ∗(δ) = ∑ 
+
+> n
+
+νn ¯τ DAT T ∗(δ, n ). Hence φDAT T ∗(Oi; δ) is the efficient influence function of τ DAT T (δ), with semiparametric bound E[{φDAT T ∗(Oi; δ)}2].
+
+Proof of the SATT case. The argument is identical with ϕDAT T ∗ 
+
+> j,a −j
+
+replaced by ϕSAT T ∗ 
+
+> j,a −j
+
+of (12) , θDAT T j (a−j , n ) by θSAT T j (a−j , n ), and ∆m∗ 
+
+> j
+
+(a−j , x, n ) by m∗ 
+
+> 0,j
+
+(a−j , x, n ) − m∗ 
+
+> 0,j
+
+(0 , x, n ). In the configuration-effect channel (1a), the two numerator terms of the integral form (B.4) now carry 
+
+p0n(∆ y | a−j , x ; η) and p0n(∆ y | 0, x ; η): perturbing the control density of ∆Yij at peer configuration 
+
+a−j yields the residual weighted by ω∗ 
+
+> j
+
+(a−j , X i, n ), perturbing it at the zero configuration yields the residual weighted by ω0∗ 
+
+> j
+
+(a−j , X i, n ), and the regression augmentation is centred at m∗ 
+
+> 0,j
+
+(a−j , X i, n )−
+
+m∗ 
+
+> 0,j
+
+(0 , X i, n ) − θSAT T ∗ 
+
+> j
+
+(a−j , n ). The EIF of ¯πδ(a−j ; n) given in (1b) remains unchanged, since ψδ∗
+
+> j,a −j
+
+depends on the assignment mechanism only. Aggregating over a−j , j, and the size law as in 37 Parts 1–2 gives φSAT T ∗(Oi; δ) of (9)–(10). □
+
+Proof of Remark 1. Under the type-B policy the allocation weight πB (a−j | n; α) is a known constant indexed by α: it does not vary along the parametric submodel, so ∂ηπB (a−j | n; α) = 0 .The proof of Theorem 1 then simplifies in one place only. In Part 1, the product rule loses its second term, 
+
+∂τ • 
+
+> B,j
+
+(α, n ; η∗)
+
+∂η = ∑
+
+> a−j
+
+πB (a−j | n; α) ∂θ • 
+
+> j
+
+(a−j , n ; η∗)
+
+∂η ,
+
+so step (1b) is not needed and ψδ∗ 
+
+> j,a −j
+
+≡ 0. Both pieces of ψδ∗ 
+
+> j,a −j
+
+indeed vanish: the covariate-law part because πB does not depend on Xi, whence πB − En[πB ] = 0 ; and the propensity part because πB
+
+is not a functional of the propensity score, whence g′ 
+
+> j,a −j
+
+= ∂π B /∂q j′ = 0 . Step (1a) is unchanged, giving φ•∗  
+
+> B,j
+
+(Oi; α) = ∑ 
+
+> a−j
+
+πB (a−j | n; α) ϕ•∗  
+
+> j,a −j
+
+(Wij ), i.e. the policy-estimation piece θ•∗  
+
+> j
+
+ψδ∗ 
+
+> j,a −j
+
+of (10) disappears. Part 2 concerns only the size law νn and the aggregation across sizes and does not involve the policy weight, so it applies verbatim with ( ¯τ • 
+
+> B
+
+, τ • 
+
+> B
+
+) in place of ( ¯τ DAT T ∗, τ DAT T ∗).Combining the two parts yields Equation (15). □
+
+Appendix B.3. Proof of Theorem 2 
+
+Fix • ∈ { DAT T, SAT T } and δ, and abbreviate Γ( ·; η) = Γ •(·; δ, η ), τ ∗ = τ •(δ), and φ∗ =
+
+φ•∗ (·; δ). For fold k let E(k)[·] denote the expectation over a new cluster with the trained nuisances ̂
+
+η(−k) held fixed, and Mk = |I k|. Throughout, C denotes a generic positive constant depending only on (c, c ′, C, n max , δ ), whose value may change from line to line. All bounds hold uniformly over the finitely many cells (j, a −j , n ), with n ≤ nmax .By Theorem 1 and Assumption 1(iv)–(v), E[φ∗] = 0 and σ2 := E[φ∗2] < ∞. By Assump-tions 1(iv) and 2(i), every denominator in Γ( ·; η∗) and Γ( ·;̂ η(−k)) is bounded below by min (c, c ′)
+
+raised to a fixed power, and all weight-type factors ( ωj , ω 0 
+
+> j
+
+, π δ, g ′ 
+
+> j,a −j
+
+, ¯πδ) are uniformly bounded; θ•∗ 
+
+> j
+
+is a finite constant and ̂ θ• 
+
+> j
+
+is bounded in probability by Lemma 2. The proof relies on the following four lemmas. 
+
+Lemma 1 (Bound of the uncentered efficient influence function) . Under Assumptions 1 and 2, 
+
+> ∥∥∥
+
+Γ( ·;̂ η(−k)) − Γ( ·; η∗)∥∥∥ ≤ C
+
+> (
+
+εq + εe + εm + max  
+
+> j,a −j,n
+> {
+
+|̂rj − r∗ 
+
+> j
+
+| + |̂ θ• 
+
+> j
+
+− θ•∗  
+
+> j
+
+| + |̂ ¯πδ − ¯π∗ 
+
+> δ
+
+|})
+
+. (B.5) 38 Proof. It suffices to bound one term T (η) = c(η) R(η), where c(η) is a product of uniformly bounded factors (the reciprocals 1/r j , the weights ωj , ω 0 
+
+> j
+
+, π δ, g ′ 
+
+> j,a −j
+
+, ¯πδ, and θ• 
+
+> j
+
+) and R(η) is at most one outcome residual ∆Yij − ma,j (η); the finitely many such terms are then summed by the triangle inequality. Decompose 
+
+T (̂η) − T (η∗) = [
+
+c(̂η) − c(η∗)]
+
+R(̂ η) + c(η∗)[
+
+R(̂ η) − R(η∗)]
+
+.
+
+For a term carrying an outcome residual, R(̂η) − R(η∗) = −(̂ma,j − m∗ 
+
+> a,j
+
+) and |c(η∗)| ≤ C, so the second summand has L2 norm at most Cε m. For a term with no outcome residual (e.g. the augmentation factor m1,j − m0,j − θ• 
+
+> j
+
+, or the policy factors of ψδj,a −j ), we take R ≡ 1 and absorb its entire nuisance dependence—including m and θ• 
+
+> j
+
+—into the bounded factor c, so its perturbation is 
+
+c(̂η) − c(η∗) and is controlled by the coefficient bound below. For the first summand, boundedness of all factors gives the telescoping bound | ∏ 
+
+> l
+
+al − ∏ 
+
+> l
+
+bl| ≤ C ∑ 
+
+> l
+
+|al − bl|, so, using the Lipschitz dependence of each factor on the nuisances, 
+
+|c(̂η) − c(η∗)| ≤ C(
+
+|̂q − q∗| + |̂ e − e∗| + |̂ m − m∗| + |̂ rj − r∗ 
+
+> j
+
+| + |̂ θ• 
+
+> j
+
+− θ•∗  
+
+> j
+
+| + |̂ ¯πδ − ¯π∗ 
+
+> δ
+
+|)
+
+pointwise .
+
+Multiplying by R(̂η), whose conditional second moment is bounded by Assumption 2(i), and taking 
+
+L2 norms reproduces εq, ε e, ε m and the cell errors; adding the two summands and summing over the finitely many terms gives (B.5). 
+
+Lemma 2 (Rates of cell-level nuisances) . Under Assumptions 1 and 2, 
+
+|̂rj − r∗ 
+
+> j
+
+| = Op(M −1/2), |̂ ¯πδ − ¯π∗ 
+
+> δ
+
+| ≤ Cε q + Op(M −1/2), |̂θ• 
+
+> j
+
+− θ•∗  
+
+> j
+
+| ≤ C(εq + εe)εm + Op(M −1/2),
+
+(B.6) where ̂ rj is the empirical frequency of Aij 1{Ai(−j) = a−j } over the size-n clusters of the second half of Ick.
+
+Proof. Write ̂ E(−k) 
+
+> n
+
+for the empirical mean over the size-n clusters of the second half of the training complement Ick. Since ̂ rj is an empirical frequency on that subsample, with population value exactly 
+
+r∗ 
+
+> j
+
+and no nuisance dependence, |̂rj − r∗ 
+
+> j
+
+| = Op(M −1/2). For the last two rates, split each into a 39 sampling fluctuation and a nuisance bias. By definition ̂
+
+¯πδ(a−j ; n) = ̂ E(−k)
+
+> n
+
+[∏ 
+
+> j′̸=j
+
+̂ qj′,δ (Xi, n )aj′ {1 −̂ qj′,δ (Xi, n )}1−aj′
+
+]
+
+=̂ E(−k)
+
+> n
+
+[
+
+πδ(a−j | Xi, n ;̂ q)]
+
+,
+
+where πδ(a−j | Xi, n ; q) = ∏  
+
+> j′̸=j
+
+qj′,δ (Xi, n )aj′ {1 − qj′,δ (Xi, n )}1−aj′ denotes the peer law evaluated at a generic propensity q. Hence ̂
+
+¯πδ − ¯π∗ 
+
+> δ
+
+= ( ̂E(−k) 
+
+> n
+
+− En)[
+
+πδ(a−j | Xi, n ;̂ q)]︸ ︷︷ ︸ 
+
+> Op(M−1/2)
+
++ En
+
+[
+
+πδ(a−j | Xi, n ;̂ q) − πδ(a−j | Xi, n ; q∗)]︸ ︷︷ ︸ 
+
+> ≤Cε q
+
+,
+
+the first term is an i.i.d. average over the independent second half, hence Op(M −1/2). For the second, the product ∏  
+
+> j′̸=j
+
+qaj′
+
+> j′,δ
+
+(1 − qj′,δ )1−aj′ is a bounded, Lipschitz function of the factors (qj′,δ )j′̸ =j and 
+
+q 7 → qδ is Lipschitz on [c′, 1 − c′], so |πδ(a−j | Xi, n ;̂ q) − πδ(a−j | Xi, n ; q∗)| ≤ C ∑  
+
+> j′̸=j
+
+|̂qj′ (Xi, n ) −
+
+q∗ 
+
+> j′
+
+(Xi, n )| pointwise, whence the bias is ≤ Cε q. Likewise ̂ θ• 
+
+> j
+
+− θ•∗  
+
+> j
+
+= ( ̂ E(−k) 
+
+> n
+
+− En)[ · ] + (
+
+En[ · ] − θ•∗ 
+
+> j
+
+)
+
+:the first part is Op(M −1/2), and the second part is the doubly robust product En[(1 − q∗)e∗
+
+> 0
+
+{̂ ω −
+
+ω∗}{ ̂ m0 − m∗
+
+> 0
+
+}]/r ∗ 
+
+> j
+
+. By boundedness, |̂ω − ω∗| ≤ C(|̂q − q∗| + |̂e1 − e∗
+
+> 1
+
+| + |̂e0 − e∗
+
+> 0
+
+|) pointwise; Cauchy–Schwarz then bounds this product by C(εq + εe)εm. This gives the second and third displays of (B.6). In the next two lemmas cell indices (j, a −j , n ) are suppressed, e.g. θ∗ = θ•∗  
+
+> j
+
+(a−j , n ),̂ θ =̂ θ• 
+
+> j
+
+,̂
+
+r =̂ rj , and ̂ ω, ̂ ω0,̂ m0 are evaluated at the corresponding cell; En is the true size-n conditional expectation with the training-fold nuisances held fixed. 
+
+Lemma 3 (Configuration channel: doubly robust remainder) . Under Assumptions 1 and 2, ̂
+
+θ + En
+
+[
+
+ϕDAT T (W ;̂ η)]
+
+− θ∗ = ( ̂θ − θ∗)̂ r − r∗̂
+
+r + 1̂
+
+r En
+
+[
+
+(1 − q∗)e∗
+
+> 0
+
+{̂ 
+
+ω − ω∗}{̂ 
+
+m0 − m∗
+
+> 0
+
+}]
+
+, (B.7) ̂
+
+θ + En
+
+[
+
+ϕSAT T (W ;̂ η)]
+
+− θ∗ = ( ̂θ − θ∗)̂ r − r∗̂
+
+r + 1̂
+
+r En
+
+[
+
+(1 − q∗)e∗
+
+> 0
+
+(a−j | · ){
+
+ω∗ −̂ ω}{̂ 
+
+m0(a−j , ·) − m∗
+
+> 0
+
+(a−j , ·)}]
+
+− 1̂
+
+r En
+
+[
+
+(1 − q∗)e∗
+
+> 0
+
+(0 | · ){
+
+ω0∗ −̂ ω0}{̂ 
+
+m0(0 , ·) − m∗
+
+> 0
+
+(0 , ·)}]
+
+,
+
+(B.8) and in both cases the right-hand side is op(M −1/2) + C(εq + εe)εm.40 Proof. Iterated expectations give En[Aij 1{Ai(−j) = a−j }(∆ Y −̂ m1)] = En[q∗e∗
+
+> 1
+
+(m∗ 
+
+> 1
+
+−̂ m1)] , En[(1 −
+
+Aij )1{Ai(−j) = a−j }̂ ω(∆ Y −̂ m0)] = En[(1 − q∗)e∗
+
+> 0
+
+̂ ω (m∗ 
+
+> 0
+
+−̂ m0)] , and En[Aij 1{Ai(−j) = a−j }(̂m1 −̂
+
+m0 −̂ θ)] = En[q∗e∗
+
+> 1
+
+(̂m1 −̂ m0)] −̂ θ r ∗. Summing, dividing by ̂ r, and using q∗e∗ 
+
+> 1
+
+= ω∗(1 − q∗)e∗ 
+
+> 0
+
+gives (B.7) ; the same computation with the two control-density perturbations of ϕSAT T yields (B.8) . In both, |ω∗ −̂ ω| ≤ C(|q∗ −̂ q| + |e∗ 
+
+> 1
+
+−̂ e1| + |e∗ 
+
+> 0
+
+−̂ e0|) pointwise, so Cauchy–Schwarz bounds the doubly robust term by C(εq + εe)εm; by Lemma 2 the first term equals Op(M −1/2) × op(1) = op(M −1/2).
+
+Lemma 4 (Policy-weight channel) . Under Assumptions 1 and 2, 
+
+En
+
+[
+
+ψδ(O;̂ η)]
+
+= ¯ π∗ 
+
+> δ
+
+−̂ ¯πδ − En[R2(Xi)] , ∣∣∣En[R2(Xi)] ∣∣∣ ≤ Cε 2 
+
+> q
+
+, (B.9) where R2 is the second-order remainder of the Taylor expansion of q 7 → πδ(a−j | x, n ; q) about ̂ q;the estimated first-order term ̂ g′ cancels the propensity-correction term of ψδ exactly. 
+
+Proof. By (13), 
+
+En
+
+[
+
+ψδ(O;̂ η)]
+
+=
+
+{
+
+En
+
+[
+
+πδ(a−j | Xi, n ;̂ q)]
+
+−̂ ¯πδ
+
+}
+
++ En
+
+[ ∑ 
+
+> j′̸=j
+
+̂
+
+g′ 
+
+> j,a −j
+
+(Xi, n ){
+
+q∗ 
+
+> j′
+
+(Xi, n ) −̂ qj′ (Xi, n )}]
+
+,
+
+where ̂ g′ is (14) evaluated at ̂ q. The map (qj′ )j′̸ =j 7 → πδ(a−j | x, n ) is twice continuously differentiable with derivatives bounded on [c ∧ c′, 1 − c ∧ c′]n−1 for fixed δ—an interval containing the segment between q∗(x) and ̂ q(x) by Assumptions 1(iv) and 2(i)—so a second-order Taylor expansion about ̂
+
+q(x) evaluated at q∗(x) gives, pointwise in x,
+
+πδ(a−j | x, n ; q∗) − πδ(a−j | x, n ;̂ q) = ∑ 
+
+> j′̸=j
+
+̂
+
+g′ 
+
+> j,a −j
+
+(x, n ){
+
+q∗ 
+
+> j′
+
+(x) −̂ qj′ (x)}
+
++ R2(x),
+
+|R2(x)| ≤ C ∑ 
+
+> j′̸=j
+
+{
+
+q∗ 
+
+> j′
+
+(x) −̂ qj′ (x)}2
+
+.
+
+Averaging over the true size-n covariate law, the estimated first-order term cancels the propensity-correction term above, leaving (B.9) with |En[R2(Xi)] | ≤ C En
+
+[∑  
+
+> j′̸=j
+
+{q∗ 
+
+> j′
+
+−̂ qj′ }2]
+
+≤ Cε 2 
+
+> q
+
+. This is the Neyman orthogonality supplied by the policy-estimation term, and it is what a plug-in without 
+
+ψδ lacks. 41 Next we prove Theorem 2 in five steps. 
+
+Step 1: decomposition. Since E[Γ( Oi; η∗)] = τ ∗ and Γ( Oi; η∗) − τ ∗ = φ∗(Oi),̂
+
+τ •(δ) − τ ∗ = 1
+
+M
+
+> M
+
+∑
+
+> i=1
+
+φ∗(Oi)
+
+︸ ︷︷ ︸
+
+> T1
+
++ 1
+
+M
+
+> K
+
+∑
+
+> k=1
+
+∑
+
+> i∈I k
+
+[
+
+∆Γ k(Oi) − E(k){∆Γ k(O)}
+
+]︸ ︷︷ ︸
+
+> T2
+
++
+
+> K
+
+∑
+
+> k=1
+
+Mk
+
+M Rk
+
+︸ ︷︷ ︸
+
+> T3
+
+,
+
+where ∆Γ k(·) = Γ( ·;̂ η(−k)) − Γ( ·; η∗) and Rk = E(k)[Γ( O;̂ η(−k))] − τ ∗.
+
+Step 2: T1 term. It is easy to show that √M T 1
+
+> d
+
+−→ N (0 , σ 2) by the Lindeberg–Lévy central limit theorem. 
+
+Step 3: T2 term. Write T2 = ∑Kk=1 T2,k with T2,k = 1
+
+> M
+
+∑
+
+> i∈I k
+
+[
+
+∆Γ k(Oi) − E(k){∆Γ k(O)}]
+
+. Con-ditionally on the training data of fold k, the Mk summands of T2,k are i.i.d. with mean zero, so 
+
+E
+
+[(√M T 2,k 
+
+)2 ∣∣∣∣ training data 
+
+]
+
+≤ Mk
+
+M
+
+∥∥∥∆Γ k
+
+∥∥∥2
+
+≤ C ∥∥∥∆Γ k
+
+∥∥∥2
+
+,
+
+which is op(1) by Lemmas 1 and 2 and Assumption 2(ii). Conditional Chebyshev and the finiteness of K give √M T 2 = op(1) .
+
+Step 4: T3 term. We show √M T 3 = op(1) . Since E(k)[ ¯τ •(δ, N i;̂ η)] = ∑ 
+
+> n
+
+νn ¯τ •(δ, n ;̂ η) and 
+
+E(k)[ ¯ φ•(O; δ, ̂ η)] decomposes over cells, 
+
+Rk = ∑
+
+> n≤nmax
+
+νn n−1
+
+> n
+
+∑
+
+> j=1
+
+∑ 
+
+> a−j∈A (n−1)
+
+{
+
+Tj,a −j ,n − ¯π∗ 
+
+> δ
+
+θ•∗ 
+
+> j
+
+}
+
+,Tj,a −j ,n =̂ ¯πδ̂ θ• 
+
+> j
+
++̂ ¯πδ En
+
+[
+
+ϕ• 
+
+> j,a −j
+
+(Wij ;̂ η)]
+
++̂ θ• 
+
+> j
+
+En
+
+[
+
+ψδj,a −j (Oi;̂ η)]
+
+,
+
+with En the true size-n conditional expectation and the training-fold nuisances held fixed; cell indices are suppressed. Substituting Lemma 4 into the last term of Tj,a −j ,n and rearranging, 
+
+Tj,a −j ,n − ¯π∗ 
+
+> δ
+
+θ∗ =̂ ¯πδ
+
+{̂ 
+
+θ + En
+
+[
+
+ϕ•(W ;̂ η)]
+
+− θ∗
+
+}
+
+− (̂ 
+
+¯πδ − ¯π∗
+
+> δ
+
+)(̂ 
+
+θ − θ∗)
+
+−̂ θ En[R2(Xi)] .
+
+The three summands are bounded as follows. By Lemma 3 and ̂ ¯πδ ≤ 1, the first is at most 42 C(εq + εe)εm + op(M −1/2). By Lemma 2, the second is at most 
+
+> (
+
+Cε q + Op(M −1/2))( 
+
+C(εq + εe)εm + Op(M −1/2))
+
+= op(M −1/2),
+
+using Assumption 2(ii)–(iii). By Lemma 4 and ̂ θ = Op(1) , the third is Op(1) · Cε 2 
+
+> q
+
+. Collecting, 
+
+|Rk| ≤ C
+
+> {
+
+ε2 
+
+> q
+
++ ( εq + εe)εm
+
+> }
+
++ op(M −1/2) = op(M −1/2)
+
+under Assumption 2(iii), whence √M T 3 = op(1) . Note the structure of the bound: the (εq + εe)εm
+
+terms admit the assignment–outcome trade-off, while ε2 
+
+> q
+
+arises from the weight channel (Lemma 4) alone and is irreducible—in contrast to the type-B policy, whose known weights make the estimator doubly robust (Remark 2). 
+
+Step 5: variance estimation. Write Γ( Oi;̂ η(−k)) −̂ τ •(δ) = φ∗(Oi) + ∆Γ k(Oi) − { ̂ τ •(δ) − τ ∗}.By the law of large numbers M −1 ∑ 
+
+> i
+
+φ∗(Oi)2 →p σ2; by conditional Markov and Step 3’s bound, 
+
+M −1 ∑ 
+
+> k
+> ∑
+> i∈I k
+
+∆Γ k(Oi)2 = op(1) ; and ̂ τ •(δ) − τ ∗ = op(1) by Steps 1–4. Expanding the square and applying Cauchy–Schwarz to the cross terms gives ̂ V •(δ) →p σ2, and the confidence-interval statement follows from Slutsky’s theorem. □
+
+43
