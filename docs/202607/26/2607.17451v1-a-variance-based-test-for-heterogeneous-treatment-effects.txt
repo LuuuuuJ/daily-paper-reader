@@ -1,0 +1,1811 @@
+Title: A Variance-Based Test for Heterogeneous Treatment Effects
+
+URL Source: https://arxiv.org/pdf/2607.17451v1
+
+Published Time: Tue, 21 Jul 2026 01:21:47 GMT
+
+Number of Pages: 38
+
+Markdown Content:
+# A Variance-Based Test for Heterogeneous Treatment Effects 
+
+## Fangzhou Yu ∗
+
+## February, 2026 
+
+Abstract 
+
+This paper proposes a robust nonparametric hypothesis test for the existence of heterogeneous treatment effects. We focus on the variance of the Conditional Av-erage Treatment Effect (CATE) as a natural omnibus parameter, where a non-zero variance implies the presence of relevant heterogeneity. Standard inference for this pa-rameter faces a fundamental theoretical challenge. On one hand, evaluating variance components on the same sample leads to null degeneracy, where the asymptotic vari-ance collapses to zero under the null hypothesis of homogeneity, invalidating standard Gaussian inference. On the other hand, decoupling the empirical processes via stan-dard sample-splitting breaks the Neyman orthogonality of the doubly robust scores due to their nonlinear squared loss, which prevents the cancellation of first-order regulariza-tion biases. To resolve this challenge, we propose a novel Intra-Fold Sample-Splitting algorithm. By evaluating variance components on mutually disjoint subsamples while coupling them to identical out-of-fold nuisance estimators, our procedure achieves al-gebraic cancellation of the nuisance biases. We prove this restores consistency and asymptotic normality, and ensures Type I error control. Monte Carlo simulations demonstrate that the proposed test achieves superior size control relative to existing tests while maintaining high power. In an empirical application to the NSW job train-ing program, the test detects significant heterogeneity that traditional nonparametric tests fail to uncover. 
+
+> ∗
+
+School of Economics, University of Sydney. fangzhou.yu@sydney.edu.au arXiv:2607.17451v1 [econ.EM] 20 Jul 2026 1 Introduction 
+
+The analysis of causal effects has traditionally centered on the Average Treatment Effect (ATE), which summarizes the mean impact of a policy or intervention across an entire population. While nonparametric estimators for the ATE with valid statistical inference are now well-established under the unconfoundedness assumption (e.g., Robins et al., 1994; Chernozhukov et al., 2018), the ATE often masks substantial heterogeneity in individual responses. Recognizing this heterogeneity is crucial for understanding the underlying mech-anisms of a treatment and for designing optimal policies that tailor interventions to specific subpopulations (Heckman et al., 1997; Athey and Imbens, 2017). Recent advances in causal machine learning have facilitated flexible estimation of the Con-ditional Average Treatment Effect (CATE) function, τ (x) = E[Y (1) − Y (0) |X = x], even in high-dimensional settings (e.g., Wager and Athey, 2018; Nie and Wager, 2021). However, ob-taining valid statistical inference for the full CATE function remains a formidable challenge. The complexity of modern machine learning algorithms often precludes the use of classical empirical process theory, and the regularization bias required for estimation makes formally testing hypotheses about the shape of τ (x) difficult. Consequently, researchers often face a trade-off between the robust inference available for the ATE and the granular, yet often unstable, characterization of the full CATE curve. To bridge this gap, we propose a robust hypothesis test for the existence of heterogeneous treatment effects. Rather than attempting to estimate the shape of the heterogeneity imme-diately, we ask a preliminary question: Is the treatment effect constant across subpopulations defined by covariates? We answer this by conducting inference on a single scalar parameter, the variance of the CATE, θ0 = Var( τ (X)). This parameter serves as a natural omnibus measure. If θ0 = 0, the effects are homogeneous almost surely, and if θ0 > 0, relevant heterogeneity exists, justifying further granular investigation. Developing a valid test for θ0 presents a theoretical challenge at the intersection of causal inference and machine learning. To robustly estimate this variance, one must rely on the doubly robust pseudo-outcome, which is the influence function of the ATE. However, test-ing the null hypothesis of homogeneity using these pseudo-outcomes introduces an impasse characterized by two problems, null degeneracy and the breakdown of Neyman orthogonality. 1First, under the null hypothesis, the true parameter lies on the boundary of the parameter space, and the CATE collapses to the ATE. In this boundary case, the true variance com-ponents of the pseudo-outcome become identical, and the influence function of the standard variance difference degenerates to zero almost surely. If the test statistic is computed on a single full sample, the asymptotic variance collapses and standard Gaussian inference breaks down. The modern semiparametric resolution to such degeneracy is to decouple the empirical processes of the variance components via sample-splitting (Williamson et al., 2023). Second, resolving null degeneracy via standard sample-splitting inadvertently causes a break-down of Neyman orthogonality, which is a key ingredient for developing √n-consistent semi-parametric estimators (Chernozhukov et al., 2018). By the Law of Total Variance, θ0 is iden-tified as the difference between the total and residual variances of the pseudo-outcome. While the pseudo-outcome itself is doubly robust, its squared loss is not, introducing OP (n−1/4)first-order regularization biases into both variance components. These biases can cancel each other when both components are constructed using the exact same nuisance estima-tors. Standard splitting destroys this symmetry. By evaluating the components on separate folds to decouple their empirical processes, it forces the use of independently trained machine learning models, and thus, their biases fail to cancel. When the test statistic is scaled by 
+
+√n, this uncancelled residual error diverges to infinity, invalidating asymptotic inference. To resolve this methodological impasse, a valid test must evaluate the variance components on disjoint observations to resolve degeneracy, while applying identical nuisance estimators to preserve bias cancellation. We achieve this via a novel Intra-Fold Sample-Splitting algorithm. We partition the data into K main folds and train a single set of nuisance functions out-of-fold. We randomly bisect each in-fold dataset into two mutually disjoint halves and compute the total variance exclusively on the first half and the residual variance on the second, ap-plying the exact same out-of-fold nuisance estimators to both. This paired structure ensures a strictly positive asymptotic variance under the null and cancels out the non-orthogonal squared biases. We formally prove this procedure yields consistent and asymptotically nor-mal estimators, and guarantees valid Type I error control on the boundary. Our work contributes to the growing literature on testing for treatment effect heterogeneity. Existing methods largely fall into two categories, projection-based tests and distributional tests. A prominent strand of literature focuses on testing whether the projection of the CATE onto a specific set of basis functions of covariates is zero. Crump et al. (2008) propose a nonparametric test based on sieve estimation, while Semenova and Chernozhukov (2021) de-2velop a Double/Debiased Machine Learning (DML) inference framework for the coefficients of a linear projection of the CATE. Theoretically, these projection-based methods are con-sistent against general nonlinear alternatives provided the number of basis functions grows sufficiently with the sample size. However, in practice, this approach faces a fundamental trade-off between approximation error and statistical power. Testing the joint significance of a high-dimensional vector of coefficients consumes degrees of freedom, diluting statistical power. Conversely, specifying a parsimonious basis to maximize power risks inconsistency if the true heterogeneity is orthogonal to the chosen subspace. In contrast, our CATE Variance Test targets a single scalar parameter. Because θ0 = 0 is a necessary and sufficient condition for a constant CATE, our test remains consistent against any deviation from the null without incurring the power penalty associated with high-dimensional coefficient testing. A second strand of literature focuses on distributional effects, testing for differences in the marginal distributions or variances of potential outcomes (e.g., Ding et al., 2016; Chung and Olivares, 2021). While observing a difference in marginal distributions of potential outcomes implies the existence of individual treatment effect heterogeneity, it is not a direct test of moderation by observables. It is possible for individual effects to vary while the conditional average effect τ (x) remains constant. Our test specifically isolates the heterogeneity ex-plained by covariates, making it directly relevant for policy evaluation and design. Beyond testing for treatment effect heterogeneity, our algorithm offers a generalizable framework for conducting valid hypothesis testing on nonlinear transformations of doubly robust scores. The remainder of the paper is organized as follows. Section 2 establishes the econometric framework and the identification of the target parameter via pseudo-outcomes. Section 3 formalizes the theoretical tension between null degeneracy and Neyman orthogonality, introduces our Intra-Fold Sample-Split algorithm and establishes its asymptotic properties. Section 4 presents Monte Carlo simulation results comparing our test to existing projection-based alternatives. Section 5 applies the test to empirical data from the NSW job training program, and Section 6 concludes. All proofs are collected in the Appendix. 
+
+## 2 Framework and Identification 
+
+In this section, we define the causal parameters of interest, state the assumptions required for identification and inference, and derive the variance decomposition that forms the basis 3of our test statistic. 
+
+2.1 Setup 
+
+We follow the potential outcomes framework (Rubin, 1974). We observe a random sample of 
+
+n independent and identically distributed units Oi = ( Yi, D i, X i) for i = 1 , . . . , n , drawn from an unknown distribution P0. Here, Di ∈ { 0, 1} is a binary treatment indicator, Xi ∈ X ⊂ Rp
+
+is a vector of covariates, and Yi ∈ R is the observed outcome. Let Yi(1) and Yi(0) denote the potential outcomes under treatment and control, respectively. The observed outcome relates to the potential outcomes via the consistency condition Yi = DiYi(1) + (1 − Di)Yi(0). The fundamental problem of causal inference is that for any unit i, we observe only one of the two potential outcomes. Our primary focus is the CATE, defined as 
+
+τ0(x) = E[Yi(1) − Yi(0) |Xi = x].
+
+We also define the ATE, denoted by τATE = E[τ0(Xi)]. To facilitate identification, we define the nuisance functions μ0(d, x ) = E[Yi|Di = d, X i = x] for d ∈ { 0, 1} representing the conditional outcome means, and e0(x) = P (Di = 1 |Xi = x) representing the propensity score. We invoke the standard assumptions for causal identification in observational studies (Rosen-baum and Rubin, 1983), alongside regularity conditions required for valid asymptotic infer-ence. 
+
+Assumption 1 (Unconfoundedness) . Conditional on covariates Xi, the treatment assign-ment is independent of potential outcomes 
+
+Di ⊥ (Yi(1) , Y i(0)) | Xi.
+
+Assumption 2 (Overlap) . The propensity score is strictly bounded away from zero and one. There exists a constant ξ > 0 such that 
+
+ξ ≤ e0(x) ≤ 1 − ξ
+
+almost surely for all x ∈ X .
+
+Assumption 3. (i) The outcome Yi has bounded fourth moments: E[Y 4 
+
+> i
+
+] < ∞. (ii) Non-
+
+4degeneracy: the variance of the squared centered pseudo-outcome is strictly bounded away from zero. There exists a constant c > 0 such that 
+
+Var  (ψ0(Oi) − τATE )2 > c, 
+
+where ψ0(Oi) is the doubly robust pseudo-outcome defined in Equation (2) .
+
+Assumptions 1 and 2 allow for the identification of the CATE function τ0(x) = μ0(1 , x ) −
+
+μ0(0 , x ). Assumption 3(i) ensures finite moments needed for the central limit theorem and for the empirical-process arguments underlying double machine learning. Condition (ii) directly guarantees that the asymptotic variance of our test statistic is bounded away from zero on the boundary of the parameter space, eliminating the pathological degeneracy that would otherwise arise under the null hypothesis of homogeneity. 
+
+2.2 The Target Parameter and Hypotheses 
+
+We investigate whether the treatment effect is constant across the population defined by X.Formally, we define the CATE Variance parameter: 
+
+θ0 = Var( τ0(Xi)) .
+
+The variance serves as an omnibus measure of heterogeneity. If θ0 = 0, the CATE is constant almost surely (i.e., τ0(x) = τATE for all x). If θ0 > 0, there exists variation in the treatment effect explained by the covariates. Accordingly, we test the null hypothesis of homogeneity against the one-sided alternative of heterogeneity: 
+
+H0 : θ0 = 0 vs. H1 : θ0 > 0. (1) Since θ0 is non-negative, the null hypothesis lies on the boundary of the parameter space. We address the inferential implications of this boundary condition in Section 3. 52.3 Identification via Pseudo-Outcomes 
+
+A direct estimator of Var( τ0(X)) based on a plug-in estimate of the function ˆ τ (x) would suffer from first-order regularization bias, particularly when X is high-dimensional. To address this, we utilize a doubly robust pseudo-outcome, also known as the uncentered influence function for the ATE. Define the pseudo-outcome ψ(Oi) as 
+
+ψ(Oi) = μ0(1 , X i) − μ0(0 , X i) + Di(Yi − μ0(1 , X i)) 
+
+e0(Xi) − (1 − Di)( Yi − μ0(0 , X i)) 1 − e0(Xi) . (2) This pseudo-outcome possesses two critical properties. First, it is an unbiased signal of the CATE 
+
+E[ψ(Oi)|Xi] = τ0(Xi),
+
+which also implies E[ψ(Oi)] = τATE . Second, it allows us to identify θ0 through a variance decomposition. By the Law of Total Variance applied to ψ(Oi), we have Var( ψ(Oi)) = Var( E[ψ(Oi)|Xi]) + E[Var( ψ(Oi)|Xi)] .
+
+Substituting the conditional expectation with τ0(Xi), we can rearrange this to identify the CATE variance 
+
+θ0 = Var( ψ(Oi)) − E[( ψ(Oi) − τ0(Xi)) 2].
+
+Or, expressed in terms of Mean Squared Error which facilitates our estimation strategy 
+
+θ0 = E[( ψ(Oi) − τATE )2]
+
+| {z }
+
+> Vtot
+
+− E[( ψ(Oi) − τ0(Xi)) 2]
+
+| {z }
+
+> Vres
+
+. (3) Equation (3) provides the identification result for our test. It expresses the CATE variance as the difference between Vtot , the MSE of the best constant predictor of the pseudo-outcome (τATE ), and Vres , the MSE of the best conditional predictor ( τ0(X)). 
+
+## 3 Test for Heterogeneous Treatment Effect 
+
+In this section, we develop a formal hypothesis test for the presence of heterogeneous treat-ment effects. Having identified the CATE variance, θ0 = Var( τ0(X)), as our target parameter 6in Section 2, we test the hypotheses in Equation (1). This test leverages the identification result derived in Equation (3). While estimating θ0 fits within the general framework of semiparametric inference, the null hypothesis poses a unique theoretical challenge known as null-degeneracy. Below, we derive the influence function for θ0, analyze its properties, and detail the algorithm for the hypothesis test. We first derive the influence function for θ0.
+
+Proposition 1 (Influence Function for θ0). Under Assumptions 1–3, the influence function for the CATE variance θ0 is given by 
+
+ϕθ(Oi) = ( ψ(Oi) − τATE )2 − (ψ(Oi) − τ0(Xi)) 2 − θ0,
+
+where ψ(Oi) is the pseudo-outcome defined in Equation (2) .
+
+Proof. See Appendix. Based on Proposition 1, a standard ”one-step” efficient estimator can be constructed by solving the empirical equation n−1 P ˆϕθ(Oi) = 0, where ˆϕθ(Oi) is obtained by plugging in the estimated nuisance parameters. Under the alternative hypothesis, H1 : θ0 > 0, standard semiparametric theory guarantees that such an estimator is √n-consistent and asymptotically normal √n(ˆθ − θ0) d
+
+−→ N (0 , Var( ϕθ)) ,
+
+provided that the nuisance parameters converge at sufficiently fast rates, typically n−1/4
+
+(Chernozhukov et al., 2018). This allows us to employ modern machine learning methods to estimate μ0 and e0, and plug in the pseudo-outcome ψ(Oi). Constructing ˆθ also requires feasible estimators for τATE and τ0(X), which we review in the next section. 
+
+3.1 Estimation of ATE and CATE 
+
+Existing strategies for estimating τ0(x) and τATE largely fall into two categories, the T-learner and the DR-learner. The T-learner estimates the conditional means μ0(1 , x ) and 
+
+μ0(0 , x ) and computes their differences to obtain an estimator for the treatment effect. For the ATE, a T-learner is n−1 Pni=1 (ˆ μ(1 , X i) − ˆμ(0 , X i)), and for the CATE, a T-learner is ˆμ(1 , X i) − ˆμ(0 , X i). By the triangle inequality, the L2 error of the T-learner is bounded 7by the errors of the baseline outcome models. Therefore, provided the nuisance estimators ˆμ(1 , ·) and ˆ μ(0 , ·) satisfy the oP (n−1/4) rate, we can show that the T-learner also satisfies this rate and can be applied in our algorithm. However, as noted by K¨ unzel et al. (2019), T-learners can suffer from regularization bias, particularly when the CATE function is sparser than the baseline outcome functions or when there is poor overlap between treatment groups. The DR-learner, on the other hand, treats ATE and CATE estimation as a direct regression of the pseudo-outcome ψ(Oi) on the covariates. The DR-learner for the ATE is n−1 Pni=1 ˆψ(Oi), which is also known as the Augmented Inverse Propensity Weighting (AIPW) estimator. Because the pseudo-outcome is Neyman orthogonal, ˆ τATE is √n-consistent provided the product of the L2 estimation errors for the propensity score and outcome mean vanishes at an oP (n−1/2) rate (e.g., Robins et al., 1994; Chernozhukov et al., 2018). For the CATE, it is the minimizer of the mean squared error Pni=1 ( ˆψ(Oi) − f (Xi)) 2. Its estimation error is bounded by the oracle smoothing error of the CATE plus the product of the nuisance errors 
+
+∥ˆe − e0∥P, 2 × ∥ ˆμ − μ0∥P, 2 (Kennedy, 2023), where ∥ · ∥ P, 2 denotes the L2(P0) norm. This imparts a ”double robustness of rates.” Even if the baseline outcome model ˆ μ converges at a rate slower than n−1/4 due to complex confounding, the DR-learner can still achieve the requisite oP (n−1/4) rate, provided the propensity score converges sufficiently fast and the true CATE is sufficiently smooth. In this paper, we adopt the DR-learner for both ATE and CATE estimation. It often yields more stable estimates than differencing two regression functions, and the convergence rate depends on the product of nuisance errors, making it robust to misspecification of the nuisance models. However, simply plugging the nuisance estimators into a standard full-sample or cross-fitting empirical analogue of θ0 fails to yield valid inference. We formalize this fundamental breakdown of Neyman orthogonality in the next section. 
+
+3.2 Null Degeneracy and the Breakdown of Orthogonality 
+
+To develop a valid semiparametric test based on the variance of CATE, the first hurdle is the problem of null degeneracy. Under the null hypothesis of homogeneity H0 : θ0 = 0, the true CATE is constant almost surely, i.e., τ0(Xi) = τATE . Consequently, the true total and residual losses are identical, and their corresponding influence functions coincide perfectly. If one computes the empirical analogues of Vtot and Vres using the same sample of observations, the empirical processes become perfectly correlated, and the asymptotic variance of their 8difference collapses to zero. This degeneracy violates the regularity conditions required for standard Gaussian approximations and destroys the size calibration of the test: rather than attaining its nominal level, the same-sample statistic degenerates and becomes severely conservative (Appendix B). Williamson et al. (2023) suggest that this degeneracy can be resolved by evaluating the components on disjoint subsets of the data via sample-splitting. However, resolving null degeneracy via standard sample-splitting breaks down the Neyman orthogonality of the influence function in Proposition 1. To formalize this, consider the pathwise Gˆ ateaux derivative of the expected squared residual loss, E[( ψ − τ0(X)) 2], with respect to the propensity score e(x). The expected first-order bias depends on the cross-term conditional on Xi,
+
+E
+
+
+
+2( ψ(Oi) − τ0(Xi)) ∂ψ ∂e (Oi) Xi
+
+
+
+.
+
+Substituting the residual error 
+
+ψ(Oi) − τ0(Xi) = Di(Yi − μ0(1 , X i)) 
+
+e0(Xi) − (1 − Di)( Yi − μ0(0 , X i)) 1 − e0(Xi)and its partial derivative 
+
+∂ψ ∂e (Oi) = −Di(Yi − μ0(1 , X i)) 
+
+e0(Xi)2 − (1 − Di)( Yi − μ0(0 , X i)) (1 − e0(Xi)) 2 ,
+
+the cross-products strictly vanish since the treatment indicator satisfies Di(1 − Di) = 0. Using the unconfoundedness assumption to replace the expected squared residual outcomes with the true conditional variances σ21 (Xi) and σ20 (Xi), 
+
+E
+
+
+
+2( ψ(Oi) − τ0(Xi)) ∂ψ ∂e (Oi) Xi
+
+
+
+= 2 
+
+
+
+− σ21 (Xi)
+
+e0(Xi)2 + σ20 (Xi)(1 − e0(Xi)) 2
+
+
+
+≡ g(Xi).
+
+Crucially, this derivative g(Xi) is generally non-zero. Because this derivative does not van-ish, the squared pseudo-outcome is not Neyman orthogonal. Any plug-in estimator for the residual variance Vres is therefore contaminated by a first-order regularization bias of order 
+
+OP (∥ˆe − e0∥P, 2). The estimator for the total variance, Vtot = E[( ψ − τATE )2], suffers from the same non-orthogonal bias g(Xi). The target parameter θ0 remains √n-consistent only because of an exact algebraic cancella-tion. If both variance components are evaluated using the exact same nuisance estimators, their respective first-order biases g(Xi) are mathematically identical and cancel one another 9when taking the difference Vtot − Vres . Standard sample-splitting, which evaluates the two variance components on different data folds, structurally destroys this delicate symmetry by forcing the use of independently trained machine learning nuisance estimators (e.g., evalu-ating Vtot with an out-of-fold propensity score ˆ eodd and Vres with ˆ eeven ). Because these inde-pendently trained nuisance estimators differ in finite samples, their induced non-orthogonal biases no longer match. The uncancelled first-order bias in the split-sample estimator be-comes approximately Bias( ˆθsplit ) ≈
+
+Z
+
+g(X) ˆeodd (X) − ˆeeven (X)dP 0(X).
+
+Standard rates only guarantee that independently trained nuisance estimators differ by 
+
+oP (n−1/4), so the √n-scaled test statistic inherits a residual bias of order oP (n1/4) — a quantity that need not converge to zero, invalidating asymptotic inference. 
+
+3.3 The Intra-Fold Sample-Split Algorithm 
+
+To resolve the methodological impasse formalized in Section 3.2, a valid testing procedure must simultaneously evaluate the total and residual variance components on strictly disjoint sets of observations and construct these components using the same nuisance estimators to preserve the algebraic cancellation of the squared pseudo-outcomes, thereby restoring Neyman orthogonality. We achieve these requirements via a novel Intra-Fold Sample-Split (IF-SS) algorithm, de-tailed in Algorithm 1. Instead of splitting the evaluation of the variance components across entirely different main folds, our algorithm introduces an internal data partition. We first partition the data into K main folds and train a single set of nuisance functions on the out-of-fold data. We randomly bisect each in-fold evaluation dataset into two mutually dis-joint halves. We compute the total variance exclusively on the first half and the residual variance exclusively on the second half, applying the identically trained out-of-fold nuisance estimators to both. To establish the asymptotic validity of Algorithm 1, we impose regularity conditions on the estimators used. We maintain Assumptions 1–3 from Section 2 and further introduce the following regularity conditions on nuisance estimators. 10 Algorithm 1 Intra-Fold Sample-Split CATE Variance Test (IF-SS-CVT) 
+
+Require: Data {(Yi, D i, X i)}ni=1 , Number of folds K ≥ 2, Significance level α.
+
+Ensure: Test statistic Zθ and rejection decision. 
+
+1. Partitioning 
+
+1: Randomly partition indices {1, . . . , n } into K disjoint main folds I1, . . . , IK . Let nk =
+
+|I k|.
+
+2: For each fold k, randomly sub-split the evaluation fold Ik into two mutually disjoint subsets, Ik, tot , and Ik, res , of equal size mk = nk/2. 
+
+2. Nuisance Training and Paired Evaluation 
+
+3: for k = 1 , . . . , K do 
+
+4: Train estimators ˆ ηk = (ˆ ek, ˆμk) and learners ˆ τk, ˆ τATE ,k on I−k = {1, . . . , n } \ I k.
+
+5: for each unit i ∈ I k do 
+
+6: ˆψi,k ← ˆμk(1 , X i) − ˆμk(0 , X i) + Di(Yi−ˆμk (1 ,X i)) ˆek (Xi) − (1 −Di)( Yi−ˆμk (0 ,X i)) 1−ˆek (Xi)
+
+7: end for 
+
+8: Evaluate Total Variance strictly on Ik, tot :
+
+9: ˆVtot ,k ← 1
+
+> mk
+
+P 
+
+> i∈I k, tot
+
+( ˆψi,k − ˆτATE ,k )2
+
+10: ˆσ2tot ,k ← 1 
+
+> mk−1
+
+P
+
+> i∈I k, tot
+
+
+
+( ˆψi,k − ˆτATE ,k )2 − ˆVtot ,k 
+
+2
+
+11: Evaluate Residual Variance strictly on Ik, res , using the same ˆψi,k :
+
+12: ˆVres ,k ← 1
+
+> mk
+
+P 
+
+> i∈I k, res
+
+( ˆψi,k − ˆτk(Xi)) 2
+
+13: ˆσ2res ,k ← 1 
+
+> mk−1
+
+P
+
+> i∈I k, res
+
+
+
+( ˆψi,k − ˆτk(Xi)) 2 − ˆVres ,k 
+
+2
+
+14: end for 3. Aggregation and Inference 
+
+15: Compute split-sample variance estimate: ˆθsplit ← 1
+
+> K
+
+PKk=1 ( ˆVtot ,k − ˆVres ,k )
+
+16: Compute standard error: cSE ←
+
+r
+
+> 1
+> K2
+
+PKk=1 
+
+ ˆσ2tot ,k  
+
+> mk
+
++ ˆσ2res ,k 
+
+> mk
+
+
+
+17: Compute standardized test statistic: Zθ ← ˆθsplit / cSE 
+
+18: return Reject H0 if Zθ > z 1−α, otherwise Fail to reject .11 Assumption 4. (i) Convergence Rates: 
+
+∥ˆek − e0∥P, 2 = oP (n−1/4) and ∥ˆμk − μ0∥P, 2 = oP (n−1/4),
+
+∥ˆτk − τ0∥P, 2 = oP (n−1/4) and |ˆτATE ,k − τATE | = OP (n−1/2).
+
+(ii) Uniform Boundedness: There exist constants ξ > 0 and C < ∞ such that with probability approaching 1, ˆek(X) ∈ [ξ, 1−ξ] and max  |ˆμk(d, X )|, |ˆτk(X)|, |μ0(d, X )|, |τ0(X)| ≤ C almost surely. 
+
+Because Algorithm 1 algebraically cancels the non-orthogonal bias, the only remaining es-timation errors depend strictly on the doubly robust linear pseudo-outcome terms and the Mean Squared Error of the CATE estimator itself ( ∥ˆτk − τ0∥2
+
+> P, 2
+
+). Provided Assumption 4 holds, these remaining errors rigorously vanish at an oP (n−1/2) rate. We formalize the asymptotic validity of this test in Theorem 1. 
+
+Theorem 1 (Asymptotic Validity of IF-SS-CVT) . Suppose Assumptions 1–4 hold. Let Zθ be the standardized test statistic computed via Algorithm 1 with a fixed number of folds K ≥ 2.As n → ∞ , under both the null hypothesis H0 : θ0 = 0 and the alternative H1 : θ0 > 0, the standardized estimator converges to a standard normal distribution 
+
+ˆθsplit − θ0
+
+cSE 
+
+> d
+
+−→ N (0 , 1) .
+
+Consequently, under the null hypothesis H0 : θ0 = 0 , the test controls the Type I error rate at level α
+
+lim  
+
+> n→∞
+
+P (Zθ > z 1−α | H0) = α. 
+
+Under the alternative hypothesis H1 : θ0 > 0, the test is consistent against any fixed alterna-tive 
+
+lim  
+
+> n→∞
+
+P (Zθ > z 1−α | H1) = 1 .
+
+Proof. See Appendix. 12 4 Simulation 
+
+We evaluate the performance of the proposed test using Monte Carlo simulations. In all designs, we generate n ∈ { 250 , 500 , 1000 , 2000 } independent and identically distributed ob-servations Oi = ( Yi, D i, X i) where Xi ∈ Rp. The outcome follows a common structural model 
+
+Yi = μ0(Xi) + Di · τ (Xi) + εi,
+
+where μ0(x) is the baseline outcome function, τ (x) is the CATE, and εi ∼ N (0 , 1). The covariates are drawn from a multivariate normal distribution Xi ∼ N (0 , Σ). The treatment assignment Di follows a Bernoulli distribution conditional on Xi with propensity score e(x) = (1 + exp( −x′α)) −1.We adopt a sparse setting with p = 50 and uncorrelated covariates, Σ = Ip. The propensity score depends on the first three covariates, with α = (0 .2, 0.2, 0.2, 0, . . . , 0) ′ ∈ Rp. The baseline outcome is a sparse linear function of the first five covariates, 
+
+μ0(x) = x1 + 0 .5x2 + 0 .5x3 + 0 .3x4 + 0 .3x5.
+
+We examine four specifications of the CATE function τ (x) = μ(1 , x ) − μ(0 , x ): 1. Constant CATE (Null): The treatment effect is constant, τ (x) = 1. 2. Linear CATE: The treatment effect is linear in the first two covariates, 
+
+τ (x) = 2 x1 + x2.
+
+3. Kinked CATE: The treatment effect is piecewise linear with a kink at zero, 
+
+τ (x) = 4 max( x1, 0) + 2 max( x2, 0) .
+
+4. Nonlinear CATE: The treatment effect is a smooth nonlinear function, 
+
+τ (x) = 3 
+
+
+
+exp  x1
+
+> 2
+
+ + exp  x2
+
+> 2
+
+ − 2 exp  18
+
+
+
+.
+
+Figure 1 provides visualizations of the data generating processes through the scatter plots of 13 Yi against X1i, alongside the true conditional mean functions μ(1 , x 1) and μ(0 , x 1) evaluated at the mean of all other covariates. The models are designed to reflect qualitatively different patterns of treatment effect heterogeneity. The constant CATE model falls under the null of Equation (1), while the other three models fall under the alternative. The linear and nonlinear models have a zero ATE by construction, so conventional ATE-targeted approaches such as OLS or IPW would fail to detect the existence of treatment effects. We implement our proposed Algorithm 1 using K = 5 folds. We estimate the nuisance pa-rameters and the DR-learner for the CATE function using two machine learning algorithms: Lasso and XGBoost 1. To demonstrate the theoretical necessity of our IF-SS structure, we introduce a Naive DML benchmark. This benchmark utilizes standard DML cross-fitting but omits our internal sample-splitting step. Specifically, for each fold k, it computes both the total variance ˆVtot ,k and the residual variance ˆVres ,k on the entire evaluation fold Ik using the identically trained nuisance estimators ˆ ηk. The Naive DML benchmark uses XGBoost for nuisance estimation. While this naive approach preserves Neyman orthogonality, it fails to solve the null degeneracy problem. Under the null hypothesis, the influence function 
+
+ϕi = ( ˆψi − ˆτATE )2 − ( ˆψi − ˆτ (Xi)) 2 converges to zero for all i, so that both the point estimate and the estimated standard error degenerate. Because the two variance components are eval-uated on the same observations, the flexible CATE learner contributes a spurious dispersion that biases ˆθ downward, and dividing this negative bias by a standard error of even smaller order drives the standardized statistic to −∞ ; the rejection probability of the one-sided test converges to zero (Proposition B1). The naive test is therefore severely undersized rather than unreliable in an unpredictable direction. We characterize this conservative degeneracy formally in Appendix B.     
+
+> 1We use the glmnet R package for Lasso and the xgboost package for XGBoost.
+
+14 Figure 1: Sketches of the Data Generating Processes 
+
+We also compare the performance with two existing tests in the literature, the nonparametric test proposed by Crump et al. (2008) (hereinafter CHIM) and the debiased machine learning test proposed by Semenova and Chernozhukov (2021) (hereinafter SC). We implement the sieve-based nonparametric test proposed by CHIM to evaluate the null hypothesis of a constant conditional average treatment effect. This method approaches the problem by comparing the shapes of the conditional outcome mean functions for the treated and control groups. We approximate these functions, μ1(x) and μ0(x), using a sieve basis expansion P(x) = (1 , p 1(x), . . . , p K (x)) ′, where the basis terms are constructed as a linear function of the covariates Xi. This vector includes an intercept and K covariate-dependent basis terms. We estimate the coefficients by running two separate OLS regressions of the 15 observed outcome Yi on P(Xi) for the treated and control subsamples, yielding the coefficient vectors ˆξ1 = (ˆ α1, ˆβ′
+
+> 1
+
+)′ and ˆξ0 = (ˆ α0, ˆβ′
+
+> 0
+
+)′. Under the null hypothesis, the treatment effect is constant, implying that the outcome functions are parallel and their slope coefficients are identical ( β1 = β0). The test statistic evaluates the quadratic distance between these estimated slopes 
+
+TCrump = ( ˆβ1 − ˆβ0)′ bV−1 
+
+> β
+
+( ˆβ1 − ˆβ0),
+
+where bVβ is the robust covariance matrix for the difference in slope estimates. As a benchmark for high-dimensional settings, we implement the Best Linear Predictor (BLP) test proposed by SC, following Example 2.2 in their paper. This framework approx-imates the CATE by projecting it onto a linear dictionary of covariates. The core of the method is the construction of a Neyman-orthogonal signal, which is the pseudo-outcome 
+
+ψ(Oi) in Equation (2), which serves as an unbiased proxy for the latent individual treatment effect. We employ the cross-fitting procedure proposed in their Definition 2.1. The sample is split into K folds, and for each observation i in fold k, the signal ψ(Oi) is constructed using nuisance parameters estimated on the complementary folds. In the second stage, we project this cross-fitted signal onto a vector of covariates Zi constructed as a second-order polynomial expansion of Xi (including interaction terms) to estimate the BLP coefficients. We solve the Lasso optimization problem ( ˆβ0, ˆβLasso ) = arg min 
+
+> β0,β
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+( ˆψ(Oi) − β0 − Z′
+
+> i
+
+β)2 + λ∥β∥1.
+
+The null hypothesis of a constant treatment effect implies that the best linear predictor is constant, or equivalently, that the slope coefficients are zero ( β = 0). We test this hypothesis using the debiased Lasso estimator to account for regularization bias, constructing a Wald statistic for the joint significance of the slope coefficients. The empirical rejection proportions over 1 , 000 Monte Carlo replications at the nominal α =0.05 level are presented in Table 1. Under the constant CATE model, the results demonstrate the impasse detailed in Section 3.2. The Naive DML estimator is severely undersized under the null: reusing the same evaluation fold biases its point estimate downward while its standard error degenerates even faster, so the standardized statistic drifts to −∞ and the one-sided test almost never rejects. The drift is slow for regularized learners, which is why the rejection rates remain small but non-zero and essentially flat across the sample sizes considered (see Appendix B). Furthermore, CHIM and SC fail severely, with rejection rates 16 far exceeding the nominal level even at large sample sizes. In contrast, our proposed IF-SS-CVT maintains excellent size control across all sample sizes. Under the alternative hypotheses, all tests show consistent high power when n is large, while our IF-SS-CVT has lower power than the other tests when n is small. This is expected, as by randomly bisecting each evaluation fold to decouple empirical processes, the IF-SS-CVT operates on an effective sample size of n/ 2. Despite this inherent finite-sample penalty, the IF-SS-CVT remains remarkably powerful when the sample size is large. Table 1: Simulated Rejection Rate IF-SS-CVT 
+
+n CHIM SC Naive DML Lasso XGBoost 250 98.8 20.2 0.7 4.0 3.8 homo (size) 500 67.3 36.3 0.7 4.2 4.9 1000 30.6 44.1 0.6 4.5 5.6 2000 17.6 13.9 0.6 4.8 5.0 250 100.0 100.0 100.0 95.2 42.1 linear 500 100.0 100.0 100.0 99.9 89.7 1000 100.0 100.0 100.0 100.0 100.0 2000 100.0 100.0 100.0 100.0 100.0 250 100.0 100.0 100.0 56.2 50.4 kinked 500 100.0 100.0 100.0 87.9 94.6 1000 100.0 100.0 100.0 99.5 100.0 2000 100.0 100.0 100.0 100.0 100.0 250 100.0 100.0 100.0 71.3 33.9 nonlinear 500 100.0 100.0 100.0 96.0 77.5 1000 100.0 100.0 100.0 99.8 97.5 2000 100.0 100.0 100.0 100.0 100.0    
+
+> Empirical rejection proportions, in percentage points, at 5% significance level based on 1000 simulations. The columns “CHIM” and “SC” refer to the tests proposed by Crump et al. (2008) and Semenova and Chernozhukov (2021), respectively. “Naive DML” refers to the standard DML estimator without sample splitting. “IF-SS-CVT” refers to the proposed CATE Variance Test in Algorithm 1 implemented with Lasso or XGBoost.
+
+## 5 Application 
+
+In this section, we demonstrate the application of the proposed test to the NSW job training program data. In this program, participants were randomly assigned to either a job training 17 program or a control group, and the treatment effect on future earnings can be estimated by directly comparing outcomes of the treated and control groups. In order to evaluate the validity of econometric estimators of treatment effects, LaLonde (1986) compared the treated individuals from the experiment to control groups drawn from two survey datasets: the Panel Study of Income Dynamics (PSID) and the Current Population Survey (CPS). The resulting datasets have been extensively analyzed in the influential works by Dehejia and Wahba (1999); Smith and Todd (2005); Angrist and Pischke (2009); S loczy´ nski (2022), among others. In the context of CATE hypothesis testing, the dataset was analyzed by Hsu (2017) and Dai et al. (2023), who focused specifically on heterogeneity with respect to age. Using the proposed test, we examine heterogeneity with respect to all available covariates. The dataset we use is NSW-CPS, which contains 185 treated units from the experiment and 15992 control units from the CPS. The outcome Yi is the earnings in 1978, and the treatment Di is a binary indicator of whether the individual received the job training. We consider the same set of covariates as those in column 4 of Table 3.3.3 in Angrist and Pischke (2009), which includes age, age squared, education, dummy variables for black and Hispanic, marital status, a dummy indicator for high school degree, and pre-treatment earnings in 1974 and 1975. For this set of covariates Xi, we test H0 : τ (x) = c for some constant c
+
+and all covariate values x. For nuisance parameter estimation in the IF-SS-CVT, we employ XGBoost. We compare the results with the CHIM and SC tests introduced in the simulation section, maintaining the same specifications for the basis functions (linear basis for CHIM and second-order polynomials with interactions for SC). The test results are presented in Table 2. The CHIM test fails to reject the null hypothesis of constant treatment effects at the 5% significance level ( p = 0 .40). This lack of rejection might be attributed to the test’s lower power in finite samples with moderate-dimensional covariates, as observed in our simulations. In contrast, both the SC test and our proposed IF-SS-CVT with Lasso or XGBoost strongly reject the null hypothesis ( p < 0.01), providing robust evidence for the presence of heterogeneous treatment effects. The rejection by the SC test suggests that some of the heterogeneity is linear in the covariates, while the consistent rejection by both Lasso- and XGBoost-based IF-SS-CVT confirms that this finding is not an artifact of a specific machine learning method. These findings complement the conventional ATE-focused analyses by highlighting that the treatment effect of job training likely varies across individuals with different characteristics. 18 Table 2: Test Results for NSW Data Test Statistic P-value CHIM Wald = 9.42 0.40 SC Wald = 35.81 < 0.01 IF-SS-CVT (Lasso) Z = 9.45 < 0.01 IF-SS-CVT (XGBoost) Z = 10.78 < 0.01 
+
+## 6 Conclusion 
+
+This paper develops a hypothesis test for the presence of heterogeneous treatment effects by targeting a single omnibus parameter, the variance of the CATE, θ0 = Var( τ0(X)). In developing this test, we identify a fundamental theoretical impasse in semiparametric infer-ence at the boundary of the parameter space. On one hand, evaluating variance components on the identical sample leads to null degeneracy, where the asymptotic variance collapses to zero and invalidates standard Gaussian approximations. On the other hand, decoupling the empirical processes via standard sample-splitting destroys the Neyman orthogonality of the squared pseudo-outcomes. To resolve this impasse, we develop a novel Intra-Fold Sample-Split algorithm. By randomly bisecting each evaluation fold and computing the total and residual variance components on mutually disjoint halves, our procedure guarantees a positive asymptotic variance under the null. By strictly coupling both evaluation halves to identically trained nuisance estimators, the non-orthogonal squared biases cancel out. We formally prove that this algorithm restores Neyman orthogonality, yields asymptotic normality, and guarantees valid Type I error control under the null hypothesis. Monte Carlo simulations and an empirical application to the NSW job training program confirm the robust finite-sample performance of the proposed test. Our simulations provide empirical proof that, on the boundary, standard cross-fitted DML statistics degenerate and become severely conservative while projection-based HTE tests severely over-reject, whereas our IF-SS-CVT attains the nominal size. Beyond testing for treatment effect moderation, our algorithm provides a general framework for conducting robust hypothesis testing on nonlinear transformations of doubly robust scores. 19 References 
+
+Angrist, J. D. and J.-S. Pischke (2009): Mostly harmless econometrics: An empiricist’s companion , Princeton university press. 
+
+Athey, S. and G. W. Imbens (2017): “The state of applied econometrics: Causality and policy evaluation,” Journal of Economic perspectives , 31, 3–32. 
+
+Chernozhukov, V., D. Chetverikov, M. Demirer, E. Duflo, C. Hansen, W. Newey, and J. Robins (2018): “Double/debiased machine learning for treatment and structural parameters,” The Econometrics Journal , 21, C1–C68. 
+
+Chung, E. and M. Olivares (2021): “Permutation test for heterogeneous treatment effects with a nuisance parameter,” Journal of Econometrics .
+
+Crump, R. K., V. J. Hotz, G. W. Imbens, and O. A. Mitnik (2008): “Nonparametric tests for treatment effect heterogeneity,” The Review of Economics and Statistics , 90, 389– 405. 
+
+Dai, M., W. Shen, and H. S. Stern (2023): “Nonparametric tests for treatment effect heterogeneity in observational studies,” Canadian Journal of Statistics , 51, 531–558. 
+
+Dehejia, R. H. and S. Wahba (1999): “Causal effects in nonexperimental studies: Reeval-uating the evaluation of training programs,” Journal of the American statistical Associa-tion , 94, 1053–1062. 
+
+Ding, P., A. Feller, and L. Miratrix (2016): “Randomization inference for treatment effect variation,” Journal of the Royal Statistical Society Series B: Statistical Methodology ,78, 655–671. 
+
+Heckman, J. J., J. Smith, and N. Clements (1997): “Making the most out of pro-gramme evaluations and social experiments: Accounting for heterogeneity in programme impacts,” The Review of Economic Studies , 64, 487–535. 
+
+Hsu, Y.-C. (2017): “Consistent tests for conditional treatment effects,” The econometrics journal , 20, 1–22. 
+
+Kennedy, E. H. (2023): “Towards optimal doubly robust estimation of heterogeneous causal effects,” Electronic Journal of Statistics , 17, 3008–3049. 
+
+K¨ unzel, S. R., J. S. Sekhon, P. J. Bickel, and B. Yu (2019): “Metalearners for estimating heterogeneous treatment effects using machine learning,” Proceedings of the national academy of sciences , 116, 4156–4165. 
+
+LaLonde, R. J. (1986): “Evaluating the econometric evaluations of training programs with experimental data,” The American economic review , 604–620. 
+
+Nie, X. and S. Wager (2021): “Quasi-oracle estimation of heterogeneous treatment ef-fects,” Biometrika , 108, 299–319. 20 Robins, J. M., A. Rotnitzky, and L. P. Zhao (1994): “Estimation of regression coeffi-cients when some regressors are not always observed,” Journal of the American statistical Association , 89, 846–866. 
+
+Rosenbaum, P. R. and D. B. Rubin (1983): “The central role of the propensity score in observational studies for causal effects,” Biometrika , 70, 41–55. 
+
+Rubin, D. B. (1974): “Estimating causal effects of treatments in randomized and nonran-domized studies.” Journal of educational Psychology , 66, 688. 
+
+Semenova, V. and V. Chernozhukov (2021): “Debiased machine learning of conditional average treatment effects and other causal functions,” The Econometrics Journal , 24, 264– 289. 
+
+Sloczy´ nski, T. (2022): “Interpreting OLS estimands when treatment effects are hetero-geneous: Smaller groups get larger weights,” Review of Economics and Statistics , 104, 501–509. 
+
+Smith, J. A. and P. E. Todd (2005): “Does matching overcome LaLonde’s critique of nonexperimental estimators?” Journal of econometrics , 125, 305–353. 
+
+Wager, S. and S. Athey (2018): “Estimation and inference of heterogeneous treatment effects using random forests,” Journal of the American Statistical Association , 113, 1228– 1242. 
+
+Williamson, B. D., P. B. Gilbert, N. R. Simon, and M. Carone (2023): “A general framework for inference on algorithm-agnostic variable importance,” Journal of the American Statistical Association , 118, 1645–1658. 21 A Appendix: Proofs 
+
+A.1 Proof of Proposition 1 
+
+Proof. We regard the CATE variance θ0 as a statistical functional θ(P ) defined on a non-parametric space of probability distributions P satisfying Assumptions 1–4. Following the identification result in Equation (3) of the main text, we can express the functional as the difference between two variance components 
+
+θ(P ) = Vtot (P ) − Vres (P ),
+
+where 
+
+Vtot (P ) = EP
+
+(ψP (O) − τATE (P )) 2 ,Vres (P ) = EP
+
+(ψP (O) − τP (X)) 2 .
+
+Here, ψP (O) is the doubly robust pseudo-outcome evaluated using the nuisance parameters 
+
+ηP = ( eP , μ P ) under distribution P . The projection parameters are defined as τATE (P ) = 
+
+EP [ψP (O)] and τP (X) = EP [ψP (O) | X]. To derive the influence function, we compute the pathwise (Gˆ ateaux) derivative of the func-tional θ(P ) along a smooth, one-dimensional parametric submodel {Pt : t ∈ [0 , ϵ )} ⊂ P that passes through the true distribution P0 at t = 0. Let S(O) = ∂∂t log dP t(O) t=0 denote the score function of this submodel. By definition, the influence function ϕθ(O) is the unique mean-zero function satisfying 
+
+ddt θ(Pt) t=0 
+
+= EP0 [ϕθ(O)S(O)] .
+
+Applying the chain rule, the variation of the total variance functional comes from the change in the measure Pt, the nuisance parameter variation in ψPt (O), and the change in the cen-22 tering parameter τATE (Pt)
+
+ddt Vtot (Pt) t=0 
+
+= EP0
+
+(ψP0 (O) − τATE (P0)) 2S(O)
+
++ 2 EP0
+
+
+
+(ψP0 (O) − τATE (P0)) 
+
+∂ψ Pt (O)
+
+∂t t=0 
+
+− ∂τ ATE (Pt)
+
+∂t t=0 
+
+ 
+
+.
+
+Since τATE (P0) = EP0 [ψP0 (O)], the expected pseudo-outcome residual strictly vanishes: 
+
+EP0 [ψP0 (O) − τATE (P0)] = 0. As a result, the derivative with respect to τATE (Pt) evalu-ates to zero 
+
+−2∂τ ATE (Pt)
+
+∂t t=0 
+
+EP0 [ψP0 (O) − τATE (P0)] = 0 .
+
+Hence, the pathwise derivative simplifies to 
+
+ddt Vtot (Pt) t=0 
+
+= EP0
+
+(ψP0 (O) − τATE (P0)) 2S(O)+EP0
+
+
+
+2( ψP0 (O) − τATE (P0)) ∂ψ Pt (O)
+
+∂t t=0 
+
+
+
+.
+
+(A.1) Similarly, we differentiate the residual variance functional. The function τPt (X) minimizes the mean squared error EPt [( ψPt (O) − f (X)) 2]. By the Envelope Theorem for functional optimization (or simply the orthogonal projection property), the first-order variation with respect to the optimal conditional mean function τPt (X) vanishes. Using the Law of Iterated Expectations, we have 
+
+EP0
+
+
+
+2( ψP0 (O) − τP0 (X)) ∂τ Pt (X)
+
+∂t t=0 
+
+
+
+= EP0
+
+2∂τ Pt (X)
+
+∂t t=0 
+
+EP0 [ψP0 (O) − τP0 (X) | X]
+
+| {z }
+
+> =0
+
+ = 0 .
+
+Thus, the pathwise derivative of Vres (Pt) is 
+
+ddt Vres (Pt) t=0 
+
+= EP0
+
+(ψP0 (O) − τP0 (X)) 2S(O) + EP0
+
+
+
+2( ψP0 (O) − τP0 (X)) ∂ψ Pt (O)
+
+∂t t=0 
+
+
+
+.
+
+(A.2) As demonstrated in Section 3.2 of the main text, the conditional covariance between the pseudo-outcome and its nuisance derivative, EP0 [( ψP0 (O) − τP0 (X)) ∂ψ Pt (O) 
+
+> ∂t
+
+|t=0 | X], is gener-ally non-zero. Thus, Vtot (P ) and Vres (P ) are not individually Neyman orthogonal. However, by subtracting (A.2) from (A.1), we obtain the pathwise derivative of the target 23 parameter θ(Pt). The combined nuisance variation of the difference is ∆nuisance = EP0
+
+
+
+2( ψP0 (O) − τATE (P0)) ∂ψ Pt (O)
+
+∂t t=0 
+
+
+
+− EP0
+
+
+
+2( ψP0 (O) − τP0 (X)) ∂ψ Pt (O)
+
+∂t t=0 
+
+
+
+= EP0
+
+
+
+2( τP0 (X) − τATE (P0)) ∂ψ Pt (O)
+
+∂t t=0 
+
+
+
+.
+
+Crucially, the scalar factor ( τP0 (X) − τATE (P0)) is purely a function of the covariates X.Applying the Law of Iterated Expectations, we condition on X first ∆nuisance = EP0
+
+
+
+2( τP0 (X) − τATE (P0)) EP0
+
+∂ψ Pt (O)
+
+∂t t=0 
+
+X
+
+ 
+
+. (A.3) To evaluate the inner conditional expectation, we expand the derivative of the doubly robust pseudo-outcome with respect to the submodel parameter t∂ψ Pt (O)
+
+∂t t=0 
+
+= ∂μ Pt (1 , X )
+
+∂t t=0 
+
+
+
+1 − DeP0 (X)
+
+
+
+− ∂μ Pt (0 , X )
+
+∂t t=0 
+
+
+
+1 − 1 − D
+
+1 − eP0 (X)
+
+
+
+− D(Y − μP0 (1 , X )) 
+
+eP0 (X)2
+
+∂e Pt (X)
+
+∂t t=0 
+
++ (1 − D)( Y − μP0 (0 , X )) (1 − eP0 (X)) 2
+
+∂e Pt (X)
+
+∂t t=0 
+
+.
+
+Taking the conditional expectation given X under the true probability measure P0, we use the unconfoundedness assumption EP0 [D | X] = eP0 (X) and the consistency of the outcome regressions EP0 [Y | D = d, X ] = μP0 (d, X )
+
+EP0
+
+
+
+1 − DeP0 (X) X
+
+
+
+= 1 − eP0 (X)
+
+eP0 (X) = 0 
+
+EP0
+
+
+
+1 − 1 − D
+
+1 − eP0 (X) X
+
+
+
+= 1 − 1 − eP0 (X)1 − eP0 (X) = 0 
+
+EP0
+
+D(Y − μP0 (1 , X )) 
+
+eP0 (X)2 X
+
+
+
+= eP0 (X)
+
+eP0 (X)2 EP0 [Y − μP0 (1 , X ) | D = 1 , X ]
+
+| {z }
+
+> =0
+
+= 0 
+
+EP0
+
+(1 − D)( Y − μP0 (0 , X )) (1 − eP0 (X)) 2 X
+
+
+
+= 1 − eP0 (X)(1 − eP0 (X)) 2 EP0 [Y − μP0 (0 , X ) | D = 0 , X ]
+
+| {z }
+
+> =0
+
+= 0 Consequently, EP0
+
+h∂ψ Pt (O)  
+
+> ∂t t=0
+
+X
+
+i
+
+= 0. This fundamental property confirms that the ex-pected first-order nuisance bias of the doubly robust pseudo-outcome conditional on X is exactly zero. Substituting this back into Equation (A.3), the entire joint nuisance variation algebraically annihilates: ∆ nuisance = 0. 24 With the nuisance variation strictly vanishing, the pathwise derivative of the target functional is exclusively driven by the measure variation 
+
+ddt θ(Pt) t=0 
+
+= EP0
+
+  (ψP0 (O) − τATE (P0)) 2 − (ψP0 (O) − τP0 (X)) 2 S(O) .
+
+To officially identify the influence function ϕθ(O) as the Riesz representer, the bracketed term must have an expected value of zero under P0. Because the score function is mean-zero (EP0 [S(O)] = 0), we can subtract the constant θ0 = EP0 [( ψP0 (O) − τATE (P0)) 2 − (ψP0 (O) −
+
+τP0 (X)) 2] from the integrand without altering the expectation: 
+
+ddt θ(Pt) t=0 
+
+= EP0
+
+h 
+
+(ψP0 (O) − τATE (P0)) 2 − (ψP0 (O) − τP0 (X)) 2 − θ0
+
+
+
+S(O)
+
+i
+
+.
+
+Letting ψ(Oi) = ψP0 (Oi), τATE = τATE (P0), and τ0(Xi) = τP0 (Xi) for notational simplicity, we extract the required influence function for the CATE variance θ0
+
+ϕθ(Oi) = ( ψ(Oi) − τATE )2 − (ψ(Oi) − τ0(Xi)) 2 − θ0.
+
+This completes the proof. 
+
+A.2 Proof of Theorem 1 
+
+To establish the asymptotic validity of Algorithm 1, we map the estimator into a sum of independent empirical processes. Throughout the proof, let P0 denote the true probability measure. Let ψ0(O) denote the true uncentered efficient influence function (oracle pseudo-outcome) evaluated with the true nuisance parameters η0 = ( μ0, e 0). Let Pn,k, tot and Pn,k, res 
+
+denote the empirical probability measures over the mutually disjoint evaluation sub-splits 
+
+Ik, tot and Ik, res . For notational simplicity and without loss of generality, we assume the 
+
+K folds are perfectly balanced such that nk = n/K , and the sub-splits are of equal size 
+
+mk = m = n/ (2 K). 
+
+Lemma A1. Let ˆηk = (ˆ ek, ˆμk, ˆτk, ˆτATE ,k ) be the identically trained nuisance estimators on 
+
+I−k. Conditional on I−k, define the expected drift of the paired variance components evaluated at ˆηk as 
+
+Bk = P0
+
+h  ˆψk(O) − ˆτATE ,k 
+
+2 −   ˆψk(O) − ˆτk(X)2 | I −k
+
+i
+
+− θ0
+
+where P0[· | I −k] is the expectation taken over a new observation O = ( Y, D, X ) independent 
+
+25 of I−k. Under Assumptions 1–4, Bk = oP (n−1/2).Proof. We expand the difference of the estimated expected losses using the identity ( c −
+
+x)2 − (c − y)2 = 2 c(y − x) + x2 − y2 with c = ˆψk, x = ˆ τATE ,k , and y = ˆ τk,
+
+  ˆψk − ˆτATE ,k 
+
+2 −   ˆψk − ˆτk
+
+2 = 2 ˆψk(ˆ τk − ˆτATE ,k ) − ˆτ 2 
+
+> k
+
++ ˆ τ 2ATE ,k .
+
+Crucially, because Algorithm 1 strictly couples both components to the exact same evaluated ˆψk, the non-orthogonal ˆψ2 
+
+> k
+
+terms cancel out. To isolate the estimation errors from the true functions, define the perturbations: ∆ψ =ˆψk − ψ0, ∆ τ = ˆ τk − τ0, and ∆ c = ˆ τATE ,k − τATE . We expand the exact target parameter 
+
+θ0 using the identical algebraic expansion evaluated at the true functions: θ0 = P0[2 ψ0(τ0 −
+
+τATE ) − τ 20 + τ 2ATE ]. Subtracting θ0 from the conditional expectation of the estimated losses yields the exact drift 
+
+Bk
+
+Bk = P0
+
+h
+
+2( ψ0 + ∆ ψ)( τ0 + ∆ τ − τATE − ∆c) − (τ0 + ∆ τ )2 + ( τATE + ∆ c)2 | I −k
+
+i
+
+− θ0.
+
+Expanding this expression and grouping terms gives 
+
+Bk = P0[2 ψ0∆τ − 2τ0∆τ | I −k]
+
+| {z }
+
+> T1
+
++ P0[−2ψ0∆c + 2 τATE ∆c | I −k]
+
+| {z }
+
+> T2
+
+++ 2 P0[∆ ψ(τ0 − τATE ) | I −k] + 2 P0[∆ ψ(∆ τ − ∆c) | I −k] − P0[∆ τ 2 | I −k] + ∆ c2.
+
+By the Law of Iterated Expectations, P0[ψ0 | X] = τ0(X) and P0[ψ0] = τATE . Therefore, the linear error terms cancel out: T1 = P0[2 τ0∆τ − 2τ0∆τ | I −k] = 0, and T2 = −2τATE ∆c +2τATE ∆c = 0. The conditional drift strictly simplifies to four remainder components: 
+
+Bk = 2 P0
+
+∆ψ(τ0 − τATE ) | I −k
+
+ + 2 P0
+
+∆ψ(∆ τ − ∆c) | I −k
+
+ − P0
+
+∆τ 2 | I −k
+
+ + ∆ c2.
+
+We bound these four components using the L2 convergence rates in Assumption 4. By construction of the pseudo-outcome, the conditional expectation of its estimation error is 
+
+EP0 [∆ ψ | X, I−k] = ˆek − e0
+
+ˆek
+
+(ˆ μk(1) − μ0(1)) + ˆek − e0
+
+1 − ˆek
+
+(ˆ μk(0) − μ0(0)) .
+
+26 Because the true functions τ0(X) and τATE are uniformly bounded by C (Assumption 4(ii)), their absolute difference is bounded by 2 C. Taking the absolute value and applying Cauchy-Schwarz to the product of errors gives 2 P0
+
+∆ψ(τ0 − τATE ) | I −k
+
+ ≤ 4Cξ ∥ˆek − e0∥P, 2
+
+ ∥ˆμk(1) − μ0(1) ∥P, 2 + ∥ˆμk(0) − μ0(0) ∥P, 2
+
+,
+
+where the overlap constant 1 /ξ comes from Assumption 2. By Assumption 4(i), this is 
+
+oP (n−1/4) × oP (n−1/4) = oP (n−1/2). For the second cross-term, the factors ∆ τ and ∆ c are measurable with respect to X and 
+
+I−k, so by the Law of Iterated Expectations we may pass to the conditional expectation 
+
+EP0 [∆ ψ | X, I−k] before bounding. Because the true and estimated outcome functions are uniformly bounded by C (Assumption 4(ii)), the absolute differences |ˆμk(d, X )−μ0(d, X )| are bounded by 2 C almost surely, and the L2(P0) norm of the conditional expectation satisfies 
+
+EP0 [∆ ψ | X, I−k] P, 2 ≤ 2Cξ ∥ˆek − e0∥P, 2 = oP (n−1/4).
+
+Applying Cauchy-Schwarz to the outer expectation, 2 P0
+
+∆ψ(∆ τ − ∆c) | I −k
+
+ ≤ 2 EP0 [∆ ψ | X, I−k] P, 2
+
+ ∥∆τ ∥P, 2 + |∆c| = oP (n−1/2).P0[∆ τ 2 | I −k] = ∥ˆτk − τ0∥2 
+
+> P, 2
+
+=  oP (n−1/4)2 = oP (n−1/2). ∆c2 = (ˆ τATE ,k − τATE )2 =  OP (n−1/2)2 = OP (n−1) = oP (n−1/2). Summing these bounds confirms that Bk = oP (n−1/2). Neyman orthogonality for θ0 is successfully restored. 
+
+Lemma A2. Define the influence functions for the variance components as ϕtot (Oi) = (ψ0(Oi) − τATE )2 − Vtot and ϕres (Oi) = ( ψ0(Oi) − τ0(Xi)) 2 − Vres . The split-sample estimator 
+
+ˆθsplit = 1
+
+> K
+
+PKk=1 ˆθk satisfies the asymptotic expansion 
+
+√n(ˆθsplit − θ0) = 
+
+√nK
+
+> K
+
+X
+
+> k=1
+
+(Pn,k, tot [ϕtot ] − Pn,k, res [ϕres ]) + oP (1) .
+
+Proof. For a given fold k, the estimated target is ˆθk = ˆVtot ,k − ˆVres ,k . We decompose the 27 error into an empirical process evaluated at the estimated nuisance parameters, plus the conditional drift Bk
+
+ˆθk − θ0 = ( Pn,k, tot − P0)( ˆψk − ˆτATE ,k )2 − (Pn,k, res − P0)( ˆψk − ˆτk)2 + Bk.
+
+Because Bk = oP (n−1/2) as in Lemma A1 and the out-of-fold estimators ˆ ηk are computed on the independent set I−k, we invoke standard stochastic equicontinuity results for cross-fitted Double/Debiased Machine Learning by Chernozhukov et al. (2018). Crucially, Assumption 3(i) ensures the outcome Yi has bounded fourth moments and Assumption 4(ii) ensures the true and estimated nuisance functions are uniformly bounded; together these guarantee that the squared pseudo-outcomes possess a valid square-integrable envelope, satisfying the regularity conditions for cross-fitted empirical processes. Given the L2 consistency required by Assumption 4, substituting the estimated nuisance functions with their true probability limits inside the centered empirical process introduces only an oP (n−1/2) remainder (Pn,k, tot −P0)( ˆψk−ˆτATE ,k )2 = ( Pn,k, tot −P0)(ψ0−τATE )2+oP (n−1/2) = Pn,k, tot [ϕtot ]+ oP (n−1/2)(Pn,k, res − P0)( ˆψk − ˆτk)2 = ( Pn,k, res − P0)(ψ0 − τ0)2 + oP (n−1/2) = Pn,k, res [ϕres ] + oP (n−1/2).
+
+Averaging across the K fixed folds and multiplying by √n yields the stated linear expansion. 
+
+Lemma A3. Let σ2tot = Var( ϕtot (O)) and σ2res = Var( ϕres (O)) . Under Assumptions 1–4, the aggregated test statistic ˆθsplit satisfies 
+
+√n(ˆθsplit − θ0) d
+
+−→ N  0, 2σ2tot + 2 σ2res 
+
+.
+
+Crucially, the asymptotic variance remains strictly positive even under the null hypothesis 
+
+H0 : θ0 = 0 .Proof. Let Itot = SKk=1 Ik, tot and Ires = SKk=1 Ik, res . By the construction of Algorithm 1, these global sets completely partition the dataset such that Itot ∩ I res = ∅, and both sets have an identical size of n/ 2. We rewrite the summation from Lemma A2 as a scaled difference over these global sets 
+
+√n(ˆθsplit − θ0) = √2
+
+"
+
+1
+
+pn/ 2
+
+X
+
+> i∈I tot
+
+ϕtot (Oi)
+
+#
+
+− √2
+
+"
+
+1
+
+pn/ 2
+
+X
+
+> j∈I res
+
+ϕres (Oj )
+
+#
+
++ oP (1) .
+
+28 By the Central Limit Theorem, the bracketed terms converge in distribution to N (0 , σ 2tot )and N (0 , σ 2res ). Because the evaluation subsets Itot and Ires are mutually disjoint, the two empirical processes evaluate statistically independent observations. Thus, their covariance is exactly zero, and the variance of their difference sums strictly to 2 σ2tot + 2 σ2res .Under H0 : θ0 = 0, the CATE is constant almost surely τ0(X) = τATE . Consequently, the true uncentered influence functions become perfectly identical: ϕtot (O) = ϕres (O) almost surely. If these components were evaluated on the same sample, the variance of their differ-ence would degenerate identically to Var( ϕtot − ϕtot ) = 0. However, because our algorithm strictly partitions the evaluation sets, the empirical covariance remains exactly zero, and the asymptotic limit variance strictly evaluates to 4 σ2tot . By the non-degeneracy condition in Assumption 3(ii), Var(( ψ0(O) − τATE )2) = σ2tot > c > 0. Therefore, the asymptotic variance strictly bounds away from zero, formally resolving the null degeneracy. 
+
+Proof of Theorem 1. Equipped with the preceding lemmas, we now establish the final asymp-totic validity of Algorithm 1. The standard error estimator cSE 2
+
+proposed in Algorithm 1 aggregates the sample variances within the paired sub-splits. Substituting mk = n/ (2 K) and scaling the expression by nn cSE 2
+
+= n 1
+
+K2
+
+> K
+
+X
+
+> k=1
+
+ ˆσ2tot ,k 
+
+n/ (2 K) + ˆσ2res ,k 
+
+n/ (2 K)
+
+
+
+= 2
+
+K
+
+> K
+
+X
+
+> k=1
+
+ ˆσ2tot ,k + ˆ σ2res ,k 
+
+.
+
+Under Assumption 3 and the L2 consistency of the nuisance parameters, the sample variances are weakly consistent for their population counterparts: ˆ σ2tot ,k p
+
+−→ σ2tot and ˆ σ2res ,k p
+
+−→ σ2res . By the Weak Law of Large Numbers over the fixed K folds, n cSE 2 p
+
+−→ 2σ2tot + 2 σ2res .The standardized test statistic can be rewritten as 
+
+Zθ =
+
+√n(ˆθsplit − θ0)
+
+q
+
+n cSE 2
+
+.
+
+By Lemma A3, the numerator converges in distribution to N (0 , 2σ2tot +2 σ2res ). The denomina-tor converges in probability to the square root of that identical quantity. Applying Slutsky’s Theorem yields the stated standard normal limit 
+
+Zθd
+
+−→ N (0 , 1) .
+
+29 Under the null hypothesis H0 : θ0 = 0, the standardized statistic simplifies to Zθ = ˆθsplit / cSE .Because the asymptotic Gaussian limit is valid on the boundary (as established by the non-degeneracy in Lemma A3), the one-sided test provides exact asymptotic size control lim  
+
+> n→∞
+
+P (Zθ > z 1−α | H0) = 1 − Φ( z1−α) = α. 
+
+Under the alternative H1 : θ0 > 0, the standardized test statistic decomposes into a centered distribution and a non-stochastic drift 
+
+Zθ = ˆθsplit 
+
+cSE = ˆθsplit − θ0
+
+cSE + θ0
+
+cSE .
+
+The first term converges to N (0 , 1) and is OP (1). For the drift component, since θ0 > 0 is a fixed positive constant and cSE = OP (n−1/2), we have: 
+
+θ0
+
+cSE = √n θ0
+
+q
+
+n cSE 2
+
+> p
+
+−→ +∞.
+
+Therefore, the test statistic Zθ diverges to + ∞ at a √n-rate. Consequently, the probability of rejecting the null hypothesis approaches 1, establishing asymptotic unit power against any fixed alternative lim  
+
+> n→∞
+
+P (Zθ > z 1−α | H1) = 1 .
+
+30 B Appendix: Asymptotic Behavior of the Naive DML Statistic 
+
+This appendix characterizes the limiting behavior of the Naive DML benchmark introduced in Section 4. The benchmark is constructed to isolate the role of the Intra-Fold Sample-Split: it retains standard cross-fitting but evaluates the total and residual variance components on the same observations. We show that, under the null hypothesis and an exact-rate condition on the DR-learner, this single change produces a standardized statistic that drifts to −∞ , so the one-sided test’s rejection probability converges to zero. This formalizes the conservative degeneracy described in Section 3.2 and accounts for the small, n-insensitive rejection rates in the Naive DML column of Table 1. The result is proved for the feasible K-fold statistic by conditional moment arguments alone; no central limit theorem is invoked, so no condition on the dependence between folds induced by the shared training data is required. For each fold k, the benchmark trains a single set of out-of-fold nuisance estimators ˆ ηk =(ˆ ek, ˆμk), a DR-learner ˆ τk, and an ATE estimator ˆ τATE ,k on I−k, and evaluates both variance components on the entire evaluation fold Ik,ˆVtot ,k = 1
+
+nk
+
+X
+
+> i∈I k
+
+  ˆψi,k − ˆτATE ,k 
+
+2, ˆVres ,k = 1
+
+nk
+
+X
+
+> i∈I k
+
+  ˆψi,k − ˆτk(Xi)2.
+
+The point estimate and standard error are ˆθnaive = 1
+
+K
+
+> K
+
+X
+
+> k=1
+
+  ˆVtot ,k − ˆVres ,k 
+
+, cSE naive =
+
+vuut 1
+
+K2
+
+> K
+
+X
+
+> k=1
+
+ˆσ2
+
+> ϕ,k
+
+nk
+
+,
+
+the standardized statistic is Znaive = ˆθnaive / cSE naive , where ˆ σ2 
+
+> ϕ,k
+
+is the sample variance over 
+
+Ik of the per-unit influence term ˆϕi,k =   ˆψi,k − ˆτATE ,k 
+
+2 −   ˆψi,k − ˆτk(Xi)2, (B.1) and the test rejects H0 when Znaive > z 1−α. As in the proof of Theorem 1 in Appendix A, we take the folds balanced, nk = n/K , without loss of generality. 31 Notation. Fix a fold k and write, with all conditional expectations taken over a new observation O = ( Y, D, X ) independent of I−k,ˆhk(x) := ˆ τk(x) − ˆτATE ,k , ∆c,k := ˆ τATE ,k − τATE ,δn,k := ∥ˆτk − τ0∥P, 2, ¯bk := P0
+
+ˆτk(X) − τ0(X) | I −k
+
+,ρk := P0
+
+ˆrk(X) ˆhk(X) | I −k
+
+,
+
+(B.2) where ˆrk(x) :=  ˆek(x) − e0(x)  ˆμk(1 , x ) − μ0(1 , x )ˆek(x) + ˆμk(0 , x ) − μ0(0 , x )1 − ˆek(x)
+
+
+
+(B.3) is the doubly robust product bias: as computed in the proof of Lemma A1, P0[ ˆψi,k − ψ0(Oi) |
+
+Xi, I−k] = ˆ rk(Xi). Finally let ˆvk(x) := Var   ˆψi,k | Xi = x, I−k
+
+,mk := P0
+
+ ˆϕi,k | I −k
+
+, s2 
+
+> k
+
+:= Var   ˆϕi,k | I −k
+
+.
+
+Assumption B1. In addition to Assumptions 1–4, the following hold. (i) Conditional moments: there exist constants ¯M < ∞ and σ2min > 0 such that, almost surely, E(Y − μ0(D, X )) 4 | D, X  ≤ ¯M and σ2
+
+> d
+
+(X) = Var( Y | D = d, X ) ≥ σ2min for 
+
+d ∈ { 0, 1}.(ii) Exact learner rate: there is a deterministic sequence dn → 0 with δn,k /d np
+
+−→ 1 for each k = 1 , . . . , K , and √n d n → ∞ . (The unit normalization is without loss of generality; 
+
+δn,k ≍P dn suffices, with the obvious changes of constants.) (iii) Product-bias domination: ∥ˆrk∥P, 2 = oP (dn) for each k. Sufficient primitive conditions: the propensity score is known (then ˆrk ≡ 0, as in a randomized experiment), or ∥ˆek −e0∥P, 2 =
+
+oP (dn), since |ˆrk| ≤ (4 C/ξ ) |ˆek − e0| on the event of Assumption 4(ii). 
+
+Assumption B1(ii) restricts attention to learners whose L2 error, while vanishing, decays more slowly than the parametric rate; this is the empirically relevant case for regularized machine learners and, as Remark B1 explains, it is also the only regime in which the benchmark admits a one-signed asymptotic verdict under Assumptions 1–4. Note that (ii) together with Assumption 4(i) implies ∆2 
+
+> c,k
+
+= OP (n−1) = oP (d2
+
+> n
+
+): the dominance of the learner error over the ATE error is derived, not assumed. 32 Proposition B1 (Degeneracy of the Naive DML Test) . Suppose Assumptions 1–4 and B1 hold, and let H0 : θ0 = 0 be true. Then: (i) (Exact bias anatomy.) For every fold k,
+
+mk = P0
+
+ ˆϕi,k | I −k
+
+ = − δ2 
+
+> n,k
+
++ ∆ 2 
+
+> c,k
+
++ 2 ρk, (B.4) 
+
+an identity that uses only Assumptions 1–3 and holds on the event of Assumption 4(ii) (probability approaching one), on which all conditional moments above exist. (ii) ˆθnaive = − d2
+
+> n
+
+ 1 + oP (1) .(iii) n cSE 2naive = S2
+
+> n
+
+ 1 + oP (1) , where S2 
+
+> n
+
+:= K−1 PKk=1 s2 
+
+> k
+
+obeys the two-sided bounds 
+
+4σ2min + oP (1) ≤ S2
+
+> n
+
+d2
+
+> n
+
+≤ C⋆ + oP (1) 
+
+for a finite constant C⋆ depending only on (ξ, C, ¯M ). In particular the naive standard error is of exact order dn/√n.(iv) Consequently 
+
+Znaive = −√n d 2
+
+> n
+
+Sn
+
+ 1 + oP (1)  p
+
+−→ −∞ ,
+
+lim  
+
+> n→∞
+
+P  Znaive > z 1−α | H0
+
+ = 0 for every α ∈ (0 , 1) .
+
+The benchmark therefore never over-rejects asymptotically; its asymptotic size is zero, and the standardized statistic diverges at the rate √n d n.Proof. Fix a fold k; all constants C1, C 2, . . . below depend only on ( ξ, C, ¯M ), and K is fixed. Since |τ0| ≤ C implies |τATE | ≤ C, the event 
+
+En,k := 
+
+n
+
+ˆek(X) ∈ [ξ, 1 − ξ], max  |ˆμk(d, X )|, |ˆτk(X)| ≤ C a.s. , |∆c,k | ≤ 1
+
+o
+
+satisfies P (En,k ) → 1: the first two requirements hold with probability approaching one by Assumption 4(ii), and the third holds because Assumption 4(i) gives ∆ c,k = OP (n−1/2) = 
+
+oP (1). Since every conclusion is a statement of convergence in probability, we may and do argue on En,k throughout. On this event |ˆτATE ,k | ≤ C + 1, hence |ˆhk| ≤ ¯h := 2 C + 1 and, by (B.3), |ˆrk| ≤ ¯r := 4 C/ξ almost surely. 33 Step 1 (conditional structure). Let εi,k := ˆψi,k −P0[ ˆψi,k | Xi, I−k], so that P0[εi,k | Xi, I−k] = 0 and P0[ε2 
+
+> i,k
+
+| Xi, I−k] = ˆ vk(Xi). Since P0[ψ0 | X] = τ0(X) = τATE under H0 and P0[ ˆψi,k − ψ0 |
+
+Xi, I−k] = ˆ rk(Xi), ˆψi,k − ˆτATE ,k = εi,k + ˆ rk(Xi) − ∆c,k .
+
+Since ˆψi,k − ˆτk(Xi) = ( ˆψi,k − ˆτATE ,k ) − ˆhk(Xi), the influence term (B.1) factorizes as ˆϕi,k = 2   ˆψi,k − ˆτATE ,k 
+
+ˆhk(Xi) − ˆhk(Xi)2 = 2 εi,k ˆhk(Xi) + qk(Xi), (B.5) with qk(x) := 2  ˆrk(x) − ∆c,k 
+
+ˆhk(x) − ˆhk(x)2, an I−k-measurable function of x alone. 
+
+Step 2 (exact mean; part (i)). Because 
+
+P0
+
+εi,k ˆhk(Xi) | I −k
+
+ = P0
+
+ˆhk(X) P0[εi,k | X, I−k] = 0 ,
+
+we have mk = P0[qk | I −k]. Under H0, ˆhk = (ˆ τk − τ0) − ∆c,k , so 
+
+P0[ˆhk | I −k] = ¯bk − ∆c,k , P0[ˆh2 
+
+> k
+
+| I −k] = δ2 
+
+> n,k
+
+− 2∆ c,k ¯bk + ∆ 2
+
+> c,k
+
+.
+
+Therefore 
+
+mk = 2 ρk − 2∆ c,k 
+
+ ¯bk − ∆c,k 
+
+ −  δ2 
+
+> n,k
+
+− 2∆ c,k ¯bk + ∆ 2
+
+> c,k
+
+ = − δ2 
+
+> n,k
+
++ ∆ 2 
+
+> c,k
+
++ 2 ρk,
+
+which is (B.4); the terms in ∆ c,k ¯bk cancel exactly. Only integrability and the conditional-bias formula were used, so (i) holds under Assumptions 1–3 alone on the event of Assumption 4(ii). 
+
+Step 3 (drift). By Jensen’s inequality |¯bk| ≤ δn,k , and by Assumption 4(i) and √n d n → ∞ 
+
+we have ∆ c,k = OP (n−1/2) = oP (dn). Hence, using Assumption B1(ii), 
+
+∥ˆhk∥2 
+
+> P, 2
+
+= δ2 
+
+> n,k
+
+− 2∆ c,k ¯bk + ∆ 2 
+
+> c,k
+
+= d2
+
+> n
+
+ 1 + oP (1) . (B.6) By Cauchy–Schwarz and Assumption B1(iii), |ρk| ≤ ∥ ˆrk∥P, 2∥ˆhk∥P, 2 = oP (dn) · OP (dn) = 
+
+oP (d2
+
+> n
+
+), while ∆ 2 
+
+> c,k
+
+= OP (n−1) = oP (d2
+
+> n
+
+). Combining with (i), 
+
+mk = − d2
+
+> n
+
+ 1 + oP (1) . (B.7) 
+
+Step 4 (two-sided conditional variance bounds). Since P0[εi,k ˆhk(qk − mk) | I −k] = P0[ˆhk(qk −
+
+34 mk) P0[εi,k | X, I−k]] = 0, the decomposition (B.5) gives 
+
+s2 
+
+> k
+
+= 4 P0
+
+ˆvk(X)ˆhk(X)2 | I −k
+
+ + Var  qk(X) | I −k
+
+. (B.8) For the lower bound, the law of total variance and ˆ ek, 1 − ˆek ≤ 1 give, on En,k ,ˆvk(X) ≥ P0
+
+ Var( ˆψi,k | D, X ) | X
+
+= e0(X) σ21 (X)ˆek(X)2 +  1 − e0(X) σ20 (X)(1 − ˆek(X)) 2 ≥ σ2min ,
+
+so s2 
+
+> k
+
+≥ 4σ2min ∥ˆhk∥2
+
+> P, 2
+
+. For the upper bound, | ˆψi,k | ≤ 2C + ( |Y − μ0(D, X )| + 2 C)/ξ on En,k 
+
+and E[( Y − μ0(D, X )) 2 | D, X ] ≤ ¯M 1/2 yield ˆ vk(X) ≤ P0[ ˆψ2 
+
+> i,k
+
+| X, I−k] ≤ C1; moreover 
+
+|qk| ≤  2(¯ r + 1) + ¯h|ˆhk| on En,k (using |∆c,k | ≤ 1 there), so Var( qk | I −k) ≤ P0[q2 
+
+> k
+
+| I −k] ≤
+
+C2∥ˆhk∥2
+
+> P, 2
+
+. Hence, with C3 := 4 C1 + C2,4σ2min ∥ˆhk∥2 
+
+> P, 2
+
+≤ s2 
+
+> k
+
+≤ C3 ∥ˆhk∥2
+
+> P, 2
+
+, (B.9) and by (B.6) both bounds are of exact order d2
+
+> n
+
+.
+
+Step 5 (fluctuations; part (ii)). Let Ak := n−1
+
+> k
+
+P 
+
+> i∈I k
+
+( ˆϕi,k − mk), so that P0[Ak | I −k] = 0 and Var( Ak | I −k) = s2
+
+> k
+
+/n k, the observations in Ik being i.i.d. and independent of I−k. By conditional Chebyshev, (B.9), (B.6) and P (En,k ) → 1, for every η > 0
+
+P  |Ak| > η d 2
+
+> n
+
+ ≤ E
+
+
+
+min 
+
+
+
+1, s2
+
+> k
+
+nk η2d4
+
+> n
+
+ 
+
++ o(1) ≤ 2C3Kη2 n d 2
+
+> n
+
++ o(1) −→ 0,
+
+using n d 2 
+
+> n
+
+→ ∞ . Thus Ak = oP (d2
+
+> n
+
+) for each of the K folds separately — no joint moment across folds is required — and with (B.7), ˆθnaive = 1
+
+K
+
+> K
+
+X
+
+> k=1
+
+ mk + Ak
+
+ = − d2
+
+> n
+
+ 1 + oP (1) ,
+
+which is (ii). Note this already implies P (ˆθnaive ≥ 0) → 0 and hence, since cSE naive > 0 and 
+
+z1−α > 0, the size conclusion in (iv) — the remaining steps sharpen this to the stated rate. 
+
+Step 6 (standard error; part (iii)). Write ˆ σ2 
+
+> ϕ,k
+
+= n−1
+
+> k
+
+P
+
+> i∈I k
+
+ˆϕ2 
+
+> i,k
+
+− (mk + Ak)2 (the nk/(nk − 1) correction is immaterial). On En,k , E[ε4 
+
+> i,k
+
+| Xi, I−k] ≤ C4(1 + ¯M ) by the same envelope as in 35 Step 4, so from (B.5), |ˆhk| ≤ ¯h and |qk| ≤ C5,
+
+P0
+
+ ˆϕ4 
+
+> i,k
+
+| I −k
+
+ ≤ 8
+
+
+
+16 ¯h2 C4(1 + ¯M ) ∥ˆhk∥2 
+
+> P, 2
+
++ C25 P0[q2 
+
+> k
+
+| I −k]
+
+
+
+≤ C6 ∥ˆhk∥2
+
+> P, 2
+
+.
+
+Since P0[ ˆϕ2 
+
+> i,k
+
+| I −k] = s2 
+
+> k
+
++ m2
+
+> k
+
+, conditional Chebyshev gives 
+
+n−1
+
+> k
+
+X
+
+> i∈I k
+
+ˆϕ2 
+
+> i,k
+
+= s2 
+
+> k
+
++ m2 
+
+> k
+
++ OP
+
+p C6 d2
+
+> n
+
+/n k
+
+
+
+= s2 
+
+> k
+
++ oP (d2
+
+> n
+
+),
+
+because m2 
+
+> k
+
+= OP (d4
+
+> n
+
+) = oP (d2
+
+> n
+
+) and dn/√n = oP (d2
+
+> n
+
+) by √n d n → ∞ . Likewise ( mk +Ak)2 =
+
+OP (d4
+
+> n
+
+) = oP (d2
+
+> n
+
+). Hence ˆ σ2 
+
+> ϕ,k
+
+= s2 
+
+> k
+
++ oP (d2
+
+> n
+
+) = s2
+
+> k
+
+ 1 + oP (1) , the last step by the lower bound in (B.9). With nk = n/K ,
+
+n cSE 2naive = 1
+
+K
+
+> K
+
+X
+
+> k=1
+
+ˆσ2 
+
+> ϕ,k
+
+= S2
+
+> n
+
+ 1 + oP (1) ,
+
+and the stated bounds on S2
+
+> n
+
+/d 2 
+
+> n
+
+follow from (B.9) and (B.6) with C⋆ := C3.
+
+Step 7 (conclusion; part (iv)). Combining (ii) and (iii), 
+
+Znaive =
+
+√n ˆθnaive 
+
+q
+
+n cSE 2naive 
+
+= −√n d 2
+
+> n
+
+Sn
+
+ 1 + oP (1) ,
+
+and hence, by the upper bound in (iii), 
+
+− Znaive ≥√n d n
+
+√C⋆
+
+ 1 + oP (1)  p
+
+−→ ∞ ,
+
+so Znaive 
+
+> p
+
+−→ −∞ and, since z1−α is fixed, P (Znaive > z 1−α) → 0, proving (iv). 
+
+Remark B1 (The boundary regime √n d n = O(1), and why no Gaussian limit is claimed) .
+
+Assumption B1(ii) excludes learners at or beyond the parametric rate, and this exclusion is essential rather than technical. When √n δ n,k = OP (1) , all three terms of the exact identity 
+
+(B.4) are of the same order n−1 as the statistic’s conditional standard deviation sk/√nk, so the standardized location is the OP (1) random quantity √nk
+
+  − δ2 
+
+> n,k
+
++ ∆ 2 
+
+> c,k
+
++ 2 ρk
+
+/s k, whose sign is not determined by H0: the limit of Znaive is a normal location mixture driven by the training-fold randomness in ∆c,k and ρk, not N (−κ, 1) for a constant κ. Conservativeness can then fail. Two mechanisms illustrate this. First, if ˆτk ≡ τATE exactly while ˆτATE ,k is a regular AIPW estimate, then mk = ∆ 2 
+
+> c,k
+
+> 0 and the standardized statistic converges to 
+
+36 |W |/(2¯ σ) + N (0 , 1) -type limits with W Gaussian, so the one-sided test over-rejects mildly. Second, without Assumption B1(iii) the cross term 2ρk can be made positive and of larger order than δ2 
+
+> n,k
+
+by nuisance-estimator sequences that satisfy Assumptions 1–4 (correlated, spiked errors of ˆek, ˆμk and ˆτk on a common small region), in which case Znaive 
+
+> p
+
+−→ +∞ and the benchmark over-rejects with probability tending to one. Both mechanisms are artifacts of evaluating the two losses on the same observations; neither arises for Algorithm 1. 
+
+Remark B2 (Reading Table 1, and the contrast with Algorithm 1) . For regularized machine learners under the null, the L2 rate typically satisfies √n d n → ∞ , if only logarithmically (e.g. 
+
+dn ≍ ps log p/n for ℓ1-regularized DR-learners), so Proposition B1(iv) applies: Znaive drifts to −∞ at the slow rate √n d n and the rejection probability decays to zero correspondingly slowly. This is consistent with the small and nearly n-insensitive rejection rates of the Naive DML column of Table 1 over the moderate range n ∈ [250 , 2000] .The contrast with the Intra-Fold Sample-Split is instructive, and it lies entirely in the denom-inator. Under H0 and Assumptions 1–4 and B1, Lemma A1 shows that the split estimator carries the same leading drift in its conditional mean, ˆθsplit = −d2
+
+> n
+
+(1 + oP (1)) + OP (n−1/2)-fluctuations, since the dominant remainder in Bk is −P0[∆ τ 2 | I −k]. But by Lemma A3 and Assumption 3(ii) the split statistic’s standard error is of exact order n−1/2 and bounded below on the boundary, so the standardized drift is −√n d 2
+
+> n
+
+/p2σ2tot + 2 σ2res , which vanishes because dn = o(n−1/4) under Assumption 4(i); hence Zsplit 
+
+> d
+
+−→ N (0 , 1) . The benchmark in-stead normalizes by a standard error of order dn n−1/2 (Proposition B1(iii)), so the same drift is inflated by the factor 1/d n and the statistic degenerates: d2
+
+> n
+
+  dn/√n = √n d n → ∞ .The surviving factor of dn in the denominator is exactly what the Intra-Fold split removes, converting a degenerate, drifting statistic into an asymptotically pivotal one. 
+
+37

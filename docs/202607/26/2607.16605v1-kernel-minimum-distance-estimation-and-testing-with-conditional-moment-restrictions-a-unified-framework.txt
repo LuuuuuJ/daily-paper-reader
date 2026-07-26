@@ -1,0 +1,5498 @@
+Title: Kernel Minimum Distance Estimation and Testing with Conditional Moment Restrictions: A Unified Framework
+
+URL Source: https://arxiv.org/pdf/2607.16605v1
+
+Published Time: Tue, 21 Jul 2026 00:22:58 GMT
+
+Number of Pages: 99
+
+Markdown Content:
+# Kernel Minimum Distance Estimation and Testing with Conditional Moment Restrictions: A Unified Framework ∗
+
+## Yuhao Li †
+
+## Xi’an Jiaotong–Liverpool University Haokun Lu ‡
+
+## Peking University Xiaojun Song §
+
+## Peking University July 21, 2026 
+
+Abstract 
+
+We propose a unified Kernel Minimum Distance (KMD) framework for estimating and testing models defined by conditional moment restrictions. By embedding con-ditional moments into a Reproducing Kernel Hilbert Space (RKHS), we construct a closed-form V -statistic objective function that quantifies the distance from the restric-tions. We establish the √n-consistency and asymptotic normality of the associated minimum distance estimator. Within this framework, the minimized objective func-tion naturally yields a consistent omnibus specification test. Unlike projection-based methods that require auxiliary nonparametric estimation for Neyman orthogonaliza-tion, our test inherently captures the estimation effect via a projected kernel structure. We derive asymptotic properties of the test statistics under the null hypothesis, the alternative hypothesis, and a sequence of local alternatives converging to the null at the parametric rate n−1/2. The validity of a computationally simple multiplier bootstrap is established to facilitate inference. Simulation results demonstrate robust finite-sample performance, and the framework is illustrated by analyzing Engel curves using UK Family Expenditure Survey data. 
+
+Keywords: Kernel Minimum Distance, Conditional Moment Restrictions, Reproduc-ing Kernel Hilbert Space 
+
+JEL Classification Number: C12; C13; C14; C26. 
+
+> ∗
+
+The authors contributed equally to this work and are listed in alphabetical order. 
+
+> †
+
+School of Mathematics and Physics, Xi’an Jiaotong–Liverpool University, Suzhou, China. Email: 
+
+yuhao.li@xjtlu.edu.cn .
+
+> ‡
+
+Department of Business Statistics and Econometrics, Guanghua School of Management, Peking Univer-sity, Beijing, 100871, China. Email: hklu25@stu.pku.edu.cn .
+
+> §
+
+Corresponding author. Department of Business Statistics and Econometrics, Guanghua School of Man-agement, Peking University, Beijing, 100871, China. Email: sxj@gsm.pku.edu.cn . This work was supported by the National Natural Science Foundation of China [Grant Numbers 72373007 and 72333001]. The author also gratefully acknowledges the research support from the Center for Statistical Science of Peking University, China, and the Key Laboratory of Mathematical Economics and Quantitative Finance (Peking University) of the Ministry of Education, China. arXiv:2607.16605v1 [econ.EM] 18 Jul 2026 1 Introduction 
+
+Conditional moment restrictions (CMRs) serve as a fundamental framework in economet-ric analysis, encompassing a wide range of empirical settings, including instrumental variable estimation, nonlinear regression, and structural modeling. In these applications, economic theory typically postulates a parametric structural relationship that implies moment condi-tions of the form: 
+
+E [ρ (Z, θ 0) |X] = 0 almost surely (a.s.) , (1.1) for some unknown true parameter θ0 ∈ Θ. Here, Z ∈ Z and X ∈ X denote the observable variables, and ρ : Z × Θ → Rq is a pre-specified generalized residual function known up to the parameter θ ∈ Θ ⊂ Rp, which encodes the structural restrictions imposed by the model. Consequently, empirical researchers face two closely related tasks: consistently estimating the structural parameter θ0 and assessing whether the assumed structural model is correctly specified. Without the latter, the economic interpretation of the estimated parameters re-mains questionable. The standard approach to estimation under conditional moment restrictions is the Gen-eralized Method of Moments (GMM; Hansen, 1982), which approximates the conditional restriction by a finite vector of unconditional moments. While computationally convenient and widely used, this finite reduction may lead to fundamental identification problems. When the conditioning variables have support with infinite cardinality, the conditional restriction implies an infinite collection of unconditional moment conditions, and satisfying only a finite subset does not ensure global identification in nonlinear models, even when optimal instru-ments are employed (see Dom´ ınguez and Lobato, 2004, Examples 1–2). As a consequence, GMM estimators may be inconsistent even when the underlying conditional restriction is correctly specified. A closely related limitation concerns specification testing. The classical 
+
+J-test (Sargan, 1958; Hansen, 1982) is not omnibus and is consistent only against violations of the selected moment conditions (Newey, 1985). To restore global identification, the literature has evolved to exploit the infinite infor-mation inherent in conditional restrictions. Prominent contributions in this vein include sieve-based methods that approximate conditional moments using an expanding sequence 2of basis functions (e.g., Donald et al., 2003) and kernel-based approaches that rely on local smoothing (e.g., Kitamura et al., 2004). Closely related to the latter is Lavergne and Patilea (2013), who develop a smooth minimum distance estimator and uniform-in-bandwidth in-ference for conditional estimating equations. While many of these methods are theoretically capable of achieving semiparametric efficiency, their implementation often involves choosing a dimension, bandwidth, or regularization parameter to manage the bias-variance trade-off. Consequently, implementation may entail carefully selecting such objects; for instance, de-termining the optimal number of basis functions in sieve estimation requires complex data-driven procedures (see Donald et al., 2009). A distinct strategy leverages the Integrated Conditional Moment (ICM) approach, pioneered by Bierens (1982). This framework rests on the fundamental result that the original conditional restriction is equivalent to satisfying a continuum of unconditional moment restrictions, obtained by integrating the conditional moments with respect to a weighting function. This equivalence has been extensively de-veloped for consistent estimation (e.g., Carrasco and Florens, 2000; Dom´ ınguez and Lobato, 2004) and omnibus specification testing (e.g., Bierens, 1990; Bierens and Ploberger, 1997; Delgado et al., 2006; Escanciano, 2006; Dom´ ınguez and Lobato, 2015). However, despite their theoretical appeal, the practical implementation of ICM methods remains challenging. The test statistics are typically constructed by integrating empirical processes over a contin-uum of indices or weighting functions, a step that may lack an analytic solution. Closed-form expressions exist only for restrictive choices of weighting functions (e.g., Bierens, 1982; Es-canciano, 2006), otherwise necessitating computationally intensive numerical integration. Furthermore, because the asymptotic distributions of these omnibus statistics are often non-standard and data-dependent, obtaining valid critical values for many of these procedures requires complex adjustments or computationally intensive resampling methods, which may limit their routine use in applied econometric work. In the spirit of the ICM approach, we propose a unified Kernel Minimum Distance (KMD) framework for both the estimation and specification testing of models defined by conditional moment restrictions. Rather than working with a pre-specified indexed family of transfor-mations or weighting functions, KMD takes the relevant test functions to be the unit ball of a vector-valued Reproducing Kernel Hilbert Space (RKHS), so that the criterion mea-3sures the largest normalized violation of the conditional moment restriction over this RKHS class. The kernel’s reproducing property then turns this infinite-dimensional criterion into a closed-form pairwise V -statistic objective function. Thus, the kernel plays two roles: it determines the class of moment violations against which the conditional restriction is as-sessed, and it delivers a tractable sample objective for estimation and testing. We establish the √n-consistency and asymptotic normality of the resulting estimator and discuss a one-step Newton–Raphson update toward semiparametric efficiency. Building directly on the same estimation framework, we construct a consistent omnibus specification test based on the minimized objective function. Under the null hypothesis, the limiting distribution of the test statistic automatically accounts for the first-order estimation effect via a projected-kernel structure, yielding an automatic Neyman-type orthogonalization without the need to construct a separate orthogonalized testing process. We further establish consistency against fixed alternatives, examine power against sequences of local alternatives converging to the null at the parametric rate n−1/2, and establish the validity of a simple multiplier bootstrap procedure that is computationally efficient and avoids repeated parameter re-estimation or resampling observations. Our framework is related to two strands of work: RKHS-based measures of distribu-tional and moment discrepancies, and minimum-distance approaches to conditional moment restrictions in econometrics. In statistics and machine learning, the use of RKHS norms to measure discrepancies is closely related to the maximum mean discrepancy of Gretton et al. (2006, 2012); for a comprehensive review of kernel mean embeddings and their applications, see Muandet et al. (2017). For conditional moment restrictions, on the estimation front, Muandet et al. (2020) formulate the Maximum Moment Restriction (MMR) principle, and Zhang et al. (2023) recently apply a related kernel maximum-moment loss to instrumental variable regression and establish basic asymptotic properties. Their framework is primarily formulated as a learning problem: the emphasis is on constructing and optimizing a kernel-based empirical risk for IV regression, with particular attention to algorithmic implementa-tion and predictive performance. We complement this literature by tailoring the estimator to structural inference and providing valid asymptotic inference based on consistent variance estimation. 4The closest econometric precursor on the estimation side is the smooth minimum distance approach of Lavergne and Patilea (2013). Their criterion is derived from local smoothing of conditional estimating equations, and one of their key insights is that consistent estimation of the structural parameter does not require consistent nonparametric estimation of the local conditional moment itself. Our criterion is closely related in continuous Euclidean settings with translation-invariant smoothing kernels, but it starts from a different primitive object: the RKHS norm of an embedded conditional moment. This formulation makes explicit the role of the kernel in measuring moment violations over the conditioning space and allows kernels to be specified directly for the variables being conditioned on. For example, when the conditioning variables contain both continuous covariates and discrete indicators, as is common in econometric practice, one may combine a Gaussian kernel for the former with a categorical kernel for the latter. On the testing front, existing literature similarly harnesses the geometry of RKHS to ag-gregate conditional moment restrictions. Muandet et al. (2020) primarily focus on regression settings where the structural parameter θ0 is assumed known. Relatedly, Sancetta (2022) develops RKHS score-type tests for functional subspace restrictions in the presence of high-or infinite-dimensional nuisance parameters, using estimated projections of test functions to remove nuisance effects. Escanciano (2024) extends the RKHS/Gaussian-process approach to the composite hypothesis setting but adopts a decoupling strategy based on an exogenous estimator. This estimator-agnostic framework allows for estimators with slower convergence rates and dispenses with the requirement of an asymptotic linear Bahadur representation. While this flexibility is advantageous for high-dimensional nuisance parameters, it can re-quire additional orthogonalization steps in standard structural applications. Specifically, achieving such robustness may require an auxiliary estimate of the relevant conditional score or nuisance projection whenever the gradient is not measurable with respect to the σ-algebra generated by the conditioning covariates – a common feature in models with endogeneity, such as instrumental variable regressions. In contrast, our unified KMD framework defines the test statistic directly as the minimized value of the estimation objective function. In this setting, the parameter estimation uncertainty is captured by the statistic’s geometry through a projected kernel derived from the estimator’s first-order conditions, thereby en-5abling asymptotic inference without constructing a separate orthogonalized testing process. Conceptually, our approach aligns with the unified paradigm established by Dom´ ınguez and Lobato (2004) and Dom´ ınguez and Lobato (2015). These works elegantly link estimation and testing by interpreting the minimized value of an integrated moment objective function as an omnibus specification test. However, their reliance on indicator-weighted empirical processes renders the methodology susceptible to the “curse of dimensionality” and leads to rapid power loss as the number of covariates increases. We advance this unified framework by substituting indicator functions with reproducing kernels. By defining the estimator bθn as the minimizer of the KMD objective, we retain the computational simplicity of their framework, particularly in nonlinear and endogenous settings, thereby yielding a statistic that can be interpreted as a generalized Sargan test. Crucially, this kernel-based formulation leverages geometric adaptability to significantly enhance the robustness of both estimation and testing in multivariate settings. The remainder of the paper is organized as follows. Section 2 presents the identification strategy via an RKHS embedding, defines the KMD estimator, establishes its asymptotic normality, develops asymptotic inference for individual parameters and for linear and non-linear restrictions, and discusses a two-step update that attains semiparametric efficiency. Section 3 develops an omnibus specification test based on the minimized objective function, derives its limiting distribution under the null hypothesis, establishes consistency against fixed alternatives, and analyzes power against local alternatives. Section 4 introduces a com-putationally efficient multiplier bootstrap procedure and establishes its asymptotic validity. Section 5 investigates the finite-sample performance of the proposed framework through extensive Monte Carlo simulations. Section 6 illustrates the method’s empirical relevance by revisiting the structural analysis of Engel curves. Section 7 concludes. Proofs of the main results and additional numerical and empirical analyses are provided in the Online Supplementary Material. 
+
+Notation . Throughout the paper, ∥ · ∥ denotes the Euclidean norm for vectors and the Frobenius norm for matrices. The superscript ′ denotes the transpose of a vector or matrix. Iq represents the q × q identity matrix. We denote convergence in probability and in distribution by p
+
+−→ and d
+
+−→, respectively. The stochastic order symbols Op(·) and op(·) are 6defined in the standard sense. 
+
+# 2 Estimation 
+
+## 2.1 Identification Strategy via RKHS Embedding 
+
+In this section, we consider the estimation of the structural parameter θ0 defined by the conditional moment restrictions in (1.1). In the spirit of the ICM approach, we embed the conditional moment restrictions into a vector-valued RKHS. By the Moore–Aronszajn theorem, every symmetric positive definite kernel k on X induces a unique Hilbert space Hk of real-valued functions on X . Its reproducing property, h(x) = ⟨h, k (·, x )⟩Hk turns evaluation at x into an inner product. This property allows function-indexed moment restrictions to be represented through kernel evaluations. We do not require the unknown conditional mean x 7 → E[ρ(Z, θ )|X = x] to belong to the RKHS. Rather, the RKHS provides the class of test functions and the geometry used to measure violations of the conditional moment restriction. Identification rests on the equivalence between the conditional restriction (1.1) and the vanishing norm of the corresponding moment embedding within the RKHS. To formalize this framework, we introduce the following assumptions. 
+
+Assumption 2.1. 
+
+(i) The observed data {Wi}ni=1 is an i.i.d. sample of a random vector W . The vector Wi
+
+contains subvectors Zi and Xi, which are not necessarily disjoint. (ii) The function ρ(z, θ ) : Z × Θ → Rq is continuous at each θ ∈ Θ with probability one, and satisfies E[sup θ∈Θ ∥ρ(Z, θ )∥2] < ∞.(iii) The parameter space Θ ⊂ Rp is compact. There exists a unique θ0 ∈ Θ such that 
+
+E[ρ(Z, θ 0)|X] = 0 a.s. (iv) The conditioning space X is a separable metric space equipped with its Borel σ-field. The kernel k : X × X → R is symmetric, continuous, bounded, and positive definite. Moreover, k is strictly positive definite over finite signed Borel measures: for every 
+
+7nonzero finite signed Borel measure ν on X ,
+
+Z Z 
+
+> X ×X
+
+k(x, ex) dν (x) dν (ex) > 0.
+
+We define the q × q matrix kernel as K(x1, x 2) := k(x1, x 2) · Iq.
+
+Assumptions 2.1(i) and (ii) are standard regularity conditions. Assumption 2.1(iii) im-poses global identification of the structural parameter. Assumption 2.1(iv) imposes injec-tivity of the RKHS embedding at the level of finite signed measures, 1 which is the relevant requirement for conditional moment restrictions. Indeed, for each component of the gener-alized residual, the map A 7 → E[ρl(Z, θ )1{X ∈ A}] defines a finite signed measure on X .Thus, the vanishing of the RKHS embedding recovers the conditional moment restriction only if the kernel embedding is injective for such signed measures. This formulation is not tied to a Euclidean conditioning space or to the existence of a Lebesgue density for X. In the standard continuous-covariate setting, the condition is satisfied by many familiar bounded translation-invariant kernels whose spectral measure has full support, including Gaussian, Laplace, and Mat´ ern kernels. In settings with discrete or mixed conditioning variables, one may instead use kernels defined directly on the relevant support, for instance, products of a continuous kernel and a strictly positive-definite categorical kernel. Hence Assumption 2.1(iv) accommodates the types of continuous, discrete, and mixed conditioning variables commonly encountered in econometric applications. Let HK denote the vector-valued RKHS associated with the matrix kernel K defined in Assumption 2.1(iv). 2 We next relate the KMD construction to the traditional ICM ap-proach. The ICM approach converts a conditional moment restriction into a collection of unconditional moment restrictions indexed by test functions of the conditioning variables. Specifically, if E[ρ(Z, θ ) | X] = 0 a.s., then for every admissible vector-valued test function                                  
+
+> 1This requirement is stronger than the usual characteristic-kernel property, which concerns injectivity of the kernel mean embedding over probability measures. See Sriperumbudur et al. (2011) for detailed characterizations.
+> 2Since the matrix kernel has a diagonal structure K(x, ex) = k(x, ex)Iq, the vector-valued RKHS HKcan be identified with the Hilbert direct sum of qcopies of the scalar RKHS Hkgenerated by k. Equivalently,
+> HK={h= ( h1, . . . , h q)′:hl∈ H k, l = 1 , . . . , q }, with inner product ⟨h, g ⟩HK=Pql=1 ⟨hl, g l⟩Hk. Thus each element h∈ H Kis a vector-valued function h:X → Rq.
+
+8h,
+
+E[ρ(Z, θ )′h(X)] = E[E[ρ(Z, θ ) | X]′h(X)] = 0 .
+
+The converse implication requires the test-function class to be sufficiently rich. Our KMD formulation implements this idea by taking the admissible test-function class to be the unit ball of HK . For each fixed θ ∈ Θ, define the linear functional Lθ : HK → R by 
+
+Lθh := E[ρ(Z, θ )′h(X)]. Assumptions 2.1(ii) and (iv) guarantee that Lθ is bounded. Its operator norm is 
+
+∥L θ∥op := sup  
+
+> ∥h∥HK≤1
+
+|L θh| = sup  
+
+> ∥h∥HK≤1
+
+|E[ρ(Z, θ )′h(X)] | .
+
+Thus, ∥L θ∥op measures the largest normalized unconditional moment violation over the RKHS class. When the conditional moment restriction holds at θ, Lθ is the zero functional and ∥L θ∥op = 0. Conversely, the implication from ∥L θ∥op = 0 back to the conditional mo-ment restriction relies on the richness of the RKHS class, ensured here by the signed-measure injectivity condition in Assumption 2.1(iv). By the Riesz Representation Theorem, there exists a unique element μ(θ) ∈ H K , referred to as the conditional moment embedding (CME) (Muandet et al., 2017, 2020), such that 
+
+Lθh = ⟨h, μ (θ)⟩HK for all h ∈ H K . Consequently, ∥L θ∥op = ∥μ(θ)∥HK . The following lemma formalizes the identification content of this RKHS representation. 
+
+Lemma 1. Suppose Assumption 2.1 holds. Then, for any θ ∈ Θ,
+
+E[ρ(Z, θ ) | X] = 0 a.s. ⇐⇒ ∥ μ(θ)∥HK = 0 .
+
+Based on Lemma 1, we define the population objective function as the squared RKHS norm Q(θ) := ∥μ(θ)∥2 
+
+> HK
+
+. To obtain a computable expression for this criterion, note that the reproducing property implies, for every h ∈ H K ,
+
+Lθh = E[ρ(Z, θ )′h(X)] = E⟨h, K (·, X )ρ(Z, θ )⟩HK
+
+ = ⟨h, E[K(·, X )ρ(Z, θ )] ⟩HK . (2.1) By the uniqueness of the Riesz representer, this identifies μ(θ) = E[K(·, X )ρ(Z, θ )]. Hence, 9the RKHS norm admits the closed-form double expectation 
+
+Q(θ) = 
+
+D
+
+E[K(·, X )ρ(Z, θ )] , E[K(·, eX)ρ( eZ, θ )] 
+
+E
+
+> HK
+
+= E
+
+h
+
+ρ(Z, θ )′K(X, eX)ρ( eZ, θ )
+
+i
+
+, (2.2) where ( Z, X ) and ( eZ, eX) are independent copies from the population distribution. Specifically, for a continuous translation-invariant scalar kernel on Rd, k(x, ex) = φ(x− ex), the connection with characteristic-function-based ICM criteria can be made explicit. By Bochner’s theorem, there exists a finite nonnegative Borel measure Λ on Rd such that 
+
+k(x, ex) = 
+
+Z
+
+> Rd
+
+exp {iω′(x − ex)} dΛ( ω).
+
+Substituting this representation into (2.2) and applying Fubini’s theorem and the indepen-dence of the two copies yields 
+
+Q(θ) = 
+
+Z
+
+> Rd
+
+∥E[ρ(Z, θ ) exp(i ω′X)] ∥2 dΛ( ω).
+
+Thus, in this special case, KMD aggregates a continuum of characteristic-function moments, with the kernel determining how different frequencies are weighted through the spectral measure Λ. This provides a direct link to Bierens-type ICM criteria and to the Fourier-moment representation underlying the SMD construction of Lavergne and Patilea (2013); see also Muandet et al. (2020). The representation is interpretive rather than computational: 
+
+Q(θ) is evaluated directly through the closed-form pairwise expression in (2.2), without numerical integration over ω.Regardless of this special-case representation, Q(θ) = ∥μ(θ)∥2 
+
+> HK
+
+≥ 0, and Lemma 1 es-tablishes that equality holds if and only if E[ρ(Z, θ ) | X] = 0 a.s. By the global identification condition in Assumption 2.1(iii), this occurs if and only if θ = θ0. Hence, the true parameter is uniquely identified as the global minimizer of the population objective function. This directly motivates our estimation strategy, which minimizes the sample analog of (2.2). 10 2.2 The KMD Estimator 
+
+To implement the estimation, we construct the sample counterpart of the population objective Q(θ) using a V -statistic formulation: 
+
+bQn(θ) = 1
+
+n2
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+ρ(Zi, θ )′K(Xi, X j )ρ(Zj , θ ).
+
+The Kernel Minimum Distance (KMD) estimator is then defined as: 
+
+bθn = arg min 
+
+> θ∈Θ
+
+bQn(θ).
+
+Remark 1. We use the V -statistic criterion bQn(θ) rather than the off-diagonal U -statistic because it preserves the minimum-distance geometry. Specifically, bQn(θ) = ∥bμn(θ)∥2 
+
+> HK
+
+,where bμn(θ) := n−1 Pni=1 K(·, X i)ρ(Zi, θ ), so bQn(θ) is the squared RKHS norm of the empir-ical embedding. Since the kernel matrix is positive semidefinite, bQn(θ) ≥ 0 globally, preserv-ing the metric interpretation and improving the finite-sample optimization geometry. Off-diagonal U -statistic criteria are natural in smooth minimum-distance and local-smoothing approaches, such as Lavergne and Patilea (2013); our use of the V -statistic reflects a finite-sample geometric consideration rather than an asymptotic distinction. In particular, because 
+
+K − diag( K) need not be positive semidefinite, the off-diagonal criterion need not define a squared norm and may exhibit negative regions or boundary minima in finite samples. The diagonal bias is only O(n−1) and vanishes asymptotically, so consistency of bθn is unaffected; see Section B.2.1 of the Online Supplementary Material for further discussion. The following lemma formally establishes this consistency result. 
+
+Lemma 2. Under Assumptions 2.1, bθnp
+
+−→ θ0.
+
+To establish the asymptotic normality of bθn, we impose the following regularity conditions necessary to validate the Taylor expansion of the first-order condition and to ensure the validity of the resulting asymptotic linear representation. 
+
+Assumption 2.2. 
+
+11 (i) θ0 ∈ int (Θ) .(ii) ρ(z, θ ) is twice continuously differentiable with respect to θ in an open neighborhood 
+
+N (θ0) of θ0, with probability one. Let g(z, θ ) = ∂ρ (z, θ )/∂θ ′ denote the score func-tion with dimension q × p. E  sup θ∈N (θ0) ∥g(Z, θ )∥2 < ∞, E ∥ρ (Z, θ 0)∥4 < ∞,
+
+E ∥g (Z, θ 0)∥4 < ∞ and the Hessian matrix E  sup θ∈N (θ0) ∥∇ 2 
+
+> θθ ′
+
+ρl (Z, θ ) ∥2 < ∞,for l = 1 , · · · q, where ρl (·) denotes the l-th element in ρ (·).(iii) The p × p matrix ∆ ( θ0) = E
+
+h
+
+g(Z, θ 0)′K(X, ˜X)g( ˜Z, θ 0)
+
+i
+
+is non-singular. 
+
+Assumption 2.2 outlines the regularity conditions for the asymptotic representation. Con-dition (i) requires θ0 to be an interior point to validate the expansion, while condition (iii) guarantees the invertibility of the population Hessian. In condition (ii), the moment bounds involving the supremum are specifically imposed to establish the uniform convergence of the sample Hessian matrix bHn(θ) via the Uniform Weak Law of Large Numbers (UWLLN) for 
+
+V -statistics. The finite fourth moments for ρ(Z, θ 0) and g(Z, θ 0) serve as sufficient conditions to ensure E[∥g(Z, θ 0)′ρ(Z, θ 0)∥2] < ∞, which enables the H´ ajek projection of the V -statistic score vector ∇θ bQn(θ0). We explicitly retain these separate fourth-moment conditions to maintain a unified framework with the specification testing procedure, which relies on an analogous V -statistic formulation (see Section B.2.2 of the Online Supplementary Mate-rial for a detailed discussion of U - versus V -statistics for testing). Notably, these moment requirements are slightly stronger than standard second-moment conditions; this is a di-rect consequence of employing the V -statistic estimator, which necessitates control over the stochastic behavior of the diagonal terms ( i = j). With these regularity conditions in place, the following lemma establishes the asymptotic linear representation of bθn.
+
+Lemma 3. Under Assumptions 2.1 and 2.2, the kernel minimum distance estimator bθ admits the asymptotic linear representation 
+
+√n
+
+bθn − θ0
+
+
+
+= −∆ ( θ0)−1 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+G (Xi, θ 0)′ ρ (Zi, θ 0) + op(1) ,
+
+where G (Xi, θ 0) = E [K (Xi, X j ) g (Zj , θ 0) |Xi]q×p.
+
+Applying the Central Limit Theorem to Lemma 3 yields: 12 Theorem 2.1. Under Assumptions 2.1 and 2.2, 
+
+√n
+
+bθn − θ0
+
+ d
+
+−→ N  0, ∆ ( θ0)−1 Ω ( θ0) ∆ ( θ0)−1 ,
+
+where Ω ( θ0) = E G (X, θ 0)′ ρ (Z, θ 0) ρ (Z, θ 0)′ G (X, θ 0)
+
+> p×p
+
+.
+
+For statistical inference, a consistent estimator of the asymptotic covariance matrix Σ := ∆( θ0)−1Ω( θ0)∆( θ0)−1 is obtained via the plug-in sample analog bΣn = b∆−1 
+
+> n
+
+bΩn b∆−1 
+
+> n
+
+, with components 
+
+b∆n = 1
+
+n2
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+bg′
+
+> i
+
+K(Xi, X j )bgj , bΩn = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+bGn(Xi)′ bρi bρ′ 
+
+> i
+
+bGn(Xi), (2.3) where bρi := ρ(Zi, bθn), bgi := g(Zi, bθn), and bGn(Xi) := n−1 Pnj=1 K(Xi, X j )bgj .
+
+Proposition 1. Under Assumptions 2.1 and 2.2, bΣnp
+
+−→ Σ as n → ∞ .
+
+Proposition 1 provides a basis for standard asymptotic inference on smooth functionals of θ0. Pointwise confidence intervals for individual components follow immediately from the asymptotic normality of bθn and the consistency of bΣn. For a full-row-rank matrix R ∈ Rq×p
+
+and vector r ∈ Rq, the linear restriction H0 : Rθ 0 = r may be tested using the feasible Wald statistic W Ln = ( Rbθn − r)′(RbΣnR′/n )−1(Rbθn − r). Under H0, we have W Lnd
+
+−→ χ2 
+
+> q
+
+.More generally, let h : Rp → Rq be continuously differentiable, with Jacobian ∇h(θ) of full row rank at θ0. For the nonlinear restriction H0 : h(θ0) = 0, the feasible Wald statistic is W N L n = h(bθn)′(∇h(bθn)bΣn∇h(bθn)′/n )−1h(bθn), and W N L nd
+
+−→ χ2 
+
+> q
+
+under H0. These standard Wald statistics concern restrictions on θ0, which should be distinguished from the omnibus specification test of the conditional moment restrictions developed in Section 3; see, e.g., Lavergne and Patilea (2013) for SMD-based tests of parameter restrictions. Finally, although the baseline KMD estimator is generally not semiparametrically effi-cient, it admits a two-step efficient refinement in the spirit of Dom´ ınguez and Lobato (2004). In particular, starting from the √n-consistent estimator bθn, one may take a single Newton– Raphson step toward the feasible efficient GMM objective constructed from nonparametric estimators of the relevant conditional moments; see Newey (1990) and Robinson (1991). 13 However, there is no free lunch in achieving semiparametric efficiency: this refinement re-quires additional nonparametric estimation, together with the attendant smoothing choices, and thus sacrifices some of the simplicity and robustness of the KMD procedure. We there-fore defer the formal discussion to Section B.1 of the Online Supplementary Material. 
+
+# 3 Specification Testing 
+
+## 3.1 Test Statistic 
+
+Following the identification and estimation of the structural parameters discussed in the preceding section, we now turn to the specification test of the conditional moment restrictions. Specifically, we evaluate the validity of the model by testing the null hypothesis of correct specification against the omnibus alternative: 
+
+H0 : (1.1) holds v.s. H1 : P (E [ρ(Z, θ ) | X] = 0) < 1 for all θ ∈ Θ. (3.1) To construct the test statistic, we utilize the minimized value of the KMD objective function. The test statistic bTn is defined as the scaled V -statistic evaluated at bθn:
+
+bTn = n bQn(bθn) = 1
+
+n
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+ρ(Zi, bθn)′K(Xi, X j )ρ(Zj , bθn).
+
+In what follows, we derive the asymptotic distribution of bTn under the null hypothesis H0,establish its consistency under the fixed alternative H1, and analyze its local power properties under the sequence of local alternatives H1n.
+
+## 3.2 Behavior Under the Null H0
+
+We first establish an asymptotic representation of bTn under the null hypothesis, showing that the estimation effect is asymptotically equivalent to replacing the reproducing kernel with its projection. 14 Lemma 4. Suppose Assumptions 2.1 and 2.2 hold. Under H0, the test statistic bTn has the following asymptotic representation: 
+
+bTn = 1
+
+n
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+ρ (Zi, θ 0)′ Kp(Xi, X j )ρ (Zj , θ 0) + op(1) ,
+
+where Kp(Xi, X j ) = K(Xi, X j ) − G(Xi, θ 0)∆( θ0)−1G(Xj , θ 0)′.
+
+Remark 2. The projected kernel Kp induces a projection geometry within the vector-valued RKHS HK onto the orthogonal complement of the score subspace S = span {ψl}pl=1 ,where ψl(·) = E[K(·, X )gl(Z, θ 0)]. As detailed in the Online Supplementary Material, for any function h(·) = Pni=1 K(·, x i)ci with arbitrary coefficients {ci}ni=1 ⊂ Rq, the quadratic form of Kp satisfies the isometry: 
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+c′
+
+> i
+
+Kp(xi, x j )cj = ∥(I − PS )h∥2 
+
+> K
+
+≥ 0, (3.2) where PS denotes the orthogonal projection operator onto S. This identity establishes that 
+
+Kp is positive semidefinite. In particular, the asymptotic representation of bTn in Lemma 4 corresponds to the specific case where the coefficients are the normalized residuals, ci = n−1/2ρ(Zi, θ 0). By capturing the component of the moment conditions orthogonal to the score functions gl, this asymptotic representation effectively eliminates the first-order estimation effect. Building on this representation, the following theorem derives the limiting distribution of bTn under the null, which exhibits the standard spectral form for degenerate V -statistics. 
+
+Theorem 3.1. Suppose Assumptions 2.1 and 2.2 hold. Then, under H0:
+
+bTnd
+
+−→
+
+> ∞
+
+X
+
+> k=1
+
+λkW 2 
+
+> k
+
+,
+
+where {Wk}∞ 
+
+> k=1
+
+are i.i.d. N (0 , 1) and {λk}∞ 
+
+> k=1
+
+are eigenvalues of the operator A defined on 
+
+15 the function space L2 (Z × X , PXZ ) as 
+
+Aψ(s) = 
+
+Z
+
+> Z×X
+
+fp (s, ˜s, θ 0) ψ (˜ s) dPXZ (˜ s) , s ∈ Z × X , ψ ∈ L2 (Z × X , PXZ ) , (3.3) 
+
+where fp (s, s ′, θ 0) = ρ (z, θ 0)′ Kp (x, x ′) ρ (z′, θ 0).
+
+Remark 3. The spectral representation P∞ 
+
+> k=1
+
+λkW 2 
+
+> k
+
+derived in Theorem 3.1 characterizes the test statistic bTn as a Generalized Sargan Test for a continuum of moment conditions. In the classical GMM framework with a fixed number of moments m and parameters p, Hansen’s 
+
+J-statistic converges to a χ2 
+
+> m−p
+
+distribution, assessing the validity of the m−p overidentifying restrictions. Our framework corresponds to the limiting case m → ∞ . Specifically, bTn
+
+asymptotically isolates the component of the embedded moment conditions lying in the orthogonal complement of the score subspace, thereby assessing the structural validity of the continuum of overidentifying restrictions beyond the p degrees of freedom consumed by parameter estimation. This interpretation parallels the unified framework of Dom´ ınguez and Lobato (2015). While they address the estimation effect by projecting the empirical process, our framework relies on the projection kernel Kp.The test rejects H0 at significance level α if bTn > c 1−α, where c1−α is the (1 − α)-quantile of the limiting distribution defined in Theorem 3.1. However, since the eigenvalues {λk}∞
+
+> k=1
+
+depend on the kernel and the unknown data-generating process, this distribution is non-pivotal. In Section 4, we introduce a computationally simple multiplier bootstrap to obtain feasible critical values. 
+
+## 3.3 Behavior Under the Fixed Alternative H1
+
+We now establish the test’s consistency against fixed alternatives by showing that bTn
+
+diverges under global misspecification. This requires the following modified regularity con-ditions, under which a pseudo-true parameter θ1 is defined as the unique minimizer of the population objective function. 
+
+Assumption 3.1. Suppose Assumption 2.1 (i), (ii), and (iv) hold, and (iii) is replaced by: The parameter space Θ ⊂ Rp is compact. Q (θ) is uniquely minimized at a pseudo true value 
+
+16 θ1 ∈ Θ such that Q(θ1) > 0.
+
+Assumption 3.2. Suppose Assumption 2.2 holds with θ0 replaced by θ1. Furthermore, the generalized Hessian matrix under misspecification, 
+
+e∆( θ1) = E
+
+(
+
+k(Xi, X j )
+
+"
+
+g(Zi, θ 1)′g(Zj , θ 1) + 
+
+> q
+
+X
+
+> l=1
+
+ρl(Zj , θ 1)∇2 
+
+> θθ ′
+
+ρl(Zi, θ 1)
+
+#) 
+
+,
+
+is non-singular. 
+
+Analogous to Lemma 3, the following result establishes the asymptotic representation of 
+
+bθn around the pseudo-true value θ1.
+
+Lemma 5. Under H1, suppose Assumptions 3.1 and 3.2 hold, then 
+
+√n
+
+bθn − θ1
+
+
+
+= − e∆ ( θ1)−1 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+G (Xi, θ 1)′ ρ (Zi, θ 1) + g(Zi, θ 1)′M (Xi, θ 1) + op(1) ,
+
+where G (Xi, θ ) is defined in Lemma 3, and M (Xi, θ ) = E [K (Xi, X j ) ρ (Zj , θ 0) |Xi]q×1.
+
+In contrast to the degenerate behavior under H0, the objective function bQn(bθn) under H1
+
+behaves asymptotically as a non-degenerate V -statistic, yielding √n−asymptotic normality centered at the positive constant Q(θ1). 
+
+Theorem 3.2. Suppose Assumptions 3.1 and 3.2 hold. Under the fixed alternative H1:
+
+√n
+
+ bQn(bθn) − Q(θ1)
+
+ d
+
+−→ N  0, σ 2(θ1) ,
+
+where σ2(θ1) = 4 Var [ ρ(Z, θ 1)′M (X, θ 1)] .
+
+Since Q(θ1) > 0, Theorem 3.2 implies that bTn = n bQn(bθn) → ∞ . Hence, the test is consistent against any fixed alternative. 
+
+## 3.4 Behavior Under the Local Alternative H1n
+
+We further examine the asymptotic power under a sequence of Pitman local alterna-tives converging at the parametric rate n−1/2. Let P denote the null measure satisfying 17 EP[ρ(Z, θ 0) | X] = 0 a.s., and P(n) denote the sequence of alternative measures. We specify the form of these local perturbations as follows. 
+
+Assumption 3.3. Under H1n, the observations (X, Z ) follow a sequence of probability measures P(n) such that dP(n)/d P(x, z ) = 1 + n−1/2h(x, z ), where EP[h(X, Z )4] < ∞ and 
+
+EP[h(X, Z ) | X] = 0 a.s.. 
+
+Applying the change of measure formula under Assumption 3.3, we obtain the specific Pitman alternative: 
+
+H1n : EP(n) [ρ(Z, θ 0) | X] = δ(X)
+
+√n . (3.4) Here, the drift function is defined as δ(X) := EP[ρ(Z, θ 0)h(X, Z )|X], which is square-integrable due to the fourth finite moment conditions on ρ and h. This local drift induces an asymptotic bias shift in the estimator, as formalized in the following linear representation. 
+
+Lemma 6. Under the sequence of local alternatives H1n satisfying Assumption 3.3, and assuming Assumptions 2.1(ii)–(iv) and 2.2 hold under the null measure P, the estimator satisfies the asymptotic linear representation: 
+
+√n
+
+bθn − θ0
+
+
+
+= −∆ ( θ0)−1 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+G (Xi, θ 0)′ ϵi − ∆ ( θ0)−1 Bδ(θ0) + op(1) ,
+
+where ϵi := ρ(Zi, θ 0)−n−1/2δ(Xi) represents the centered error term under H1n, and Bδ(θ0) = 
+
+EP [G(Xi, θ 0)′δ(Xi)] denotes the asymptotic bias shift. 
+
+Building on this linear representation, the following theorem establishes the asymptotic distribution of bTn under local alternatives. 
+
+Theorem 3.3. Suppose Assumptions for Lemma 6 hold. Then, under H1n, the test statistic converges in distribution as: 
+
+bTnd
+
+−→
+
+> ∞
+
+X
+
+> k=1
+
+λk (Wk + ck)2 ,
+
+where {Wk}∞ 
+
+> k=1
+
+are i.i.d. N (0 , 1) , and {λk}∞ 
+
+> k=1
+
+and {φk(·)}∞ 
+
+> k=1
+
+are the eigenvalues and or-thonormal eigenfunctions, respectively, of the integral operator A defined in Theorem 3.1. The non-centrality parameters are given by ck = EP[φk(Z, X )h(Z, X )] .
+
+18 Remark 4. Theorem 3.3 characterizes the limiting distribution as an infinite sum of weighted non-central χ21 variables. This result situates the proposed statistic within the established framework of ICM tests, exhibiting a spectral structure analogous to that derived by Bierens and Ploberger (1997) for local power analysis. Its asymptotic local power is completely determined by the non-centrality parameters 
+
+{ck}∞
+
+> k=1
+
+. In particular, local power is trivial, in the sense that it converges to size α, if and only if ck = 0 for all k with positive eigenvalues. As shown in the proof of Theorem 3.3, this is equivalent to ∞X
+
+> k=1
+
+λkc2 
+
+> k
+
+= EP
+
+h
+
+δ(X)′Kp(X, ˜X; θ0)δ( ˜X)
+
+i
+
+= 0 .
+
+Since the projected kernel operator is positive semi-definite, this holds if and only if δ(X)lies in its null space P-a.s., that is, EP[Kp(X, ˜X; θ0)δ( ˜X) | X] = 0. By Remark 2, this means that the local drift δ(X) belongs to the score subspace S. Provided K is ISPD, trivial power obtains if and only if δ(X) = EP[g(Z, θ 0) | X]v (P-a.s.) for some v ∈ Rp.Intuitively, trivial power arises precisely when the local drift mimics the score function. In that case, it is asymptotically indistinguishable from a local shift in θ0 along the direction 
+
+v, and is therefore absorbed by the estimator bθn. This is a consequence of the preliminary estimation step rather than a deficiency of the test itself. 
+
+# 4 Multiplier Bootstrap 
+
+The asymptotic null distribution of the test statistic bTn is generally non-pivotal, as it depends on the underlying data-generating process via the operator A. To circumvent this issue, we introduce an easy-to-implement multiplier bootstrap procedure to approximate the critical values. Motivated by the asymptotic representation established in Lemma 4, the bootstrap procedure is implemented as follows: 1. Generate a sequence of i.i.d. random variables {Vi}ni=1 with zero mean, unit vari-ance and finite fourth moment, independent of the original samples {Xi, Z i}ni=1 ; e.g., Rademacher random variable, standard normal random variable, or Bernoulli random variable with P (v = 1 − κ) = κ/ √5 and P (v = κ) = 1 − κ/ √5, where κ = ( √5 + 1) /219 (Mammen, 1993). 2. Compute the multiplier bootstrap statistic 
+
+bT ∗ 
+
+> n
+
+= 1
+
+n
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+ViVj ρ(Zi, bθn)′ bKpn(Xi, X j , bθn)ρ(Zj , bθn),
+
+where bKpn(Xi, X j , bθn) := K(Xi, X j ) − bGn(Xi) b∆−1 
+
+> n
+
+bGn(Xj )′, with bGn and b∆n defined as in (2.3). 3. Repeat Steps 1 and 2 B times to obtain a sequence of bootstrap statistics 
+
+n bT ∗
+
+> n,b
+
+oBb=1 
+
+.4. For a given significance level α ∈ (0 , 1), compute the (1 − α)-th quantile of 
+
+n bT ∗
+
+> n,b
+
+oBb=1 
+
+,denoted by c∗
+
+> n,α
+
+. The null hypothesis is rejected if bTn > c ∗
+
+> n,α
+
+.To establish the asymptotic validity of this procedure, the following lemma first provides an asymptotic representation of the bootstrap statistic bT ∗ 
+
+> n
+
+, replacing the estimated quantities with their population counterparts. 
+
+Lemma 7. Let θ∗ be the (pseudo) true value under different hypotheses, i.e., θ∗ = θ0 under 
+
+H0 or H1n and θ∗ = θ1 under H1. Under Assumptions 2.1 and 2.2 ( or Assumptions 3.1 and 3.2 for θ∗ = θ1), the multiplier bootstrap statistic has the following asymptotic representation: 
+
+bT ∗ 
+
+> n
+
+= 1
+
+n
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+ViVj ρ(Zi, θ ∗)′Kp(Xi, X j , θ ∗)ρ(Zj , θ ∗) + op(1) .
+
+Denote by “ d, ∗
+
+−→ in probability” the weak convergence in probability under the bootstrap law, that is, conditional on the original sample {Xi, Z i}ni=1 and let P∗ be the conditional probability related to {Vi}ni=1 given {Xi, Z i}ni=1 . The next theorem establishes the asymptotic validity of the proposed multiplier bootstrap procedure. 
+
+Theorem 4.1. Suppose Assumptions for Lemma 7 hold. Then, 
+
+• Under H0 in (1.1) or H1n in (3.4) , we have 
+
+bT ∗
+
+> nd, ∗
+
+−→
+
+> ∞
+
+X
+
+> k=1
+
+λkW 2 
+
+> k
+
+in probability ,
+
+20 where P∞ 
+
+> k=1
+
+λkW 2 
+
+> k
+
+is defined in Theorem 3.1. 
+
+• Under H1 in (3.1) , for every ε > 0, there exists a positive A such that 
+
+P∗
+
+ bT ∗ 
+
+> n
+
+≥ A
+
+
+
+≤ ε + op(1) .
+
+On one hand, under H0, both bT ∗ 
+
+> n
+
+and bTn converge in distribution to P∞ 
+
+> k=1
+
+λkW 2 
+
+> k
+
+, as de-fined in Theorem 3.1. Hence, a test based on the bootstrapped critical value would yield an asymptotically correct level for bTn. On the other hand, under H1, by Theorem 3.2, bTn(bθn)diverges to infinity with probability approaching one, whereas bT ∗ 
+
+> n
+
+is stochastically bounded conditional on the original sample. This implies that the test based on the bootstrapped crit-ical value is consistent against all such fixed alternatives. Moreover, Theorem 4.1 combined with Theorem 3.3 also implies that our tests implemented through the multiplier bootstrap preserve the asymptotic local power properties of bTn under H1n. Therefore, the multiplier bootstrap procedure is asymptotically valid. 
+
+# 5 Simulation Study 
+
+This section evaluates the finite-sample properties of the proposed KMD framework across three data-generating processes of increasing complexity: the Linear Regression Model, the Box–Cox Transformation Model, and Instrumental Variable Models. We assess estimation accuracy using bias and RMSE, with additional coverage rate results available in Section C.5 of the Online Supplementary Material. For the specification test, we examine empirical rejection rates to validate size and power; we also provide a benchmark comparison with Dom´ ınguez and Lobato (2015) in Section C.6 of the Online Supplementary Material. Across all designs, we consider sample sizes n ∈ { 100 , 200 } for estimation and extend the analysis to n = 400 for specification testing. We vary the covariate dimension p ∈ { 3, 5, 10 }
+
+to investigate performance in higher-dimensional settings. Except for the mixed IV design with discrete instruments, where the kernel is specified separately, KMD uses a Gaussian kernel with the median-heuristic bandwidth. All results are based on 1,000 Monte Carlo replications, with test critical values obtained from 999 bootstrap repetitions. 21 5.1 The Linear Regression Model 
+
+We begin with a linear regression benchmark under homoskedastic and heteroskedastic disturbances. We compare the KMD estimator with OLS, feasible weighted least squares, and infeasible optimal GMM, and study the corresponding KMD specification test under several basic alternatives. This benchmark mainly serves as a sanity check: the KMD estimator is essentially unbiased, with moderate efficiency loss relative to the parametric benchmarks, and the KMD test shows good size control and strong finite-sample power. To conserve space, the design and full results are reported in Section C.1 of the Online Supplementary Material. We now turn to nonlinear designs that more directly highlight the comparative advantages of the proposed method. 
+
+## 5.2 The Box–Cox Transformation Model 
+
+We next extend the simulation to the generalized Box–Cox transformation model. Our design draws upon the setups in Shin (2008) and Dom´ ınguez and Lobato (2015), governed by the structural equation: 
+
+y(λ0) 
+
+> i
+
+= α0 + X′ 
+
+> i
+
+β0 + ϵi, i = 1 , . . . , n. 
+
+To accommodate outcomes with non-positive support without error truncation, we employ the generalized transformation family of Bickel and Doksum (1981): 
+
+y(λ) 
+
+> i
+
+=
+
+
+
+|yi|λ sgn( yi) − 1
+
+λ if λ̸ = 0 ,
+
+ln( yi) if λ = 0 .
+
+We fix the intercept at α0 = 0 .5 and evaluate performance across λ0 ∈ { 0, 0.5, 1}. The slope parameter is set to β0 = (1 , . . . , 1, −1, . . . , −1) ′, with the first ⌈p/ 2⌉ components equal to 1, and the regressors Xi are generated from a multivariate normal distribution N (0 , ΣX )with Toeplitz covariance structure Σ X,jk = 0 .5|j−k|. We consider both homoskedastic and heteroskedastic disturbances, with ϵi ∼ N (0 , 1) in the former case and ϵi = exp(0 .25 Xi, 1)νi,
+
+νi ∼ N (0 , 1), in the latter. 22 To assess estimation performance, we compare the KMD estimator with two feasible consistent alternatives: the nonlinear two-stage least squares (NL2S) estimator of Amemiya and Powell (1981) and the minimum distance estimator of Shin (2008). For the log-linear case ( λ0 = 0), we also report the infeasible Oracle GMM (GMM ∗), based on the optimal instrument A∗(Xi) = σ−2(Xi) −1, −X′ 
+
+> i
+
+, [( α0 + X′ 
+
+> i
+
+β0)2 + σ2(Xi)] /2′.Tables 1 and 2 summarize the finite-sample estimation results for the Box–Cox trans-formation model under λ0 = 0 and λ0 = 0 .5, respectively. 3 For the log-linear specification (λ0 = 0, Table 1), the proposed KMD estimator demonstrates robust performance across all considered designs. In terms of consistency, KMD exhibits negligible bias, comparable to the infeasible Oracle GMM. Regarding efficiency, the KMD estimator consistently yields lower RMSEs than the feasible consistent alternatives, NL2S and Shin-MD, in most scenarios. Under homoskedasticity (Panel A), the KMD estimator performs remarkably well, exhibit-ing precision levels that closely approach the semiparametric efficiency bound. Furthermore, under heteroskedasticity (Panel B), where GMM ∗ explicitly utilizes the true conditional vari-ance, the unweighted KMD estimator remains highly competitive, delivering precision levels comparable to the theoretical efficiency bound. The advantages of the KMD framework are most pronounced in the specification with 
+
+λ0 = 0 .5 (Table 2). Across the considered designs, the KMD estimator consistently yields the lowest finite-sample bias and RMSE. Notably, KMD significantly outperforms the Shin-MD estimator, with the performance gap likely attributable to the covariate dimensionality. Whereas Shin (2008) relies on indicator-weighted cumulative moments (e.g., I(Xi ≤ Xj )) that are vulnerable to data sparsity in higher-dimensional spaces, the KMD approach em-ploys a continuous kernel metric that adapts effectively to the multivariate geometry. Con-sequently, the KMD estimator maintains high precision without substantial deterioration as the dimension p increases, offering a robust alternative for generalized regression models in nonlinear settings. We next test the validity of the Box–Cox specification: 
+
+H0 : E[Y (λ0) − (α0 + X′β0) | X] = 0 a.s. for some θ0 ∈ Θ.    
+
+> 3To conserve space, estimation results for λ0= 1 are relegated to Section C.2 of the Online Supplementary Material. These results exhibit patterns similar to the λ0= 0 .5 case.
+
+23 Table 1: Estimation Performance of Box–Cox Model Parameters ( λ = 0) 
+
+Bias RMSE 
+
+n p Param. NL2S Shin-MD GMM ∗ KMD NL2S Shin-MD GMM ∗ KMD 
+
+Panel A: Homoskedastic Errors 
+
+100 3
+
+α 0.003 −0.003 0.009 −0.013 0.206 0.163 0.162 0.150 
+
+β 0.018 0.007 0.005 0.008 0.145 0.160 0.133 0.134 
+
+λ −0.004 −0.007 0.002 −0.013 0.100 0.072 0.071 0.066 5
+
+α −0.007 −0.006 0.005 −0.007 0.189 0.187 0.141 0.143 
+
+β 0.009 0.019 0.011 0.013 0.134 0.188 0.130 0.134 
+
+λ −0.005 −0.003 0.000 −0.005 0.047 0.037 0.028 0.028 10 
+
+α −0.001 −0.019 0.001 0.000 0.168 0.240 0.140 0.138 
+
+β 0.015 0.015 0.017 0.015 0.139 0.206 0.138 0.139 
+
+λ 0.000 −0.003 0.000 0.000 0.014 0.012 0.009 0.009 200 3
+
+α −0.004 −0.002 0.002 −0.010 0.141 0.138 0.107 0.115 
+
+β 0.008 0.007 0.008 0.012 0.095 0.113 0.090 0.094 
+
+λ −0.004 −0.003 0.000 −0.007 0.066 0.061 0.043 0.048 5
+
+α −0.004 0.000 0.001 −0.006 0.125 0.127 0.097 0.097 
+
+β 0.005 0.010 0.004 0.004 0.092 0.131 0.090 0.093 
+
+λ −0.002 0.000 0.000 −0.002 0.030 0.027 0.019 0.019 10 
+
+α 0.001 −0.016 −0.004 0.000 0.114 0.238 0.088 0.090 
+
+β 0.012 0.013 0.010 0.012 0.093 0.174 0.092 0.095 
+
+λ 0.000 −0.002 0.000 0.000 0.010 0.010 0.006 0.006 
+
+Panel B: Heteroskedastic Errors 
+
+100 3
+
+α −0.020 −0.061 0.004 −0.051 0.210 0.166 0.152 0.160 
+
+β 0.012 0.018 0.006 0.036 0.148 0.149 0.122 0.138 
+
+λ −0.014 −0.039 0.002 −0.034 0.103 0.078 0.065 0.074 5
+
+α −0.028 −0.049 0.000 −0.033 0.191 0.183 0.140 0.149 
+
+β 0.013 0.017 0.014 0.016 0.141 0.175 0.126 0.141 
+
+λ −0.008 −0.016 0.001 −0.011 0.048 0.038 0.027 0.031 10 
+
+α −0.024 −0.060 0.009 −0.013 0.181 0.250 0.135 0.143 
+
+β 0.017 0.028 0.016 0.018 0.147 0.197 0.131 0.148 
+
+λ −0.003 −0.006 0.001 −0.002 0.015 0.013 0.009 0.010 200 3
+
+α −0.003 −0.037 −0.003 −0.032 0.158 0.135 0.104 0.118 
+
+β 0.011 0.010 0.006 0.018 0.100 0.104 0.082 0.096 
+
+λ −0.003 −0.023 −0.001 −0.020 0.075 0.063 0.042 0.053 5
+
+α −0.014 −0.030 0.000 −0.022 0.131 0.124 0.092 0.100 
+
+β 0.008 0.016 0.009 0.015 0.098 0.119 0.084 0.098 
+
+λ −0.005 −0.010 −0.001 −0.008 0.034 0.027 0.017 0.022 10 
+
+α −0.012 −0.051 0.004 −0.010 0.122 0.223 0.091 0.096 
+
+β 0.008 0.018 0.007 0.009 0.099 0.159 0.088 0.100 
+
+λ −0.001 −0.005 0.000 −0.001 0.011 0.010 0.006 0.006 
+
+Note: The bias for α and λ is the raw bias, while the bias for β is the L2 norm of the bias vector. 
+
+24 Table 2: Estimation Performance of Box–Cox Model Parameters ( λ = 0 .5) 
+
+Bias RMSE 
+
+n p Param. NL2S Shin-MD KMD NL2S Shin-MD KMD 
+
+Panel A: Homoskedastic Errors 
+
+100 3
+
+α 0.019 0.065 0.009 0.215 0.232 0.153 
+
+β 0.026 0.176 0.010 0.133 0.475 0.130 
+
+λ 0.014 −0.018 0.005 0.109 0.210 0.066 5
+
+α −0.007 0.052 −0.002 0.224 0.273 0.162 
+
+β 0.028 0.074 0.014 0.134 0.323 0.133 
+
+λ 0.001 −0.001 0.001 0.068 0.124 0.040 10 
+
+α −0.077 −0.074 −0.049 0.246 0.271 0.168 
+
+β 0.022 0.038 0.021 0.140 0.214 0.139 
+
+λ −0.015 −0.016 −0.011 0.044 0.040 0.026 200 3
+
+α 0.008 0.066 0.005 0.154 0.219 0.118 
+
+β 0.019 0.198 0.008 0.093 0.470 0.095 
+
+λ 0.007 −0.025 0.003 0.077 0.204 0.051 5
+
+α −0.008 0.081 −0.004 0.162 0.318 0.113 
+
+β 0.013 0.173 0.006 0.093 0.422 0.095 
+
+λ 0.000 −0.019 0.000 0.050 0.161 0.029 10 
+
+α −0.056 −0.063 −0.037 0.197 0.250 0.129 
+
+β 0.007 0.023 0.007 0.095 0.187 0.095 
+
+λ −0.010 −0.014 −0.007 0.036 0.044 0.020 
+
+Panel B: Heteroskedastic Errors 
+
+100 3
+
+α −0.001 0.025 −0.021 0.225 0.227 0.156 
+
+β 0.037 0.154 0.010 0.145 0.459 0.139 
+
+λ 0.009 −0.038 −0.009 0.125 0.191 0.069 5
+
+α −0.028 0.023 −0.029 0.232 0.302 0.167 
+
+β 0.020 0.099 0.005 0.143 0.360 0.142 
+
+λ −0.006 −0.024 −0.010 0.072 0.135 0.044 10 
+
+α −0.098 −0.090 −0.066 0.281 0.373 0.187 
+
+β 0.020 0.061 0.021 0.145 0.238 0.145 
+
+λ −0.018 −0.026 −0.014 0.050 0.068 0.030 200 3
+
+α 0.013 0.033 −0.007 0.171 0.189 0.117 
+
+β 0.027 0.186 0.010 0.099 0.463 0.097 
+
+λ 0.011 −0.046 −0.005 0.093 0.205 0.053 5
+
+α −0.006 0.057 −0.008 0.188 0.313 0.117 
+
+β 0.015 0.155 0.009 0.098 0.397 0.098 
+
+λ 0.002 −0.025 −0.002 0.061 0.151 0.031 10 
+
+α −0.084 −0.097 −0.049 0.221 0.235 0.133 
+
+β 0.017 0.033 0.014 0.101 0.161 0.100 
+
+λ −0.015 −0.018 −0.009 0.041 0.028 0.022 
+
+Note: The bias for α and λ is the raw bias, while the bias for β is the L2 norm of the bias vector. 
+
+25 Focusing on the log-linear case ( λ0 = 0), we define the residual as ρ(Z, θ ) = ln Y − (α + X′β). To evaluate power, we generate data under the alternatives by introducing an additive drift f (Xi) into the latent index: Yi = exp( α0 + X′ 
+
+> i
+
+β0 + f (Xi) + ϵi). We consider three representative forms of misspecification: 
+
+• H1a (Quadratic): f (Xi) = δX 2
+
+> i, 1
+
+, representing smooth global nonlinearity. 
+
+• H1b (Discontinuous): f (Xi) = δ · I(|Xi, 1| ≤ 0.5), representing a localized structural break or bump that is often harder to detect. 
+
+• H1c (Interaction): f (Xi) = δX i, 1Xi, 2, capturing omitted interaction effects. The perturbation magnitude is set to δ = 0 .5 for H1a and H1c, and to δ = 1 .5 for H1b.Table 3: Empirical Rejection Rates for Box–Cox Specification Tests ( α = 0 .05) 
+
+Homoskedastic Errors Heteroskedastic Errors 
+
+n DGP p = 3 p = 5 p = 10 p = 3 p = 5 p = 10 100 Size ( H0) 0.046 0.058 0.039 0.060 0.054 0.047 Power ( H1a: Quad.) 0.619 0.651 0.549 0.674 0.671 0.489 Power ( H1b: Disc.) 0.821 0.545 0.227 0.745 0.492 0.231 Power ( H1c: Inter.) 0.640 0.587 0.540 0.677 0.587 0.495 200 Size ( H0) 0.056 0.059 0.035 0.052 0.046 0.045 Power ( H1a: Quad.) 0.953 0.984 0.935 0.968 0.979 0.905 Power ( H1b: Disc.) 0.986 0.908 0.574 0.928 0.798 0.482 Power ( H1c: Inter.) 0.930 0.949 0.931 0.973 0.940 0.883 400 Size ( H0) 0.046 0.047 0.043 0.064 0.053 0.050 Power ( H1a: Quad.) 1.000 1.000 1.000 1.000 1.000 1.000 Power ( H1b: Disc.) 1.000 0.999 0.954 0.996 0.995 0.928 Power ( H1c: Inter.) 1.000 1.000 0.999 1.000 0.998 0.999 
+
+Table 3 summarizes the empirical rejection rates for the Box–Cox specification test. Under the null hypothesis, the test maintains accurate size control across all considered dimensions and error structures, with rejection rates close to the nominal level. Regarding power, we observe varying sensitivity to covariate dimensionality. For the smooth alternatives (Quadratic H1a and Interaction H1c), the empirical power remains relatively robust as the dimension increases from p = 3 to p = 10. In contrast, the discontinuous alternative ( H1b)exhibits a more substantial reduction in power in higher-dimensional settings, reflecting the 26 challenge of detecting local irregularities in sparse spaces. However, these distortions vanish with larger sample sizes; rejection rates for all alternatives converge to 1 as n increases to 400, confirming the test’s consistency. 
+
+## 5.3 Linear and Nonlinear Instrumental Variable Models 
+
+Finally, we evaluate the finite-sample performance of the KMD estimator in the pres-ence of endogeneity. We consider three DGPs with nonlinear reduced forms, including two continuous-instrument designs and one mixed-instrument design. For Designs 1–2, we generate a p-dimensional continuous instrument vector Zi = ( Zi1, . . . , Z ip )′,where the components Zij ∼ U [0 , 3] are mutually independent. For Design 3, the conditioning vector is Wi = ( C′
+
+> i
+
+, D ′
+
+> i
+
+)′, where Ci = ( Ci1, . . . , C ip c )′ contains independent U[0 , 3] continuous components and Di = ( Di1, . . . , D ip d )′ is binary, as is common in empirical applications. Let Λ( a) = 1 /(1 + exp( −a)). Conditional on Ci, we generate 
+
+Dim ∼ Bernoulli( πi), πi = Λ {0.75( Ci1 − 1.5) }, m = 1 , . . . , p d,
+
+which induces dependence between the continuous and discrete components. We set ( p, p c, p d) = (3 , 2, 1) , (5 , 3, 2) , (10 , 5, 5), with p = pc +pd. Endogeneity is induced through correlated latent errors: ηi
+
+vi
+
+ ∼ N 
+
+00
+
+ ,
+
+ 1 0.80.8 1
+
+ , ui = vi, ϵi = σiηi.
+
+We report both homoskedastic and heteroskedastic designs. In the homoskedastic case, 
+
+σi = 1. In the heteroskedastic case, σi = exp {0.25( Zi1 − 1.5) } for Designs 1–2, while for Design 3, σi = exp {0.25( Ci1 − 1.5) + 0 .15 Ai}, with Ai introduced below. We set θ0 = 0 .5and specify the three designs as follows: 
+
+• Design 1: Linear Structural Equation. 
+
+Yi = θ0Xi + ϵi, Xi = Zi1 + 0 .5Z2 
+
+> i2
+
++ ui.
+
+27 • Design 2: Nonlinear Structural Equation. 
+
+Yi = exp(1 + θ0Xi) + ϵi, Xi = 0 .2Zi1 + cos( Zi2Zi3) + ui.
+
+• Design 3: Nonlinear Structural Equation with Mixed Instruments. 
+
+Yi = exp(1 + θ0Xi) + ϵi, Xi = 0 .2Ci1 + 0 .5 cos( Ci1Ci2) + Ai + Bi cos( Ci1Ci2) + ui,
+
+where Ai = p−1/2
+
+> d
+
+Ppd
+
+> m=1
+
+(Dim − πi) and Bi = p−1/2
+
+> d
+
+Ppd
+
+> m=1
+
+(−1) m+1 (Dim − πi). For estimation, we benchmark KMD against alternative methods categorized by their handling of endogeneity and nonlinearity. A useful feature of our reproducing kernel formu-lation is that the kernel can be tailored to the support of the conditioning variables. We use a Gaussian kernel with the median-heuristic bandwidth in Designs 1–2. In the mixed-data Design 3, KMD uses a product kernel K(Wi, W j ) = KC (Ci, C j )KD(Di, D j ), where 
+
+KC is Gaussian and KD is a coordinatewise soft categorical kernel with k(d, d ′) = 1{d =
+
+d′} + 0 .5 1{d̸ = d′}.
+
+• Plug-in 2SLS: We consider an oracle plug-in estimator based on the true conditional mean E[X|Z]. While valid in linear designs, plug-in two-stage procedures are generally inconsistent in nonlinear structural models because of the forbidden-regression problem (Wooldridge, 2010). 
+
+• GMM Approaches: We report Oracle GMM , based on DGP-specific moment functions, and Sieve-GMM , based on polynomial sieve moments with the efficient GMM weighting matrix. 
+
+• Smooth Minimum Distance (SMD): Following Lavergne and Patilea (2013), we include a smooth minimum distance benchmark based on the off-diagonal U -statistic criterion. We report two bandwidth choices: a fixed bandwidth h = 1, denoted SMD-h1, and a dimension-dependent smoothing bandwidth hdim = n−1/(p+4) , denoted SMD-hdim. 
+
+• DML-OS: To handle higher-dimensional nuisance components, we also report a cross-fitted orthogonal-score benchmark, motivated by Chernozhukov et al. (2018), and im-28 plemented with random forests. 4
+
+Table 4 reports the estimation results for the IV designs, with all values multiplied by 100 for readability. In the linear structural setting (Panel A), KMD performs comparably to the oracle IV benchmarks. Its bias is small across all sample sizes and dimensions, and its RMSE is of the same order as oracle 2SLS, oracle GMM, and DML-OS. As the dimension increases, KMD remains stable, whereas the sieve- and smoothing-based alternatives exhibit somewhat larger RMSEs across several designs. Panels B and C show that the advantages of KMD become more visible in nonlinear IV settings. The oracle plug-in 2SLS estimator exhibits large biases in both panels, reflecting the forbidden-regression problem in nonlinear structural models, while oracle GMM serves as an infeasible benchmark based on correctly specified moment functions. Among the feasible alternatives, KMD exhibits low bias and a stable RMSE across sample sizes and dimensions. In Panel B, KMD is broadly comparable to the strongest feasible competitors at low dimensions and becomes more stable as p increases. The SMD estimator with a fixed bandwidth performs reasonably well in several cases; however, the dimension-dependent smoothing bandwidth deteriorates markedly in higher-dimensional designs, illustrating the finite-sample curse of dimensionality faced by local-smoothing-based criteria. In Panel C, the mixed-data design further highlights this stability: KMD remains well behaved when the conditioning variables include both continuous and discrete instruments, whereas DML-OS and the SMD estimators exhibit larger finite-sample variability in several higher-dimensional mixed designs. We conclude by evaluating the specification test in instrumental variable models. Let 
+
+Wi = Zi in Designs 1–2 and Wi = ( C′
+
+> i
+
+, D ′
+
+> i
+
+)′ in Design 3. The null hypothesis asserts the validity of the conditional moment restriction: 
+
+H0 : ∃θ0 ∈ Θ such that E[ρ(Yi, X i, θ 0) | Wi] = 0 a.s., where ρ(Yi, X i, θ ) = Yi − θX i in Design I and ρ(Yi, X i, θ ) = Yi − exp(1 + θX i) in Designs II– 
+
+> 4Implementation details for the DML-OS are provided in Section C.4 of the Online Supplementary Material.
+
+29 Table 4: Estimation Performance of IV Estimators (Bias and RMSE) 
+
+Estimators 
+
+n p Metric † 2SLS ∗ GMM ∗ Sieve-GMM SMD-h1 SMD-hdim DML-OS KMD 
+
+Panel A: Linear Structural Equation 
+
+100 3 Bias 0.092 0.053 0.266 −0.081 −0.077 −0.105 0.120 RMSE 2.976 3.065 3.221 3.295 3.363 3.064 3.272 5 Bias −0.064 −0.086 0.443 −0.318 −0.377 −0.282 −0.079 RMSE 2.928 3.083 3.524 3.381 3.824 3.057 3.237 10 Bias 0.105 0.148 1.144 −0.124 −0.470 −0.077 0.198 RMSE 2.932 3.060 4.121 3.997 6.149 3.071 3.317 200 3 Bias 0.040 0.037 0.136 −0.125 −0.118 −0.072 −0.025 RMSE 2.106 2.125 2.188 2.295 2.318 2.123 2.266 5 Bias 0.062 0.069 0.335 −0.072 −0.039 −0.058 0.005 RMSE 2.167 2.194 2.366 2.389 2.524 2.230 2.389 10 Bias −0.014 −0.007 0.552 −0.166 −0.220 −0.133 −0.064 RMSE 2.102 2.126 2.458 2.747 3.966 2.147 2.408 
+
+Panel B: Nonlinear (Exponential) Structural Equation 
+
+100 3 Bias 9.537 −0.091 0.503 −0.585 −0.562 −0.530 0.001 RMSE 10 .248 1.656 1.850 2.289 2.395 2.310 1.930 5 Bias 9.382 −0.130 0.892 −0.743 −1.174 −0.612 −0.022 RMSE 10 .036 1.621 1.903 2.572 4.805 2.238 1.946 10 Bias 9.766 −0.005 1.766 −1.986 −19 .627 −0.819 0.083 RMSE 10 .429 1.643 2.550 12 .529 69 .540 6.210 2.030 200 3 Bias 9.654 −0.034 0.266 −0.271 −0.275 −0.248 −0.010 RMSE 9.990 1.153 1.297 1.486 1.482 1.445 1.395 5 Bias 9.689 0.002 0.514 −0.260 −0.349 −0.246 0.044 RMSE 10 .024 1.078 1.268 1.557 1.918 1.389 1.383 10 Bias 9.930 0.056 1.123 −0.249 −3.873 −0.189 0.102 RMSE 10 .239 1.068 1.649 1.923 23 .944 1.385 1.348 
+
+Panel C: Nonlinear (Exponential) Structural Equation with Mixed Covariates 
+
+100 3 Bias 7.281 0.048 0.261 −0.629 −0.621 −0.509 0.094 RMSE 8.064 1.516 1.713 2.293 2.312 2.069 1.852 5 Bias 9.343 0.221 0.818 −0.759 −1.414 −0.943 0.359 RMSE 10 .405 1.738 1.968 2.835 8.190 6.091 1.926 10 Bias 8.372 0.218 1.501 −3.600 −27 .061 −1.254 1.196 RMSE 10 .172 1.773 2.372 18 .851 85 .758 8.697 1.936 200 3 Bias 7.389 −0.019 0.133 −0.288 −0.302 −0.256 0.046 RMSE 7.790 1.033 1.143 1.380 1.340 1.243 1.292 5 Bias 9.469 0.133 0.410 −0.349 −0.478 −0.319 0.209 RMSE 10 .017 1.232 1.357 1.682 2.076 1.587 1.431 10 Bias 8.263 0.118 0.896 −0.422 −4.658 −0.229 0.764 RMSE 9.122 1.141 1.467 2.273 28 .903 1.576 1.367 
+
+Note: † All values are multiplied by 100 for readability. 
+
+30 III. To evaluate power, we introduce perturbations of magnitude δ = 0 .1 that target distinct misspecifications across the three designs. For the linear framework, we generate data under a quadratic alternative to introduce functional-form misspecification: Yi = θ0Xi + δX 2 
+
+> i
+
++ ϵi.For the continuous nonlinear framework, we simulate an exclusion-type violation by allowing the instrument Zi1 to enter the structural equation: Yi = exp(1 + θ0Xi + δZ i1) + ϵi. For the mixed-data nonlinear framework, we perturb the structural equation through the mixed component Ai: Yi = exp(1 + θ0Xi + δA i) + ϵi.Table 5: Empirical Rejection Rates for IV Specification Tests ( α = 0 .05) 
+
+Homoskedastic Errors Heteroskedastic Errors 
+
+n DGP d = 3 d = 5 d = 10 d = 3 d = 5 d = 10 
+
+Panel A: Linear structural model with continuous instruments 
+
+100 Size ( H0) 0.043 0.040 0.037 0.040 0.052 0.031 Power ( H1) 0.653 0.518 0.313 0.620 0.456 0.253 200 Size ( H0) 0.052 0.047 0.040 0.057 0.040 0.043 Power ( H1) 0.931 0.885 0.723 0.901 0.845 0.686 400 Size ( H0) 0.056 0.039 0.045 0.048 0.045 0.044 Power ( H1) 0.999 0.997 0.974 0.999 0.997 0.978 
+
+Panel B: Nonlinear structural model with continuous instruments 
+
+100 Size ( H0) 0.050 0.046 0.032 0.048 0.031 0.033 Power ( H1) 0.817 0.713 0.508 0.756 0.639 0.429 200 Size ( H0) 0.056 0.057 0.040 0.054 0.047 0.035 Power ( H1) 0.982 0.960 0.890 0.979 0.951 0.858 400 Size ( H0) 0.051 0.058 0.042 0.048 0.055 0.037 Power ( H1) 0.998 1.000 0.997 1.000 1.000 0.994 
+
+Panel C: Mixed nonlinear structural model with continuous and discrete instruments 
+
+100 Size ( H0) 0.053 0.048 0.032 0.044 0.041 0.034 Power ( H1) 0.486 0.559 0.355 0.409 0.482 0.296 200 Size ( H0) 0.053 0.048 0.042 0.055 0.054 0.032 Power ( H1) 0.856 0.914 0.761 0.863 0.883 0.730 400 Size ( H0) 0.046 0.054 0.042 0.048 0.052 0.033 Power ( H1) 0.994 0.999 0.991 0.999 0.997 0.992 
+
+Table 5 reports the empirical rejection rates for the IV specification tests under both homoskedastic and heteroskedastic errors. Under the null, the test controls size well across 31 all three designs, with rejection rates generally close to the nominal 5% level; the mild undersizing observed in some high-dimensional cases is small and does not worsen under heteroskedasticity. Under the alternatives, the test shows strong power against the three types of misspecification considered: functional-form misspecification in Panel A, exclusion-type violations in Panel B, and mixed-data nonlinear misspecification in Panel C. Power is lower in smaller samples and tends to decrease with the dimension of the conditioning variables, but it increases rapidly with n. By n = 400, rejection rates are close to one across all panels and error designs, indicating that the test remains effective in detecting violations of the IV conditional moment restrictions. In summary, the simulation results underscore the KMD framework’s universality and robustness across both estimation and testing tasks. In terms of estimation, the proposed estimator exhibits consistent stability across diverse settings, demonstrating distinct advan-tages particularly in scenarios characterized by nonlinearity and endogeneity. Regarding specification testing, the KMD statistic maintains accurate size control and satisfactory power, whereas the alternative test of Dom´ ınguez and Lobato (2004) suffers significantly more from dimensionality; see Section C.6 of the Online Supplementary Material for a de-tailed comparison. 
+
+# 6 Empirical Application 
+
+To illustrate the practical relevance of the proposed KMD framework, we revisit the Engel curve application of Blundell et al. (2007) using their pre-processed 1995 UK Family Expenditure Survey (FES) sample. The data consist of 1,655 households, restricted to married couples with an employed head aged 25 to 55, and are treated as i.i.d. following Blundell et al. (2007). The sample contains budget shares for seven commodity groups ( wil 
+
+for l = 1 , . . . , 7: food, catering, alcohol, fuel, motor, fares, and leisure), together with log total expenditure (ln xi), log gross earnings (ln vi), and the number of children ( ki). The data are publicly available as the Engel95 dataset in the R package np .32 Following Blundell et al. (2007), we consider the Engel curve specification 
+
+wil = hl(ui) + γlki + ϵil , l = 1 , . . . , 7, (6.1) where ui = ln xi −θk i denotes log effective total expenditure, θ is a common equivalence-scale parameter, and γl captures commodity-specific demographic effects. Whereas Blundell et al. (2007) leave hl(·) unrestricted and estimate it nonparametrically, our interest lies in testing economically motivated parametric restrictions on Engel curves. This is relevant because empirical demand analysis often relies on parsimonious functional forms, even though their adequacy is ultimately an empirical question. We therefore consider two leading specifica-tions for hl(·): the linear Working–Leser form (Working, 1943; Leser, 1963), hl(ui) = αl +βlui,and the QUAIDS form (Banks et al., 1997), hl(ui) = αl + βlui + λlu2 
+
+> i
+
+.5
+
+To address the endogeneity of total expenditure, we use the log of gross earnings as an instrument. Consequently, the null hypothesis of correct model specification is formulated as the following CMR: 
+
+H0 : E[ϵi | Zi] = E[wi − h(ui; θ) − Γki | Zi] = 0 , (6.2) where Zi collects the instrument (ln vi) and demographic controls ( ki). The vector wi contains budget shares, h(·) denotes the vector of shape functions, and Γ = ( γ1, . . . , γ 7)⊤ represents the vector of demographic coefficients. Based on this framework, we test two canonical specifications: the linear Working–Leser form 6, and the Quadratic Almost Ideal Demand System (QUAIDS) .We implement the KMD test using a Gaussian kernel, with the bandwidth selected via the median heuristic and critical values obtained from B = 2999 multiplier bootstrap replications. The results decisively favor the quadratic specification: the linear Working– Leser form is rejected at the 5% level ( p = 0 .046), indicating a misspecified functional               
+
+> 5In this cross-sectional setting, households face common prices, so the price-index terms in the original QUAIDS specification are absorbed into the intercept αl.
+> 6Note that in the linear specification hl(ui) = αl+βl(ln xi−θk i), the equivalence scale parameter θis not separately identified as it is collinear with the direct demographic effect γl. In this case, θis absorbed into the reduced-form coefficient on ki.
+
+33 form. In contrast, the quadratic QUAIDS specification fails to reject the null hypothesis (p = 0 .703), confirming that the inclusion of the quadratic term is sufficient to capture the structural nonlinearities in the demand system. Given that the QUAIDS specification is not rejected by the data, we report the param-eter estimates from this preferred model. We first identify the common equivalence scale parameter shared across the demand system, which we estimate as ˆθ1 = 0 .049 (standard error 0 .103). While the positive sign is consistent with theoretical expectations regarding household composition costs, the estimate is not statistically significant in this sample. In light of this, we perform a robustness check by re-estimating the model and repeating the specification tests under the restriction θ = 0. The results, detailed in Section D of the Online Supplementary Material, indicate that our primary findings regarding the functional form specification remain robust to the exclusion of the equivalence scale parameter. Table 6 summarizes the remaining commodity-specific coefficients and their corresponding standard errors. Table 6: Parameter Estimates for the Quadratic (QUAIDS) Specification 
+
+Commodity αl βl λl γl
+
+Food −0.319 (0 .640) 0.259 (0 .232) −0.031 (0 .021) 0.048 (0 .009) Catering −0.312 (0 .437) 0.138 (0 .160) −0.012 (0 .015) −0.005 (0 .003) Alcohol −0.524 (0 .453) 0.234 (0 .164) −0.023 (0 .015) −0.023 (0 .004) Fuel 1.055 (0 .267) −0.330 (0 .097) 0.027 (0 .009) 0.009 (0 .005) Motor −2.041 (0 .728) 0.842 (0 .264) −0.080 (0 .024) −0.020 (0 .006) Fares 0.822 (0 .376) −0.310 (0 .138) 0.030 (0 .013) −0.007 (0 .003) Leisure 1.265 (1 .030) −0.564 (0 .380) 0.065 (0 .035) −0.010 (0 .015)              
+
+> Notes: The table reports the commodity-specific coefficients with standard errors in parentheses. The parameters correspond to the specification wil =αl+βlui+λlu2
+> i+γlki+ϵil .
+
+Inspection of Table 6 indicates that the standard errors for the individual shape parame-ters βl and λl are relatively large in some equations. This pattern likely reflects the structural multicollinearity between the linear regressor ui and its quadratic counterpart u2 
+
+> i
+
+. To assess the influence of total expenditure, we further conduct equation-specific Wald tests for the joint null hypothesis H0 : βl = λl = 0, utilizing the established asymptotic normality of the KMD estimator. The results, summarized in Table 7, show a decisive rejection of the null 34 hypothesis at the 1% significance level for six out of seven commodities. This finding con-firms that, despite inflated standard errors for individual coefficients, the expenditure terms are jointly significant in characterizing the demand system. The sole exception is catering, where the expenditure elasticity does not appear statistically distinguishable from zero. Table 7: Wald Tests for Joint Significance of Expenditure Terms ( H0 : βl = λl = 0) 
+
+Food Catering Alcohol Fuel Motor Fares Leisure 
+
+p-value 0.000 ∗∗∗ 0.435 0.006 ∗∗ 0.000 ∗∗∗ 0.000 ∗∗∗ 0.008 ∗∗ 0.000 ∗∗∗ 
+
+Note: Significance levels: ∗p < 0.05, ∗∗ p < 0.01, ∗∗∗ p < 0.001. 0.0 0.2 0.4 0.6                      
+
+> 4567
+> Log Expenditure (i)
+> Share (Food)
+> 0.0 0.1 0.2 0.3 0.4
+> 4567
+> Log Expenditure (ii)
+> Share (Fuel)
+> 0.0 0.1 0.2 0.3
+> 4567
+> Log Expenditure (iii)
+> Share (Catering)
+> 0.0 0.1 0.2 0.3 0.4
+> 4567
+> Log Expenditure (iv)
+> Share (Alcohol)
+> 0.0 0.1 0.2 0.3 0.4 0.5
+> 4567
+> Log Expenditure (v)
+> Share (Fares)
+> 0.0 0.2 0.4 0.6
+> 4567
+> Log Expenditure (vi)
+> Share (Motor)
+> 0.00 0.25 0.50 0.75
+> 4567
+> Log Expenditure (vii)
+> Share (Leisure)
+
+Figure 1: Estimated QUAIDS Engel curves for seven commodity groups. Grey dots rep-resent observed household shares, while solid blue-black lines indicate the fitted quadratic specification. Sub-labels (i) through (vii) refer to food, fuel, catering, alcohol, fares, motor, and leisure, respectively. Finally, Figure 1 illustrates the economic implications of the estimated model by plot-ting the predicted Engel curves over the support of the data. The recovered shapes are generally consistent with established demand theory. The curves for food and fuel exhibit a predominant downward trend consistent with Engel’s Law, although the fuel curve suggests a mild reversal at the upper tail of the expenditure distribution. In contrast, the curves for motor and alcohol exhibit a distinct inverted-U-shaped trajectory, capturing the “rank-3” 35 flexibility inherent in the QUAIDS specification. Notably, this non-monotonic pattern for alcohol is consistent with the empirical findings of Banks et al. (1997). Furthermore, leisure exhibits a convex, accelerating upward trend, indicative of a luxury good. Collectively, these heterogeneous patterns highlight the limitations of the linear form and support adopting the quadratic specification. 
+
+# 7 Conclusion 
+
+This paper establishes a unified Kernel Minimum Distance (KMD) framework for es-timating and testing models defined by conditional moment restrictions. By embedding conditional moments into a Reproducing Kernel Hilbert Space, we construct a tractable, closed-form V -statistic objective function. The proposed framework delivers a √n-consistent, asymptotically normal estimator and yields a naturally associated omnibus specification test based directly on the minimized objective value. We establish the asymptotic properties of our proposed tests under the null hypothesis, the fixed alternative, and a sequence of local alternatives converging to the null at the parametric rate n−1/2. A distinguishing feature of our approach is that the estimation effect is inherently captured through a projected ker-nel structure, thereby obviating the need for auxiliary orthogonalization. Supported by a computationally efficient multiplier bootstrap, the proposed framework is practically imple-mentable; extensive simulation results demonstrate robust performance in both estimation and testing across diverse settings. 
+
+# References 
+
+Takeshi Amemiya and James L Powell. A comparison of the box-cox maximum likelihood estimator and the non-linear two-stage least squares estimator. Journal of Econometrics ,17(3):351–381, 1981. James Banks, Richard Blundell, and Arthur Lewbel. Quadratic engel curves and consumer demand. Review of Economics and Statistics , 79(4):527–539, 1997. 36 Peter J Bickel and Kjell A Doksum. An analysis of transformations revisited. Journal of the American Statistical Association , 76(374):296–311, 1981. Herman J Bierens. Consistent model specification tests. Journal of Econometrics , 20(1): 105–134, 1982. Herman J Bierens. A consistent conditional moment test of functional form. Econometrica ,58(6):1443–1458, 1990. Herman J Bierens and Werner Ploberger. Asymptotic theory of integrated conditional mo-ment tests. Econometrica , 65(5):1129–1151, 1997. Richard Blundell, Xiaohong Chen, and Dennis Kristensen. Semi-nonparametric iv estimation of shape-invariant engel curves. Econometrica , 75(6):1613–1669, 2007. Marine Carrasco and Jean-Pierre Florens. Generalization of gmm to a continuum of moment conditions. Econometric Theory , 16(6):797–834, 2000. Victor Chernozhukov, Denis Chetverikov, Mert Demirer, Esther Duflo, Christian Hansen, Whitney Newey, and James Robins. Double/debiased machine learning for treatment and structural parameters. The Econometrics Journal , 21(1):C1–C68, 2018. Miguel A Delgado, Manuel A Dom´ ınguez, and Pascal Lavergne. Consistent tests of condi-tional moment restrictions. Annales d’ ´Economie et de Statistique , 1(81):33–67, 2006. Manuel A Dom´ ınguez and Ignacio N Lobato. Consistent estimation of models defined by conditional moment restrictions. Econometrica , 72(5):1601–1615, 2004. Manuel A Dom´ ınguez and Ignacio N Lobato. A simple omnibus overidentification specifica-tion test for time series econometric models. Econometric Theory , 31(4):891–910, 2015. Stephen G Donald, Guido W Imbens, and Whitney K Newey. Empirical likelihood estimation and consistent tests with conditional moment restrictions. Journal of Econometrics , 117 (1):55–93, 2003. 37 Stephen G Donald, Guido W Imbens, and Whitney K Newey. Choosing instrumental vari-ables in conditional moment restriction models. Journal of Econometrics , 152(1):28–36, 2009. Juan Carlos Escanciano. A consistent diagnostic test for regression models using projections. 
+
+Econometric Theory , 22(6):1030–1051, 2006. Juan Carlos Escanciano. A gaussian process approach to model checks. The Annals of Statistics , 52(5):2456–2481, 2024. Arthur Gretton, Karsten M. Borgwardt, Malte Rasch, Bernhard Sch¨ olkopf, and Alex J. Smola. A kernel method for the two-sample-problem. In Advances in Neural Information Processing Systems , volume 19, pages 513–520, 2006. Arthur Gretton, Karsten M Borgwardt, Malte J Rasch, Bernhard Sch¨ olkopf, and Alexander Smola. A kernel two-sample test. Journal of Machine Learning Research , 13(1):723–773, 2012. Lars Peter Hansen. Large sample properties of generalized method of moments estimators. 
+
+Econometrica , 50(4):1029–1054, 1982. Yuichi Kitamura, Gautam Tripathi, and Hyungtaik Ahn. Empirical likelihood-based infer-ence in conditional moment restriction models. Econometrica , 72(6):1667–1714, 2004. Pascal Lavergne and Valentin Patilea. Smooth minimum distance estimation and testing with conditional estimating equations: uniform in bandwidth theory. Journal of Econometrics ,177(1):47–59, 2013. Conrad Emanuel Victor Leser. Forms of engel functions. Econometrica , 31(4):694–703, 1963. Enno Mammen. Bootstrap and wild bootstrap for high dimensional linear models. The Annals of Statistics , 21(1):255–285, 1993. Krikamol Muandet, Kenji Fukumizu, Bharath Sriperumbudur, Bernhard Sch¨ olkopf, et al. Kernel mean embedding of distributions: A review and beyond. Foundations and Trends ®
+
+in Machine Learning , 10(1-2):1–141, 2017. 38 Krikamol Muandet, Wittawat Jitkrittum, and Jonas K¨ ubler. Kernel conditional moment test via maximum moment restriction. In Conference on Uncertainty in Artificial Intelligence ,volume 124, pages 41–50. PMLR, 2020. Whitney K Newey. Generalized method of moments specification testing. Journal of Econo-metrics , 29(3):229–256, 1985. Whitney K Newey. Efficient instrumental variables estimation of nonlinear models. Econo-metrica , 58(4):809–837, 1990. Peter M Robinson. Best nonlinear three-stage least squares estimation of certain econometric models. Econometrica , 59(3):755–786, 1991. Alessio Sancetta. Testing subspace restrictions in the presence of high dimensional nuisance parameters. Electronic Journal of Statistics , 16(2):5277–5320, 2022. John D Sargan. The estimation of economic relationships using instrumental variables. 
+
+Econometrica , pages 393–415, 1958. Youngki Shin. Semiparametric estimation of the box–cox transformation model. The Econo-metrics Journal , 11(3):517–537, 2008. Bharath K Sriperumbudur, Kenji Fukumizu, and Gert RG Lanckriet. Universality, charac-teristic kernels and rkhs embedding of measures. Journal of Machine Learning Research ,12(7):2389–2410, 2011. Jeffrey M Wooldridge. Econometric analysis of cross section and panel data . MIT press, 2010. Holbrook Working. Statistical laws of family expenditure. Journal of the American Statistical Association , 38(221):43–56, 1943. Rui Zhang, Masaaki Imaizumi, Bernhard Sch¨ olkopf, and Krikamol Muandet. Instrumental variable regression via kernel maximum moment loss. Journal of Causal Inference , 11(1): 20220073, 2023. 39 Online Supplementary Material for 
+
+# “Kernel Minimum Distance Estimation and Testing with Conditional Moment Restrictions: A Unified Framework” 
+
+Yuhao Li Haokun Lu Xiaojun Song The Online Supplementary Material is organized into four sections. Section A provides the proofs of all main results. Section B contains additional methodological discussions, including the two-step efficient refinement and the choice between U - and V -test statistics. Section C presents additional simulation results, and Section D reports additional empirical results. 
+
+# A Proofs 
+
+## A.1 Proofs for Section 2 
+
+Proof of Lemma 1 
+
+Proof. For each component l = 1 , . . . , q , define the finite signed Borel measure 
+
+νθ,l (A) := E[ρl(Z, θ )1{X ∈ A}] , A ∈ B (X ).
+
+This measure is finite because Assumption 2.1(ii) implies E|ρl(Z, θ )| < ∞. Moreover, by the law of iterated expectations, νθ,l is absolutely continuous with respect to PX , with Radon– Nikodym derivative ml(X, θ ) := E[ρl(Z, θ ) | X]. By the diagonal structure K(x, ex) = k(x, ex)Iq and the reproducing property, 
+
+∥μ(θ)∥2 
+
+> HK
+
+=
+
+> q
+
+X
+
+> l=1
+
+Z Z 
+
+> X ×X
+
+k(x, ex) dν θ,l (x)dν θ,l (ex).
+
+Equivalently, 
+
+∥μ(θ)∥2 
+
+> HK
+
+=
+
+> q
+
+X
+
+> l=1
+
+E
+
+h
+
+ml(X, θ )k(X, eX)ml( eX, θ )
+
+i
+
+,
+
+1where eX is an independent copy of X.If E[ρ(Z, θ ) | X] = 0 a.s., then ml(X, θ ) = 0 a.s. for all l, and hence νθ,l = 0 for all l.Therefore ∥μ(θ)∥HK = 0. Conversely, suppose ∥μ(θ)∥HK = 0. Since k is positive definite, each term in the preceding sum is nonnegative. Hence every component satisfies 
+
+Z Z 
+
+> X ×X
+
+k(x, ex) dν θ,l (x)dν θ,l (ex) = 0 , l = 1 , . . . , q. 
+
+By the signed-measure injectivity condition in Assumption 2.1(iv), this implies νθ,l = 0 for every l. Since νθ,l ≪ PX with Radon–Nikodym derivative ml(·, θ ), it follows that ml(X, θ ) = 0 PX -a.s. for all l. Therefore E[ρ(Z, θ ) | X] = 0 a.s., completing the proof. 
+
+Proof of Lemma 2 
+
+Proof. Let Si = ( Xi, Z i) and define 
+
+f (Si, S j , θ ) = ρ(Zi, θ )′K(Xi, X j )ρ(Zj , θ ).
+
+By Assumption 2.1(ii) and (iv), f (Si, S j , θ ) is almost surely continuous in θ ∈ Θ. Moreover, 
+
+E
+
+
+
+sup 
+
+> θ∈Θ
+
+∥f (Si, S j , θ )∥
+
+
+
+= E
+
+
+
+sup 
+
+> θ∈Θ
+
+∥ρ(Zi, θ )′K(Xi, X j )ρ(Zj , θ )∥
+
+
+
+≤ sup 
+
+> x∈X
+
+k(x, x )
+
+
+
+E[sup 
+
+> θ∈Θ
+
+∥ρ(Z, θ )∥]
+
+2
+
+< ∞,
+
+E
+
+
+
+sup 
+
+> θ∈Θ
+
+∥f (Si, S i, θ )∥
+
+
+
+≤ sup 
+
+> x∈X
+
+k(x, x ) E[sup 
+
+> θ∈Θ
+
+∥ρ(Z, θ )∥2] < ∞.
+
+Hence, by Lemma 8.5 of Newey and McFadden (1994), the population criterion 
+
+Q(θ) := E[f (Si, S j , θ )] is continuous on Θ and satisfies sup 
+
+> θ∈Θ
+
+∥ bQn(θ) − Q(θ)∥ p
+
+−→ 0.
+
+2By Assumption 2.1, the kernel K is ISPD, implying Q(θ) ≥ 0 for all θ ∈ Θ. By the identification condition in Assumption 2.1(iii) and the Law of Iterated Expectations, −Q(θ)attains a unique maximizer at θ0. Since Q(θ) is continuous and the uniform convergence above holds, Theorem 2.1 of Newey and McFadden (1994) yields 
+
+bθnp
+
+−→ θ0.
+
+This completes the proof. 
+
+Proof of Lemma 3 
+
+Proof. By Assumption 2.2, ∇θ bQn(bθn) admits a mean-value expansion around θ0:
+
+∇θ bQn(bθn) = ∇θ bQn(θ0) + bHn(¯θn)( bθn − θ0),
+
+where ¯θn lies between θ0 and bθn.Since 
+
+∇θf (Si, S j , θ ) = k(Xi, X j )g(Zi, θ )′ρ(Zj , θ ) + g(Zj , θ )′ρ(Zi, θ ),
+
+we obtain 
+
+∇θ bQn(θ) = 2
+
+n2
+
+X
+
+> i,j
+
+k(Xi, X j )g(Zi, θ )′ρ(Zj , θ ),
+
+and the sample Hessian is 
+
+bHn(θ) = 2
+
+n2
+
+X
+
+> i,j
+
+k(Xi, X j )
+
+" q
+
+X
+
+> l=1
+
+ρl(Zj , θ )∇2 
+
+> θθ ′
+
+ρl(Zi, θ ) + g(Zi, θ )′g(Zj , θ )
+
+#
+
+.
+
+First, we show that bHn(¯θn) p
+
+−→ 2∆( θ). To see this, note that Hn(θ) is a V −statistic defined by the kernel 
+
+ϕ(Si, S j , θ ) = 2 · k (Xi, X j )
+
+" q
+
+X
+
+> l=1
+
+ρl (Zj , θ ) ∇2 
+
+> θθ ′
+
+ρl (Zi, θ ) + g (Zi, θ )′ g (Zj , θ )
+
+#
+
+,
+
+with ϕ(Si, S j , θ ) almost surely continuous in θ ∈ N (θ0). Moreover, direct bound by triangular 3inequalities yields that Esup θ∈N (θ0) ∥ϕ(Si, S j , θ )∥ < ∞ and Esup θ∈N (θ0) ∥ϕ(Si, S i, θ )∥ <
+
+∞. By Lemma 8.5 of Newey and McFadden (1994) again, the population criterion 
+
+H(θ) := E [ϕ(Si, S j , θ )] is continuous on Θ and satisfies sup  
+
+> θ∈N (θ0)
+
+∥ bHn(θ) − H(θ)∥ p
+
+−→ 0.
+
+Furthermore, note that when θ = θ0, E [ρl(Z, θ 0)|X] ≡ 0 for l = 1 , · · · , q . Thus, 
+
+E [ϕ(Si, S j , θ 0)] = 2∆( θ0) + 2 E
+
+(
+
+k (Xi, X j )
+
+" q
+
+X
+
+> l=1
+
+ρl (Zj , θ ) ∇2 
+
+> θθ ′
+
+ρl (Zi, θ )
+
+#) 
+
+= 2∆( θ0) + 2 E
+
+(
+
+k(Xi, X j )
+
+> q
+
+X
+
+> l=1
+
+E [ρl (Zj , θ 0) |Xj ] ∇2 
+
+> θθ ′
+
+ρl (Zi, θ )
+
+)
+
+= 2∆( θ0).
+
+Since bθnp
+
+−→ θ0 and ¯θ is between θ and bθn, by triangular inequality, 
+
+bHn(¯θn) − 2∆( θ0) ≤ bHn(¯θn) − H(¯θn) + H(¯θn) − H(θ0)
+
+≤ sup  
+
+> θ∈N (θ0)
+
+bHn(θ) − H(θ) + H(¯θn) − H(θ0) p
+
+−→ 0,
+
+where the second term follows from the Continuous Mapping Theorem. Thus, bHn(¯θn) p
+
+−→
+
+2∆( θ). Next, note that the score ∇θ bQn (θ0). is also a V -statistic with symmetrized kernel 
+
+ϱ(Si, S j , θ ) = k(Xi, X j ) [ g(Zi, θ )′ρ(Zj , θ ) + g(Zj , θ )′ρ(Zi, θ )] .
+
+Assumption 2.2(ii) ensures 
+
+E[ϱ(Si, S i, θ 0)2] ≤
+
+
+
+sup 
+
+> x∈X
+
+k(x, x )
+
+2
+
+E ∥g(Zi, θ 0)′ρ(Zi, θ 0)∥2 ≤ E ∥ρ(Zi, θ 0)∥4 E ∥g(Zi, θ 0)∥4 < ∞.
+
+4Thus, by the H´ ajek projection result for V –statistics (e.g. Serfling (1980), §5.7.3), 
+
+∇θ bQn(θ0) = 2
+
+n
+
+> n
+
+X
+
+> i=1
+
+G(Xi, θ 0)′ρ(Zi, θ 0) + op(n−1/2),
+
+because 
+
+E [ϱ(Si, S j , θ 0)|Si] = k(Xi, X j )g(Zi, θ 0)E [ρ(Zj , θ 0)|Xj ] + E [g(Zj , θ 0)′K(Xi, X j )|Xi] ρ(Zi, θ 0)= G(Xi, θ 0)′ρ(Zi, θ 0).
+
+The first-order condition implies ∇θ
+
+ bQn(bθn)
+
+
+
+= 0. Thus, 2
+
+n
+
+> n
+
+X
+
+> i=1
+
+G(Xi, θ 0)′ρ(Zi, θ 0) + op
+
+ 1
+
+√n
+
+
+
++ (2∆( θ0) + op(1)) 
+
+bθn − θ0
+
+
+
+= 0,
+
+Multiplying both side by √n, by Slutsky’s Theorem, Continuous Mapping Theorem and Assumption 2.2 (iii), 
+
+√n
+
+bθn − θ0
+
+
+
+= −∆ ( θ0)−1 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+G (Xi, θ 0)′ ρ (Zi, θ 0) + op(1) .
+
+This completes the proof. 
+
+Proof of Theorem 2.1 
+
+Proof. By Lemma 3 we have 
+
+√n(bθn − θ0) = −∆( θ0)−1 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ψi + op(1) , ψi := G(Xi, θ 0)′ρ(Zi, θ 0).
+
+Under Assumption 2.1(iii), E[ρ(Z, θ 0) | X] = 0, hence E[ψi] = 0. By Assumption 2.2(ii), the 5components of ψi have finite second moments and Ω( θ0) = E[ψiψ′
+
+> i
+
+] = EG(X, θ 0)′ρ(Z, θ 0)ρ(Z, θ 0)′G(X, θ 0)
+
+= Ei {Ej [g(Zj , θ 0)′K(Xi, X j )|Xi] ρ(Zi, θ 0)ρ(Zi, θ 0)′Ej [K(Xi, X j )g(Zj , θ 0)|Xi]}≤
+
+
+
+sup 
+
+> x∈X
+
+k(x, x )
+
+2
+
+E ∥g(Zi, θ 0)′ρ(Zi, θ 0)∥2 < ∞,
+
+is well defined and finite. Thus, the multivariate CLT therefore yields 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+ψid
+
+−→ N (0 , Ω( θ0)) .
+
+Combining this with the linear representation and applying Slutsky’s theorem gives 
+
+√n(bθn − θ0) d
+
+−→ −∆( θ0)−1N (0 , Ω( θ0)) = N  0, ∆( θ0)−1Ω( θ0)∆( θ0)−1,
+
+as required. 
+
+Proof of Proposition 1 
+
+Proof. First, by Lemma A.4 7, we have sup θ∈N ∗ ∥ b∆n(θ)−1 −∆( θ)−1∥ = op(1) for some compact neighborhood of θ0. Combined with the consistency of bθn and the continuity of ∆( θ)−1, it follows directly that b∆−1
+
+> np
+
+−→ ∆( θ0)−1.Next, we establish the consistency of bΩn. Define the infeasible sample analog 
+
+eΩn := n−1
+
+> n
+
+X
+
+> i=1
+
+G(Xi, θ 0)′ρ(Zi, θ 0)ρ(Zi, θ 0)′G(Xi, θ 0).
+
+By the Law of Large Numbers and the moment conditions in Assumptions 2.1 and 2.2, eΩnp
+
+−→
+
+Ω( θ0). It remains to show ∥bΩn − eΩn∥ = op(1). For notation simplicity, let Gi := G(Xi, θ 0), 
+
+ρi := ρ(Zi, θ 0), ∆ Gi := bGn(Xi, bθn) − Gi, ∆ ρi := ρ(Zi, bθn) − ρi.For ∆ Gi, the triangle inequality yields ∥∆Gi∥ ≤ ∥ bGn(Xi, bθn) − G(Xi, bθn)∥ + ∥G(Xi, bθn) −
+
+G(Xi, θ 0)∥. Invoking Lemma A.3 and the Lipschitz continuity of G(·, θ ), we obtain a uniform     
+
+> 7Lemma A.3 and A.4 are established in Section 4 for the multiplier bootstrap. They provide uniform convergence over a neighborhood covering θ∗, which implies the consistency at θ0required here.
+
+6bound: max  
+
+> 1≤i≤n
+
+∥∆Gi∥ ≤ max  
+
+> i
+
+sup 
+
+> θ
+
+∥ bGn(Xi, θ ) − G(Xi, θ )∥ + LG∥bθn − θ0∥ = op(1) .
+
+For ∆ ρi, the Mean Value Theorem implies ∥∆ρi∥ ≤ sup θ ∥g(Zi, θ )∥∥ bθn − θ0∥. We obtain: 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∥∆ρi∥2 ≤ ∥ bθn − θ0∥2 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+sup  
+
+> θ∈N (θ0)
+
+∥g(Zi, θ )∥2
+
+!
+
+= op(1) · Op(1) = op(1) .
+
+Furthermore, max i ∥Gi∥ ≤ sup x,x ′ k(x, x ′)E[∥g∥] < ∞.Let Ui := G′
+
+> i
+
+ρi and bUi := ( Gi +∆ Gi)′(ρi +∆ ρi). The difference is ∆ Ui = ∆ G′
+
+> i
+
+ρi +G′
+
+> i
+
+∆ρi +∆G′
+
+> i
+
+∆ρi. We bound the mean squared norm n−1 P ∥∆Ui∥2 by analyzing each term using the inequality ( a + b + c)2 ≤ 3( a2 + b2 + c2): 1. 1
+
+> n
+
+P ∥∆G′
+
+> i
+
+ρi∥2 ≤ (max i ∥∆Gi∥)2( 1
+
+> n
+
+P ∥ρi∥2) = op(1) · Op(1) = op(1). 2. 1
+
+> n
+
+P ∥G′
+
+> i
+
+∆ρi∥2 ≤ (max i ∥Gi∥)2( 1
+
+> n
+
+P ∥∆ρi∥2) = O(1) · op(1) = op(1). 3. 1
+
+> n
+
+P ∥∆G′
+
+> i
+
+∆ρi∥2 ≤ (max i ∥∆Gi∥)2( 1
+
+> n
+
+P ∥∆ρi∥2) = op(1) · op(1) = op(1). Thus, n−1 P ∥∆Ui∥2 = op(1). 
+
+bΩn − eΩn = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ bUi bU ′ 
+
+> i
+
+− UiU ′
+
+> i
+
+
+
+≤ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+bUi bU ′ 
+
+> i
+
+− UiU ′
+
+> i
+
+≤ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∥∆Ui∥2 + 2 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∥Ui∥ ∥ ∆Ui∥≤ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∥∆Ui∥2 + 2 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∥Ui∥2
+
+!1/2
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∥∆Ui∥2
+
+!1/2
+
+,
+
+where the inequalities follow, respectively, from the triangle inequality, the matrix norm bound ∥aa ′ − bb ′∥ ≤ ∥ a − b∥2 + 2 ∥b∥∥ a − b∥, and the Cauchy-Schwarz inequality. Noting 
+
+n−1 P ∥Ui∥2 = Op(1), bΩn − eΩn = op(1). Thus, bΩnp
+
+−→ Ω( θ0). Consequently, by Slutsky’s theorem, bΣn = b∆−1 
+
+> n
+
+bΩn b∆−1
+
+> np
+
+−→ Σ. 7A.2 Proofs for Section 3 
+
+Proof of Lemma 4 
+
+Proof. By Assumption 2.2, bTn = n bQn(bθn) admits a mean-value expansion around θ0:
+
+bTn = n bQn(θ0)+ 
+
+√n∇θ bQn(θ0)
+
+′ h√n
+
+bθn − θ0
+
+i 
+
++12
+
+h√n
+
+bθn − θ0
+
+i ′ bHn(¯θn)
+
+h√n
+
+bθn − θ0
+
+i 
+
+,
+
+(A.1) where ¯θn lies between bθn and θ0. From the proof of Lemma 3: 
+
+bHn(¯θn) = 2∆( θ0) + op(1) ,
+
+√n∇θ bQn(θ0) = 2 Sn(θ0) + op(1) ,
+
+√n
+
+bθn − θ0
+
+
+
+= −∆( θ0)−1Sn(θ0) + op(1) ,
+
+where Sn(θ0) := 1 /√n Pni=1 G(Xi, θ 0)′ρ(Zi, θ 0). Substituting these expansions and applying Slutsky’s theorem yields 
+
+bTn = n bQn(θ0) − Sn(θ0)′∆( θ0)−1Sn(θ0) + op(1) = 1
+
+n
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+ρ (Zi, θ 0)′ K(Xi, X j ) − G(Xi, θ 0)∆( θ0)−1G(Xj , θ 0)′ ρ (Zj , θ 0) + op(1) := 1
+
+n
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+ρ (Zi, θ 0)′ Kp(Xi, X j )ρ (Zj , θ 0) + op(1) .
+
+This completes the proof. 
+
+Proof of the PSD of Kp
+
+Proof. Let Hk be the scalar Reproducing Kernel Hilbert Space (RKHS) associated with the scalar kernel k(·, ·). Since the matrix kernel is defined as a diagonal matrix K(x, y ) = 
+
+k(x, y )Iq, the associated vector-valued RKHS, denoted by HK , is isomorphic to the direct sum of q copies of Hk. Specifically, HK consists of vectorvalued functions f = ( f1, . . . , f q)′ :
+
+X → Rq such that each component fl ∈ H k . This space is equipped with the inner product 8defined by the sum of the component-wise inner products: 
+
+⟨f, h ⟩K =
+
+> q
+
+X
+
+> l=1
+
+⟨fl, h l⟩Hk , ∀f, h ∈ H K .
+
+Recall that G(x, θ 0) = E[K(x, X )g(Z, θ 0)] is a q × p matrix. Let gl(Z, θ 0) denote the l-th column of the Jacobian g(Z, θ 0). We define the component functions ψl ∈ H K via the Bochner integrals: 
+
+ψl(·) = E[K(·, X )gl(Z, θ 0)] , l = 1 , . . . , p. 
+
+By the properties of Bochner integrals, point evaluation yields ψl(x) = Gl(x, θ 0), where 
+
+Gl(x, θ 0) is the l-th column of G(x, θ 0). Furthermore, the entries of the matrix ∆( θ0) cor-respond precisely to the inner products of these functions in HK . Specifically, applying the reproducing property ⟨f, k (·, X )v⟩K = v′f (X) for v ∈ Rq and the independence of Z and its copy Z′, we obtain: 
+
+⟨ψl, ψ m⟩K = EZ [⟨k(·, X )gl(Z, θ 0), ψ m⟩K ]= EZ [gl(Z, θ 0)′ψm(X)] = EZ,Z ′ [gl(Z, θ 0)′k(X, X ′)gm(Z′, θ 0)] .
+
+This equality confirms that ∆( θ0) is the p×p Gram matrix of the functions {ψ1, . . . , ψ p}. Let 
+
+S = span {ψ1, . . . , ψ p} ⊂ H K denote the p-dimensional subspace spanned by these functions. Since ∆( θ0) is assumed to be non-singular (Assumption 2.2), the set {ψl}pl=1 is linearly independent. To establish the positive semi-definiteness of the q × q matrix kernel Kp, consider an arbitrary set of points {xi}ni=1 ⊂ X and arbitrary vectors {ci}ni=1 ⊂ Rq. Define the function 
+
+h = Pni=1 K(·, x i)ci ∈ H K . We analyze the quadratic form associated with Kp:
+
+Qn(c) ≡
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+c′
+
+> i
+
+Kp(xi, x j )cj = X
+
+> i,j
+
+c′
+
+> i
+
+K(xi, x j )cj − X
+
+> i,j
+
+c′
+
+> i
+
+G(xi, θ 0)∆( θ0)−1G(xj , θ 0)′cj .
+
+The first term is exactly the squared norm ∥h∥2 
+
+> K
+
+. For the second term, let v ∈ Rp be a vector 9whose l-th component is given by 
+
+vl =
+
+> n
+
+X
+
+> i=1
+
+c′
+
+> i
+
+ψl(xi) = 
+
+> n
+
+X
+
+> i=1
+
+⟨K(·, x i)ci, ψ l⟩K = ⟨h, ψ l⟩K .
+
+In matrix notation, this can be written as v = Pni=1 G(xi, θ 0)′ci, and the second term can be rewritten as v′∆( θ0)−1v. We now show that this term corresponds exactly to the squared norm of the orthogonal projection of h onto S.Let PS h denote the orthogonal projection of h onto S. Since PS h ∈ S , it can be uniquely expressed as a linear combination of the basis functions: PS h = Ppk=1 αkψk. The coefficient vector α = ( α1, . . . , α p)′ is determined by the orthogonality condition, which requires that the residual h − PS h be orthogonal to each basis function ψl:
+
+⟨h − PS h, ψ l⟩K = 0 =⇒ ⟨h, ψ l⟩K = ⟨PS h, ψ l⟩K , ∀l = 1 , . . . , p. 
+
+Substituting the expansion of PS h into the right-hand side yields 
+
+vl =
+
+* p
+
+X
+
+> k=1
+
+αkψk, ψ l
+
++
+
+> K
+
+=
+
+> p
+
+X
+
+> k=1
+
+αk⟨ψk, ψ l⟩K =
+
+> p
+
+X
+
+> k=1
+
+∆( θ0)lk αk.
+
+In matrix notation, this system implies v = ∆( θ0)α. Since ∆( θ0) is non-singular, the unique coefficients are given by α = ∆( θ0)−1v.Finally, we compute the squared norm of the projection: 
+
+∥PS h∥2 
+
+> K
+
+= ⟨PS h, P S h⟩K =
+
+* p
+
+X
+
+> k=1
+
+αkψk,
+
+> p
+
+X
+
+> m=1
+
+αmψm
+
++
+
+> K
+
+=
+
+> p
+
+X
+
+> k=1
+> p
+
+X
+
+> m=1
+
+αkαm∆( θ0)km = α′∆( θ0)α. 
+
+Substituting α = ∆( θ0)−1v, we obtain ∥PS h∥2 
+
+> K
+
+= v′∆( θ0)−1v.Therefore, the quadratic form becomes 
+
+Qn(c) = ∥h∥2 
+
+> K
+
+− ∥ PS h∥2 
+
+> K
+
+= ∥(I − PS )h∥2 
+
+> K
+
+≥ 0,
+
+10 which proves that Kp is positive semi-definite. 
+
+Proof of Theorem 3.1 
+
+Proof. By Lemma 4, it suffices to analyze the asymptotic distribution of 
+
+Vn := 1
+
+n
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+f p(Si, S j , θ 0), f p(s, s ′, θ 0) = ρ(z, θ 0)′Kp(x, x ′)ρ(z′, θ 0).
+
+Assumption 2.2(ii) implies 
+
+Ef p(Si, S j , θ 0)2 < ∞, Ef p(Si, S i, θ 0)2 < ∞, (A.2) so the kernel is square–integrable. Under H0,
+
+E[f p(Si, S j , θ 0) | Si] = 0 ,
+
+hence Vn is a degenerate V –statistic. Therefore, by Theorem B in §6.4.1 of Serfling (1980) (see also Theorem 3.16 of Shao (1999)), 
+
+Vnd
+
+−→
+
+> ∞
+
+X
+
+> k=1
+
+λkW 2 
+
+> k
+
+,
+
+where {Wk} are i.i.d. N (0 , 1) and {λk} are the eigenvalues of the Hilbert–Schmidt operator 
+
+Aψ(s) = 
+
+Z
+
+> Z×X
+
+f p(s, s ′, θ 0)ψ(s′) dPXZ (s′).
+
+Slutsky’s theorem then yields the stated claim for bTn(bθn). 
+
+Lemma A.1. Under H1, suppose Assumptions 3.1 hold, then bθnp
+
+−→ θ1.Proof. The proof is identical to that of Lemma 2, with θ0 replaced by θ1, and is therefore omitted. 
+
+Proof of Lemma 5 
+
+11 Proof. The proof proceeds as in the null case. By Assumption 3.2 the map θ 7 → ∇ θ bQn(θ)admits a mean-value expansion about θ1:
+
+∇θ bQn(bθn) = ∇θ bQn(θ1) + bHn(¯θn) ( bθn − θ1),
+
+with ¯θn is between θ1 and bθn. As in the null case one verifies that bHn(¯θn) p
+
+−→ 2 e∆( θ1). Next, we analyze the score at θ1. As before, the score is a V –statistic with symmetrized kernel 
+
+ϱ(Si, S j , θ ) = k(Xi, X j )g(Zi, θ )′ρ(Zj , θ ) + g(Zj , θ )′ρ(Zi, θ ).
+
+Applying the H´ ajek projection and Assumption 3.2 yields 
+
+∇θ bQn(θ1) = 2
+
+n
+
+> n
+
+X
+
+> i=1
+
+eψi(θ1) + op
+
+ 1
+
+√n
+
+
+
+,
+
+where the projected summand is 
+
+eψi(θ1) = E[ϱ(Si, S j , θ 1) | Si] = G(Xi, θ 1)′ρ(Zi, θ 1) + g(Zi, θ 1)′M (Xi, θ 1).
+
+(Indeed, the second term appears because under H1 the conditional moment E[ρ(Z, θ 1) | X]need not vanish.) The first-order condition ∇θ bQn(bθn) = 0 thus gives 2
+
+n
+
+> n
+
+X
+
+> i=1
+
+eψi(θ1) +  2 e∆( θ1) + op(1) (bθn − θ1) + op
+
+ 1
+
+√n
+
+
+
+= 0 .
+
+Multiplying by √n and rearranging yields 
+
+√n(bθn − θ1) = − e∆( θ1)−1 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+eψi(θ1) + op(1) .
+
+Substituting the expression for eψi(θ1) gives the asserted representation 
+
+√n bθn − θ1
+
+ = − e∆( θ1)−1 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+G(Xi, θ 1)′ρ(Zi, θ 1) + g(Zi, θ 1)′M (Xi, θ 1) + op(1) .
+
+12 This completes the proof. 
+
+Proof of Theorem 3.2 
+
+Proof. Consider a Taylor expansion of the objective function around the pseudo-true value 
+
+θ1:
+
+bQn(bθn) = bQn(θ1) + ∇θ bQn(θ1)′(bθn − θ1) + 12(bθn − θ1)′∇2 
+
+> θθ
+
+bQn(¯θn)( bθn − θ1),
+
+where ¯θn lies between bθn and θ1.From the proof of Lemma 5, we have ∥∇ θ bQn(θ1)∥ = Op(n−1/2). ∥bθn − θ1∥ = Op(n−1/2). Furthermore, the Hessian term is bounded in probability. Rearranging terms and scaling by 
+
+√n yields that 
+
+√n
+
+ bQn(bθn) − bQn(θ1)
+
+
+
+= √n∇θ bQn(θ1)′(bθn − θ1) + √nO p(∥bθn − θ1∥2)= √n · Op(n−1/2) · Op(n−1/2) + √n · Op(n−1)= Op(n−1/2) + Op(n−1/2) = op(1) .
+
+Therefore, 
+
+√n
+
+h bQn(bθn) − Q(θ1)
+
+i
+
+= √n
+
+h bQn(θ1) − Q(θ1)
+
+i
+
++ op(1) .
+
+Under H1, note that bQn(θ1) is a standard non-degenerate V-statistic with kernel h(Si, S j , θ 1) = 
+
+ρ(Zi, θ 1)′K(Xi, X j )ρ(Zj , θ 1). The first-order projection is h1(Si) = E[h(Si, S j , θ 1)|Si] = 
+
+ρ(Zi, θ 1)′M (Xi, θ 1). Therefore, by Theorem A in §6.4.1 of Serfling (1980) (see also Theo-rem 3.16 of Shao (1999)), 
+
+√n
+
+h bQn(θ1) − Q(θ1)
+
+i d
+
+−→ N  0, σ 2(θ1) ,
+
+where σ2(θ1) = 4 Var( h1(Si)). The result follows from Slutsky’s Theorem. 
+
+Lemma A.2. Under H1n, suppose Assumption 3.3 holds. Further, assume that Assumptions 2.1(ii)–(iv) and 2.2 are satisfied with respect to the null measure P. Then bθnp
+
+−→ θ0.Proof. The result is established by invoking Le Cam’s First Lemma to extend the consistency property from the null hypothesis to the sequence of local alternatives. First, observe that 13 under the null measure P, the estimator bθn is consistent for θ0. To show that this convergence in probability holds under the local alternatives H1n, it suffices to prove that the sequence of measures P(n) is contiguous with respect to P. Consider the log-likelihood ratio Λ n =log( dP(n)/d P). Under Assumption 3.3, a second-order Taylor expansion yields Λn =
+
+> n
+
+X
+
+> i=1
+
+log 
+
+
+
+1 + 1
+
+√nh(Xi, Z i)
+
+
+
+= 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+h(Xi, Z i) − 12n
+
+> n
+
+X
+
+> i=1
+
+h(Xi, Z i)2 + op(1) . (A.3) By Assumption 3.3, the perturbation function s(X, Z ) has zero mean and finite variance 
+
+σ2 
+
+> h
+
+≡ EP[h(X, Z )2] under the null. Applying the Central Limit Theorem and the Weak Law of Large Numbers under P, we obtain Λnd
+
+−→ N 
+
+
+
+−12σ2
+
+> h
+
+, σ 2
+
+> h
+
+
+
+.
+
+According to Le Cam’s First Lemma (e.g., Lemma 6.4 in Van der Vaart (2000)), the asymp-totic normality of the log-likelihood ratio with mean −σ2
+
+> h
+
+/2 implies that P(n) is contiguous to 
+
+P (denoted P(n)◁P). By the definition of contiguity, convergence in probability to zero under P
+
+implies convergence in probability to zero under P(n). Consequently, P(n)(∥bθn −θ0∥ > ϵ ) → 0, establishing the consistency of bθn under the local alternatives. 
+
+Proof of Lemma 6 
+
+Proof. The derivation proceeds by expanding the first-order condition for the estimator around the true parameter θ0. Since bθn minimizes the objective function, it satisfies ∇θ bQn(bθn) = 
+
+0. By a mean-value expansion, we obtain 
+
+0 = ∇θ bQn(θ0) + bHn(¯θn)( bθn − θ0), (A.4) where bHn(θ) = ∇2 
+
+> θθ ′
+
+bQn(θ) is the Hessian matrix and ¯θn lies on the line segment joining bθn
+
+and θ0.We first establish the probability limit of the Hessian matrix under the sequence of local 14 alternatives. The sample Hessian is given by a V-statistic: 
+
+bHn(θ) = 2
+
+n2
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+k(Xi, X j )
+
+" q
+
+X
+
+> l=1
+
+ρl(Zj , θ )∇2 
+
+> θθ ′
+
+ρl(Zi, θ ) + g(Zi, θ )′g(Zj , θ )
+
+#
+
+.
+
+Under the null measure P, Lemma 3 establishes that bHn(θ0) p
+
+−→ 2∆( θ0). Under the local alternative P(n), recall that ρ(Z, θ 0) = ϵ + n−1/2δ(X). The term involving ρ in the Hessian is thus linear in the perturbation n−1/2δ(X) plus a centered error term. Consequently, its contribution is asymptotically negligible ( Op(n−1/2)). The dominant term g(Zi, θ 0)′g(Zj , θ 0)remains unchanged in the limit because the second moments of s(X, Z ) are finite. Since P(n)
+
+is contiguous to P, the probability limit derived under P is preserved. Combined with the consistency bθnp
+
+−→ θ0 (Lemma A.2) and the uniform convergence of the Hessian, we conclude that bHn(¯θn) p
+
+−→ 2∆( θ0) under P(n).Next, we analyze the asymptotic behavior of the score vector ∇θ bQn(θ0). Recall that 
+
+∇θ bQn(θ0) = 2
+
+n2
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+k(Xi, X j )g(Zi, θ 0)′ρ(Zj , θ 0).
+
+To explicitly characterize the asymptotic bias, we decompose the residual vector using the specific form of the local alternative from (3.4): ρ(Zj , θ 0) = ϵj + n−1/2δ(Xj ), where ϵj is the centered error satisfying EP(n) [ϵj | Xj ] = 0 almost surely. Substituting this decomposition into the gradient expression yields 
+
+∇θ bQn(θ0) = 2
+
+n2
+
+X
+
+> i,j
+
+k(Xi, X j )g(Zi, θ 0)′ϵj
+
+| {z }
+
+> V1n
+
++ 1
+
+√n
+
+2
+
+n2
+
+X
+
+> i,j
+
+k(Xi, X j )g(Zi, θ 0)′δ(Xj )
+
+| {z }
+
+> V2n
+
+.
+
+The first term, V1n, is a V -statistic with a kernel that is degenerate in the j-argument under 
+
+P(n) (since EP(n) [ϵj | Xj ] = 0). By the H´ ajek projection, we get: 
+
+√nV 1n = 2
+
+√n
+
+> n
+
+X
+
+> i=1
+
+G(Xi, θ 0)′ϵi + op(1) ,
+
+where G(Xi, θ 0) = EP[k(Xi, X j )g(Zj , θ 0)′ | Xi]. Note that the projection is calculated with 15 respect to the limit measure P due to the convergence of P(n) to P.The second term, V2n, represents the drift-induced bias. 1
+
+> n2
+
+P 
+
+> i,j
+
+k(Xi, X j )g(Zi, θ 0)′δ(Xj )converges in probability (under P(n)) to the expectation EP[k(Xi, X j )g(Zi, θ 0)′δ(Xj )] = Bδ(θ0). Consequently, the scaled term behaves as 
+
+√nV 2n = 2 Bδ(θ0) + op(1) .
+
+Substituting the asymptotic expressions for bHn(¯θn) and √n∇θ bQn(θ0) back into (A.4) and rearranging terms, we arrive at 
+
+√n(bθn − θ0) = −(2∆( θ0)) −1 2
+
+√n
+
+> n
+
+X
+
+> i=1
+
+G(Xi, θ 0)′ϵi + 2 Bδ(θ0)
+
+!
+
++ op(1) .
+
+Simplifying the factor of 2 yields the stated asymptotic linear representation 
+
+√n(bθn − θ0) = −∆( θ0)−1 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+G(Xi, θ 0)′ϵi − ∆( θ0)−1Bδ(θ0) + op(1) .
+
+Proof of Theorem 3.3 
+
+Proof. Since the sequence of local alternatives P(n) is contiguous to the null measure P
+
+(denoted P(n) ◁ P), the asymptotic representation derived in Lemma 4 remains valid under 
+
+H1n by Le Cam’s First Lemma (e.g., Lemma 6.4 in Van der Vaart (2000)). Specifically, 
+
+bTn = 1
+
+n
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+fp(Si, S j , θ 0) + op(1) ,
+
+where fp(s, s ′, θ 0) = ρ(z, θ 0)′Kp(x, x ′)ρ(z′, θ 0). Since the kernel fp is square-integrable with respect to P ⊗ P, A is a Hilbert-Schmidt operator and thus compact. Moreover, the construction of Kp as a projected kernel ensures that A is self-adjoint and positive semi-definite. By the Spectral Theorem for compact 16 self-adjoint operators, the kernel admits the following expansion (in the L2 sense): 
+
+fp(s, s ′, θ 0) = 
+
+> ∞
+
+X
+
+> k=1
+
+λkφk(s)φk(s′),
+
+where {λk}∞ 
+
+> k=1
+
+is the sequence of non-negative eigenvalues and {φk}∞ 
+
+> k=1
+
+are the corresponding orthonormal eigenfunctions satisfying EP[φk(S)φj (S)] = δkj .Crucially, under the null hypothesis H0, the conditional moment restriction EP[ρ(Z, θ 0)|X] = 0 implies that the kernel is degenerate, i.e., EP[fp(S, S ′, θ 0)|S] = 0 a. This degeneracy implies that all eigenfunctions corresponding to non-zero eigenvalues have zero mean under the null measure: 
+
+EP[φk(S)] = 0 , ∀k such that λk > 0.
+
+Substituting this spectral decomposition into the V-statistic yields the spectral represen-tation: 
+
+bTn =
+
+> ∞
+
+X
+
+> k=1
+
+λk
+
+1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+φk(Si)
+
+!2
+
++ op(1) .
+
+Defining the projection component for the k-th eigenfunction as ξk,n := n−1/2 Pni=1 φk(Si), the statistic can be rewritten as bTn = P∞ 
+
+> k=1
+
+λkξ2 
+
+> k,n
+
++ op(1). Next, fix an arbitrary integer M ≥ 1. We analyze the joint asymptotic distribution of the first M projection components ξ(M ) 
+
+> n
+
+= ( ξ1,n , . . . , ξ M,n )′ and the log-likelihood ratio Λ n
+
+defined in (A.3). Construct the random vector Yi ∈ RM +1 for the i-th observation: 
+
+Yi = ( φ1(Si), . . . , φ M (Si), h (Si)) ′ .
+
+Under the null hypothesis H0, {Yi}ni=1 constitutes a sequence of independent and identically distributed random vectors. We verify the first two moments of Yi under the null measure 
+
+P. The mean vector is zero, EP[Yi] = 0, since EP[φk(Si)] = 0 and EP[h(Si)] = 0. Regarding the covariance structure, the orthonormality of the eigenfunctions implies Var P(φk) = 1 and Cov P(φk, φ l) = 0 for k̸ = l, while Var P(h) = σ2 
+
+> h
+
+< ∞ holds by Assumption 3.3. The 17 covariance between the k-th eigenfunction and the score is given by: Cov P(φk(Si), h (Si)) = EP[φk(Si)h(Si)] := ck.
+
+Let Σ M +1 be the covariance matrix of Yi, which is structured as: ΣM +1 =
+
+IM cc′ σ2
+
+> h
+
+ , where c = ( c1, . . . , c M )′.
+
+By the Multivariate Central Limit Theorem, the scaled partial sum converges in distribution under P:1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+Yi =
+
+ ξ(M )
+
+> n
+> 1√n
+
+Pni=1 h(Si)
+
+ d
+
+−→ N (0, ΣM +1 ) .
+
+Recall the expansion of the log-likelihood ratio derived in (A.3): Λn = 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+h(Si) − 12σ2 
+
+> h
+
++ op(1) .
+
+By Slutsky’s Theorem, the joint vector of projection components and the log-likelihood ratio converges as: ξ(M )
+
+> n
+
+Λn
+
+ d
+
+−→ N 
+
+ 0
+
+−12 σ2
+
+> h
+
+ ,
+
+IM cc′ σ2
+
+> h
+
+ under P.
+
+Thus, by Le Cam’s Third Lemma (e.g., Example 6.7 in Van der Vaart (2000)), under the contiguous alternative sequence P(n),
+
+ξ(M )
+
+> nd
+
+−→ N (c, I M ),
+
+which implies that, for any finite M , the components ξk,n are asymptotically independent under H1n and converge to Zk ∼ N (ck, 1). Let T = P∞ 
+
+> k=1
+
+λk(Wk + ck)2 denote the target limit variable. From above, for any fixed 18 integer M ≥ 1, the truncated statistic converges in distribution: 
+
+> M
+
+X
+
+> k=1
+
+λkξ2
+
+> k,n d
+
+−→
+
+> M
+
+X
+
+> k=1
+
+λk(Wk + ck)2 under P(n).
+
+To establish the convergence of the full statistic bTn(bθn) to T , by Theorem 3.2 in Billingsley (1999), it suffices to verify the uniform asymptotic negligibility of the tail remainder: lim   
+
+> M→∞
+
+lim sup 
+
+> n→∞
+
+P(n)
+
+> ∞
+
+X 
+
+> k=M+1
+
+λkξ2 
+
+> k,n
+
+> ϵ 
+
+!
+
+= 0 , ∀ϵ > 0. (A.5) By Markov’s inequality, the probability in (A.5) is bounded by ϵ−1 P∞  
+
+> k=M+1
+
+λkEP(n) [ξ2
+
+> k,n
+
+]. We analyze the limit of the expectation of the total energy. Under the contiguous alternative 
+
+P(n), a direct calculation of the V -statistic’s expectation yields: lim  
+
+> n→∞
+
+EP(n) [ bTn] = 
+
+> ∞
+
+X
+
+> k=1
+
+λk +
+
+> ∞
+
+X
+
+> k=1
+
+λkc2
+
+> k
+
+.
+
+By Assumptions 2.1 and 2.2, P∞ 
+
+> k=1
+
+λk = EP[ρ(Z)′Kp(X, X )ρ(Z)] < ∞, implying that the integral operator A is of trace class. Furthermore, by the definition ck = EP[h(S)φk(S)] and the spectral decomposition A = P∞ 
+
+> k=1
+
+λkφk ⊗ φk, we verify that: 
+
+> ∞
+
+X
+
+> k=1
+
+λkc2 
+
+> k
+
+=
+
+> ∞
+
+X
+
+> k=1
+
+λk⟨h, φ k⟩2 
+
+> L2(P)
+
+= ⟨h, Ah⟩L2(P)
+
+=
+
+Z
+
+> Z×X
+
+h(z, x )
+
+Z 
+
+> Z×X
+
+fp(( z, x ), (z′, x ′), θ 0)h(z′, x ′)dP(z′, x ′)
+
+
+
+dP(z, x )= ES,S ′ [h(S)ρ(Z, θ 0)′Kp(X, X ′)ρ(Z′, θ 0)h(S′)] = EX,X ′ [δ(X)′Kp(X, X ′)δ(X′)] < ∞.
+
+Since the total expectation converges to the sum of the limits of individual components (i.e., lim n EP(n) [ξ2
+
+> k,n
+
+] = 1 + c2
+
+> k
+
+), the expectation of the tail sum must vanish asymptotically: lim 
+
+> n→∞ ∞
+
+X 
+
+> k=M+1
+
+λkEP(n) [ξ2
+
+> k,n
+
+] = 
+
+> ∞
+
+X 
+
+> k=M+1
+
+λk(1 + c2
+
+> k
+
+).
+
+19 Since the series P λk and P λkc2 
+
+> k
+
+are convergent, the right-hand side tends to zero as M →∞. This verifies condition (A.5). Thus, we conclude that 
+
+bTnd
+
+−→
+
+> ∞
+
+X
+
+> k=1
+
+λk(Wk + ck)2 under H1n.
+
+## A.3 Proofs for Section 4 
+
+Lemma A.3. Let θ∗ be the (pseudo) true value under different hypotheses, i.e., θ∗ = θ0
+
+under H0 or H1n and θ∗ = θ1 under H1. Under Assumptions 2.1 and 2.2 ( or Assumptions 3.1 and 3.2 for θ∗ = θ1), we have 
+
+Tn := max  
+
+> 1≤i≤n
+
+sup  
+
+> θ∈N ∗
+
+bGn(Xi, θ ) − G(Xi, θ ) = op(1) ,
+
+where N ∗ is any compact neighborhood of θ∗ such that N ∗ ⊂ N (θ∗).Proof. The proof employs a truncation strategy based on a uniform envelope, a grid-covering argument, and component-wise Bernstein inequalities. We begin by introducing some nota-tions. Throughout the proof, let S(z) := sup θ∈N ∗ ∥g(z, θ )∥ be the uniform envelope. By As-sumption 2.2 (ii) (or 3.2 (ii) for θ1), we have E [S(Z)2] < ∞ and E [S(Z)] < ∞. Furthermore, by the boundedness of the Hessian tensor of ρ, i.e., E
+
+
+
+sup θ∈N (θ∗) ∥∇ 2 
+
+> θθ ′
+
+ρl (Z, θ )∥2
+
+< ∞, for 
+
+l = 1 , · · · q. Define L(z) := 
+
+rPql=1 
+
+
+
+sup θ∈N ∗ ∥∇ 2 
+
+> θθ ′
+
+ρl(z, θ )∥op 
+
+2
+
+. By the Mean Value Theo-rem, g(z, θ ) is Lipschitz continuous in N (θ∗) with L(z), i.e. 
+
+∀θ1, θ 2 ∈ N ∗, ∥g(z, θ 1) − g(z, θ 2)∥ ≤ L(z) ∥θ1 − θ2∥ .
+
+Furthermore, E [L(Z)2] < ∞ and E [L(Z)] < ∞.First, we use a θ-independent truncation based on the envelope S(z). Let Mn be a truncation sequence such that Mn → ∞ as n → ∞ . We decompose g(z, θ ) into a truncated 20 part ˜ gn and a tail part ˜ rn:˜gn(z, θ ) := g(z, θ ) · 1{S(z)≤Mn}, ˜rn(z, θ ) := g(z, θ ) · 1{S(z)>M n}.
+
+This induces a decomposition of the q × p matrices bGn and G:
+
+Sn(x, θ ) := 1
+
+n
+
+> n
+
+X
+
+> j=1
+
+k(x, X j )˜ gn(Zj , θ )
+
+Rn(x, θ ) := 1
+
+n
+
+> n
+
+X
+
+> j=1
+
+k(x, X j )˜ rn(Zj , θ )So, bGn(x, θ ) = Sn(x, θ ) + Rn(x, θ ), and G(x, θ ) = E [Sn(x, θ ) | X = x] + E [Rn(x, θ ) | X = x]. By the triangle inequality, 
+
+Tn = max  
+
+> 1≤i≤n
+
+sup  
+
+> θ∈N ∗
+
+∥(Sn(Xi, θ ) − E [Sn(Xi, θ ) | Xi]) + ( Rn(Xi, θ ) − E [Rn(Xi, θ ) | Xi]) ∥≤ max  
+
+> 1≤i≤n
+
+sup  
+
+> θ∈N ∗
+
+∥Sn(Xi, θ ) − E [Sn(Xi, θ ) | Xi]∥
+
+| {z }
+
+> I
+
++ max  
+
+> 1≤i≤n
+
+sup  
+
+> θ∈N ∗
+
+∥Rn(Xi, θ ) − E [Rn(Xi, θ ) | Xi]∥
+
+| {z }
+
+> II
+
+We will prove that I = op(1) and II = op(1). We first show the tail part II = op(1). By the triangle inequality, we have II ≤ max  
+
+> 1≤i≤n
+
+sup  
+
+> θ∈N ∗
+
+∥Rn(Xi, θ )∥ + max  
+
+> 1≤i≤n
+
+sup  
+
+> θ∈N ∗
+
+∥E [Rn(Xi, θ ) | Xi]∥ .
+
+21 For any i ∈ { 1, · · · n} and θ ∈ N ∗:
+
+∥Rn(Xi, θ )∥ = 1
+
+n
+
+> n
+
+X
+
+> j=1
+
+k(Xi, X j )˜ rn(Zj , θ )
+
+≤ K · 1
+
+n
+
+> n
+
+X
+
+> j=1
+
+g(Zj , θ )1{S(Zj )>M n}
+
+≤ K · 1
+
+n
+
+> n
+
+X
+
+> j=1
+
+∥g(Zj , θ )∥ 1{S(Zj )>M n}
+
+≤ K · 1
+
+n
+
+> n
+
+X
+
+> j=1
+
+S(Zj )1{S(Zj )>M n}
+
+!
+
+,
+
+where the last inequality holds by the definition of S (·). This bound is uniform in i and θ.Similarly, for any i and θ:
+
+∥E [Rn(Xi, θ ) | Xi]∥ = ∥E [k(Xi, X j )˜ rn(Zj , θ ) | Xi]∥≤ E [|k(Xi, X j )| · ∥ ˜rn(Zj , θ )∥ | Xi]
+
+≤ K · E S(Zj )1{S(Zj )>M n}
+
+ .
+
+This bound is also uniform in i and θ. Since E[S(Z)] < ∞, by the Dominated Con-vergence Theorem, K · E S(Z)1{S(Z)>M n}
+
+ = o(1) as Mn → ∞ . For the sample part, 
+
+K ·
+
+ 1
+
+> n
+
+Pnj=1 S(Zj )1{S(Zj )>M n}
+
+
+
+, by Markov’s inequality. For any ϵ > 0, 
+
+P K ·
+
+"
+
+1
+
+n
+
+> n
+
+X
+
+> j=1
+
+S(Zj )1{S(Zj )>M n}
+
+#
+
+> ϵ 
+
+!
+
+≤ Kϵ E
+
+"
+
+1
+
+n
+
+> n
+
+X
+
+> j=1
+
+S(Zj )1{S(Zj )>M n}
+
+#
+
+= o(1) .
+
+Therefore, II ≤ op(1) + o(1) = op(1), for any Mn → ∞ .We now prove that the truncated term I is also op(1). We use a grid-covering argument. Let Nn be a δn-net of the compact set N ∗ ⊂ Rp. The size of this net Nn := |N n| satisfies 
+
+Nn ≤ Cδ −pn for some constant C and δn → 0. Using the triangle inequality, we add and 22 subtract the value at the nearest grid point θk:I ≤ max  
+
+> 1≤i≤n
+
+max  
+
+> θk∈N n
+
+∥Sn(Xi, θ k) − E [Sn(Xi, θ k) | Xi]∥
+
+| {z }
+
+> IA
+
++ max  
+
+> 1≤i≤n
+
+max  
+
+> θk∈N n
+
+sup  
+
+> θ:|θ−θk|≤ δn
+
+∥(Sn(Xi, θ ) − Sn(Xi, θ k)) − E [Sn(Xi, θ ) − Sn(Xi, θ k) | Xi]∥
+
+| {z }
+
+> IB
+
+Analogously to the proof of Term II, by the triangle inequality, I B is bounded by the sum of its sample and expectation parts. We bound the sample part (the expectation part is identical). For any i ∈ { 1, · · · n}, θk ∈ N n and θ ∈ N ∗:
+
+∥Sn(Xi, θ ) − Sn(Xi, θ k)∥
+
+= 1
+
+n
+
+> n
+
+X
+
+> j=1
+
+k(Xi, X j ) [˜ gn(Zj , θ ) − ˜gn(Zj , θ k)] 
+
+≤ K · 1
+
+n
+
+> n
+
+X
+
+> j=1
+
+(g(Zj , θ ) − g(Zj , θ k)) · 1{S(Zj )≤Mn}
+
+≤ K · 1
+
+n
+
+> n
+
+X
+
+> j=1
+
+∥g(Zj , θ ) − g(Zj , θ k)∥≤ K · 1
+
+n
+
+> n
+
+X
+
+> j=1
+
+L(Zj ) ∥θ − θk∥≤ Kδ n
+
+1
+
+n
+
+> n
+
+X
+
+> j=1
+
+L(Zj )
+
+!
+
+,
+
+where the second-to-last inequality holds from the Lipschitz condition of g(·). This bound is uniform in i, θ, θ k. Since E[L(Z)] < ∞. By LLN, 1
+
+> n
+
+P L(Zj ) = Op(1), and similarly, the expectation part ∥E [Sn(Xi, θ ) − Sn(Xi, θ k) | Xi]∥ has the uniform bound of O(δn). Thus, as long as we choose δn → 0, we have I B = op(1). For Term I A, we apply Bernstein’s inequality and finally use a union bound. Since Sn(·)is a q × p matrix, we bound the Frobenius norm by the L1 norm of the components. Let 23 Slm n (·) be the ( l, m )-th component of the matrix Sn(·). IA ≤ max  
+
+> 1≤i≤n
+
+max 
+
+> kq
+
+X
+
+> l=1
+> p
+
+X
+
+> m=1
+
+Slm n (Xi, θ k) − E Slm n (Xi, θ k) | Xi
+
+
+
+≤
+
+> q
+
+X
+
+> l=1
+> p
+
+X
+
+> m=1
+
+
+
+max  
+
+> 1≤i≤n
+
+max  
+
+> k
+
+Slm n (Xi, θ k) − E Slm n (Xi, θ k) | Xi
+
+ 
+
+,
+
+which is a summation over a fixed number ( q × p) of terms. To show that I A = op(1), it is sufficient to show that I (l,m ) 
+
+> A
+
+:= max 1≤i≤n max k Slm n (Xi, θ k) − E Slm n (Xi, θ k) | Xi
+
+ = op(1) for every component ( l, m ). Fix ( l, m ). Let Wj, (i,k,l,m ) := k(Xi, X j ) [˜ gn(Zj , θ k)] lm . Given Xi, the scalar variables 
+
+{Wj, (i,k,l,m )}nj=1 are independent. We apply Bernstein’s inequality. Let Yj = Wj −E [Wj | Xi]. First, it is easy to verify that Yj is bounded, since 
+
+|Wj, (i,k,l,m )| ≤ | k(Xi, X j )| · [˜ gn(Zj , θ k)] lm 
+
+≤ K · ∥ ˜gn(Zj , θ k)∥
+
+= K · g(Zj , θ k)1{S(Zj )≤Mn}
+
+≤ KM n.
+
+So, |Yj | ≤ | Wj |+|E[Wj | Xi]| ≤ 2KM n. Let Bn := 2 KM n. Furthermore, the conditional vari-ance Vn := Pnj=1 Var( Yj | Xi) ≤ Pnj=1 E W 2 
+
+> j
+
+| Xi
+
+ ≤ n(KM n)2. For ε > 0, by Bernstein’s Inequality: 
+
+P 1
+
+n
+
+> n
+
+X
+
+> j=1
+
+Yj > ϵ | Xi
+
+!
+
+≤ 2 exp 
+
+
+
+− (nϵ )2
+
+2Vn + 23 Bn(nϵ )
+
+
+
+≤ 2 exp 
+
+
+
+− nϵ 2
+
+2( KM n)2 + 43 KM nϵ
+
+
+
+.
+
+Thus, by the tower property, P
+
+ 1
+
+> n
+
+Pnj=1 Yj > ϵ 
+
+
+
+≤ 2 exp 
+
+
+
+− nϵ 2  
+
+> 2( KM n)2+43KM nϵ
+
+
+
+. The total number of terms in the max i,k is n × Nn. By a union bound over i and k:
+
+P
+
+
+
+I(l,m ) 
+
+> A
+
+> ϵ 
+
+
+
+≤ 2n · Nn · exp 
+
+
+
+− nϵ 2
+
+2( KM n)2 + 43 KM nϵ
+
+
+
+.
+
+24 Finally, we choose our sequences Mn and δn. Let Mn = log n, δn = 1 /n . Then, Nn = O(np). For any given ε > 0, P
+
+
+
+I(l,m ) 
+
+> A
+
+> ϵ 
+
+
+
+≤ O(np+1 ) · exp 
+
+
+
+− nϵ 2 
+
+> O((log n)2)
+
+
+
+→ 0. Thus, I (l,m ) 
+
+> A
+
+= op(1) for any given ( l, m ). Thus, I A is op(1). This completes the proof. 
+
+Lemma A.4. Let θ∗ be the (pseudo) true value under different hypotheses, i.e., θ∗ = θ0
+
+under H0 or H1n and θ∗ = θ1 under H1. Under Assumptions 2.1 and 2.2 ( or Assumptions 3.1 and 3.2 for θ∗ = θ1), for some compact neighborhood N ∗ ⊂ N (θ∗) of θ∗, we have 
+
+sup  
+
+> θ∈N ∗
+
+b∆n(θ)−1 − ∆( θ)−1 = op(1) ,
+
+Proof. Let Si = {Xi, Z i}, g (Si, S j , θ ) = g (Zi, θ )′ K (Xi, X j ) g (Zj , θ ). By Assumption 2.2(ii)( or Assumption 3.2 (ii) for θ∗ = θ1), g (Si, S j , θ ) is continuous at each θ ∈ N (θ∗) with probability one. Furthermore, 
+
+E sup  
+
+> θ∈N (θ∗)
+
+∥g (Si, S j , θ )∥
+
+!
+
+⩽ sup 
+
+> x∈X
+
+k(x, x ) ·
+
+"
+
+E sup  
+
+> θ∈N (θ∗)
+
+∥g(z, θ )∥
+
+!# 2
+
+< ∞,
+
+E sup  
+
+> θ∈N (θ∗)
+
+∥g (Si, S i, θ )∥
+
+!
+
+⩽ sup 
+
+> x∈X
+
+k(x, x ) · E sup  
+
+> θ∈N (θ∗)
+
+∥g(z, θ )∥2
+
+!
+
+< ∞.
+
+By Lemma 8.5 of Newey and McFadden (1994), ∆( θ) is continuous in θ ∈ N (θ∗), and sup  
+
+> θ∈N (θ∗)
+
+b∆( θ) − ∆( θ) = op(1) . (A.6) By Assumption 2.2(iii) (or 3.2(iii)), ∆( θ∗) is non-singular. By the continuity of ∆( θ) (and thus det(∆( θ))) on the open set N (θ∗), there exists a compact sub-neighborhood N ∗ ⊂ N (θ∗)of θ∗ on which ∆( θ) is uniformly non-singular, i.e.: sup  
+
+> θ∈N ∗
+
+∆( θ)−1 = O(1) . (A.7) Now, consider b∆( θ) on N ∗. Combining (A.6) and (A.7), it follows by standard arguments on matrix inversion that sup  
+
+> θ∈N ∗
+
+b∆( θ)−1 = Op(1) . (A.8) 25 Using the identity A−1 − B−1 = A−1(B − A)B−1,sup  
+
+> θ∈N ∗
+
+b∆( θ)−1 − ∆( θ)−1 ≤ sup  
+
+> θ∈N ∗
+
+b∆( θ)−1(∆( θ) − b∆( θ))∆( θ)−1
+
+≤
+
+
+
+sup  
+
+> θ∈N ∗
+
+b∆( θ)−1
+
+
+
+·
+
+
+
+sup  
+
+> θ∈N ∗
+
+b∆( θ) − ∆( θ)
+
+
+
+·
+
+
+
+sup  
+
+> θ∈N ∗
+
+∆( θ)−1
+
+
+
+= Op(1) · op(1) · O(1) = op(1) .
+
+This completes the proof. 
+
+Lemma A.5. Let θ∗ be the (pseudo) true value under different hypotheses, i.e., θ∗ = θ0
+
+under H0 or H1n and θ∗ = θ1 under H1. Under Assumptions 2.1 and 2.2 ( or Assumptions 3.1 and 3.2 for θ∗ = θ1), 
+
+max 
+
+> i,j
+
+bKpn(Xi, X j , bθn) − Kp(Xi, X j , θ ∗) = op(1) .
+
+Proof. Applying the triangle inequality, we decompose the difference of interest into two components: max 
+
+> 1≤i,j ≤n
+
+bKpn(Xi, X j , bθn) − Kp(Xi, X j , θ ∗)
+
+≤ max 
+
+> i,j
+
+bGn(Xi, bθn) b∆n(bθn)−1 bGn(Xj , bθn)′ − G(Xi, bθn)∆( bθn)−1G(Xj , bθn)′
+
++ max  
+
+> i,j
+
+G(Xi, bθn)∆( bθn)−1G(Xj , bθn)′ − G(Xi, θ ∗)∆( θ∗)−1G(Xj , θ ∗)′ ,
+
+denoted as I and II respectively. To establish the convergence of term I, observe that consistency bθnp
+
+−→ θ∗ implies that bθn
+
+lies within a compact neighborhood N ∗ of θ∗ with probability approaching one. Therefore, it suffices to bound the supremum of the difference over θ ∈ N ∗. Adding and subtracting 26 cross-terms yields I ≤ max  
+
+> i,j
+
+sup  
+
+> θ∈N ∗
+
+( bGn(Xi, θ ) − G(Xi, θ )) b∆n(θ)−1 bGn(Xj , θ )′
+
++ max  
+
+> i,j
+
+sup  
+
+> θ∈N ∗
+
+G(Xi, θ )( b∆n(θ)−1 − ∆( θ)−1) bGn(Xj , θ )′
+
++ max  
+
+> i,j
+
+sup  
+
+> θ∈N ∗
+
+G(Xi, θ )∆( θ)−1( bGn(Xj , θ ) − G(Xj , θ )) ′ .
+
+By Lemmas A.3 and A.4, uniformly in i, θ , we have ∥G(Xi, θ )∥ = O(1), bGn(Xi, θ ) − G(Xi, θ ) =
+
+op(1), bGn(Xi, θ ) = Op(1), ∥∆( θ)−1∥ = O(1), b∆n(θ)−1 − ∆( θ)−1 = op(1), b∆n(θ)−1 =
+
+Op(1). Consequently, each term in the expansion above is the product of an op(1) factor and 
+
+Op(1) factors, proving that I = op(1). For term II, define Ψ ij (θ) := G(Xi, θ )∆( θ)−1G(Xj , θ )′. By the Mean Value inequality, II is bounded by ∥bθn − θ∗∥ · max i,j sup θ∈N ∗ ∥∇ θΨij (θ)∥.Invoking the Dominated Convergence Theorem under Assumptions 2.1 and 2.2 (or As-sumptions 3.1 and 2.2 for θ∗ = θ1), we establish the uniform bounds: sup 
+
+> x∈X
+
+sup  
+
+> θ∈N ∗
+
+∥G(x, θ )∥ ≤ sup 
+
+> x, ˜x
+
+∥K(x, ˜x)∥ · E
+
+
+
+sup  
+
+> θ∈N ∗
+
+∥g(Z, θ )∥
+
+
+
+≤ C1 < ∞,
+
+sup 
+
+> x∈X
+
+sup  
+
+> θ∈N ∗
+
+∥∇ θG(x, θ )∥ ≤ sup 
+
+> x, ˜x
+
+∥K(x, ˜x)∥ · E
+
+
+
+sup  
+
+> θ∈N ∗
+
+∥∇ θg(Z, θ )∥
+
+
+
+≤ C2 < ∞.
+
+Furthermore, sup θ∈N ∗ ∥∆( θ)−1∥ ≤ C∆ < ∞ and sup θ∈N ∗ ∥∇ θ∆( θ)∥ ≤ C∇∆ < ∞. By the matrix product rule, the derivative of Ψ ij (θ) is: 
+
+∇θΨij (θ) = ( ∇θGi)∆ −1G′ 
+
+> j
+
+− Gi∆−1(∇θ∆)∆ −1G′ 
+
+> j
+
++ Gi∆−1(∇θGj )′,
+
+where dependence on θ and X is suppressed for brevity. Applying the triangle inequality and the sub-multiplicative property of the matrix norm implies: 
+
+∥∇ θΨij (θ)∥ ≤ ∥∇ θGi∥∥ ∆−1∥∥ Gj ∥ + ∥Gi∥∥ ∆−1∥2∥∇ θ∆∥∥ Gj ∥ + ∥Gi∥∥ ∆−1∥∥∇ θGj ∥≤ C2C∆C1 + C21 C2∆C∇∆ + C1C∆C2.
+
+27 Since the upper bound depends only on finite constants which are independent of indices 
+
+i, j , we conclude that max 1≤i,j ≤n sup θ∈N ∗ ∥∇ θΨij (θ)∥ = O(1). Since ∥bθn − θ∗∥ = Op(n−1/2), it follows that II = Op(n−1/2) = op(1). Combining the results for I and II completes the proof. 
+
+Proof of Lemma 7 
+
+Proof. A second-order Taylor expansion of ρ(Zi, bθn) around θ∗ yields: 
+
+ρ(Zi, bθn) = ρ(Zi, θ ∗) + g(Zi, θ ∗)( bθn − θ∗) + 12Ri(¯θ), (A.9) where the remainder term Ri(¯θ) is a q × 1 vector with its l-th component given by: 
+
+Ril (¯θ) = ( bθn − θ∗)′∇2
+
+> θθ
+
+ρl(Zi, ¯θil )( bθn − θ∗).
+
+Here, ¯θil denotes an intermediate point on the line segment joining bθn and θ∗, which may vary across components l. Additionally, Lemma A.5 establishes the uniform convergence of the kernel estimator: max  
+
+> 1≤i,j ≤n
+
+∥ bKpn(Xi, X j , bθn) − Kp(Xi, X j , θ ∗)∥ = op(1) . (A.10) To analyze the asymptotic difference between bT ∗ 
+
+> n
+
+and T ∗ 
+
+> n
+
+, we introduce the following compact notation. For u ∈ { 1, 2, 3}, define the vector expansion terms Au,i :
+
+A1,i := ρ(Zi, θ ∗), A2,i := g(Zi, θ ∗)( bθn − θ∗), A3,i := 12Ri(¯θ).
+
+Similarly, for v ∈ { 1, 2}, define the kernel matrix components Mv,ij :
+
+M1,ij := Kp(Xi, X j , θ ∗), M2,ij := bKpn(Xi, X j , bθn) − Kp(Xi, X j , θ ∗).
+
+28 Substituting these definitions into bT ∗ 
+
+> n
+
+, we obtain the decomposition: 
+
+bT ∗ 
+
+> n
+
+= 1
+
+n
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+ViVj
+
+> 3
+
+X
+
+> u=1
+
+Au,i 
+
+!′ 2X
+
+> v=1
+
+Mv,ij 
+
+! 3X
+
+> w=1
+
+Aw,j 
+
+!
+
+= X
+
+> u,v,w
+
+Quvw , (A.11) where Quvw := 1
+
+> n
+
+P 
+
+> i,j
+
+ViVj A′
+
+> u,i
+
+Mv,ij Aw,j for indices u, w ∈ { 1, 2, 3} and v ∈ { 1, 2}. We analyze representative terms from this sum: 1. Leading Term ( Q111 ): By definition, Q111 = T ∗ 
+
+> n
+
+.2. Linear Estimation Error ( Q112 ): This term captures the interaction between the score function and the true kernel: 
+
+Q112 =
+
+"
+
+1
+
+n
+
+X
+
+> i,j
+
+ρ(Zi, θ ∗)′Kp(θ∗)g(Zj , θ ∗)ViVj
+
+#
+
+(bθn − θ∗).
+
+The bracketed term is a n-scaled degenerate V -statistic (due to centered multipliers 
+
+E[Vi] = 0) and is thus Op(1). Since ( bθn − θ∗) = Op(n−1/2), it follows that Q112 =
+
+Op(1) · Op(n−1/2) = op(1). 3. Second-Order Remainder ( Q113 ): This term involves the Hessian via Ri(¯θ). Rearrang-ing terms to isolate the convergence rate yields: 
+
+Q113 = 12
+
+√n(bθn − θ∗)′
+
+"
+
+1
+
+n2
+
+> n
+
+X
+
+> i,j =1
+
+Ψn(Zi, Z j , ¯θ)
+
+# √n(bθn − θ∗), (A.12) where Ψn(Zi, Z j , θ ) := ViVj
+
+Pql=1 [ρ(Zi, θ ∗)′Kp(θ∗)] l ∇2
+
+> θθ
+
+ρl(Zj , θ ). Since ∥√n(bθn−θ∗)∥ =
+
+Op(1), the asymptotic behavior is determined by the bracketed term. Observe that 
+
+> 1
+> n2
+
+P 
+
+> i,j
+
+Ψn(·) constitutes a V -statistic with a zero-mean kernel function. Applying the Uniform Weak Law of Large Numbers (UWLLN) for V -statistics (e.g., Lemma 8.5 of Newey and McFadden (1994)), we obtain: sup  
+
+> θ∈N ∗
+
+1
+
+n2
+
+> n
+
+X
+
+> i,j =1
+
+Ψn(Zi, Z j , θ ) = op(1) .
+
+As ¯θ p
+
+−→ θ∗, the continuous mapping theorem implies the bracketed term is op(1), and 29 thus Q113 = op(1). 4. Kernel Estimation Error ( Q121 ): This term accounts for the error in bKpn:
+
+Q121 = 1
+
+n
+
+X
+
+> i,j
+
+ViVj ρ(Zi, θ ∗)′M2,ij ρ(Zj , θ ∗).
+
+Using the uniform bound max i,j ∥M2,ij ∥ = op(1) from Lemma A.5, combined with the 
+
+Op(1) boundedness of the degenerate V -statistic formed by the multipliers and ρ, we have Q121 = op(1). The remaining 14 terms are of equal or smaller stochastic order and vanish asymptotically. We categorize them based on their dependence on the intermediate value ¯θ. For terms involving the second-order remainder A3 (where u = 3 or w = 3), the quadratic factor (bθn − θ∗) allows for the extraction of an n−1 scaling factor. This effectively results in an 
+
+n−2-scaled sum, activating the UWLLN for V -statistics to control the dependence on ¯θ and rendering these terms op(1). Conversely, terms independent of ¯θ (involving only A1, A 2, and 
+
+M1,2) do not require uniform convergence laws; their negligibility follows directly from the boundedness of degenerate V -statistics (scaled by n), combined with the √n-consistency of 
+
+bθn and the uniform convergence of bKpn.Consequently, bT ∗ 
+
+> n
+
+= T ∗ 
+
+> n
+
++ op(1). 
+
+Lemma A.6. Suppose Assumptions 2.1 and 2.2 hold. Let fp(s, s ′, θ 0) = ρ(z, θ 0)′Kp(x, x ′)ρ(z′, θ 0)
+
+as defined in Theorem 3.1. Then, we have: 
+
+Mn := 1
+
+√n max 
+
+> 1≤i≤n
+
+1
+
+n
+
+> n
+
+X
+
+> j=1
+
+(fp(Si, S j , θ 0)) 2
+
+!1/2
+
+= op(1) .
+
+Proof. We first establish the uniform boundedness of the projected kernel Kp. By Assump-tions 2.1, 2.2 and Jensen’s inequality, observe that sup x∈X ∥G(x, θ 0)∥ ≤ CK E[∥g(Z, θ 0)∥] <
+
+∞. Using the definition of Kp, the triangle inequality, and the sub-multiplicative property of matrix norms, we obtain sup x,y ∈X |Kp(x, y )| ≤ CK + C2
+
+> G
+
+∥∆( θ0)−1∥. Since ∆( θ0) is non-singular, ∥∆( θ0)−1∥ < ∞. Thus, there exists a finite constant CKp such that sup x,y |Kp(x, y )| ≤ 
+
+CKp .30 By the Cauchy–Schwarz inequality, we have |fp(Si, S j , θ 0)| ≤ CKp ∥ρ(Zi, θ 0)∥∥ ρ(Zj , θ 0)∥.Substituting this bound into the definition of Mn yields 
+
+Mn ≤ 1
+
+√n max 
+
+> 1≤i≤n
+
+1
+
+n
+
+> n
+
+X
+
+> j=1
+
+C2 
+
+> Kp
+
+∥ρ(Zi)∥2∥ρ(Zj )∥2
+
+!1/2
+
+= CKp
+
+max 1≤i≤n ∥ρ(Zi)∥√n
+
+ 1
+
+n
+
+> n
+
+X
+
+> j=1
+
+∥ρ(Zj )∥2
+
+!1/2
+
+.
+
+Weak Law of Large Numbers imply that n−1 Pnj=1 ∥ρ(Zj )∥2 p
+
+−→ E[∥ρ(Z)∥2], so the square root of this sum is Op(1). Furthermore, max 1≤i≤n ∥ρ(Zi)∥ = op(n1/2). Combining these, we conclude that Mn ≤ CKp · op(1) · Op(1) = op(1). 
+
+Proof of Theorem 4.1 
+
+Proof. First, by Lemma 7, we have 
+
+bT ∗ 
+
+> n
+
+= T ∗ 
+
+> n
+
++ op(1) ,
+
+where T ∗ 
+
+> n
+
+= 1
+
+> n
+
+Pni=1 
+
+Pnj=1 ViVj ρ(Zi, θ ∗)′Kp(Xi, X j , θ ∗)ρ(Zj , θ ∗) is defined in the proof of Lemma 7, and θ∗ is the (pseudo) true value under different hypotheses, i.e. θ∗ = θ0 un-der H0 or H1n and θ∗ = θ1 under H1. Thus, by Slutsky’s Theorem, it is sufficient to show that conditional on the original samples, T ∗ 
+
+> n
+
+is stochastically bounded and furthermore, under 
+
+H0 or H1n (i.e., when θ∗ = θ0), T ∗ 
+
+> n
+
+(θ0) d, ∗
+
+−→ P∞ 
+
+> k=1
+
+λkW 2 
+
+> k
+
+, as defined in Theorem 3.1. Under H0 or H1n, we have θ∗ = θ0. Let fp(s, s ′, θ 0) be defined as in Theorem 3.1, specifically fp(s, s ′, θ 0) = ρ(z, θ 0)′Kp(x, x ′)ρ(z′, θ 0). Consider the n × n symmetric Gram matrix Hn with entries Hij = fp(Si, S j , θ 0). By the spectral theorem, we decompose Hn as 
+
+Hn =
+
+> n
+
+X
+
+> k=1
+
+bγk,n uku′
+
+> k
+
+,
+
+where bγ1,n ≥ bγ2,n ≥ . . . are the real eigenvalues and u1, . . . , un are the orthonormal eigen-vectors ( uk ∈ Rn, ∥uk∥2 = 1). Define the normalized eigenvalues by bλk,n = bγk,n /n . These correspond to the non-zero eigenvalues of the empirical operator bAn, which is the finite-sample counterpart to A, defined 31 by 
+
+bAnψ(s) = 
+
+Z
+
+fp(s, s ′, θ 0)ψ(s′) dPn(s′) = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+fp(s, S i, θ 0)ψ(Si). (A.13) It is a standard duality result that the non-zero eigenvalues of the empirical operator bAn
+
+are exactly bλk,n . Substituting the decomposition into the expression for T ∗ 
+
+> n
+
+yields: 
+
+T ∗ 
+
+> n
+
+= 1
+
+nV ′HnV =
+
+> n
+
+X
+
+> k=1
+
+bλk,n (u′
+
+> k
+
+V )2 =
+
+> n
+
+X
+
+> k=1
+
+bλk,n Z2
+
+> k,n
+
+, (A.14) where Zk,n := u′
+
+> k
+
+V = Pni=1 uk,i Vi. Conditional on the original sample Sn, the variables 
+
+{Zk,n }nk=1 are uncorrelated with zero mean and unit variance, since E∗[V V ′] = In implies Cov ∗(Zk,n , Z l,n ) = u′
+
+> k
+
+Inul = δkl .Let ϕ∗
+
+> n
+
+(t) = E∗[exp( itT ∗ 
+
+> n
+
+)] denote the conditional characteristic function of T ∗ 
+
+> n
+
+. Let 
+
+Y = P∞ 
+
+> k=1
+
+λkW 2 
+
+> k
+
+be the target random variable with characteristic function ϕY (t), where 
+
+Wk
+
+> i.i.d.
+
+∼ N (0 , 1). Fix a truncation integer M ≥ 1. We decompose the statistic and the target variable as: 
+
+T ∗ 
+
+> n
+
+= T ∗ 
+
+> n,M
+
++ R∗ 
+
+> n,M
+
+, where T ∗ 
+
+> n,M
+
+=
+
+> M
+
+X
+
+> k=1
+
+bλk,n Z2
+
+> k,n
+
+,Y = YM + Ytail,M , where YM =
+
+> M
+
+X
+
+> k=1
+
+λkW 2 
+
+> k
+
+.
+
+Using the inequality |eix − eiy | ≤ | x − y|, we bound the distance between the characteristic functions for any fixed t:
+
+|ϕ∗
+
+> n
+
+(t) − ϕY (t)| ≤ | E∗[eitT ∗ 
+
+> n
+
+] − E∗[eitT ∗ 
+
+> n,M
+
+]| + |E∗[eitT ∗ 
+
+> n,M
+
+] − E[eitY M ]| + |E[eitY M ] − E[eitY ]|≤ E∗|eitT ∗ 
+
+> n
+
+− eitT ∗ 
+
+> n,M
+
+| + |ϕT ∗ 
+
+> n,M
+
+(t) − ϕYM (t)| + E|eitY M − eitY |≤ | t| E∗|R∗ 
+
+> n,M
+
+|
+
+| {z }
+
+> ∆1
+
++ |ϕT ∗ 
+
+> n,M
+
+(t) − ϕYM (t)|
+
+| {z }
+
+> ∆2
+
++|t| E|Ytail,M |
+
+| {z }
+
+> ∆3
+
+. (A.15) We show that for any ε > 0 and fixed t, the RHS converges to zero in probability by first choosing M large enough and then letting n → ∞ .First, we analyze the empirical tail term ∆ 1. Since the projected kernel Kp is positive semi-definite (PSD), the kernel matrix Hn is PSD, implying bλk,n ≥ 0. Consequently, the 32 residual sum is non-negative, R∗ 
+
+> n,M
+
+≥ 0. Given that the multipliers satisfy E∗[Z2
+
+> k,n
+
+] = 1, the conditional expectation is: ∆1 = E∗
+
+" nX 
+
+> k=M+1
+
+bλk,n Z2
+
+> k,n
+
+#
+
+=
+
+> n
+
+X 
+
+> k=M+1
+
+bλk,n .
+
+Using the trace identity, Pnk=1 bλk,n = 1 
+
+> n
+
+tr( Hn). By the Law of Large Numbers (LLN), the empirical trace converges in probability to the population trace: 
+
+> n
+
+X
+
+> k=1
+
+bλk,n = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ρ(Zi)′Kp(Xi, X i)ρ(Zi) p
+
+−→ E [ρ(Z)′Kp(X, X )ρ(Z)] = 
+
+> ∞
+
+X
+
+> k=1
+
+λk.
+
+The finiteness of this limit is guaranteed by Assumptions 2.1 and 2.2, which imply the operator is trace class. Let Hfp be the RKHS associated with the kernel fp(s, s ′, θ 0) = 
+
+ρ(z, θ 0)′Kp(x, x ′)ρ(z′, θ 0), which is valid by the Schur product theorem. We define the random element χi = fp(·, S i, θ 0) ∈ H fp .Using the reproducing property ⟨fp(·, s ), h ⟩Hfp = h(s), we observe that the population operator A defined in (3.3) is equivalent to the expected rank-one tensor product: 
+
+Ah =
+
+Z
+
+fp(·, s )h(s)dP(s) = E
+
+h
+
+χi⟨χi, h ⟩Hfp 
+
+i
+
+= E[χi ⊗ χi]h. (A.16) Similarly, the empirical counterpart bAn defined in (A.13) admits the equivalent tensor prod-uct representation bAn = 1
+
+> n
+
+Pni=1 χi⊗χi. Since E[∥χ1∥2 
+
+> fp
+
+] = E[fp(S1, S 1, θ 0)] < ∞, by Theorem 8.1.2 of Hsing and Eubank (2015), ∥ bAn − A∥ HS a.s. 
+
+−−→ 0, and consequently ∥ bAn − A∥ op a.s. 
+
+−−→ 0. By Weyl’s Inequality, the eigenvalues converge uniformly, so for any fixed M :
+
+> M
+
+X
+
+> k=1
+
+bλk,n p
+
+−→
+
+> M
+
+X
+
+> k=1
+
+λk.
+
+Combining these results yields the convergence of the tail sum in probability: ∆1 =
+
+> n
+
+X
+
+> k=1
+
+bλk,n −
+
+> M
+
+X
+
+> k=1
+
+bλk,n p
+
+−→
+
+> ∞
+
+X
+
+> k=1
+
+λk −
+
+> M
+
+X
+
+> k=1
+
+λk =
+
+> ∞
+
+X 
+
+> k=M+1
+
+λk.
+
+33 Since P λk < ∞, this limit vanishes as M → ∞ . Thus, for sufficiently large M , ∆ 1 is negligible with high probability. Second, we analyze the term ∆ 2 = |ϕT ∗ 
+
+> n,M
+
+(t) − ϕYM (t)|. Let K+ = {k ∈ { 1, . . . , M } : λk >
+
+0} be the set of indices corresponding to strictly positive population eigenvalues. For any 
+
+k ∈ K +, we have bλk,n p
+
+−→ λk > 0. We first establish the asymptotic normality of the vector ZK+ = ( Zk,n )k∈K + . Recall that Zk,n = Pni=1 uk,i Vi, where P 
+
+> i
+
+u2 
+
+> k,i
+
+= 1 and Vi are i.i.d. multipliers. To apply the Lindeberg–Feller CLT, it suffices to verify Lyapunov’s condition. Given that multipliers have finite fourth moments, this is satisfied if max 1≤i≤n |uk,i | p
+
+−→ 0. From the eigenvalue equation Hnuk = nbλk,n uk, we express the i-th eigenvector component as: 
+
+uk,i = 1
+
+nbλk,n nX
+
+> j=1
+
+Hij uk,j .
+
+By the Cauchy-Schwarz inequality and the normalization ∥uk∥ = 1: max  
+
+> 1≤i≤n
+
+|uk,i | ≤ 1
+
+nbλk,n 
+
+max 
+
+> 1≤i≤n
+> n
+
+X
+
+> j=1
+
+H2
+
+> ij
+
+!1/2
+
+∥uk∥ = 1
+
+√nbλk,n 
+
+max 
+
+> 1≤i≤n
+
+1
+
+n
+
+> n
+
+X
+
+> j=1
+
+(fp(Si, S j , θ 0)) 2
+
+!1/2
+
+.
+
+Since k ∈ K +, the denominator satisfies bλk,n p
+
+−→ λk > 0. Consequently, by Lemma A.6, max 1≤i≤n |uk,i | = op(1). Thus, the Cram´ er–Wold device implies that conditional on the data, the sub-vector ZK+
+
+converges in distribution to a standard multivariate normal vector WK+ ∼ N (0, I|K +|). Now consider the statistic T ∗ 
+
+> n,M
+
+. We decompose the sum based on the index sets: 
+
+T ∗ 
+
+> n,M
+
+= X
+
+> k∈K +
+
+bλk,n Z2 
+
+> k,n
+
++ X
+
+> k∈K 0
+
+bλk,n Z2
+
+> k,n
+
+.
+
+For the first term, by the Continuous Mapping Theorem and the convergence of eigenvalues and eigenvectors derived above: 
+
+X
+
+> k∈K +
+
+bλk,n Z2
+
+> k,n d∗
+
+−→ X
+
+> k∈K +
+
+λkW 2 
+
+> k
+
+.
+
+34 For the second term, where k ∈ K 0 (i.e., λk = 0), we observe that bλk,n p
+
+−→ 0. Furthermore, 
+
+E∗[Z2
+
+> k,n
+
+] = 1 implies Z2 
+
+> k,n
+
+= O∗
+
+> p
+
+(1). Therefore, by Slutsky’s Theorem, 
+
+bλk,n Z2
+
+> k,n p∗
+
+−→ 0 · O∗
+
+> p
+
+(1) = 0 .
+
+Combining these, we have T ∗
+
+> n,M d∗
+
+−→ P 
+
+> k∈K +
+
+λkW 2 
+
+> k
+
++ 0 = YM . By L´ evy’s Continuity Theorem, this implies ∆ 2
+
+> p
+
+−→ 0 as n → ∞ .Finally, ∆ 3 = E[P∞  
+
+> k=M+1
+
+λkW 2 
+
+> k
+
+] = P∞  
+
+> k=M+1
+
+λk is deterministic and vanishes as M → ∞ .To conclude, for any ε > 0, we first choose M sufficiently large such that |t|(P∞  
+
+> k=M+1
+
+λk) <ε/ 2. With M fixed, as n → ∞ , both |t|∆1 (converging to the tail sum) and ∆ 2 (converging to 0) behave such that the probability of the RHS of (A.15) exceeding ε tends to zero. Thus, 
+
+|ϕ∗
+
+> n
+
+(t) − ϕY (t)| p
+
+−→ 0, which implies T ∗
+
+> nd∗
+
+−→ Y in probability. Under the fixed alternative H1, the bootstrap statistic is T ∗ 
+
+> n
+
+(θ1) = n−1V ′Hn(θ1)V . Cru-cially, although the kernel H is non-degenerate, the zero mean of the multipliers renders T ∗ 
+
+> n
+
+adegenerate quadratic form conditional on the sample. Assuming E[V 4 
+
+> i
+
+] < ∞, the conditional second moment expands to: 
+
+E∗[( T ∗ 
+
+> n
+
+(θ1)) 2] = 1
+
+n2 (E[V 4] − 3) 
+
+> n
+
+X
+
+> i=1
+
+H2 
+
+> ii
+
++ (tr( Hn)) 2 + 2tr( H2
+
+> n
+
+)
+
+!
+
+. (A.17) The first term is Op(n−1) and vanishes asymptotically. By the Law of Large Numbers, the remaining trace terms satisfy n−1tr( Hn) p
+
+−→ E[H(Z, Z )] and n−2tr( H2
+
+> n
+
+) p
+
+−→ E[H(Z, Z ′)2]. Consequently, 
+
+E∗[( T ∗ 
+
+> n
+
+(θ1)) 2] p
+
+−→ (E[H(Z, Z )]) 2 + 2 E[H(Z, Z ′)2]. (A.18) Given this finite probability limit, Chebyshev’s inequality implies T ∗ 
+
+> n
+
+(θ1) = Op∗ (1), complet-ing the proof. 35 B Additional Methodological Discussions 
+
+## B.1 Discussion on Two-Step Efficient Estimation 
+
+The proposed KMD estimator bθn is √n-consistent and asymptotically normal, effectively exploiting the continuum of unconditional moment restrictions. However, it generally does not attain the semiparametric efficiency bound of Chamberlain (1987). Achieving efficiency directly within the minimum distance framework would require characterizing a kernel func-tion whose associated RKHS embedding induces an optimal weighting measure over the continuum of moment conditions. A potential solution to this problem is to construct the regularized inverse of the covariance operator, as developed in Carrasco and Florens (2000). However, as they explicitly note, this inversion is ill-posed and requires spectral decomposition and the selection of data-dependent tuning parameters (e.g., for Tikhonov regularization). In this subsection, we adopt the two-step strategy of Dom´ ınguez and Lobato (2004), which offers a computationally efficient approach while preserving the operational simplicity of the KMD framework. Let Jn(θ) denote the feasible efficient GMM objective function, constructed using consistent nonparametric estimators of conditional moments (e.g., via kernel or series methods as in Newey (1990) and Robinson (1991)). Given that bθn is √n-consistent, it serves as a robust starting value that allows us to construct an asymptotically efficient estimator bθeff via a single Newton-Raphson update: 
+
+bθeff = bθn −
+
+h ¨Jn(bθn)
+
+i−1 ˙Jn(bθn), (B.1) where ˙Jn and ¨Jn denote the gradient and Hessian of the feasible objective, respectively. Under regularity conditions sufficient for the consistency of the nonparametric estimators (see Newey (1990), Robinson (1991)), it follows from Robinson (1988) that bθeff − eθ = op(n−1/2), where eθ is the theoretically efficient GMM estimator. 
+
+Remark 5. It is important to acknowledge that there is “no free lunch” in the pursuit of semiparametric efficiency. Specifically, the evaluation of the derivatives ˙Jn and ¨Jn required for the update in (B.1) necessitates the consistent nonparametric estimation of conditional 36 moments. This requirement introduces nontrivial practical challenges. First, standard non-parametric techniques typically assume that the conditioning covariates have compact sup-port. Second, as the dimension of the covariates increases, these estimators suffer from the “curse of dimensionality”, leading to slower convergence rates. Third, the implementation requires selecting smoothing parameters, a step that can be highly sensitive to statistical inference. In sharp contrast, the proposed KMD estimator bθn is simple to implement and robust; it circumvents the direct estimation of conditional moments and imposes no com-pactness restrictions on the support of the covariates. Notably, our simulation results suggest that the finite-sample efficiency loss of the simpler bθn is often marginal; see Section 5 for a detailed comparison. 
+
+## B.2 Discussion on U or V Statistic for Estimation and Testing 
+
+B.2.1 On Estimation 
+
+The off-diagonal U -statistic criterion and the corresponding V -statistic criterion are asymptotically close, differing only by diagonal terms. The distinction, however, can matter for the finite-sample geometry of the sample objective. Off-diagonal criteria arise naturally in smooth minimum-distance and local-smoothing approaches, including Lavergne and Patilea (2013). Our use of the V -statistic is motivated by a different consideration: it preserves the empirical RKHS squared-norm representation 
+
+bQV (θ) = ∥bμn(θ)∥2 
+
+> HK
+
+= 1
+
+n2 ρ(θ)′Kρ (θ).
+
+Since the Gram matrix K is positive semidefinite, bQV (θ) ≥ 0 for all θ. By contrast, the off-diagonal criterion 
+
+bQU (θ) = 1
+
+n(n − 1) ρ(θ)′{K − diag( K)}ρ(θ)does not generally define a squared norm, because K −diag( K) need not be positive semidef-inite. Figure B.1 illustrates this finite-sample distinction in the continuous nonlinear IV design 37 used in the simulation section. To isolate the effect of deleting the diagonal terms, both criteria are computed with the same Gaussian median kernel and evaluated over the grid θ ∈
+
+[−1.5, 0.8], with the true value θ0 = 0 .5. The V -statistic objective remains nonnegative and is minimized near the true parameter in this draw. The off-diagonal U -statistic objective, while asymptotically close to the V -version, can take negative values and attain lower values near the boundary of the plotted search interval. This diagnostic is not intended as a performance comparison or as a critique of the asymptotic theory of off-diagonal SMD estimators. It simply illustrates that deleting the diagonal terms can change the finite-sample optimization landscape. In nonlinear models, both objectives may be nonconvex in θ, but the V -criterion retains the lower-bound and metric interpretation implied by its squared-norm structure. −1.5 −1.0 −0.5 0.0 0.5 0.0  0.5  1.0  1.5     
+
+> V−statistic objective
+> θ
+> Q^ V( θ)
+> θ0grid minimizer
+> −1.5 −1.0 −0.5 0.0 0.5 −1.0  −0.5  0.0  0.5  1.0  1.5
+> Off−diagonal U−statistic objective
+> θ
+> Q^ U(θ)
+> zero line
+> θ0grid minimizer
+
+Figure B.1: Finite-sample objective functions in the continuous NLIV design, evaluated over θ ∈ [−1.5, 0.8]. The left panel plots the V -statistic RKHS squared-norm objective. The right panel plots the off-diagonal U -statistic objective computed with the same kernel. The vertical dotted line marks the true value θ0 = 0 .5. The following stylized calculation explains why such behavior can occur. Consider two observations with s1 = a, s2 = −a, a > 0, and kernel matrix 
+
+K =
+
+1 κκ 1
+
+ , 0 < κ < 1.
+
+In the correctly specified noiseless exponential model yi = exp(1 + θ0si), the V -statistic objective 4 −1ρ(θ)′Kρ (θ) is nonnegative and is uniquely minimized at θ0. By contrast, the 38 off-diagonal objective equals 
+
+QU (θ) = κ
+
+2 ρ1(θ)ρ2(θ) = −κe 2{cosh( a(θ − θ0)) − 1},
+
+which is zero at θ0 and strictly negative for every θ̸ = θ0. Hence, on a compact parameter space, the off-diagonal criterion may attain its finite-sample minimum away from θ0. This example does not contradict the asymptotic validity of off-diagonal criteria; rather, it iso-lates the finite-sample algebraic effect of removing the diagonal terms from a squared-norm criterion. 
+
+B.2.2 On Testing 
+
+While the V -statistic formulation is essential for parameter estimation to ensure a valid, non-negative minimization objective, an alternative strategy for the testing stage involves the U -statistic, constructed by excluding the diagonal terms: 
+
+eTn := 1
+
+n − 1
+
+X
+
+> i̸=j
+
+ρ(Zi, bθn)′K(Xi, X j )ρ(Zj , bθn).
+
+The primary theoretical appeal of this alternative lies in the potential relaxation of regularity conditions; specifically, it reduces the finite fourth-moment requirement on ρ(Z, θ 0) and 
+
+g(Z, θ 0) to finite second moments by eliminating the need to control the diagonal components. However, we retain the unified V -statistic framework for the following reasons that outweigh this marginal gain. As discussed in Remark 3, the V -statistic admits a natural interpretation as a Generalized Sargan Test (or J-test) by representing the squared RKHS norm ∥bμn(bθn)∥2 
+
+> HK
+
+, guaranteeing a non-negative measure of misspecification. In contrast, the U -type test statistic corresponds to an indefinite quadratic form that deviates from the distance-minimization framework. As shown below, the limiting distribution of eTn under H0 involves negative nuisance shifts: 
+
+eTnd
+
+−→
+
+> ∞
+
+X
+
+> k=1
+
+λk
+
+ W 2 
+
+> k
+
+− 1 − δ, 
+
+39 where δ := E[ρ(Z, θ 0)′G(X, θ 0)∆( θ0)−1G(X, θ 0)′ρ(Z, θ 0)] captures the asymptotic bias arising from the diagonal components inherent to the V -statistic estimation. These shift terms allow eTn to take negative values, rendering its interpretation counter-intuitive as a measure of model fit. Analogously, under the local alternative H1n, the distribution exhibits an identical shift structure: 
+
+eTnd
+
+−→
+
+> ∞
+
+X
+
+> k=1
+
+λk
+
+(Wk + ck)2 − 1 − δ, 
+
+which deviates from the unified spectral representation of Bierens and Ploberger (1997). Finally, it is worth noting that the validity of the preliminary estimator bθn inherently relies on the V -statistic formulation, which requires the finiteness of E[∥g(Z, θ 0)′ρ(Z, θ 0)∥2]. Given this unavoidable requirement, we consider the marginal relaxation of regularity conditions offered by the U -type test statistic insufficient to justify sacrificing the geometric coherence and analytical interpretability of our unified framework. 
+
+Detailed Derivation for the Asymptotics of U -type Test Statistic 
+
+Proof. We adopt the notation from the proofs of Lemmas 3 and 4. Let the U -type test statistic eTn := n eQn(bθn), with 
+
+eQn(θ) := 1
+
+n(n − 1) 
+
+X
+
+> i̸=j
+
+ρ(Zi, θ )′K(Xi, X j )ρ(Zj , θ ).
+
+Under H0, by the mean value expansion along with equation A.1, we have 
+
+eTn = n bQn(θ0)+ 
+
+√n∇θ eQn(θ0)
+
+′ h√n
+
+bθn − θ0
+
+i 
+
++12
+
+h√n
+
+bθn − θ0
+
+i ′ eHn(¯θn)
+
+h√n
+
+bθn − θ0
+
+i 
+
+.
+
+Noting that U -statistics and V -statistics share asymptotically equivalent gradients and Hes-sians, we have 
+
+eHn(¯θn) = 2∆( θ0) + op(1) ,
+
+√n∇θ eQn(θ0) = 2 Sn(θ0) + op(1) ,
+
+√n
+
+bθn − θ0
+
+
+
+= −∆( θ0)−1Sn(θ0) + op(1) .
+
+40 Thus, 
+
+eTn = n eQn(θ0) − Sn(θ0)∆( θ0)−1Sn(θ0) + op(1) = 1
+
+n − 1
+
+X
+
+> i̸=j
+
+ρ(Zi, θ 0)′K(Xi, X j )ρ(Zj , θ 0)
+
+− 1
+
+n
+
+X
+
+> i
+
+X
+
+> j
+
+ρ(Zi, θ 0)′G(Xi, θ 0)∆( θ0)−1G(Xj , θ 0)′ρ(Zj , θ 0) + op(1) = 1
+
+n − 1
+
+X
+
+> i̸=j
+
+ρ(Zi, θ 0)′ K(Xi, X j ) − G(Xi, θ 0)∆( θ0)−1G(Xj , θ 0)′ ρ(Zj , θ 0)+ 1
+
+n(n − 1) 
+
+X
+
+> i̸=j
+
+ρ(Zi, θ 0)′G(Xi, θ 0)∆( θ0)−1G(Xj , θ 0)′ρ(Zj , θ 0)
+
+− 1
+
+n
+
+X
+
+> i
+
+ρ(Zi, θ 0)′G(Xi, θ 0)∆( θ0)−1G(Xi, θ 0)′ρ(Zi, θ 0) + op(1) .
+
+Furthermore, under H0,1
+
+n(n − 1) 
+
+X
+
+> i̸=j
+
+ρ(Zi, θ 0)′ K(Xi, X j ) − G(Xi, θ 0)∆( θ0)−1G(Xj , θ 0)′ ρ(Zj , θ 0) p
+
+−→ 0,
+
+1
+
+n
+
+X
+
+> i
+
+ρ(Zi, θ 0)′G(Xi, θ 0)∆( θ0)−1G(Xi, θ 0)′ρ(Zi, θ 0) p
+
+−→ E[ρ(Z, θ 0)′G(X, θ 0)∆( θ0)−1G(X, θ 0)′ρ(Z, θ 0)] := δ. 
+
+Thus, under H0,
+
+eTn = 1
+
+n − 1
+
+X
+
+> i̸=j
+
+ρ(Zi, θ 0)′Kp(Xi, X j )ρ(Zj , θ 0) − δ + op(1) ,
+
+where the first term is an n-scaled degenerate U -statistic. Invoking the Theorem in Section 5.5.2 of Serfling (1980), we obtain 
+
+eTnd
+
+−→
+
+> ∞
+
+X
+
+> k=1
+
+λk
+
+ W 2 
+
+> k
+
+− 1 − δ, 
+
+where λk and Wk are defined as in Theorem 3.1. 41 C Additional Simulation Results 
+
+This section provides additional simulation details to verify the robustness of the proposed framework. We first present supplementary estimation results for the Box–Cox model with 
+
+λ0 = 1 .0 in Section C.2, followed by a detailed description of the Double Machine Learning (DML) implementation in Section C.4. Section C.5 validates the proposed inference theory by reporting the pointwise coverage probabilities of the asymptotic confidence intervals across different model specifications. Lastly, Section C.6 provides comparative simulation results for the specification test of Dom´ ınguez and Lobato (2015). 
+
+## C.1 The Linear Regression Model 
+
+We set the standard Linear Regression Model: 
+
+Yi = X′ 
+
+> i
+
+β0 + ϵi, i = 1 , . . . , n, 
+
+where the true parameter vector is set to β0 = (1 , . . . , 1, −1, . . . , −1) ′, with the first ⌈p/ 2⌉
+
+elements equal to 1. The regressors Xi are generated from a multivariate normal distribu-tion N (0 , ΣX ) with a Toeplitz covariance structure, Σ X,jk = 0 .5|j−k|, to induce moderate correlation among covariates. We examine two error specifications to assess robustness: (i) 
+
+Homoskedasticity , with ϵi ∼ N (0 , 1); and (ii) Heteroskedasticity , with ϵi = exp(0 .25 Xi, 1) · νi,where νi ∼ N (0 , 1). For estimation, we benchmark the KMD estimator against Ordinary Least Squares (OLS), Feasible Weighted Least Squares (FWLS), and the infeasible Oracle GMM estimator (GMM ∗). GMM ∗ employs the true conditional variance weights to attain the semiparametric efficiency bound, whereas FWLS relies on a feasible log-linear variance approximation. Table C.1 summarizes the finite-sample estimation performance under linear regression settings. In terms of consistency, the KMD estimator exhibits negligible bias across all sce-narios and matches parametric benchmarks. Regarding efficiency, the KMD estimator incurs a moderate efficiency loss relative to OLS (Panel A; e.g., approximately 15–20% increase in RMSE for n = 100). Under asymmetric heteroskedasticity (Panel B), while Oracle GMM 42 Table C.1: Estimation Performance in Linear Regression (Bias and RMSE)                                                                                                             
+
+> Bias RMSE
+> npOLS FWLS GMM ∗KMD OLS FWLS GMM ∗KMD
+> Panel A: Homoskedastic Errors
+> 100 30.005 0.005 0.005 0.009 0.121 0.130 0.121 0.141 50.005 0.009 0.005 0.007 0.125 0.138 0.125 0.157 10 0.013 0.018 0.013 0.019 0.135 0.154 0.135 0.179 200 30.002 0.003 0.002 0.003 0.086 0.091 0.086 0.097 50.003 0.005 0.003 0.005 0.088 0.094 0.088 0.106 10 0.010 0.009 0.010 0.013 0.092 0.101 0.092 0.121
+> Panel B: Heteroskedastic Errors
+> 100 30.007 0.004 0.004 0.010 0.132 0.122 0.113 0.149 50.006 0.010 0.006 0.007 0.135 0.131 0.117 0.165 10 0.016 0.015 0.012 0.021 0.144 0.150 0.129 0.189 200 30.002 0.003 0.003 0.001 0.094 0.084 0.079 0.102 50.004 0.004 0.003 0.006 0.095 0.088 0.082 0.111 10 0.011 0.008 0.009 0.014 0.099 0.096 0.087 0.127
+> Note: The table reports the mean bias norm ( || bβ−β0|| 2) and average element-wise RMSE for linear regression estimators over 1000 replications.
+
+and FWLS naturally outperform unweighted methods, the KMD estimator remains stable, with RMSEs comparable to OLS. These findings are unsurprising and acceptable, given that the standard KMD estimator relies on a global kernel metric and does not explicitly exploit the conditional variance structure for weighting. We next evaluate the specification test for the linear regression model, where the null hypothesis asserts that E[Y − X′β0 | X] = 0 a.s. Under this specification, the score function 
+
+g(Z, β ) = −X is independent of β, yielding a key computational advantage as the correction terms in the projected kernel bKpn depend solely on the observed regressors. To evaluate power, we introduce a perturbation f (Xi) under the alternative H1 : Yi =
+
+X′ 
+
+> i
+
+β0 + f (Xi) + ϵi. Setting the magnitude to δ = 0 .5, we consider three distinct misspecifi-cation classes, where Xi,k denotes the k-th component of the regressor vector Xi:
+
+• H1a (Quadratic): f (Xi) = δX 2
+
+> i, 1
+
+, representing smooth, global nonlinearity. 
+
+• H1b (Discontinuous): f (Xi) = δ · I(|Xi, 1| ≤ 0.5), representing a local structural break or “bump” often difficult for global polynomial tests to detect. 43 • H1c (Interaction): f (Xi) = δX i, 1Xi, 2, capturing omitted cross-variable dependencies. Table C.2: Empirical Rejection Rates for Linear Regression Specification Tests ( α = 0 .05) 
+
+Homoskedastic Errors Heteroskedastic Errors 
+
+n DGP p = 3 p = 5 p = 10 p = 3 p = 5 p = 10 100 Size ( H0) 0.046 0.050 0.031 0.040 0.047 0.030 Power ( H1a: Quad.) 0.956 0.949 0.915 0.946 0.920 0.894 Power ( H1b: Disc.) 0.502 0.455 0.344 0.476 0.425 0.315 Power ( H1c: Inter.) 0.556 0.499 0.400 0.514 0.451 0.375 200 Size ( H0) 0.058 0.047 0.040 0.061 0.047 0.047 Power ( H1a: Quad.) 1.000 1.000 1.000 1.000 1.000 1.000 Power ( H1b: Disc.) 0.846 0.790 0.724 0.823 0.741 0.685 Power ( H1c: Inter.) 0.946 0.844 0.812 0.917 0.796 0.766 400 Size ( H0) 0.052 0.052 0.049 0.053 0.049 0.049 Power ( H1a: Quad.) 1.000 1.000 1.000 1.000 1.000 1.000 Power ( H1b: Disc.) 0.983 0.976 0.962 0.978 0.964 0.940 Power ( H1c: Inter.) 1.000 0.999 0.997 0.995 0.987 0.979 
+
+Table C.2 reports the empirical rejection rates for the specification test. Under the null hypothesis ( H0), the proposed test maintains accurate size control across all designs. The rejection rates align closely with the nominal 5% level and are robust to both homoskedastic and heteroskedastic errors. While slight undersizing is observed in high-dimensional small samples (e.g., n = 100 , p = 10), this distortion diminishes as the sample size increases to 
+
+n = 200. Regarding power performance, the test displays consistent power against all three classes of misspecification, with rejection rates increasing monotonically toward unity as the sample size grows. For the smooth quadratic alternative ( H1a), the test is particularly powerful, achieving near-unity rejection rates even at n = 100. For the discontinuous ( H1b) and inter-action ( H1c) alternatives, the power is substantial but naturally lower than that for the global quadratic alternative, reflecting the challenge of detecting local irregularities or multivariate dependencies. Furthermore, the results illustrate the expected trade-off with respect to di-mensionality: for a fixed sample size, power decreases as the dimension p increases from 3 to 10. Nevertheless, the test remains omnibus, with power exceeding 0 .94 in all scenarios when 44 n = 400, confirming the consistency of the KMD test against a broad range of alternatives. 
+
+## C.2 Additional Simulation Results for Box–Cox Estimation 
+
+Table C.3 reports the estimation performance under the linear specification ( λ0 = 1 .0). While estimation errors increase across all methods relative to the λ0 = 0 and λ0 = 0 .5cases, likely due to the weaker identification of the transformation parameter as the model approaches linearity, the KMD estimator consistently maintains superior performance in terms of both Bias and RMSE. 45 Table C.3: Estimation Performance of Box–Cox Model Parameters ( λ = 1 .0) 
+
+Bias RMSE 
+
+n p Param. NL2S Shin-MD KMD NL2S Shin-MD KMD 
+
+Panel A: Homoskedastic Errors 
+
+100 3
+
+α −0.045 0.054 −0.058 0.313 0.315 0.185 
+
+β 0.042 0.455 0.016 0.174 0.666 0.135 
+
+λ −0.028 −0.297 −0.050 0.232 0.650 0.130 5
+
+α −0.130 −0.057 −0.102 0.297 0.341 0.191 
+
+β 0.038 0.266 0.053 0.145 0.432 0.133 
+
+λ −0.078 −0.194 −0.067 0.171 0.446 0.104 10 
+
+α −0.256 −0.288 −0.187 0.356 0.373 0.248 
+
+β 0.250 0.272 0.198 0.167 0.221 0.151 
+
+λ −0.113 −0.126 −0.085 0.151 0.153 0.102 200 3
+
+α −0.007 0.112 −0.024 0.200 0.425 0.133 
+
+β 0.029 0.453 0.004 0.106 0.740 0.093 
+
+λ −0.006 −0.283 −0.025 0.164 0.659 0.099 5
+
+α −0.083 0.012 −0.058 0.241 0.366 0.141 
+
+β 0.024 0.400 0.032 0.106 0.514 0.096 
+
+λ −0.051 −0.240 −0.039 0.139 0.530 0.075 10 
+
+α −0.201 −0.245 −0.132 0.301 0.343 0.183 
+
+β 0.197 0.238 0.138 0.128 0.196 0.107 
+
+λ −0.088 −0.115 −0.059 0.127 0.141 0.073 
+
+Panel B: Heteroskedastic Errors 
+
+100 3
+
+α −0.033 0.041 −0.078 0.312 0.331 0.199 
+
+β 0.048 0.478 0.010 0.168 0.706 0.138 
+
+λ −0.017 −0.316 −0.065 0.238 0.656 0.141 5
+
+α −0.162 −0.072 −0.126 0.344 0.332 0.218 
+
+β 0.038 0.301 0.056 0.149 0.451 0.140 
+
+λ −0.096 −0.231 −0.083 0.189 0.492 0.120 10 
+
+α −0.286 −0.306 −0.213 0.390 0.382 0.278 
+
+β 0.276 0.294 0.224 0.177 0.213 0.161 
+
+λ −0.126 −0.136 −0.098 0.163 0.154 0.115 200 3
+
+α −0.004 0.073 −0.044 0.229 0.355 0.149 
+
+β 0.029 0.480 0.012 0.112 0.721 0.095 
+
+λ 0.004 −0.296 −0.035 0.180 0.640 0.107 5
+
+α −0.087 −0.019 −0.076 0.242 0.326 0.151 
+
+β 0.025 0.308 0.039 0.104 0.458 0.096 
+
+λ −0.054 −0.200 −0.053 0.144 0.457 0.086 10 
+
+α −0.234 −0.260 −0.151 0.331 0.338 0.203 
+
+β 0.230 0.235 0.161 0.136 0.176 0.113 
+
+λ −0.103 −0.114 −0.070 0.140 0.133 0.084 
+
+Note: The bias for α and λ is the raw bias, while the bias for β is the L2 norm of the bias vector. 
+
+46 C.3 Additional Simulation Results for IV Estimation 
+
+Table C.4 reports the estimation performance under heteroskedastic errors. The results are quite similar to those under homoskedasticity: the relative performance of the estimators remains largely unchanged, and KMD continues to perform competitively across the three IV designs. 47 Table C.4: Estimation Performance of IV Estimators (Bias and RMSE) 
+
+Estimators 
+
+n p Metric † 2SLS ∗ GMM ∗ Sieve-GMM SMD-h1 SMD-hdim DML-OS KMD 
+
+Panel A: Linear Structural Equation 
+
+100 3 Bias 0.024 0.103 0.389 −0.251 −0.220 −0.171 −0.037 RMSE 3.529 3.379 3.553 3.557 3.725 3.493 3.466 5 Bias −0.064 0.066 0.614 −0.249 −0.329 −0.234 0.014 RMSE 3.305 3.254 3.649 3.601 4.074 3.344 3.379 10 Bias 0.075 0.195 1.333 −0.200 −0.677 −0.105 0.148 RMSE 3.471 3.324 4.424 4.309 6.705 3.415 3.522 200 3 Bias 0.047 0.061 0.215 −0.037 −0.031 −0.055 0.045 RMSE 2.413 2.290 2.360 2.505 2.554 2.431 2.478 5 Bias 0.051 0.065 0.328 −0.022 −0.008 −0.039 0.072 RMSE 2.422 2.311 2.540 2.603 2.801 2.419 2.503 10 Bias 0.114 0.087 0.722 −0.076 −0.290 0.016 0.083 RMSE 2.486 2.406 2.821 2.881 4.274 2.472 2.532 
+
+Panel B: Nonlinear (Exponential) Structural Equation 
+
+100 3 Bias 9.565 −0.079 0.547 −0.605 −0.740 −0.624 0.063 RMSE 10 .387 1.706 1.923 2.485 2.722 2.434 2.035 5 Bias 9.676 −0.002 1.061 −0.574 −1.345 −0.520 0.138 RMSE 10 .454 1.720 2.071 2.877 9.282 2.497 2.209 10 Bias 9.551 −0.040 1.824 −2.495 −21 .486 −0.478 0.108 RMSE 10 .340 1.676 2.549 14 .134 71 .551 2.397 1.985 200 3 Bias 9.669 −0.092 0.221 −0.349 −0.387 −0.383 −0.032 RMSE 10 .053 1.165 1.283 1.612 1.601 1.573 1.477 5 Bias 9.876 0.072 0.662 −0.184 −0.248 −0.151 0.138 RMSE 10 .255 1.159 1.425 1.599 1.939 1.513 1.424 10 Bias 9.668 −0.043 1.069 −0.427 −4.688 −0.284 0.039 RMSE 10 .058 1.191 1.662 2.268 25 .804 1.655 1.481 
+
+Panel C: Nonlinear (Exponential) Structural Equation with Mixed Covariates 
+
+100 3 Bias 7.163 0.083 0.369 −0.655 −1.030 −0.673 0.159 RMSE 7.869 1.587 1.874 2.477 7.613 4.321 1.966 5 Bias 9.339 0.194 0.851 −1.075 −2.370 −1.116 0.438 RMSE 10 .442 2.091 2.339 5.672 13 .971 7.582 2.358 10 Bias 8.165 0.172 1.634 −5.669 −29 .150 −1.400 1.228 RMSE 9.921 1.898 2.563 26 .265 90 .265 9.247 2.093 200 3 Bias 7.309 0.025 0.131 −0.291 −0.326 −0.283 0.050 RMSE 7.682 1.060 1.286 1.574 1.538 1.444 1.440 5 Bias 9.477 0.127 0.519 −0.281 −0.384 −0.217 0.296 RMSE 10 .048 1.338 1.508 1.861 2.239 1.746 1.555 10 Bias 8.437 0.057 0.870 −0.575 −5.822 −0.345 0.726 RMSE 9.397 1.272 1.552 2.854 28 .098 1.871 1.526 
+
+Note: † All values are multiplied by 100 for readability. 
+
+48 C.4 Details of the DML-OS Benchmark 
+
+This section describes the implementation of the DML-OS benchmark used in the sim-ulation study. The benchmark is motivated by the orthogonal score and cross-fitting ideas of Chernozhukov et al. (2018) but is adapted to the IV designs considered in this paper. In both designs, nuisance functions are learned strictly out-of-fold using K = 5 cross-fitting with random forests, and the structural parameter is then estimated from the pooled cross-fitted score. 
+
+C.4.1 Design I: Linear Structural Equation Model specification. The first design is 
+
+Y = θ0X + ϵ, E[ϵ | Z] = 0 , (C.1) 
+
+X = f0(Z) + u, E[u | Z] = 0 , (C.2) where X is endogenous, and Z is a possibly high-dimensional vector of instruments. 
+
+Score construction. For this design, we use the score 
+
+ψ(W ; θ, η ) = ( Y − θX )η(Z),
+
+with nuisance function η0(Z) = E[X | Z]. Orthogonality follows from 
+
+∂ηEP [ψ(W ; θ0, η 0)][ η − η0] = EP [ϵ{η(Z) − η0(Z)}] = 0 ,
+
+which holds by iterated expectations and the condition E[ϵ | Z] = 0. 
+
+Estimation algorithm. The implementation proceeds as follows. 1. The sample of size N is randomly partitioned into K = 5 folds, denoted by {Ik}Kk=1 .2. For each fold k, the nuisance function η0(Z) = E[X | Z] is estimated using only the auxiliary sample Ick = {1, . . . , N } \ Ik. Specifically, we regress X on Z using a random 49 forest with 1000 trees, minimum node size 5, and mtry = max {⌊ p/ 3⌋, 1}.3. The fitted random forest is then evaluated on the held-out fold Ik to obtain cross-fitted predictions bηi for i ∈ Ik. Repeating this step over all folds yields a full set of cross-fitted nuisance estimates {bηi}Ni=1 .4. The structural parameter is estimated from the pooled score equation 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+(Yi − θX i)bηi = 0 .
+
+In this linear case, the solution is available in closed form: 
+
+bθ =
+
+> N
+
+X
+
+> i=1
+
+bηiXi
+
+!−1 NX
+
+> i=1
+
+bηiYi.
+
+C.4.2 Design II: Nonlinear Structural Equation Model specification. The second design is 
+
+Y = exp(1 + θ0X) + ϵ, E[ϵ | Z] = 0 ,
+
+so that 
+
+m(W, θ ) = Y − exp(1 + θX ), E[m(W, θ 0) | Z] = 0 .
+
+Score construction. We use the score 
+
+ψ(W ; θ, μ ) = m(W, θ )μ(Z),
+
+where μ(·) is a nuisance function learned from the data. Motivated by the score-gradient construction, we approximate μ0(Z) by the conditional expectation of X exp(1 + θ0X), up to an irrelevant sign normalization. Since this object depends on the unknown parameter value, we estimate it using a fold-specific preliminary estimator. 
+
+Estimation algorithm. The implementation is fully cross-fitted and proceeds as follows. 50 1. As in Design I, the sample is randomly partitioned into K = 5 folds {Ik}Kk=1 .2. For each fold k, we use only the auxiliary sample Ick to compute a preliminary esti-mator ¯θ(−k). Our primary choice is a sieve-GMM estimator based on polynomial sieve moments. If this step fails numerically, we use a nonlinear least squares estimator computed on the same auxiliary sample; if that also fails, we revert to the initial value. 3. Using the same auxiliary sample Ick, we construct the fold-specific pseudo-outcome 
+
+D∗,(−k) 
+
+> i
+
+= Xi exp  1 + ¯θ(−k)Xi
+
+, i ∈ Ick.
+
+We then regress D∗,(−k) 
+
+> i
+
+on Zi over Ick using a random forest with 1000 trees, minimum node size 5, and mtry = max {⌊ p/ 3⌋, 1}.4. The fitted random forest is evaluated on the held-out fold Ik to obtain cross-fitted nuisance predictions bμi for i ∈ Ik. Repeating this step across all folds yields a full set of cross-fitted predictions {bμi}Ni=1 .5. The structural parameter is then estimated from the pooled score equation 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+n
+
+Yi − exp(1 + θX i)
+
+obμi = 0 .
+
+Numerically, we first search for a root over a fixed interval. If a sign change is detected, we solve the equation using one-dimensional root-finding. Otherwise, we use the min-imizer of the squared pooled score over the same interval as a numerical fallback. 
+
+Implementation note. In both designs, nuisance functions are estimated strictly out-of-fold, so that the final score is formed entirely from cross-fitted predictions. The benchmark is included as a DML-style orthogonal score comparison, motivated by Chernozhukov et al. (2018). We do not attempt to verify the high-level rate conditions of that paper for the present simulation designs, and the random forest tuning parameters are chosen for numerical stability rather than to establish formal rate guarantees. 51 C.5 Simulation Results for Finite Sample Coverage of KMD Es-timation 
+
+In this section, we evaluate the finite sample inference performance of the KMD estimator across all model specifications discussed in the main text: Linear Regression (LR) , the 
+
+Box–Cox Transformation Model , Linear IV (LIV) , and Nonlinear IV (NLIV) .For each specification, we compute the pointwise coverage probabilities (CP) of the 95% asymptotic confidence intervals. These intervals are constructed using the sandwich variance estimators derived from the asymptotic normality results in Theorem 2.1 and Proposition 1. The following tables present the empirical coverage rates under various sample sizes (n), dimensions ( p), and error structures (Homoskedastic and Heteroskedastic). The results demonstrate that the empirical coverage rates converge to the nominal 95% level as the sample size increases, confirming the validity of the KMD inference framework. Table C.5: Pointwise Coverage Percentages for Linear Regression Model                                                                                                                                  
+
+> npError θ1θ2θ3θ4θ5θ6θ7θ8θ9θ10
+> 100 3Hetero 0.943 0.940 0.919 Homo 0.942 0.942 0.924 5Hetero 0.950 0.935 0.938 0.944 0.932 Homo 0.944 0.940 0.939 0.948 0.935 10 Hetero 0.945 0.936 0.942 0.936 0.934 0.928 0.944 0.937 0.945 0.941 Homo 0.939 0.930 0.945 0.939 0.935 0.928 0.941 0.940 0.941 0.946 200 3Hetero 0.937 0.934 0.953 Homo 0.936 0.938 0.956 5Hetero 0.945 0.951 0.939 0.942 0.942 Homo 0.947 0.943 0.941 0.944 0.936 10 Hetero 0.945 0.941 0.944 0.961 0.961 0.952 0.932 0.948 0.954 0.953 Homo 0.940 0.949 0.943 0.964 0.962 0.955 0.934 0.955 0.954 0.949 400 3Hetero 0.952 0.955 0.943 Homo 0.959 0.946 0.937 5Hetero 0.939 0.955 0.950 0.942 0.952 Homo 0.932 0.951 0.948 0.941 0.951 10 Hetero 0.950 0.956 0.936 0.942 0.944 0.946 0.951 0.952 0.950 0.935 Homo 0.955 0.952 0.937 0.939 0.947 0.956 0.949 0.951 0.951 0.936
+
+52 Table C.6: Pointwise Coverage Percentages for Box–Cox Model ( λ0 = 0) 
+
+n p Error α β1 β2 β3 β4 β5 β6 β7 β8 β9 β10 λ
+
+100 3 Hetero 0.938 0.937 0.942 0.934 0.915 Homo 0.956 0.943 0.947 0.948 0.965 5 Hetero 0.946 0.923 0.939 0.924 0.935 0.944 0.914 Homo 0.942 0.923 0.933 0.931 0.923 0.943 0.945 10 Hetero 0.907 0.910 0.930 0.931 0.922 0.934 0.917 0.937 0.934 0.927 0.925 0.892 Homo 0.937 0.930 0.923 0.922 0.938 0.919 0.933 0.927 0.929 0.922 0.905 0.926 200 3 Hetero 0.931 0.947 0.943 0.945 0.940 Homo 0.962 0.939 0.944 0.948 0.967 5 Hetero 0.942 0.940 0.943 0.950 0.949 0.933 0.931 Homo 0.962 0.955 0.945 0.942 0.956 0.954 0.954 10 Hetero 0.939 0.940 0.942 0.938 0.952 0.940 0.951 0.933 0.946 0.941 0.939 0.939 Homo 0.945 0.937 0.933 0.940 0.930 0.935 0.950 0.943 0.947 0.935 0.943 0.942 400 3 Hetero 0.946 0.952 0.941 0.949 0.935 Homo 0.952 0.934 0.927 0.940 0.966 5 Hetero 0.935 0.950 0.941 0.952 0.943 0.936 0.930 Homo 0.950 0.939 0.943 0.950 0.950 0.944 0.949 10 Hetero 0.938 0.942 0.940 0.945 0.941 0.936 0.953 0.948 0.949 0.959 0.943 0.944 Homo 0.950 0.935 0.943 0.946 0.949 0.943 0.946 0.952 0.956 0.952 0.943 0.943 Table C.7: Pointwise Coverage Percentages for Box–Cox Model ( λ0 = 0 .5) 
+
+N P Error α β1 β2 β3 β4 β5 β6 β7 β8 β9 β10 λ
+
+100 3 Hetero 0.952 0.944 0.943 0.940 0.931 Homo 0.969 0.946 0.952 0.943 0.973 5 Hetero 0.960 0.926 0.941 0.927 0.938 0.952 0.930 Homo 0.949 0.926 0.937 0.932 0.924 0.949 0.954 10 Hetero 0.909 0.912 0.932 0.934 0.922 0.934 0.917 0.938 0.935 0.928 0.924 0.864 Homo 0.931 0.936 0.932 0.921 0.938 0.913 0.939 0.928 0.932 0.921 0.912 0.914 200 3 Hetero 0.950 0.946 0.944 0.948 0.949 Homo 0.969 0.941 0.942 0.955 0.967 5 Hetero 0.947 0.936 0.947 0.951 0.944 0.935 0.937 Homo 0.962 0.956 0.945 0.942 0.958 0.956 0.951 10 Hetero 0.935 0.940 0.936 0.941 0.953 0.936 0.951 0.934 0.942 0.940 0.941 0.894 Homo 0.939 0.938 0.933 0.941 0.934 0.930 0.949 0.944 0.950 0.938 0.941 0.930 400 3 Hetero 0.959 0.948 0.938 0.950 0.942 Homo 0.953 0.939 0.933 0.940 0.965 5 Hetero 0.937 0.949 0.943 0.949 0.943 0.934 0.936 Homo 0.954 0.944 0.943 0.953 0.948 0.944 0.947 10 Hetero 0.931 0.943 0.941 0.943 0.944 0.941 0.951 0.953 0.947 0.960 0.941 0.937 Homo 0.952 0.933 0.942 0.943 0.946 0.942 0.942 0.951 0.955 0.949 0.943 0.941 53 Table C.8: Pointwise Coverage Probabilities for Linear, Nonlinear, and Mixed IV Models                                                               
+
+> nDim. Homoskedastic Errors Heteroskedastic Errors Linear IV Nonlinear IV Mixed NLIV Linear IV Nonlinear IV Mixed NLIV 100 30.950 0.938 0.937 0.954 0.943 0.946 50.953 0.931 0.929 0.951 0.933 0.937 10 0.953 0.909 0.920 0.948 0.929 0.931 200 30.956 0.940 0.937 0.934 0.954 0.950 50.948 0.940 0.934 0.948 0.940 0.937 10 0.947 0.929 0.936 0.956 0.941 0.934 400 30.955 0.956 0.960 0.963 0.935 0.948 50.942 0.949 0.952 0.947 0.957 0.960 10 0.946 0.951 0.953 0.952 0.950 0.949
+
+## C.6 Simulation Results for the Test of Dom´ ınguez and Lobato (2015) 
+
+To benchmark the finite-sample performance of the proposed KMD test, particularly its robustness to the dimensionality of the conditioning variables, this section presents a comparative analysis with the omnibus specification test of Dom´ ınguez and Lobato (2015). We implement the DL test following their exact protocol, utilizing the Consistent Method of Moments (CMM) estimator and the projection-based wild bootstrap procedure. While the DL test is consistent against fixed alternatives, its construction using coordinate-wise indicator functions makes it inherently susceptible to data sparsity as the dimension of the covariate space increases, a limitation that the reproducing-kernel-based KMD aims to mitigate. 54 Table C.9: Empirical Rejection Rates for Linear Regression Specification Tests ( α = 0 .05) 
+
+Homoskedastic Errors Heteroskedastic Errors 
+
+n DGP Model p = 3 p = 5 p = 10 p = 3 p = 5 p = 10 100 Size ( H0) 0.050 0.033 0.014 0.042 0.031 0.014 Power ( H1a: Quad.) 0.747 0.483 0.012 0.743 0.489 0.012 Power ( H1b: Disc.) 0.488 0.268 0.015 0.484 0.267 0.018 Power ( H1c: Inter.) 0.157 0.101 0.006 0.154 0.093 0.008 200 Size ( H0) 0.039 0.043 0.025 0.037 0.044 0.021 Power ( H1a: Quad.) 0.990 0.926 0.061 0.988 0.933 0.062 Power ( H1b: Disc.) 0.852 0.681 0.047 0.853 0.700 0.043 Power ( H1c: Inter.) 0.401 0.328 0.030 0.384 0.348 0.030 400 Size ( H0) 0.039 0.044 0.028 0.041 0.051 0.025 Power ( H1a: Quad.) 1.000 1.000 0.460 1.000 1.000 0.478 Power ( H1b: Disc.) 0.990 0.955 0.249 0.989 0.965 0.287 Power ( H1c: Inter.) 0.836 0.740 0.135 0.836 0.770 0.160 
+
+Table C.10: Empirical Rejection Rates for Box–Cox Specification Tests ( α = 0 .05) 
+
+Homoskedastic Errors Heteroskedastic Errors 
+
+n DGP Model p = 3 p = 5 p = 10 p = 3 p = 5 p = 10 100 Size ( H0) 0.044 0.026 0.016 0.042 0.041 0.005 Power ( H1a: Quad.) 0.339 0.179 0.015 0.388 0.225 0.019 Power ( H1b: Disc.) 0.945 0.495 0.033 0.948 0.526 0.030 Power ( H1c: Inter.) 0.241 0.062 0.008 0.270 0.088 0.008 200 Size ( H0) 0.039 0.029 0.021 0.044 0.037 0.016 Power ( H1a: Quad.) 0.680 0.569 0.071 0.763 0.684 0.078 Power ( H1b: Disc.) 1.000 0.969 0.169 1.000 0.977 0.168 Power ( H1c: Inter.) 0.561 0.243 0.027 0.668 0.300 0.025 400 Size ( H0) 0.037 0.045 0.038 0.045 0.036 0.028 Power ( H1a: Quad.) 0.941 0.959 0.405 0.986 0.988 0.463 Power ( H1b: Disc.) 1.000 1.000 0.726 1.000 1.000 0.738 Power ( H1c: Inter.) 0.909 0.671 0.131 0.979 0.793 0.188 
+
+55 Table C.11: Empirical Rejection Rates for IV Specification Tests ( α = 0 .05) 
+
+Homoskedastic Errors Heteroskedastic Errors 
+
+n DGP d = 3 d = 5 d = 10 d = 3 d = 5 d = 10 
+
+Panel A: Linear structural model with continuous instruments 
+
+100 Size ( H0) 0.027 0.025 0.000 0.038 0.019 0.001 Power ( H1) 0.201 0.068 0.001 0.236 0.069 0.002 200 Size ( H0) 0.043 0.021 0.002 0.052 0.027 0.003 Power ( H1) 0.448 0.159 0.007 0.519 0.169 0.001 400 Size ( H0) 0.050 0.035 0.009 0.039 0.028 0.007 Power ( H1) 0.785 0.434 0.040 0.869 0.483 0.025 
+
+Panel B: Nonlinear structural model with continuous instruments 
+
+100 Size ( H0) 0.034 0.018 0.003 0.029 0.035 0.003 Power ( H1) 0.583 0.108 0.001 0.628 0.143 0.002 200 Size ( H0) 0.045 0.024 0.009 0.043 0.019 0.013 Power ( H1) 0.959 0.513 0.006 0.965 0.557 0.001 400 Size ( H0) 0.049 0.030 0.041 0.047 0.021 0.040 Power ( H1) 1.000 0.965 0.024 1.000 0.973 0.014 
+
+Panel C: Mixed nonlinear structural model with continuous and discrete instruments 
+
+100 Size ( H0) 0.037 0.040 0.018 0.031 0.027 0.026 Power ( H1) 0.357 0.232 0.051 0.521 0.318 0.087 200 Size ( H0) 0.056 0.048 0.026 0.043 0.040 0.036 Power ( H1) 0.724 0.606 0.133 0.900 0.764 0.211 400 Size ( H0) 0.046 0.054 0.024 0.063 0.038 0.035 Power ( H1) 0.975 0.950 0.417 0.998 0.989 0.609 
+
+56 D Additional Empirical Results 
+
+In the primary empirical analysis presented in Section 6, the estimated equivalence scale parameter ˆθ was found to be statistically insignificant from zero. To ensure that our main conclusions regarding the functional form of the Engel curves are not driven by the uncer-tainty associated with this parameter, we conduct a robustness check by imposing the re-striction θ = 0. Under this restriction, the effective total expenditure simplifies to ui = ln xi.Regarding specification tests, the rejection of the linear form remains valid by construc-tion, as θ is unidentified in that setting. For the quadratic specification, the restricted KMD test yields a p-value of 0 .783, indicating that the model fits the data well even without the equivalence scale parameter. Tables D.1 and D.2, together with Figure D.1, present the results for the restricted model. The structural estimates, Wald test results, and Engel curve shapes are virtually indistinguishable from those in the unrestricted case reported in the main text. These findings confirm that our empirical analysis is robust to excluding the equivalence scale parameter. Table D.1: Parameter Estimates for the Restricted Quadratic Specification ( θ = 0) 
+
+Commodity αl βl λl γl
+
+Food −0.144 (0 .632) 0.193 (0 .228) −0.025 (0 .021) 0.051 (0 .004) Catering −0.264 (0 .441) 0.120 (0 .160) −0.010 (0 .015) −0.005 (0 .003) Alcohol −0.555 (0 .460) 0.245 (0 .166) −0.024 (0 .015) −0.023 (0 .004) Fuel 0.983 (0 .262) −0.303 (0 .095) 0.024 (0 .009) 0.011 (0 .002) Motor −2.056 (0 .732) 0.843 (0 .265) −0.080 (0 .024) −0.019 (0 .005) Fares 0.809 (0 .378) −0.303 (0 .138) 0.029 (0 .013) −0.007 (0 .003) Leisure 1.174 (1 .028) −0.527 (0 .378) 0.062 (0 .035) −0.017 (0 .007)                  
+
+> Notes: The table reports the commodity-specific coefficients estimated under the restriction θ= 0. Standard errors are in parentheses. The parameters correspond to the specification wil =αl+βlui+λlu2
+> i+γlki+ϵil ,where ui= ln xi.
+
+57 Table D.2: Wald Tests for Joint Significance of Expenditure Terms under θ = 0 ( H0 : βl =
+
+λl = 0) 
+
+Food Catering Alcohol Fuel Motor Fares Leisure 
+
+p-value 0.000 ∗∗∗ 0.449 0.002 ∗∗ 0.000 ∗∗∗ 0.000 ∗∗∗ 0.002 ∗∗ 0.000 ∗∗∗ 
+
+Note: Significance levels: ∗p < 0.05, ∗∗ p < 0.01, ∗∗∗ p < 0.001. 0.0 0.2 0.4 0.6                      
+
+> 4567
+> Log Expenditure (i)
+> Share (Food)
+> 0.0 0.1 0.2 0.3 0.4
+> 4567
+> Log Expenditure (ii)
+> Share (Fuel)
+> 0.0 0.1 0.2 0.3
+> 4567
+> Log Expenditure (iii)
+> Share (Catering)
+> 0.0 0.1 0.2 0.3 0.4
+> 4567
+> Log Expenditure (iv)
+> Share (Alcohol)
+> 0.0 0.1 0.2 0.3 0.4 0.5
+> 4567
+> Log Expenditure (v)
+> Share (Fares)
+> 0.0 0.2 0.4 0.6
+> 4567
+> Log Expenditure (vi)
+> Share (Motor)
+> 0.00 0.25 0.50 0.75
+> 4567
+> Log Expenditure (vii)
+> Share (Leisure)
+
+Figure D.1: Estimated QUAIDS Engel curves for seven commodity groups under the re-striction θ = 0. Grey dots represent observed household shares, while solid blue-black lines indicate the fitted quadratic specification. Sub-labels (i) through (vii) refer to food, fuel, catering, alcohol, fares, motor, and leisure, respectively. 58 References 
+
+Herman J Bierens and Werner Ploberger. Asymptotic theory of integrated conditional mo-ment tests. Econometrica , 65(5):1129–1151, 1997. Patrick Billingsley. Convergence of probability measures . John Wiley & Sons, 1999. Marine Carrasco and Jean-Pierre Florens. Generalization of gmm to a continuum of moment conditions. Econometric Theory , 16(6):797–834, 2000. Gary Chamberlain. Asymptotic efficiency in estimation with conditional moment restric-tions. Journal of Econometrics , 34(3):305–334, 1987. Victor Chernozhukov, Denis Chetverikov, Mert Demirer, Esther Duflo, Christian Hansen, Whitney Newey, and James Robins. Double/debiased machine learning for treatment and structural parameters. The Econometrics Journal , 21(1):C1–C68, 2018. Manuel A Dom´ ınguez and Ignacio N Lobato. Consistent estimation of models defined by conditional moment restrictions. Econometrica , 72(5):1601–1615, 2004. Manuel A Dom´ ınguez and Ignacio N Lobato. A simple omnibus overidentification specifica-tion test for time series econometric models. Econometric Theory , 31(4):891–910, 2015. Tailen Hsing and Randall L Eubank. Theoretical foundations of functional data analysis, with an introduction to linear operators , volume 997. Wiley Online Library, 2015. Pascal Lavergne and Valentin Patilea. Smooth minimum distance estimation and testing with conditional estimating equations: uniform in bandwidth theory. Journal of Econometrics ,177(1):47–59, 2013. Whitney K Newey. Efficient instrumental variables estimation of nonlinear models. Econo-metrica , 58(4):809–837, 1990. Whitney K Newey and Daniel McFadden. Large sample estimation and hypothesis testing. 
+
+Handbook of Econometrics , 4:2111–2245, 1994. 59 Peter M Robinson. The stochastic difference between econometric statistics. Econometrica ,56(3):531–548, 1988. Peter M Robinson. Best nonlinear three-stage least squares estimation of certain econometric models. Econometrica , 59(3):755–786, 1991. Robert J Serfling. Approximation theorems of mathematical statistics . John Wiley & Sons, 1980. Jun Shao. Mathematical Statistics . Springer, 1999. Aad W Van der Vaart. Asymptotic statistics , volume 3. Cambridge university press, 2000. 60

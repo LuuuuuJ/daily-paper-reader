@@ -1,0 +1,672 @@
+Title: Interrupted Time Series Analysis Of Count Data With Nuisance Interruptions
+
+URL Source: https://arxiv.org/pdf/2607.19493v1
+
+Published Time: Thu, 23 Jul 2026 00:05:43 GMT
+
+Number of Pages: 24
+
+Markdown Content:
+# INTERRUPTED TIME SERIES ANALYSIS OF COUNT DATA WITH 
+
+# NUISANCE INTERRUPTIONS 
+
+A P REPRINT 
+
+2026-07-15 
+
+Benjamin Stockton 
+
+Department of Population Health New York University Grossman School of Medicine New York, 10016 benjamin.stockton@nyulangone.org 
+
+Linda G. Kahn 
+
+Department of Population Health New York University Grossman School of Medicine New York, 10016 Department of Pediatrics New York University Grossman School of Medicine New York, 10016 
+
+Shilpi S. Mehta-Lee 
+
+Department of Obstetrics and Gynecology New York University Grossman School of Medicine New York, 10016 
+
+Erinn M. Hade 
+
+Department of Population Health New York University Grossman School of Medicine New York, 10016 arXiv:2607.19493v1 [stat.AP] 21 Jul 2026 A P REPRINT - 2026-07-15 
+
+## ABSTRACT 
+
+Interrupted time series analysis has been used to model the effect of policy and other interventions on public health by forecasting a counterfactual time series during the intervention period using data from prior to the intervention. However, due to typically relying on a single study unit, this approach risks not adjusting for other interruptions that precede and co-occur during the intervention period. The COVID-19 pandemic is a prominent example of this phenomenon of nuisance interruptions in contemporary public health research. To address this complication, we propose using Bayesian stacking over a range of functional forms for the impact of the nuisance interruption in order to make counterfactual forecasts for the intervention period. We used our proposed methods to estimate the impact of the 2021 Texas six-week abortion ban on documented pregnancies among women in Texas while adjusting for the impact of the COVID-19 pandemic. 
+
+Keywords Causal inference • Bayesian data analysis • Stacking • Model combination • Electronic health records • Maternal health 
+
+## 1 Introduction 
+
+The key feature of interrupted time series analysis (ITS) is the occurrence of a single event or intervention that creates pre- and post-interruption periods. A model that is fit using the pre-interruption data can then be used to make a counterfactual forecast without the interrupting event, allowing for inference of the event’s impact on outcomes. ITS analysis has been used to assess public health interventions and policy changes [Schaffer et al., 2021, Papadogeorgou et al., 2023] and pandemic impacts [Riley et al., 2022], to perform econometric analyses [Menchetti et al., 2021] and A/B testing [Brodersen et al., 2015]. While the research question of interest, “What is the impact of the interruption on outcomes?” has been asked across many applications, there is limited literature connecting ITS analysis to the conventional potential outcomes framework [Rubin, 1974, Papadogeorgou et al., 2023, Menchetti et al., 2021]. Moreover, there is a further gap in the literature for ITS methods with a prior interruption ( nuisance interruption ) to the event of interest that is within the study time frame. These nuisance interruptions have the potential to confound inferences in the primary post-interruption period due to the interruptions’ post-periods overlap. restricting the study period to only analyze the post-nuisance interruption data, this excludes information on the trend prior to the nuisance event, limiting the statistical power and potential to pick up on long-term trends such as seasonality. While a nuisance interruption could also occur simultaneously with the intervention, the co-occurrence poses an identifiability issue where we are unable to disentangle the effects of the nuisance and intervention. In this paper, we limit our focus to nuisance interruptions that occur strictly prior to the intervention. Beyond potential for confounding by the nuisance interruption, it is unclear what functional form the nuisance interrup-tion’s effect may take. For example, consider investigating the impact of the 2021 Texas’s six-week abortion (Senate 2A P REPRINT - 2026-07-15 Bill8 or SB 8) on the rate of hypertensive disorders of pregnancy (HDP). The ban was passed into law on July 1, 2021 and prohibits abortion after detection of fetal or embryonic cardiac activity, generally around six weeks of gestation. The COVID-19 pandemic, which began in early 2020, has been observed to have a negative impact on the rate of HDP [Jackson et al., 2024]. If our goal is to estimate the impact of Texas’s six-week abortion ban on the rate of HDP over the time period 2015 to 2024, the confounding interruption due to the pandemic must be addressed in our model in order to estimate the ban’s subsequent impact. To address potential confounding by a nuisance interruption with unknown functional form, we propose a modeling strategy leveraging Bayesian stacking over a range of time series models, each with a different functional form of the nuisance interruption’s effect [Yao et al., 2018, Hyndman and Rostami-Tabar, 2024]. This approach is flexible in that it allows specification of various time series models with valid predictive distributions and without constraining the shape of the nuisance effect. Additionally, stacking weights the nuisance effect models to optimize the out-of-sample predictiveness on pre-intervention data making the best use of observed data and expert knowledge. The remainder of the paper is structured as follows: first, we provide further background on the ITS methodology. Then, we discuss our proposed methods for handling nuisance interruptions in the potential outcomes framework. This includes discussion of the assumptions, what quantities may be of interest, a particular specification for the outcome model, and the details of Bayesian stacking. We then provide a simulation study comparing the inferential abilities of the Bayesian stacking approach to conventional ITS approaches such as Bayesian Structural Time Series and a single covariate time series model. Next, we investigate the impact of Texas’s 2021 abortion ban on documented pregnancies using electronic health record data from Epic Cosmos [Tarabichi et al., 2021]. Finally, we conclude with a discussion of the results and implications for ITS analyses in related contexts. 
+
+## 2 Background 
+
+ITS analysis is useful for assessing policy impacts or natural experiments [Lopez Bernal et al., 2017, Schaffer et al., 2021, Jiang et al., 2022, Papadogeorgou et al., 2023, Bell et al., 2023, Jackson et al., 2024]. Previous approaches to ITS analysis have considered two related but different strategies to make comparisons to a counterfactual prediction [Jiang et al., 2022]. First, the fully parametric prediction approach utilizes a time series model that is fit to the pre-and post-intervention periods using some parametric functional form to model the intervention impact in the post-intervention period [Lopez Bernal et al., 2017]. The alternative model, the semi-parametric forecasting approach, fits a time series model to the pre-intervention data and then uses forecasting during the post-intervention period to create a counterfactual time series [Brodersen et al., 2015, Gianacas et al., 2023]. The parametric prediction approach typically uses one of the following models to estimate the intervention’s effect on the outcome: segmented (linear, logistic, Poisson) regression, ARIMA/ARMA modeling, generalized additive (mixed) models (GAM), or Prais-Winsten regression models. Each of these models parameterizes the effect as a step change, a slope or ramp, as a pulse, or as some other readily defined functional form [Lopez Bernal et al., 2017]. While not 3A P REPRINT - 2026-07-15 always necessary, the counterfactual prediction can be made by setting the intervention parameters to zero. Otherwise, the quantity of interest could be the parameters themselves. The semi-parametric forecasting approach fits a time series model to the pre-intervention data and makes a counter-factual forecast for the post-intervention period based solely on the pre-intervention data and observed time-varying covariates assumed to be independent of the intervention a particular functional form for the intervention’s impact [Brodersen et al., 2015, Gianacas et al., 2023]. This approach assumes that trends pre-intervention would have contin-ued post-intervention in the counterfactual world where the intervention does not occur. One particular model that has been used in this setting is the Bayesian Structural Time Series (BSTS) [Brodersen et al., 2015]. tAd^ tA +3 = ytA +k1 − y^ tA +k0 
+
+> 22000 24000 26000 28000 30000
+> Jul 2021 Nov 2021 Mar 2022 Jul 2022 Nov 2022 Mar 2023
+> Pregnancies  (Y t)
+> Counterfactual Observed
+
+Figure 1: An illustration of how the point-wise differences are calculated using the Texas documented pregnancies time series and a counterfactual forecast from the semi-parametric negative binomial model. As illustrated in Figure 1, the impact of the intervention at any time t after the intervention begins at time tA is modeled as the difference between a counterfactual prediction and observed data ( dt = Y 1 
+
+> t
+
+Y 0 
+
+> t
+
+). The total impact can be estimated as the cumulative sum of the point-wise differences ( Dt = Tt=tA dt) during the post-intervention period. The estimands are defined in further detail in the following section. As noted by Gianacas et al.[Gianacas et al., 2023], the fully parametric approach may require more effort to set up and requires more assumptions about the shape of the intervention’s impact, but this approach can provide more stable estimates with smaller standard errors than the semi-parametric approach. The semi-parametric approach may be preferred when, (i) the intervention occurs later in the time series rather than in the middle, (ii) there is potentially a lag between implementation and impact, and (iii) there is a chance for model misspecification[Jiang et al., 2022]. All three of these apply to our application in the analysis of the impact of the 2021 Texas six week abortion ban on documented pregnancies among Texan women. Further work formalized the causal assumptions and effects that are incorporated in the proposed semi-parametric forecasting approach[Papadogeorgou et al., 2023]. They term the setting as a single unit time series where the unit represents a whole region. Their proposal for the causal estimands, required causal assumptions, and estimation methods form the basis for our framework as discussed in the Methods section. 4A P REPRINT - 2026-07-15 
+
+## 3 Methods 
+
+We develop the causal framework and outcome model for both the fully parametric and semi-parametric approaches to highlight their differences and provide methods for when either approach is appropriate. The key innovation we develop involves modeling the nuisance interruption that occurs before the intervention and potentially continues during the post-intervention period. 
+
+3.1 Assumptions 
+
+Papadoeorgou et al.[Papadogeorgou et al., 2023] propose two causal identification assumptions that must be satisfied for estimates of a causal effect on a single unit time series to be valid: 1. The potential outcomes pre-intervention are unaffected by the intervention. 2. Covariates for predicting the outcome are unaffected by the intervention, and conditional on the covariates, the outcome series is stationary. The first assumption can always be satisfied by setting the intervention initiation tA to be a time earlier in the series such as when the intervention was first proposed or passed. It can also be checked by setting a fictional intervention time tA prior to the true initiation point tA and estimating an effect at time t between the fictional and true initiation point t [tA, tA]. If a null effect is consistent with the estimate, then the assumption is not likely violated. The second assumption allows for using pre-intervention data to forecast a counterfactual in the post-intervention period. Violations of this assumption can arise from two sources. First, if the covariates are affected by the intervention, then the assumption is violated. This can be checked by treating each covariate as an outcome and estimating the intervention effect, where a null effect again indicates no violation. The second source of violation comes from confounding in the series, which results from systematic differences pre- and post-intervention that are not due to the intervention itself [Papadogeorgou et al., 2023]. In our analysis, the presence of the COVID-19 pandemic and its impact on maternal health could act as a confounder that must be controlled for in the model. Further, we assume that the observed series Yt during the post-intervention period t t a is an observation of Yt(1) .
+
+3.2 Quantity of Interest 
+
+Following the potential outcomes framework for ITS proposed previously[Papadogeorgou et al., 2023], for any given outcome Y , the quantity of interest will be the total count of events of Y due to the intervention. Let Yt(At) be the potential outcome count of events of Y at time t with intervention indicator At. Over T time points, we observe Yt(0) 
+
+for t = 1, , tA 1 and Yt(1) for t = tA, , T . The unobserved counterfactual is Yt(0) for post-intervention period 
+
+t t A. Suppose we also have fully observed covariates X RT Œk from both the pre- and post-intervention periods. To emphasize that the quantity of interest is not dependent on the model choice, we first develop the quantity we want to estimate, before developing a model to perform the estimation. 5A P REPRINT - 2026-07-15 To estimate the intervention effects via fully parametric modeling, the data are not split into pre- and post-intervention segments; rather, the model is fit to the whole data set. The intervention parameter estimates are then directly used to estimate the intervention effect as the difference between counterfactual means,  
+
+> t
+
+= E (Yt(1) Yt(0)| y1( tA1) , X1t) . (1) Semi-parametric estimation of the intervention effects begins with splitting the data into pre- and post-intervention segments and fitting the model only to the pre-intervention data. Next, we generate post-intervention period forecasts for the counterfactual based on the pre-intervention period model. The intervention effect estimate t is non-parametric based on point-wise differences between the predicted and observed counts in Equation 1 and illustrated by Figure 1. The cumulative intervention effect up to time t t A t is,  
+
+> t
+
+= ti=tA
+
+E (Yi(1) Yi(0)| y1( tA1) , X1t) = ti=tA
+
+> i
+
+. (2) 
+
+3.3 An Outcome Model 
+
+For the purposes of our analysis, we now propose a Bayesian autoregressive Poisson outcome model. We adopt the Bayesian approach to incorporate prior information, to implement Bayesian stacking, and to take advantage of the probabilistic properties inherent to the posterior predictive distribution. The fully parametric model is an autoregressive Poisson generalized linear model with with the log-link and an offset to model the outcome as a rate, and step and slope changes for the intervention effect, 
+
+log (t) = 0 + xt1 + fC (t, tC , Ct; )+ 
+
+> 3
+
+At + 4(t t A)At+  
+
+> Pp=1 p
+
+log (Ytp + 1) + log (Wt), (3) where • f (t, tC , Ct; ) is a function of the nuisance event’s impact. • At is an indicator for the intervention. • tA is the time period coinciding with the start of the intervention. • xt is a vector of time-varying predictors. • Wt is an offset to model the rates of the outcome. The semi-parametric model drops the term 3At + 4(t t A)At from the parametric model, 6A P REPRINT - 2026-07-15 
+
+log (t) = 0 + xt1 + f (t, tC , Ct; )+   
+
+> Pp=1 p
+
+log (Ytp + 1) + log (Wt), (4) The semi-parametric counterfactual forecast is independent of the intervention conditional on the environment leading up to the intervention. This assumes that those same conditions will continue during the intervention period, control-ling for the time-varying covariates in xt.
+
+Of note is that neither the quantity of interest nor the approach for handling the nuisance interruption is dependent on the type of outcome model, and an investigator could readily substitute a Gaussian, negative binomial, zero-inflated Poisson, or various other types of outcome models as long as they allow for including covariates, produce forecasts, and have a valid predictive likelihood function. For example, a negative binomial model with the GLM parameterization the Equation 5 could also use the same mean as in Equations 3 or 4 with an additional overdispersion parameter r > 0 ,
+
+P r (Yt = y) = (r + y)
+
+y!( r) ( rr + t
+
+)r
+
+( t
+
+r + t
+
+)y
+
+, (5) for y = 0, 1, 2, , such that V ar (Yt) = t + 2 
+
+> t
+> r
+
+.Both the Poisson and negative binomial models use the same prior distribution specifications for the model parameters 
+
+= (, ). The priors are jointly independent and weakly informative; j iid N (0, 10 2) for j = 0, , 4 and p iid N[1,1] (0, 1 2). 
+
+In our application, we investigated several potential prior distributions for r such as the exponential, gamma, and Inverse-Gamma distributions in a prior sensitivity analysis discussed in the appendix. Models are fit using the Stan programming language and CmdStanr interface [Team, 2023, Gabry et al., 2023]. 
+
+3.4 Model Stacking over Nuisance Interruption Functional Forms 
+
+In an analysis where a nuisance interruption occurs prior to the intervention, model uncertainty is tied to the effect shape over time on outcomes of both the nuisance interruption and the intervention interruption. A range of effect shapes may be considered in a segmented regression model, including a step change, slope change, both step and slope, lagged changes, or temporary changes [Lopez Bernal et al., 2017]. We can also adjust for the nuisance interruption directly using similar adjustments. For example, if the COVID-19 pandemic is a potential nuisance interruption, then we can use the average COVID-19 case load or average number of deaths due to COVID-19 over time as a direct measure of its potential impact. Indeed, in our analysis of the effects of the six-week abortion ban on documented pregnancies in Texas, we consider a range of effect functional forms, which include the average COVID-19 case and death loads for each bi-monthly period in our study from January 2020 to May 2023 [Dong et al., 2020, Centers for Disease Control and Prevention, 2020]. 7A P REPRINT - 2026-07-15 The nuisance interruption functional form f (.) can be manipulated based on different assumptions of how the inter-ruption could impact the outcome. For our analysis, the direct measures of COVID-19 impact include the presence of COVID-19 in the environment, time since the beginning of the pandemic, current mean case load, current mean percentage of deaths due to COVID-19, while functional forms include step and/or slope changes, temporary step and/or slope changes, an exponential decay, and a spike with a steady drop-off. 1. No Impact: f (xt; ) = 0 
+
+2. Step: f (xt; ) = 1Ct
+
+3. Slope: f (xt; ) = 1(t t C )Ct
+
+4. Step and Slope: f (xt; ) = 1Ct + 2(t t C )Ct
+
+5. Step Ends: f (xt; ) = 1Ct (1 At)
+
+6. Slope Ends: f (xt; ) = 1(t t C )Ct (1 At)
+
+7. Step and Slope Ends: f (xt; ) = 1Ct (1 At) + 2(t t C )Ct (1 At)
+
+8. Lagged Step: f (xt; ) = 1Ctl 
+
+9. Lagged Slope: f (xt; ) = 1(t t C l)Ctl 
+
+10. Lagged Step and Slope: f (xt; ) = 1Ctl + 2(t t C l)Ctl 
+
+11. Pulse: f (xt; ) = 1exp (( t t C )/2) Ct
+
+12. Triangle: f (xt; ) = 1(12 |12 tC |) 
+
+13. Average Daily COVID-19 Cases: f (xt; ) = 1Mt, where Mt is the daily mean cases of COVID-19 for each two-month period t in Texas 14. Average Weekly % of Deaths due to COVID-19: f (xt; ) = 1Dt, where Dt is the mean of weekly % deaths due to COVID-19 for each period t in Texas. We propose using Bayesian stacking to address model uncertainty while appropriately incorporating uncertainty in the analysis estimates [Yao et al., 2018]. Our innovation is to use stacking with an ITS analysis to assess model uncertainty for the effect shape of the intervention and uncertainty of the effect shape of the nuisance interruption. We perform stacking based on Pareto-Smoothed Importance-Sampling Leave-Future-Out (PSIS-LFO) weights [Yao et al., 2018, Bürkner et al., 2020, Barigou et al., 2023]. Previous work has developed the framework to calculate the Leave-Future-Out cross validation (LFO-CV) values and the expected log-predictive distribution ( ELPD LFO )estimates from log-likelihood values calculated at each step of a Markove Chain Monte Carlo (MCMC) sampler [Bürkner et al., 2024]. The log-likelihood of the data model is calculated at each observation using the current posterior draws for each iteration of the sampler generating S draws of the log-likelihood. From these, the PSIS-LFO weights can be calculated which approximate the leave-future-out posterior predictive distribution of each observation. These approximations allow us to use the log-scoring rule (Kullback-Leibler divergence) to find the optimal model weights to maximize 8A P REPRINT - 2026-07-15 the scoring rule to compare the LFO posterior predictive distribution with the true posterior predictive distribution. Equivalently, this minimizes the divergence between the two predictive distributions. To perform stacking, we first determine the model set M using the range of considered nuisance interruption effect shapes and autoregressive (AR) orders p = 0, , P . For each Mk M , we fit the model to the data to collect posterior predictive distribution (PPD) draws Pk RQŒT and log-likelihood values Lk = ( l1, , lT ) where lki,q = pk(yi|(q)) and 
+
+pk(y|) is the log-likelihood for Mk evaluated at i = 1, , T with posterior draw (q) for q = 1, , Q. We use approximate LFO-CV on the model fit to obtain the PSIS-LFO ELPD values ELPD LF O [Bürkner et al., 2020, Bürkner et al., 2024]. Using the ELPD LF O values, model weights are calculated using the stacking log scoring rule or Pseudo-Bayesian Model Averaging (Pseudo-BMA) [Yao et al., 2018, Barigou et al., 2023]. For the stacking rule, the weights w = ( w1, , wK ) are the solution to the optimization problem, 
+
+w = argmax  
+
+> wS K
+> 1
+> N M i=L
+
+log Kk=1 wkpk(yI+1 M |y1i, Mk), (6) where SK 
+
+> 1
+
+= { w [0, 1] K Kk=1 wk = 1}, N is the full series length, M is the number of steps ahead to predict, L is the minimum series length to evaluate, and pk(yI+1 M |y1i) is the predictive density for the M -step ahead predictions given data up to time i.
+
+For the pseudo-BMA rule, the weights are derived from the ELPD kLF O for each model k,
+
+wk = exp (ELPD kLF O ) 
+
+> Kk=1
+
+exp (ELPD kLF O ) . (7) The AR order is a primary part of the model that differentiates the Poisson model used here from a conventional GLM with an offset. The AR order is something that is typically selected using a model selection technique like minimizing an information criterion (AIC, BIC, LOO-IC, etc.) or by maximizing log-likelihood or R2. The AR models of different orders could also be included in the model stack by expanding our range of considered models beyond various nuisance interruption shapes. 
+
+3.5 Cumulative Impact Estimation 
+
+Suppose we have fit the Poisson semi-parametric model in Equation 4 to the pre-intervention data and obtained pos-terior samples = (, ) stored in a Q Œ ( K + 1 + P ) matrix where Q is the number of MCMC draws, K + 1 is the number of coefficients including the intercept, and P is the AR order. Setting P = 1 , the qth draw of parameters is (q) = ( (q)0 , , (q) 
+
+> K
+
+, (q)1 ). Then we obtain the posterior predictive draws given the pre-intervention outcome and all covariates up to time t, (y1( tA1) , X1t), as Y (q) 
+
+> t
+
+(0) for t > T from Y (q) 
+
+> t
+
+(0)| y1( tA1) , X1t P ois ((q) 
+
+> t
+
+) where 9A P REPRINT - 2026-07-15 
+
+log ((q) 
+
+> t
+
+) = (q)0 + (q)1 xt + f (t, tC , Ct; (q))+  
+
+> (q)1
+
+log (Y (q) 
+
+> t1
+
+(0) + 1) + log (Wt). (8) Based on the previously mentioned causal assumptions, we can use the posterior predictive forecast Y (q) 
+
+> t
+
+(0) for the counterfactual series Yt(0) for t t A to make inferences on the intervention impacts, assuming that Yt(0)| y1( tA1) , X1t
+
+is drawn from the same distribution as Yt(0)| y1( tA1) , X1t. Since the counterfactual is approximated by posterior pre-dictive MCMC draws, the estimates derived from the counterfactual given the observed data inherit the probabilistic properties of the posterior predictive distribution. The impact estimates are built upon the posterior predictive point differences dqt = Yt Y (q) 
+
+> t
+
+(0) for t t A. The differences are indexed by MCMC draw q and stored in the Q Œ ( T t A) matrix D = ( dtA , , dT ) where dt = ( d(1)  
+
+> t
+
+, , d(Q) 
+
+> t
+
+) . 
+
+The mean posterior difference for t at time t is then approximated by t = 1 
+
+> QQq=1
+
+d(q) 
+
+> t
+
+. These differences can also be cumulatively summed to give the cumulative impact up to time t as Dqt = ti=tA d(q) 
+
+> i
+
+, which in expectation estimates  
+
+> t
+
+= 1 
+
+> QQq=1
+
+D(q) 
+
+> t
+
+.
+
+Note that 
+
+E(t|y1( tA1) , X1t) = 1
+
+Q 
+
+> Qq=1
+
+E (d(q) 
+
+> t
+
+|y1( tA1) , X1t)= E (Yt Y (q) 
+
+> t
+
+(0)| y1( tA1) , X1t)= E (Yt(1) Yt(0)| y1( tA1) , X1t)= t, (9) and 
+
+E(t|y1( tA1) , X1t) = E ( ti=tA
+
+> i
+
+|y1( tA1) , X1t)= ti=tA
+
+E (i|y1( tA1) , X1t)= ti=tA 
+
+> i
+
+= t. (10) Similarly, we can estimate the posterior probability of an increase at a given point t tA as P (t > 0| y1( tA1) , X1t) = 
+
+E(I(t > 0)| y1( tA1) , X1t) approximated by pt = 1 
+
+> QQq=1
+
+I(d(q) 
+
+> t
+
+> 0). Further, the estimated probability of an increase in the total cumulative incidence of a particular maternal health outcome is P (t > 0| y1( tA1) , X1t) = E(I(t >0)| y1( tA1) , X1t) as Pt = 1 
+
+> QQq=1
+
+I(D(q) 
+
+> t
+
+> 0). 
+
+10 A P REPRINT - 2026-07-15 
+
+## 4 Simulation 
+
+We performed a Monte Carlo simulation study to evaluate our proposed method’s inferential performance for esti-mating T following an intervention and a nuisance interruption prior to the intervention. The study was designed to evaluate performance in settings similar to the electronic health records (EHR) data analyzed in the application case study; a short time series T = 39 , with a late interruption of interest tA = 30 , and a nuisance occurring 10 time steps prior to the event tC = 20 .The data are generated using the Poisson AR(1) model given by Equation 3 with parameters = (2.2, 0.01, 2), , and  
+
+> 1
+
+= 0, where 2 and are the confounding and intervention strengths respectively. The confounding effect is either 
+
+f1(Ct, tC , ) = 2Ct or f2(Ct, tC , ) = 2 (0.2 sin (t/4) + 0.3 sin (t/8)) . The first effect f1(Ct, tC , ) is referred to as the “simple” confounding effect and is included in the set of averaged models as well as being a submodel for the semi-and fully parametric step-slope model. The second effect f2(Ct, tC , ) is referred to as the “complex” confounding effect and is outside of the model space used for stacking. Excluding the second effect from the model space for the stacking methods and comparison models allows us to evaluate how well the methods perform when they do not match the data generating process. We considered various confounding shapes (the “simple” step change vs the “complex” sine wave), confounding strengths ( 2 = 0, 0.01, 0.1 ), and intervention strengths ( = 0, 0.1 ). For brevity and readability, we present the settings most similar to the Texas 2021 abortion ban analysis. The proposed stacking Poisson ITS model was evaluated in both the semi-parametric and fully parametric settings (abbreviated “SP Stacking” and “FP Stacking” respectively) as discussed in the Methods section. The model space included no nuisance interruption predictor f1, a step predictor f2, step and slope predictors f3, and a sinusoidal periodic predictor f4 following interruption, 
+
+f1(t, tC , C; ) = 0 
+
+f2(t, tC , C; ) = 1Cf3(t, tC , C; ) = 1C + 3tC
+
+f4(t, tC , C; ) = 1 sin ( tC
+
+4 ) , 
+
+where tC is the time of the nuisance event and Ct = I(t t C ) is an indicator for the nuisance event. Five comparison methods were also evaluated, including a Bayesian Structural Time Series model (BSTS) for ITS implemented by the CausalImpact R package [Brodersen et al., 2015], and semi- and fully parametric versions of the Poisson ITS outcome model with either no confounder covariate f1 (abbreviated “SP No Conf” and “FP No Conf”) or step-slope confounder covariates (“SP Step-Slope” and “FP Step-Slope”) f3.11 A P REPRINT - 2026-07-15 Inferential performance was evaluated using frequentist criteria including the bias, 95% credible interval coverage, and mean squared error (MSE) of the cumulative difference estimate. Following the guidelines for designing simulation studies[Morris et al., 2019], we include the estimated Monte Carlo uncertainty using the asymptotic distributions for bias, 95% confidence interval coverage, and MSE. Formulas for the asymptotic confidence intervals are displayed in the appendix. The simulation was run for 500 Monte Carlo samples for each simulation setting. 
+
+4.1 Simulation Results 
+
+Simulation results for the selected settings similar to the EHR data ( T = 39 , tA = 30 , tA tC = 10 ) are displayed as forest plots in Figure 2. Estimates for each criterion (bias, coverage, MSE, or credible interval width) are displayed with a point for the mean and vertical bars covering the asymptotic 95% confidence interval. Stacking methods are highlighted with a white background while comparison methods have a gray background. Methods whose 95% confi-dence intervals for bias do not include zero (horizontal dashed line) are biased and are highlighted with a translucent vertical red bar. Table 1 and Figure 2a display the estimated bias in estimating the cumulative difference for each model under each setting. Across the selected settings, the SP Stacking and FP Stacking methods perform well and are unbiased with relatively narrow asymptotic confidence intervals for the bias. The BSTS and SP Step-Slope and FP Step-Slope models perform similarly to each other in most settings. These three methods are biased in several settings and have very large asymptotic confidence intervals, far wider than either stacking methods’ intervals, indicating unstable point estimation in general. The SP No Confounding and FP No Confounding models perform similarly to each other, but are also biased in several settings, albeit less so than the BSTS and SP Step-Slope and FP Step-Slope models. The No Confounding models also have much narrower asymptotic confidence intervals, similar to the two stacking methods, indicating more stable point estimation. The 95% credible interval coverage of the true cumulative difference is displayed in Table 2 and Figure 2b. A horizon-tal dashed line marks the nominal 95% coverage level with translucent, vertical red bars highlighting models whose 95% confidence interval’s upper bound for coverage does not reach 95%. For example, a coverage point estimate of 0.94 with 95% CI (0.925, 0.955) would be said to reach the nominal coverage despite the point estimate being below 95%. Across the settings displayed in Figure 2b, the SP and FP Stacking methods reach nominal 95% coverage except for the complex confounding with a weak confounding effect and no intervention effect. The BSTS method outperforms the other methods in some settings but otherwise is similar to the Step-Slope methods, which fail to reach nominal coverage for all of the presented settings. The No Confounding methods are again similar and fail to reach nominal coverage for most settings. The Step-Slope methods seem to fail to reach nominal coverage due to high bias while the No Confounding methods seem to fail due to too narrow credible intervals. The BSTS method reaches coverage where Step-Slope methods do not, due to having too wide credible intervals to overcome the large bias estimates noted in Figure 2a. 12 A P REPRINT - 2026-07-15 Complex 
+
+β2 = 0
+
+Complex 
+
+β2 = 0.01 
+
+Complex 
+
+β2 = 0.1 
+
+Simple 
+
+β2 = 0
+
+Simple 
+
+β2 = 0.01 
+
+Simple 
+
+β2 = 0.1 
+
+> α =  0 α =  0.1
+> FP Stacking SP Stacking BSTS FP No Conf SP No Conf FP Step−Slope SP Step−Slope
+> FP Stacking SP Stacking BSTS FP No Conf SP No Conf FP Step−Slope SP Step−Slope
+> FP Stacking SP Stacking BSTS FP No Conf SP No Conf FP Step−Slope SP Step−Slope
+> FP Stacking SP Stacking BSTS FP No Conf SP No Conf FP Step−Slope SP Step−Slope
+> FP Stacking SP Stacking BSTS FP No Conf SP No Conf FP Step−Slope SP Step−Slope
+> FP Stacking SP Stacking BSTS FP No Conf SP No Conf FP Step−Slope SP Step−Slope
+
+−20000 020000 
+
+−20000 020000 
+
+Model 
+
+> Bias
+
+Approach 
+
+FP Stacking 
+
+SP Stacking 
+
+BSTS 
+
+FP No Conf 
+
+SP No Conf 
+
+FP Step−Slope 
+
+SP Step−Slope 
+
+(a) Bias in Cumulative Difference for selected simulations. Complex 
+
+β2 = 0
+
+Complex 
+
+β2 = 0.01 
+
+Complex 
+
+β2 = 0.1 
+
+Simple 
+
+β2 = 0
+
+Simple 
+
+β2 = 0.01 
+
+Simple 
+
+β2 = 0.1 
+
+> α =  0 α =  0.1
+> FP Stacking SP Stacking BSTS FP No Conf SP No Conf FP Step−Slope SP Step−Slope
+> FP Stacking SP Stacking BSTS FP No Conf SP No Conf FP Step−Slope SP Step−Slope
+> FP Stacking SP Stacking BSTS FP No Conf SP No Conf FP Step−Slope SP Step−Slope
+> FP Stacking SP Stacking BSTS FP No Conf SP No Conf FP Step−Slope SP Step−Slope
+> FP Stacking SP Stacking BSTS FP No Conf SP No Conf FP Step−Slope SP Step−Slope
+> FP Stacking SP Stacking BSTS FP No Conf SP No Conf FP Step−Slope SP Step−Slope
+
+0.00 0.25 0.50 0.75 1.00 
+
+0.00 0.25 0.50 0.75 1.00 
+
+Model 
+
+> Coverage
+
+Approach 
+
+FP Stacking 
+
+SP Stacking 
+
+BSTS 
+
+FP No Conf 
+
+SP No Conf 
+
+FP Step−Slope 
+
+SP Step−Slope 
+
+(b) 95% Credible interval coverage of Cumulative Difference for selected simulations. 
+
+Figure 2: Simulation study results. 13 A P REPRINT - 2026-07-15 Table 1: Mean bias for the cumulative differences and Monte Carlo standard errors for the bias for the cumulative differences in parentheses below the bias estimate. Biased estimates whose 95% asymptotic confidence interval for bias does not contain zero are highlighted in bold. Stacking No Conf Step-Slope Conf. Shape 2 BSTS FP SP FP SP FP SP Simple 0 0 -349 98.8 96.2 98.6 99.4 -126.2 -124.6 (2009.6) (630.9) (632.7) (625.9) (624.5) (2852.5) (2852.7) Simple 0 0.1 418.7 -6.2 -18.2 -12 -11.9 4.2 75 (3583.1) (2143.6) (2114.6) (2070.5) (2074.9) (5165.4) (4982.1) Simple 0.01 0 971.6 -566.6 -564.8 -15332.3 -15330 -501.8 -566.6 (4888.8) (3036.6) (3001.8) (2319.8) (2305.5) (8890.8) (8849.6) Simple 0.01 0.1 -1025.9 -1074.8 -1234 -670.2 -664.7 -1834 -1832.4 (3112.3) (2947.7) (2838.2) (2084.4) (2078.1) (3820.9) (3825.4) Simple 0.1 0 -13258.2 -2872.4 -2619.6 -1168.7 -1176.4 -14661.5 -14668 
+
+(1926) (3322.5) (3086.4) (696.9) (697.1) (2136.3) (2131.9) Simple 0.1 0.1 600.1 -214.1 -196.6 -4080.7 -4078.4 7.6 10.6 (781.9) (1154.8) (1131.5) (701.5) (701) (1424.5) (1422.2) Complex 0 0 803.7 -290.1 -283.7 -284.5 -292 903.7 945.3 (7583.2) (2155.1) (2167.1) (2156.7) (2159.9) (12287.4) (12288.2) Complex 0 0.1 -2113.5 -687.9 -693.5 -707.1 -708.6 -1586.4 -1501.1 (8021.8) (2113.9) (2100.8) (2083.1) (2084.2) (12251.1) (12212) Complex 0.01 0 18684.9 -4535.7 -5270.8 -5873.3 -5961 20244.1 20202.8 
+
+(8009.1) (3914.2) (2713.1) (2108.9) (2119.8) (6988.4) (6998.1) Complex 0.01 0.1 -666.2 -130.8 -132.8 -125.5 -124.3 -1343.1 -1343.6 (1376.2) (696.6) (688) (677.7) (680) (1874.5) (1876.3) Complex 0.1 0 124.8 -6.3 -10.5 -9.4 -9.9 135.6 140.3 (1578.3) (630.1) (625.7) (627.1) (623.8) (2619.3) (2631.4) Complex 0.1 0.1 -4679.6 -1544.2 -1458.9 -864.5 -870.2 -5989 -5992.9 
+
+(1646.9) (1337) (1285) (664.5) (664.9) (1380.9) (1375.8) 
+
+## 5 Impacts of the 2021 Texas Six-week Abortion Ban on Pregnancies 
+
+We now demonstrate our proposed methods using data from Texas, which passed a six-week abortion ban through SB8 in July 2021. These data come from Epic’s Cosmos database, which harmonizes electronic health records from Epic EHR systems across hospitals and clinics into a deidentified data source [Tarabichi et al., 2021]. 
+
+5.1 Data 
+
+While Cosmos data are well curated and available to researchers at participating institutions, we note several character-istics to consider when using these data. First, patient state of residence is the most recent address recorded in Cosmos relative to the date of data extraction. Our analyses include women whose address in the EHR was in Texas as of December 29, 2024. Within study timeline (January 2017 to June 2023), these women may have previously received care and lived in states other than Texas. Additionally, the composition of the patient population contributing data to Cosmos varies over time as health systems/clinics are onboarded. As clinical site is not available in these de-identified data, it is not possible to use clinic-related data to adjust for the shifting demographics over time. Finally, due to data privacy required by Cosmos for aggregated data, small cell counts are masked. For any given subset of data used for analysis (in our case, time frame Œ location Œ outcome Œ demographics/insurance), the count of occurrences X is only reported if X > 10 or if X = 0 . This leads to considerable censoring, e.g. for low population 14 A P REPRINT - 2026-07-15 Table 2: Mean 95% credible interval coverage for the cumulative differences and with Monte Carlo standard errors in parentheses below each coverage estimate.Models and settings with nominal 95% or higher coverage are highlighted in bold. Stacking No Conf Step-Slope Conf. Shape 2 BSTS FP SP FP SP FP SP Simple 0 0 0.97 0.996 0.998 0.925 0.925 0.588 0.582 (0.008) (0.003) (0.002) (0.012) (0.012) (0.022) (0.022) Simple 0 0.1 0.957 0.952 0.954 0.566 0.562 0.395 0.397 (0.009) (0.01) (0.01) (0.023) (0.023) (0.023) (0.023) Simple 0.01 0 1 0.96 0.964 0 0 0.378 0.37 (0) (0.009) (0.008) (0) (0) (0.022) (0.022) Simple 0.01 0.1 0.891 0.932 0.928 0.508 0.514 0.377 0.377 (0.014) (0.011) (0.012) (0.023) (0.023) (0.022) (0.022) Simple 0.1 0 0.004 0.883 0.877 0.561 0.565 0 0(0.003) (0.014) (0.015) (0.022) (0.022) (0) (0) Simple 0.1 0.1 1 0.96 0.964 0 0 0.688 0.7 (0) (0.009) (0.008) (0) (0) (0.021) (0.021) Complex 0 0 0.949 0.957 0.955 0.494 0.5 0.34 0.34 (0.01) (0.009) (0.009) (0.022) (0.022) (0.021) (0.021) Complex 0 0.1 0.945 0.955 0.955 0.501 0.501 0.347 0.335 (0.01) (0.009) (0.009) (0.023) (0.023) (0.021) (0.021) Complex 0.01 0 0.396 0.424 0.355 0.026 0.022 0.008 0.008 (0.022) (0.022) (0.022) (0.007) (0.007) (0.004) (0.004) Complex 0.01 0.1 0.977 0.998 0.998 0.928 0.932 0.528 0.52 (0.007) (0.002) (0.002) (0.012) (0.011) (0.023) (0.023) Complex 0.1 0 0.984 0.996 0.996 0.945 0.945 0.57 0.574 (0.006) (0.003) (0.003) (0.01) (0.01) (0.022) (0.022) Complex 0.1 0.1 0.49 0.92 0.932 0.676 0.67 0 0(0.022) (0.012) (0.011) (0.021) (0.021) (0) (0) states, rare events, small socio-demographic groups, or rare insurance types (e.g., self-pay). Due to these reporting requirements, to increase counts, we requested Cosmos data aggregated into six, two-month groups per year from January-February 2017 to May-June 2023, resulting in T = 39 time points. The demographic changes noted across the study period in the Texas Cosmos population roughly match the U.S. Census Bureau’s American Community Survey (ACS) for age groups and race and ethnicity groups (assuming two or more races is similar to Hispanic in ACS’s racial categories). Assessment of insurance over time between these data sources is challenging since the ACS reports insured/not insured without more detail of insurance type. The percentage of insured remained steady from 2017 to 2023 in the ACS data, while the proportion of insured in Cosmos varied over time in Texas. The COVID-19 positive case counts and death data were collected from the Johns Hopkins CSSE COVID-19 Data Repository and Center for Disease Control [Dong et al., 2020, Centers for Disease Control and Prevention, 2020]. 1
+
+As a case study and demonstration of our proposed methods, we present the results for the impact of the 2021 six-week abortion ban on documented pregnancies for women of reproductive age in Texas. This outcome was chosen from among other reproductive health outcomes to highlight the modeling choices that must be made regarding the space of 
+
+> 1Cases data from Johns Hopkins CSSE and deaths data from CDC.
+
+15 A P REPRINT - 2026-07-15 Table 3: The set of socio-demographic covariates and time t, and seasonality tS = sin (( t 2017)/3 + /2) trend predictors included in the model space. Name xt
+
+Time Overall 1t
+
+Time Seasonal 1tS
+
+Time Overall & Seasonal 1t + 2tS
+
+Race & Ethnicity; Time Overall & Seasonal 1t + 2tS + 3Rt,W + 4Rt,B + 5Rt,H
+
+Age; Time Overall & Seasonal 1t + 2tS + 3At
+
+Insurance type; Time Overall & Seasonal 1t + 2tS + 3It,P + 4It,M
+
+All 1t + 2tS + 3Rt,W + 4Rt,B + 5Rt,H +
+
+> 6
+
+At + 7It,P + 8It,M
+
+nuisance functionals, time-varying covariates, and overdispersion. However, our outcome measure still has significant caveats. The pregnancy rate per 1,000 women is based on the occurrence of pregnancy diagnostic codes and the count of women of reproductive age in the Cosmos sites in Texas for each two-month period. The pregnancy frequency is a proxy for the number of pregnancies beginning in each two-month period in Texas for women of reproductive age who received care at a medical facility whose records connect to Epic Cosmos. 
+
+5.2 Application Models 
+
+We performed the above-described analysis using Poisson and negative binomial models for the fully parametric and semi-parametric approaches, resulting in four analyses. We based our model space for the model averaging on the Cartesian product of the set of COVID-19 impact functions 
+
+A = { No Impact, Step,. . . , Avg. Weekly Deaths } listed previously and a set of time-varying socio-demographic covariates, and seasonality and trend predictors B = { Time, Seasonal,. . . , All } displayed in Table 3. The socio-demographic predictors include Rt,W , Rt,B , and Rt,H which are the proportions of Texas women in Cosmos during period t who are White, Black, or Hispanic respectively; At which is the proportion of Texas women in Cosmos who are 35 years of age or older; and It,P and It,M which are the proportion of Texas women in Cosmos with public or private insurance in period t respectively. Each model in the model space is a concatenated pair from 
+
+M M = concat (A Œ B) = { Time+No Impact, Seasonal+No Impact,. . . , All+Avg. Weekly Deaths } where the 
+
+concat () function additively joins the two elements of each ordered pair in a set. In total, the 14 COVID-19 pandemic impact functions and 7 predictor functions created a set of 98 sub-models that were then weighted by stacking. The analysis was performed twice for each model family, once using the semi-parametric approach, and again using the fully parametric approach in order to demonstrate the potential for different results depending on the approach. The results of the analyses are displayed in Figure 3 and Table 4. The LFO-IC and model stacking model weights for each sub-model are available as CSV files in the supplementary materials. The Poisson and negative binomial models use jointly independent, weakly informative priors for j iid N (0, 10 2)
+
+for j = 0, , 4 and p iid N[1,1] (0, 1 2). The negative binomial model also requires specifying an additional prior for the overdisperson parameter r. To choose this prior, we performed a sensitivity analysis comparing the pos-terior distribution of r under exponential and Inverse-Gamma distribution priors with different fixed scale param-16 A P REPRINT - 2026-07-15 eter values = 0.1, 1, 10, 100, 1000 and with a hyper-prior on the scale parameter, Inv Gamma (3, 2) where 
+
+= E() = 0.1, 1, 10, 100, 1000 .In our analysis we used the Inverse-Gamma prior with a hyper-prior on the scale parameter where the scale parameter has prior expectation E() = 10 . See the appendix for further details on the sensitivity analysis. 
+
+5.3 Application Results Start of COVID−19 Pandemic Texas Six−Week 
+
+> 10 15 20 25 30 35
+> 2017−03−01 2017−09−01 2018−03−01 2018−09−01 2019−03−01 2019−09−01 2020−03−01 2020−09−01 2021−03−01 2021−09−01 2022−03−01 2022−09−01 2023−03−01
+
+Date 
+
+> Rate per 1000 Women  
+> Y tWt 1000
+> 
+
+Approach FP NB FP Pois SP NB SP Pois 
+
+(a) Documented pregnancy rates per 1000 pregnancies. Start of COVID−19 Pandemic Texas Six−Week 
+
+> 10000 20000 30000 40000
+> 2017−03−01 2017−09−01 2018−03−01 2018−09−01 2019−03−01 2019−09−01 2020−03−01 2020−09−01 2021−03−01 2021−09−01 2022−03−01 2022−09−01 2023−03−01
+
+Date 
+
+> Number of Pregnancies  (Yt)
+
+Approach FP NB FP Pois SP NB SP Pois (b) Documented pregnancy counts. Start of COVID−19 Pandemic Texas Six−Week 
+
+> −10000 010000
+> 2017−03−01 2017−09−01 2018−03−01 2018−09−01 2019−03−01 2019−09−01 2020−03−01 2020−09−01 2021−03−01 2021−09−01 2022−03−01 2022−09−01 2023−03−01
+
+Date 
+
+> Difference  (δ
+> ^ t)
+
+Approach FP NB FP Pois SP NB SP Pois 
+
+(c) Differenced counts. Start of COVID−19 Pandemic Texas Six−Week 
+
+> −50000 050000 100000 150000
+> 2017−03−01 2017−09−01 2018−03−01 2018−09−01 2019−03−01 2019−09−01 2020−03−01 2020−09−01 2021−03−01 2021−09−01 2022−03−01 2022−09−01 2023−03−01
+
+Date 
+
+> Cumulative Diff.  (∆^ t)
+
+Approach FP NB FP Pois SP NB SP Pois (d) Cumulative differences. 
+
+Figure 3: Overlaid rates, counts, differences, and cumulative differences in pregnancies in Texas with FP Stacking and SP Stacking for the Poisson and negative binomial models. The gray line and points in (a) and (b) are the observed data. 17 A P REPRINT - 2026-07-15 Table 4: Cumulative differences between the documented pregnancy counts in Texas and the counterfactuals. Model Estimate SD 95% CI LB 95% CI UB P (CumDif f > 0) 
+
+Semi-Parametric Poisson 34958 48084 -35877 144316 0.76 Fully Parametric Poisson 43326 42404 -34857 146528 0.90 Semi-parametric NB 42082 56332 -55232 152098 0.77 Fully parametric NB 41032 50109 -49163 140182 0.82 In Figure 3@, a dark blue vertical line indicates the beginning of the COVID-19 pandemic, corresponding to the first bi-monthly period (March-April 2020) where pregnancies could have been impacted by the pandemic. Similarly, a yellow vertical line marks the first bi-monthly period for conception of pregnancies potentially impacted by the Texas six-week abortion ban (July-August 2021). The periods after each line are shaded to indicate these times are potentially impacted by each event. Our posterior mean estimates for the number of excess pregnancies during the ban period range from 34,958 excess pregnancies with the semi-Parametric Poisson model to 43,326 excess pregnancies with the fully parametric Poisson model. With all four modeling approaches, the 95% credible intervals for the posterior number of excess pregnancies are extremely wide by the end of the study period (roughly 180,000 to 210,000 pregnancies). This is due to the accumulated uncertainty via summing t.We also found there to be between a 76% and 90% probability of an increase in excess pregnancies during the ban period. 
+
+## 6 Discussion 
+
+Nuisance interruptions to time series complicate ITS analysis of intervention effects by potentially confounding the intervention of interest through time. The co-occurrence of the interruptions calls for adjustment for the confounder’s effect. We proposed to address the nuisance interruption confounding using stacking over a model space of the potential functional forms for the nuisance interruption’s effect, and to estimate the intervention’s effect using posterior estimates for the point-wise or cumulative difference between the observed time series and a forecast or predicted counterfactual. In our simulations, we found that stacking in either the semi-parametric or fully parametric model performed well in terms of bias and had reasonable coverage across scenarios. Given the flexibility of stacking models to accommodate varying shapes of the nuisance interruption, we found these methods had least bias and reached nominal coverage across simulation scenarios, outperforming comparison methods. Despite similarities between FP and SP Stacking in our simulation results, credible interval coverage, and credible interval widths for the estimation of the cumulative difference, we have seen more substantial differences between the two methods in practice. As such, the choice between the SP and FP Stacking methods should be motivated by the level of confidence in choosing a functional form for the intervention effect. If the functional form is fairly certain, 18 A P REPRINT - 2026-07-15 then the FP Stacking method is suitable, otherwise SP Stacking should be used. Graphical checks for the quality of the prediction or forecast should also be performed to ensure that the counterfactual is plausible. The Bayesian structural time series (BSTS) method has become a standard ITS method in recent years. However, in our simulation study, BSTS performed poorly with regard to bias, credible interval width, and MSE in estimat-ing the cumulative difference due to the intervention. While this may be partly due to model mis-specification (the 
+
+CausalImpact package only allows for normally distributed outcomes), we would expect this method to underesti-mate the variance that was seen in the simulations. We would advise caution when using this approach to ITS analysis when there is a confounding interruption. In our semi-parametric negative binomial analysis of excess observed pregnancies in Texas following the 2021 abortion ban, we found weak evidence of an increase in observed pregnancies for women of reproductive age with a cumulative estimate of 42,082 excess pregnancies and a 95% credible interval of (-55,232, 152,098) pregnancies. There was a corresponding estimated 77% posterior probability of a cumulative increase in pregnancies following the ban. For comparison, the fully parametric Poisson model estimated a similar increase of 43,326 pregnancies, a 95% CI of (-34,857, 146,528) pregnancies, and a 90% posterior probability of a cumulative increase. Recent work describing challenges in the evaluation of abortion restrictions on outcomes highlights the COVID-era disruptions and the need to account for the impact of COVID-19 and the recovery from the pandemic when estimating the abortion restriction effect [Gemmill et al., 2026]. Analyses measuring the impact of the 2021 Texas abortion ban on infant mortality [Gemmill et al., 2024, Bell et al., 2023, Gemmill et al., 2025] and fertility [Bell et al., 2025] did not directly account for COVID-19 pandemic effects on their respective outcomes. Instead they attempted to account for COVID-19 effects through comparison to other states, or side-stepped the issue by performing a cross-sectional analysis [Stevenson and Root, 2024, Thornburg et al., 2024]. ITS analysis was previously used to investigate impact of the COVID-19 pandemic itself on maternal health, demonstrating the method’s utility in estimating public health impacts following disruptive events or interventions [Jackson et al., 2024]. Our proposed method provides an approach to directly account for the COVID-19 pandemic in assessments of abortion ban impacts, as well as other instances when nuisance interruptions precede the intervention of interest. 
+
+Acknowledgments 
+
+The computational work performed on this project was done with help from the NYU Big Purple High-Performance Computing cluster. 
+
+Conflicts of Interest Disclosure 
+
+We have no conflicts of interest to disclose. 
+
+Funding 
+
+This work was funded by the Educational Foundation of America (EFA). 19 A P REPRINT - 2026-07-15 This research is also supported in part by an NYU CTSA grant UM1TR005769 from the National Center for Advancing Translational Sciences, National Institutes of Health. 
+
+Supplementary Materials 
+
+The LFO-IC and model weight tables for the Poisson and negative binomial outcome models from the pregnancy analysis are available as .CSV files. R code for the simulations and ITS analysis are available upon request. 
+
+## References 
+
+Karim Barigou, Pierre-Olivier Goffard, Stéphane Loisel, and Yahia Salhi. Bayesian model averaging for mortality forecasting using leave-future-out validation. International Journal of Forecasting , 39(2):674–690, April 2023. ISSN 0169-2070. doi: 10.1016/j.ijforecast.2022.01.011. Suzanne O. Bell, Elizabeth A. Stuart, and Alison Gemmill. Texas’ 2021 Ban on Abortion in Early Pregnancy and Changes in Live Births. JAMA , 330(3):281–282, July 2023. ISSN 0098-7484. doi: 10.1001/jama.2023.12034. Suzanne O. Bell, Alexander M. Franks, David Arbour, Selena Anjur-Dietrich, Elizabeth A. Stuart, Eli Ben-Michael, Avi Feller, and Alison Gemmill. US Abortion Bans and Fertility. JAMA , February 2025. ISSN 0098-7484. doi: 10.1001/jama.2024.28527. Kay H. Brodersen, Fabian Gallusser, Jim Koehler, Nicolas Remy, and Steven L. Scott. Inferring causal impact using Bayesian structural time-series models. The Annals of Applied Statistics , 9(1):247–274, March 2015. ISSN 1932-6157, 1941-7330. doi: 10.1214/14-AOAS788. Paul-Christian Bürkner, Jonah Gabry, and Aki Vehtari. Approximate leave-future-out cross-validation for Bayesian time series models. Journal of Statistical Computation and Simulation , 90(14):2499–2523, September 2020. ISSN 0094-9655. doi: 10.1080/00949655.2020.1783262. Paul-Christian Bürkner, Jonah Gabry, and Aki Vehtari. Approximate leave-future-out cross-validation for bayesian time series models, 07 2024. URL https://mc-stan.org/loo/articles/loo2-lfo.html#approximate-1-step-ahead-predictions. Centers for Disease Control and Prevention. Covid data tracker, 03 2020. URL https://covid.cdc.gov/covid-data-tracker. Ensheng Dong, Hongru Du, and Lauren Gardner. An interactive web-based dashboard to track covid-19 in real time. The Lancet Infectious Diseases , 20(5):533–534, 05 2020. doi: 10.1016/S1473-3099(20)30120-1. URL https://www.thelancet.com/journals/laninf/article/PIIS1473-3099(20)30120-1/fulltext. Publisher: Elsevier PMID: 32087114. Jonah Gabry, Rok ˇ Cešnovar, and Andrew Johnson. cmdstanr: R Inferfacet to ’CmdStan’ . 2023. URL https://mc-stan.org/cmdstanr/,https://discourse.mc-stan.org. 20 A P REPRINT - 2026-07-15 Alison Gemmill, Claire E. Margerison, Elizabeth A. Stuart, and Suzanne O. Bell. Infant Deaths After Texas’ 2021 Ban on Abortion in Early Pregnancy. JAMA Pediatrics , 178(8):784–791, August 2024. ISSN 2168-6203. doi: 10.1001/jamapediatrics.2024.0885. Alison Gemmill, Alexander M. Franks, Selena Anjur-Dietrich, Amy Ozinsky, David Arbour, Elizabeth A. Stuart, Eli Ben-Michael, Avi Feller, and Suzanne O. Bell. US Abortion Bans and Infant Mortality. JAMA , February 2025. ISSN 0098-7484. doi: 10.1001/jama.2024.28517. Alison Gemmill, Alexander Franks, Avi Feller, Elizabeth A Stuart, Eli Ben-Michael, and Suzanne O Bell. Method-ological considerations for investigating the impact of abortion restrictions on outcomes using aggregate panel data. 
+
+American Journal of Epidemiology , page kwag032, March 2026. ISSN 0002-9262. doi: 10.1093/aje/kwag032. Christopher Gianacas, Bette Liu, Martyn Kirk, Gian Luca Di Tanna, Josephine Belcher, Suzanne Blogg, and David J. Muscatello. Bayesian structural time series, an alternative to interrupted time series in the right circumstances. 
+
+Journal of Clinical Epidemiology , 163:102–110, November 2023. ISSN 0895-4356. doi: 10.1016/j.jclinepi.2023. 10.003. Rob J. Hyndman and Bahman Rostami-Tabar. Forecasting interrupted time series. Journal of the Operational Research Society , 0(0):1–14, September 2024. ISSN 0160-5682. doi: 10.1080/01605682.2024.2395315. Kaitlyn Jackson, Deborah Karasek, Alison Gemmill, Daniel F. Collin, and Rita Hamad. Maternal Health During the COVID-19 Pandemic in the United States: An Interrupted Time-series Analysis. Epidemiology , 35(6):823, November 2024. ISSN 1044-3983. doi: 10.1097/EDE.0000000000001779. Huan Jiang, Xinyang Feng, Shannon Lange, Alexander Tran, Jakob Manthey, and Jürgen Rehm. Estimating effects of health policy interventions using interrupted time-series analyses: A simulation study. BMC Medical Research Methodology , 22(1):235, August 2022. ISSN 1471-2288. doi: 10.1186/s12874-022-01716-4. James Lopez Bernal, Steven Cummins, and Antonio Gasparrini. Interrupted time series regression for the evaluation of public health interventions: A tutorial. International Journal of Epidemiology , 46(1):348–355, 2017. ISSN 0300-5771, 1464-3685. doi: 10.1093/ije/dyw098. Fiammetta Menchetti, Fabrizio Cipollini, and Fabrizia Mealli. Estimating the causal effect of an intervention in a time series setting: The C-ARIMA approach, September 2021. Tim P. Morris, Ian R. White, and Michael J. Crowther. Using simulation studies to evaluate statistical methods. 
+
+Statistics in Medicine , 38(11):2074–2102, 2019. doi: 10.1002/sim.8086. URL https://onlinelibrary.wiley.com/doi/ abs/10.1002/sim.8086. _eprint: https://onlinelibrary.wiley.com/doi/pdf/10.1002/sim.8086. Georgia Papadogeorgou, Fiammetta Menchetti, Christine Choirat, Jason H. Wasfy, Corwin M. Zigler, and Fabrizia Mealli. Evaluating federal policies using bayesian time series models: estimating the causal impact of the hospital 21 A P REPRINT - 2026-07-15 readmissions reduction program. Health Services and Outcomes Research Methodology , 01 2023. doi: 10.1007/s1 0742-022-00294-8. URL https://doi.org/10.1007/s10742-022-00294-8. Taylor Riley, Elizabeth Nethery, Esther K. Chung, and Vivienne Souter. Impact of the COVID-19 pandemic on perinatal care and outcomes in the United States: An interrupted time series analysis. Birth , 49(2):298–309, 2022. ISSN 1523-536X. doi: 10.1111/birt.12606. Donald B. Rubin. Estimating causal effects of treatments in randomized and nonrandomized studies. Journal of Edu-cational Psychology , 66(5):688–701, 1974. doi: 10.1037/h0037350. Place: US Publisher: American Psychological Association. Andrea L. Schaffer, Timothy A. Dobbins, and Sallie-Anne Pearson. Interrupted time series analysis using autoregres-sive integrated moving average (ARIMA) models: A guide for evaluating large-scale health interventions. BMC Medical Research Methodology , 21(1):58, March 2021. ISSN 1471-2288. doi: 10.1186/s12874-021-01235-8. Amanda Jean Stevenson and Leslie Root. Trends in Maternal Death Post-Dobbs v Jackson Women’s Health. JAMA Network Open , 7(8):e2430035, August 2024. ISSN 2574-3805. doi: 10.1001/jamanetworkopen.2024.30035. Yasir Tarabichi, Adam Frees, Steven Honeywell, Courtney Huang, Andrew M. Naidech, Jason H. Moore, and David C. Kaelber. The Cosmos Collaborative: A Vendor-Facilitated Electronic Health Record Data Aggregation Platform. 
+
+ACI Open , 05(01):e36–e46, January 2021. ISSN 2566-9346. doi: 10.1055/s-0041-1731004. Stan Development Team. Stan Modeling Language Users Guide and Reference Manual . 2023. URL https://mc-stan.org. Benjamin Thornburg, Alene Kennedy-Hendricks, Joanne D. Rosen, and Matthew D. Eisenberg. Anxiety and Depres-sion Symptoms After the Dobbs Abortion Decision. JAMA , 331(4):294–301, January 2024. ISSN 0098-7484. doi: 10.1001/jama.2023.25599. Yuling Yao, Aki Vehtari, Daniel Simpson, and Andrew Gelman. Using Stacking to Average Bayesian Predictive Distributions (with Discussion). Bayesian Analysis , 13(3):917–1007, September 2018. ISSN 1936-0975, 1931-6690. doi: 10.1214/17-BA1091. 22 A P REPRINT - 2026-07-15 
+
+## A Appendix 
+
+A.1 Asymptotic Confidence Intervals for Simulation Evaluation Criteria 
+
+Let the true cumulative difference be T with posterior mean estimate mT ,i for estimation method m { BSTS, SP No Conf, FP No Conf, SP Step-Slope, FP Step-Slope, SP Stacking, FP Stacking } in the i-th simulation iteration. Also, let (m)  
+
+> T,q,i
+
+be the q-th quantile of the posterior for T with method m in the i-th simulation iteration. For each criterion, we assume asymptotic normality based on the central limit theorem to construct typical Wald confidence intervals for each criteria[Morris et al., 2019]. We reproduce the formulas from Morris et al.[Morris et al., 2019] for bias and confidence interval coverage here. The estimate for bias is Bias = 1   
+
+> nsim
+> nsim
+> I=1 (m)
+> T,iT
+
+with Monte Carlo standard error SE (Bias ) = 1 
+
+> nsim (nsim 1)
+> nsim
+> I=1
+
+((m)   
+
+> T,iT
+
+)2.For 95% CI coverage, the point estimate is Cov = 1 
+
+> nsim
+> nsim
+> I=1
+
+I((m)    
+
+> T,0.025, iT(m)
+> T,0.975, i
+
+) with standard error SE (Cov ) =  
+
+> 1
+> nsim
+
+Cov m(1 Cov m).
+
+A.2 Prior Sensitivity Analysis 
+
+We performed a prior sensitivity analysis for the negative binomial autoregressive model to assess the sensitivity to the prior for the overdispersion parameter r. As r , the negative binomial model behaves arbitrarily similarly to the Poisson model. We would like to retain this flexibility while assuming a priori that overdispersion is possible, so we need weakly informative priors. Given these goals and the domain of the overdispersion parameter ( r > 0 ), we chose to focus on Gamma ( r G(1, ) r Exp () ) and Inverse-Gamma priors ( r Inv Gamma (1, 1)) using the shape-scale parameterizations. Beyond the weakly informative priors, we also tested adding hierarchical hyper-priors to the scale parameter . First, the hyperparameter is either set to a fixed value = 0.1, 1, 10, 100 or given a hyper-prior InvGamma (3, 2) such that E() = and V ar () = 1 .To perform the sensitivity analysis, we re-fit the component models used for the semi-parametric pregnancy analysis under each of the prior settings, and collected the posterior distributions of r and the LFO-IC for each of the component models used in the stacking. In Figure A1, we compare the overdispersion parameter’s posterior distributions. The left column of Figure A1 displays posteriors where the hyperparameter is held fixed at a pre-specified value ( = = 0.1, 1, 10, 100 ). The right column displays posteriors after assigning a hyper-prior to Inv Gamma (3, 2) such that E() = and we set 
+
+= 0.1, 1, 10, 100 . The top row sets r Inv Gamma (1, 1) while the bottom row sets r Exp () . The prior scale hyperparameter’s expected value E() = is varied along the x-axis. From Figure A1, we can see that while there is considerable variation in the posterior of r for each sub-model, the posteriors stay relatively consistent for the Inverse-Gamma prior. However, for the exponential priors, the posterior of r depends on the prior scale parameter; very strongly if a hyper-prior isn’t specified for . The tendency for the overdispersion parameter’s posterior mean to be between 50 and 200 indicates mild-overdispersion. Additionally, the 23 A P REPRINT - 2026-07-15 insensitivity of the posterior to the prior scale under the Inverse-Gamma prior suggested we adopt this prior for the final analysis presented in the application case study, as the results would not be dependent about the choice of . r ~ Exp (θ )
+
+> θ = η
+> r ~ Exp
+
+(θ ) 
+
+> θ~ IG
+
+(3, 2η )
+
+> r ~ IG
+
+(1, θ −1)
+
+> θ = η
+> r ~ IG
+
+(1, θ −1) 
+
+> θ~ IG
+
+(3, 2η )         
+
+> 1e−01 1e+00 1e+01 1e+02 1e+03 1e−01 1e+00 1e+01 1e+02 1e+03
+> 0500 1000 1500
+> 0500 1000 1500
+
+Prior Scale (η)
+
+> Overdispersion Parameter  (r)
+
+Figure A1: Overdispersion parameter r’s 95% credible interval and posterior mean under the four different priors with varied prior scale hyperparameter on the x-axis. Each line plot corresponds to an individual sub-model. We also found that the prior settings mostly do not impact the LFO-ICs as most LFO-IC estimates for component models overlap even in the case of the exponential prior on r with fixed (lower-right panel) where the posterior of r
+
+was highly sensitive to the prior scale. 24
