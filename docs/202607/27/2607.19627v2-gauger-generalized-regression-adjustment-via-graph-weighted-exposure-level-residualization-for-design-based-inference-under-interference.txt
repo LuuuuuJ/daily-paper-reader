@@ -1,0 +1,3432 @@
+Title: GAUGER: Generalized Regression Adjustment via Graph-Weighted Exposure-Level Residualization for Design-Based Inference Under Interference
+
+URL Source: https://arxiv.org/pdf/2607.19627v2
+
+Published Time: Fri, 24 Jul 2026 00:23:16 GMT
+
+Number of Pages: 29
+
+Markdown Content:
+# GAUGER: Generalized Regression Adjustment via Graph-Weighted Exposure-Level Residualization for Design-Based Inference Under Interference 
+
+Lei Shi ∗
+
+Adobe Research San Jose, CA, USA 
+
+leis@adobe.com 
+
+Rita Qiuran Lyu 
+
+UC Berkeley Berkeley, CA, USA 
+
+Sizhu Lu 
+
+UC Berkeley Berkeley, CA, USA 
+
+## Abstract 
+
+Estimating causal effects under interference is a common problem in social sci-ence and economics. However, it is challenging due to the complex dependency structure induced by network connections. In this paper, we propose GAUGER, a Generalized regression Adjustment framework via Graph-weighted Exposure-level Residualization for design-based causal inference under general interference. We first reveal a surprising mismatch between accuracy and efficiency in this setting: model adjustments that minimize prediction error (e.g., MSE) do not necessarily lead to the most variance reduction of the treatment effect estimator. To address this mismatch, we propose a two-step approach: (1) leveraging a strong prediction model to learn outcome patterns from the network and covariates, and (2) applying a novel calibration scheme called Graph-weighted Exposure-level Residualization (GER) that directly targets variance reduction. The resulting estimator is consistent for target causal parameters, enjoys provable variance reduction, and is asymptoti-cally normal with a conservative variance estimator for valid statistical inference. As a practical implementation of the pipeline, we present a scheme that leverages Graph Neural Networks (GNNs) to construct the prediction model and use GER to steer the model adjustment for better variance reduction. Numerical studies show substantial efficiency gains over existing methods. 
+
+## 1 Introduction 
+
+1.1 Background. 
+
+Many real-world problems involve units connected through networks, such as social networks (Freeman et al., 2004), communication systems (Shaw, 1964), and geographical structures (Rolnick et al., 2019), where outcomes may depend not only on own treatment but also on neighbors’ treatments, a phenomenon known as interference . While interference complicates causal inference, it is essential for studying peer and spillover effects. Randomized experiments are widely regarded as the gold standard for causal effect estimation (Hinkelmann and Kempthorne, 2007; Imbens and Rubin, 2015). Under the design-based framework, the validity of estimation and inference is guaranteed by the known randomization mechanism with minimal assumptions on potential outcomes (Neyman, 1990; Rubin, 2005; Ding, 2024). In this perspective, outcome models are used only to improve statistical efficiency , typically via variance reduction, rather than for identification, a practice often termed as model-assisted inference .
+
+> ∗Corresponding author. Preprint. arXiv:2607.19627v2 [stat.ME] 23 Jul 2026
+
+Recent work has extended design-based methods to interference settings (Hudgens and Halloran, 2008; Aronow and Samii, 2017; Basse and Feller, 2018; Chang, 2023; Leung, 2022; Gao and Ding, 2023). However, compared to the no-interference setting, there is limited guidance on how predictive models should be used for statistically efficient adjustment under network dependence. In particular, clear guidance on efficient model-assisted adjustment under network dependence and scalable, end-to-end implementations lags behind what is available in simpler settings. 
+
+1.2 Our contributions. 
+
+We identify a fundamental challenge in model-assisted inference under interference: predictive accuracy does not, in general, align with statistical efficiency . We show that estimator variance is governed by a design-induced, graph-weighted structure , under which residuals contribute unequally depending on the network and assignment mechanism. As a result, minimizing standard prediction loss does not guarantee variance reduction. To address this issue, we propose Generalized Regression Adjustment via Graph-weighted Exposure-level Residualization (GAUGER), a general calibration framework that separates prediction from efficiency optimization. GAUGER first learns flexible outcome models, and then applies a calibration step that explicitly targets the graph-weighted variance structure of the estimator. We show that the calibrated estimator is provably no worse in asymptotic variance than prediction-based adjustments. We further demonstrate how GAUGER can be combined with modern predictive models such as graph neural networks (GNNs). While GNNs provide expressive representations, we show that prediction alone is insufficient, and that graph-weighted calibration is essential for achieving efficiency. Empirical results on synthetic, semi-synthetic, and real-world network data confirm that GAUGER consistently yields substantial variance reduction over both prediction-based methods and existing graph-based approaches. 
+
+1.3 Related work 
+
+Prior work on causal inference under interference has established identification and estimation procedures using exposure mappings and design-based methods (Hudgens and Halloran, 2008; Aronow and Samii, 2017; Leung, 2022; Gao and Ding, 2023). However, the role of predictive modeling for statistically efficient estimation remains underexplored. Recent work applies GNNs to causal inference under interference, primarily in observational settings where modeling assumptions are required for identification (Jiang and Sun, 2022; Guo et al., 2020; Cai et al., 2023). In contrast, we focus on randomized experiments, where identification is guaranteed and efficiency becomes the central challenge. Our framework provides a principled calibration procedure that can be applied on top of flexible predictive models, rather than relying on prediction objectives alone. See Appendix A for more detailed related work discussion. 
+
+## 2 A Design-based setup 
+
+We consider a finite population of n units connected through a network represented by an adjacency matrix G ∈ { 0, 1}n×n, where Gij = 1 indicates a connection between units i and j. We assume 
+
+Gii = 1 for all i. Let Hi = Pnj=1 Gij denote the (self-inclusive) degree of unit i. Each unit 
+
+i receives a binary treatment Ai ∈ { 0, 1} with Ai = 1 if unit i is treated. Under interference, a unit’s outcome may depend on the treatments of other units. We adopt the standard exposure mapping framework (Aronow and Samii, 2017), where this dependence is summarized through a scalar exposure variable Di. Formally, for a treatment vector a of other units, the exposure of unit i
+
+is given by D(a) 
+
+> i
+
+, and the potential outcome depends only on the exposure level. 
+
+Assumption 2.1 (Exposure mapping) . For any i = 1 , . . . , n , Y (a) 
+
+> i
+
+= Y (a′) 
+
+> i
+
+whenever D(a) 
+
+> i
+
+= D(a′) 
+
+> i
+
+.We denote the potential outcomes as Y (d) 
+
+> i
+
+for d ∈ D , where D is the set of possible exposure levels. A commonly example is the number of treated neighbors, Di = Pnj=1 ,j ̸ =i Gij Aj . We denote 
+
+Y (d) = ( Y (d)1 , . . . , Y (d) 
+
+> n
+
+)⊤ as the vector of potential outcomes under exposure level d.2Given the treatment assignment mechanism and exposure mapping, define 
+
+π(d) 
+
+> i
+
+= P(Di = d), (1) 
+
+π(d,d ′) 
+
+> ij
+
+= P(Di = d, D j = d′). (2) Intuitively, they characterize how likely each unit (and pair of units) is to fall into specific exposure level, and therefore govern how different units contribute to estimation uncertainty.As we show later, these probabilities induce a graph-dependent weighting structure that plays a central role in determining the variance of design-based estimators. We provide further discussion on alternative exposure mappings, robustness to misspecification, and learning exposure mappings from data in Appendix D.6 abd how to approximate these probabilities via Monte Carlo methods (Aronow and Samii, 2017); details are provided in Appendix D.1. Our goal is to estimate the average treatment effect between two exposure levels: 
+
+τ (d1,d 2) = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ Y (d1) 
+
+> i
+
+− Y (d2)
+
+> i
+
+.
+
+## 3 Model adjustment under interference: a mismatch between accuracy and statistical efficiency 
+
+In design-based inference, unbiased estimators for treatment effects are readily available due to the known randomization mechanism. The primary challenge is therefore not identification, but statistical efficiency. A common approach is model-assisted adjustment , where predictive models are used to reduce variance, often by minimizing prediction error (e.g., mean squared error). However, under interference, this intuition breaks down. The key issue is that estimator variance is governed by a design-induced, graph-dependent weighting structure. As a result, residuals contribute unequally depending on the network and assignment mechanism. Consequently, minimizing prediction error does not, in general, minimize estimator variance. 
+
+AIPW estimators under interference. We consider augmented inverse probability weighting (AIPW) estimators of the form 
+
+ˆτ (d1,d 2) = ˆ μ(d1) − ˆμ(d2),
+
+where 
+
+ˆμ(dk ) = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+(
+
+1(Di = dk)( Yi − f (dk ) 
+
+> i
+
+)
+
+π(dk )
+
+> i
+
++ f (dk )
+
+> i
+
+)
+
+, k = 1 , 2. (3) Here f (dk ) 
+
+> i
+
+is any predicted potential outcome, which may depend on covariates and network structure. A common specification is a linear model 
+
+f (dk ) 
+
+> i
+
+= F (dk )
+
+> i
+> ⊤
+
+βk,
+
+where F (dk ) 
+
+> i
+
+are features (e.g., covariates or learned representations). We denote the resulting estimator by ˆτ (d1,d 2) 
+
+> F,β
+
+.
+
+Variance structure. Let ˆ1(dk ) 
+
+> i
+
+= 1(Di = dk)/π (dk ) 
+
+> i
+
+and define Λ as the covariance matrix of the signed vector (ˆ 1(d1), −ˆ1(d2)). The matrix Λ is determined by the exposure probabilities and encodes the graph-dependent weighting structure induced by the design (see Appendix for details). Stacking outcomes and features as 
+
+Y (d1;d2) =
+
+Y (d1)
+
+Y (d2)
+
+
+
+, F (d1⊕d2) =
+
+F (d1) 00 F (d2)
+
+
+
+,
+
+we obtain the following result. 3Theorem 3.1 (Mean and variance of AIPW estimators) . The estimator ˆτ (d1,d 2) is unbiased: 
+
+E[ˆ τ (d1,d 2)] = τ (d1,d 2).
+
+Its variance is given by 
+
+n2Var(ˆ τ (d1,d 2)) = ( Y (d1;d2) − F (d1⊕d2)β)⊤Λ(Y (d1;d2) − F (d1⊕d2)β).
+
+Theorem 1 leads to three key observations: (i) Model-agnostic validity. The estimator is unbiased for any choice of fi, reflecting the design-based nature of the problem. (ii) Residuals drive efficiency. Smaller residuals generally reduce variance. (iii) Prediction does not imply efficiency. Variance depends on the quadratic form 
+
+(residual )⊤Λ(residual ),
+
+where Λ induces non-uniform, graph-dependent weighting. As a result, minimizing predic-tion error does not, in general, minimize estimator variance. This establishes a fundamental mismatch: prediction-optimal adjustments are not necessarily variance-optimal under interference . Two models with similar prediction accuracy can yield different estimator variances depending on how their residuals align with the graph-weighted structure. Such misalignment has also been observed in settings without interference when nonlinear models are used (Fogarty, 2018; Guo and Basse, 2023). Our results reveal an additional and distinct source of mismatch arising from the interference structure itself. This observation motivates our approach: instead of optimizing prediction loss, we construct adjust-ments that directly target the graph-weighted variance objective. 
+
+## 4 Model construction and calibration 
+
+4.1 The GAUGER framework 
+
+Section 3 shows that the variance of AIPW estimators is governed by a graph-weighted quadratic form: (residual )⊤Λ(residual ), where Λ encodes the network structure and assignment mechanism. This implies that variance minimization corresponds to solving a weighted least squares problem 
+
+under the metric induced by Λ.Given features F , the variance-optimal coefficient β∗ is given by 
+
+β∗ = ( F (d1⊕d2)⊤ΛF (d1⊕d2))†F (d1⊕d2)⊤ΛY (d1;d2), (4) where for a matrix M , the Penrose-Moore pseudoinverse is denoted by M †.However, β∗ is infeasible since it depends on unobserved potential outcomes. Our goal is therefore to construct an estimator ˆβ that approximates β∗ using observed data. A key challenge is that the weighting matrix Λ is dense and depends on joint exposure probabilities, making direct optimization difficult in practice. Instead, we propose a tractable surrogate that captures the dependency structure underlying Λ.
+
+Graph-weighted exposure residualization (GER). We define a dependency graph ∆ ∈ { 0, 1}n×n
+
+such that 
+
+{∆}ij = 1(Di̸ ⊥⊥ Dj ),
+
+which encodes whether exposure assignments of units i and j are dependent. For common exposure mappings, ∆ can be constructed directly from the network. For example, when the exposure mapping depends only on self and 1-hop neighbors with Bernoulli randomization, ∆ is the 2-hop adjacency matrix: ∆ = 1(In + G + G2 > 0) , where In is the n × n identity matrix. With this definition, we construct the following estimator: 
+
+( ˆβ1, ˆβ2) = argmin 
+
+> β1,β 2
+
+{ˆε(β1, β 2)}T ∆{ˆε(β1, β 2)}. (5) 4where ˆε(β1, β 2) = ˆY (d1) − ˆY (d2) − { ˆF (d1) − F (d1)}β1 + { ˆF (d2) − F (d2)}β2, and ˆF (dk ) =
+
+F (dk ) · diag {ˆ1(dk ) 
+
+> i
+
+}ni=1 .
+
+This objective can be viewed as a graph-weighted residual minimization , where ∆ approximates the dependency structure of Λ and we use exposure-level residualized features ˆF (d1) − F (d1) and 
+
+ˆF (d2) − F (d2) as the regressors, prioritizing reducing residuals along directions that contribute most to estimator variance. The resulting GAUGER procedure consists of two stages: (S1) Prediction: Learn strong outcome models f (d) 
+
+> i
+
+using modern machine learning methods (e.g., LASSO, random forest, GNNs, Transformer) to accurately predict the potential outcomes for each unit at each exposure level. (S2) Calibration: Estimate ˆβ via graph-weighted exposure residualization to align predictions with the variance reduction objective. Unlike standard approaches that rely solely on predictive accuracy, GAUGER explicitly targets the design-based efficiency criterion derived from Λ.
+
+4.2 Theoretical insights 
+
+In this section, we show that GAUGER consistently approximates the variance-optimal solution and achieves the desired efficiency guarantees. We adopt the standard design-based asymptotic framework (Ding, 2024; Aronow and Samii, 2017), where we consider a sequence of finite populations Pn = {(Y (d) 
+
+> n
+
+)d∈D , (F (d) 
+
+> n
+
+)d∈D , Gn}, indexed by sample size n with n → ∞ , and treatment is assigned via Bernoulli randomization. We impose standard regularity conditions ensuring positivity, boundedness, and controlled depen-dency. In particular, we assume: (i) exposure probabilities are bounded away from zero, (ii) potential outcomes and features are logarithmically bounded, (iii) the dependency graph has bounded degree, and (iv) the graph-weighted second moments are stable after normalization. The detailed assumption is in Appendix C. We first show that the GER estimator consistently recovers the variance-optimal coefficient. 
+
+Theorem 4.1 (Convergence of the coefficient) . Under regularity assumptions, 
+
+ˆβ − β⋆ = op(1) .
+
+This result shows that the proposed graph-weighted residualization procedure successfully approxi-mates the oracle solution derived from the Λ-weighted variance minimization problem. We next establish the asymptotic distribution of the calibrated estimator. 
+
+Theorem 4.2 (Asymptotic normality and efficiency) . Under Assumption C.1(a)-C.1(e), 
+
+ˆτ (d1,d 2)  
+
+> F, ˆβ
+
+− τ (d1,d 2)
+
+q
+
+avar {ˆτ (d1,d 2) 
+
+> F,β ∗
+
+}
+
+> d
+
+−→ N (0 , 1) .
+
+Moreover, the asymptotic variance satisfies 
+
+avar {ˆτ (d1,d 2) 
+
+> F,β ∗
+
+} ≤ avar {ˆτ (d1,d 2) 
+
+> F,β
+
+} for any β ∈ Rp.
+
+This result provides a formal justification of GAUGER: given a feature space F , the calibrated estimator achieves the minimum asymptotic variance among all linear adjustments of the form considered. In particular, it guarantees that the proposed calibration step is never worse, and often strictly better than standard prediction-based adjustments. Together, these results show that GAUGER directly addresses the mismatch identified in Section 3: while predictive models provide a useful starting point, the calibration step is essential to align the adjustment with the graph-weighted efficiency objective. 55 GNN-assisted AIPW estimator 
+
+5.1 Using GNNs within the GAUGER framework 
+
+Below, we introduce one architecture of GNN-assisted estimation pipeline illustrated in Figure 1. The pipeline consists of three main stages: feature extraction, representation learning, and outcome prediction with representation balancing. 
+
+Figure 1: Overview of the GNN encoder for potential outcome prediction given exposure mapping. 
+
+Stage 1: Feature extraction. Given an input graph G representing the network structure among 
+
+n units, we extract both individual-level and neighborhood-level information for each unit i. The treatment information is aggregated through the exposure mapping to compute the exposure level Di
+
+for each unit, which captures the relevant summary of interference from neighboring units. 
+
+Stage 2: Representation learning via GNN. The extracted covariates are processed through multiple layers of Graph Neural Networks (GNNs) to learn informative representations H = ( H1, . . . , H n)T
+
+that encode both individual characteristics and network structure. The GNN layers perform message passing to aggregate information from neighboring nodes, allowing each unit’s representation to incorporate relevant contextual information from its local network neighborhood (Wu et al., 2020). The framework is agnostic to the specific GNN architecture and can accommodate various choices. See Appendix D.4 for more details. 
+
+Stage 3: Outcome prediction and representation balancing. The learned representations H serve two purposes. First, they are fed into MLP heads to predict potential outcomes ˆY (D) at different exposure levels. Second, we optionally encourage representation balance across exposure groups. Specifically, let bP (H | D = d) denote the empirical distribution of representations among units with exposure level d. We penalize discrepancies between exposure-specific distributions using an Integral Probability Metric (IPM): 
+
+IPM   bP (H | D = d1), bP (H | D = d2),
+
+where (d1, d 2) are exposure levels of interest. The model is trained end-to-end with the objective 
+
+L = MSE( ˆY , Y ) + λ · IPM   bP (H | D = d1), bP (H | D = d2),
+
+where the first term captures prediction error, and the second encourages representations to have similar distributions across exposure groups. This regularization improves stability of prediction, but does not directly target the design-based variance objective. 
+
+5.2 GNN-assisted AIPW estimator 
+
+The above procedure leads to prediction for each unit at each exposure level: ˆf (dk ) 
+
+> i
+
+= {H(dk ) 
+
+> i
+
+}T ˆωk,k = 1 , 2, where H(dk ) 
+
+> i
+
+is the representation for unit i at exposure level dk, which is extracted from the second-to-last layer of the k-th MLP head. ˆωk is the weight for the second-to-last layer of the 
+
+k-th MLP head. Therefore, this corresponds to taking F (dk ) 
+
+> i
+
+= H(dk )  
+
+> iT
+
+and ˆβk = ˆ ωk.65.3 Calibration via GAUGER 
+
+As shown in Section 3, prediction-based estimators are not guaranteed to be variance-optimal. We therefore apply the GER calibration procedure to align the GNN predictions with the graph-weighted variance objective. We consider two calibration paradigms. 
+
+Paradigm 1: Calibration of predictions. We take the features as F (dk ) 
+
+> i
+
+= (1 , ˆY (dk ) 
+
+> i
+
+)⊤, k =1, 2, and apply GER to estimate β∗. This corresponds to an affine transformation of the predicted outcomes, adjusting for bias in a way that targets variance reduction. 
+
+Paradigm 2: Calibration of representations. We instead take F (dk ) 
+
+> i
+
+= (1 , H (dk )⊤ 
+
+> i
+
+)⊤, and esti-mate β∗ via GER. This corresponds to modifying the final-layer weights of the GNN, allowing more flexible alignment with the variance objective. The two paradigms represent a trade-off: calibrating predictions is more stable but less flexible, while calibrating representations provides greater flexibility at the cost of higher estimation variance. 
+
+## 6 Numerical studies 
+
+We evaluate the proposed GAUGER framework across three complementary settings: (i) controlled synthetic simulations, (ii) semi-synthetic experiments on real-world networks, and (iii) a real ran-domized field experiment. Our goal is to assess statistical efficiency, robustness to interference, and practical applicability. 
+
+Synthetic study. We first consider a controlled simulation with network spillover effects. The data-generating process (DGP) incorporates both individual covariates and neighbor interactions, allowing us to isolate the impact of prediction and calibration. The detailed DGP is in Appendix H.1. We compare primitive estimators (Horvitz–Thompson and Hájek), linear adjustments, GNN-based models (GAT and PNA), and three representative GNN-based causal inference baselines: NetEstima-tor (Jiang and Sun, 2022), GCN-Deconfounder (Guo et al., 2020), and RRNet (Cai et al., 2023). The results are in Table 1. We can see three consistent patterns. First, Horvitz–Thompson suffers from large variance due to unstable weights, while Hájek provides a stable baseline. Second, prediction-based adjustment alone does not guarantee improved efficiency: models trained to minimize MSE achieve similar variance to Hájek despite using additional information. Third, GAUGER calibration consistently reduces variance across all model classes. In particular, PNA-based calibrated estimators achieve the lowest RMSE. Compared to existing GNN baselines, GAUGER achieves substantially Table 1: Synthetic study under network spillover (true τ ⋆ = −0.594 ). Results are reported as mean 
+
+± 90% Monte Carlo confidence intervals across 100 simulations.                                                                                                                                                                             
+
+> Class Estimator Bias SD RMSE Coverage Power Primitive ˆτht −0.049 ±0.09 0.541 ±0.06 0.543 ±0.06 0.60 0.66
+> ˆτhaj 0.018 ±0.03 0.203 ±0.02 0.203 ±0.02 0.97 0.74 Linear
+> ˆτlinear-raw −0.017 ±0.03 0.202 ±0.02 0.203 ±0.02 0.99 0.82
+> ˆτlinear-linear 0.034 ±0.03 0.170 ±0.02 0.173 ±0.02 0.97 0.82
+> ˆτlinear-pred 0.040 ±0.03 0.172 ±0.02 0.176 ±0.02 0.97 0.81 GAT
+> ˆτGAT-raw 0.035 ±0.03 0.168 ±0.02 0.172 ±0.02 0.96 0.89
+> ˆτGAT-linear 0.058 ±0.02 0.141 ±0.02 0.152 ±0.02 0.98 0.95
+> ˆτGAT-pred 0.058 ±0.02 0.140 ±0.02 0.152 ±0.02 0.98 0.95 PNA
+> ˆτPNA-raw −0.001 ±0.02 0.127 ±0.01 0.127 ±0.01 0.97 1.00
+> ˆτPNA-linear 0.008 ±0.02 0.125 ±0.01 0.125 ±0.01 0.98 1.00
+> ˆτPNA-pred 0.009 ±0.02 0.124 ±0.01 0.124 ±0.01 0.98 1.00 Pure GNN Baselines NetEstimator −0.090 ±0.02 0.136 ±0.02 0.163 ±0.02 ——GCN-Deconf 0.351 ±0.01 0.088 ±0.01 0.362 ±0.01 ——RRNet −0.069 ±0.02 0.134 ±0.02 0.150 ±0.02 ——
+
+lower RMSE. GCN-Deconfounder exhibits large bias, reflecting its inability to handle spillover 7effects, while NetEstimator and RRNet remain suboptimal in variance. Importantly, these baseline methods do not provide valid uncertainty quantification, whereas GAUGER supports design-based inference. 
+
+Semi-synthetic study on real networks To evaluate performance in a more realistic setting, we construct a semi-synthetic experiment based on a real student friendship network from the ICPSR 37070 dataset (Aronow and Samii, 2017), consisting of n = 2 ,983 nodes with an average degree of approximately 2.5. We define exposure levels based on the fraction of treated neighbors, discretized into k = 3 categories 
+
+d ∈ { 0, 1, 2} corresponding to low, medium, and high neighborhood treatment intensity. Individual treatments are assigned independently according to Bernoulli(1 /3) .Potential outcomes are generated as 
+
+Yi(d) = α + β1 · d 
+
+> 2
+
++ β2 ·   d
+
+> 2
+
+2 + γ1 · wi + γ2 · ˜ri + γ3 · ˜r2
+
+> i
+
++δ · d 
+
+> 2
+
+· wi + γ4 · ¯w(1)  
+
+> i
+
++ γ5 · ¯r(1)  
+
+> i
+
++ δ2 · d 
+
+> 2
+
+· ¯w(1)  
+
+> i
+
++ γ6 · ¯w(2)  
+
+> i
+
++ γ7 · gpa (2)  
+
+> i
+
++ δ3 · d 
+
+> 2
+
+· ¯w(2)  
+
+> i
+
++ εi,
+
+where εi ∼ N (0 , σ 2), wi denotes baseline wrist measurement, ˜ri is normalized degree, and ¯w(k) 
+
+> i
+
+,
+
+¯r(k) 
+
+> i
+
+represent k-hop neighborhood averages of covariates. The parameter values are set as in with 
+
+σ = 0 .20 .The target estimand is the peer effect 
+
+τ ∗ = E[Yi(d=2)] − E[Yi(d=0)] ≈ 0.4623 ,
+
+which captures the effect of moving from zero to high neighborhood exposure. Across B = 200 randomizations, we observe that all GER-based estimators achieve negligible bias, confirming their design-based validity. Compared to the linear GER baseline, GNN-enhanced GER methods (GAT and PNA) achieve substantial variance reduction, leading to approximately 2–2.5×
+
+improvements in RMSE. Among these, PNA-based variants consistently attain the lowest RMSE, highlighting the benefit of expressive representations when combined with variance-aware calibration. We further compare against three representative GNN-based causal inference methods: NetEstimator (Jiang and Sun, 2022), GCN-Deconfounder (Guo et al., 2020), and RRNet (Cai et al., 2023). These methods are adapted to our exposure-mapping setting and evaluated over B = 200 randomizations. The results are in Table 2. We can see that GAUGER-based estimators significantly outperform these baselines in terms of RMSE, achieving approximately 3.5–4× improvement over the best competing method (RRNet). In contrast, GCN-Deconfounder exhibits severe bias, as it does not explicitly model spillover effects. NetEstimator and RRNet perform more competitively but remain suboptimal. A key reason for this gap is that these methods do not incorporate design-based weighting, and thus rely heavily on the correctness of the outcome model. In contrast, GAUGER explicitly aligns adjustment with the design-induced variance structure, leading to both low bias and low variance. These results demonstrate that, even in realistic network settings, improving predictive representations alone is insufficient for efficient estimation under interference. Explicit calibration toward the design-based variance objective is essential for achieving optimal performance. 
+
+Real application We apply our GAUGER framework to analyze data from a large-scale randomized controlled trial studying the effects of unconditional cash transfers in rural Kenya (Egger et al., 2022). The GiveDirectly experiment implemented a randomized saturation design across 653 villages in Siaya County, Kenya. In this design, sublocations (administrative units containing multiple villages) were first randomly assigned to either high-saturation (two-thirds of villages treated) or low-saturation (one-third of villages treated) conditions. Within each sublocation, villages were then randomly assigned to treatment or control. All eligible households in treated villages received unconditional cash transfers of approximately $1,000 USD. We construct a spatial network among villages based on geographic proximity, following our desciption in Appendix H.3. We define the exposure mapping as Di = ( Ai, S i), where Ai ∈ { 0, 1} is the village’s own treatment indicator, and Si = 1(|N i|−1P 
+
+> j∈N i
+
+Aj > 1/3) indicates whether more than one-third of village i’s neighbors are treated. This yields four exposure levels: (Ai, S i) ∈ { (0 , 0) , (0 , 1) , (1 , 0) , (1 , 1) }. The 8Table 2: Semi-synthetic study on real network ( n = 2 ,983 , τ ∗ = 0 .4623 ). Results are reported as mean ± 95% Monte Carlo confidence intervals. 
+
+Category Method Bias SD RMSE Primitive / Linear HT −0.032 ± 0.036 0.091 ± 0.026 0.096 ± 0.027 
+
+Hájek −0.012 ± 0.021 0.052 ± 0.015 0.054 ± 0.015 
+
+Linear GER +0 .006 ± 0.012 0.030 ± 0.008 0.030 ± 0.009 
+
+GAT + GER GAT-linear GER +0 .001 ± 0.005 0.013 ± 0.004 0.013 ± 0.004 
+
+GAT-pred GER +0 .000 ± 0.005 0.012 ± 0.003 0.012 ± 0.003 
+
+GAT-raw GER −0.003 ± 0.005 0.013 ± 0.004 0.014 ± 0.004 
+
+PNA + GER PNA-linear GER −0.002 ± 0.005 0.012 ± 0.003 0.012 ± 0.003 
+
+PNA-pred GER −0.002 ± 0.004 0.011 ± 0.003 0.011 ± 0.003 
+
+PNA-raw GER −0.004 ± 0.004 0.010 ± 0.003 0.011 ± 0.003 
+
+External GNN baselines NetEstimator +0 .044 ± 0.004 0.031 ± 0.003 0.053 ± 0.004 
+
+GCN-Deconf −0.197 ± 0.002 0.018 ± 0.002 0.198 ± 0.002 
+
+RRNet +0 .022 ± 0.006 0.042 ± 0.004 0.047 ± 0.005 
+
+exposure (0 , 0) corresponds to untreated villages with few treated neighbors, while (1 , 1) corresponds to treated villages with many treated neighbors. The contrast between (1 , 0) and (0 , 0) captures the direct effect of treatment with low neighborhood saturation, while (0 , 1) versus (0 , 0) captures the spillover effect on untreated villages from having many treated neighbors. Table 3 presents treatment effect estimates for revenue per enterprise (in Kenyan Shillings or KES). The Hájek, Linear, and PNA-no-harm estimators yield consistent conclusions: a statistically signifi-cant positive direct effect when neighbors are mostly treated ( H = 1 ), with point estimates around 1,356–1,391 KES. In contrast, the Horvitz-Thompson estimator produces misleading results—it shows spurious significance for Direct ( H = 0 ) and Spillover ( A = 0 ) due to its sensitivity to extreme inverse probability weights, while missing the true Direct ( H = 1 ) effect. Table 3 presents 95% confidence interval widths for the treatment effect estimates, showing that the PNA-no-harm estimator achieves the narrowest average confidence interval width for all four contrasts. This efficiency gain comes from the PNA model’s ability to leverage network structure for outcome prediction, reducing residual variance. Table 3: Treatment effect estimates for revenue per enterprise (KES). * denotes statistical significance at α = 0 .05 .                                               
+
+> HT Hájek Linear PNA-no-harm Contrast ˆτ95% CI ˆτ95% CI ˆτ95% CI ˆτ95% CI Direct ( H= 0 )2786* [405, 5167] 841 [-1085, 2767] 879 [-1084, 2842] 731 [-1088, 2549] Direct ( H= 1 )113 [-1185, 1410] 1391* [105, 2678] 1356* [96, 2617] 1390* [186, 2594] Spillover ( A= 0 )3770* [1963, 5577] 46 [-1372, 1464] -75 [-1479, 1329] -64 [-1402, 1275] Spillover ( A= 1 )1097 [-774, 2969] 596 [-1198, 2390] 481 [-1508, 2470] 536 [-1215, 2288]
+
+Across all settings, the results consistently support the central thesis of this paper: improving predictive accuracy alone is insufficient for efficient estimation under interference. Explicit calibration toward the graph-weighted variance objective is necessary to translate predictive gains into statistical efficiency. 
+
+## 7 Discussion 
+
+In this paper, we have proposed a GAUGER framework for estimating treatment effects under interference. We have shown that the GAUGER framework can be used to estimate treatment effects under interference and provide a principled way to construct model adjustment for statistical efficiency. We have also shown that the GAUGER framework can be implemented using GNNs to achieve substantial efficiency gains over existing methods. There are many remaining questions and extensions to the current work. For example, most exposure mappings are discrete, and it is worth exploring how to extend the GAUGER framework to continuous 9exposure mappings. Moreover, it is an interesting question to explore how to use GAUGER for facilitating a better experimental design on the networks for better effect estimation. 
+
+## References 
+
+Aronow, P. M. and Samii, C. (2017). Estimating average causal effects under general interference, with application to a social network experiment. The Annals of Applied Statistics , 11(4):1912–1947. Basse, G. and Feller, A. (2018). Analyzing two-stage experiments in the presence of interference. 
+
+Journal of the American Statistical Association , 113(521):41–55. Cai, R., Yang, Z., Chen, W., Yan, Y., and Hao, Z. (2023). Generalization bound for estimating causal effects from observational network data. In Proceedings of the 32nd ACM International Conference on Information and Knowledge Management , pages 163–172. Chang, H. (2023). Design-based estimation theory for complex experiments. arXiv preprint arXiv:2311.06891 .Chen, L. H. and Shao, Q.-M. (2004). Normal approximation under local dependence. The Annals of Probability , 32(3):1985–2028. Chen, W., Cai, R., Yang, Z., Qiao, J., Yan, Y., Li, Z., and Hao, Z. (2024). Doubly robust causal effect estimation under networked interference via targeted learning. arXiv preprint arXiv:2405.03342 .Corso, G., Cavalleri, L., Beaini, D., Liò, P., and Veliˇ ckovi´ c, P. (2020). Principal neighbourhood aggregation for graph nets. In Advances in Neural Information Processing Systems , volume 33, pages 13260–13271. Ding, P. (2024). A First Course in Causal Inference . London: Chapman and Hall. Du, X., Li, J., Cheng, D., Liu, L., Gao, W., Chen, X., and Xu, Z. (2025). Telling peer direct effects from indirect effects in observational network data. In Forty-second International Conference on Machine Learning .Egger, D., Haushofer, J., Miguel, E., Niehaus, P., and Walker, M. (2022). General equilibrium effects of cash transfers: experimental evidence from kenya. Econometrica , 90(6):2603–2643. Fiedler, M. (1973). Algebraic connectivity of graphs. Czechoslovak Mathematical Journal , 23(2):298– 305. Fogarty, C. B. (2018). Regression-assisted inference for the average treatment effect in paired experiments. Biometrika , 105(4):994–1000. Freeman, L. et al. (2004). The development of social network analysis. A Study in the Sociology of Science , 1(687):159–167. Gao, M. and Ding, P. (2023). Causal inference in network experiments: regression-based analysis and design-based properties. arXiv preprint arXiv:2309.07476 .Guo, K. and Basse, G. (2023). The generalized oaxaca-blinder estimator. Journal of the American Statistical Association , 118(541):524–536. Guo, R., Li, J., Li, Y., Candan, K. S., Raglin, A., and Liu, H. (2021). Ignite: A minimax game toward learning individual treatment effects from networked observational data. In Proceedings of the Twenty-Ninth International Conference on International Joint Conferences on Artificial Intelligence , pages 4534–4540. Guo, R., Li, J., and Liu, H. (2020). Learning individual causal effects from networked observational data. In Proceedings of the 13th international conference on web search and data mining , pages 232–240. Hinkelmann, K. and Kempthorne, O. (2007). Design and analysis of experiments, volume 1: Introduction to experimental design , volume 1. John Wiley & Sons. 10 Hudgens, M. G. and Halloran, M. E. (2008). Toward causal inference with interference. Journal of the American Statistical Association , 103(482):832–842. Imbens, G. W. and Rubin, D. B. (2015). Causal Inference in Statistics, Social, and Biomedical Sciences . Cambridge: Cambridge University Press. Jang, E., Gu, S., and Poole, B. (2017). Categorical reparameterization with Gumbel-softmax. In 
+
+International Conference on Learning Representations .Jiang, S. and Sun, Y. (2022). Estimating causal effects on networked observational data via repre-sentation learning. In Proceedings of the 31st ACM International Conference on Information & Knowledge Management , pages 852–861. Kernighan, B. W. and Lin, S. (1970). An efficient heuristic procedure for partitioning graphs. The Bell System Technical Journal , 49(2):291–307. Kipf, T. N. and Welling, M. (2017). Semi-supervised classification with graph convolutional networks. In International Conference on Learning Representations .Leung, M. P. (2022). Causal inference under approximate neighborhood interference. Econometrica ,90(1):267–293. Leung, M. P. and Loupos, P. (2022). Graph neural networks for causal inference under network confounding. arXiv preprint arXiv:2211.07823 .Lu, S., Shi, L., Fang, Y., Zhang, W., and Ding, P. (2025a). Design-based causal inference in bipartite experiments. arXiv preprint arXiv:2501.09844 .Lu, X., Shi, L., Liu, H., and Ding, P. (2025b). Conditional cross-fitting for unbiased machine-learning-assisted covariate adjustment in randomized experiments. arXiv preprint arXiv:2508.15664 .Ma, J., Wan, M., Yang, L., Li, J., Hecht, B., and Teevan, J. (2022). Learning causal effects on hypergraphs. In Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining , pages 1202–1212. Ma, Y. and Tresp, V. (2021). Causal inference under networked interference and intervention policy enhancement. In International Conference on Artificial Intelligence and Statistics , pages 3700–3708. PMLR. Maddison, C. J., Mnih, A., and Teh, Y. W. (2017). The concrete distribution: A continuous relaxation of discrete random variables. In International Conference on Learning Representations .Masoero, L., Vijaykumar, S., Richardson, T. S., McQueen, J., Rosen, I., Burdick, B., Bajari, P., and Imbens, G. (2026). Multiple randomization designs: estimation and inference with interference. 
+
+Journal of the Royal Statistical Society Series B: Statistical Methodology .Middleton, J. A. (2018). A unified theory of regression adjustment for design-based inference. arXiv preprint arXiv:1803.06011 .Neyman, J. (1923/1990). On the application of probability theory to agricultural experiments. Essay on principles. Section 9. Statistical Science , pages 465–472. Papadogeorgou, G., Song, Z., Imbens, G., and Mealli, F. (2025). Causal inference when intervention units and outcome units differ. arXiv preprint arXiv:2507.20231 .Rolnick, D., Aydin, K., Pouget-Abadie, J., Kamali, S., Mirrokni, V., and Najmi, A. (2019). Random-ized experimental design via geographic clustering. In Proceedings of the 25th ACM SIGKDD International Conference on Knowledge Discovery & Data Mining , pages 2745–2753. Rubin, D. B. (2005). Causal inference using potential outcomes: Design, modeling, decisions. 
+
+Journal of the American statistical Association , 100(469):322–331. Shaw, M. E. (1964). Communication networks. In Advances in experimental social psychology ,volume 1, pages 111–147. Elsevier. 11 Shi, L. and Ding, P. (2025). Berry-esseen bounds for design-based causal inference with possibly diverging treatment levels and varying group sizes. The Annals of Statistics , page to appear. Su, F. and Ding, P. (2021). Model-assisted analyses of cluster-randomized experiments. Journal of the Royal Statistical Society Series B: Statistical Methodology , 83(5):994–1015. Veliˇ ckovi´ c, P., Cucurull, G., Casanova, A., Romero, A., Liò, P., and Bengio, Y. (2018). Graph attention networks. In International Conference on Learning Representations .Wedin, P.-Å. (1973). Perturbation theory for pseudo-inverses. BIT Numerical Mathematics , 13(2):217– 232. Wu, A., Qiu, H., Chen, Z., Li, Z., Xiong, R., Wu, F., and Zhang, K. (2025). Causal graph transformer for treatment effect estimation under unknown interference. In The Thirteenth International Conference on Learning Representations .Wu, Z., Pan, S., Chen, F., Long, G., Zhang, C., and Yu, P. S. (2020). A comprehensive survey on graph neural networks. IEEE transactions on neural networks and learning systems , 32(1):4–24. Xu, K., Hu, W., Leskovec, J., and Jegelka, S. (2019). How powerful are graph neural networks? In 
+
+International Conference on Learning Representations .
+
+## A Detailed related work 
+
+There is a large literature on causal inference with interference. Early work by Hudgens and Halloran (2008) formalized interference in two-stage randomized designs, while Aronow and Samii (2017) built around exposure mappings that summarize peers’ treatments and enable well-defined estimands and estimators. More recently, (Leung, 2022; Gao and Ding, 2023) developed asymptotic theory under approximate neighborhood interference, and specialized settings such as bipartite experiments, clustered designs, and two-sided randomization have also been studied (Papadogeorgou et al., 2025; Lu et al., 2025a; Su and Ding, 2021; Masoero et al., 2026). While this literature establishes identification and valid estimation procedures under interference, much less attention has been paid to efficiency in model-assisted settings. In particular, existing design-based approaches provide limited guidance on how to use predictive models to achieve optimal variance reduction, especially in the presence of network dependence. Our work addresses this gap by explicitly characterizing the relationship between prediction and efficiency and proposing a calibration framework that targets the design-based variance. 
+
+Graph neural networks for causal inference with interference. A growing body of work applies graph neural networks (GNNs) to causal inference under interference (Wu et al., 2025; Jiang and Sun, 2022; Guo et al., 2020, 2021; Cai et al., 2023; Chen et al., 2024; Ma and Tresp, 2021; Du et al., 2025; Ma et al., 2022; Leung and Loupos, 2022) in observational studies. These methods typically learn representations or outcome models using predictive or balancing objectives, where identification relies on modeling assumptions such as unconfoundedness. In contrast, our work focuses on randomized experiments, where identification is guaranteed by the design and the primary challenge is statistical efficiency rather than bias reduction. As a result, the role of modeling is fundamentally different: instead of learning representations for identification, we aim to calibrate predictions to minimize the variance of a design-based estimator. Our proposed GAUGER framework is therefore not tied to a specific model class, but provides a principled post-hoc calibration that can be applied on top of flexible predictive models, including GNNs. Empirically, we show that raw prediction-only GNN methods can be suboptimal from an efficiency perspective, and that our graph-weighted calibration leads to substantial variance reduction. 
+
+## B variance structure 
+
+Variance structure. To characterize the variance of AIPW estimator under interference, we intro-duce the notation Λ, which corresponds to the covariance matrix of the signed reweighted exposure 12 vector ({ˆ1(d1)}T , −{ ˆ1(d2)}T )T , where for k = 1 , 2ˆ1(dk ) = {ˆ1(dk ) 
+
+> i
+
+}ni=1 , ˆ1(dk ) 
+
+> i
+
+= 1(Di = dk)
+
+πi(dk) .
+
+Λ is given by the following 2n × 2n block matrix 
+
+Λ =
+
+Λ11 Λ12 
+
+Λ12 Λ22 
+
+
+
+(6) with the two diagonal blocks being n × n symmetric matrices with (i, j )-th item equal to 
+
+{Λ11 }(i,j ) =1(j = i) 1 − π(d1)
+
+> i
+
+π(d1)
+
+> i
+
++ 1(j̸ = i) π(d1,d 1) 
+
+> ij
+
+− π(d1) 
+
+> i
+
+π(d1)
+
+> j
+
+π(d1) 
+
+> i
+
+π(d1)
+
+> j
+
+,
+
+{Λ22 }(i,j ) =1(j = i) 1 − π(d2)
+
+> i
+
+π(d2)
+
+> i
+
++ 1(j̸ = i) π(d2,d 2) 
+
+> ij
+
+− π(d2) 
+
+> i
+
+π(d2)
+
+> j
+
+π(d2) 
+
+> i
+
+π(d2)
+
+> j
+
+,
+
+and the off-diagonal blocks being an n × n symmetric matrix with (i, j )-th item equal to 
+
+{Λ12 }(i,j ) = 1(j = i) − 1(j̸ = i) π(d1,d 2) 
+
+> ij
+
+− π(d1) 
+
+> i
+
+π(d2)
+
+> j
+
+π(d1) 
+
+> i
+
+π(d2)
+
+> j
+
+.
+
+## C Regulariy assumptions 
+
+Define the oracle residuals 
+
+ε(dk ) = Y (dk ) − F (dk )β∗ 
+
+> k
+
+,
+
+where β∗ is the variance-optimal coefficient defined in Section 4.1. We further define the graph-weighted population second-order moments of the potential outcomes: 
+
+ΣY 
+
+> n
+
+= {Y (d1⊕d2)}⊤Λ{Y (d1⊕d2)}, ΣF 
+
+> n
+
+= {F (d1⊕d2)}⊤Λ{F (d1⊕d2)}, Σεn = {ε(d1⊕d2)}⊤Λ{ε(d1⊕d2)}.
+
+Assumption C.1. Let γ1, γ 2, γ 3 > 0 be universal constants. We assume the following regularity conditions: (a) First-order inclusion positivity : The propensity scores satisfy strong positivity with some 
+
+ηn = O((log n)γ1 ): min d∈D min i∈[n] π(d) 
+
+> i
+
+> η −1 
+
+> n
+
+.(b) Second-order inclusion positivity : The minimal positive joint inclusion probability is bounded below by some η−1 
+
+> n
+
+: min d̸=d′∈D min i,j {π(d;d′) 
+
+> ij
+
+: π(d;d′) 
+
+> ij
+
+> 0} > η −1 
+
+> n
+
+.(c) Logarithmically bounded potential outcomes and covariates : The potential outcomes and covariates are bounded with some Mn = O((log n)γ2 ): max i∈[n] |Yi| <Mn, max i∈[n],d ∈D ∥F (d) 
+
+> i
+
+∥2 < M n.(d) Logarithmically bounded depenency degree : The network has a bounded degree with some 
+
+δn = O((log n)γ3 ): max i∈[n] deg i(∆) < δ n.(e) Stability : There is a rate function κn that is at least constant order, i.e., lim inf  
+
+> n→∞
+
+κn > 0,such that the following quantities are asymptotically of constant order: for some constants 
+
+c, c > 0, and some interger r ≤ p,
+
+cI2 ≾ 1
+
+nκ n
+
+Σεn ≾ cI2, cI2 ≾ 1
+
+nκ n
+
+ΣY 
+
+> n
+
+≾ cI2,cIr ≾ 1
+
+nκ n
+
+ΣF 
+
+> n
+
+≾ cIr , for some integer 1 ≤ r ≤ p. 
+
+These assumptions are standard in design-based inference with interference and ensure that the influence of any individual unit remains controlled as n grows. 13 D Additional details 
+
+D.1 Monte Carlo approximation for Λ
+
+One key step for the framework is to perform Monte Carlo approximation to estimate the matrix Λ.We use the Monte Carlo simulation approach introduced by Section 3 of Aronow and Samii (2017). Introduce the following matrix Π(dk ,d l) ∈ Rn×n to encode the probabailities in (1) and (2) , with elements: 
+
+{Π(dk ,d l)}ij =
+
+(
+
+π(dk ) 
+
+> i
+
+, i = j, k = l;
+
+π(dk ,d l) 
+
+> ij
+
+, otherwise .
+
+Based on (6) , Λ can be directly computed from Π(dk ,d l). Algorithm 1 summarizes the procedure to compute Λ.
+
+Algorithm 1 Monte Carlo Simulation for Computing Λ(dk ,d l) 
+
+> 1:
+
+Input: Randomization plan P, rounds of Monte Carlo repetition R, number of exposure levels 
+
+K, number of unites n, network G 
+
+> 2:
+
+Perform R rounds of randomization following P, to construct K indicator-of-exposure matrix in {0, 1}n×R, given by 1MC  
+
+> k
+
+= {1(r)(Di = dk)}i∈[n],r ∈[R], where 1(r)(Di = dk) indicates whether unit i has exposure level dk(k = 1 , 2) in Round r. 
+
+> 3:
+
+for k=1,2 do  
+
+> 4:
+
+Compute ˆΠ(dk ,d k ) = {1MC  
+
+> k
+
+· (1MC  
+
+> k
+
+)T + In}/(R + 1) . The (i, i )-th diagonal of ˆΠ(dk ,d k )
+
+approximates the propensity scores π(dk ) 
+
+> i
+
+, and the (i, j )-th off-diagonal value approximates the joint inclusion probability π(dk ,d k ) 
+
+> ij
+
+. 
+
+> 5:
+
+end for  
+
+> 6:
+
+Compute ˆΠ(dk ,d l) = {1MC  
+
+> k
+
+· (1MC  
+
+> l
+
+)T }/R . The (i, j )-th value approximates the joint inclusion probability π(dk ,d l) 
+
+> ij
+
+. 
+
+> 7:
+
+Use the definition (6) to construct ˆΛ(dk ,d l)
+
+from ˆΠ(dk ,d l)
+
+. 
+
+> 8:
+
+Output: ˆΛ(dk ,d l) and ˆΠ(dk ,d l).Aronow and Samii (2017) also provides a theoretical justification for Algorithm 1, which suggests that the Monte Carlo approximation is asymptotically consistent: 
+
+Proposition D.1 (Proposition 3.1 in Aronow and Samii (2017)) . As R → ∞ , ˆΠ(dk ,d l) → Π(dk ,d l)
+
+almost surely. Thus, we also have that ˆΛ(dk ,d l) → Λ(dk ,d l) almost surely. Remark D.2 (Computational complexity of Algorithm 1) . The main computational cost of Algorithm 1 is the computation of the matrix ˆΠ(dk ,d l), which requires O(n2R) operations. More broadly, if we apply Algorithm 1 to compute the matrix Λ for K exposure levels, the computational complexity is 
+
+O(n2K2R).
+
+D.2 Variance estimation 
+
+Following the tradition of design-based inference, it is not possible to construct a consistent variance estimator for ˆτ (d1,d 2)  
+
+> F, ˆβ
+
+, because we can never observe and estimate the cross-level covariance between potential outcomes. Instead, we need to construct a variance estimator with a certain level of conservativeness to be robust to different possible cross-level correlations. First, we define the following matrix: 
+
+Φkl = diag {ϕ(dk ,d l) 
+
+> i+
+
+}ni=1 , k = 1 , 2,
+
+where ϕ(dk ,d l) 
+
+> i+
+
+= Pnj=1 1(π(dk ,d l) 
+
+> ij
+
+= 0 , ∆ij = 1) counts the number of units j under level dl that have Dj̸ ⊥⊥ Di and are never jointly included in the sample with i under exposure dk. The reweighted version is given by 
+
+Φπkl = diag {π(dk ) 
+
+> i
+
+ϕ(dk ,d l) 
+
+> i+
+
+}ni=1 ,
+
+14 Then, we define the following matrix, which is a augmented version of Λ:
+
+{Λπkl }(i,j ) =
+
+
+
+{Λkl }(i,j ) · π(dk ) 
+
+> iπ(dl)
+> i
+> π(dk ,d l)
+> ij
+
+, π(dk ,d l)
+
+> ij
+
+̸ = 0; 0, πij (dk, d l) = 0 .
+
+Meanwhile, we construct the following variance estimator: 
+
+ˆv(d1,d 2) =
+
+p 
+
+ˆv(d1) +
+
+p
+
+ˆv(d2)
+
+2
+
+, (7) where for k = 1 , 2,
+
+ˆv(dk ) = n−2{ ˆY (dk ) − ˆF (dk ) ˆβk }T (Λπkk + Φπkk ){ ˆY (dk ) − ˆF (dk ) ˆβk }.
+
+The variance estimator motivates the following confidence interval: 
+
+ˆτ (d1,d 2)  
+
+> F, ˆβ
+
+± zα/ 2
+
+p
+
+ˆv(d1,d 2),
+
+where zα/ 2 is the 1 − α/ 2 quantile of the standard normal distribution. The following theorem shows the conservativeness of the variance estimator ˆv(d1, d 2).
+
+Theorem D.3 (Conservative variance estimator and CI) . Assume Assumption C.1(a)-C.1(e), and a consistent estimator ˆβ of β⋆, i.e., ˆβ − β⋆ = op(1) . Define 
+
+v(d1,d 2)lim =
+
+q 
+
+v(d1)lim +
+
+q
+
+v(d2)lim 
+
+2
+
+,
+
+where v(dk )lim is given in Appendix F.8. Then the variance estimator (7) is conservative: 
+
+ˆv(d1,d 2) − v(d1,d 2)lim 
+
+v(d1,d 2)lim 
+
+= op(1) , v(d1,d 2)lim ≥ avar {ˆτ (d1,d 2)  
+
+> F, ˆβ
+
+}.
+
+The conservativeness of the variance estimator also guarantees the validity of the confidence interval. 
+
+D.3 Computation complexity for hyperparameter construction 
+
+In this section, we comment on the computation complexity of the hyperparameter construction, when there are K pairs of contrast exposures we want to compare. Applying GER to estimate β⋆ only requires computation of ∆ and the first-order inclusion proba-bilities (1) , and there is no need for the second-order inclusion probabilities (2) . This improves the computation complexity to O(nKR ) for first-order inclusion probabilities where R is the number of rounds of Monte Carlo simulation, plus O(nδ 2
+
+> n
+
+) for constructing ∆, resulting in a total computational complexity of O(nKR + nδ 2
+
+> n
+
+) for hyperparameter construction. Another straightforward approach is to estimate β⋆ by a plug-in approach using IPW counterpart for Y (d1;d2), as well as F (d1⊕d2). Such an approach has been discussed in multiple literature for design-based causal inference, such as Middleton (2018); Chang (2023); Lu et al. (2025a). Based on our discussion in Appendix D.1, when there are K pairs of contrast exposures, the computational complexity is O(Kn 2R), where R is the number of rounds of Monte Carlo simulation. 
+
+D.4 Choice of GNN architecture 
+
+Our framework is agnostic to the specific GNN architecture. We describe common choices following the message-passing paradigm where unit i’s representation H(ℓ) 
+
+> i
+
+at layer ℓ is updated by aggregating from neighbors Ni. Let H(0)  
+
+> i
+
+= Xi.1. GCN (Kipf and Welling, 2017): Normalized mean aggregation. H(ℓ+1)  
+
+> i
+
+= σ W (ℓ) · 1 
+
+> |N i|+1
+
+(H(ℓ) 
+
+> i
+
++
+
+P
+
+> j∈N i
+> H(ℓ)
+> j
+
+√|N j |+1 ). Efficient but treats all neighbors equally. 15 2. GAT (Veliˇ ckovi´ c et al., 2018): Learned attention weights. H(ℓ+1)  
+
+> i
+
+=
+
+σ  P  
+
+> j∈N i∪{ i}
+
+α(ℓ) 
+
+> ij
+
+W (ℓ)H(ℓ)
+
+> j
+
+, where αij are softmax-normalized attention scores com-puted from node pairs. Focuses on informative neighbors. 3. GIN (Xu et al., 2019): Maximally expressive. H(ℓ+1)  
+
+> i
+
+= MLP (ℓ) (1 + ϵ(ℓ))H(ℓ) 
+
+> i
+
++ P 
+
+> j∈N i
+
+H(ℓ)
+
+> j
+
+.Sum aggregation with MLP distinguishes more graph structures. 4. PNA (Corso et al., 2020): Multiple aggregators with degree scalers. H(ℓ+1)  
+
+> i
+
+=
+
+U (ℓ) H(ℓ) 
+
+> i
+
+, L 
+
+> agg ,s
+
+s(|N i|) · agg ({H(ℓ) 
+
+> j
+
+}j∈N i ), where agg ∈ { mean , max , min , std } and s ∈{1, |N i|−1/2, |N i|−1}. Robust across different graph types. 
+
+D.5 A cross-fitting extension 
+
+Cross-fitting is a standard technique to reduce overfitting bias when the same data is used for both model fitting and estimation (Lu et al., 2025b). Under network interference, the dependency structure requires a more careful sample splitting strategy. We propose a graph-based cross-fitting procedure tailored to interference settings, summarized in Algorithm 2. 
+
+Algorithm 2 Graph-Based Cross-Fitting for Network Interference  
+
+> 1:
+
+Input: Network G, covariates X, outcomes Y , exposures D1, . . . , D n, propensities π(d) 
+
+> i
+
+,balance tolerance ϵ > 0 
+
+> 2:
+
+(Construct 2-hop graph) Compute G(2) where G(2)  
+
+> ij
+
+= 1 if Ni ∩ N j̸ = ∅ (i.e., units i and j
+
+share a common neighbor in G).  
+
+> 3:
+
+(Balanced min-cut) Partition units into V1, V2 by solving: min V1,V2 |{ (i, j ) : G(2)  
+
+> ij
+
+= 1 , i ∈V1, j ∈ V 2}| s.t. ||V 1| − |V 2|| ≤ ϵn.  
+
+> 4:
+
+(Create buffer zones) Define training sets by removing boundary units: T1 = V1 \ { i : ∃j ∈V2 with G(2)  
+
+> ij
+
+= 1 }, and T2 = V2 \ { i : ∃j ∈ V 1 with G(2)  
+
+> ij
+
+= 1 }. 
+
+> 5:
+
+(Fit models) Train outcome model ˆf1 on units in T1; train ˆf2 on units in T2. 
+
+> 6:
+
+(Cross-predict) For each unit i and exposure level d, compute: ˆY (d),cf  
+
+> i
+
+= ˆf2(Xi, G ; d) · 1(i ∈V1) + ˆf1(Xi, G ; d) · 1(i ∈ V 2). 
+
+> 7:
+
+(Construct estimator) Compute the cross-fitted AIPW estimator: ˆμ(d) 
+
+> cf
+
+=
+
+> 1
+> n
+
+Pni=1 
+
+ 1(Di=d)( Yi− ˆY (d),cf  
+
+> i)
+> π(d)
+> i
+
++ ˆY (d),cf 
+
+> i
+
+
+
+. 
+
+> 8:
+
+Output: Cross-fitted estimator ˆτ (d1,d 2) 
+
+> cf
+
+= ˆ μ(d1) 
+
+> cf
+
+− ˆμ(d2) 
+
+> cf
+
+.The key insight is that units in T1 have no 2-hop neighbors in V2 (and vice versa), ensuring that each unit’s predicted outcome comes from a model trained on independent data. The balanced min-cut in Step 3 can be solved using spectral partitioning (Fiedler, 1973) or the Kernighan-Lin algorithm (Kernighan and Lin, 1970). 
+
+D.6 More on exposure mappings D.6.1 Choices of exposure mappings 
+
+In this section, we discuss some common choices of exposure mappings. 
+
+Example D.4 (SUTVA baseline) . One common choice is to use the SUTVA baseline, which is assuming there is no interference, and setting Di = Ai. However, this is often unrealistic in practice as it ignores the possibility of spillover effects. 
+
+Example D.5 (Total number of treated neighbors) . One choice is to use the total number of treated neighbors, coupled with a self-treatment indicator, which is given by Di = ( Pnj=1 Gij Aj , A i).This is a continuous exposure mapping, and it is more sensitive to the number of treated neighbors. However, it might be hard to estimate the spillover effect for certain contrasts given that if certain units have a lot of neighbors. 
+
+Example D.6 (Indicator of whether any neighbor is treated) . One choice is to use the indicator of whether any neighbor is treated, coupled with a self-treatment indicator, which is given by 16 Di = ( Ai, 1∃j ∈ N i : Aj = 1) . The indicator gives a binary level of spillover, and it is easy to interpret. However, it is not very sensitive to the number of treated neighbors. 
+
+Example D.7 (Exposure bins) . Another common choice is to use exposure bins, Discretize neighbor summary into levels to define a small set of exposures: Si ∈ { 0, 1, 2, 3+ }, or quantile bins of treated-neighbor proportion. This is a discrete exposure mapping, and it is easy to interpret. 
+
+D.6.2 Parameter interpretation with misspecified exposure mappings 
+
+We can also follow the framework of Leung (2022) and allow for misspecified exposure mappings: 
+
+Di need not correctly capture how others affect an individual’s potential outcome. With the potential outcomes Yi(a), we can define the unit i’s expected response under exposure mapping value d as 
+
+μi(d) = X
+
+> a′∈{ 0,1}n
+
+Yi(a′)P (D = a′|T = d).
+
+which equals the expected potential outcome of unit i over all possible treatment assignment vectors given the exposure mapping value at d. Let μ(d) = n−1 Pni=1 μi(d) be the finite population average and μ = ( μ(d) : d ∈ D ) be the K × 1 vector containing all the μ(d)’s corresponding to exposure mapping values. Our focus will be on contrasting these aggregated avarege potential outcomes. 
+
+D.6.3 Learning exposure mappings via GNNs 
+
+In many applications, the exposure mapping is not known a priori. We propose a data-driven approach to learn the exposure mapping using GNNs. The key idea is to learn a categorical representation that captures how a unit’s own treatment and its neighbors’ treatments jointly affect the outcome. 1. Covariate encoding. Encode pretreatment covariates and network structure: ϕi =
+
+GNN X (G, X)i, where ϕi ∈ Rdϕ captures unit i’s covariates and local network structure. 2. Treatment encoding. Encode the treatment assignment pattern via a separate GNN: ψi =
+
+GNN A(G, A)i, where ψi ∈ Rdψ captures how unit i’s own treatment and its neighbors’ treatments jointly determine the exposure. 3. Exposure categorization. Pass the treatment encoding through a softmax layer: πi =
+
+softmax (W ψ i), where W ∈ RK×dψ and K is the number of exposure categories. The dis-crete exposure is Di = argmax k{πi,k }.4. Gumbel-softmax relaxation. Since argmax is non-differentiable, we use the Gumbel-softmax trick (Jang et al., 2017; Maddison et al., 2017) during training: 
+
+ei = softmax 
+
+ log πi + gi
+
+τ
+
+
+
+,
+
+where gi contains i.i.d. Gumbel(0,1) samples and τ > 0 is a temperature parameter annealed during training. 5. Outcome model and loss. The outcome model is ˆYi = f (ϕi, e i; θ), trained by minimizing: 
+
+L = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+(Yi − ˆYi)2
+
+| {z }
+
+> MSE loss
+
++λ · IPM ({ϕi}Di=d, {ϕi}Di=d′ )
+
+| {z }
+
+> Balance loss
+
+,
+
+where the IPM loss (e.g., MMD or Wasserstein distance) encourages balanced representations across exposure groups. At inference time, we use the hard assignment Di = argmax k{πi,k } to obtain discrete exposure categories for use in our GAUGER framework. 
+
+## E Additional Theoretical Results 
+
+In this section, we provide additional theoretical results. They serve as intermediate steps in the proofs of the main results, but also stand alone as insights on the general properties of the proposed framework. Let’s define ˆτ (d1,d 2) 
+
+> β∗
+
+as the AIPW estimator (3) with a given set of features and the optimal oracle coefficients β∗ from (4). The following theorem shows the consistency of ˆτ (d1,d 2) 
+
+> β∗
+
+.17 Theorem E.1 (Consistency of the linearly adjusted estimator) . Under Assumption C.1(a)-C.1(e), the variance of the linearly adjusted estimator has the order: 
+
+var {ˆτ (d1,d 2) 
+
+> β∗
+
+} = Θ 
+
+ κn
+
+n
+
+
+
+.
+
+Therefore, the linearly adjusted estimator is consistent under the scaling κn = o(n):
+
+ˆτ (d1,d 2) 
+
+> β∗
+
+− τ (d1,d 2) = Op
+
+r κn
+
+n
+
+
+
+= op(1) .
+
+Below we prove asymptotic normality of the AIPW estimator with the oracle coefficients β∗.
+
+Theorem E.2 (Asymptotic normality of the linearly adjusted estimator) . Under Assumption C.1(a)-C.1(e), we have the following Berry-Esseen bound: 
+
+P
+
+ ˆτ (d1,d 2) 
+
+> β∗
+
+− τ (d1,d 2)
+
+q
+
+var {ˆτ (d1,d 2) 
+
+> β∗
+
+}≤ z
+
+ − Φ( z) ≤ CM 3
+
+> n
+
+δ20  
+
+> n
+
+η3
+
+> n
+
+n1/2κ3/2
+
+> n
+
+,
+
+where C is a constant. Therefore, the linearly adjusted estimator is asymptotically normal: 
+
+ˆτ (d1,d 2) 
+
+> β∗
+
+− τ (d1,d 2)
+
+q
+
+var {ˆτ (d1,d 2) 
+
+> β∗
+
+}→ N (0 , 1) .
+
+Theorem 4.2 provides the asymptotic distribution of the estimator. It builds the foundation of confidence interval construction. The Berry-Esseen bound is of independent interest as an addition to finite-population distribution approximation theory (Shi and Ding, 2025; Masoero et al., 2026). Now we need to move to consider the estimator with a plug-in coefficient, as we can never implement the AIPW estimator with an oracle coefficient: 
+
+ˆτ (d1,d 2)ˆβ = ˆμ(d1)ˆβ1
+
+− ˆμ(d2)ˆβ2
+
+,
+
+where, for k ∈ { 1, 2},
+
+ˆμ(dk )ˆβ = n−1
+
+> n
+
+X
+
+> i=1
+
+1(Di = dk)( Yi − F (dk )T 
+
+> i
+
+ˆβk)
+
+π(dk )
+
+> i
+
++ F (dk )T 
+
+> i
+
+ˆβk.
+
+with ˆβ1 and ˆβ2 being the plug-in coefficients. 
+
+Theorem E.3 (Properties with a plug-in coefficient) . Under Assumption C.1(a)-C.1(e), and assume that ˆβ is consistent, i.e., ˆβ − β⋆ = op(1) . The plug-in coefficient estimator is asymptotically normal as n → ∞ :
+
+ˆτ adj  
+
+> ˆβ
+
+− τ
+
+q
+
+avar {ˆτ adj  
+
+> ˆβ
+
+}→ N (0 , 1) .
+
+Theorem E.3 is a strong result stating that the plug-in AIPW estimator also enjoys the asymptotic normality, as long as the estimated coefficient is consistent. Hence, the focus of the problem goes to verifying the GER procedure from (5) gives a consistent estimator to the oracle β⋆. This is established by Theorem 4.1. 
+
+## F Proof 
+
+F.1 Proof of Theorem 3.1 
+
+Proof. First, we have that 
+
+E{(Yi − F (dk )T 
+
+> i
+
+βk)1(Di = dk)/π (dk ) 
+
+> i
+
+} = Y (dk ) 
+
+> i
+
+− F (dk )T 
+
+> i
+
+βk.
+
+18 Taking a sum over all units, we have that 
+
+E{ˆμ(d1) 
+
+> β1
+
+} = n−1
+
+> n
+
+X
+
+> i=1
+
+Y (d1) 
+
+> i
+
+− n−1
+
+> n
+
+X
+
+> i=1
+
+F (d1)T 
+
+> i
+
+β1 + n−1
+
+> n
+
+X
+
+> i=1
+
+F (d1)T 
+
+> i
+
+β1 = μ(d1),
+
+E{ˆμ(d2) 
+
+> β2
+
+} = n−1
+
+> n
+
+X
+
+> i=1
+
+Y (d2) 
+
+> i
+
+− n−1
+
+> n
+
+X
+
+> i=1
+
+F (d2)T 
+
+> i
+
+β2 + n−1
+
+> n
+
+X
+
+> i=1
+
+F (d2)T 
+
+> i
+
+β2 = μ(d2).
+
+Thus for any β, we have that 
+
+E{ˆτ (d1,d 2) 
+
+> β
+
+} = E{ˆμ(d1) 
+
+> β1
+
+} − E{ˆμ(d2) 
+
+> β2
+
+} = τ (d1,d 2).
+
+For variance, because the only random component in the estimators is the exposure levels Di. For unit i, we have: cov (1(Di = d), 1(Di = d)) = E(1(Di = d) · 1(Di = d)) − E(1(Di = d)) · E(1(Di = d)) = π(d) 
+
+> i
+
+(1 − π(d) 
+
+> i
+
+),
+
+cov (1(Di = d1), 1(Di = d2)) = E(1(Di = d1) · 1(Di = d2)) − E(1(Di = d1)) · E(1(Di = d2)) = 0 − π(d1) 
+
+> i
+
+π(d2) 
+
+> i
+
+= −π(d1) 
+
+> i
+
+π(d2) 
+
+> i
+
+, for d1̸ = d2.
+
+For two units i and j, we have: cov (1(Di = d), 1(Dj = d)) = E(1(Di = d) · 1(Dj = d)) − E(1(Di = d)) · E(1(Dj = d)) = π(d,d ) 
+
+> ij
+
+− π(d) 
+
+> i
+
+π(d) 
+
+> j
+
+,
+
+cov (1(Di = d1), 1(Dj = d2)) = π(d1,d 2) 
+
+> ij
+
+− π(d1) 
+
+> i
+
+π(d2) 
+
+> j
+
+.
+
+The variance of ˆτ (d1,d 2) 
+
+> β
+
+consists of three parts: var {ˆτ (d1,d 2) 
+
+> β
+
+} = var {ˆμ(d1) 
+
+> β1
+
+} + var {ˆμ(d2) 
+
+> β2
+
+} − 2cov {ˆμ(d1) 
+
+> β1
+
+, ˆμ(d2) 
+
+> β2
+
+}.
+
+For var {ˆμ(d1) 
+
+> β1
+
+}, we have: var {ˆμ(d1) 
+
+> β1
+
+} = var 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+(
+
+1(Di = d1)( Yi − F (d1)T 
+
+> i
+
+β1)
+
+π(d1)
+
+> i
+
++ F (d1)T 
+
+> i
+
+β1
+
+)! 
+
+= var 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+(
+
+1(Di = d1)( Yi − F (d1)T 
+
+> i
+
+β1)
+
+π(d1)
+
+> i
+
+)! 
+
+= 1
+
+n2
+
+> n
+
+X
+
+> i=1
+
+var (1(Di = d1)) · (Y (d1) 
+
+> i
+
+− F (d1)T 
+
+> i
+
+β1)2
+
+{π(d1) 
+
+> i
+
+}2
+
++ 1
+
+n2
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+cov (1(Di = d1), 1(Dj = d1))( Y (d1) 
+
+> i
+
+− F (d1) 
+
+> i
+
+β1)T β1)( Y (d1) 
+
+> j
+
+− F (d1) 
+
+> j
+
+β1)T β1)
+
+π(d1) 
+
+> i
+
+π(d1)
+
+> j
+
+= 1
+
+n2 {Y (d1) − F (d1)β1}T Λ11 {Y (d1) − F (d1)β1}.
+
+Similarly, we can show that var {ˆμ(d2) 
+
+> β2
+
+} = 1
+
+n2 {Y (d2) − F (d2)β2}T Λ22 {Y (d2) − F (d2)β2}.
+
+For cov {ˆμ(d1) 
+
+> β1
+
+, ˆμ(d2) 
+
+> β2
+
+}, we have: cov {ˆμ(d1) 
+
+> β1
+
+, ˆμ(d2) 
+
+> β2
+
+} = 1
+
+n2 {Y (d1) − F (d1)β1}T Λ12 {Y (d2) − F (d2)β2}.
+
+Thus, we conclude the theorem. 19 F.2 Statement and Proof of Lemma F.1 Lemma F.1. Under Assumption C.1(a)-C.1(e), we have that 
+
+κn ≤ Cη 2
+
+> n
+
+δnM 2 
+
+> n
+
+= O(poly(log n)) .
+
+Proof. Note that we can bound the largest eigenvalue of Λ with its induced ∞-norm: 
+
+ρmax (Λ) ≤ ∥ Λ∥∞ = max 
+
+> i∈[n]
+
+X
+
+> j∈[n]
+
+|(Λ12 )(i,j )| ≤ Cη 2
+
+> n
+
+δn.
+
+Based on Assumption C.1(e), we have that 
+
+(nκ n)−1ρmin 
+
+ Y (d1)T 00 Y (d2)T
+
+
+
+Λ(d1, d 2)
+
+Y (d1) 00 Y (d2)
+
+ 
+
+≥ c. 
+
+Moreover, 
+
+ρmax 
+
+ Y (d1)T 00 Y (d2)T
+
+
+
+Λ(d1, d 2)
+
+Y (d1) 00 Y (d2)
+
+ 
+
+≤ Cη 2
+
+> n
+
+δn(∥Y (d1)∥22 + ∥Y (d2)∥22).
+
+Therefore, we have that 
+
+(nκ n)−1 ≥ cCη 2
+
+> n
+
+δn(∥Y (d1)∥22 + ∥Y (d2)∥22) ,
+
+or equivalently, 
+
+κn ≤ Cη 2
+
+> n
+
+δn(∥Y (d1)∥22 + ∥Y (d2)∥22)
+
+nc ≤ Cη 2
+
+> n
+
+δnM 2
+
+> n
+
+.
+
+F.3 Proof of Theorem E.1 
+
+Proof. We will use Chebyshev’s inequality to show convergence in probability. Under Assumption C.1(e), for β∗, based on Equation (8), we have that 
+
+2cκ n
+
+n ≾ var {ˆτ (d1,d 2) 
+
+> β∗
+
+} = 1
+
+n2 (1 −1) Σεn
+
+ 1
+
+−1
+
+
+
+≾ 2cκ n
+
+n .
+
+Applying the Chebyshev’s inequality, we have that 
+
+ˆτ (d1,d 2) 
+
+> β⋆
+
+− τ (d1,d 2) = Op
+
+r κn
+
+n
+
+
+
+= op(1) .
+
+F.4 Proof of Theorem E.2 and Theorem 4.2 
+
+Theorem 4.2 is a direct corollary of the more general result Theorem E.2. Hence, we directly prove Theorem E.2. 
+
+A preliminary lemma. We will use a result from Chen and Shao (2004). For self-consistency, we include the following lemma for CLT under graph dependency. Consider a set of random variables 
+
+{Vi, i ∈ V} indexed by the vertices of a graph G = ( V, E). G is said to be a dependency graph if, for any pair of disjoint sets Γ1 and Γ2 in V such that no edge in E has one endpoint in Γ1 and the other in Γ2, the sets of random variables {Vi, i ∈ Γ1} and {Vi, i ∈ Γ2} are independent. Let D denote the maximal degree of G, that is, the maximal number of edges incident to a single vertex. 
+
+Lemma F.2 (A CLT under graph dependency, Theorem 2.7 in Chen and Shao (2004)) . Let {Vi, i ∈ V} 
+
+be random variables indexed by the vertices of a dependency graph G = ( V, E). Put W = Pni=1 Vi.Assume that E(W 2) = 1 , E(Vi) = 0 and E(|Vi|p) ≤ θp for i ∈ V and for some 2 < p ≤ 3 and 
+
+θ > 0. Then for any z ∈ R,
+
+|P (W ≤ z) − Φ( z)| ≤ 75 D5( p−1) |V |θp.
+
+20 Proof. The proof follows from the central limit theorem. We will use Lemma F.2 to show a CLT for 
+
+{ˆμ(dk ) 
+
+> βk
+
+}k∈[2] .Taking Vi in Lemma F.2 as the scaled random component, dropping the outcome part, we have that 
+
+Vi = 1
+
+n
+
+q
+
+var {ˆμ(dk ) 
+
+> βk
+
+}
+
+(
+
+1(Di = dk)( Yi − F (dk )T 
+
+> i
+
+βk)
+
+π(dk )
+
+> i
+
+− (Y (dk ) 
+
+> i
+
+− F (dk )T 
+
+> i
+
+βk)
+
+)
+
+,
+
+with E(Vi) = 0 . Also define 
+
+W =
+
+> n
+
+X
+
+> i=1
+
+Vi, with E(W 2) = 1 .
+
+Now we bound E(|Vi|3). By Assumption C.1(c), we have that 
+
+E
+
+ 1(Di = d1)( Yi − F (d1)T 
+
+> i
+
+β1)
+
+π(d1)
+
+> i
+
+− (Y (d1) 
+
+> i
+
+− F (d1)T 
+
+> i
+
+β1)
+
+> 3
+
+
+
+≤
+
+
+
+|Y (d1) 
+
+> i
+
+− F (d1)T 
+
+> i
+
+β1|3
+
+· E
+
+ 1(Di = d1)
+
+π(d1)
+
+> i
+
+− 1
+
+> 3
+
+
+
+≤ CM 3
+
+> n
+
+η3
+
+> n
+
+.
+
+Similarly, we have that 
+
+E
+
+ 1(Di = d2)( Yi − F (d2)T 
+
+> i
+
+β2)
+
+π(d2)
+
+> i
+
+− (Y (d2) 
+
+> i
+
+− F (d2)T 
+
+> i
+
+β2)
+
+> 3
+
+
+
+≤
+
+
+
+|Y (d2) 
+
+> i
+
+− F (d2)T 
+
+> i
+
+β2|3
+
+· E
+
+ 1(Di = d2)
+
+π(d2)
+
+> i
+
+− 1
+
+> 3
+
+
+
+≤ CM 3
+
+> n
+
+η3
+
+> n
+
+.
+
+Therefore, using (8), we have that 
+
+E(|Vi|3) ≤ CM 3
+
+> n
+
+η3
+
+> n
+
+n3var {ˆμ(dk ) 
+
+> βk
+
+}3/2 ≤ CM 3
+
+> n
+
+η3
+
+> n
+
+n3/2κ3/2
+
+> n
+
+(defined as θp in Lemma F.2) .
+
+Based on the definition for dependency graph, we have can define G = ∆ to be the dependency graph of the ∆. The maximal degree of G is at most δn. Also |V | = n. Therefore, using Lemma F.2, we have that 
+
+|P (W ≤ z) − Φ( z)| ≤ CM 3
+
+> n
+
+δ10  
+
+> n
+
+η3
+
+> n
+
+n1/2κ3/2
+
+> n
+
+.
+
+F.5 Proof of Theorem E.3 
+
+Proof. We compute that 
+
+ˆτ (d1,d 2) 
+
+> β∗
+
+− ˆτ (d1,d 2)ˆβ = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+(
+
+1(Di = d1){− F (d1)T 
+
+> i
+
+(β∗ 
+
+> 1
+
+− ˆβ1)}
+
+π(d1)
+
+> i
+
++ F (d1)T 
+
+> i
+
+(β∗ 
+
+> 1
+
+− ˆβ1)
+
+)
+
+− 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+(
+
+1(Di = d2){− F (d2)T 
+
+> i
+
+(β∗ 
+
+> 2
+
+− ˆβ2)}
+
+π(d2)
+
+> i
+
++ F (d2)T 
+
+> i
+
+(β∗ 
+
+> 2
+
+− ˆβ2)
+
+)
+
+= −(β∗ 
+
+> 1
+
+− ˆβ1) · 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+(
+
+1(Di = d1)
+
+π(d1)
+
+> i
+
+− 1
+
+)
+
+F (d1)T
+
+> i
+
++( β∗ 
+
+> 2
+
+− ˆβ2) · 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+(
+
+1(Di = d2)
+
+π(d2)
+
+> i
+
+− 1
+
+)
+
+F (d2)T 
+
+> i
+
+.
+
+21 Treating F (dk ) 
+
+> i
+
+as pseudo potential outcomes, we can apply Theorem E.1 to obtain rate: 
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ 1(Di = d1)
+
+πi(d1) − 1
+
+
+
+F (d1)T 
+
+> i
+
+= Op
+
+r κn
+
+n
+
+
+
+, 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ 1(Di = d2)
+
+πi(d2) − 1
+
+
+
+F (d2)T 
+
+> i
+
+= Op
+
+r κn
+
+n
+
+
+
+.
+
+Therefore, Using ˆβ − β∗ = op(1) and the variance order (8), we have 
+
+ˆτ (d1,d 2) 
+
+> β∗
+
+− ˆτ (d1,d 2)ˆβ
+
+q
+
+var (ˆ τ (d1,d 2) 
+
+> β∗
+
+)= Op
+
+ p κn
+
+> n
+
+ · op(1) Θ  p κn
+
+> n
+
+ = op(1) .
+
+Thus we conclude the theorem. 
+
+F.6 Statement and Proof of Lemma F.3 Lemma F.3 (Variance bounds for a double-sum statistic over a dependency graph) . Let G = ( V, E)
+
+be a dependency graph, with adjacency matrix ∆ and maximum degree δ(∆). Let (Ui, V i)i∈V be a sequence of random variable pairs following G, with mean zero and variance max {E(U 4 
+
+> i
+
+), E(V 4 
+
+> i
+
+)} ≤ 
+
+¯σ4. Let (ci)i∈V be a sequence of constants, with upper bound ¯c. Then, 
+
+var 
+
+
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+(∆)ij · cij UiVj
+
+ ≤ nδ (∆)3 ¯c2 ¯σ4.
+
+Proof. We have that var 
+
+
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+(∆)ij · cij UiVj
+
+ =
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+> n
+
+X
+
+> r=1
+> n
+
+X
+
+> s=1
+
+(∆)ij (∆)rs · cij crs cov (UiVj , U r Vs).
+
+Here, cov (UiVj , U r Vs) = 0 if UiVj ⊥⊥ Ur Vs. Therefore, the index tuple (i, j, r, s ) ∈ [n]4 for the nonzero terms in the summation must satisfy: 
+
+Ui̸ ⊥⊥ Vj , Ur̸ ⊥⊥ Vs, UiVj̸ ⊥⊥ Ur Vs.
+
+On dependency graph, this means: i is connected to j, r is connected to s, and at least one of i, j is connected to one of r, s . WLOS, if j connects to r, this means we can find a path on the dependency graph in the form of i → j → r → s (some index might be the same, say i = j, as dependency graph includes self-loop). Conversely, any path with length no greater than three can lead to a potential nonzero index tuple. For each node i, there are at most δ(∆)3 potential paths with length no greater than three. Therefore, the total number of potential nonzero index tuples is at most nδ (∆)3.Now each term in the summation is upper bounded by 
+
+|cij crs cov (UiVj , U r Vs)| ≤ ¯c2
+
+q
+
+var (UiVj )var (Ur Vs) ≤ ¯c2
+
+q
+
+(E(U 4 
+
+> i
+
+) + E(V 4 
+
+> j
+
+))( E(U 4 
+
+> r
+
+) + E(V 4 
+
+> s
+
+)) /4 ≤ ¯c2 ¯σ4.
+
+Therefore, we conclude that var 
+
+
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+(∆)ij · cij UiVj
+
+ ≤ nδ (∆)3 ¯c2 ¯σ2.
+
+F.7 Proof of Theorem 4.1 
+
+Proof. For convience, recall the notaion 
+
+F (d1⊕d2) =
+
+F (d1) 0n×p
+
+0n×p F (d2)
+
+
+
+.
+
+22 Let ˆβregression be the plug-in coefficients from (5) , with the pseudo inverse trimmed to the rank r. Let’s show that 
+
+(nκ n)−1
+
+ ˆF (d1)T − F (d1)T
+
+ˆF (d2)T − F (d2)T
+
+
+
+∆   ˆF (d1)T − F (d1)T ˆF (d2)T − F (d2)T 
+
+converges in probability to its expectation. Taking the left-upper block, for any uk,p , u l,p ∈ Rp with all zero but a 1 at the k-th and l-th positions, we have that 
+
+(nκ n)−1uT
+
+k,p ( ˆF (d1)T − F (d1)T )∆( ˆF (d1) − F (d1))ul,p 
+
+= (nκ n)−1
+
+nX
+
+i=1 
+
+nX
+
+j=1 
+
+1(Di̸ ⊥⊥ Dj ) · F (d1)T
+
+i uk,p F (d1)T
+
+j ul,p · (ˆ 1i(d1) − 1)(ˆ 1j (d1) − 1) .
+
+Taking expectation, we have that 
+
+E{(nκ n)−1uT
+
+k,p ( ˆF (d1)T − F (d1)T )∆( ˆF (d1) − F (d1))ul,p }
+
+= (nκ n)−1
+
+nX
+
+i=1 
+
+nX
+
+j=1 
+
+1(Di̸ ⊥⊥ Dj ) · F (d1)T
+
+i uk,p F (d1)T
+
+j ul,p · E{(ˆ 1i(d1) − 1)(ˆ 1j (d1) − 1) }
+
+= (nκ n)−1
+
+nX
+
+i=1 
+
+nX
+
+j=1 
+
+1(Di̸ ⊥⊥ Dj ) · F (d1)T
+
+i uk,p F (d1)T
+
+j ul,p · cov (1(Di = d1), 1(Dj = d1)) = (nκ n)−1
+
+nX
+
+i=1 
+
+nX
+
+j=1 
+
+1(Di̸ ⊥⊥ Dj ) · F (d1)T
+
+i uk,p F (d1)T
+
+j ul,p · { Λ11 }ij 
+
+= (nκ n)−1 · uT
+
+k,p F (d1)T Λ11 F (d1)ul,p .
+
+Using Lemma F.3 and Lemma F.1, we have that var 
+
+n
+
+(nκ n)−1uT
+
+k,p ( ˆF (d1)T − F (d1)T )∆( ˆF (d1) − F (d1))ul,p 
+
+o
+
+≤ Cnδ 6
+
+nM 4
+
+nη6
+
+n
+
+n2κ2
+
+n
+
+= O( Cδ 6
+
+nM 4
+
+nη6
+
+n
+
+nκ 2
+
+n
+
+) = o(1) .
+
+Therefore, we have that 
+
+(nκ n)−1{( ˆF (d1)T − F (d1)T )∆( ˆF (d1) − F (d1)) − F (d1)T Λ11 F (d1)} = Op(
+
+s
+
+η6
+
+nδ3
+
+nM 4
+
+n
+
+nκ 2
+
+n
+
+).
+
+Similarly, we can show that this convergence holds for all the other three blocks, which amounts to 
+
+(nκ n)−1{( ˆF (d1;d2)T − F (d1;d2)T )∆( ˆF (d1;d2) − F (d1;d2)) − F (d1⊕d2)T ΛF (d1⊕d2)} = Op(
+
+s
+
+η6
+
+nδ3
+
+nM 4
+
+n
+
+nκ 2
+
+n
+
+).
+
+Using Lemma F.4, we have that 
+
+(nκ n)∥{ ( ˆF (d1;d2)T − F (d1;d2)T )∆( ˆF (d1;d2) − F (d1;d2))}† − { F (d1⊕d2)T ΛF (d1⊕d2)}†∥op 
+
+≤ C max {∥ (nκ n){( ˆF (d1;d2)T − F (d1;d2)T )∆( ˆF (d1;d2) − F (d1;d2))}†∥2
+
+op , ∥(nκ n){(F (d1⊕d2))T ΛF (d1⊕d2)}†∥2
+
+op }·∥ (nκ n)−1{( ˆF (d1;d2)T − F (d1;d2)T )∆( ˆF (d1;d2) − F (d1;d2)) − F (d1⊕d2)T ΛF (d1⊕d2)}∥ op .
+
+According to Assumption C.1(e), we have 
+
+max {∥ (nκ n){( ˆF (d1;d2)T − F (d1;d2)T )∆( ˆF (d1;d2) − F (d1;d2))}†∥2
+
+op , ∥(nκ n){(F (d1⊕d2))T ΛF (d1⊕d2)}†∥2
+
+op } ≤ Cc −2.
+
+Therefore, we have that 
+
+(nκ n)∥(( ˆF (d1;d2)T − F (d1;d2)T )∆( ˆF (d1;d2) − F (d1;d2))) † − (F (d1⊕d2)T ΛF (d1⊕d2))†∥op = Op(
+
+s
+
+η6
+
+nδ3
+
+nM 4
+
+n
+
+nκ 2
+
+n
+
+).
+
+Moreover, we have that 
+
+(nκ n)−1{( ˆF (d1;d2)T − F (d1;d2)T )∆( ˆY (d1) − ˆY (d2)) − F (d1⊕d2)T ΛY (d1;d2)} = Op(
+
+s
+
+η6
+
+nδ3
+
+nM 4
+
+n
+
+nκ 2
+
+n
+
+).
+
+Therefore, we have that 
+
+ˆβ − β⋆ = Op
+
+s
+
+η6
+
+nδ6
+
+nM 4
+
+n
+
+nκ 2
+
+n
+
+!
+
+.
+
+23 F.8 Proof of Theorem D.3 
+
+We first introduce a lemma that will be used in the proof. 
+
+Lemma F.4 (Perturbation bounds of the Moore-Penrose inverse, Wedin (1973)) . Let A be a real-valued matrix and B = A + E. Then, 
+
+∥B† − A†∥op ≤ C max {∥ A†∥2
+
+> op
+
+, ∥B†∥op }∥ E∥op ,
+
+Now we are ready to prove Theorem D.3. 
+
+Proof. We first show the consistency of the variance estimator for ˆμ(d1) and ˆμ(d2). We focus on 
+
+ˆv(d1) without loss of generality. Recall that 
+
+nκ −1 
+
+> n
+
+ˆv(d1) = (nκ n)−1{ ˆY (d1) − ˆF (d1) ˆβ1}T (Λπ 
+
+> 11
+
++ Φπ
+
+> 11
+
+){ ˆY (d1) − ˆF (d1) ˆβ1}
+
+= (nκ n)−1{ ˆY (d1) − ˆF (d1)β⋆ 
+
+> 1
+
+}T (Λπ 
+
+> 11
+
++ Φπ
+
+> 11
+
+){ ˆY (d1) − ˆF (d1)β⋆ 
+
+> 1
+
+}
+
+| {z }
+
+> Term I
+
++ ( nκ n)−1{ ˆF (d1) ˆβ1 − ˆF (d1)β⋆ 
+
+> 1
+
+}T (Λπ 
+
+> 11
+
++ Φπ
+
+> 11
+
+){ ˆF (d1) ˆβ1 − ˆF (d1)β⋆ 
+
+> 1
+
+}
+
+| {z }
+
+> Term II
+
++ 2( nκ n)−1{ ˆY (d1) − ˆF (d1)β⋆ 
+
+> 1
+
+}T (Λπ 
+
+> 11
+
++ Φπ
+
+> 11
+
+){ ˆF (d1) ˆβ1 − ˆF (d1)β⋆ 
+
+> 1
+
+}
+
+| {z }
+
+> Term III
+
+.
+
+For Term I, we have that 
+
+(nκ n)−1{ ˆY (d1) − ˆF (d1)β⋆ 
+
+> 1
+
+}T (Λπ 
+
+> 11
+
++ Φπ
+
+> 11
+
+){ ˆY (d1) − ˆF (d1)β⋆ 
+
+> 1
+
+}
+
+= (nκ n)−1
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+1{∆ij =1 ,π (d1,d 2) 
+
+> ij >0}
+
+{Λπ
+
+> 11
+
+}(i,j )(Y (d1) 
+
+> i
+
+− F (d1)T 
+
+> i
+
+β⋆ 
+
+> 1
+
+)( Y (d1) 
+
+> j
+
+− F (d1)T 
+
+> j
+
+β⋆ 
+
+> 1
+
+) · 1(Di = d1, D j = d2)
+
+π(d1) 
+
+> i
+
+π(d2)
+
+> j
+
+| {z }
+
+> Term I.1
+
++ ( nκ n)−1
+
+> n
+
+X
+
+> i=1
+
+n
+
+π(d1) 
+
+> i
+
+ϕ(d1,d 2)
+
+> i+
+
+o (Y (d1) 
+
+> i
+
+− F (d1)T 
+
+> i
+
+β⋆ 
+
+> 1
+
+)21(Di = d1)
+
+{π(d1) 
+
+> i
+
+}2
+
+| {z }
+
+> Term I.2
+
+.
+
+Let Λ+11 be the n × n block matrix with (i, j )-th item equal to 
+
+{Λ+11 }(i,j ) = {Λ11 }(i,j ) · 1(π(d1,d 2) 
+
+> ij
+
+> 0) .
+
+We can verify that 
+
+E{Term I } = ( nκ n)−1(Y (d1) − F (d1)β⋆ 
+
+> 1
+
+)T (Λ+11 + Φ11 )( Y (d1) − F (d1)β⋆ 
+
+> 1
+
+) ≜ (nκ n)−1vlim (d1).
+
+By the fact that Λ+11 + Φ11 ⪰ Λ11 , we always have 
+
+E{Term I } ≥ nκ −1 
+
+> n
+
+var (ˆ μ(d1) 
+
+> β1
+
+) = Θ(1) .
+
+Now, using Lemma F.3, we have that var {Term I.1 } ≤ Cδ 6
+
+> n
+
+M 4
+
+> n
+
+η6
+
+> n
+
+nκ 2
+
+> n
+
+.
+
+For Term I.2, treating Y pseudo  
+
+> i
+
+(d1) = π(d1) 
+
+> i
+
+ϕ(d1,d 2) 
+
+> i+
+
+(Y (d1) 
+
+> i
+
+−F (d1)T 
+
+> i
+
+β⋆ 
+
+> 1
+
+)2 as a pseudo potential outcome, using Theorem (3.1), we have that var {Term I.2 } ≤ C(nκ n)−1δ2
+
+> n
+
+M 2
+
+> n
+
+η2
+
+> n
+
+,
+
+which is dominated by the variance of Term I.1. To sum up, we have Term I − E{Term I } = Op(
+
+s
+
+δ6
+
+> n
+
+M 4
+
+> n
+
+η6
+
+> n
+
+nκ 2
+
+> n
+
+).
+
+24 For Term II, we first bound the variance of the following term, using Lemma F.3 again: var {(nκ n)−1uT 
+
+> k,p
+
+ˆF (d1)T (Λ+11 + Φ11 ) ˆF (d1)ul,p } ≤ Cδ 6
+
+> n
+
+M 4
+
+> n
+
+η6
+
+> n
+
+nκ 2
+
+> n
+
+.
+
+Hence, (nκ n)−1 ˆF (d1)T (Λ+11 + Φ11 ) ˆF (d1) = Op(1) , i.e., has the same order as its mean. Based on the stated condition, ˆβ1 − β⋆ 
+
+> 1
+
+= op(1) , we have that Term II = op(1) .
+
+For Term III, similarly, we can show that Term III = op(1) .
+
+Therefore, we have that 
+
+nκ −1 
+
+> n
+
+ˆv(d1) − nκ −1 
+
+> n
+
+v(d1)lim 
+
+nκ −1 
+
+> n
+
+v(d1)lim 
+
+= nκ −1 
+
+> n
+
+(ˆ v(d1) − v(d1)lim )
+
+nκ −1 
+
+> n
+
+v(d1)lim 
+
+= Op( op(1) Θ(1) ) = op(1) .
+
+Similarly, we can show the counterpart for ˆv(d2). Now using Cauchy-Schwarz inequality, we have that var (ˆ τ (d1,d 2) 
+
+> β1
+
+) = var (ˆ μ(d1) 
+
+> β1
+
+) + var (ˆ μ(d2) 
+
+> β2
+
+) − 2cov (ˆ μ(d1) 
+
+> β1
+
+, ˆμ(d2) 
+
+> β2
+
+)
+
+≤ var (ˆ μ(d1) 
+
+> β1
+
+) + var (ˆ μ(d2) 
+
+> β2
+
+) + 2 
+
+q
+
+var (ˆ μ(d1) 
+
+> β1
+
+)var (ˆ μ(d2) 
+
+> β2
+
+)=
+
+q 
+
+var (ˆ μ(d1) 
+
+> β1)
+
++
+
+q
+
+var (ˆ μ(d2)
+
+> β2)
+
+2
+
+≤
+
+q 
+
+v(d1)lim +
+
+q
+
+v(d2)lim 
+
+2
+
+≜ v(d1,d 2)lim .
+
+Therefore, we have that 
+
+ˆv(d1,d 2) − v(d1,d 2)lim 
+
+v(d1,d 2)lim 
+
+= op(1) , v(d1,d 2)lim ≥ var (ˆ τ (d1,d 2) 
+
+> β1
+
+).
+
+## G Hyperparameter Tuning 
+
+In this section, we present how we tune GNN-related models in our simulation study and real data. Our data are splitted into training set, validation set, and testing set. We choose a set of hyperparameters that generate the best performance in validation set. 
+
+GAT hyperparameter tuning. We tune the GAT model to maximize outcome prediction R2 on the simulated data. Table 4 summarizes the hyperparameter search space. We find that a medium-depth architecture (GAT layers [64, 32], representation dimension 16, head layers [64, 32, 16]) with no IPM regularization and no dropout achieves the best balance between model capacity and regularization, recovering substantial predictive power from the graph structure alone. 
+
+PNA hyperparameter tuning. We tune the PNA model to minimize average confidence interval width across contrasts. Table 5 summarizes the hyperparameter search space. We find that simpler models with fewer aggregators and moderate regularization yield the narrowest confidence intervals. 
+
+## H Additional Details in Numerical Studies 
+
+H.1 Synthetic data generating process Data generating process. We generate a network G with n = 2000 units, with average degree δavg ,and maximum degree δmax . Unit-level covariates Xi = ( Xi1, X i2, X i3)T are generated as functions of degree Hi = |N i|:
+
+Xi1 ∼ N (0 .5Hi, 1) , Xi2 ∼ N (0 .02 H2 
+
+> i
+
+, 1) , Xi3 ∼ Poisson (1(Hi ≥ δavg )) ,
+
+25 Table 4: GAT hyperparameter search space Hyperparameter Values Searched GAT hidden layers [32], [64], [64, 32], [128, 64] Representation dim 16, 32 Head hidden layers [16], [32, 16], [64, 32], [64, 32, 16] Attention heads 4, 8 IPM regularization λ 0.0, 0.1, 1.0 Dropout 0.0, 0.1, 0.2 Learning rate 0.0005, 0.001, 0.002 Weight decay 0.0001, 0.01, 0.05, 0.1, 0.2 Epochs 500, 800, 1000, 2000 Early stopping patience 30, 50, 100 Table 5: PNA hyperparameter search space Hyperparameter Values Searched GNN hidden dimension and layers [32], [64], [128], [256], [128, 64] Representation dimension 16, 32, 64 Head hidden dimension and layers [], [16], [32], [64], [64, 32] Aggregators {mean}, {mean, sum}, {mean, sum, max}, {mean, sum, max, std} Scalers {identity}, {identity, amplification}, {identity, amplification, attenuation} Learning rate 0.0002, 0.0005, 0.001, 0.005 IPM regularization λ 0.0, 0.1, 1.0 Weight decay 0.0001, 0.01, 0.05, 0.1, 0.2 Dropout 0.0, 0.2, 0.3, 0.5 Epochs 500, 800, 1000, 2000 Early stopping patience 30, 50, 100 In all of our simulation studies, to add the complexity of unmeasured confounders, we only use Xi3
+
+as well as an intercept to build model adjustments, while keeping Xi1 and Xi2 as blind. Potential outcomes incorporate both individual covariates and neighbor spillover: 
+
+Yi(d) = β0 + βH Hi + βdd + g(Xi) + 1
+
+|N i \ { i}| 
+
+X
+
+> j∈N i\{ i}
+
+g(Xj ) + εi,
+
+where g(Xi) = 0 .6Xi1 + 0 .15 X2 
+
+> i2
+
++ 0 .4 tanh( Xi3) is a nonlinear function, and εi ∼ N (0 , 1) . The neighbor spillover term 1
+
+> |N i\{ i}|
+
+P 
+
+> j∈N i\{ i}
+
+g(Xj ) captures the influence of neighbors’ covariates on unit i’s outcome, which cannot be captured by individual-level covariates alone. Treatment Ai is assigned uniformly at random with P (Ai = 1) = 1 /3. Exposure Di ∈ { 0, 1, 2} is determined by discretizing the proportion of treated neighbors into k = 3 bins. In Section 6, we choose δavg = 3 and δmax = 9 . We estimate τ (d1,d 2) = E[Y (d1) − Y (d2)] with 
+
+d1 = 0 and d2 = 2 ; the true effect is τ ⋆ = −0.594 .
+
+H.2 Additional synthetic study 
+
+To assess robustness across network structures, we repeat the simulation with a medium-density network (average degree 5, maximum degree 10). Table 6 presents results for this configuration, maintaining the same DGP and 3-level exposure ( k = 3 ). The true treatment effect remains 
+
+τ ⋆ = −0.594 .PNA methods continue to dominate with the lowest RMSE ( ≈ 0.16 –0.24), representing a 33% improvement over linear GRR (0.245) and 34% over GAT methods ( ≈ 0.25). Notably, PNA-pred achieves the highest power (81%) despite a slightly higher RMSE than PNA-linear/no-harm, 26 Table 6: Simulation results with medium-density network (avg degree 5, max degree 10). True 
+
+τ ⋆ = −0.594 .
+
+Description Estimator Bias SD RMSE Coverage Power Primitive ˆτ ht −0.359 ± 0.24 1.475 ± 0.17 1.518 ± 0.18 0.38 0.60 
+
+ˆτ haj −0.027 ± 0.06 0.367 ± 0.04 0.368 ± 0.04 0.94 0.21 Linear ˆτ linear-raw −0.084 ± 0.08 0.459 ± 0.05 0.467 ± 0.05 0.98 0.16 
+
+ˆτ linear-linear 0.057 ± 0.04 0.238 ± 0.03 0.245 ± 0.03 0.98 0.21 
+
+ˆτ linear-pred 0.074 ± 0.04 0.241 ± 0.03 0.252 ± 0.03 0.97 0.22 GAT ˆτ GAT-raw −0.010 ± 0.06 0.382 ± 0.04 0.382 ± 0.04 0.93 0.21 
+
+ˆτ GAT-linear 0.113 ± 0.04 0.221 ± 0.03 0.248 ± 0.03 0.92 0.27 
+
+ˆτ GAT-pred 0.116 ± 0.04 0.221 ± 0.03 0.250 ± 0.03 0.92 0.25 PNA ˆτ PNA-raw −0.008 ± 0.04 0.241 ± 0.03 0.242 ± 0.03 0.97 0.81 
+
+ˆτ PNA-linear 0.041 ± 0.03 0.158 ± 0.02 0.163 ± 0.02 0.96 0.73 
+
+ˆτ PNA-pred 0.041 ± 0.03 0.159 ± 0.02 0.164 ± 0.02 0.96 0.73 
+
+consistent with the variance-power trade-off observed in the sparse network setting. The linear-no-cal method performs poorly (RMSE 0.467) in this multi-level exposure setting, demonstrating that separate OLS fitting per exposure level is unreliable when data is split across three groups. Overall, the results confirm that PNA’s performance advantage is robust across network densities. 
+
+H.3 Real data study Network structure and exposure distribution. The network is constructed as follows: for each village i, we connect it to its nearest five villages that are within 8 kilometers. To avoid issues with extremely high-degree nodes that could dominate the interference structure, we cap the maximum degree by removing edges from villages with excessively high connectivity. The resulting network captures potential spillover pathways through which treatment effects may propagate across nearby villages—for example, through local labor markets, trade relationships, or price effects. Table 7 summarizes the network structure and exposure distribution. The network has 2,285 undirected edges with an average degree of 7.0. The degree distribution is similar across exposure groups, suggesting that network position does not strongly predict exposure assignment. Table 7: Network structure and exposure distribution. Standard deviations of average degree at different exposure level are presented in (·).Exposure A H n Avg Degree Degree Range 
+
+D = 0 0 0 97 6.92 (1.06) [3, 8] 
+
+D = 1 0 1 228 7.10 (1.14) [2, 8] 
+
+D = 2 1 0 82 6.83 (1.34) [1, 8] 
+
+D = 3 1 1 246 7.00 (1.20) [3, 8] Total 653 7.00 [1, 8] 
+
+Propensity score distributions. Figure 2 summarizes the propensity score distributions. The propensity scores π(d) 
+
+> i
+
+= P (Di = d) are estimated via Monte Carlo simulation with 100,000 rounds. Appendix section D.1 illustrates how we use Monte Carlo simulation to approximate Λ.The propensity scores exhibit substantial heterogeneity, reflecting the complex dependence structure induced by interference. Notably, the H = 0 exposures ( D = 0 and D = 2 ) have lower average propensities because having fewer than one-third of neighbors treated is relatively rare given the network structure and treatment rates. 
+
+95% confidence interval widths. Table 8 presents 95% confidence interval widths for the treatment effect estimates. 27 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7  
+
+> (d)
+> i
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> 120
+> Count
+> n= 97
+> Min: 0.014
+> Max: 0.496
+
+D = 0 ( A = 0, H = 0)           
+
+> All villages
+> Observed at D= 0
+> 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7
+> (d)
+> i
+> 0
+> 25
+> 50
+> 75
+> 100
+> 125
+> 150
+> Count
+> n= 228
+> Min: 0.000
+> Max: 0.639
+
+D = 1 ( A = 0, H = 1)           
+
+> All villages
+> Observed at D= 1
+> 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7
+> (d)
+> i
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> 120
+> Count
+> n= 82
+> Min: 0.015
+> Max: 0.666
+
+D = 2 ( A = 1, H = 0)           
+
+> All villages
+> Observed at D= 2
+> 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7
+> (d)
+> i
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> Count
+> n= 246
+> Min: 0.000
+> Max: 0.639
+
+D = 3 ( A = 1, H = 1)   
+
+> All villages
+> Observed at D= 3
+
+Figure 2: Propensity score distributions by exposure level. Blue bars show the distribution of π(d)
+
+> i
+
+across all 653 villages; orange bars show the distribution among villages actually observed at exposure 
+
+D = d.Table 8: 95% confidence interval widths for the treatment effect estimates. Contrast HT Hájek Linear PNA-no-harm Direct ( H = 0 ) 4762 3852 3926 3638 
+
+Direct ( H = 1 ) 2595 2573 2521 2408 
+
+Spillover ( A = 0 ) 3614 2836 2807 2677 
+
+Spillover ( A = 1 ) 3743 3589 3977 3503 
+
+Average 3679 3213 3308 3057 A second outcome: wage bill per enterprise. Table 9 presents treatment effect estimates for wage bill per enterprise (in KES). For this outcome, the PNA-no-harm estimator requires careful initialization to achieve competitive performance. Using seed 50039 for reproducibility, PNA-no-harm achieves an average confidence interval width of 507 KES, representing a 3% improvement over Hájek (521) and 4% over HT (528). The estimates suggest a moderate positive direct effect when neighbors are untreated ( H = 0 ), with point estimates around 363 KES. All estimators find insignificant spillover effects, consistent with wage bill being less sensitive to network spillovers than revenue. 
+
+## I Technical appendices and supplementary material 
+
+Technical appendices with additional results, figures, graphs, and proofs may be submitted with the paper submission before the full submission deadline (see above). You can upload a ZIP file for videos or code, but do not upload a separate PDF file for the appendix. There is no page limit for the technical appendices. 28 Table 9: Treatment effect estimates for wage bill per enterprise (KES). * denotes statistical significance at α = 0 .05 . PNA results use seed 50039.                                                
+
+> HT Hájek Linear PNA-no-harm Contrast ˆτ95% CI ˆτ95% CI ˆτ95% CI ˆτ95% CI Direct( H= 0 )516* [229, 803] 436* [155, 718] 444* [158, 730] 363* [94, 632] Direct( H= 1 )-95 [-337, 146] 11 [-229, 250] 28 [-218, 274] 16 [-204, 237] Spillover( A= 0 )606* [380, 833] 372* [150, 594] 321* [81, 561] 253* [30, 476] Spillover( A= 1 )-5 [-307, 297] -54 [-353, 245] -29 [-378, 321] -66 [-367, 235]
+
+Table 10: 95% confidence interval widths for wage bill (KES). Boldface indicates narrowest width for each contrast. Contrast HT Hájek Linear PNA-no-harm Direct( H = 0 ) 574 563 572 538 
+
+Direct( H = 1 ) 483 479 492 442 
+
+Spillover( A = 0 ) 453 444 480 446 (close to best) Spillover( A = 1 ) 603 598 700 602 (close to best) Average 528 521 561 507 
+
+Note: Think of the appendix as “optional reading” for reviewers. The paper must be able to stand alone without the appendix; for example, adding critical experiments that support the main claims to an appendix is inappropriate. 29
