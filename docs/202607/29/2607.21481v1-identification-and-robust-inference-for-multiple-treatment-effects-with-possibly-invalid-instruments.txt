@@ -1,0 +1,3564 @@
+Title: Identification and Robust Inference for Multiple Treatment Effects with Possibly Invalid Instruments
+
+URL Source: https://arxiv.org/pdf/2607.21481v1
+
+Published Time: Fri, 24 Jul 2026 01:09:57 GMT
+
+Number of Pages: 60
+
+Markdown Content:
+# Identification and Robust Inference for Multiple Treatment Effects with Possibly Invalid Instruments ∗
+
+## Ziwei Mei a, Qingliang Fan b, and Zijian Guo caFaculty of Business Administration, University of Macau 
+
+bDepartment of Economics, The Chinese University of Hong Kong 
+
+cCenter for Data Science, Zhejiang University July 24, 2026 
+
+Abstract 
+
+The instrumental variable (IV) method is widely used to infer causal effects in observa-tional studies with unmeasured confounding, but invalid instruments can compromise both population identification and finite-sample inference. This paper studies linear IV models with multiple endogenous treatments and possibly invalid instruments. Identification is more delicate than in the single-treatment setting because a single instrument no longer identi-fies a scalar candidate effect; instead, each relevant instrument defines a hyperplane in the multidimensional effect space. For identification of multiple treatment effects, we introduce generalized plurality and majority rules which require a sufficiently large number of IVs to be valid. For inference, data-dependent instrument selection may fail to separate certain in-valid IVs from valid ones, leading to undercoverage of confidence intervals when these invalid instruments are mistakenly selected as valid. We propose a sampling confidence interval for each treatment effect, which is robust to IV selection errors. We establish asymptotic coverage and parametric-rate length of our sampling confidence interval under regularity conditions and illustrate this method in a Mendelian randomization application. 
+
+Key words : Causal inference, Invalid instruments, Generalized plurality rule, Generalized majority rule, Sampling 
+
+> ∗
+
+Ziwei Mei: ziweimei@um.edu.mo, Faculty of Business Administration and Asia-Pacific Academy of Economics and Management, University of Macau; Qingliang Fan: michaelqfan@cuhk.edu.hk, Depart-ment of Economics, The Chinese University of Hong Kong; Zijian Guo: zijguo@zju.edu.cn, Center for Data Science, Zhejiang University. Mei acknowledges the partial financial support from the Start-up Research Grant (SRG, Project No. SRG2025-00062-FBA) and the APAEM Seed Grant (Project No. APAEM/SG/00004/2026) from University of Macau. 
+
+1arXiv:2607.21481v1 [stat.ME] 23 Jul 2026 1 Introduction 
+
+Unmeasured confounders are prevalent in the study of treatment effects using observational data. The instrumental variable (IV) method is one of the most popular tools to tackle the endogeneity issue in causal inference. Ideally, conditioning on the observed covariates, IVs are required to satisfy the following conditions: (A1) the IVs are relevant to the treatments; (A2) the IVs do not directly affect the outcome; (A3) the IVs are uncorrelated with the unmeasured confounders. Condition (A1) is the IV relevance condition. Conditions (A2) and (A3), often imposed conditional on the observed covariates, ensure that treatment is the only pathway from the IVs to the outcome. IVs that satisfy both (A2) and (A3) are called “valid IVs”. These conditions are essential for identifying causal effects. However, either condition can be violated in observational studies. When instruments violate (A2), they have direct effects on the outcome in addition to their effects through the treatments. When instruments violate (A3), they are correlated with unobserved confounders omitted from the outcome model. We define an IV as “invalid” if it violates either Condition (A2) or (A3). If an invalid IV is mistakenly treated as valid, causal effects are generally not correctly identified. Causal studies with multiple treatments are common. Examples include studies of mul-tiple risk factors, including smoking, high cholesterol, diabetes, kidney disease, inactivity, and obesity, for cardiovascular disease (Burgess and Thompson, 2015) and Alzheimer’s dis-ease (Qiang et al., 2017), as well as education value-added models with multiple policy interventions (Goldsmith-Pinkham et al., 2024). Despite a growing literature on IV meth-ods for a single treatment, identification and robust inference for multiple treatments with possibly invalid instruments remain less developed. For instance, multivariable Mendelian randomization, a widely used approach in epidemiology (Zhou et al., 2020), involves mul-tiple exposures but still requires methods that can accommodate invalid genetic markers. This paper addresses two gaps in this setting: identification conditions for multidimensional causal effects (Section 2) and an inference procedure that is robust to IV selection errors (Section 3). 21.1 Causal Identification 
+
+Causal identification is the first-order issue in IV analysis with potentially invalid instru-ments. A rapidly growing literature, primarily focused on the single-treatment model, has developed identification conditions for treatment effects in the presence of invalid instru-ments. Representative conditions include the majority rule (Han, 2008; Kang et al., 2016; Windmeijer et al., 2019) and the plurality rule (Guo et al., 2018; Windmeijer et al., 2021), which require valid IVs to form a sufficiently large group. For settings with multiple treat-ments, however, these scalar rules do not directly identify the true multidimensional effect when invalid IVs are present. We now explain why the usual majority rule is not enough in the multiple-treatment regime. Consider a linear IV model with pz instruments and pd treatments, and assume all instruments are relevant. When pd = 1, each instrument identifies a scalar candidate effect: valid instruments yield the true effect, whereas invalid instruments yield biased values. If more than half of the instruments are valid, the true effect can be recovered as the majority of the instrument-specific candidates. When pd > 1, a single instrument cannot identify the full vector of treatment effects; instead, at least pd instruments are required. Geomet-rically, each instrument defines a ( pd − 1)-dimensional hyperplane in the pd-dimensional effect space. Thus, for pd > 1, an instrument-specific identified set is no longer a singleton but a continuum of candidate values. Consequently, even if a strict majority of instru-ments are valid, there is no immediate “majority vote” over scalar candidates, and the single-treatment majority or plurality logic does not deliver identification without further structure. This paper develops identification results tailored to multiple treatments. Our main population condition is the generalized plurality rule . As illustrated above, each relevant IV defines a ( pd − 1)-dimensional hyperplane in the pd-dimensional effect space. The gen-eralized plurality rule requires that, among all possible effect values, the true value lies on strictly more of these hyperplanes than any false value. This geometric formulation makes the identification problem transparent and complements earlier algebraic formulations of related conditions. We also establish a sufficient condition, the generalized majority rule .This rule shows that identification is guaranteed when the number of valid IVs exceeds the lower bound in (15). When pd = 1, it reduces to the familiar majority rule requiring more than half of the relevant IVs to be valid. 31.2 Robust Inference 
+
+In observational studies, valid inference for endogenous effects hinges on correct selection of valid IVs. In the single-treatment regime, related literature (Guo et al., 2018; Kang et al., 2016; Windmeijer et al., 2019, 2021) proposes selecting valid instruments through hard thresholding or penalized regressions. It is a natural idea to generalize these methods to accommodate multiple treatments. However, inference for causal effects following IV selection can be biased if invalid IVs are mistakenly classified as valid. Specifically, selection of valid IVs involves solving a system of linear equations and retaining solutions that satisfy the identification condition (e.g. the generalized majority rule). In observational data, the coefficients in this system are estimated with finite-sample error. Consequently, if the violation of (A2) or (A3) by certain instruments is local to zero, standard selection methods can struggle to distinguish them from valid IVs. We refer to these invalid IVs as locally invalid IVs , with a formal description in (27) of Section 3.2. The inclusion of these locally invalid IVs in the selected set can lead to significant size distortion in subsequent causal inference. To address the aforementioned size distortion, we propose a novel inference method that is robust to errors in IV selection. Our approach accounts for finite-sample estimation error by injecting randomness into solving the aforementioned linear equations and determining which IVs are valid. In particular, we perturb the solutions to the linear equations and select a valid-IV set for each perturbation. We show that, with sufficiently many perturbations, at least one selected set contains all truly valid IVs with high probability. We use each selected IV set to construct a confidence interval for the causal effect using the two-stage least squares (TSLS) estimator. We then aggregate these intervals and show that the resulting confidence set attains nominal coverage. We further prove that its length converges at the parametric rate n−1/2. The resulting procedure provides inference for multiple treatment effects that is robust to IV selection error without requiring prior knowledge of which IVs are valid. We exhibit the usefulness of the method through Monte Carlo simulations (Section 5) and a Mendelian randomization study (Section 6). 
+
+## 1.3 Additional Related Literature 
+
+In the multiple-treatment setting, Liang et al. (2022) proved that treatment effects are identified when more than ( pz + pd − 1) /2 instruments are valid, under an additional restriction on IV relevance. This result is a special case of our generalized majority rule in 4Section 2.2. Apfel and Liang (2024) also discussed identification under multiple treatments, but their identification condition requires the additional restriction that every subset of pd
+
+IVs identifies a unique candidate effect. In contrast, our generalized plurality rule does not impose this restriction. See Remark 2 for more discussion. Under a single treatment, our generalized plurality rule reduces to the sparsest rule developed in Lin et al. (2024). Our population identification condition is also closely related to Condition ID c0 in Andrews (1999); Remark 3 explains the connection. Importantly, none of these papers considers robust inference with locally invalid IVs in the multiple-treatment setting. In terms of inference robust to selection error, a recent work by Guo (2023) proposed an inference procedure based on searching and sampling focusing on a single treatment. Specifically, Guo (2023) searches over candidate effects on the one-dimensional real line and collects values of β that suggest a large proportion of valid IVs. A direct grid-search generalization to pd dimensions is computationally costly: for example, 500 grid points in each coordinate would require 500 pd evaluations. Rather than searching over the entire effect space, our proposal searches over TSLS estimators generated by subsets of pd rele-vant IVs. When a valid just-identifying subset exists, at least one of these estimators is centered at the truth. Thus, unlike a direct extension of Guo (2023), our method avoids a multidimensional grid search. We briefly review other literature on invalid IVs. Tchetgen Tchetgen et al. (2021) proposed the GENIUS method for robust inference in Mendelian randomization, whose identification draws from heteroskedasticity (Lewbel, 2012). Hu et al. (2022) proposed MR-APSS to deal with invalid IVs at the summary level by leveraging genome-wide information. Lin et al. (2024) and Ye et al. (2024) examine robust inference for a single endogenous treatment with many weak and invalid instruments. Other studies on inferring a single treatment effect with possibly invalid IVs include Sun et al. (2022, 2023), Fan and Wu (2024), and Dukes et al. (2025). Unlike these studies focusing on a single treatment, our paper considers unknown IV validity in a multiple-treatment framework. Cheng and Liao (2015) used adaptive LASSO to select invalid moment conditions in GMM, assuming a known set of valid moments. Our study considers a distinct regime that does not require the known subset of valid IVs. See Kang et al. (2024) for a more detailed review of related literature. 
+
+Structure . The rest of the paper is organized as follows. Section 2 studies causal iden-tification under the regime of multiple treatments. Section 3 illustrates IV selection error with locally invalid IVs and proposes an inference procedure robust to such error. Section 54 establishes asymptotic theory to justify the validity of our inference procedure. Section 5 displays numerical results and Section 6 presents a real data application of Mendelian randomization. Section 7 concludes the paper. 
+
+Notations . We use “ p
+
+→” and “ d
+
+→” to denote convergence in probability and distribution, respectively. We use [ n] for some natural number n to denote the integer set {1, 2, · · · , n },and use n! to denote the factorial. We use I n to denote the n-dimensional identity matrix, and 1{·} to denote the indicator function. For any positive integers m > n , let mn
+
+!
+
+be the binomial coefficient m!(m−n)! n! . For a p-dimensional vector x = ( x1, x 2, · · · , x p)⊤, the 
+
+L2 norm is ∥x∥2 =
+
+qPpj=1 x2 
+
+> j
+
+, the L1 norm is ∥x∥1 = Ppj=1 |xj |, the L0 norm measuring the number of nonzero coordinates is ∥x∥0 = Ppj=1 1{xj̸ = 0 }, and the maximum norm is 
+
+∥x∥∞ = max j∈[p] |xj |. We use λmin (A) and λmax (A) to denote the minimum and maximum eigenvalues of any symmetric matrix A. For any m×n matrix A = ( Ajk )j∈[m],k ∈[n], the spec-tral norm is ∥A∥2 = pλmax (A⊤A) and the maximum norm is ∥A∥∞ = max j∈[m],k ∈[n] |Ajk |.Matrix vectorization and Kronecker product are respectively denoted by vec( A) and ⊗.For any sets A and B, |A| denotes the cardinality of A, and A\B = {x ∈ A : x / ∈ B} .
+
+# 2 The Model and Effect Identification 
+
+For each individual i ∈ { 1, 2, . . . , n }, we observe an outcome Yi ∈ R, a multivariate treatment vector Di· = ( Di, 1, D i, 2, . . . , D i,p d )⊤ ∈ Rpd , the instrumental variables Zi· =(Zi, 1, Z i, 2, . . . , Z i,p z )⊤ ∈ Rpz , and the covariates Xi· = ( Xi, 1, X i, 2, . . . , X i,p x )⊤ ∈ Rpx . We assume that {Yi, D ⊤ 
+
+> i·
+
+, Z ⊤ 
+
+> i·
+
+, X ⊤ 
+
+> i·
+
+}ni=1 are generated in an independently and identically dis-tributed (i.i.d.) fashion. Let Y (d,z,x ) 
+
+> i
+
+be the potential outcome if the individual i had treatment d ∈ Rpd , instruments z ∈ Rpz , and covariates x ∈ Rpx . In practice, we ob-serve only one outcome, Yi = Y (Di·,Z i·,X i·) 
+
+> i
+
+, for each observation. Throughout the paper, we assume that pz ≥ pd ≥ 1 and all variable dimensions pd, pz , and px are fixed. We consider the additive linear potential outcome model (Small, 2007; Kang et al., 2016; Guo et al., 2018; Windmeijer et al., 2019), and allow for multiple treatments and possibly invalid instruments. For two possible sets of values of the exposures d, d′, instruments z,
+
+z′, and covariates x, x′, we assume the potential outcome model 
+
+Y (d,z,x ) 
+
+> i
+
+− Y (d′,z ′,x ′) 
+
+> i
+
+= ( d − d′)⊤β∗ + ( x − x′)⊤ξ∗ + ( z − z′)⊤κ∗,
+
+E(Y (0 ,0,0)  
+
+> i
+
+|Zi·, X i·) = Z⊤ 
+
+> i·
+
+η∗ + X⊤ 
+
+> i·
+
+ζ∗, (1) 6where β∗ ∈ Rpd denotes the true causal effect, while κ∗, η ∗ ∈ Rpz and ξ∗, ζ ∗ ∈ Rpx are other unknown parameters. In particular, β∗ 
+
+> j
+
+, the j-th entry of the vector β∗, measures the population causal effect of the j-th treatment D·j on the potential outcome. The parameter κ∗ measures the direct effect of instrumental variables on the outcome, and κ∗ = 0 means the exclusion condition (A2) is satisfied. The parameter η∗ represents the presence of unmeasured confounding between the instruments and the outcome, and 
+
+η∗ = 0 indicates that the condition of no unmeasured confounder (A3) is satisfied. Lastly, the parameters ξ∗ and ζ∗ measure the effects of the covariates Xi· on the potential outcome. Define ui = Y (0 ,0,0)  
+
+> i
+
+− E(Y (0 ,0,0)  
+
+> i
+
+|Zi·, X i·). Applying the model (1) together with the expression Y (0 ,0,0)  
+
+> i
+
+= ui + E(Y (0 ,0,0)  
+
+> i
+
+|Zi·, X i·), we have the following main model of multiple treatments with observational data: 
+
+Yi = D⊤ 
+
+> i·
+
+β∗ + Z⊤ 
+
+> i·
+
+π∗ + X⊤ 
+
+> i·
+
+φ∗ + ui, with E(Xi·ui) = 0 , E(Zi·ui) = 0 , (2) where π∗ = κ∗ + η∗, and φ∗ = ξ∗ + ζ∗. We allow Di· ∈ Rpd to be endogenous due to its correlation with the unmeasured error term ui ∈ R. The k-th instrumental variable 
+
+Zi,k is valid if π∗ 
+
+> k
+
+= 0, for k ∈ [pz ]. Since π∗ = κ∗ + η∗, the IV validity measured by π∗
+
+consists of two violations: the direct effect of IVs on the outcome measured by κ∗, and the confounding between IVs and the outcome represented by η∗.To measure the relevance between the IVs and the treatments stated by Condition (A1) in Section 1, we further assume the following linear reduced-form model for the treatment 
+
+D⊤ 
+
+> i·
+
+= Z⊤ 
+
+> i·
+
+Υ∗ + X⊤ 
+
+> i·
+
+Ψ∗ + ε⊤ 
+
+> i·
+
+with E(Xi·εi·) = 0 , E(Zi·εi·) = 0 . (3) Model (3) can be viewed as the best linear approximation of Di· by the instruments Zi· and covariates Xi·. The relevance matrix Υ∗ = (Υ ∗ 
+
+> k,j
+
+)k∈[pz ],j ∈[pd] measures the relevance between the treatments and IVs. For any subset A ⊂ [pz ], we use Υ ∗A· to denote the submatrix of Υ∗ consisting of the rows that correspond to the subset A. Define the set of IVs relevant to at least one treatment as 
+
+S∗ = {k ∈ [pz ] : ∥Υ∗
+
+> k·
+
+∥2 > 0}, (4) and refer to them as relevant IVs for simplicity. Furthermore, define the set of valid IVs as 
+
+V∗ = {k ∈ S ∗ : π∗ 
+
+> k
+
+= 0 }.
+
+7For identification, we further impose the following full rank condition on the IVs. 
+
+Condition 1. Suppose that rank(Υ ∗V∗·) = pd.
+
+Condition 1 imposes a full column rank on the submatrix of Υ ∗ composed of the rows indexed by the valid IV set V∗, which means that using the true set of valid instruments enables the identification of the true effect β∗. Without this condition, identification of the true effect may fail. For example, identification fails when pd > 1 if all valid IVs are relevant to the first treatment but irrelevant to all other treatments. In this example, rank(Υ ∗V∗·) = 1 and Condition 1 is violated. In the remaining parts of Section 2, we provide detailed interpretations and discussions of the generalized plurality rule for a general pd ≥ 1. Section 2.1 introduces the generalized plurality rule for identification of multiple treatment effects with a geometric interpretation under the two-treatment case. Section 2.2 discusses a sufficient condition for identification called the generalized majority rule, stating that identification success is always guaranteed when the number of valid IVs exceeds a lower bound specified in (15). 
+
+## 2.1 Generalized Plurality Rule 
+
+We introduce the generalized plurality rule in the following and elaborate why it enables causal identification when there are possibly invalid IVs. Substituting model (3) into (2) yields the reduced-form model 
+
+Yi = Z⊤ 
+
+> i·
+
+Γ∗ + X⊤ 
+
+> i·
+
+Φ∗ + e∗ 
+
+> i
+
+, D⊤ 
+
+> i·
+
+= Z⊤ 
+
+> i·
+
+Υ∗ + X⊤ 
+
+> i·
+
+Ψ∗ + ε⊤ 
+
+> i·
+
+, (5) where e∗ 
+
+> i
+
+= ui + ε⊤ 
+
+> i·
+
+β∗ ∈ R, Φ ∗ = Ψ ∗β∗ + φ∗ ∈ Rpx and Γ∗ = Υ ∗β∗ + π∗ ∈ Rpz . (6) Note that the regressors on the right-hand side of both equations in (5) only include the instruments and covariates, without the endogenous treatments. Consequently, we can consistently estimate the reduced form coefficients Γ ∗ and Υ ∗ using ordinary least squares (OLS). In the remainder of this section, we assume Γ ∗ and Υ ∗ are known to simplify the discussion and emphasize the population identification conditions for β∗. We will provide a fully data-dependent procedure in Section 3 where we shall estimate all model parameters, namely Γ ∗, Υ ∗, β∗ and π∗.8We emphasize that the true β∗ is not identified by the system of equations in (6) alone, as it involves pd +pz unknown parameters in β∗ and π∗, but provides only pz equations. The identification needs some extra conditions on the IV validity. In conventional IV model studies, all instruments are assumed to be valid with π∗ = 0, and thus Γ ∗ − Υ∗β∗ = 0 according to (6). Identification of β∗ is therefore viewed as searching for a candidate β
+
+satisfying 
+
+π(β) = 0 with π(β) = Γ ∗ − Υ∗β. (7) For any π∗, the k-th entry of π(β) is given by 
+
+πk(β) = Γ ∗ 
+
+> k
+
+− (Υ ∗
+
+> k·
+
+)⊤β = − X
+
+> j∈[pd]
+
+Υ∗ 
+
+> k,j
+
+(βj − β∗ 
+
+> j
+
+) + π∗
+
+> k
+
+. (8) Componentwise, the k-th IV yields the equation πk(β) = 0 and identifies all solutions to this equation. For illustration, we say that the k-th IV votes for the candidate β if 
+
+πk(β) = 0. All valid IVs unanimously vote for the true β∗. By contrast, any invalid IV with π∗
+
+> k
+
+̸ = 0 does not vote for the true β∗. Guided by the view that researchers tend to select candidate IVs using domain knowledge, we assume that valid IVs are sufficiently prevalent for the true 
+
+β∗ to receive more votes than any other candidate value. We formulate this assumption as the following generalized plurality rule .
+
+Condition 2 (Generalized Plurality Rule) .
+
+|V ∗| > max   
+
+> β̸=β∗
+
+|K (β)|, where K(β) = {k ∈ S ∗ : πk(β) = 0 } . (9) By definition, K(β) collects the relevant IVs that vote for the candidate β, and thus 
+
+|K (β)| is the number of relevant IVs voting for β. In (9), the left-hand side of the inequality 
+
+|V ∗| is the number of truly valid IVs that vote for the true β∗. The right-hand side of the inequality in (9) is the maximum number of relevant IVs voting for the same false candidate 
+
+β̸ = β∗. Therefore, (9) means that the true β∗ is the unique winner of the voting, and we can distinguish the true effect β∗ from all other β ∈ Rpd by searching for the unique candidate that wins the largest number of votes. 
+
+Remark 1. The voting does not involve irrelevant IVs since they make no difference to the voting result. Note that when an IV is irrelevant with Υ ∗ 
+
+> k·
+
+= 0, we have πk(β) = π∗
+
+> k
+
+according to (8). Therefore, it either votes for all candidates when π∗ 
+
+> k
+
+= 0, or votes for no 9candidate when π∗
+
+> k
+
+̸ = 0. For inference in practice, we will remove the irrelevant IVs in the first stage before selecting valid IVs. See Section 3.1 for details. We now elaborate the difference between single-treatment and multiple-treatment set-tings. When pd = 1, the relevance matrix Υ ∗ = (Υ ∗
+
+> 1
+
+, Υ∗
+
+> 2
+
+, · · · , Υ∗ 
+
+> pz
+
+)⊤ becomes a vector. The valid IVs with π∗ 
+
+> k
+
+= 0 only vote for the true β∗, and the invalid IVs with the same value of π∗
+
+> k
+
+/Υ∗ 
+
+> k
+
+only vote for the same false candidate β∗ + π∗
+
+> k
+
+/Υ∗
+
+> k
+
+. Hence, we can easily classify the IVs into the same group if they vote for the same candidate β, and the generalized plurality rule (9) reduces to the plurality rule in Guo et al. (2018) stating that the valid IVs constitute the largest group. In sharp contrast to single-treatment models where each relevant IV votes for a single-ton, under the multiple-treatment framework each relevant IV votes for all candidates on a (pd − 1)-dimensional hyperplane in the pd-dimensional Euclidean space. According to (8), the k-th IV votes for all candidates in the following hyperplane in Rpd
+
+Lk := 
+
+β = ( βj )j∈[pd] : X
+
+> j∈[pd]
+
+Υ∗ 
+
+> k,j
+
+(βj − β∗ 
+
+> j
+
+) = π∗
+
+> k
+
+ . (10) Under a single treatment, Lk degenerates to a singleton on the real line. For bivariate treatments, Lk represents a straight line. For trivariate treatments, Lk becomes a two-dimensional plane, and so forth. For a clearer picture of Condition 2, in Figure 1 we provide two graphical examples with pd = 2 and pz = 5, where all IVs are relevant and thus the straight lines {L k}5
+
+> k=1
+
+specified in (10) are well defined. If a candidate effect β falls on a straight line, it means that the corresponding IV votes for β. The straight lines for valid instruments are sketched by blue lines, and those for invalid instruments are represented by red lines. In both panels of Figure 1, three of the five instruments are valid. All blue lines in Figure 1 representing valid IVs go across the true effect β∗, meaning that all valid IVs vote for the true β∗. In contrast, none of the red lines representing invalid IVs goes across β∗, meaning that no invalid IVs vote for the true effect. We now discuss the validity of the generalized plurality rule in the two cases of Figure 1. Panel (a) in Figure 1 gives an example where Condition 2 is satisfied. Among the intersection points of the straight lines, only the true effect β∗ receives three votes. All other points receive at most two votes. For example, the false candidates β(1) and β(2) 
+
+receive two votes. Therefore, the true effect β∗ with three votes is the unique winner in the 10 β∗ 
+
+> β(1) β(2)
+> β2
+> β1
+> (a) Successful Identification
+> β∗
+> β(1)
+> β(2)
+> β2
+> β1
+> (b) Counter Example
+
+Figure 1: Illustrative graphs for Identification        
+
+> Note: Each panel sketches an example with 5 IVs and 2 treatments. Each axis represents the value of one treatment effect. Each straight line represents a hyperplane defined in (10) of an IV. The hyperplanes of valid IVs are in blue color, while those of invalid ones are red. A vector β= ( β1, β 2)⊤receives a vote from an IV when it falls on the corresponding hyperplane. For example, β∗in both panels receives votes from three valid IVs, and β(1) in both panels receives two votes from a valid IV and an invalid one.
+
+voting. Even without prior knowledge of instrument validity in practice (i.e., the colors of the straight lines are unknown), we can identify β∗ as the unique winner. Panel (b) in Figure 1 gives a counterexample where Condition 2 is violated. Again, we highlight three candidates here. The false candidate β(1) receives two votes, fewer than the three votes received by the true effect β∗. However, two red lines and one blue line intersect at another false candidate effect β(2) , resulting in 3 votes for this candidate. The generalized plurality rule is violated so that we cannot determine whether β∗ or β(2) is the true effect, leading to identification failure. Although Panel (b) illustrates a failure in effect identification, we emphasize that such failures are rare. If we fix the blue lines representing the hyperplanes Lk for k ∈ V ∗,identification failure occurs only if the intersection of two red lines (for example, the β(2) in Panel (b)) coincidentally falls on one of the blue lines. Section 2.1.1 formalizes this rarity under a random-coefficient model. 
+
+2.1.1 How Often Does Identification Fail? 
+
+To formulate the identification failure problem, in this Section 2.1.1 only, we assume that all nonzero coefficients in the relevance matrix Υ ∗ and the vector π∗ measuring IV validity are randomly generated from continuous distributions. We use I∗ := S∗\V ∗ to denote the index set of invalid instruments. 11 Proposition 1. Suppose that all entries in the vector of coefficients (vec(Υ ∗S∗·)⊤, π ∗⊤ I∗ )⊤ are drawn from independent continuous distributions with supports on the whole R|S ∗|× pd+|I ∗|
+
+space, while the subvector π∗V∗ = 0 |V ∗| and the true effect β∗ are deterministic. Then 
+
+Pr 
+
+
+
+max   
+
+> β̸=β∗
+
+|{ k ∈ S ∗ : πk(β) = 0 }| ≤ pd
+
+
+
+= 1 . (11) 
+
+Thus, if |V ∗| > p d, we have Pr {Condition 2 holds } = 1 .
+
+Equation (11) means that with probability one, all false candidate effects receive no more than pd votes. Therefore, when the true model is overidentified with |V ∗| > p d, the true β∗ is the unique winner in the voting with probability one. Hence, Condition 2 holds with probability one and identification failure is a zero-probability event under the random coefficient framework. When coefficients are nonrandom, how many valid IVs are sufficient for identifying multiple treatment effects? The following Section 2.2 gives a confirmative answer to this question with a generalized majority rule. 
+
+## 2.2 Generalized Majority Rule 
+
+Under multiple treatments, the majority rule (Kang et al., 2016) 
+
+|V ∗| > |S ∗|/2 (12) is not sufficient for identification. Figure 1(b) provides a counterexample: three out of five instruments are valid and thus the majority rule (12) holds, but the identification of β∗
+
+fails. We now discuss the sufficient condition under multiple treatments. A natural sufficient condition is that |V ∗| is larger than the maximum number of votes a false candidate β can receive. The complexity rises from the fact that both valid IVs and invalid ones can vote for false candidates. In the worst case, all ( |S ∗| − |V ∗|) relevant but invalid instruments vote for the same false candidate β̸ = β∗. To quantify valid IVs that vote for the same false candidate, let D = {H ⊂ V ∗ : rank(Υ ∗H· ) < p d} collect the valid IV subsets with a rank-deficient IV relevance matrix. Furthermore, define the integer h0 as 
+
+h0 := 1 + max  
+
+> H∈ D
+
+|H| . (13) 12 By definition, h0 − 1 is the maximum cardinality of a subset of valid IVs whose relevance submatrix is rank deficient. Thus, the relevance submatrix associated with any h0 valid IVs has full column rank. Geometrically, the corresponding hyperplanes in (10) have a unique common intersection. Equivalently, any h0 valid IVs can only jointly vote for one candidate. This unique candidate must be the true β∗ because all valid IVs vote for the true value. Consequently, no false candidate can receive votes from h0 or more valid IVs; that is, it can receive at most h0 − 1 votes from valid IVs. Therefore, a sufficient condition for the true β∗ to receive strictly more votes than any false candidate is 
+
+|V ∗|
+
+|{z}  
+
+> votes for the true β∗
+
+> |S ∗| − |V ∗|
+
+| {z }   
+
+> maximum possible votes for β̸=β∗
+> from invalid IVs
+
++ h0 − 1
+
+| {z }    
+
+> maximum possible votes for β̸=β∗
+> from valid IVs
+
+. (14) Rearranging (14) yields the following generalized majority rule. 
+
+Theorem 1 (Generalized Majority Rule) . Suppose that Condition 1 holds. Then Condition 2 holds if 
+
+|V ∗| > |S ∗| + h0 − 12 . (15) The integer h0 captures the rank structure of the relevance matrix and plays a crucial role in the generalized majority rule. A larger h0 reflects a weaker rank structure, but correspondingly requires more valid IVs in (15). By construction, we have 
+
+pd ≤ h0 ≤ |V ∗|,
+
+because at least pd rows are required for a pd-column matrix to be full-column-rank, whereas the relevance matrix associated with the full set of valid IVs has rank pd by Condition 1. The least restrictive case of (15) occurs when h0 attains its smallest possible value pd. In this case, the generalized majority rule reduces to 
+
+|V ∗| > |S ∗| + pd − 12 . (16) When all IVs are relevant, so that |S ∗| = pz , (16) becomes |V ∗| > pz +pd−12 , which coincides with the condition developed by Liang et al. (2022). In particular, when pd = 1, every relevant IV individually yields a rank-one relevance matrix, so that h0 = 1. The generalized majority rule then reduces to the conventional majority rule |V ∗| > |S ∗|/2.
+
+13 Two remarks are in order to distinguish our results from the most relevant literature. 
+
+Remark 2 (Relation to Apfel and Liang (2024)) . Apfel and Liang (2024) formulate a family plurality rule by treating each full-rank, just-identifying combination of pd IVs as a voting unit. Our formulation instead takes individual IVs as the voting units. Under the additional condition h0 = pd, their family plurality rule closely links to our generalized plurality rule through the votes cast by individual IVs. However, our voting scheme allows h0 > p d,thereby accommodating relevance matrices for some subsets of pd valid IVs that are rank deficient. 
+
+Remark 3 (Relation to Andrews (1999)) . An equivalent formulation of the generalized plu-rality rule appears as Condition ID c0 in Andrews (1999); see also their algebraic illustration on pp. 548–549. The geometric and voting interpretations in Section 2.1 provide an intuitive explanation of the identification mechanism. These intuitive interpretations also facilitate our subsequent analysis of identification failure in Section 2.1.1 and the generalized majority rule in Section 2.2. These additional analyses provide practically interpretable conditions for assessing identification beyond the scope of Andrews (1999). 
+
+# 3 Robust Inference Accounting for IV Selection Error 
+
+Section 2 has established the identification conditions assuming the parameters in the reduced-form model (5) are given. We now switch our focus to statistical inference for treatment effects β∗ with observational data, where the unknown coefficients Γ ∗, Υ ∗, Φ ∗, and Ψ∗ (5) are estimated. In Section 3.1, we devise a data-dependent way to select the relevant IVs, and the subsets comprising pd relevant IVs that can identify a unique value of β.Following the tradition of IV models, we refer to these subsets as just-identifying IV subsets .Section 3.2 illustrates that in practice, certain invalid IVs cannot be easily separated from valid ones since their violations of validity, measured by π∗, are not sufficiently different from zero in finite samples. We refer to these IVs as locally invalid IVs with a formal discussion in Section 3.2. Therefore, IV selection methods may mistakenly include these invalid IVs as valid ones, causing a size distortion in the inference for the treatment effects using the selected IVs. This issue motivates us to provide a robust inference procedure of the multiple treatment effects allowing for locally invalid instruments, with the full details provided in Section 3.3. We fix some notations before diving into the procedures. We collect the i.i.d. obser-vational data introduced at the beginning of Section 2 into matrices by Y = ( Y1, · · · , Y n)⊤ ∈
+
+14 Rn, D = ( D1·, · · · , D n·)⊤ ∈ Rn×pd , X = ( X1·, · · · , X n·)⊤ ∈ Rn×px and Z = ( Z1·, · · · , Z n·)⊤ ∈
+
+Rn×pz . Define the collection of IVs and covariates as Wi· = ( Z⊤ 
+
+> i·
+
+, X ⊤ 
+
+> i·
+
+)⊤ and W = ( W1·, · · · , W n·)⊤ ∈
+
+Rn×p, where p = px + pz . Furthermore, we define the projection matrix for any full-column-rank matrix A with n rows as P A = A(A⊤A)−1A⊤, and M A = I n − PA.
+
+## 3.1 First-Stage Hard Thresholding 
+
+We first estimate the IV relevance matrix and collect the IVs that are significantly relevant to at least one of the treatments. We then select the just-identifying IV subsets based on the selected relevant IVs. To select relevant IVs, we estimate the reduced form coefficients Γ ∗ and Υ ∗ in (5) by ordinary least squares (OLS), given as 
+
+bΓ = ( Z⊤MX Z)−1Z⊤MX Y, and bΥ = ( Z⊤MX Z)−1Z⊤MX D. (17) We use bΥ to select relevant IVs, and bΓ to select valid IVs later on. We use cSE( bΥk,j ) to denote the standard error of bΥk,j and relegate its analytical formula to (A1) in the supplementary Section A. With the estimator of relevance matrix bΥ, we define the estimated relevant IV set as 
+
+bS =
+
+
+
+k ∈ [pz ] : max 
+
+> j∈[pd]
+
+bΥk,j / cSE( bΥk,j ) ≥ plog n
+
+
+
+, (18) which collects the IVs relevant to at least one of the treatments. The threshold √log n
+
+adjusts for multiplicity of evaluating the relevance of multiple IVs to multiple treatments. In Section 4, we will show that under some regularity conditions bS consistently estimates the set of relevant IVs S∗ defined in (4). Using these IVs, we construct  | bS| 
+
+> pd
+
+ subsets comprising pd relevant IVs. Note that not every subset comprising pd relevant IVs identifies a unique treatment-effect vector. Let 
+
+H denote a subset comprising pd relevant IVs. Even if all IVs in H are relevant to at least one treatment, this subset fails to identify a unique treatment-effect vector when Υ ∗H· 
+
+is rank deficient, that is, when rank(Υ ∗H· ) < p d. One example is when pd = 2 and all IVs in H are relevant to the first treatment but irrelevant to the second, so the second column of Υ ∗H· is zero. Another example of rank deficiency is when two columns of Υ ∗H· are proportional. This is essentially different from the single-treatment case with pd = 1, in which any relevant IV identifies a unique candidate effect. In the following, we rule out the subsets comprising pd relevant IVs suffering from 15 rank deficiency. A classical test statistic for this rank deficiency in the multivariate linear instrumental variable model dates back to Cragg and Donald (1993). For any subset H
+
+comprising pd estimated relevant IVs in bS, we use CD (H) to denote the Cragg and Donald (CD) test statistic, given as CD (H) = λmin 
+
+hbΣ−1/2 
+
+> ε
+
+bΥ⊤H· 
+
+ Z⊤·H MW (H) Z·H 
+
+ bΥH· bΣ−1/2
+
+> ε
+
+i
+
+, where bΣε = n−1 bε⊤ bε, (19) 
+
+bε = M W D denotes the OLS residual for (3), and W (H) = ( X, Z · bS\H ) collects the covariates and the selected relevant instruments not in H. Intuitively, the CD statistic measures the minimum squared singular value of Υ ∗H· , where the matrices  Z⊤·H MW (H) Z·H 
+
+ and bΣ−1/2
+
+> ε
+
+rescale the statistic accounting for the variances of IVs and the error term. The CD statistic has an Op(1) order when Υ ∗H· is rank-deficient; otherwise it diverges to infinity. A small CD statistic indicates the existence of zero singular values in Υ ∗H· , thereby suggesting rank deficiency. The CD statistic is analogous to the concentration parameter under a single treatment that measures the IV strength. We store the subsets comprising 
+
+pd relevant IVs resulting in a CD test statistic no smaller than the threshold log n:
+
+cH =
+
+n
+
+H ⊂ bS : |H| = pd, CD (H) ≥ log n
+
+o
+
+, (20) where the slowly diverging threshold log n accounts for the multiplicity in IV selections. When n → ∞ , cH is a consistent estimator of 
+
+H ∗ = {H ⊂ S ∗ : |H| = pd, rank(Υ ∗H· ) = pd} , (21) which collects the just-identifying IV subsets comprising pd IVs that identify a unique value of β. We write the collection of just-identifying IV subsets as H ∗ = {H 1, · · · , H|H ∗|}.Correspondingly, its finite-sample analogue is cH = { bH1, · · · , bH| cH |}.Thus far, we have completed the first-stage hard thresholding to select the just-identifying IV subsets. Each of these just-identifying IV subsets corresponds to a TSLS estimator. To prepare for the inference of treatment effect, we need to define the TSLS estimator using a subset of IVs and its relevant quantities. The TSLS estimator using an arbitrary subset of IVs indexed by H is 
+
+bβ(H) =
+
+hbθ(H)
+
+i
+
+> 1: pd
+
+where bθ(H) = ( D(H)⊤PW D(H))−1D(H)⊤PW Y. (22) 16 In (22), D(H) = ( D, Z ·[pz ]\H , X ) collects the treatments, the IVs not in H, and the covariates. Equivalently, bβ(H) is the estimated coefficients of D in the second-stage regression of Y on ( bD, Z ·[pz ]\H , X ), where bD = P W D is the fitted value in the first-stage regression. For simplicity, we will focus on the inference for the first treatment effect β∗ 
+
+> 1
+
+. The same procedure applies to the other coordinates. We relegate the analytical formula of standard error of bβ(H)1 , denoted as cSE( bβ(H)1 ), to (A2) in the supplementary Section A. If the instruments in H are valid, the 100(1 − α)% TSLS confidence interval for β∗ 
+
+> 1
+
+is CI( H, α ) = 
+
+h bβ(H)1 − z1−α/ 2 · cSE( bβ(H)1 ), bβ(H)1 + z1−α/ 2 · cSE( bβ(H)1 )
+
+i
+
+(23) where z1−α/ 2 is the (1 − α/ 2)-th quantile of the standard normal distribution. With these notations ready, we move forward to the selection of valid IVs in the following Section 3.2. 
+
+## 3.2 Error of Hard-Thresholding Valid IV Selection 
+
+In this section, we illustrate the extension of the two-stage hard-thresholding (TSHT, Guo et al. (2018)) to multiple treatment effects, and discuss the variable selection error by hard thresholding. Recall that for each possible value of effects β, we can use the vector 
+
+π(β) in (7) to evaluate the IV validity. When β equals the true effect β∗, the vector 
+
+π(β∗) = π∗ discloses the truth of IV validity. With observational data, for each just-identifying IV subset in cH = { bHℓ}1≤ℓ≤| cH | defined in (20), we use the TSLS estimator 
+
+bβ( bHℓ), ℓ = 1 , 2, · · · , | cH |, to back out an estimate of IV validity through 
+
+bπ(ℓ) = bΓ − bΥ bβ( bHℓ), (24) where bΓ and bΥ are the reduced-form model estimates defined in (17). Selection of valid IVs is usually based on hard thresholding in the literature (Guo et al., 2018; Windmeijer et al., 2021). In our case of multiple treatments, one strategy is to select 
+
+Zi,k as a valid IV if the absolute value of bπ(ℓ) 
+
+> k
+
+is smaller than some threshold. Let cSE( bπ(ℓ) 
+
+> k
+
+)denote the standard error of bπ(ℓ) 
+
+> k
+
+with the definition relegated to (A3) in the supplementary Section A. According to the common practice for single-treatment models (Guo et al., 2018; Windmeijer et al., 2021), we select the following as the valid IVs: 
+
+bV(ℓ) = {k ∈ bS : |bπ(ℓ) 
+
+> k
+
+| ≤ C∗ · cSE( bπ(ℓ) 
+
+> k
+
+)plog n}. (25) 17 In (25), the factor √log n adjusts for the multiplicity of evaluating the validity of multiple IVs, and C∗ > 0 is an absolute constant that we specify in the illustrative simulation below. The threshold in (25) is of order plog n/n if bπ(ℓ) 
+
+> k
+
+is √n-consistent. Under Condition 1, with high probability there exists at least one just-identifying IV subset bHℓ where all IVs are valid. Under regularity conditions, we can show that ( bπ(ℓ) 
+
+> k
+
+−
+
+π∗
+
+> k
+
+) = Op
+
+ cSE( bπ(ℓ) 
+
+> k
+
+)
+
+
+
+. Therefore, when the k-th IV is valid such that π∗ 
+
+> k
+
+= 0, (25) selects the k-th IV with high probability. In practice, it is unknown which just-identifying IV subset bHℓ includes valid IVs, and therefore also unknown which bV(ℓ) correctly estimates the valid IV set V∗. We thus need to leverage the identification condition developed in Section 2. According to the generalized plurality rule (Condition 2), the selected valid IV sets bV(ℓ) with the largest number of IVs are the most likely to correctly select all valid IVs. We therefore store bV(ℓ) as a candidate valid IV set if 
+
+ℓ ∈ bL := arg max   
+
+> ℓ′=1 ,2,..., |cH|
+
+|bV(ℓ′)|. (26) The TSHT confidence interval for β∗ 
+
+> 1
+
+under the significance level α is then defined as the union of the TSLS confidence intervals (23) using all selections that are possibly correct, given as CI TSHT (α) = [ 
+
+> ℓ∈bL
+
+CI( bV(ℓ), α ).
+
+Nevertheless, valid IV selection (25) is prone to errors if certain invalid IVs are hard to distinguish from valid ones. We refer to these IVs as locally invalid IVs , satisfying 0 < |π∗
+
+> k
+
+| ≤ C∗ · max  
+
+> ℓ∈bL
+
+cSE( bπ(ℓ) 
+
+> k
+
+)plog n. (27) These locally invalid IVs can be selected as valid ones, thereby distorting the size of inference for β∗ 
+
+> 1
+
+based on the selected IVs in (25). These arguments echo the discussions of Guo (2023, Section 3) for single-treatment models about the IV selection error by hard thresholding, and the undercoverage of confidence intervals caused by erroneous IV selection. We provide an illustrative simulation to further clarify the impact of locally invalid IVs. We consider an example with pd = 2 treatments, pz = 7 IVs, and px = 5 covariates. We set the sample size n = 1000, and other settings follow the setting (S1) in Section 5. In particular, the measurement of IV validity π∗ = (0 , 0, 0, 0, 0, τ, 0.5) ⊤. When τ̸ = 0, the last two IVs are invalid. We vary τ from 0 to 0.5, where a relatively small positive τ
+
+characterizes a locally invalid IV. The 7th IV with π∗ 
+
+> 7
+
+= 0 .5 is always significantly distinct 18 0.0 0.1 0.2 0.3 0.4 0.5                
+
+> τ
+> Coverage Probability
+> 0.5 0.6 0.7 0.8 0.9
+> 00
+> C∗=0.25 C∗=0.5 C∗=0.75 C∗=1
+
+Figure 2: Coverage probability of the 95% TSHT confidence interval with different viola-tions of IV validity τ
+
+from the valid IVs. Figure 2 shows the coverage probabilities of the confidence interval for β∗ 
+
+> 1
+
+by TSHT under different τ . The tuning parameter C∗ in (25) takes values in {0.25 , 0.5, 0.75 , 1}, and we focus on C∗ = 0 .5 for which the coverage probability is close to the nominal level when 
+
+τ is around 0 or 0.5. When τ = 0, the 6th IV is valid and the coverage of the TSHT confidence interval is close to the nominal level. When τ ranges from 0.05 to 0.3, inference with TSHT shows severe size distortions, because IV selection based on hard thresholding cannot always distinguish a valid IV from a locally invalid one with a relatively small value of τ . When τ exceeds 0.4, the coverage probability recovers to the nominal level, since the 6th IV becomes easily separated from the valid IVs. These results indicate that IV selection by hard thresholding suffers from errors in finite samples, causing size distortions in the inference for β∗ 
+
+> 1
+
+. The drawback of TSHT motivates the robust inference with sampling in the following. 
+
+## 3.3 Inference with Sampling Confidence Interval 
+
+We now elaborate our inferential procedure for β∗ 
+
+> 1
+
+leveraging the identification conditions in Section 2, which consists of two steps. 19 Step 1: Sampling and Screening . Recall that for each of the | cH | just-identifying IV subsets in (20), we have an estimate bπ(ℓ) of IV validity in (24). To sample these estimates for relevant IVs selected by bS, we draw ξ[m] ∼ N (0 , I| bS| ) for m = 1 , 2, . . . , M , where M is the number of resamples. We filter out the ξ[m]’s excessively deviating from the center by 
+
+M =
+
+
+
+m ∈ [M ] : max  
+
+> k∈bS
+
+|ξ[m] 
+
+> k
+
+| ≤ 1.1z1−α0/(2 | bS| )
+
+
+
+(28) with α0 ∈ (0 , α ) being a small tuning parameter discussed in Remark 4. The truncation by 
+
+z1−α0/(2 | bS| ) rules out extremely large sampled values. The truncation is necessary to avoid an overly conservative confidence interval and guarantee the parametric rate of the interval length. We perturb the estimated IV validity measures associated with each just-identifying subset in (20) using the sampled normal vectors ξ[m] ∈ R| bS| . For the ℓth just-identifying subset bHℓ and the mth draw, define 
+
+eπ(ℓ,m ) 
+
+> k
+
+= 1{k / ∈ bHℓ}
+
+nbπ(ℓ) 
+
+> k
+
++ cSE  bπ(ℓ)
+
+> k
+
+ξ[m]
+
+> k
+
+o
+
+, k ∈ bS. (29) Here, bπ(ℓ) 
+
+> k
+
+, defined in (24), estimates the validity measure of IV k using bHℓ, and its standard error cSE  bπ(ℓ)
+
+> k
+
+ is given in (A3) of the supplementary Section A. Note that bπ(ℓ) 
+
+> k
+
+= 0 is always true for every k ∈ bHℓ if bπ(ℓ) follows (24). Intuitively, IVs in the just-identifying IV subset 
+
+bHℓ always evaluate themselves as valid IVs. We therefore set eπ(ℓ,m ) 
+
+> k
+
+= 0 for k ∈ bHℓ, as imposed by the indicator function in (29). We also define cSE  bπ(ℓ)
+
+> k
+
+ = 0 when k ∈ bHℓ.Under the m-th sampling and the ℓ-th just-identifying IV subset, we select valid IVs according to the sampled coefficients in (29), given as 
+
+eV(ℓ,m ) =
+
+n
+
+k ∈ bS : |eπ(ℓ,m ) 
+
+> k
+
+| ≤ cSE( bπ(ℓ) 
+
+> k
+
+) · ρn(M )
+
+o
+
+, (30) where ρn(M ) = C0(log n/M )1/(2 | bS| ) with the tuning parameter C0 discussed in Remark 4. We now demonstrate the effect of sampling. Recall that Condition 1 guarantees the existence of pd valid IVs with a full-rank relevance matrix. This implies that with high probability the collection in (20) contains at least one just-identifying IV subset where all IVs are valid. Let ℓ∗ denote the index of this all-valid just-identifying IV subset. Then 
+
+bπ(ℓ∗) consistently estimates the true IV-validity vector π∗. The sampling in (29) generates a large number of estimators {eπ(ℓ∗,m )}m∈M in a neighborhood of the consistent estimate 20 bπ(ℓ∗). We will show in Proposition 3 that there exists an m∗ ∈ M such that 
+
+eπ(ℓ∗,m ∗) 
+
+> k
+
+− π∗ 
+
+> k
+
+≤ cSE( bπ(ℓ∗) 
+
+> k
+
+)ρn(M ), ∀k ∈ bS, (31) where ρn(M ) is used in (30). With M → ∞ , we have ρn(M ) → 0 and thus eπ(ℓ∗,m ∗) is nearly the same as the true π∗. Therefore, the set eV(ℓ∗,m ∗) defined in (30) correctly selects all valid IVs, even if the original estimate bπ(ℓ∗) causes IV selection error. Although there exists a eV(ℓ∗,m ∗) that correctly selects all valid IVs with high probability, in practice we need to determine which eV(ℓ,m ) to use. One strategy is to leverage the generalized plurality rule developed in Section 2. Under the m-th sampling, if |eV(ℓ,m )| =max ℓ′ |eV(ℓ′,m )|, the estimated valid IV set eV(ℓ,m ) is consistent with the generalized plurality rule, and we store it as a candidate valid IV set. We collect these candidate sets as 
+
+bT GenPlur  
+
+> m
+
+=
+
+(
+
+1 ≤ ℓ ≤ | cH | : |eV(ℓ,m )| = max   
+
+> 1≤ℓ′≤| cH|
+
+|eV(ℓ′,m )|
+
+)
+
+. (32) Alternatively, we can store the candidate IV sets based on (16), the least restrictive scenario of the generalized majority rule. The storage is given as 
+
+bT GenMaj  
+
+> m
+
+=
+
+(
+
+1 ≤ ℓ ≤ | cH | : eV(ℓ,m ) > | bS| + pd − 12
+
+)
+
+. (33) We prefer bT GenMaj  
+
+> m
+
+to bT GenPlur  
+
+> m
+
+in practical implementation, and we will discuss the reason in the following step. Under (16), the m∗-th sampling selects the ℓ∗-th just-identifying IV subset in bT GenMaj  
+
+> m∗
+
+with high probability. 
+
+Step 2: Aggregation. In this step we use aggregation to utilize the reserved index set bTm, where bTm denotes either bT GenPlur  
+
+> m
+
+or bT GenMaj  
+
+> m
+
+from Step 1 according to the leveraged identification condition. Recall that the 100(1 − α)% TSLS confidence interval CI ( H, α ) using the IVs in H
+
+is defined in (23). For each eV(ℓ,m ) in (30), we can construct a TSLS confidence interval CI 
+
+eV(ℓ,m ), α − α0
+
+
+
+under the significance level α − α0, where the additional α0 compen-sates for the multiplicity caused by the screening in (28). We then aggregate these TSLS confidence intervals into our Sampling Confidence Interval (SCI) for β∗ 
+
+> 1
+
+, given as SCI( α) = [
+
+> m∈M
+
+[ 
+
+> ℓ∈bTm
+
+CI 
+
+eV(ℓ,m ), α − α0
+
+
+
+, (34) 21 where bTm is the reserved index set chosen in Step 1. The set SCI( α) is not necessarily a continuous interval, while we still call it a confidence interval for terminological consistency. Recall that there exist ℓ∗ and m∗ such that (31) holds, which yields correct IV selec-tion with high probability. Under the leveraged identification condition, the ℓ∗-th just-identifying IV subset is included in bTm∗ with high probability, and thus at least one of the TSLS confidence intervals on the right-hand side of (34) is valid. Therefore, the union confidence interval SCI( α) covers the true value with a probability no less than the nominal coverage level 1 − α.Which bTm is preferred? The following illustrative simulations exhibit that though the generalized plurality rule is weaker for identification, it substantially sacrifices efficiency. Figure 3 shows the simulation results of the sampling method using bT GenPlur  
+
+> m
+
+or bT GenMaj 
+
+> m
+
+under the simulation settings in Section 3.2, where both the generalized plurality rule and the generalized majority rule are satisfied. We observe that compared to bT GenPlur  
+
+> m
+
+, the use of bT GenMaj  
+
+> m
+
+substantially shortens the confidence intervals without distorting the coverage probabilities. Therefore, in the following we focus on the generalized majority rule for both theoretical justifications and numerical experiments. Algorithm 1 summarizes our procedure. 
+
+Algorithm 1: Sampling Confidence Interval (SCI) for β∗                                                     
+
+> 1
+> Input: Data {Yi, D i·, Z i·, X i·}ni=1 ; Sampling number M; Significance level α; screening parameter α0;ρn(M) = C0(log n/M )1/(2 |bS| ).
+> Output: A 100(1 −α)% confidence interval SCI( α) for β∗
+> 1.1: Save bSby (18) and cHby (20). 2: For each m∈[M], sample ξ[m]∼N(0 ,I|bS| ) and filter these random samples by Min (28). 3: for m∈ M do for ℓ= 1 ,2, . . . , |cH|do
+> Calculate the sampled coefficient eπ(ℓ,m )by (29). Save estimated valid IV set eV(ℓ,m )by (30).
+> end end
+> 4: Use eV(ℓ,m )in (30) and bTGenMaj
+> min (33) to produce SCI( α) in (34).
+
+Remark 4 (Tuning Parameter Selection) . Key tuning parameters for our robust inference include the number of resamples M , the constant C0 in the sequence ρn(M ) in (31), and the screening parameter α0. We suggest M = 1000, under which the SCI performs well in all our simulation studies. For C0 in ρn(M ), we follow the idea of Guo (2023) and start with a small value 0 .05. We multiply the value of C0 by a factor of 1.25 until more than 5% of the IV selections bT GenMaj  
+
+> m
+
+are nonempty. Alternatively, the algorithm stops when the 22 0.0 0.1 0.2 0.3 0.4 0.5 0.0  0.2  0.4  0.6  0.8  1.0 
+
+Coverage Probability      
+
+> τ
+> 0.0 0.1 0.2 0.3 0.4 0.5 0.1  0.3  0.5  0.7
+
+CI Length  
+
+> τ
+> 00
+> GenPlur GenMaj
+
+Figure 3: Coverage probability of the 95% confidence interval by sampling with bT GenPlur 
+
+> m
+
+and bT GenMaj 
+
+> m
+
+Note: The blue curves show the results with bT GenPlur  
+
+> m
+
+, while the red ones represent the outputs using 
+
+bT GenMaj  
+
+> m
+
+. The left panel shows the coverage probability of the 95% intervals, with the gray dashed line highlighting the nominal level. The right panel exhibits the length of confidence intervals. 
+
+number of iterations reaches the default maximum of 15. If the iteration number reaches the maximum, it indicates that the generalized majority rule is possibly violated, which can be used as a partial check of the generalized majority rule. Finally, we use α0 = α/ 20. 
+
+Remark 5 (Weak Identification) . Our procedure relies on the assumption that there exists at least one valid just-identifying IV subset that strongly identifies the true β∗. This rules out weak identification, for example, when all IVs are weakly relevant to the treatments. Robust inference for multiple treatment effects under locally invalid IVs is already challenging. Inference under both locally invalid IVs and weak identification is beyond the scope of the current paper and left for future research. 
+
+# 4 Theoretical Justifications for Sampling Confidence Interval 
+
+We present the theoretical properties of the proposed inference procedure. The following regularity conditions are used in the theoretical derivations. Throughout this theoretical 23 section, an absolute constant is positive and independent of the sample size n.
+
+Assumption 1. Suppose the following conditions hold, for all 1 ≤ i ≤ n:(a) The instruments and covariates Wi· = ( Z⊤ 
+
+> i·
+
+, X ⊤ 
+
+> i·
+
+)⊤ are i.i.d. sub-Gaussian random vec-tors with Σ = E(Wi·W ⊤ 
+
+> i·
+
+) satisfying cΣ ≤ λmin (Σ) ≤ λmax (Σ) ≤ CΣ for some absolute constants CΣ ≥ cΣ > 0.(b) The error terms vi· = ( ui, ε ⊤ 
+
+> i
+
+)⊤ are i.i.d. sub-Gaussian random vectors with E(vi·|Wi·) = 0 and Λ = E(vi·v⊤ 
+
+> i·
+
+|Wi·) satisfying cΛ ≤ λmin (Λ) ≤ λmax (Λ) ≤ CΛ for some absolute constants CΛ ≥ cΛ > 0.
+
+Assumption 1 specifies the distributions of the observed exogenous variables in Wi·
+
+and the unobserved error terms and rules out perfect correlations through the bounded-eigenvalue condition. The sub-Gaussian conditions simplify the technical proofs, which can be relaxed to the moment conditions. The next assumption is imposed on the IV relevance matrix Υ ∗. Recall that S∗ collects the relevant IVs and H ∗ collects the just-identifying IV subsets. 
+
+Assumption 2 (IV Relevance) . There exists some absolute constant cΥ > 0, such that (a) 
+
+max j∈[pd] |Υ∗ 
+
+> k,j
+
+| > c Υ for all k ∈ S ∗, and (b) min H∈ H ∗ λmin (Υ ∗⊤ H· Υ∗H· ) > c Υ.
+
+Assumption 2(a) ensures that the relevant IVs are well separated from the irrelevant ones, therefore the screening by (18) consistently selects the relevant IVs. Assumption 2(b) ensures the just-identifying IV subsets are well separated from the subsets not identifying a unique value of effect. These two conditions ensure that the IV subset selection by (20) is consistent. We first establish model-selection consistency in the first-stage hard thresholding for relevant IVs and the just-identifying IV subsets, respectively. 
+
+Proposition 2. Suppose that Assumptions 1 and 2 hold. Then lim n→∞ Pr { bS = S∗} = 1 ,and lim n→∞ Pr { cH = H ∗} = 1 .
+
+We next derive the results for inference. The following proposition states the existence of ( ℓ∗, m ∗), such that (31) holds with high probability. That means there exists a sampled estimator eπ(ℓ∗,m ∗) sufficiently close to the true measurement of IV validity π∗. As explained around (31), this is the essential result that corrects the IV selection errors under locally invalid IVs. 24 Proposition 3. Suppose that Assumptions 1 and 2 and Condition 1 hold. Then 
+
+lim inf  
+
+> n→∞
+
+lim   
+
+> M→∞
+
+Pr 
+
+(
+
+min   
+
+> ℓ∈[|cH|],m ∈M
+
+max  
+
+> k∈bS
+
+eπ(ℓ,m ) 
+
+> k
+
+− π∗
+
+> k
+
+cSE( bπ(ℓ) 
+
+> k
+
+) ≤ ρn(M )
+
+)
+
+≥ 1 − α0, (35) 
+
+where we define ratios of the form 0/0 as zero to accommodate zero standard errors. 
+
+Given that the sampled estimator eπ(ℓ∗,m ∗) is sufficiently close to the true IV validity, the estimated valid IV set eV(ℓ∗,m ∗) defined in (30) correctly selects all valid IVs with a high probability. Therefore, at least one of the TSLS confidence intervals on the right-hand side of (34) is valid. The final confidence interval SCI( α) thus has sufficient coverage with high probability. The following theorem formally establishes the coverage probability of our SCI under |V ∗| > |S ∗|+pd−12 .
+
+Theorem 2. Suppose that |V ∗| > (|S ∗| + pd − 1) /2. Under the conditions in Proposition 3, we have 
+
+lim inf  
+
+> n→∞
+
+lim   
+
+> M→∞
+
+Pr {β∗ 
+
+> 1
+
+∈ SCI( α)} ≥ 1 − α, (36) 
+
+where SCI( α) is defined in (34). 
+
+Theorem 2 guarantees the asymptotic coverage of SCI( α). Note that Theorem 2 does not rely on the assumption that the true β∗ is uniquely identified. When multiple candidate 
+
+β’s are identified, our confidence interval covers not only the true effect β∗ 
+
+> 1
+
+with at least the nominal probability, but also other false candidate effects. To guarantee the efficiency of our confidence interval, we need to ensure that the true effect β∗ is the unique candidate that receives more than ( |S ∗| + pd − 1) /2 votes. We therefore impose the following assumption. In view of Proposition 2, cH = H ∗ holds with probability approaching one. Thus, we do not distinguish between cH and H ∗ in what follows for simplicity. 
+
+Assumption 3. For each 1 ≤ ℓ ≤ | H ∗|, the initial estimator (24) is centered at some nonrandom vector π(ℓ) = ( π(ℓ)1 , π (ℓ)2 , · · · , π (ℓ) 
+
+> pz
+
+)⊤ that may depend on n, such that 
+
+√n(bπ(ℓ) − π(ℓ)) d
+
+→ N (0 , Ω(ℓ)), (37) 
+
+where Ω(ℓ) is a pz × pz positive semidefinite matrix. In addition, we index the strongly invalid just-identifying IV subsets by 
+
+SI =
+
+
+
+1 ≤ ℓ ≤ | H ∗| : ∥π∗Hℓ ∥∞ > C1 log( C2/α 0)
+
+√n
+
+
+
+, (38) 25 where C1 and C2 are absolute constants. Assume that 
+
+max 
+
+> ℓ∈SI
+
+X
+
+> k∈S ∗
+
+1
+
+
+
+|π(ℓ) 
+
+> k
+
+| ≤ C1 log( C2/α 0)
+
+√n
+
+
+
+≤ |S ∗| + pd − 12 , (39) 
+
+where α0 is used in (28). 
+
+For simplicity, we impose the high-level asymptotic normality in (37), which follows from standard central limit theorems. We now explain (39). If π(ℓ) 
+
+> k
+
+is local to zero, the 
+
+ℓ-th just-identified IV subset may select the k-th IV as valid, so the k-th IV is in eV(ℓ,m )
+
+defined in (30) for some m with high probability. With (39) we can show that if ℓ ∈ SI ,we have |eV(ℓ,m )| ≤ (|S ∗| + pd − 1) /2 for all nonempty eV(ℓ,m ) with high probability, which cannot pass (33) and is excluded from the SCI in (34). Hence, any set eV(ℓ,m ) used in SCI is associated with ℓ / ∈ SI with high probability. By the definition (38), ℓ / ∈ SI means 
+
+∥π∗Hℓ ∥∞ ≤ C1 log( C2/α 0)/√n, indicating that all IVs in the just-identifying IV subset bHℓ
+
+are either valid or locally invalid. Since such a subset only selects valid or locally invalid IVs in eV(ℓ,m ), the resulting confidence interval stays near the true value β∗ 
+
+> 1
+
+, ensuring the efficiency of the SCI. When |V ∗| > |S ∗|+pd−12 , (39) in Assumption 3 implies that 
+
+|V ∗| > max 
+
+> ℓ∈SI
+
+
+
+k ∈ S ∗ : |π(ℓ) 
+
+> k
+
+| ≤ C1 log( C2/α 0)
+
+√n
+
+
+
+. (40) Note that the quantity on the right-hand side of (40) is a finite-sample analogue of max β̸ =β∗ |K (β)|
+
+in Condition 2. The only change is that we replace the restriction πk(β) = 0 by a local-to-zero upper bound. In this sense, Eq. (40) is slightly stronger than the generalized plurality rule in Condition 2, accounting for the variable selection error in finite samples. Define the length of the SCI as Len( α) = max(SCI( α)) − min(SCI( α)) ,
+
+where max( A) and min( A) denote the maximum and minimum elements in A ⊂ R. We end the theoretical section with the following Theorem 3, showing that the length of the SCI is controlled by the parametric rate 1 /√n with high probability. 
+
+Theorem 3. Under Assumption 3 and the conditions in Theorem 2, there exist absolute 
+
+26 constants C3 > 0 and C4 > 0 such that 
+
+lim inf  
+
+> n→∞
+
+lim   
+
+> M→∞
+
+Pr 
+
+
+
+Len( α) ≤ C3 log( C4/α 0)
+
+√n
+
+
+
+≥ 1 − α0. (41) 
+
+# 5 Monte Carlo Simulations 
+
+Consider the linear instrumental variable regression model (2) under a setting with pd = 2 treatments, and px = 5 covariates, and pz = 7 instrumental variables. The i.i.d. data 
+
+{Yi, D i·, Z i·, X i·}1≤i≤n are generated via models (2) and (3), where Wi· = ( Z⊤ 
+
+> i·
+
+, X ⊤ 
+
+> i·
+
+)⊤ fol-lows i.i.d. joint normal distributions with mean zero and variance Σ = (0 .5|j−k|)j,k ∈[p].The error terms vi = ( ui, ε ⊤ 
+
+> i·
+
+)⊤ follow i.i.d. joint normal distributions with mean zero, individual variance 1, and pairwise covariance 0.5. We vary the sample size n across 
+
+{500 , 1000 , 2000 , 5000 }.We consider β∗ = ( β∗ 
+
+> 1
+
+, β ∗ 
+
+> 2
+
+)⊤ = (1 , −1) ⊤ and set the coefficients of covariates as φ∗ =0.5(0 .3, 0.6, 0.9, 1.2, 1.5) ⊤, Ψ ∗ = 0 .5( ψ∗ 
+
+> 1
+
+, ψ ∗ 
+
+> 2
+
+) where ψ∗ 
+
+> 1
+
+= (1 , 0.8, 0.6, 0.4, 0.2) ⊤ and ψ∗ 
+
+> 2
+
+=(0 .2, 0.4, 0.6, 0.8, 1) ⊤. We set the IV relevance matrix as Υ ∗ = 0 .5( γ∗ 
+
+> 1
+
+, γ ∗ 
+
+> 2
+
+) where γ∗ 
+
+> 1
+
+=(1 , 1, 1, 1, 1, 1, 1) ⊤ and γ∗ 
+
+> 2
+
+= ( −1.5, −1, −0.5, 0, 1.5, 1, 0.5) ⊤. We consider two settings of IV validity: (S1) π∗ = ( 0⊤ 
+
+> 5
+
+, τ, 0.5) ⊤,(S2) π∗ = ( 0⊤ 
+
+> 5
+
+, τ, τ )⊤.Both settings include five valid instruments, thereby satisfying the condition (16) and guaranteeing the validity of our SCI procedure. When τ is close to zero, (S1) contains a locally invalid IV and a strongly invalid IV, while both invalid IVs in (S2) are locally invalid. We vary τ from 0.05 to 0.5. A relatively small τ characterizes the locally invalid IVs discussed in Section 3.2, under which the CI based on IV selection using hard thresholds, like TSHT, will suffer from size distortions. Under these settings, we compare the following methodologies to construct confidence intervals for β∗ 
+
+> 1
+
+:1. Our proposed SCI method introduced in Section 3.3; 2. The TSHT confidence interval demonstrated in Section 3.2, with C∗ = 0 .5 and the 27 selection criterion (26) replaced by the analog for generalized majority rule 
+
+bL =
+
+(
+
+1 ≤ ℓ ≤ | cH | : |bV(ℓ)| > | bS| + pd − 12
+
+)
+
+;3. The oracle bias-aware (OracleBA) confidence interval. For the TSHT estimator 
+
+bβTSHT 1 in Section 3.2 and its standard error SE( bβTSHT 1 ), we assume that ( bβTSHT 1 −
+
+β∗ 
+
+> 1
+
+)/SE( bβTSHT 1 ) d
+
+→ N (b1, 1) with b1 denoting the asymptotic bias due to the IV se-lection error. Following Eq. (7) in Armstrong et al. (2020), we leverage the oracle knowledge of E( bβTSHT 1 − β∗ 
+
+> 1
+
+) and construct the OracleBA confidence interval ( bβTSHT 1 − ∆1, bβTSHT 1 + ∆ 1), ∆1 = SE( bβTSHT 1 )
+
+q
+
+cv α(|E( bβTSHT 1 − β∗ 
+
+> 1
+
+)|2/[SE( bβTSHT 1 )] 2),
+
+where cv α(B2) is the (1 − α) quantile of the χ2 distribution with 1 degree of freedom and non-centrality parameter B2. The OracleBA CI serves as a fairer benchmark than the oracle TSLS confidence interval assuming prior knowledge of V∗, since OracleBA accounts for the IV selection error. When τ is relatively small, the sixth IV in (S1), as well as the sixth and seventh IVs in (S2), is locally invalid, under which the TSHT confidence interval is expected to suffer from undercoverage, according to our demonstrations in Section 3.2. To save space, we only show the results under the setup (S1). The results for (S2) are similar and relegated to Section B of the supplementary materials. Figure 4 shows that the TSHT confidence interval suffers from severe undercoverage when the IV invalidity τ is close to zero. Even if the sample size reaches 5000, the coverage probability of the TSHT confidence interval is still below 60% when τ = 0 .05. This result indicates the limitation of hard thresholding in the presence of locally invalid IVs, as explained in Section 3.2. Increasing τ alleviates the undercoverage of the TSHT confidence interval, as a large τ
+
+well separates the invalid IVs from the valid ones, thus improving the accuracy of valid IV selection. In contrast, our SCI method remains robust under all IV validity levels τ and sam-ple sizes n considered in our simulation. The coverage probability of SCI is always close to the nominal level 95%, which is similar to the OracleBA confidence interval. Regard-ing CI lengths, our SCI is only slightly wider than the confidence interval by OracleBA, suggesting that our inferential method achieves robustness without substantial power loss. Figure 5 clearly shows that the length of the SCI converges to zero as the sample size n
+
+28 increases, while the coverage probability remains robust. These results echo our theoretical justifications of the asymptotic coverage probability and length of our proposed SCI. 
+
+# 6 Real Data Application 
+
+Mendelian randomization (MR) uses genetic variants as instrumental variables to estimate the effect of a modifiable exposure on an outcome of interest in the presence of unmeasured confounding. Recent MR studies often use genome-wide association study (GWAS) sum-mary data, with single nucleotide polymorphisms (SNPs) serving as candidate instruments. We consider coronary artery disease (CAD) as the outcome, and low-density lipoprotein (LDL) and high-density lipoprotein (HDL) as exposures. This application implements our SCI for the causal effects of LDL and HDL on heart-disease outcomes while allowing some SNP instruments to be invalid. The IVs can be invalid due to the presence of population stratification or horizontal pleiotropy, where the latter is the biological phenomenon in which a genetic variant affects the outcome through a pathway other than the exposure of interest. Locally invalid instruments are possible when population stratification or hor-izontal pleiotropy are weak. Therefore, the SCI procedure is well suited for inference that is robust to IV selection error. We examine the causal relationships between lipoprotein traits and heart diseases using GWAS summary statistics. We consider CAD as the outcome Yi of interest, and a bivariate-treatment model where Di· includes the levels of LDL and HDL. For candidate IVs, we use the 9 SNPs that are relevant to both LDL and HDL. All the GWAS summary statistics used for MR analysis are publicly available with a more detailed description of each dataset given in Supplementary Table S4 in Liu et al. (2024). Specifically, the following summary statistics are available from the database: 1. Estimates of the correlation between the outcome and IVs analogous to the bΓ in (17), together with their standard errors and the p-values from the t-statistics. 2. Estimates of the relevance between the treatments and IVs analogous to the bΥ in (17), together with their standard errors and the p-values from the t-statistics. 3. The sample sizes used for estimation. Details about the implementation of SCI with summary data are relegated to the supple-mentary Section D. 29 Table 1: Confidence Intervals for Effects of Lipoprotein on CAD           
+
+> Method LDL HDL TSLS (0.183,0.500) (-0.315,0.112) TSHT (0.237,0.573) (-0.224,0.328) SCI (0.168,0.776) (-0.375,0.328)
+> Notes: The table shows the 95% confidence intervals. “TSLS” represents the two-stage least squares estimator. “TSHT” is the hard thresholding method in Section 3.2. “SCI” is our proposed method.
+
+Table 1 exhibits the 95% confidence intervals of the treatment effects of LDL and HDL on CAD using different methods. Overall, the results suggest that a higher level of LDL significantly increases the risk of CAD, while HDL does not exhibit a significant effect. This result echoes the findings of Global Lipids Genetics Consortium (2013) that LDL cholesterol is significantly positively associated with CAD risk, whereas the inverse association between HDL and CAD in observational studies is insignificant in genetic analyses. When we compare different methods, the confidence intervals from TSLS and TSHT are relatively short. However, TSLS may suffer from invalid IVs, and TSHT is prone to undercoverage caused by IV selection errors when some IVs are locally invalid. In contrast, our SCI is longer but robust to locally invalid IVs. 
+
+# 7 Conclusion 
+
+This paper studies identification conditions and robust inference for linear IV models with multiple endogenous treatments and possibly invalid instruments. We establish a condition called the generalized plurality rule under which the vector of multiple treatment effects is uniquely identified. We develop a sufficient condition called the generalized majority rule for identification. For studies with observational data, we propose an inference procedure that is robust to locally invalid instruments and IV selection error. These results shed light on how invalid instruments affect identification in multidimensional treatment settings and provide a practical route to robust inference when IV validity must be learned from the data. 30 0.0  0.2  0.4  0.6  0.8  1.0 
+
+Coverage Probability 
+
+> n = 500
+
+0.05 0.1 0.2 0.3 0.4 0.5 
+
+> 0.0  0.2  0.4  0.6  0.8  1.0
+
+CI Length 
+
+0.05 0.1 0.2 0.3 0.4 0.5 
+
+> 0.0  0.2  0.4  0.6  0.8  1.0
+> n = 1000
+
+0.05 0.1 0.2 0.3 0.4 0.5 
+
+> 0.0  0.2  0.4  0.6  0.8  1.0
+
+0.05 0.1 0.2 0.3 0.4 0.5 
+
+> 0.0  0.2  0.4  0.6  0.8  1.0
+> n = 2000
+
+0.05 0.1 0.2 0.3 0.4 0.5 
+
+> 0.0  0.2  0.4  0.6  0.8  1.0
+
+0.05 0.1 0.2 0.3 0.4 0.5 
+
+> 0.0  0.2  0.4  0.6  0.8  1.0
+
+τ
+
+> n = 5000
+
+0.05 0.1 0.2 0.3 0.4 0.5 
+
+τ
+
+> 0.0  0.2  0.4  0.6  0.8  1.0
+
+τ
+
+0.05 0.1 0.2 0.3 0.4 0.5 
+
+τ
+
+00
+
+TSHT SCI OracleBA Figure 4: Coverage Probabilities and CI Lengths for β∗
+
+1 Varying with τ for (S1) 31 0.0  0.2  0.4  0.6  0.8  1.0 
+
+Coverage Probability 
+
+> τ = 0.1
+
+500 1000 2000 5000 
+
+> 0.0  0.2  0.4  0.6  0.8  1.0
+
+CI Length 
+
+500 1000 2000 5000 
+
+> 0.0  0.2  0.4  0.6  0.8  1.0
+> τ = 0.3
+
+500 1000 2000 5000 
+
+> 0.0  0.2  0.4  0.6  0.8  1.0
+
+500 1000 2000 5000 
+
+> 0.0  0.2  0.4  0.6  0.8  1.0
+
+n
+
+> τ = 0.5
+
+500 1000 2000 5000 n
+
+> 0.0  0.2  0.4  0.6  0.8  1.0
+
+n
+
+500 1000 2000 5000 n
+
+00
+
+TSHT SCI OracleBA Figure 5: Coverage Probabilities and CI Lengths for β∗
+
+1 Varying with n for (S1) 32 References 
+
+Abadir, K. M. and Magnus, J. R. (2005). Matrix Algebra , volume 1 of Econometric Exer-cises . Cambridge University Press. Andrews, D. W. (1999). Consistent moment selection procedures for generalized method of moments estimation. Econometrica , 67(3):543–563. Apfel, N. and Liang, X. (2024). Agglomerative hierarchical clustering for selecting valid instrumental variables. Journal of Applied Econometrics .Armstrong, T. B., Koles´ ar, M., and Kwon, S. (2020). Bias-aware inference in regularized regression models. arXiv preprint arXiv:2012.14823 .Bowden, J., Davey Smith, G., and Burgess, S. (2015). Mendelian randomization with invalid instruments: effect estimation and bias detection through egger regression. In-ternational journal of epidemiology , 44(2):512–525. Burgess, S. and Thompson, S. G. (2015). Multivariable mendelian randomization: The use of pleiotropic genetic variants to estimate causal effects. American Journal of Epidemi-ology , 181:251–260. Cheng, X. and Liao, Z. (2015). Select the valid and relevant moments: An information-based lasso for gmm with many moments. Journal of Econometrics , 186(2):443–464. Cragg, J. G. and Donald, S. G. (1993). Testing identifiability and specification in instru-mental variable models. Econometric theory , 9(2):222–240. Dukes, O., Richardson, D. B., Shahn, Z., Robins, J. M., and Tchetgen Tchetgen, E. J. (2025). Using negative controls to identify causal effects with invalid instrumental vari-ables. Biometrika , 112(1):asae064. Fan, Q. and Wu, Y. (2024). Endogenous treatment effect estimation with a large and mixed set of instruments and control variables. Review of Economics and Statistics ,106(6):1655–1674. Global Lipids Genetics Consortium (2013). Discovery and refinement of loci associated with lipid levels. Nature genetics , 45(11):1274–1283. 33 Goldsmith-Pinkham, P., Hull, P., and Koles´ ar, M. (2024). Contamination bias in linear regressions. American Economic Review , page forthcoming. Guo, Z. (2023). Post-selection problems and a solution using searching and sampling. 
+
+Journal of the Royal Statistical Society Series B: Statistical Methodology , 85(3):959–985. Guo, Z., Kang, H., Tony Cai, T., and Small, D. S. (2018). Confidence intervals for causal effects with invalid instruments by using two-stage hard thresholding with voting. Journal of the Royal Statistical Society Series B: Statistical Methodology , 80(4):793–815. Han, C. (2008). Detecting invalid instruments using l1-GMM. Economics Letters , 3:285– 287. Hu, X., Zhao, J., Lin, Z., Wang, Y., Peng, H., Zhao, H., Wan, X., and Yang, C. (2022). Mendelian randomization for causal inference accounting for pleiotropy and sample struc-ture using genome-wide summary statistics. Proceedings of the National Academy of Sciences , 119(28):e2106858119. Kang, H., Guo, Z., Liu, Z., and Small, D. (2024). Identification and inference with invalid instruments. Annual Review of Statistics and Its Application , 12. Kang, H., Zhang, A., Cai, T. T., and Small, D. S. (2016). Instrumental variables estimation with some invalid instruments and its application to mendelian randomization. Journal of the American statistical Association , 111(513):132–144. Lewbel, A. (2012). Using heteroscedasticity to identify and estimate mismeasured and endogenous regressor models. Journal of Business & Economic Statistics , 30(1):67–80. Liang, X., Sanderson, E., and Windmeijer, F. (2022). Selecting valid instrumental variables in linear models with multiple exposure variables: Adaptive lasso and the median-of-medians estimator. arXiv preprint arXiv:2208.05278 .Lin, Y., Windmeijer, F., Song, X., and Fan, Q. (2024). On the instrumental variable estimation with many weak and invalid instruments. Journal of the Royal Statistical Society Series B: Statistical Methodology , page qkae025. Liu, Z., Yao, M., Miller, G., Vardarajan, B., Baccarelli, A., and Guo, Z. (2024). Robust mendelian randomization analysis by automatically selecting valid genetic instruments with applications to identify plasma protein biomarkers for alzheimer’s disease. 34 Pierce, B. L. and Burgess, S. (2013). Efficient design for mendelian randomization studies: subsample and 2-sample instrumental variable estimators. American journal of epidemi-ology , 178(7):1177–1184. Qiang, W., Yau, W.-M., Lu, J.-X., Collinge, J., and Tycko, R. (2017). Structural variation in amyloid-β fibrils from alzheimer’s disease clinical subtypes. Nature , 541:217–221. Small, D. S. (2007). Sensitivity analysis for instrumental variables regression with overiden-tifying restrictions. Journal of the American Statistical Association , 102(479):1049–1058. Sun, B., Cui, Y., and Tchetgen, E. T. (2022). Selective machine learning of the average treatment effect with an invalid instrumental variable. Journal of Machine Learning Research , 23(204):1–40. Sun, B., Liu, Z., and Tchetgen Tchetgen, E. (2023). Semiparametric efficient g-estimation with invalid instrumental variables. Biometrika , 110(4):953–971. Tchetgen Tchetgen, E., Sun, B., and Walter, S. (2021). The genius approach to robust mendelian randomization inference. Statistical Science , 36(3):443–464. Windmeijer, F., Farbmacher, H., Davies, N., and Davey Smith, G. (2019). On the use of the lasso for instrumental variables estimation with some invalid instruments. Journal of the American Statistical Association , 114(527):1339–1350. Windmeijer, F., Liang, X., Hartwig, F. P., and Bowden, J. (2021). The confidence interval method for selecting valid instrumental variables. Journal of the Royal Statistical Society Series B: Statistical Methodology , 83(4):752–776. Yao, M., Miller, G. W., Vardarajan, B. N., Baccarelli, A. A., Guo, Z., and Liu, Z. (2024). Deciphering proteins in alzheimer’s disease: A new mendelian randomization method integrated with alphafold3 for 3d structure prediction. Cell Genomics , 4(12). Ye, T., Liu, Z., Sun, B., and Tchetgen Tchetgen, E. (2024). Genius-mawii: for robust mendelian randomization with many weak invalid instruments. Journal of the Royal Statistical Society Series B: Statistical Methodology , 86(4):1045–1067. Zhou, D., Jiang, Y., Zhong, X., Cox, N. J., Liu, C., and Gamazon, E. R. (2020). A unified framework for joint-tissue transcriptome-wide association and mendelian randomization analysis. Nature Genetics , 52:1239–1246. 35 Supplementary Materials for “Identification and Robust Inference for Multiple Treatment Effects with Possibly Invalid Instruments” 
+
+Ziwei Mei, Qingliang Fan, Zijian Guo 
+
+# A Omitted Formulas 
+
+The standard error of bΥk,j is 
+
+cSE( bΥk,j ) = 
+
+sbΩ(j)
+
+> k,k
+
+n , where bΩ(j) = ( bΩ(j) 
+
+> k,t
+
+)k,t ∈[pz ] = ( bσεj )2 ·  n−1Z⊤MX Z−1 , (A1) and ( bσεj )2 = n−1∥MW D·j ∥22 is the mean squared OLS residuals by the regression of D·j on 
+
+W = ( Z, X ). The standard error of bβ(H)1 is 
+
+cSE( bβ(H)1 ) = 
+
+s
+
+(bΩ(H) 
+
+> β
+
+)1,1
+
+n , where bΩ(H) 
+
+> β
+
+= ( bσ(H) 
+
+> u
+
+)2 · (n−1D(H)⊤PW D(H))−1
+
+> 1: pd,1: pd
+
+, (A2) and ( bσ(H) 
+
+> u
+
+)2 = n−1∥Y − D(H) bθ(H)∥22 is the mean squared TSLS residuals. For any k ∈ [pz ]\ bHℓ, let s(k) denote the order of k in the sequence that organizes [pz ]\ bHℓ in an ascending order. Then algebraically bπ(ℓ) 
+
+> k
+
+equals the ( pd + s(k))-th entry in 
+
+bθ( bHℓ) defined in (22) for any k ∈ [pz ]\ bHℓ. Consider an example with pz = 5 and pd = 2. 
+
+bHℓ = {1, 2}, we have s(3) = 1, s(4) = 2, and s(5) = 3. If bHℓ = {2, 5}, we have s(1) = 1, 
+
+s(3) = 2, and s(4) = 3. The standard error of bπ(ℓ) 
+
+> k
+
+is then estimated by [ cSE( bπ(ℓ) 
+
+> k
+
+)] 2 =
+
+
+
+0, if k ∈ bHℓ,(bσ(ℓ) 
+
+> u
+
+)2
+
+n
+
+(n−1D(ℓ)⊤PW D(ℓ))−1 
+
+> pd+s(k),p d+s(k)
+
+, if k ∈ [pz ]\ bHℓ,
+
+(A3) where ( bσ(ℓ) 
+
+> u
+
+)2 = ( bσ( bHℓ) 
+
+> u
+
+)2 follows the definition of ( bσ(H) 
+
+> u
+
+)2 below (A2). 
+
+# B Additional Simulation Results 
+
+This Section includes the simulation results for the setting (S2) in Section 5. The results are similar to those in Figure 4 and Figure 5, and thus omitted in the main text. 10.0  0.2  0.4  0.6  0.8  1.0 
+
+Coverage Probability 
+
+> n = 500
+
+0.05 0.1 0.2 0.3 0.4 0.5 
+
+> 0.0  0.2  0.4  0.6  0.8  1.0
+
+CI Length 
+
+0.05 0.1 0.2 0.3 0.4 0.5 
+
+> 0.0  0.2  0.4  0.6  0.8  1.0
+> n = 1000
+
+0.05 0.1 0.2 0.3 0.4 0.5 
+
+> 0.0  0.2  0.4  0.6  0.8  1.0
+
+0.05 0.1 0.2 0.3 0.4 0.5 
+
+> 0.0  0.2  0.4  0.6  0.8  1.0
+> n = 2000
+
+0.05 0.1 0.2 0.3 0.4 0.5 
+
+> 0.0  0.2  0.4  0.6  0.8  1.0
+
+0.05 0.1 0.2 0.3 0.4 0.5 
+
+> 0.0  0.2  0.4  0.6  0.8  1.0
+
+τ
+
+> n = 5000
+
+0.05 0.1 0.2 0.3 0.4 0.5 
+
+τ
+
+> 0.0  0.2  0.4  0.6  0.8  1.0
+
+τ
+
+0.05 0.1 0.2 0.3 0.4 0.5 
+
+τ
+
+00
+
+TSHT SCI OracleBA Figure B1: Coverage Probabilities and CI Lengths for β∗
+
+1 Varying with τ for (S2) 20.0  0.2  0.4  0.6  0.8  1.0 
+
+Coverage Probability 
+
+> τ = 0.1
+
+500 1000 2000 5000 
+
+> 0.0  0.2  0.4  0.6  0.8  1.0
+
+CI Length 
+
+500 1000 2000 5000 
+
+> 0.0  0.2  0.4  0.6  0.8  1.0
+> τ = 0.3
+
+500 1000 2000 5000 
+
+> 0.0  0.2  0.4  0.6  0.8  1.0
+
+500 1000 2000 5000 
+
+> 0.0  0.2  0.4  0.6  0.8  1.0
+
+n
+
+> τ = 0.5
+
+500 1000 2000 5000 n
+
+> 0.0  0.2  0.4  0.6  0.8  1.0
+
+n
+
+500 1000 2000 5000 n
+
+00
+
+TSHT SCI OracleBA Figure B2: Coverage Probabilities and CI Lengths for β∗
+
+1 Varying with n for (S2) 3C Proofs 
+
+## C.1 Proofs of Section 2 
+
+We first state a lemma about the relationship between the existence of solutions to a linear equation and matrix rank. 
+
+Lemma C1. (a) (Abadir and Magnus, 2005, Exercise 6.42) For any m × pd matrix Υ
+
+and m-dimensional vector π, the linear equation Υx = π has a solution if and only if 
+
+rank(Υ) = rank(Υ , π ).(b) (Abadir and Magnus, 2005, Exercise 6.33) For any m×pd matrix Υ, the linear equation 
+
+Υx = 0m has a nonzero solution if and only if rank(Υ) < p d.Proof of Theorem 1. By definition, max   
+
+> β̸=β∗
+
+|{ k ∈ S ∗ : πk(β) = 0 }| ≤ max   
+
+> β̸=β∗
+
+|{ k ∈ S ∗\V ∗ : πk(β) = 0 }| + max   
+
+> β̸=β∗
+
+|{ k ∈ V ∗ : πk(β) = 0 }| ≤ |S ∗| − |V ∗| + max   
+
+> β̸=β∗
+
+|{ k ∈ V ∗ : πk(β) = 0 }| .
+
+The condition |V ∗| > |S ∗|+h0−12 can be reorganized as 
+
+|V ∗| > |S ∗| − |V ∗| + h0 − 1.
+
+It then suffices to show max   
+
+> β̸=β∗
+
+|{ k ∈ V ∗ : πk(β) = 0 }| ≤ h0 − 1.
+
+Recall that by definition, π(β) = π∗ + Υ ∗(β∗ − β). As π∗ 
+
+> k
+
+= 0 for all k ∈ V ∗, we have max   
+
+> β̸=β∗
+
+|{ k ∈ V ∗ : πk(β) = 0 }| = max   
+
+> β̸=β∗
+
+|{ k ∈ V ∗ : Υ ∗
+
+> k·
+
+(β∗ − β) = 0 }| 
+
+= max 
+
+> x̸=0pd
+
+|{ k ∈ V ∗ : Υ ∗
+
+> k·
+
+x = 0 }| .
+
+We then need to show max 
+
+> x̸=0pd
+
+|{ k ∈ V ∗ : Υ ∗
+
+> k·
+
+x = 0 }| ≤ h0 − 1. (C4) We prove (C4) by contradiction. If max x̸=0pd |{ k ∈ V ∗ : Υ ∗
+
+> k·
+
+x = 0 }| > h 0 − 1, there exist a 4nonzero vector x ∈ Rpd \{ 0pd } and a subset of valid IVs indexed by H1 ⊂ V ∗, such that 
+
+|H 1| > h 0 − 1 and Υ ∗H1·x = 0 .
+
+Let H0 be a subset of H1 satisfying |H 0| = h0. Then Υ∗H0·x = 0 .
+
+That means the linear equation Υ ∗H0·x = 0 has a nonzero solution x. Then by Lemma C1(b), rank(Υ ∗H0·) < p d. (C5) Because |H 0| = h0, (C5) is contradictory to the definition of h0 in (13). Thus, (C4) is verified by contradiction and we complete the proof of Theorem 1. 
+
+Proof of Proposition 1. Notice that Pr {Condition 2 holds } = 1 is a direct corollary of (11) and |V ∗| > p d. It thus suffices to prove (11). For any H ⊂ S ∗, define the event 
+
+R(H) = {rank(Υ ∗H· ) < rank(Υ ∗H· , π ∗H)}. (C6) Further, define 
+
+R∗ = { rank(Υ ∗H· ) = pd for any H ⊂ S ∗ satisfying |H| ≥ pd}
+
+and the class of subsets 
+
+H0 = {H ⊂ S ∗ : |H| > p d and π∗H̸ = 0|H| }.
+
+In words, H0 includes all subsets H ⊂ S ∗ of cardinality greater than pd, such that at least one of the instruments indexed by H is invalid. It suffices to show the following results: (a) (11) holds when both R∗ and T 
+
+> H∈ H0
+
+R(H) hold; (b) R∗ and T 
+
+> H∈ H0
+
+R(H) hold with probability one. Proof of (a). Recall that by definition, π(β) = π∗ + Υ ∗(β∗ − β). Lemma C1(a) suggests that under R(H), the linear equation Υ ∗H· x + π∗H = 0|H| has no solution. Since πH(β) = 5π∗H + Υ ∗H· (β∗ − β), under R(H) we cannot find any β such that πH(β) = 0|H| . Therefore, under T 
+
+> H∈ H0
+
+R(H), we have 
+
+πH(β)̸ = 0|H| for any β ∈ Rpd , if H ∈ H0.
+
+Therefore, under T 
+
+> H∈ H0
+
+R(H), if there exists a subset H ⊂ S ∗ and a candidate effect 
+
+β ∈ Rpd such that πH(β) = 0|H| , we have H /∈ H0. That means one of the following must be satisfied: (I) |H| > p d and π∗H = 0|H| ;(II) |H| ≤ pd.Under (I), by π∗H = 0|H| and πH(β) = 0|H| we have Υ∗H· (β∗ − β) = πH(β) − π∗H = 0|H| . (C7) Note that the matrix Υ ∗H· is full-column-rank under R∗. By Lemma C1(b), the only solution to (C7) is β = β∗. Therefore, if the additional restriction β̸ = β∗ is imposed, the only possibility is (II). Then max   
+
+> β̸=β∗
+
+|{ k ∈ S ∗ : πk(β) = 0 }| = max     
+
+> {H⊂S ∗:∃β̸=β∗s.t. πH(β)= 0|H| }
+
+|H| ≤ pd.
+
+This verifies (11) in Proposition 1. Proof of (b). We first show Pr {R∗} = 1 . (C8) For any H ⊂ S ∗ with |H| ≥ pd, define 
+
+R∗H,1 = {Υ∗H,1̸ = 0|H| }.
+
+By continuity of the distributions, the random vector Υ ∗H,1 lies on any singleton with probability zero. We thus have Pr {R∗H,1} = 1 − Pr {Υ∗H,1 = 0|H| } = 1 .
+
+6If pd = 1, then R∗ = T 
+
+> H⊂S ∗,|H|≥ pd
+
+R∗H,1, and Pr {R∗} = Pr { \
+
+> H⊂S ∗,|H|≥ pd
+
+R∗H,1} = 1 ,
+
+given that the intersection of finitely many events that each have a probability of 1 also has a probability of 1. Therefore, (C8) is verified. Otherwise, when pd = 2 define 
+
+R∗H,2 = {rank  Υ∗H,1, Υ∗H,2
+
+ = 2 }.
+
+Recall |H| ≥ pd. Again by continuity of the distributions, the |H| -dimensional random vector lies on any one-dimensional subspace with zero probability. Let LH,1 denote the linear space spanned by Υ ∗H,1 whose dimension is 1. Because the nonzero elements are drawn from independent continuous distributions, the random vectors Υ ∗H,1 and Υ ∗H,2 are independent. Therefore, Pr {R∗H,2|R∗H,1} = 1 − Pr {Υ∗H,2 ∈ LH,1|R∗H,1} = 1 , (C9) which implies that Pr {R∗H,2} ≥ Pr {R∗H,2 ∩ R∗H,1} = Pr {R∗H,2|R∗H,1} Pr {R∗H,1} = 1 . (C10) If pd = 2, R∗ = T 
+
+> H⊂S ∗,|H|≥ pd
+
+R∗H,2 and thus (C8) is verified. Otherwise, when pd ≥ 3, we further define 
+
+R∗H,j = {rank  Υ∗H,1, . . . , Υ∗H,j 
+
+ = j}
+
+for j ≥ 3. We can show by induction that for any j = 3 , . . . , p d,Pr R∗H,j |R∗H,j −1, . . . , R∗H,1 = 1 following the arguments for the proof of (C9). Therefore, Pr R∗H,p d ≥ Pr 
+
+( pd\
+
+> j=1
+
+R∗H,j 
+
+)
+
+= Pr R∗H,1 ·
+
+> pd
+
+Y
+
+> j=2
+
+Pr R∗H,j |R∗H,j −1, . . . , R∗H,1
+
+= 1 .
+
+7Thus, Pr {R∗} = Pr 
+
+nT 
+
+> H⊂S ∗,|H|≥ pd
+
+R∗H,p d
+
+o
+
+= 1 and (C8) is verified. We then show Pr {T 
+
+> H∈ H0
+
+R(H)} = 1. Given that H0 is a finite collection, it suffices to show that Pr {R(H)} = 1 for any H ∈ H0, where R(H) is defined in (C6). Given that (C8) has been verified, from now on we always assume that R∗ is true, and omit the conditioning on R∗ for simplicity. Under R∗, it suffices to show Pr {rank(Υ ∗H· , π ∗H) = pd + 1 } = 1 . (C11) for any H ∈ H0. Note that by definition any H ∈ H0 includes at least one invalid IV. Case I. When all instruments in H are invalid, i.e. H ⊂ V ∗c, all entries in π∗H are random. Then we can prove (C11) following the arguments in proving (C8). Case II. When some of the instruments in H are valid, i.e. H ∩ V ∗ is not empty, π∗H∩V ∗ =
+
+0|H∩V ∗| is deterministic, and π∗H∩V ∗c is random. Recall that under R∗ we have rank(Υ ∗H· ) = 
+
+pd, and in this case the event in (C11) is equivalent to 
+
+{rank(Υ ∗H· , π ∗H) = pd + 1 } = {rank(Υ ∗H· ) < rank(Υ ∗H· , π ∗H)}
+
+= {Υ∗H· x̸ = π∗H for any x ∈ Rpd }, (C12) where the second row applies Lemma C1(a). Note that any x such that Υ ∗H· x = π∗H
+
+must satisfy Υ ∗
+
+> (H∩V ∗)·
+
+x = π∗ 
+
+> (H∩V ∗)
+
+= 0|(H∩V ∗)|. Equivalently, any solution to the equation Υ∗H· x = π∗H is in the set 
+
+X0 = {x ∈ Rpd : Υ ∗
+
+> (H∩V ∗)·
+
+x = 0|H∩V ∗|}.
+
+Therefore, 
+
+{Υ∗H· x̸ = π∗H for any x ∈ Rpd } = {Υ∗
+
+> (H∩V ∗c)·
+
+x̸ = π∗ 
+
+> (H∩V ∗c)
+
+for any x ∈ X 0}. (C13) By (C12) and (C13), to prove (C11) it suffices to show Pr {Υ∗
+
+> (H∩V ∗c)·
+
+x̸ = π∗ 
+
+> (H∩V ∗c)
+
+for any x ∈ X 0} = 1 . (C14) Under R∗, the rank of the |H ∩ V ∗| × pd matrix Υ ∗ 
+
+> (H∩V ∗)·
+
+equals either |H ∩ V ∗| or pd.By the Rank-Nullity Theorem, the null space X0 satisfies dim( X0) = max {pd − |H ∩ V ∗|, 0}. (C15) 8When dim( X0) = 0, the space X0 = {0pd }. Note that H includes at least one invalid IV, and thus π∗
+
+> (H∩V ∗c)
+
+̸ = 0|H∩V ∗c| = Υ ∗
+
+> (H∩V ∗c)·
+
+0pd , and thus the event in (C14) holds. Otherwise, dim( X0) = pd − |H ∩ V ∗| > 0. Define the null space and range space of the linear transformation Υ ∗ 
+
+> (H∩V ∗c)·
+
+as 
+
+N0 = {x ∈ X 0 : Υ ∗
+
+> (H∩V ∗c)·
+
+x = 0|H∩V ∗c|},
+
+and 
+
+W0 = {Υ∗
+
+> (H∩V ∗c)·
+
+x : x ∈ X 0}.
+
+By the Rank-Nullity Theorem, dim( W0) = dim( X0) − dim( N0)
+
+≤ dim( X0) = pd − |H ∩ V ∗|. (C16) Recall that |H| > p d for any H ∈ H0, and π∗H∩V ∗c is a random vector of length 
+
+|H| − |H ∩ V ∗| > p d − |H ∩ V ∗| ≥ dim( W0),
+
+where the last step applies (C16). That means the length of the continuously distributed random vector π∗H∩V ∗c is larger than the dimension of W0. Therefore, π∗H∩V ∗c falls onto the subspace W0 with probability zero. This indicates that (C14) holds with probability one, and therefore (C11) holds. This completes the proof of Part (b) and concludes the proof of Proposition 1. 
+
+## C.2 Proofs of Section 3 
+
+In the following proofs, we abuse the notation C or Cj for j ∈ N to denote absolute constants, which may vary from place to place. 
+
+Proof of Proposition 2. According to the classical central limit theorems for ordinary least squares, the estimators of reduced-form coefficients bΓ and bΥ satisfy the following asymptotic normality bΥk,j − Υ∗
+
+> k,j
+
+cSE( bΥk,j )
+
+> d
+
+→ N (0 , 1) , (C17) and the standard error cSE( bΥk,j ) = Op(n−1/2). Therefore, for any k ∈ [pz ], if k /∈ S ∗,9Υ∗ 
+
+> kj
+
+= 0, and thus 
+
+| bΥkj / cSE( bΥk,j )| = op
+
+p log n
+
+
+
+,
+
+indicating that for any absolute constant c,Pr( | bΥkj / cSE( bΥk,j )| > plog n) → 0 for any k / ∈ S ∗. (C18) Besides, recall that ∥Υ∗
+
+> k·
+
+∥∞ ≫ plog n/n for any k ∈ S ∗ by Assumption 2. Given that 
+
+cSE( bΥk,j ) = Op(n−1/2), we have ∥Υ∗
+
+> k·
+
+∥∞ > 2 cSE( bΥk,j )√log n with probability approaching one. Therefore, 
+
+| bΥkj | ≥ | Υ∗ 
+
+> kj
+
+| − | bΥkj − Υ∗ 
+
+> kj
+
+|≥ 2 cSE( bΥk,j )plog n − Op( cSE( bΥk,j )) ≥ cSE( bΥk,j )plog n
+
+with probability approaching one. Therefore, Pr( | bΥkj / cSE( bΥk,j )| > plog n) → 1 for any k ∈ S ∗. (C19) The limits (C18) and (C19) indicate that Pr( bS = S∗) → 1 as n → ∞ .We then prove Pr { cH = H ∗} → 1. When H ∈ H ∗, λmin (Υ ∗⊤ H· Υ∗H· ) is bounded away from zero. In addition, standard limit theory yields that 
+
+λmin ( bΥ⊤H· bΥH· ) − λmin (Υ ∗⊤ H· Υ∗H· ) = Op(n−1/2),
+
+and the eigenvalues of bΣ−1/2 
+
+> ε
+
+and  Z⊤·H MW (H) Z·H 
+
+ /n are bounded away from zero and infinity with probability approaching one. Therefore, for any H ∈ H ∗, we have CD( H) ≥ c · nλ min ( bΥ⊤H· bΥH· ) = c · n ≫ log n
+
+for some absolute constant c with probability approaching one. That means Pr {H ∈ cH } → 
+
+1. Also, for any H /∈ H ∗, we have rank(Υ ∗H· ) ≤ pd − 1. Therefore, there exists a nonzero vector v ∈ Rpd such that ∥v∥2 = 1 and Υ ∗H· v = 0. By the law of large numbers for OLS, we have 
+
+bΥH· v = bΥH· v − Υ∗H· v = Op(n−1/2).
+
+10 Therefore, CD( H) ≤ C · nλ min ( bΥ⊤H· bΥH· ) ≤ C · nv ⊤ bΥ⊤H· bΥH· v = Op(1) ≪ log n
+
+where C is an absolute constant. Therefore, Pr {H /∈ cH } → 1. We complete the proof of Pr { cH = H ∗} → 1. 
+
+Proof of Proposition 3. Define the event 
+
+E1 =
+
+n bS = S∗, cH = H ∗
+
+o
+
+. (C20) We have Pr {E 1} → 1 by Proposition 2. By Condition 1, there exists ℓ∗ ∈ [|H ∗|] such that 
+
+Hℓ∗ ⊂ V ∗, and under E1 we have bHℓ∗ = Hℓ∗ . Therefore, for any k ∈ bHℓ∗ we have 
+
+π∗ 
+
+> k
+
+= 0, and eπ(ℓ∗,m ) 
+
+> k
+
+= 0 for all m ∈ M ,
+
+where the second equality applies the definition in (29). This implies Pr {eπ(ℓ∗,m ) 
+
+> k
+
+− π∗ 
+
+> k
+
+= 0 for all k ∈ bHℓ∗ , m ∈ M} ≥ Pr {eπ(ℓ∗,m ) 
+
+> k
+
+− π∗ 
+
+> k
+
+= 0 for all k ∈ bHℓ∗ , m ∈ M|E 1} Pr {E 1} → 1.
+
+It then suffices to show that lim inf  
+
+> n→∞
+
+lim   
+
+> M→∞
+
+Pr 
+
+(
+
+min  
+
+> m∈M
+
+max   
+
+> k∈bS\ bHℓ∗
+
+eπ(ℓ∗,m ) 
+
+> k
+
+− π∗
+
+> k
+
+cSE( bπ(ℓ∗) 
+
+> k
+
+) ≤ ρn(M )
+
+)
+
+≥ 1 − α0. (C21) Let O denote the observed data, and define 
+
+bU = bπ(ℓ∗) 
+
+> k
+
+− π∗
+
+> k
+
+cSE( bπ(ℓ∗) 
+
+> k
+
+)
+
+!  
+
+> k∈bS\ bHℓ∗
+
+and U [m] = bπ(ℓ∗) 
+
+> k
+
+− eπ(ℓ∗,m )
+
+> k
+
+cSE( bπ(ℓ∗) 
+
+> k
+
+)
+
+!  
+
+> k∈bS\ bHℓ∗
+
+. (C22) Furthermore, define the following event for the data O:
+
+E2 =
+
+n
+
+∥ bU ∥∞ ≤ z1−α0/(2 |S ∗|)
+
+o
+
+,
+
+E = E1 ∩ E 2.
+
+(C23) 11 By central limit theorem we can show that lim inf  
+
+> n→∞
+
+Pr( E2) ≥ 1 − α0. Therefore, lim inf  
+
+> n→∞
+
+Pr( E) ≥ 1 − α0.
+
+Recall that bU is a function of the observed data O. Also, U [m] 
+
+> k
+
+= −ξ[m] 
+
+> k
+
+∼ N (0 , 1). Let 
+
+f (· | O ) denote the conditional density function of U [m] given the data O, that is, 
+
+f  U [m] = U | O  = Y  
+
+> k∈bS\ bHℓ∗
+
+1
+
+√2π exp 
+
+
+
+−U 2
+
+> k
+
+2
+
+
+
+On the event E, we have 
+
+X  
+
+> k∈bS\ bHℓ∗
+
+bU 2
+
+> k
+
+2 ≤ |S ∗|
+
+2
+
+z1−α0/(2 |S ∗|)
+
+2 ,
+
+and further establish 
+
+f
+
+
+
+U [m] = bU | O 
+
+
+
+· 1O∈E ≥ c(α0) := 
+
+ 1
+
+√2π
+
+|S ∗|
+
+exp 
+
+
+
+−|S ∗|
+
+2
+
+z1−α0/(2 |S ∗|)
+
+2
+
+
+
+(C24) We use Pr( · | O ) to denote the conditional probability with respect to the observed data 
+
+O. Note that Pr 
+
+
+
+min  
+
+> 1≤m≤M
+
+U [m] − bU ∞
+
+≤ ρn(M ) | O 
+
+
+
+= 1 − Pr 
+
+
+
+min  
+
+> 1≤m≤M
+
+U [m] − bU ∞
+
+≥ ρn(M ) | O 
+
+
+
+= 1 −
+
+> M
+
+Y
+
+> m=1
+
+h
+
+1 − Pr 
+
+
+
+U [m] − bU ∞
+
+≤ ρn(M ) | O 
+
+i 
+
+≥ 1 − exp 
+
+"
+
+−
+
+> M
+
+X
+
+> m=1
+
+Pr 
+
+
+
+U [m] − bU ∞
+
+≤ ρn(M ) | O 
+
+#
+
+where the second equality follows from the conditional independence of U [m] 
+
+> 1≤m≤M
+
+given the observed data O, and the last inequality follows from 1 − x ≤ e−x. Applying the 12 inequality above, we can further establish Pr 
+
+
+
+min  
+
+> 1≤m≤M
+
+U [m] − bU ∞
+
+≤ ρn(M ) | O 
+
+
+
+· 1O∈E 
+
+≥ 1 − exp 
+
+"
+
+−
+
+> M
+
+X
+
+> m=1
+
+Pr 
+
+
+
+U [m] − bU ∞
+
+≤ ρn(M ) | O 
+
+#! 
+
+· 1O∈E 
+
+= 1 − exp 
+
+"
+
+−
+
+> M
+
+X
+
+> m=1
+
+Pr 
+
+
+
+U [m] − bU ∞
+
+≤ ρn(M ) | O 
+
+
+
+· 1O∈E 
+
+#
+
+(C25) For the remainder of the proof, we establish a lower bound for Pr 
+
+
+
+U [m] − bU ∞
+
+≤ ρn(M ) | O 
+
+
+
+· 1O∈E (C26) and apply (C25) to establish a lower bound for Pr 
+
+
+
+min  
+
+> 1≤m≤M
+
+U [m] − bU ∞
+
+≤ ρn(M ) | O 
+
+
+
+We further decompose the targeted probability in (C26) as Pr 
+
+
+
+U [m] − bU ∞
+
+≤ ρn(M ) | O 
+
+
+
+· 1O∈E 
+
+=
+
+Z
+
+f  U [m] = U | O  · 1{∥U − bU ∥∞≤ρn(M )}dU · 1O∈E 
+
+=
+
+Z
+
+f
+
+
+
+U [m] = bU | O 
+
+
+
+· 1{∥U − bU ∥∞≤ρn(M )}dU · 1O∈E 
+
++
+
+Z h
+
+f  U [m] = U | O  − f
+
+
+
+U [m] = bU | O 
+
+i 
+
+· 1{∥U − bU ∥∞≤ρn(M )}dU · 1O∈E .
+
+(C27) By (C24), we establish 
+
+Z
+
+f
+
+
+
+U [m] = bU | O 
+
+
+
+· 1{∥U − bU ∥∞≤ρn(M )}dU · 1O∈E 
+
+≥ c(α0) ·
+
+Z
+
+1{∥U − bU ∥∞≤ρn(M )}dU · 1O∈E 
+
+= c(α0) · [2 ρn(M )] |S ∗\ bHℓ| · 1O∈E .
+
+(C28) By Taylor expansion, there exists a t ∈ (0 , 1) such that 
+
+f  U [m] = U | O  − f
+
+
+
+U [m] = bU | O 
+
+
+
+= [ ∇f ( bU + t(U − bU ))] ⊤(U − bU )13 with the gradient function 
+
+∇f (u) = 
+
+ 1
+
+√2π
+
+
+
+−u · exp 
+
+
+
+−u2
+
+2
+
+ |S ∗\ bHℓ|
+
+.
+
+Since ∥∇ f ∥2 is bounded from above, there exists a positive constant C > 0 such that 
+
+f  U [m] = U | O  − f
+
+
+
+U [m] = bU | O 
+
+
+
+≤ Cp|S ∗|∥ U − bU ∥∞
+
+Then we establish 
+
+Z h
+
+f  U [m] = U | O  − f
+
+
+
+U [m] = bU | O 
+
+i 
+
+· 1{∥U − bU ∥∞≤ρn(M )}dU · 1O∈E 
+
+≤ Cp|S ∗| · ρn(M ) ·
+
+Z
+
+1{∥U − bU ∥∞≤ρn(M )}dU · 1O∈E 
+
+= Cp|S ∗| · ρn(M ) · [2 ρn(M )] |S ∗\ bHℓ| · 1O∈E 
+
+(C29) Since ρn(M ) → 0 and c(α0) is a positive constant, then there exists a positive integer M0
+
+such that 
+
+Cp|S ∗| · ρn(M ) ≤ 12c(α0) for M ≥ M0
+
+We combine the above inequality, (C27), (C28) and (C29) and obtain that for M ≥ M0,Pr 
+
+
+
+∥U [m] − bU ∥∞ ≤ ρn(M ) | O 
+
+
+
+· 1O∈E ≥ 12c(α0) · [2 ρn(M )] |S ∗\ bHℓ| · 1O∈E 
+
+≥ 12c(α0) · [2 ρn(M )] |S ∗| · 1O∈E .
+
+Together with (C25), we establish that for M ≥ M0,Pr 
+
+
+
+min  
+
+> 1≤m≤M
+
+U [m] − bU ∞
+
+≤ ρn(M ) | O 
+
+
+
+· 1O∈E 
+
+≥ 1 − exp 
+
+
+
+−M · 12c(α0) · [2 ρn(M )] |S ∗| · 1O∈E 
+
+
+
+=
+
+
+
+1 − exp 
+
+
+
+−M · 12c(α0) · [2 ρn(M )] |S ∗|
+
+ 
+
+· 1O∈E .
+
+In addition, we show that on the event E,min  
+
+> m / ∈M
+
+∥U [m] − bU ∥∞ > ρ n(M ). (C30) 14 This can be verified by min  
+
+> m / ∈M
+
+∥U [m] − bU ∥∞ > min  
+
+> m / ∈M
+
+∥ξ[m]∥∞ − ∥ bU ∥∞ > 1.1z1−α0/(2 |S ∗|) − z1−α0/(2 |S ∗|)
+
+= 0 .1z1−α0/(2 |S ∗|) > ρ n(M )when M is sufficiently large, where the second inequality applies (28) and E2. (C30) implies that 
+
+{ min  
+
+> m∈M
+
+∥U [m] − bU ∥∞ ≤ ρn(M )} = { min  
+
+> 1≤m≤M
+
+∥U [m] − bU ∥∞ ≤ ρn(M )}. (C31) We use EO to denote the expectation taken with respect to the observed data O. We further integrate with respect to O and establish that for M ≥ M0,Pr 
+
+
+
+min  
+
+> m∈M
+
+U [m] − bU ∞
+
+≤ ρn(M )
+
+
+
+= EO
+
+
+
+Pr 
+
+
+
+min  
+
+> m∈M
+
+U [m] − bU ∞
+
+≤ ρn(M ) | O 
+
+ 
+
+≥ EO
+
+
+
+Pr 
+
+
+
+min  
+
+> m∈M
+
+U [m] − bU ∞
+
+≤ ρn(M ) | O 
+
+
+
+· 1O∈E 
+
+
+
+= EO
+
+
+
+Pr 
+
+
+
+min  
+
+> 1≤m≤M
+
+U [m] − bU ∞
+
+≤ ρn(M ) | O 
+
+
+
+· 1O∈E 
+
+
+
+≥ EO
+
+ 
+
+1 − exp 
+
+
+
+−M · 12c(α0) · [2 ρn(M )] |S ∗|
+
+ 
+
+· 1O∈E 
+
+
+
+,
+
+where the fourth row applies (C31). Taking ρn(M ) = C0
+
+log nM
+
+ 12| bS| with C0 = 12 ( 2 
+
+> c(α0)
+
+)1/(|S| ∗), we establish that for M ≥ M0,Pr 
+
+
+
+min  
+
+> m∈M
+
+U [m] − bU ∞
+
+≤ ρn(M )
+
+
+
+≥  1 − n−1 · Pr( E).
+
+Therefore, lim inf  
+
+> n→∞
+
+lim   
+
+> M→∞
+
+Pr 
+
+
+
+min  
+
+> m∈M
+
+∥ bU − U [m]∥∞ ≤ ρn(M )
+
+
+
+≥ lim inf  
+
+> n→∞
+
+Pr( E) ≥ 1 − α0.
+
+This verifies (C21) and concludes the proof of Proposition 3. 
+
+Proof of Theorem 2. Define 
+
+bV = ( bVk)k∈ bS , bVk = bUk1{k ∈ bS\ bHℓ∗ },
+
+15 and 
+
+V [m] = ( V [m] 
+
+> k
+
+)k∈ bS , V [m] 
+
+> k
+
+= U [m] 
+
+> k
+
+1{k ∈ bS\ bHℓ∗ },
+
+where bU and U [m] are defined in (C22). Furthermore, define the event 
+
+E3 = E1 ∩ { min  
+
+> m∈M
+
+∥ bV − V [m]∥∞ ≤ ρn(M )}, (C32) where E1 is defined in (C20). We have Pr {E 3} ≥ 1 − α0 + o(1) by Propositions 2 and 3. Under E3, let m∗ denote the index of sampling that satisfies 
+
+∥ bV − V [m∗]∥∞ ≤ ρn(M ).
+
+Define 0 /0 = 0 and 1 /0 = ∞ to accommodate zero standard errors. Under E3, for any 
+
+k ∈ V ∗, we have π∗ 
+
+> k
+
+= 0 and thus 
+
+|eπ(ℓ∗,m ∗) 
+
+> k
+
+|
+
+cSE( bπ(ℓ∗) 
+
+> k
+
+) = |eπ(ℓ∗,m ∗) 
+
+> k
+
+− π∗
+
+> k
+
+|
+
+cSE( bπ(ℓ∗) 
+
+> k
+
+) ≤ ∥ bV − V [m∗]∥∞ ≤ ρn(M ), (C33) and thus k ∈ eV(ℓ∗,m ∗). This implies V∗ ⊂ eV(ℓ∗,m ∗) and hence |eV(ℓ∗,m ∗)| ≥ |V ∗| > (|S ∗| + pd −
+
+1) /2. Under E1, we have ℓ∗ ∈ bTm∗ , which means eV(ℓ∗,m ∗) is used to construct SCI. Then Pr {β∗ 
+
+> 1
+
+∈ SCI( α)} ≥ Pr {(β∗ 
+
+> 1
+
+∈ SCI( α)) ∩ E 3}≥ Pr {(β∗ 
+
+> 1
+
+∈ CI( eV(ℓ∗,m ∗), α − α0)) ∩ E 3}. (C34) If Pr {eV(ℓ∗,m ∗) = V∗|E 3} → 1, (C35) we have Pr {(eV(ℓ∗,m ∗)̸ = V∗) ∩ E 3} → 0 and thus Pr {(β∗ 
+
+> 1
+
+∈ CI( eV(ℓ∗,m ∗), α − α0)) ∩ E 3}
+
+= Pr {(β∗ 
+
+> 1
+
+∈ CI( eV(ℓ∗,m ∗), α − α0)) ∩ E 3 ∩ (eV(ℓ∗,m ∗) = V∗)}
+
++ Pr {(β∗ 
+
+> 1
+
+∈ CI( eV(ℓ∗,m ∗), α − α0)) ∩ E 3 ∩ (eV(ℓ∗,m ∗)̸ = V∗)}
+
+= Pr {(β∗ 
+
+> 1
+
+∈ CI( V∗, α − α0)) ∩ E 3} + o(1) 
+
+≥ Pr {(β∗ 
+
+> 1
+
+∈ CI( V∗, α − α0)) } − (1 − Pr( E3)) + o(1) .
+
+(C36) 16 By the asymptotic normality of TSLS estimators, we have lim  
+
+> n→∞
+
+Pr {(β∗ 
+
+> 1
+
+∈ CI( V∗, α − α0)) } = 1 − α + α0. (C37) By (C34), (C36), and (C37), we have lim inf  
+
+> n→∞
+
+lim   
+
+> M→∞
+
+Pr {β∗ 
+
+> 1
+
+∈ SCI( α)}≥ lim inf  
+
+> n→∞
+
+lim   
+
+> M→∞
+
+[Pr {(β∗ 
+
+> 1
+
+∈ CI( V∗, α − α0)) } − (1 − Pr( E3))] = (1 − α + α0) − 1 + lim inf  
+
+> n→∞
+
+lim   
+
+> M→∞
+
+Pr( E3)= 1 − α, 
+
+where the last step applies Proposition 3. It then suffices to show (C35). Define 0 /0 = 0 and 1 /0 = ∞ to accommodate zero standard errors. Under E3, for any k ∈ V ∗, by (C33) we have k ∈ eV(ℓ∗,m ∗). For k / ∈ V ∗, we have π∗
+
+> k
+
+̸ = 0. Define tmin = min k∈ bS\V ∗ (|π∗
+
+> k
+
+|/ cSE( bπ(ℓ∗) 
+
+> k
+
+)). With a sufficiently large M , we have 
+
+tmin > 2 · ρn(M ). Therefore, 
+
+|eπ(ℓ∗,m ∗) 
+
+> k
+
+|
+
+cSE( bπ(ℓ∗) 
+
+> k
+
+) ≥ tmin − ∥ bV − V [m∗]∥∞ > 2ρn(M ) − ρn(M ) = ρn(M ), (C38) which implies k / ∈ eV(ℓ∗,m ∗). Therefore, (C33) and (C38) imply (C35), which ends the proof of Theorem 2. 
+
+Proof of Theorem 3. Note that under E1, for all k ∈ S ∗, ℓ ∈ [|H ∗|] and any m ∈ M ,
+
+|eπ(ℓ,m ) 
+
+> k
+
+− bπ(ℓ) 
+
+> k
+
+| = |ξ[m] 
+
+> k
+
+| · cSE( bπ(ℓ) 
+
+> k
+
+) ≤ cSE( bπ(ℓ) 
+
+> k
+
+) · 1.1z1−α0/(2 | bS| )
+
+≤ cSE( bπ(ℓ) 
+
+> k
+
+) · C log(2 | bS| /α 0) = cSE( bπ(ℓ) 
+
+> k
+
+) · C log(2 |S ∗|/α 0)(C39) w.p.a.1 for some absolute constant C > 0. In addition, define 
+
+E4 = \ 
+
+> k∈S ∗,ℓ ∈[|H∗|]
+
+E4,kℓ , where E4,kℓ =
+
+n
+
+|bπ(ℓ) 
+
+> k
+
+− π(ℓ) 
+
+> k
+
+| ≤ cSE( bπ(ℓ) 
+
+> k
+
+)z1−α0/(8 |H ∗||S ∗|)
+
+o
+
+. (C40) 17 By asymptotic normality we have Pr {E 4} = 1 − Pr { [ 
+
+> k∈S ∗,ℓ ∈[|H∗|]
+
+Ec
+
+> 4,kℓ
+
+} ≥ 1 − | H ∗||S ∗| · α0/(4 |H ∗||S ∗|) + o(1) ≥ 1 − α0/3(C41) with a sufficiently large n. Under E1, E4, and (C39), we have for any m ∈ M |eπ(ℓ,m ) 
+
+> k
+
+−π(ℓ) 
+
+> k
+
+| ≤ cSE( bπ(ℓ) 
+
+> k
+
+)·C log(2 |S ∗|/α 0) + z1−α0/(8 |H ∗||S ∗|)
+
+ ≤ cSE( bπ(ℓ) 
+
+> k
+
+)·C log(8 |H ∗||S ∗|/α 0).
+
+(C42) Define 
+
+E5 = \ 
+
+> k∈S ∗,ℓ ∈[|H∗|]
+
+E5,kℓ , where E5,kℓ =
+
+
+
+max 
+
+> m∈M
+
+cSE( bβ( eV(ℓ,m ))1 ) + cSE( bπ(ℓ) 
+
+> k
+
+) ≤ C
+
+√n
+
+
+
+. (C43) By (C50) that will be proved later, we have lim n→∞ Pr {E 5} → 1. Recall that Proposition 2 implies lim n→∞ Pr {E 1} → 1. Therefore, Pr {E 1 ∩ E 5} → 1. (C44) Suppose that n and M are sufficiently large. When k ∈ eV(ℓ,m ), by the definition in (30) we have 
+
+|eπ(ℓ,m ) 
+
+> k
+
+| ≤ cSE( bπ(ℓ) 
+
+> k
+
+) · ρn(M ) (C45) Thus, under E1, E4, and E5, for any k ∈ eV(ℓ,m ) we have 
+
+|π(ℓ) 
+
+> k
+
+| ≤ | eπ(ℓ,m ) 
+
+> k
+
+| + |eπ(k,m ) 
+
+> k
+
+− π(ℓ) 
+
+> k
+
+|≤ cSE( bπ(ℓ) 
+
+> k
+
+) · [ρn(M ) + C log(8 |S ∗|/α 0)] ≤ C1 log( C2/α 0)
+
+√n
+
+for some absolute constants C1 and C2, where the second inequality applies (C42), (C45) and E5. Therefore, if ℓ ∈ bTm, we have |eV(ℓ,m )| > |S ∗|+pd−12 , which implies 
+
+
+
+k ∈ S ∗ : |π(ℓ) 
+
+> k
+
+| ≤ C1 log( C2/α 0)
+
+√n
+
+
+
+> |S ∗| + pd − 12 .
+
+By the condition (39) in Assumption 3, we have ℓ / ∈ SI . Therefore, under E1, E4, and E5,18 we have bTm ∩ SI = ∅, which means if ℓ ∈ bTm for some m ∈ M , we have 
+
+|π∗
+
+> k
+
+| ≤ C1 log( C2/α 0)
+
+√n for all k ∈ bHℓ. (C46) Therefore, define 
+
+E6 =
+
+
+
+∥π bHℓ ∥∞ ≤ C1 log( C2/α 0)
+
+√n
+
+
+
+,
+
+and the discussions from (C45) to (C46) result in Pr {E 6} ≥ Pr {E 1 ∩ E 4 ∩ E 5} ≥ 1 − α0
+
+3 + o(1) . (C47) We next state the following Lemma C2, claiming that locally invalid IVs satisfying (C46) will finally produce TSLS estimators that are local to the true β∗. Recall that bβ(H)
+
+in (22) denotes the TSLS estimator using the IVs in H. Define 
+
+E7 = {∥ bβ( eV(ℓ,m )) − β∗∥∞ ≤ C log( C/α 0)/√n for all m ∈ M} (C48) where C is an absolute constant. 
+
+Lemma C2. Under the conditions of Theorem 3, we have 
+
+lim inf  
+
+> n→∞
+
+lim   
+
+> M→∞
+
+Pr {E 7} ≥ lim inf  
+
+> n→∞
+
+lim   
+
+> M→∞
+
+Pr {E 6} − α0/3. (C49) Note that the SCI in (34) only adopts the selected valid IV set eV(ℓ,m ) indexed by m ∈ M 
+
+and ℓ ∈ bT GenMaj  
+
+> m
+
+, which satisfies |eV(ℓ,m )| > | bS| +pd−12 according to (33). This implies (C46) under E1. By Lemma C2, all TSLS estimators using the selected valid IV sets eV(ℓ,m ) for SCI in (34) satisfy (C48) with probability at least 1 − α0/3. By definition of the TSLS confidence intervals in (23), the lower bounds and upper bounds of the TSLS confidence intervals are LB (ℓ,m ) = bβ( eV (ℓ,m ))1 −z1−(α−α0)/2 cSE( bβ( eV (ℓ,m ))1 ), and UB (ℓ,m ) = bβ( eV (ℓ,m ))1 +z1−(α−α0)/2 cSE( bβ( eV (ℓ,m ))1 ).
+
+We next argue that the event 
+
+E8 = { cSE( bβ( eV (ℓ,m ))1 ) ≤ Cn −1/2 uniformly for any m ∈ M and ℓ ∈ bTm} (C50) holds with probability approaching one. First, note that by construction eπ(ℓ,m ) 
+
+> k
+
+= 0 for all 19 k ∈ bHℓ, and thus bHℓ ⊂ eV(ℓ,m ). That means eV(ℓ,m ) always includes a just-identifying IV subset with high probability, and thus cSE( bβ( eV (ℓ,m ))1 ) ≤ C( eV (ℓ,m ))n−1/2 for each fixed ( ℓ, m )with probability approaching one by standard law of large numbers, where C( eV (ℓ,m )) is a positive constant relevant to eV (ℓ,m ). Second, the set eV (ℓ,m ) is a subset of [ pz ], meaning the number of its possible configurations is finite. Therefore, C( eV (ℓ,m )) can be replaced by an absolute constant C, and the bound in (C50) holds uniformly. Therefore, Pr {E 8} → 1. Then under E7 and E8, we have max   
+
+> m∈M ,ℓ ∈bTGenMaj
+> m
+
+|LB (ℓ,m ) − β∗ 
+
+> 1
+
+| ≤ max   
+
+> m∈M ,ℓ ∈bTGenMaj
+> m
+
+h
+
+∥ bβ( eV (ℓ,m )) − β∗∥∞ + z1−(α−α0)/2 cSE( bβ( eV (ℓ,m ))1 )
+
+i
+
+≤ C3 log( C4/α 0)2√n
+
+for some absolute constants C3 > 0 and C4 > 0. Similarly, max   
+
+> m∈M ,ℓ ∈bTGenMaj
+> m
+
+|UB (ℓ,m ) − β∗ 
+
+> 1
+
+| ≤ C3 log( C4/α 0)2√n .
+
+Therefore, under E7 and E8,Len( α) ≤ max   
+
+> m∈M ,ℓ ∈bTGenMaj
+> m
+
+UB (ℓ,m ) − min   
+
+> m∈M ,ℓ ∈bTGenMaj
+> m
+
+LB (ℓ,m )
+
+≤ max   
+
+> m∈M ,ℓ ∈bTGenMaj
+> m
+
+|UB (ℓ,m ) − β∗ 
+
+> 1
+
+| + max   
+
+> m∈M ,ℓ ∈bTGenMaj
+> m
+
+|LB (ℓ,m ) − β∗ 
+
+> 1
+
+|≤ C3 log( C4/α 0)
+
+√n .
+
+(C51) Because Pr {E 7} ≥ 1 − 2α0/3 + o(1) by (C47) and (C49), and Pr {E 8} → 1, we have Pr {E 7 ∩ E 8} ≥ 1 − α0 + o(1). Therefore, (C51) holds with probability no smaller than 1 − α0 + o(1), which verifies (41) and concludes the proof of Theorem 3. 
+
+Proof of Lemma C2. We first show that Pr 
+
+n
+
+(∥ bβ( bHℓ) − β∗∥2 ≤ C log( C/α 0)/√n) ∩ E 6
+
+o
+
+≥ Pr( E6) − α0
+
+9 + o(1) . (C52) Define θ∗(H) = ( β∗⊤ , π ∗⊤  
+
+> [pz]\H
+
+, φ ∗⊤ )⊤ for a generic subset H. By definition in (22), we have 
+
+bθ( bHℓ) = ( D( bHℓ)⊤PW D( bHℓ))−1D( bHℓ)⊤PW (D( bHℓ)θ∗( bHℓ) + Z· bHℓ π∗
+
+> bHℓ
+
++ u)= θ∗( bHℓ) + ( D( bHℓ)⊤PW D( bHℓ))−1D( bHℓ)⊤PW Z· bHℓ π∗
+
+> bHℓ
+
++ ( D( bHℓ)⊤PW D( bHℓ))−1D( bHℓ)⊤PW u. 
+
+20 Under E6, (C46) is valid, and thus the L2-norm of the second term is bounded by C log( C/α 0)2√n .By central limit theorems for i.i.d. sub-Gaussian variables, we can show that the third term is asymptotically normal under Assumptions 1 and 2. Therefore, it is bounded by C log( C/α 0)2√n
+
+with probability at least 1 − α0/9 + o(1) when C is sufficiently large. Therefore, 
+
+∥ bβ( bHℓ) − β∗∥2 ≤ ∥ bθ( bHℓ) − θ∗( bHℓ)∥2 ≤ C log( C/α 0)
+
+√n
+
+with probability at least Pr( E6) − α0/9 + o(1), which verifies (C52). Also, note that the OLS estimators bΓ and bΥ are also asymptotically normal centered at the corresponding true coefficients. We thus have Pr 
+
+
+
+∥bΓ − Γ∗∥∞ + ∥ bΥ − Υ∗∥2 ≤ C log( C/α 0)
+
+√n
+
+
+
+≥ 1 − α0
+
+9 + o(1) . (C53) By (C52) and (C53), we have with probability no smaller than Pr( E6) − 2α0/9 + o(1), 
+
+∥bπ(ℓ) − π∗∥∞ = ∥(bΓ − bΥ bβ( bHℓ)) − (Γ ∗ − Υ∗β∗)∥∞
+
+≤ ∥ bΓ − Γ∗∥∞ + ∥ bΥ − Υ∗∥2∥β∗∥2 + ∥Υ∗∥2∥ bβ( bHℓ) − β∗∥2 + ∥ bΥ − Υ∗∥2∥ bβ( bHℓ) − β∗∥2
+
+≤ C log( C/α 0)
+
+√n .
+
+(C54) Therefore, with probability no smaller than Pr( E6) − 2α0/9 + o(1), for any k ∈ eV(ℓ,m )
+
+|π∗
+
+> k
+
+| ≤ | π∗ 
+
+> k
+
+− bπ(ℓ) 
+
+> k
+
+| + |bπ(ℓ) 
+
+> k
+
+− eπ(ℓ,m ) 
+
+> k
+
+| + |eπ(ℓ,m ) 
+
+> k
+
+| ≤ C log( C/α 0)
+
+√n ,
+
+where the first term is bounded by (C54), the second term is bounded by (C39), and the third term is bounded using the definition of eV(ℓ,m ). Therefore, define the event 
+
+E9 = \ 
+
+> m∈M ,ℓ ∈bTm
+
+
+
+|π∗
+
+> k
+
+| ≤ C log( C/α 0)
+
+√n for all k ∈ eV(ℓ,m )
+
+
+
+, (C55) and we have Pr( E9) ≥ Pr( E6) − 2α0/9 + o(1). Following the idea of showing (C52), we can prove that ∥ bβ( eV (ℓ,m )) − β∗∥2 ≤ C log( C/α 0)/√n with probability no smaller than Pr {E 9} − α0/9 + o(1) ≥ Pr {E 6} − α0/3 + o(1) .
+
+This verifies (C49) and concludes the proof of Lemma C2. 21 D SCI for GWAS Summary Data 
+
+This section illustrates the procedures of our SCI method for GWAS summary data. Recall that the summary data includes the estimators of bΓ (association between SNPs and the outcome), bΥ·1 (association between SNPs and LDL), bΥ·2 (association between SNPs and HDL), and their corresponding standard errors. Throughout this section, we assume that the SNPs are independent of each other, and the estimators bΓ, and bΥ·1, and bΥ·2 are independent of each other. Similar simplifications are adopted in the two-sample MR literature (Pierce and Burgess, 2013; Bowden et al., 2015; Yao et al., 2024). Even if the data of LDL and HDL are collected from the same cohort, we need the independence assumption as a pragmatic approximation due to the lack of available estimates of the covariance between HDL and LDL. We need to reformulate the following estimators and test statistics: (1) The CD statistic in (19) to select just-identifying IV subsets. (2) The TSLS estimator bβ(H) as in (22) using the IVs in H, and its standard error SE( bβ(H)). (3) The estimator bπ(ℓ) 
+
+> k
+
+as in (24) and its standard error SE( bπ(ℓ) 
+
+> k
+
+). With these estimators formulated, the procedure of our SCI method for GWAS summary data follows Section 3 for observational data. 
+
+(1) The CD statistic. Under the assumptions that the SNPs are independent of each other and there are no covariates, we simplify the CD statistic in (19) as CD( H) = λmin ( eΥ⊤H· eΥH· ), (D56) where eΥ = ( bΥk,j /SE( bΥk,j )) k∈[pz ],j ∈[pd] denotes the estimator of IV relevance standardized by the standard error. 
+
+(2) The TSLS estimator bβ(H) and its standard error. When all IVs in H are valid, by Γ ∗H = Υ ∗H· β∗ + π∗H and π∗H = 0, we have 
+
+β∗ =  Υ∗⊤ H· Υ∗H· 
+
+−1 Υ∗⊤ H· Γ∗H. (D57) We therefore use the estimator 
+
+bβ(H) =
+
+ bΥ⊤H· bΥH· 
+
+−1 bΥ⊤H· bΓH. (D58) 22 We impose the following simplifying covariance structure. Suppose that 
+
+bΓ − Γ∗ a
+
+∼ N (0 , bΩΓ), (D59) where bΩΓ = diag 
+
+h
+
+{(SE( bΓk)) 2}k∈[pz ]
+
+i
+
+, and a
+
+∼ denotes asymptotic distributional equivalence. In addition, for each k ∈ [pz ] and j ∈ [pd] ( pd=2 in our application), we assume that 
+
+ bΥk,j − Υ∗
+
+> k,j
+
+ a
+
+∼ N (0 , bω2 
+
+> k,j
+
+), (D60) where bωk,j = SE( bΥk,j ). Recall that we assume the elements of bΥ are asymptotically mutu-ally independent and that bΥ and bΓ are asymptotically independent. Define 
+
+bQH = bΥ⊤H· bΥH· , bBH = bQ−1 
+
+> H
+
+bΥ⊤H· , brH = bΓH − bΥH· bβ(H).
+
+In the following we deduce the asymptotic variance of bβ(H) using the delta method. 
+
+Asymptotic variance of bβ(H). The first-order expansion of (D58) is 
+
+d bβ(H) = bBH dbΓH + bQ−1 
+
+> H
+
+(d bΥH· )⊤brH − bBH(d bΥH· ) bβ(H). (D61) For k ∈ H , let b(k) denote the position of k within H. The derivative of β(H) with respect to bΥk,j is 
+
+bgk,j := ∂ bβ(H)
+
+∂ bΥk,j 
+
+= brH,b (k)
+
+ bQ−1
+
+> H
+
+
+
+> ·j
+
+− bβ(H)
+
+> j
+
+ bBH
+
+
+
+> ·b(k)
+
+, k ∈ H . (D62) It follows from the delta method that SE( bβ(H)1 ) = 
+
+q
+
+( bVH)1,1,
+
+where 
+
+bVH = bBH bΩΓ,HH bB⊤H + X
+
+> k∈H
+> pd
+
+X
+
+> j=1
+
+bω2 
+
+> k,j
+
+bgk,j bg⊤ 
+
+> k,j
+
+.
+
+(3) The estimator bπ(ℓ) and its standard error. With bΓ, bΥ, and the estimator bβ(H),the estimator bπ(ℓ) follows (24), given as bπ(ℓ) = bΓ − bΥ bβ( bHℓ). We then derive the asymptotic variance of bπ(ℓ) using the delta method. 23 Asymptotic variance of bπ(ℓ). Recall that in the sampled estimator (29) we only need the standard error of bπ(ℓ) 
+
+> k
+
+for k ∈ bHcℓ . We therefore focus on the asymptotic variance of 
+
+bπ(ℓ)
+
+> bHcℓ
+
+. Note that 
+
+bπ(ℓ)
+
+> bHcℓ
+
+= bΓ bHcℓ
+
+− bΥ bHcℓ · bβ( bHℓ). (D63) The first-order expansion of (D63) satisfies 
+
+dbπ(ℓ)
+
+> bHcℓ
+
+= dbΓ bHcℓ
+
+− (d bΥ bHcℓ ·) bβ( bHℓ) − bΥ bHcℓ · d bβ( bHℓ). (D64) Substituting (D61) gives 
+
+dbπ(ℓ)
+
+> bHcℓ
+
+= dbΓ bHcℓ
+
+− bΥ bHcℓ · bB bHℓ dbΓ bHℓ − (d bΥ bHcℓ ·) bβ( bHℓ)
+
+− bΥ bHcℓ · bQ−1
+
+> bHℓ
+
+(d bΥ bHℓ·)⊤br bHℓ + bΥ bHcℓ · bB bHℓ (d bΥ bHℓ·) bβ( bHℓ). (D65) Define 
+
+bJΓ, bHcℓ
+
+=
+
+h
+
+I| bHcℓ | − bΥ bHcℓ · bB bHℓ
+
+i
+
+. (D66) The contribution of bΓ to the asymptotic variance of bπ(ℓ)
+
+> bHcℓ
+
+is therefore 
+
+bVπ, Γ = bJΓ, bHcℓ
+
+bΩΓ bJ⊤ 
+
+> Γ,bHcℓ
+
+, (D67) where bΩΓ,( bHcℓ , bHℓ) is defined below (D59). For k ∈ bHcℓ , let a(k) denote the position of k within bHcℓ , and let ιa(k) be the corresponding unit vector in R| bHcℓ |. The derivative of bπ(ℓ)
+
+> bHcℓ
+
+with respect to bΥk,j is 
+
+bh bHcℓ 
+
+> k,j
+
+:= 
+
+∂bπ(ℓ)
+
+> bHcℓ
+
+∂ bΥk,j 
+
+= − bβ( bHℓ) 
+
+> j
+
+ιa(k), k ∈ bHcℓ . (D68) For k ∈ bHℓ, the corresponding derivative is 
+
+bh bHℓ 
+
+> k,j
+
+:= 
+
+∂bπ(ℓ)
+
+> bHcℓ
+
+∂ bΥk,j 
+
+= − bΥ bHcℓ ·bgk,j , k ∈ bHℓ, (D69) where bgk,j is defined in (D62). 24 We assume there exists a vector π(ℓ) such that 
+
+bπ(ℓ)
+
+bHcℓ
+
+− π(ℓ)
+
+bHcℓ
+
+a
+
+∼ N
+
+
+
+0, bVπ, bHcℓ
+
+
+
+, (D70) where 
+
+bVπ, bHcℓ
+
+= bJΓ, bHcℓ
+
+bΩΓ bJ⊤
+
+Γ, bHcℓ
+
++ X
+
+k∈ bHcℓ
+
+pdX
+
+j=1 
+
+bω2
+
+k,j bh bHcℓ
+
+k,j 
+
+bh bHcℓ
+
+k,j 
+
+⊤
+
++ X
+
+k∈ bHℓ
+
+pdX
+
+j=1 
+
+bω2
+
+k,j bh bHℓ
+
+k,j 
+
+bh bHℓ
+
+k,j 
+
+⊤
+
+. (D71) Accordingly, the estimated standard error of bπ(ℓ)
+
+k , for k ∈ bHcℓ , is 
+
+cSE( bπ(ℓ)
+
+k ) = 
+
+r bVπ, bHcℓ
+
+
+
+a(k),a (k)
+
+. (D72) 25

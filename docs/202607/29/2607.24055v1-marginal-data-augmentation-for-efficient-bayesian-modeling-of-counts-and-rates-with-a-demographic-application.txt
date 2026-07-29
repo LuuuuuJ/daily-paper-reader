@@ -1,0 +1,800 @@
+Title: Marginal Data Augmentation for Efficient Bayesian Modeling of Counts and Rates with a Demographic Application
+
+URL Source: https://arxiv.org/pdf/2607.24055v1
+
+Published Time: Tue, 28 Jul 2026 01:35:29 GMT
+
+Number of Pages: 22
+
+Markdown Content:
+# Marginal Data Augmentation for Efficient Bayesian Modeling of Counts and Rates with a Demographic Application 
+
+Gregor Zens 1* † and Sylvia Fr¨ uhwirth-Schnatter 2†
+
+1International Institute for Applied Systems Analysis, Schlossplatz 1, Laxenburg, 2361, Lower Austria, Austria. 
+
+2Institute for Statistics and Mathematics, WU Vienna University of Economics and Business, Welthandelsplatz 1, Vienna, 1020, Austria. 
+
+Abstract 
+
+Count data models are ubiquitous in many fields, yet Bayesian data augmentation algorithms for such models frequently encounter challenges with Markov chain Monte Carlo efficiency. Posterior simulation is especially demanding when mod-eling data with a high proportion of zero outcomes. In this paper, we address this issue by introducing a marginal data augmentation approach for semi-parametric Bayesian count data regression models, based on a working parameter that rescales latent outcomes corresponding to zero-count observations. This strategy alleviates the strong posterior dependencies that typically reduce the efficiency of standard data augmentation schemes and leads to substantial gains in sampling efficiency. Synthetic data examples and simulation studies are used to demon-strate the improvements in mixing compared to conventional sampling methods. A demographic application using latent factor analysis to model subnational mortality counts in Austria further underscores the broader applicability of the proposed methodology. 
+
+Keywords: Bayesian Count Data Regression, Factor Analysis, MCMC Efficiency, Marginal Data Augmentation, Statistical Demography 
+
+> †
+
+Both authors contributed equally to this work. ∗Corresponding author: Gregor Zens, zens@iiasa.ac.at; Sylvia Fr¨ uhwirth-Schnatter, sfruehwi@wu.ac.at. This work has been published as: Zens, G., Fr¨ uhwirth-Schnatter, S. (2026). Marginal Data Augmentation for Efficient Bayesian Modeling of Counts and Rates with a Demographic Application . In: Nagler, T., Kurowicka, D., Cooke, R., Joe, H. (eds) Statistical Dependence Modeling . Springer, Cham. https://doi.org/10.1007/978-3-032-14252-8 15. 
+
+1arXiv:2607.24055v1 [stat.ME] 27 Jul 2026 −2.5 −2.0 −1.5 −1.0     
+
+> 02500 5000 7500 10000
+> Iteration
+> β0
+
+(a) β0 = −0.50.450 0.475 0.500 0.525      
+
+> 02500 5000 7500 10000
+> Iteration
+> β0
+
+(b) β0 = 0 .5
+
+Fig. 1 : Traceplots of β0 obtained using a DA-MCMC algorithm for a STAR model, where yi = ⌊exp( zi)⌋, zi = β0 + ϵi, and ϵi ∼ N (0 , σ 2), see Sec. 2 for details. In both scenarios, the true value of σ2 is 0.05. The left panel illustrates the case with 
+
+β0 = −0.5, leading to 98% zero counts and an inefficiency factor of IE = 861. The right panel depicts a scenario with β0 = 0 .5, resulting in only 2% zero counts and an inefficiency factor of IE = 3. 
+
+# 1 Introduction 
+
+Statistical models for counts and rates are fundamental tools in numerous research fields, including epidemiology, ecology, and demography. When working with count data, researchers face various challenges including overdispersion, zero-inflation, and complex dependency structures. 1 The Bayesian paradigm offers several advantages in addressing these challenges. For instance, the integration of spatio-temporal smooth-ing structures, zero-inflation mechanisms, or accounting for model uncertainty is straightforward based on suitable (hierarchical) prior specifications. From an infer-ential perspective, the Bayesian approach allows for fully probabilistic inference in complex count data models while simultaneously overcoming issues such as non-existence of maximum likelihood estimates ([4]), as proper prior densities can be used to regularize potentially degenerate likelihood functions. Within the Bayesian paradigm, various computational techniques are available for posterior simulation, with Markov chain Monte Carlo (MCMC) algorithms tradition-ally playing a prominent role ([5]; [6]; [7]). However, generic MCMC techniques such as Metropolis-Hastings samplers for generalized linear models can suffer from poor mix-ing and require substantial tuning efforts when targeting high-dimensional posterior densities. A convenient alternative are data augmentation MCMC (DA-MCMC) algo-rithms ([8]) that introduce a set of latent outcomes in addition to the observed data in a way that facilitates posterior simulation. For complex and highly parameterized models, this is often the only feasible method for achieving (exact) posterior infer-ence. DA-MCMC algorithms for count data have been proposed for models based on Poisson likelihoods ([9]; [10]), negative binomial likelihoods ([11]), Poisson log-normal and binomial logistic-normal models ([12]) as well as for semi-parametric count data regression models ([13]; [14]). 
+
+> 1Claudia Czado has contributed significantly to this field, see [1], [2] and [3], among other papers.
+
+2In practice, a key issue with DA-MCMC algorithms for count data is that they tend to mix poorly in settings with many zero outcomes. To illustrate this, Figure 1 presents trace plots of the intercept parameter in a semi-parametric count data regression model applied to data sets with either large counts (right panel) or small counts, with over 98% zero outcomes (left panel). MCMC efficiency deteriorates substantially in the presence of many zero counts. Importantly, this is not an issue related to a single spe-cific DA-MCMC algorithm or a particular likelihood choice. Instead, this phenomenon affects many classical data augmentation schemes for semi-parametric models, as well as for models based on Poisson, binomial, or negative binomial likelihoods. Reasons for these inefficiencies will be discussed in more detail below. To address these MCMC inefficiencies, this article proposes a marginal data aug-mentation strategy ([15]) for efficient estimation of a semi-parametric Bayesian count data regression model. A set of simulation studies is used to demonstrate that this novel MCMC scheme leads to substantial improvements in sampling efficiency, while requiring only minimal additional computational efforts. We further illustrate the prac-tical significance of our methodology through a real-world demographic application. Building upon the pioneering work of Czado and colleagues ([3]), we develop a semi-parametric latent factor model for count data and apply it to Austrian subnational mortality data, highlighting the broader applicability of our approach. The remainder of this article is structured as follows. Section 2 discusses a semi-parametric count data framework, as well as an MCMC algorithm for estimation. Section 3 introduces the proposed marginal data augmentation scheme. Section 4 presents results from simulation experiments based on synthetic data. Section 5 dis-cusses a latent factor model application to subnational mortality data from Austria. Section 6 provides a brief discussion of future research pathways and concluding remarks. 
+
+# 2 Semi-Parametric Bayesian Modeling of Counts and Rates 
+
+2.1 Model definition 
+
+We consider a simple semi-parametric Bayesian count data regression model for non-negative integer counts yi ∈ N0 for i = 1 , . . . , n . The model is based on a latent Gaussian variable zi
+
+zi = x⊤ 
+
+> i
+
+β + Pi + εi with εi ∼ N (0 , σ 2). (1) which is assumed to be a linear function of an R × 1 vector of observed covariates xi,with an R×1 vector of coefficients β as well as a Gaussian error term εi with mean zero and variance σ2. In addition, we consider settings where an optional fixed and observed ‘offset’ term Pi may be included in the model. Such offset terms are, for instance, regularly used in epidemiological and demographic research, where they can be used to capture a varying exposure or a varying population-at-risk across observations i.3The latent outcome zi is related to the observed outcome yi via the choice equation 
+
+yi =
+
+
+
+0, if zi ∈ (−∞ , 0) ,k, if zi ∈ log( k), log( k + 1) , k ≥ 1.
+
+(2) The model defined by (1) and (2) is a special case of a class of models discussed in more detail in [14] and extends latent utility models typically used for binary and categorical data to integer-valued data. The boundaries in (2) imply a logarithmic link function. We focus on this setting as the logarithmic link is the most commonly encountered link function in count data models, naturally respects non-negativity of the latent utilities after transforming, and allows for straightforward interpretation of regression parameter estimates. A similar framework where the boundaries of zi are defined via an identitiy link is considered in [13]. The case of an unknown link function that is estimated from the data is discussed in [14]. 
+
+2.2 Bayesian Inference via MCMC Sampling 
+
+For Bayesian inference, we assume a semi-conjugate prior setup where β ∼ N (0 , B0)and σ2 ∼ IG (c0, C 0). These priors are conjugate for the conditional inference problem where either β or σ2 is known. In this case, all relevant full conditional densities are available in closed form, allowing a simple Gibbs sampler to be set up for posterior simulation. In addition, hierarchical priors on B0 allow to easily incorporate spatio-temporal dependence structures or sparsity in β via shrinkage priors, if desired. Conditional on the latent variables z = ( z1, . . . , z n), the model reduces to a Gaus-sian regression model, resulting in closed-form conditional posteriors of the remaining parameters. This makes data augmentation ([8]) a natural choice for posterior simu-lation. Instead of attempting to directly sample from the posterior p(β, σ 2 | y) given the data y = ( y1, . . . , y n), which is typically difficult, data augmentation involves sam-pling from the augmented complete data posterior distribution p(z, β, σ 2 | y). 2 For the model under consideration, this can be accomplished by iterating through the following steps: 1. Sample z from p(z | β, σ 2, y). It is easy to show that the zi are condition-ally independent and each full conditional is proportional to a truncated normal distribution: 
+
+zi| β, σ 2, y ∼ T N (x⊤ 
+
+> i
+
+β + Pi, σ 2),
+
+where each zi is independently drawn from a Gaussian distribution truncated to the intervals implied by (2). Given the logarithmic link, the likelihood information restricts zi to ( −∞ , 0) for yi = 0 and to [log( yi), log( yi + 1)) for yi > 0.     
+
+> 2For notational brevity, we do not explicitly condition on the fixed quantities Piand xithroughout.
+
+42. Sample σ2 from p(σ2 | z, β). The full conditional of σ2 is proportional to an inverse gamma distribution: 
+
+σ2 | z, β ∼ IG c0 + n
+
+2 , C 0 + 12
+
+> n
+
+X
+
+> i=1
+
+(zi − x⊤ 
+
+> i
+
+β − Pi)2
+
+!
+
+.
+
+3. Sample β from p(β | z, σ 2), which is proportional to a multivariate Gaussian density: 
+
+β | z, σ 2 ∼ N (BN bN , BN ),
+
+B−1 
+
+> N
+
+= B−10 + 1
+
+σ2
+
+> n
+
+X
+
+> i=1
+
+xix⊤ 
+
+> i
+
+, bN = 1
+
+σ2
+
+> n
+
+X
+
+> i=1
+
+xi(zi − Pi).
+
+2.3 Count Size and MCMC Efficiency 
+
+While data augmentation algorithms are typically implemented for computational convenience, they are known to result in potentially inefficient MCMC algorithms with highly autocorrelated posterior draws ([16];[17]). These inefficiencies arise because the samples of β and z can be highly dependent. In count data regression, the degree of this dependency, and hence the degree of MCMC inefficiency, generally depends on the observed outcome yi.3
+
+For large counts, the likelihood contributions of p(yi|zi) become increasingly con-centrated. As yi → ∞ , the interval  log( yi), log( yi + 1)  becomes infinitesimally small, effectively fixing zi at a point mass in the limit. Consequently, MCMC efficiency is higher in scenarios with large counts, as zi can be considered approximately fixed, and the dependence between β and z is minimized. This results in efficiency comparable to that of a Bayesian Gaussian linear model with fixed outcomes. On the contrary, in the limiting case where yi → 0, the likelihood contributions 
+
+p(yi|zi) become minimally informative, as yi = 0 merely implies that zi < 0. In such cases, there is strong a posteriori dependency between β and z when using DA-MCMC algorithms. As the Gaussian ‘prior’ for zi, given by (1), then strongly determines the conditional posterior of zi, MCMC step sizes may become small. 4 This explains the inefficient behavior observed in Figure 1. Importantly, these considerations are not a phenomenon unique to the semi-parametric model (1)-(2) considered here. Very similar considerations apply in the context of typical parametric regression models for overdispersed counts. For exam-ple, in the context of Poisson models with a logarithmic link where yi ∼ P (ezi ), the likelihood contributions p(yi|zi) concentrate at a point mass at log( yi) as yi → ∞ 
+
+and degenerate at yi = 0, as p(yi|zi) → 1 when zi → −∞ if yi = 0.         
+
+> 3A second major determinant of MCMC efficiency in the semi-parametric count data model considered here is the value of σ2, as βand zbecome perfectly dependent as σ2→0.
+> 4Note that for binary regression models, all likelihood contributions exhibit behavior similar to this, leading to the typically observed inefficiencies in data augmentation algorithms for these models.
+
+53 Marginal Data Augmentation for Bayesian Count Data Regression 
+
+Marginal data augmentation algorithms, also referred to as parameter-expanded data augmentation (PX-DA) algorithms, can be highly successful in accelerating DA-MCMC schemes for various latent variable regression model families ([18]; [15]; [19]; [17]). Such algorithms can be constructed by introducing a working parameter δ ∼ p(δ)that is unidentifiable under the observed data model but identifiable under the com-plete data model. Starting with the target complete data posterior p(β, σ 2, z|y), we use the working parameter δ to define a joint posterior distribution 
+
+p(β, σ 2, z, δ |y) = p(β, σ 2, z|y) p(δ), (3) which we combine with an invertible and differentiable mapping ˜ zi = √δz i where 
+
+δ = 1 results in the identity mapping. In this article, we consider a proper working prior p(δ) = IG (d0, D 0) and leave investigation of potentially more efficient but more complex algorithms relying on improper working priors for future research. Using the working parameter δ, we obtain a set of observationally equivalent data augmentation schemes using the scale transformation ˜ zi = √δz i. We will consider expansions of the form 
+
+yi = k ⇐⇒ ˜zi
+
+√δ ∈ Ik, I0 = ( −∞ , 0) ,Ik = [log( k), log( k + 1)) for k ≥ 1,
+
+˜zi = √δx ⊤ 
+
+> i
+
+β + ˜ εi where ˜εi ∼ N (0 , δσ 2).
+
+(4) Importantly, we will focus on scaling zi using δ only for selected observations yi.Specifically, we focus on transforming only those zi for which yi = 0, while fixing δ = 1 for observations with yi > 0. This is because observations with yi = 0 typically cause most MCMC inefficiency, as discussed above. In addition, scaling observations with 
+
+yi > 0 typically leads to a number of complications and potentially lower efficiency gains, as will be discussed in more detail in Section 6. Since the marginal observed-data model is unchanged by the scale expansion for any δ > 0, this parameter expansion scheme is valid and can be used to construct an MCMC algorithm that directly targets the marginal posterior distribution 
+
+p(β, σ 2, ˜z|y) = 
+
+Z
+
+p(β, σ 2, ˜z, δ |y)dδ. (5) Sampling steps to obtain samples from p(˜z, σ 2, δ |y, β) and from p(β, δ |˜z, σ 2) can be constructed relatively easily, by iterating between 1. updating ( ˜z, σ 2, δ ) ∼ p(˜z, σ 2, δ |y, β): (a) zi ∼ p(zi|yi, σ 2, β); (b) σ2 ∼ p(σ2|z, β); (c) δ∗ ∼ IG (d0, D 0); 6(d) set ˜ zi = zi
+
+√δ∗ for all i where yi = 0, otherwise ˜ zi = zi;2. updating ( β, δ ) ∼ p(β, δ |˜z, σ 2, y): (a) δ ∼ p(δ)p(δ|˜z, σ 2, y) ∝ p(˜z|δ, σ 2)p(y|˜z, δ ); (b) set znew  
+
+> i
+
+= ˜ zi/√δ for all i where yi = 0, otherwise znew  
+
+> i
+
+= zi;(c) β ∼ p(β|znew , σ 2). As δ is sampled in both steps, iterating between sampling from these two joint dis-tributions allows investigating the posterior in ( ˜z, β, σ 2) marginalized over δ, which typically increases MCMC efficiency, due to the posterior of ˜z being more diffuse than the posterior of z, see [18], [15], [19], among others. Compared to the plain DA algorithm outlined in the previous section, this strategy leads to significant gains in MCMC efficiency at negligible additional computational costs. Conceptually, such algorithms can be seen as extending the standard sampling schemes to include a ‘sandwiched’ in-between step, leading to algorithms of the form 1. sample ( z, σ 2) ∼ p(z, σ 2|β, y i); 2. move z → znew ;3. sample β ∼ p(β|znew , σ 2); where the move from z → znew based on znew  
+
+> i
+
+=
+
+q δ∗ 
+
+> δ
+
+zi is used to increase the step size of the MCMC algorithm and decrease the correlation between β and the latent outcomes z.
+
+Implementation details 
+
+Most of the necessary updating steps are straightforward to derive. For instance, all updates required to sample ( ˜z, σ 2, δ ) ∼ p(˜z, σ 2, δ | y, β) are standard and easy to implement. Similarly, once znew  
+
+> i
+
+has been obtained, sampling step (2c), which involves sampling from p(β | znew , σ 2), is straightforward. The necessary steps follow along the lines of the algorithm given in Section 2. The only major deviation from the described plain data augmentation scheme arises due to sampling the working parameter δ from p(δ | ˜z, σ 2, y) ∝ p(δ)p(˜z |
+
+δ, σ 2) p(y | ˜z, δ ). As we are expanding only observations with yi = 0, the likelihood contribution p(y | ˜z, δ ) is irrelevant for this step, since scaling does not affect the observed data model in these cases and p(y | ˜z, δ ) = 1 for all relevant values of ˜z.To derive the density p(˜z | δ, σ 2), we proceed as follows. First, we derive the pos-terior p(β|σ2, δ, ˜z), which is a multivariate Gaussian distribution. Second, we exploit Bayes’ theorem and evaluate the following ratio at β = 0: 
+
+p(˜z | δ, σ 2) ∝ p(β) Q 
+
+> i:yi=0
+
+p(˜ zi|β, σ 2, δ ) Q 
+
+> i:yi>0
+
+p(˜ zi|β, σ 2)
+
+p(β|σ2, δ, ˜z) . (6) Combining the resulting closed-form likelihood term p(˜z | δ, σ 2) with the working prior 
+
+p(δ) = IG (d0, D 0) yields 
+
+p(δ | δ∗, ˜z, σ 2) ∝
+
+ 1
+
+δ
+
+dI +1 
+
+e−DI /δ eBI /√δ , (7) 7with 
+
+dI = d0 + n0
+
+2 ,DI = D0 + δ∗
+
+2σ2
+
+X
+
+> i:yi=0
+
+z2 
+
+> i
+
+− δ∗
+
+2 m⊤ 
+
+> 0
+
+BN m0,BI = √δ∗ 1
+
+σ2
+
+X
+
+> i:yi=0
+
+ziPi + m⊤ 
+
+> 0
+
+BN (m1 − m2)
+
+!
+
+,
+
+(8) where n0 = P 
+
+> i
+
+1(yi = 0) is the number of observed zero counts, m0 =
+
+σ−2 P 
+
+> i:yi=0
+
+xizi, m1 = σ−2 P 
+
+> i:yi>0
+
+xizi, and m2 = σ−2 P 
+
+> i
+
+xiPi. The conditional pos-terior for δ hence takes the form of a density similar, but not equivalent to an inverse gamma density. 5 This nuisance is the result of expanding only observations where 
+
+yi = 0 and the presence of an offset term Pi. Note that an inverse gamma posterior is recovered, in particular, when all observations are expanded jointly. An efficient algo-rithm to sample from density (7) is described in the supplementary material of [17], where more details regarding the derivation can be found as well. For completeness, we replicate the necessary sampling steps in Appendix A. 
+
+# 4 Illustration Using Artificial Data 
+
+To evaluate the sampling efficiency of the proposed PX-DA scheme, we consider several experiments based on artificial data. In all cases, we generate n = 1 ,000 observations according to yi = ⌊ezi ⌋, with the latent Gaussian regression model specified as 
+
+zi = β0 + x⊤ 
+
+> i
+
+β + εi, εi ∼ N (0 , σ 2).
+
+We explore a variety of simulation settings. The intercept term β0 is varied over the interval [ −4, 4], ranging from cases where nearly all yi are equal to zero and MCMC efficiency is expected to be low, to situations where no zeros are observed and near-optimal MCMC efficiency is achieved. In addition, we consider σ2 ∈ { 0.05 , 0.5} to assess different levels of informativeness of the latent process. Regarding the covariates, we consider an intercept-only case ( β = 0) and two settings with p = 4 covariates, each simulated independently from N (0 , 1). In the first setting, the predictors are relatively informative with β = (1 , −1, 0.5, −0.5) ⊤ while in the second setting they are less informative with β = (0 .1, −0.1, 0.05 , −0.05) ⊤.In terms of priors, we assume βj ∼ N (0 , 100) for both β0 and the elements of β, and 
+
+σ2 ∼ IG (5 , 1). We collect M = 20 ,000 posterior samples after an initial burn-in period of 5 ,000 iterations. The primary measure of sampling inefficiency that we consider is the inefficiency factor, defined as M/ ˆη, where ˆ η is an estimate of the effective sample size obtained under a given algorithm. 6 Each simulation setting is replicated 50 times, and we report the average results across these replicate data sets below.                 
+
+> 5Note that although δis unidentifiable from the observed data, its conditional posterior moments depend on the latent data zibecause the re-parameterisation ˜zi=√δz i‘injects’ δinto the augmented joint likelihood p(y,˜z|· ).
+> 6For each parameter, the effective sample size is derived based on an estimate of the spectral density of the posterior sample chain at frequency zero, using the functionality provided in the Rpackage coda ([20]).
+
+8σ2 = 0.05 σ2 = 0.5          
+
+> Intercept Only  Uninformative  Informative
+> −4 −2 024−4 −2 024
+> 02468
+> 02468
+> 02468
+
+β0 
+
+> Ln Inefficiency Factor
+> PX−DA Plain DA
+
+Fig. 2 : Inefficiency factors (logarithmic scale) obtained under plain DA and PX-DA algorithms for the considered simulation scenarios (panels) and values of intercept β0
+
+(x-axis). Results are averages across all parameter blocks and 50 replicate data sets. Fig. 2 summarizes the main findings of this simulation study. It shows inefficiency factors averaged over all parameters for both the plain DA algorithm and the PX-DA algorithm. It is evident that the PX-DA scheme markedly outperforms the plain DA scheme in every setting. Averaged across all settings and parameters, the PX-DA scheme leads to a decrease in inefficiency factors by about 79%, from M/ ˆη ≈ 580 in the plain DA algorithm, to M/ ˆη ≈ 124 in the PX-DA algorithm. In the most extreme cases, the PX-DA scheme is either similarly efficient (difference less than 1%) or significantly more efficient (up to more than 90% improvement) compared to the plain DA scheme. Across all simulation scenarios, the PX-DA algorithm shows greater relative improvement when β0 is strongly negative, when σ2 is small, and in cases where the covariates are highly informative. This occurs because, all else being equal, a latent model with a coefficient of determination near one results in a stronger dependence between the latent outcome and the regressors, reducing sampling efficiency. Similarly, 9smaller values of σ2 increase the dependence between zi and β, further lowering sam-pling efficiency. In these scenarios, the benefits of the PX-DA algorithm are particularly pronounced. In Appendix B, additional simulation results are provided, broken down by (blocks of) parameters β0, β, and σ2 (Figs. B1-B3). The proposed PX-DA algorithm domi-nates the plain DA algorithm in all blocks. The gains are especially pronounced for the intercept term β0, followed by the gains in efficiency for the coefficients β. The efficiency improvement is least substantial for the error variance σ2.
+
+# 5 Application to Latent Factor Models for Subnational Mortality Counts 
+
+One of the primary aims of statistical demography is to develop effective models for human mortality, fertility, and migration patterns, providing essential insights for population projections and regional planning exercises. Demographic models can be used to track and predict demographic trends, potentially across multiple populations, and to impute data where reliable observations are missing – the latter issue being particularly relevant in low-income countries and in subnational analyses. In recent decades, Bayesian approaches have emerged as a dynamic and growing subfield within this domain ([21]; [22]; [23]; [24]; [25]; [26]). In a pioneering paper [3], Claudia Czado and her co-authors explored fully Bayesian factor models for demographic analysis. Similar approaches have been used by [24] and [26], among others. When analyzing demographic patterns by age group, low-rank approximation tech-niques – such as singular value decompositions or parametric factor models – have demonstrated particular effectiveness ([27]; [24]; [25]; [28]; [26]). This is due to the nature of demographic phenomena, which are often closely related to life course events or biological processes that generate common variation across diverse populations. For instance, increasing mortality rates at older ages represent a ‘universal’ pattern regardless of the specific population under study. However, estimation of such low-rank models in combination with count data like-lihoods remains challenging, especially in settings with a relatively high prevalence of zero counts—a common occurrence when disaggregating data to granular subnational levels. This motivates our evaluation of the proposed PX-DA scheme in this context. We implement and estimate a semi-parametric Bayesian latent factor model for count and rate data and apply it to subnational mortality data from Austria. Importantly, this allows us to evaluate the applicability of the proposed methodology in a real-world application that goes beyond classical regression modeling. 
+
+5.1 Model and Prior Specification 
+
+We consider mortality counts yia recorded for a subpopulation i = 1 , . . . , K and age group a = 1 , . . . , A . The observations are collected in the K × A data array y. We assume that the counts yia = ⌊exp( zia )⌋ can be well represented using a latent factor 10 model on the latent utilities zia :
+
+zia = μi +
+
+> Q
+
+X
+
+> q=1
+
+faq λiq + Pia + εia , εia ∼ N (0 , σ 2 
+
+> i
+
+), (9) where faq (q = 1 , . . . , Q ) are latent factors that capture common variation in the age dimension, λiq are subpopulation-specific factor loadings, μi is a subpopulation-specific intercept term, and εia is a Gaussian random effect with subpopulation-specific variance σ2 
+
+> i
+
+, accounting for overdispersion and stochastic variation. Pia denotes a known offset term, representing the log-transformed ‘population-at-risk’. This allows the model to be interpreted in terms of mortality rates and provides some standard-ization between subpopulations. Due to the regularities of demographic processes, a number of factors Q ≪ K can be expected to allow for an accurate representation of the K observed age patterns. Hence, (9) provides a parsimonious modeling and denoising framework for granular, subnational demographic processes. Simple, weakly informative and conditionally conjugate μi ∼ N (0 , M 0), λiq ∼N (0 , L 0) and σ2 
+
+> i
+
+∼ IG (c0, C 0) priors are specified for the factor loadings and the subpopulation-specific error variances, where we used c0 = 2 .5, C0 = 1 .5 and M0 =
+
+L0 = 100 as hyperparameters. Extensions to more complex hierarchical prior setups as in [25] or [26] are straightforward to accommodate. In terms of factors, we use independent faq ∼ N (0 , 1) priors for q = 1 , . . . , Q and a = 1 , . . . , A to enhance scale identification during MCMC. 
+
+5.2 Posterior Simulation 
+
+Conditional on all other parameters, the latent factors faq for a = 1 , . . . , A and q =1, . . . , Q can be updated as follows. First, compute the working observations z∗ 
+
+> ia
+
+=
+
+zia − μi − Pia for all i = 1 , . . . , K and a = 1 , . . . , A . For each a = 1 , . . . , A , the conditional posterior distribution of the age-specific factor fa = ( fa1, . . . , f aQ )⊤ is proportional to a multivariate Gaussian density fa|· ∼ N Q(fN,a , FN ) with posterior moments 
+
+FN =  IQ + Λ⊤Σ−1Λ−1 , fN,a = FN Λ⊤Σ−1z∗
+
+> a
+
+,
+
+where Λ denotes the K ×Q matrix of all factor loadings λiq , Σ = diag( σ21 , . . . , σ 2 
+
+> K
+
+) and 
+
+z∗ 
+
+> a
+
+= ( z∗
+
+> 1a
+
+, . . . , z ∗
+
+> Ka
+
+)⊤. Conditional on the latent factors faq , the posterior simulation scheme follows the PX-DA scheme outlined in Section 3 with obvious adaptations. For completeness, the full PX-DA scheme for the latent factor model can be found in App. C. 
+
+5.3 Data 
+
+We estimate the factor model (9) using data on age- and sex-specific subnational mortality patterns in Austria in 2023. The data stem from the national statistical office of Austria ( Statistik Austria ) and are publicly available. 7 The data cover mortality counts for A = 20 five-year age groups in 116 subnational units (corresponding to 93 
+
+> 7https://www.statistik.at/en/databases/statcube-statistical-database/free-access
+
+11 −10.0 −7.5 −5.0 −2.5 
+
+> 00−04 05−09 10−14 15−19 20−24 25−29 30−34 35−39 40−44 45−49 50−54 55−59 60−64 65−69 70−74 75−79 80−84 85−89 90−94 95+
+> Age Group
+> Log Mortality Rate
+> Male
+> Female
+
+(a) Aggregate Mortality −10.0 −7.5 −5.0 −2.5 0.0  
+
+> 00−04 05−09 10−14 15−19 20−24 25−29 30−34 35−39 40−44 45−49 50−54 55−59 60−64 65−69 70−74 75−79 80−84 85−89 90−94 95+
+> Age Group
+> Log Mortality Rate
+> Male
+> Female
+
+(b) Subnational Mortality 
+
+Fig. 3 : Aggregate (a) and district-specific (b) log-transformed mortality rates ( y-axis) by sex (color) and five-year age groups ( x-axis) for Austria in 2023. For visualization purposes, observed mortality counts and population counts are offset by 0.5 before log-transformation to avoid undefined logarithms of zero values. political districts outside Vienna and the 23 districts of Vienna) for males and females, resulting in K = 232 subpopulations. As is typical for subnational mortality counts in high-income countries, a large proportion (23.8%) of the N = 4 ,640 observations are zero, due to relatively small populations and low mortality in younger age groups. In addition to the mortality counts, we collect data on age- and sex-specific population counts for the same subnational units on January 1, 2023. The natural logarithm of these population counts is added as an offset Pia in the model. The data are visualized in Fig. 3. Panel (a) shows log mortality rates disaggregated by sex, based on countrywide aggregate mortality and population counts. The patterns are very typical, including male mortality exceeding female mortality, rising mortal-ity at older ages, slightly elevated mortality risk in the youngest age group, mostly due to infant mortality, and the so-called accident hump at ages 15-19, which is par-ticularly pronounced among males and is typically attributed to a rise in behavioral causes of death in this age group. Panel (b) shows all subnational log mortality curves superimposed. The striking similarities in the empirical patterns across all subpopu-lations illustrate why low-rank factor models can be highly successful in representing high-dimensional demographic data. 
+
+5.4 Model Selection 
+
+To select an appropriate number of latent factors Q, we compared several methods and criteria. These included a heuristic examination of the step-wise improvement of in-sample log predictive density scores, pseudo-out-of-sample log predictive scores as in [2] in combination with ten-fold cross-validation, and other criteria that focus on approximating out-of-sample predictive accuracy, such as the WAIC (as used in [14]), or an estimate of the expected log predictive density based on Pareto smoothed importance sampling (as proposed in [29]). 8 All of these methods point towards models with Q relatively large. A variant of the joint-likelihood-based information criterion    
+
+> 8Conveniently, the integrated likelihood Rp(y|z)p(z|β, σ 2)dz is available in closed-form in the model under consideration, facilitating computation of log predictive scores for model selection. The relevant quantity is given by
+
+12 −0.25 0.00 0.25 
+
+> Age
+> Factor
+
+(a) Age factor fa.−6.0 −5.5 −5.0 −4.5  
+
+> District
+> Intercept
+
+(b) Intercept μi.78910 11  
+
+> District
+> Loading
+
+(c) Loadings λi.
+
+Fig. 4 : Estimated factor and loadings from the mortality model with Q = 1. The left panel shows the estimated factor with 95% credible intervals. The middle panel displays subpopulation-specific intercept terms. The right panel shows loadings on the age-varying factor. All point estimates are posterior means. Colors and shapes refer to male (purple circle) and female (green triangle) populations. (JIC) – as introduced in [30] for choosing the number of latent factors in generalized linear factor models – based on in-sample log predictive density scores instead clearly favors a model with a single latent factor. 9
+
+Overall, these methods did not converge on a single answer, underscoring the sig-nificant challenges of model selection in latent factor models – challenges that are even more pronounced in non-Gaussian contexts. Based on additional simulation exper-iments evaluating the performance of these criteria when Q is known, and in the interest of parsimony, we focus on the model favored by the JIC, as this criterion most often led to the correct model choice in our experiments. Similar findings moti-vated the use of the JIC for model selection in non-Gaussian factor models in [31]. Further evidence that a model with a single factor is useful comes from examining a singular value decomposition of the log-transformed mortality rates, where the leading singular triplet explains more than 96% of the variance in the log-transformed data. Moreover, the single-factor case is consistent with the most classical mortality model in statistical demography, the Lee-Carter model ([27]). A detailed investigation of the performance of different model selection criteria in latent variable factor models is left for future research. 
+
+5.5 Results 
+
+Fig. 4 displays the estimated single factor (left panel), estimates of the subpopulation-specific intercept terms (middle panel), and the estimated loadings for the latent factor                                                    
+
+> p(yia =k) =
+> 
+> Φ
+> −μia
+> σi
+> 
+> ,k= 0 ,
+> Φ
+> log( k+ 1) −μia
+> σi
+> 
+> −Φ
+> log( k)−μia
+> σi
+> 
+> ,k≥1,
+> (10) where Φ( ·) denotes the cdf of the standard Gaussian distribution and μia =μi+P
+> qfaq λiq +Pia is the conditional mean of the Gaussian model for zia defined in (9).
+> 9The original version of the JIC for amodel with Qlatent factors is given by JIC Q=−2lQ+
+> Qmax( K, A ) log {min( K, A )}where lQdenotes the likelihood obtained at the maximum likelihood param-eter estimates.
+
+13 −7.5 −5.0 −2.5 0.0 
+
+> −7.5 −5.0 −2.5 0.0
+> Log Mortality Rate
+
+Fig. 5 : Data points log yia − Pia (grey points), as well as posterior means (purple solid) and 95% credible intervals (blue dashed) of the posterior predictive densities of zia − Pia for the A = 20 age groups ( x-axis, suppressed) and eight exemplary subpopulations; based on the model with Q = 1. For visualization purposes, observed mortality counts, population counts, and posterior predictive draws are each offset by 0.5 before log-transformation to avoid undefined logarithms of zero values. (right panel). To address scale identifiability in the latent factor model, posterior sam-ples of both factors and loadings from the MCMC chain were rescaled ex post prior to calculating summary statistics for this visualization. All point estimates shown are posterior means. The factor plot (left panel) includes 95% credible intervals, demon-strating that the factor is estimated with high precision. The factor clearly captures the empirical mortality patterns discussed earlier. The intercept terms reveal average mortality differences between male (purple) and female (green) populations, while the factor loadings indicate that the estimated factor applies to all subpopulations, with-out exception. Note that gender information was not provided to the model during estimation—the model detected these subpopulation patterns without any knowledge of male/female status, with gender labels applied here solely for interpreting and visualizing the results. Refined versions of the model could incorporate hierarchical structures on the loadings and intercept terms to enable further information sharing between subpopulations; see [25] and [26] for examples. Fig. 5 compares observed log mortality rates against the posterior predictive den-sity of zia − Pia for eight representative subpopulations to illustrate model fit. The figure presents posterior means and 95% predictive intervals derived from samples of the predictive density. Overall, the model demonstrates satisfactory fit, particularly considering its parsimony with only a single factor. Regarding estimation efficiency, we first compare MCMC efficiency of the fitted values μi + P 
+
+> q
+
+faq λiq for each i = 1 , . . . , K and a = 1 , . . . , A . The PX-DA algorithm yields an average 16.6% point-wise improvement in inefficiency factors and reduces average inefficiency factors from approximately 1 .98 to 1 .41. For certain coordinates, efficiency improvements reach up to 80%. For the error variances σ2 
+
+> i
+
+, the PX-DA algorithm provides an average 3.5% point-wise improvement in inefficiency factors. 14 6 Discussion and Conclusion 
+
+This paper introduces a marginal data augmentation approach for efficient Bayesian estimation of count data regression models. Our proposed method addresses a critical challenge in Bayesian count data analysis: the poor mixing of common data augmen-tation algorithms in data sets with a high proportion of zero outcomes. By introducing a working parameter to scale latent variables specifically for such zero-count observa-tions, our approach effectively reduces the strong posterior dependencies that typically impair standard data augmentation schemes. The performance gains of our proposed PX-DA algorithm can be substantial, as evidenced by extensive simulation studies. Our application to subnational mortality counts in Austria further demonstrates the broader applicability of the proposed methodology. It is worth noting that we deliberately focused on boosting only observations where 
+
+yi = 0, as these cases typically contribute most to posterior autocorrelation. Extend-ing the boosting scheme to include observations where yi > 0 introduces technical complications that likely outweigh potential benefits. Specifically, incorporating obser-vations with positive counts would necessitate truncating the posterior distribution of δ to respect the likelihood information, with larger counts requiring increasingly smaller scaling adjustments. For instance, in the presence of even only a single very large count, the posterior distribution of δ would concentrate at δ∗ ≈ δ, effectively nullifying the boosting effect for all observations. While it may be possible to iden-tify a ‘sweet spot’ — for example, by boosting only observations where yi = 0 and 
+
+yi = 1, possibly with two separate scale adjustments — the efficiency gains of such an approach may not justify the additional computational and theoretical complexity. We leave investigating such more complex PX-DA schemes for future research. Several additional promising directions for future research emerge from this work. Further investigation into marginal data augmentation schemes for count data regres-sion models could yield further efficiency gains, particularly for data sets consisting almost exclusively of small and zero counts, where even our current method faces lim-itations. For instance, beyond the scaling step, a second ’sandwiched’ translation step as suggested by [17] could potentially provide additional efficiency gains. In addition, the role of link functions in DA-MCMC and marginal data augmen-tation schemes remains underexplored. For example, degenerate likelihoods leading to low MCMC efficiency for yi = 0 (see Subsection 2.3) are an issue for Poisson models with logarithmic link functions, but less so for Poisson models with square root links. More generally, developing efficient MCMC solutions for large-sample count data sets, where updating the zi becomes a dominant constraint, would be valuable. Finally, the parameter expansion ideas presented here could be extended to accelerate varia-tional or expectation-maximization algorithms, an approach that has proven effective in other contexts such as probit regression ([32]). 
+
+# References 
+
+[1] Gschl¨ oßl, S., Czado, C.: Modelling count data with overdispersion and spatial effects. Statistical Papers 49 , 531–552 (2008) 15 [2] Czado, C., Gneiting, T., Held, L.: Predictive model assessment for count data. Biometrics 65 (4), 1254–1261 (2009) [3] Czado, C., Delwarde, A., Denuit, M.: Bayesian Poisson log-bilinear mortality projections. Insurance: Mathematics and Economics 36 (3), 260–284 (2005) [4] Silva, J.S., Tenreyro, S.: On the existence of the maximum likelihood estimates in Poisson regression. Economics Letters 107 (2), 310–312 (2010) [5] Gamerman, D.: Sampling from the posterior distribution in generalized linear mixed models. Statistics and Computing 7, 57–68 (1997) [6] Chib, S., Winkelmann, R.: Markov chain Monte Carlo analysis of correlated count data. Journal of Business & Economic Statistics 19 (4), 428–435 (2001) [7] Polson, N.G., Scott, J.G., Windle, J.: Bayesian inference for logistic models using P´ olya-Gamma latent variables. Journal of the American Statistical Association 
+
+108 , 1339–49 (2013) [8] Tanner, M.A., Wong, W.H.: The calculation of posterior distributions by data augmentation. Journal of the American Statistical Association 82 (398), 528–540 (1987) [9] Fr¨ uhwirth-Schnatter, S., Wagner, H.: Auxiliary mixture sampling for parameter-driven models of time series of counts with applications to state space modelling. Biometrika 93 (4), 827–841 (2006) [10] Fr¨ uhwirth-Schnatter, S., Fr¨ uhwirth, R., Held, L., Rue, H.: Improved auxiliary mixture sampling for hierarchical models of non-Gaussian data. Statistics and Computing 19 , 479–492 (2009) [11] Pillow, J., Scott, J.: Fully Bayesian inference for neural models with negative-binomial spiking. Advances in Neural Information Processing Systems 25 (2012) [12] Steel, M.F., Zens, G.: Model Uncertainty in Latent Gaussian Models with Univariate Link Function. Bayesian Analysis (Forthcoming) [13] Canale, A., Dunson, D.B.: Nonparametric Bayes modelling of count processes. Biometrika 100 (4), 801–816 (2013) [14] Kowal, D.R., Canale, A.: Simultaneous transformation and rounding (STAR) models for integer-valued data. Electronic Journal of Statistics 14 (1), 1744–1772 (2020) [15] Meng, X.-L., Van Dyk, D.A.: Seeking efficient data augmentation schemes via conditional and marginal augmentation. Biometrika 86 (2), 301–320 (1999) [16] Duan, L.L., Johndrow, J.E., Dunson, D.B.: Scaling up data augmentation MCMC 16 via calibration. Journal of Machine Learning Research 19 (64), 1–34 (2018) [17] Zens, G., Fr¨ uhwirth-Schnatter, S., Wagner, H.: Ultimate P´ olya Gamma Samplers– Efficient MCMC for possibly imbalanced binary and categorical data. Journal of the American Statistical Association 119 (548), 2548–2559 (2024) [18] Liu, J.S., Wu, Y.N.: Parameter expansion for data augmentation. Journal of the American Statistical Association 94 (448), 1264–1274 (1999) [19] Van Dyk, D.A., Meng, X.-L.: The art of data augmentation. Journal of Compu-tational and Graphical Statistics 10 (1), 1–50 (2001) [20] Plummer, M., Best, N., Cowles, K., Vines, K., et al. : CODA: convergence diagnosis and output analysis for MCMC. R News 6(1), 7–11 (2006) [21] Raftery, A.E., Li, N., ˇSevˇ c´ ıkov´ a, H., Gerland, P., Heilig, G.K.: Bayesian probabilis-tic population projections for all countries. Proceedings of the National Academy of Sciences 109 (35), 13915–13921 (2012) [22] Raftery, A.E., Alkema, L., Gerland, P.: Bayesian population projections for the United Nations. Statistical Science 29 (1), 58 (2014) [23] Bijak, J., Bryant, J.: Bayesian demography 250 years after Bayes. Population Studies 70 (1), 1–19 (2016) [24] Wi´ sniowski, A., Smith, P.W., Bijak, J., Raymer, J., Forster, J.J.: Bayesian population forecasting: extending the Lee-Carter method. Demography 52 (3), 1035–1059 (2015) [25] Alexander, M., Zagheni, E., Barbieri, M.: A flexible Bayesian model for estimating subnational mortality. Demography 54 (6), 2025–2041 (2017) [26] Zens, G.: Flexible Bayesian Modeling of Age-Specific Counts in Many Demo-graphic Subpopulations. Journal of the Royal Statistical Society: Series A(Statistics in Society) (forthcoming) [27] Lee, R.D., Carter, L.R.: Modeling and forecasting US mortality. Journal of the American Statistical Association 87 (419), 659–671 (1992) [28] Clark, S.J.: A general age-specific mortality model with an example indexed by child mortality or both child and adult mortality. Demography 56 (3), 1131–1159 (2019) [29] Vehtari, A., Gelman, A., Gabry, J.: Practical Bayesian model evaluation using leave-one-out cross-validation and WAIC. Statistics and Computing 27 , 1413– 1432 (2017) [30] Chen, Y., Li, X.: Determining the number of factors in high-dimensional 17 generalized latent factor models. Biometrika 109 (3), 769–782 (2022) [31] Mauri, L., Dunson, D.B.: Factor pre-training in Bayesian multivariate logistic models. arXiv preprint arXiv:2409.17441 (2024) [32] Liu, C., Rubin, D.B., Wu, Y.N.: Parameter expansion to accelerate EM: the PX-EM algorithm. Biometrika, 755–770 (1998) 18 Appendix A Details on Sampling δ
+
+The following resampling technique is used in [17] to sample δ from 
+
+p(δ|· ) ∝
+
+ 1
+
+δ
+
+dI +1 
+
+e−DI /δ eBI /√δ .
+
+First, choose an ‘auxiliary prior’ π(δ) for resampling such that the mode and the curvature of π(δ) coincide with the mode δM and the curvature Ip of the posterior 
+
+p(δ|· ) which are given by: 
+
+δM = 16 D2
+
+> I
+
+h
+
+BI + pB2 
+
+> I
+
++ 16 DI (dI + 1) 
+
+i2 , Ip = −
+
+pB2 
+
+> I
+
++ 16 DI (dI + 1) 4 · (δM ) 52
+
+.
+
+The factorization of the posterior suggests an inverse gamma distribution δ ∼G−1(d⋆I , D ⋆I ) as auxiliary prior π(δ). The mode δIG and curvature IIG of the pdf are given by: 
+
+δIG = D⋆I
+
+d⋆I + 1 , IIG = − (d⋆I + 1) 3
+
+(D⋆I )2 .
+
+Matching the mode, i.e. δIG = δM , and the curvature, i.e. IIG = Ip, to the posterior yields the following optimal choice for the parameters ( d⋆I , D ⋆I ): 
+
+d⋆I = −Ip · (δM )2 − 1, D⋆I = δM (d⋆I + 1) .
+
+Resampling then works as follows. L draws δl ∼ π(δ), l = 1 , . . . , L , from the auxiliary prior are resampled using weights proportional to the ‘auxiliary likelihood’ ℓ(δ) = 
+
+p(δ|· )/π (δ), given by: log ℓ(δ) ∝ log p(δ|· ) − log π(δ)
+
+∝ − (dI + 1) log δ − DI
+
+δ + BI
+
+√δ − log π(δ).
+
+The desired draw from p(δ|· ) is given by δl∗ , where l⋆ ∼ Multinomial(1; w1, . . . , w L)and the weights wl ∝ ℓ(δ) are normalized to 1. The auxiliary likelihood ℓ(δ) is expected to be rather flat over the support of π(δ). Hence, ( w1, . . . , w L) is expected to be close to a uniform distribution and L can be small ( L = 5 or L = 10 can be enough). 19 Appendix B Additional Simulation Results σ2 = 0.05 σ2 = 0.5          
+
+> Intercept Only  Uninformative  Informative
+> −4 −2 024−4 −2 024
+> 0.0 2.5 5.0 7.5
+> 0.0 2.5 5.0 7.5
+> 0.0 2.5 5.0 7.5
+
+β0 
+
+> Ln Inefficiency Factor
+> PX−DA Plain DA
+
+Fig. B1 : Inefficiency factors (logarithmic scale) for β0 obtained under plain DA and PX-DA for various simulation scenarios and values of intercept β0. Results are averages across 50 replicate data sets. Refer to Section 4 for details on the simulation settings. σ2 = 0.05 σ2 = 0.5          
+
+> Uninformative  Informative
+> −4 −2 024−4 −2 024
+> 0246
+> 0246
+
+β0 
+
+> Ln Inefficiency Factor
+> PX−DA Plain DA
+
+Fig. B2 : Inefficiency factors (logarithmic scale) for β obtained under plain DA and PX-DA for various simulation scenarios and values of intercept β0. Results are averages across all elements of β and 50 replicate data sets. Refer to Section 4 for details on the simulation settings. 20 σ2 = 0.05 σ2 = 0.5           
+
+> Intercept Only  Uninformative  Informative
+> −4 −2 024−4 −2 024
+> 0246
+> 0246
+> 0246
+> β0
+> Ln Inefficiency Factor
+> PX−DA Plain DA
+
+Fig. B3 : Inefficiency factors (logarithmic scale) for σ2 obtained under plain DA and PX-DA for various simulation scenarios and values of intercept β0. Results are averages across 50 replicate data sets. Refer to Section 4 for details on the simulation settings. 
+
+# Appendix C PX-DA for Latent Factor Models 
+
+Given yia = ⌊exp( zia )⌋, simulating from the joint posterior density of the latent data 
+
+z, the parameters ( μi, λ iq , σ 2 
+
+> i
+
+) and the latent factors F can be based on a slightly modified version of the Gibbs scheme outlined in Section 3. 1. Update the rows of the A × Q latent factor matrix F = ( f1, . . . , fA)⊤ as described in Section 5.2. 2. Conditional on the factors F , the subpopulation-specific parameters are indepen-dent. For each subpopulation i = 1 , . . . , K :(a) Sample zi = ( zi1, . . . , z iA )⊤ from p(zi | μi, λi, σ 2 
+
+> i
+
+, yi, F ), where yi is the ith row of the data matrix y and λi = ( λi1, . . . , λ iQ ) are the factor loadings relevant for subpopulation i. Due to conditional independence, the full conditional of each 
+
+zia is proportional to a truncated normal distribution: 
+
+zia |· ∼ T N (μi + X
+
+> q
+
+faq λiq + Pia , σ 2 
+
+> i
+
+),
+
+where zia is truncated to the interval (−∞ , 0) in case yia = 0 and to [log( yia ), log( yia + 1)) otherwise. 21 (b) Sample σ2 
+
+> i
+
+from p(σ2 
+
+> i
+
+| zi, μ i, F , λi). The full conditional of σ2 
+
+> i
+
+is proportional to an inverse gamma distribution: 
+
+σ2 
+
+> i
+
+|· ∼ IG c0 + A
+
+2 , C 0 + 12
+
+X
+
+> a
+
+(zia − μi − X
+
+> q
+
+faq λiq − Pia )2
+
+!
+
+.
+
+(c) Sample θi = ( μi, λi) from p(θi | zi, F , σ 2 
+
+> i
+
+) using the proposed PX-DA algorithm: (i) sample δ∗ ∼ IG (d0, D 0); (ii) set ˜ zia = zia 
+
+√δ∗ for all a ∈ { 1, . . . , A } where yia = 0, otherwise ˜ zia = zia ;(iii) sample δ ∼ p(δ|˜zi, σ 2 
+
+> i
+
+, F , yi) using the algorithm given in Appendix A; (iv) set znew  
+
+> ia
+
+= ˜ zia /√δ for all a ∈ { 1, . . . , A } where yia = 0, otherwise znew  
+
+> ia
+
+= zia .(v) Finally, draw 
+
+θi|· ∼ N (TN,i tN,i , TN,i ),
+
+T −1 
+
+> N,i
+
+= T −10 + 1
+
+σ2
+
+> i
+
+W ⊤W , tN,i = 1
+
+σ2
+
+> i
+
+W ⊤(znew  
+
+> i
+
+− Pi).
+
+where W = ( ιA, F ) is the A × (Q + 1) regressor matrix for updating θi with rows wa,
+
+ιA is an A × 1 vector of ones, and T0 = diag( M0, L 0, . . . , L 0) is a diagonal matrix of dimension Q + 1. The relevant posterior parameters to sample δ ∼ p(δ|˜zi, σ 2 
+
+> i
+
+, F , yi) in Step (2c-iii) are given by 
+
+dI = d0 + n0
+
+2 ,DI = D0 + δ∗
+
+2σ2
+
+> i
+
+X
+
+> a:yia =0
+
+z2 
+
+> ia
+
+− δ∗
+
+2 m⊤ 
+
+> 0
+
+TN,i m0,BI = √δ∗ 1
+
+σ2
+
+> i
+
+X
+
+> a:yia =0
+
+(zia Pia ) + m⊤ 
+
+> 0
+
+TN,i (m1 − m2)
+
+!
+
+,
+
+(C1) where n0 = P 
+
+> a
+
+1(yia = 0), m0 = σ−2
+
+> i
+
+P 
+
+> a:yia =0
+
+w⊤ 
+
+> a
+
+zia , m1 = σ−2
+
+> i
+
+P 
+
+> a:yia >0
+
+w⊤ 
+
+> a
+
+zia ,and m2 = σ−2
+
+> i
+
+P 
+
+> a
+
+w⊤ 
+
+> a
+
+Pia . For notational simplicity, we have suppressed dependence on i in several quantities in (C1). 22
