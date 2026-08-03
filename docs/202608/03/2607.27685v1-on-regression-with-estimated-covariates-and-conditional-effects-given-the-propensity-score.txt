@@ -1,0 +1,6842 @@
+Title: On regression with estimated covariates and conditional effects given the propensity score
+
+URL Source: https://arxiv.org/pdf/2607.27685v1
+
+Published Time: Fri, 31 Jul 2026 00:30:24 GMT
+
+Number of Pages: 65
+
+Markdown Content:
+# On regression with estimated covariates and conditional effects given the propensity score 
+
+Jiaqi Wu ∗ Matteo Bonvini † Edward H. Kennedy ‡ Jennie E. Brand § Yu Xie ¶
+
+July 31, 2026 
+
+Preliminary. Comments welcome. 
+
+Abstract 
+
+Motivated by the study of heterogeneous returns to education in Brand & Xie 2010, which considers how the effect of completing college on earnings varies with the (unknown) probability of completing college, we analyze the problem of estimating a nonparametric regression function when certain covariates are estimated in a first step. Plug-in estimators that treat the estimated covariates as known generally suffer from first-stage estimation error. To mitigate this issue, we analyze two debiasing approaches within a framework that is agnostic to the choice of the first-stage estimation method and relies on either local-smoothing or sieve-based methods for the second-stage regression. In particular, we consider: (i) influence function-based estimators of pathwise differentiable parameters that approximate the target estimand, and (ii) a variant of plug-in estimators that directly aims to correct their bias. For each method, we upper bound the estimation error and characterize conditions under which oracle rates can be approached, highlighting the possible gains in terms of convergence rates relative to the plug-ins. Simulation studies illustrate the finite-sample behavior of the methods. We apply our methodology to data from the National Longitudinal Survey of Youth 1997 and find evidence that completing college yields the largest reductions in unemployment for individuals least likely to do so, consistent with earlier findings in the literature (Brand & Xie 2010; Brand 2023). 
+
+## 1 Introduction 
+
+In this work, we consider the problem of estimating a nonparametric regression function in which certain covariates are not directly observed but need to be estimated in a first stage. Our work is motivated by the study of returns to education on certain outcomes of interest, such as labor-related outcomes. In particular, Brand & Xie 2010 and Brand 2023 have shown that the causal effect of completing college on wages, among other outcomes, is greater for those students less likely to do so. Their finding provides evidence in favor of the negative selection hypothesis whereby students who are least likely to receive treatment (in this case college completion) are also the ones who would benefit the most from it. This contrasts with the positive selection hypothesis which views students as rational agents completing college with larger probability to yield a greater benefit from doing so. Negative selection may occur because attending and completing college is a complex social phenomenon governed by many mechanisms in addition to pure economic incentives. For instance, 
+
+> ∗
+
+Department of Statistics, Rutgers, The State University of New Jersey. Email: jw1726@stat.rutgers.edu 
+
+> †
+
+Corresponding author. Department of Statistics, Rutgers, The State University of New Jersey. Email: mb1662@stat.rutgers.edu. 
+
+> ‡
+
+Department of Statistics & Data Science, Carnegie Mellon University. Email: edward@stat.cmu.edu. 
+
+> §
+
+Department of Sociology, University of California, Los Angeles. Email: brand@soc.ucla.edu 
+
+> ¶
+
+Department of Sociology, Princeton University. Email: yuxie@princeton.edu 
+
+1arXiv:2607.27685v1 [stat.ME] 30 Jul 2026 for students from an advantaged background, completing college may be the norm whether or not it can provide a significant boost to their wages. We refer the reader to the original works and references therein. The approach taken in Brand & Xie 2010 and here is to estimate the conditional average treatment effect, identified under the no-unmeasured-confounding assumption (in addition to consistency and positivity), conditional on the unobserved but estimable probability of treatment (the propensity score). Mathematically, our goal is to estimate τ (t) := E(Y 1 − Y 0 | r(X) = t), where Y a denotes the potential outcome had treatment been set to A = a, A denotes the indicator for treatment and r(X) = P(A = 1 | X) denotes the propensity score. As the propensity score is unknown in observational studies, our work contributes to the literature on nonparametric regression with generated regressors, which our motivating application allows us to connect to the literature on conditional average treatment effect estimation (e.g., Foster & Syrgkanis 2023, Kennedy 2023 and Nie & Wager 2021). Even sidestepping for a moment that τ (t) depends on the partially observed outcome Y 1 − Y 0 (for each unit, at most one potential outcome can be observed), our target is a nonparametric regression function on an estimated covariate. As such, even if the regressor was known exactly, our target is not root-n estimable in nonparametric models. Because τ (t) is a one-dimensional curve while r(X) is a multi-dimensional surface, we aim to be as agnostic as possible with respect to the estimators of r while considering local smoothing and sieve-based estimators of the second-stage regression of Y on r(X). Several studies have examined the effects of estimated covariates on downstream tasks. A canonical example occurs when a nonparametric regression on estimated covariates enters the construction of an estimator of a finite-dimensional parameter of interest. In this case, the estimand would be a functional of the regression on estimated covariates, which would thus act as a nuisance parameter rather than as the main estimand as in our setting (Escanciano et al. 2014; Hahn et al. 2018; Hahn & Ridder 2013; Mammen et al. 2016). The main focus of this literature is on deriving asymptotic normality (at the root-n scale) and establishing the contribution of the generated regressors to the limiting variance. The intermediate estimators of the nonparametric regression on estimated covariates considered are of the plug-in variety. That is, the outcome is simply regressed on the estimated covariate without further adjustments, see, e.g., Section 5 in Hahn et al. 2018, Section 2.2 in Mammen et al. 2016. Without further modifications or committing to a specific estimator for the generated regressors, such plug-in estimators exhibit errors that are essentially first-order in the error incurred in estimating the covariates; see, e.g., Theorem 2 in Mammen et al. 2016 or Appendix D in Hahn et al. 2018. More recently, Escanciano & P´ erez-Izquierdo 2023 derive automatically debiased estimators of parameters defined by finite-dimensional moment conditions that rely on nuisances that can depend on generated regressors, extending the literature on double machine learning (Chernozhukov et al. 2018, 2021; Kennedy 2022) to cover settings with generated covariates. There are relatively fewer works that consider a nonparametric regression on estimated covariates as the main target of inference. Our work builds directly on Mammen et al. 2012, which present a detailed analysis of the error incurred by estimating the regressor(s) in a first step by analyzing a second-stage, plug-in local linear estimator that regresses the observed outcome onto the estimated covariate. As discussed in Section 1.3, the convergence rates they derive for the plug-in estimator cast a rather pessimistic light on the accuracy with which one can recover the estimated regression function with generated regressors. Their work is rather general as they do not assume that the unobserved covariate is itself a regression function, although this setting is one of the several examples considered in their work. In our work, the unobserved regressor is a regression function 2(the propensity score). One of the main goals of our paper is to investigate whether this extra structure can be exploited to construct estimators with more favorable statistical properties than plug-in estimators. Other examples of plug-in estimators of two-stage regression with estimated covariates can be found in Song 2008 and Andrews 1995. Sperlich 2009 derives the asymptotic distribution for a local smoothing estimator regressing the outcome on estimated covariates under conditions on the bias and variance of the estimated regressors; see also Scholz et al. 2016. This formulation of the problem bears resemblance to that of the error-in-variables regression (Fan & Truong 1993), where the “covariate measured with error” consists of the true covariate plus bias and variance terms. One key difference with the literature on error-in-variables models is that consistency of the estimator of the unknown regressors means that the error in “measuring” the covariates vanishes as the sample size increases. In order to flexibly incorporate black-box, machine learning methods for estimating the unobserved regressors, we prefer specifying only high-level, rate conditions on the covariates’ estimators and thus we build directly on the approach taken in Mammen et al. 2012. Furthermore, Wu et al. 2024 considers estimating the conditional average treatment effect given a low-dimensional vector of effect modifiers, conditioning on the propensity score to deconfound the treatment-outcome association. However, they operate under restrictive conditions on the estimated propensity score effectively ensuring that its error, assumed to be of order n−1/2, is asymptotically negligible (see their Assumption 1). Finally, Tian et al. 2026 propose regressing conditional average treatment effects on estimated propensity scores—the same type of estimand we consider in Section 5—as a diagnostic tool for assessing monotonicity assumptions used to bracket different causal effects. Their theoretical analysis, however, does not focus on the estimation of these regressions and, in particular, does not account for the additional error induced by using estimated propensity scores. Further, their implementation is limited to low-dimensional parametric models for both the conditional effects and the propensity scores. Our work therefore provides a range of estimators for implementing this diagnostic approach, together with theoretical guarantees allowing for more flexible nuisance estimation. Our manuscript proceeds as follows. We describe the setup and notation in Sections 1.1 and 1.2, while Sections 1.3 and 1.4 summarize the results of Mammen et al. 2012 most relevant to our setting and our main contributions, respectively. To simplify the exposition and isolate what we view as the key challenges of the problem we consider, we first introduce our proposed estimators for the closely related problem of estimating m(t) = E(Y | r(X) = t), where r(X) = E(A | X), using n iid copies of ( Y, A, X ) ∼ P. While we strive to be agnostic with respect to the estimation of r(x), we focus on local-smoothing-based estimators (Section 2) and sieve-based estimators (Section 3) for the second-stage regression. Sections 4 and 5 contain our simulation experiments and our empirical application, respectively. 
+
+1.1 Setup 
+
+We first consider estimating m(t) = E{Y | r(X) = t}, where r(X) = E(A | X), using n iid copies of Z ≡ (Y, A, X ) ∼ P. We assume that Y and A are scalar random variables while X ∈ Rp. The regression model is 
+
+Y = μ(X) + ϵ, where E(ϵ | X) = 0 .
+
+There is a wide range of possible structural assumptions one may impose on this problem. For example, suppose X ∼ N p(θ, Σ), μ(X) = β⊺X and r(X) = expit( X⊺γ). Then, m(t) has the 3following closed-form solution: 
+
+m(t) = β⊺E {X | X⊺γ = logit( t)} = β⊺θ + β⊺Σγγ⊺Σγ {logit( t) − γ⊺θ} .
+
+Thus, in this case, the parameters can be estimated by maximum likelihood. The focus of this paper, however, is on estimating m(t) in nonparametric models for both t 7 → m(t) and x 7 → r(x). As noted in Mammen et al. 2012, one key factor dictating the difficulty of the problem is whether the regressor r(X) is enough to capture all the influence of X on Y . That is, whether the random variable 
+
+ρ(X) ≡ E(Y | X) − E{Y | r(X)} (1) is zero almost surely or not. In our application, this assumption would impose that the effect heterogeneity induced by X can be fully captured by the heterogeneity induced by r(X), i.e., 
+
+E(Y 1 − Y 0 | X) = E{Y 1 − Y 0 | r(X)}. This is likely not the case in practice. However, it satisfies 
+
+E{ρ(X) | r(X)} = 0 by construction, which also implies E{ρ(X)} = 0 by the law of iterated expectation. Thus, although ρ(X) may be nonzero, the remaining heterogeneity not captured by r(X) averages to zero within each stratum of r(X) and across the population. In deriving our results, we keep the dependence of the estimators’ errors on ρ(X) explicit. Based on the conditional mean-zero property that E{ρ(X) | r(X)} = 0, one may hope that E{ρ(X) | br(X)} is converging to zero, possibly at a rate comparable to sup x∈Rp |br(x) − r(x)|. Relaxing this assumption is important avenue for future work. We refer to Mammen et al. 2012 for a discussion of empirical applications where ρ(X) = 0 almost surely is a plausible condition. 1
+
+Assumption 1. Throughout we make the following assumptions: 1. r(X) is continuously distributed with compact support Ir. Its density function fr(·) is Lips-chitz continuous and bounded above and away from zero on Ir. To simplify the exposition, throughout, we take Ir = [0 , 1] .2. The function m(t) = E{Y | r(X) = t} is twice differentiable on Ir, with bounded first and second derivatives. 3. The random variables Y and A are bounded. 
+
+Assumption 1 imposes mild regularity conditions on the data generating process. In particular, the first condition allows us to apply standard arguments to derive the asymptotic normality of the oracle estimator with access to the true covariate r(X). The second condition imposes mild smoothness on the true regression function, which we leverage both to derive the convergence rate of the oracle estimator and to bound the contribution of having to estimate r(x) to the final rate. Notice that if m(t) possesses additional smoothness, one could employ higher order polynomial regression to better track it. Finally, the third condition is a commonly invoked boundedness condition (it can be found, e.g., Kennedy et al. 2022; Robins et al. 2017), which we expect can be              
+
+> 1While in many applications it may be overly restrictive, the parametric Gaussian model above does not generally impose the single index structure μ(X) = m(r(X)) (corresponding to the condition ρ= 0 in our notation); this can be seen by direct computation since
+> μ(X)−m(r(X)) = ( X−θ)⊺
+> 
+> β−γ β⊺Σγγ⊺Σγ
+> 
+> ,
+> which would be zero only in special cases (such as when γis aligned with β.)
+
+4relaxed with a more careful analysis. 
+
+1.2 Notation 
+
+Throughout, we employ the notation Pf = R f (z)dP(z) and Pnf = n−1 Pni=1 f (Zi). Further, we define the Lq- norm ∥f ∥qq, P= R |f |q(z)dP(z) and the sup-norm ∥f ∥∞= sup z |f (z)|. For a vector 
+
+v ∈ Rk, we write the Euclidean norm ∥v∥22= Pkj=1 v2 
+
+> j
+
+. We let a ≲ b denote a ≤ Cb for some constant C not depending on the sample size. We let a ≍ b if a ≲ b and b ≲ a. For a k × k matrix 
+
+M , we let ∥M ∥op = sup v:∥v∥2̸ =0 ∥M v ∥2/∥v∥2 denote the operator norm of M .When the context is clear, we abbreviate the notation to represent a random variable that is a function of X as follows: br ≡ br(X) and bri ≡ br(Xi). We have μ(X) = E(Y | X), ρ = μ(X) − E{Y |
+
+r(X)} ≡ μ − m(r). Thus, Y = m(r) + ρ + ϵ, where E(ϵ | X) = 0 and E(ρ | r) = 0. We assume that the sample consists of n iid observations and let Dn denote a separate, auxiliary iid sample of size 
+
+n used to estimate r(X) (and all other nuisance functions). To describe the local smoothing estimators, we introduce the following notation. We let K(u) denote a symmetric twice continuously differentiable density function, with derivative K′(u) and compact support. We let Kht (r) = h−1K(( r−t)/h ), K′
+
+> ht
+
+(r) = h−2K′(( r−t)/h ) and ght (r) = 1 (r − t)/h ⊺.We also let e1 and e2 denote the standard basis of R2.Finally, to describe the estimators based on sieves, we let u 7 → Φk(u) denote a k-dimensional vector of basis functions and u 7 → ˙Φk(u) denote the vector of their derivatives. For instance, if Φ k(u)denotes the cosine basis, we have Φ 0(u) = 1, Φ j (u) = √2 cos( πju ) and ˙Φ( u) = −√2πj · sin( πju ). Notice that Φ 0(u), Φ1(u), . . . , Φk−1(u) is orthonormal in L2[0 , 1] and, further, that R 10 ˙Φ( u) ˙Φ( u)⊺du 
+
+is a diagonal matrix with non-zero entries equal to π2 · j2.
+
+1.3 Previous work 
+
+To the best of our knowledge, Mammen et al. 2012 provide the most recent comprehensive analysis of the problem of estimating a regression with estimated covariates in a nonparametric setting (i.e., both m(t) and r(X) are estimated nonparametrically). 2 Their first result (Theorem 1) bounds the error incurred by the plug-in estimator that regresses Y on br(X) via local linear smoothing. To simplify our exposition and avoid imposing certain empirical process conditions, we consider a variant of their strategy by which the generated regressor br(x) is computed using the separate independent sample Dn. For a vanishing bandwidth h, let Wit (Xn, br; h) denote the weight of the local linear regression for observation i, i.e., 
+
+Wit (Xn, br; h) = e⊺ 
+
+> 1
+
+· [Pn{Kht (br)ght (br)ght (br)⊺}]−1 · Kht (bri) · ght (bri).
+
+The estimator analyzed in Mammen et al. 2012 can be written as bm(t) = n−1 Pni=1 Wit (Xn, br; h)Yi.Its error satisfies the following decomposition. Consider a first-order Taylor expansion of m(ri)around m(t): 
+
+m(ri) = ght (bri)⊺
+
+ m(t)
+
+h · m′(t)
+
+
+
++ m′(t)( ri − bri) + {m′(ti) − m′(t)}(ri − t),    
+
+> 2The setting covered by Mammen et al. 2012 is more general than ours since they do not assume that ris a regression function, and they allow for the possibility of multiple unobserved covariates. Our understanding is that the setup considered here captures the main subtleties and difficulties of the problem well.
+
+5where ti is an intermediate value between ri and t. Since Yi = m(ri) + ρi + ϵi, we have 
+
+bm(t) − m(t) = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Wit (Xn, br; h) m′(t)( ri − bri) + ρi + {m′(ti) − m′(t)}(ri − t) + ϵi
+
+ .
+
+If m′(t) is Lipschitz continuous and the weights Wit (Xn, br; h) are localized, we have 
+
+Wit (Xn, br; h){m′(ti) − m′(t)}(ri − t) ≲ Wit (Xn, br; h)( ri − t)2
+
+≲ |Wit (Xn, br; h)|{ h2 + ( ri − bri)2}.
+
+The error term ϵi is mean-zero given ( Dn, X n); in this respect, a standard local smoothing argument yields that n−1 Pni=1 Wit (Xn, br; h)ϵi = OP(( nh )−1/2) under mild conditions. Therefore, we may write 
+
+bm(t) − m(t) = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Wit (Xn, br; h){m′(t) · (ri − bri) + ρi} + OP
+
+
+
+h2 + 1
+
+√nh + ∥br − r∥2
+
+> ∞
+
+
+
+.
+
+Notice that, unless the conditional mean of Y given X is only a function of r(X), ρ(X) is non-zero and may contribute first-order to the error bm(t) − m(t). Even if ρ(X) is not zero, we have, by construction, E{ρ(X) | r(X)} = 0. In this light, the expression above further reduces to 
+
+bm(t) − m(t) = m′(t) · 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Wit (Xn, br; h)( ri − bri) + 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+{Wit (Xn, br; h) − Wit (Xn, r ; h)}ρi
+
++ OP
+
+
+
+h2 + 1
+
+√nh + ∥br − r∥2
+
+> ∞
+
+
+
+.
+
+Under mild smoothness assumptions on the kernel function, by the mean-value-theorem, one may show that the second term can be bounded as 
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+{Wit (Xn, br; h) − Wit (Xn, r ; h)}ρi ≲ ∥br − r∥∞sup t1,t 2 |E(ρ | br = t1, r = t2, D n)|
+
+h + OP
+
+ 1
+
+√nh 
+
+
+
+.
+
+The fact that E{ρ(X) | r(X)} = 0 motivates Mammen et al. 2012 to consider an assumption akin to |E{ρ(X) | br(X), D n}| ≲ ∥br − r∥∞ almost surely (their Assumption 4). Under the stronger assumption that |E(ρ | br, r, D n)|≲ ∥br − r∥∞ almost surely, this informal analysis of the plug-in estimator yields that 
+
+bm(t) − m(t) = m′(t) · 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Wit (Xn, br; h)( ri − bri) + OP
+
+
+
+h2 + 1
+
+√nh + ∥br − r∥2
+
+> ∞
+
+h
+
+
+
+(2) The oracle rate for estimating m(t) had r(X) been known is of order h2 + ( nh )−1/2 ≍ n−2/5 when 
+
+h ≍ n−1/5. As pointed out in Mammen et al. 2012, the non-stochastic component of the first term would typically be first-order in r − br. Interestingly, the decrease in variance from the fact that this first term is a kernel weighted average of ri − bri means that it might be negligible relative to the oracle rate n−2/5 even if br converges to r at a slower rate. See their Corollaries 1-4 for the case when br itself is a local polynomial estimator. Informally, removing from their Corollary 1’s error decomposition the portion related to the first-stage function class’ complexity (in the spirit of using 6sample splitting), the rate obtained (applied to our settings) is of order 1
+
+√nh + h2 + ∥br − r∥2
+
+> ∞
+
+h + h∥br − r∥∞+ 1
+
+ng p + gα,
+
+if r(x) is α-smooth and it is estimated by a local polynomial with bandwidth g. When h ≍ n−1/5,the oracle rate is achieved if ∥br −r∥∞= oP(n−3/10 ). Ignoring log terms, this means that ( ng p)−1/2 =
+
+o(n−3/10 ) ⇐⇒ g ≫ n−2/(5 p). To make gα negligible at n−2/5-scale, one needs g ≪ n−2/(5 α), which leads to the requirement that α > p .This work aims to study new estimators of m(t) with more favorable error decompositions than Eq. (2), while remaining agnostic with respect to the choice of the estimator of r. Following the principles of semiparametric efficiency theory, plug-in estimators of pathwise differentiable param-eters can often be substantially improved through debiasing based on the parameter’s influence function (Bickel et al. 1993; Chernozhukov et al. 2018; Kennedy 2022; Liu et al. 2017; Robins 
+
+et al. 2017; Tsiatis 2006). Related ideas have recently been considerably generalized to cover pa-rameters, such as conditional average treatment effects and dose-response functions, that are not root-n estimable in nonparametric models (Bonvini & Kennedy 2022; Foster & Syrgkanis 2023; Kennedy 2023; Kennedy et al. 2022, 2017; Luedtke & Chung 2024; Nie & Wager 2021; Zhang 
+
+et al. 2026). In these settings, the estimands are typically defined as regressions of unobserved but estimable pseudo-outcomes on observed covariates; the resulting convergence rates often take the form “oracle rate plus second-order nuisance errors,” where the oracle rate is the rate that would be achieved by an estimator with access to the true pseudo-outcome. Our analysis suggests that estimating a regression function with estimated covariates is, in general, a substantially differ-ent and more delicate statistical problem than estimating a regression function with an estimated pseudo-outcome. In particular, one should not expect the pure second-order nuisance errors that may be obtainable when the outcome is estimated and the covariates are known. A formal negative result would require minimax lower bounds, which we leave as an important direction for future work. Section A presents a stylized example highlighting a key distinction between unobserved covariates and unobserved outcomes. 
+
+1.4 Summary of our methodological contributions 
+
+The estimation strategy summarized above is rather general since it does not require the unobserved covariate r(X) to be a regression function. It is natural to ask whether better rates can be achieved when r(X) = E(A | X), as is the case for our motivating example. Our attempt to answer this question hinges on a couple of observations. First, for a fixed bandwidth h, the local linear moment condition: 
+
+E (Kht {r(X)}ght {r(X)} [μ(X) − ght {r(X)}⊺β]) = 0 is a pathwise differentiable parameter with influence function φ(Z; β) = φ1(Z) − φ2(Z)β, where 
+
+φ1 and φ2 are given in (3) and (4), respectively. This motivates the estimator bmbc (t) = ght (t)⊺ bβ,where bβ solves n−1 Pni=1 bφ(Zi, bβ) = 0. The subscript “lbc” stands for bias-correction of a plug-in estimator based on local smoothing. A similar estimator based on sieves can be derived by solving the influence function-based estimator of the following moment condition: 
+
+E (Φ k{r(X)} [μ(X) − Φk{r(X)}⊺β]) = 0 ,
+
+7yielding a bias-corrected estimator bmsbc (t; k) = Φ k(t)⊺ bβbc . The subscript “sbc” stands for bias-correction of a plug-in estimator based on sieves. Our analysis reveals that, while the bias of these estimators can be lower than that of their plug-in counterparts, their variances may in fact be larger. This is because the presence of the derivatives of the kernel function or the basis vector involve an additional division by h and multiplication by k, respectively, which inflates our bounds on the variances when h → 0 and k → ∞ . When h or k are fixed constants, the inflation in the variance does not show up in the rates and the bias-correction works in the usual way as for pathwise differentiable parameters. In particular, for a fixed bandwidth or number of basis terms, the bias is second-order in ( br − r). Our bound on the estimation errors of bmlbc (t; h) and bmsbc (t; k) are such that, depending on the data generating process, the reduction in the bias from estimating r(X) might not be enough to offset the increase in variance so that the overall convergence rate is in fact slower than that of the plug-in estimators. For example, consider the estimator bmlbc (t; h) based on local smoothing and suppose that the smoothing bias is of order h2. The extra division by h coming from the derivative of the kernel function leads to a bound on the variance of order ( nh 3)−1, which then appears to preclude attainment of the oracle rate, which is obtained by balancing the oracle standard error and bias, of orders ( nh )−1/2 and h2, respectively. We find that this issue is substantially mitigated if one is willing to assume that ρ = 0 since, under this condition, our inflated bound on the standard error, ( nh 3)−1/2, gets multiplied by ∥bμ − μ∥∞+∥br − r∥∞, which goes to zero at a certain rate. However, in the empirical application we consider, the condition ρ = 0 is highly implausible. Such potential shortcomings of these bias-corrected estimators motivate us to consider other strate-gies to improve the plug-ins. In this respect, the second estimation procedure that we study consists of the plug-in estimator minus an estimate of the first terms in (2) and (5). To refer to these es-timators, we rely on the subscript “lcpi” and “scpi” to highlight that these are corrected plug-ins based on local smoothing and sieves. The rationale is that the first term in either (2) and (5) is one of the two leading terms involving the first-order difference ( br − r). The other term involves 
+
+ρ and it appears more difficult to correct for. One may hope that this term is negligible, since 
+
+E(ρ | r) = 0 by definition. Finally, inspired by the calibrated debiased machine learning framework in van der Laan et al. 2024, we also consider an isotonic calibration step for br. In our numerical experiments, we have found that calibrating br(X) yields more stable numerical performance. In particular, we estimate br(X) on Dn
+
+and calibrate it on the main sample to get a final estimate brcali (X) satisfying Pni=1 g(bri)( Ai −bri) = 0 for any function g. The rationale for calibrating br(X) is clear from Eq. (2) since, by writing 
+
+ri − bri = ri − Ai + Ai − bri in the first term, one has 
+
+bm(t) − m(t) = m′(t) · 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Wit (Xn, br; h)( Ai − bri) + OP
+
+
+
+h2 + 1
+
+√nh + ∥br − r∥2
+
+> ∞
+
+h
+
+
+
+.
+
+If br(X) is calibrated, the first term would vanish. However, this informal analysis would need to be adjusted because brcali now depends on the main sample as well as Dn. While we explore calibrating br
+
+in our simulations and empirical application, we leave a detailed analysis of the calibrated procedure for future work. 82 Estimators based on local smoothing 
+
+In this section, we analyze the properties of the local smoothing estimators. To start, let us define the smoothing-based approximation to m(t): 
+
+m(t; h) = e⊺
+
+> 1
+
+Q−1 
+
+> ht
+
+(r)E{Kht (r)ght (r)μ}, where Qht (r) = E{Kht (r)ght (r)ght (r)⊺}.
+
+A standard smoothing argument yields that |m(t; h)−m(t)| ≲ h2 when m′(t) is Lipschitz continuous; see, e.g., Proposition 1.13 in Tsybakov 2008. Sections 2.1 and 2.2 describe and analyze our proposed local smoothing-based estimators of m(t). 
+
+2.1 Influence function-based estimator of the fixed-bandwidth approximating target 
+
+The first estimator is motivated by solving the influence function-based estimate of 
+
+E[Kht (r)ght (r){μ − ght (r)⊺β}],
+
+in a nonparametric model when treating the bandwidth h as fixed. The derivation of the influence function follows by standard calculations and is omitted; we refer to the recent review by Kennedy 2022 on this topic. Here, we propose and analyze the estimator bmlbc (t; h) = e⊺ 
+
+> 1
+
+· { Pnφ2(Z, br)}−1 ·
+
+Pnφ1(Z, br, bμ), where 
+
+φ1(Z, r, μ ) = K′
+
+> ht
+
+(r)ght (r) + Kht (r)g′
+
+> ht
+
+(r) · (A − r) · μ + Kht (r)ght (r)Y, (3) 
+
+φ2(Z, r ) = K′
+
+> ht
+
+(r)ght (r)ght (r)⊺ + Kht (r)g′
+
+> ht
+
+(r)ght (r)⊺ + Kht (r)ght (r)g′
+
+> ht
+
+(r)⊺ · (A − r)+ Kht (r)ght (r)ght (r)⊺. (4) Crucially, while the estimator is motivated by treating the bandwidth as fixed, our analysis allows the bandwidth to vanish with the sample size; this is one key difference with prior work studying finite-dimensional functionals, including the recent pre-print by Escanciano & P´ erez-Izquierdo 2023. The terms multiplying ( A − r) represent the component-wise derivatives of u 7 → Kht (u)ght (u) and 
+
+u 7 → Kht (u)ght (u)ght (u)⊺, respectively. Notice that g′
+
+> ht
+
+(t) = 0 1/h ⊺. The following proposition bounds the pointwise error. 
+
+Proposition 1. In addition to Assumption 1, assume that t is an interior point, nh 3 → ∞ and 
+
+∥br − r∥∞= oP(h). Then it holds that 
+
+bmlbc (t; h) − m(t) − 12 m′′ (t)h2
+
+Z
+
+K(u)u2du 
+
+=
+
+ 1
+
+fr(t) Pn
+
+Kht (r){ϵ + ρ − m′(t)( A − r)} + K′
+
+> ht
+
+(r)( A − r)ρ
+
+{1 + oP(1) } + o(h2)+ OP
+
+∥r − br∥∞+∥μ − bμ∥∞
+
+√nh 3 + ∥br − r∥∞·{ sup t1,t 2 E(ρ2 | br = t1, r = t2, D n)}1/2
+
+√nh 5
+
+!
+
++ OP
+
+∥br − r∥∞
+
+sup t1,t 2 |E(ρ | br = t1, r = t2, D n)|+∥r − br∥∞+∥μ − bμ∥∞
+
+h
+
+!
+
+where fr(·) denotes the density of r(X).
+
+Proposition 1 decomposes the error incurred by bmlbc (t; h) into three components: (i) a smoothing bias term of order h2; (ii) a sample average of n iid observations (dependent by the bandwidth 9h) that is amenable to the application of a triangular array central limit theorem (CLT); and (iii) nuisance bias terms that depend on the bandwidth h, the term ρ as well as the accuracy with which 
+
+r(x) and μ(x) are estimated. The first term is a standard smoothing bias term that would enter the error decomposition even if r(X) were known. The second term is a CLT term whose scaling depends on whether ρ is zero (( nh )1/2 scale) or not (( nh 3)1/2 scale). The third nuisance bias terms are summarized and interpreted below under simplifying assumptions. We note that all our results based on local smoothing rest on the assumption that ∥br − r∥∞= o(h); such assumption is also invoked in previous works, including Mammen et al. 2012 (Assumption 2) and we invoke a similar condition also for our results based on sieves estimation. Intuitively, the second-stage regression averages outcomes Yi such that bri is within h from t. If bri − ri remains large relative to h as the sample size increases, the second-stage regression would localize in the wrong spot and thus our estimator would not approximate the oracle estimator with knowledge of r.In the following, we expand on the implications of Proposition 1. To simplify the rates and derive sufficient conditions on ∥r − br∥∞ to ensure asymptotic normality of bmlbc (t; h), we further require the following rate conditions for bμ and ρ.
+
+Assumption 2. The nuisance estimator satisfies ∥bμ − μ∥∞≲ ∥br − r∥∞.
+
+Assumption 3. The conditional expectation of ρ given (br, r ) satisfies: 
+
+sup 
+
+> t1
+
+|E(ρ | br = t1, D n)|≤ sup 
+
+> t1,t 2
+
+|E(ρ | br = t1, r = t2, D n)|≲ ∥r − br∥∞.
+
+Assumption 2 is made solely to ease the presentation of the results as it allows us to focus on the conditions needed on br; in our settings, it is a plausible condition as both r(x) and μ(x) are regression functions on the same domain. However, if ∥μ − bμ∥∞≫ ∥ br − r∥∞, then one can derive similar conditions as those below, where the relevant requirements would need to be explicitly stated in terms of ∥μ − bμ∥∞. Assumption 3 plays a more important role in deriving the rates below in the sense that if sup t1,t 2 |E(ρ | br = t1, r = t2, D n)| converges to zero slowly, then the nuisance bias might effectively be first-order in ∥br − r∥∞, rendering the bias-correction ineffective. The plausibility of Assumption 3 comes from the condition E(ρ | r) = 0 that holds by design; we consider investigating whether this condition can be relaxed as an important avenue for future work. Under Assumptions 2 and 3, in the likely case that ρ̸ = 0, the rate from Proposition 1 is 
+
+bmlbc (t; h) − m(t) = OP
+
+
+
+h2 + 1
+
+√nh 3 + ∥br − r∥2
+
+> ∞
+
+h
+
+
+
+.
+
+If ∥br − r∥∞≳ n−3/14 , choosing h ≍ ∥ br − r∥2/3 
+
+> ∞
+
+yields the rate OP(∥br − r∥4/3 
+
+> ∞
+
++ n−1/2 · ∥ br − r∥−1 
+
+> ∞
+
+). If ∥br − r∥∞≲ n−3/14 , choosing h ≍ n−1/7 yields the rate n−2/7. Further, if ∥br − r∥∞= oP(n−3/14 ), then we have, under regularity conditions ensuring non-degeneracy and continuity of the conditional variance function, and with h ≍ n−1/7:
+
+√nh 3
+
+bmlbc (t; h) − m(t) − 12 m′′ (t)h2
+
+Z
+
+K(u)u2 du 
+
+ d
+
+−→ N  0, σ 2(t) ,
+
+where σ2(t) = fr(t)−1 · R K′(u)2 du · E
+
+h
+
+{(A − r)ρ}2 r(X) = t
+
+i
+
+.
+
+Recall that the oracle estimator with access to r achieves a rate n−2/5. Our analysis thus suggests 10 that this rate is not attainable by bmlbc (t; h) in the general case where ρ̸ = 0. On the other hand, if 
+
+ρ = 0, asymptotic Gaussianity is attainable (at rate n−2/5 with h ≍ n−1/5) if ∥br −r∥∞= oP(n−3/10 ). 
+
+2.2 Direct bias correction of plug-in estimator 
+
+In this section, we consider directly estimating and subtracting off one of the two leading terms in the expansion bmlpi (t; h) − m(t) in (2), namely m′(t) · n−1 Pni=1 Wit (Xn, br; h){r(Xi) − br(Xi)}.We propose estimating m′(t) via local smoothing with a bandwidth b that may differ from h. To simplify the analysis, we consider a leave-one-out type estimator in which the same observation is not used to estimate both the derivative term and the kernel smoothed average of r − br. This naturally leads to a second-order U-statistic. In the simulations, we find that simply regressing 
+
+Y − bm′(br; b) · (A − br) onto br via local linear regression yields improvements in performance relative to the plug-in estimator bmlpi (t; h). To describe the estimator bmlcpi (t; h, b ), we need to introduce some additional notation. For a vanishing bandwidth b, we define 
+
+bQbt, −j = 1
+
+n − 1
+
+> n
+
+X
+
+> i=1 ,i ̸=j
+
+Kbt (bri)gbt (bri)gTbt (bri), W2,it, −j (Xn, br; b) = eT 
+
+> 2
+
+bQ−1 
+
+> bt, −j
+
+b−1Kbt (bri)gbt (bri),
+
+bφ(Zi, Z j ) = W2,it, −j (Xn, br; b)Yi × Wjt (Xn, br; h)( Aj − t).
+
+The estimator considered is 
+
+bmlcpi (t; h, b ) = bmlpi (t; h) − 1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+bφ(Zi, Z j ),
+
+which satisfies the following error decomposition. 
+
+Proposition 2. In addition to Assumption 1, assume that t is an interior point, n min( h, b ) → ∞ 
+
+and ∥r − br∥∞= o(min( h, b )) . Then it holds that: 
+
+bmlcpi (t; h, b ) − m(t) − 12 m′′ (t)h2
+
+Z
+
+K(u)u2du 
+
+= 1
+
+fr(t) ·
+
+"
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Kht (ri){ϵi + ρi − m′(t)( Ai − ri)}
+
+#
+
+{1 + oP(1) } + o(h2)+ OP
+
+ ∥br − r∥∞
+
+h ·
+
+ 1
+
+√nh + sup 
+
+> t1,t 2
+
+|E(ρ | br = t1, r = t2, D n)|
+
+
+
++ 1
+
+√n2hb 3
+
++ ∥br − r∥∞+ sup t|E(ρ | br = t, D n)|+b2
+
+b√nh 
+
++ ∥br − r∥∞
+
+√nb 3 + b · ∥ br − r∥∞+ ∥br − r∥∞{∥ br − r∥∞+ sup t|E(ρ | br = t, D n)|} 
+
+b
+
+
+
+.
+
+Relative to Proposition 1, the error decomposition from Proposition 2 presents two key differences: (i) the leading CLT term does not involve Pn{K′
+
+> ht
+
+(r)( A − r)ρ}, which is of order OP(( nh 3)−1/2)when ρ̸ = 0; (ii) the nuisance bias terms involve both the bandwidth h used in the second-stage regression and the bandwidth b used for estimating the derivative m′(t). Throughout, we assume 11 Assumption 3 is satisfied. If ρ̸ = 0, choosing b∗ ≍ max( h, ∥br − r∥1/2 
+
+> ∞
+
+), the rate simplifies to 
+
+bmlcpi (t; h, b ∗) − m(t) = OP
+
+
+
+h2 + 1
+
+√nh + b−1 
+
+> ∗
+
+∥br − r∥2
+
+> ∞
+
++ ∥br − r∥2
+
+> ∞
+
+h
+
+
+
+.
+
+In this light, if ∥br − r∥∞≳ n−3/10 , choosing h ≍ ∥ br − r∥2/3 
+
+> ∞
+
+yields the rate 
+
+bmlcpi (t; h, b ) − m(t) = OP
+
+1
+
+√n∥br − r∥1/3
+
+> ∞
+
++ ∥br − r∥4/3
+
+> ∞
+
+!
+
+,
+
+while, if ∥br − r∥∞≲ n−3/10 , choosing h ≍ b ≍ n−1/5 yields the oracle rate n−2/5. If ρ = 0, the oracle rate n−2/5 is obtained by choosing h ≍ n−1/5 if ∥r − br∥∞≲ n−4/15 .Finally, if either (i) ∥br − r∥∞= oP(n−3/10 ) or (ii) ∥r − br∥∞= oP(n−4/15 ) and ρ = 0, then we have 
+
+√nh 
+
+bmlcpi (t; h, b ) − m(t) − 12 m′′ (t)h2
+
+Z
+
+K(u)u2du 
+
+ d
+
+−→ N  0, σ 2(t) ,
+
+where σ2(t) = fr(t)−1 · R K(u)2du · E
+
+h
+
+{ϵ + ρ − m′(t)( A − r)}2 | r(X) = t
+
+i
+
+. Table 1 summarizes the discussion above by restating the conditions derived on the first-stage error under which a CLT applies. Notice that, in the likely scenario where ρ̸ = 0, our analysis for bmlcpi (t; h, b ) requires 
+
+∥br − r∥∞= oP(n−3/10 ) for inference at rate n−2/5 while that for bmlbc (t; h) requires the weaker condition ∥br − r∥∞= oP(n−3/14 ) for inference at the slower rate n−2/7.Table 1: Summary of the conditions for inference derived from Propositions 1 and 2. 
+
+bmlcpi (t; h, b ) bmlbc (t; h)
+
+ρ̸ = 0 ρ = 0 ρ̸ = 0 ρ = 0 
+
+Achievable rate n−2/5 n−2/5 n−2/7 n−2/5
+
+Standard error scale (nh )−1/2 (nh )−1/2 (nh 3)−1/2 (nh )−1/2
+
+Condition on ∥ˆr − r∥∞ oP(n−3/10 ) oP(n−4/15 ) oP(n−3/14 ) oP(n−3/10 )
+
+## 3 Estimators based on sieves 
+
+In this section, we consider estimating the projection of m(r) onto the space spanned by Φ k(r), which is a dictionary of k basis functions. That is, the target is βk defined as 
+
+βk = QΦ,k (r)−1E{Φk(r)Y }, where QΦ,k (r) := P{Φk(r)Φ k(r)⊺}.
+
+We also define the corresponding empirical Gram matrix bQΦ,k (r) := Pn{Φk(r)Φ k(r)⊺}.In deriving the results below, we allow for the possibility that k increases with the sample size n,yielding an increasingly accurate approximation to the regression function m(r). We also allow for the misspecification of the model for m(r); this regime is natural when considering only a fixed number of basis terms. Let ∆ k(t) = m(t) − Φk(t)⊺βk and ˙∆k(t) = m′(t) − ˙Φk(t)⊺βk. By Taylor’s expansion, recalling that 12 ρ ≡ μ − m(r), we have, for some intermediate value r between r and brμ(x) = ρ + ∆ k(br) + Φ k(br)⊺βk + m′(br)( r − br) + 12 m′′ (r)( r − br)2.
+
+Let us first consider the plug-in estimator of βk, denoted bβspi , and with corresponding estimator 
+
+bmspi (t; k) = Φ k(t)⊺ bβspi ,k. We proceed as in the analysis from Theorem 1 in Mammen et al. 2012. We have 
+
+bβspi ,k − βk = bQ−1Φ,k (br) · Pn{Φk(br)Y } − βk
+
+= bQ−1Φ,k (br) · Pn
+
+
+
+Φk(br)
+
+
+
+m′(br)( r − br) + ρ + ∆ k(br) + 12 m′′ (r)( r − br)2 + ϵ
+
+ 
+
+. (5) As expected, bβspi ,k −βk, and thus also bmspi (t; k)−m(t), presents two leading terms: one involving the projection of m′(br)( r − br) and one involving the projection of ρ. Similarly to the local smoothing setting, we therefore consider two alternative estimators to bmspi (t; k). The first one, denoted 
+
+bmsbc (t; k), is based on the influence function of the projection parameter βk treating the number of basis elements k as fixed (in the same spirit as bmlbc (t; h)). The second one, denoted bmscpi (t; k, q ), subtracts off an estimate of the projection of m′(br)( r − br) onto the space spanned by Φ k(br) from the plug-in estimator bmspi (t; k) (in the same spirit as bmlcpi (t)). The derivative term m′(br) is estimated as bm′(br; q) = ˙Φq(br)⊺ bβspi ,q . Similarly to bmlcpi (t; k, q ), we estimate the correction term in bmscpi (t; k, q )via a second-order U -statistic. As estimating m(t) based on sieves is a “global method” approximating the target function over its entire domain, we derive bounds on ∥ bβsbc ,k − βk∥2 and ∥ bβscpi ,k,q − βk∥2. In turn, under mild conditions, these bounds translate into bounds on ∥Φk(r)⊺( bβsbc ,k − βk)∥2,P and ∥Φk(r)⊺( bβscpi ,k,q −
+
+βk)∥2,P, respectively. Adding the approximation error ∆ k(t) to these bounds would then yield bounds on the L2 norm of bmsbc (r; k) − m(r) and bmscpi (r; k, q ) − m(r). Our bounds on the norm of bβsbc ,k − βk and bβscpi ,k,q − βk depend on the operator norm of Gram matrices involving first and second derivatives of the components of Φ k. To better quantify the order of magnitude of the bounds, we instantiate these matrices taking the cosine basis as an example. Let ϕ0(u) = 1, ˙ϕ0(u) = ¨ϕ0(u) = 0 and, for j ≥ 1, ϕj (u) = √2 cos( πju ), ˙ϕj (u) = −√2πj sin( πju )and ¨ϕj (u) = −√2π2j2 cos( πju ). Define Φ k(u) = {ϕ0(u), . . . , ϕ k−1(u)}⊺ and ˙Φk and ¨Φk analogously. In this respect, assuming r is uniformly distributed, we have 
+
+Z 10
+
+Φk(u)Φ ⊺
+
+> k
+
+(u)du = Ik×k =⇒ ∥ QΦ,k (r)∥op = 1 ,
+
+Z 10
+
+˙Φk(u) ˙Φk(u)⊺du = diag(0 , π 2, 4π2, . . . , (k − 1) 2π2) = ⇒ Q ˙Φ,k (r) op ≍ k2,
+
+Z 10
+
+¨Φk(u) ¨Φk(u)⊺du = diag(0 , π 4, 16 π4, . . . , (k − 1) 4π4) = ⇒ Q¨Φ,k (r) op ≍ k4.
+
+We assume that the Gram matrix QΦ,k (r) is well-conditioned and invertible uniformly in k, which is commonly imposed in the sieve literature; see, for example, Belloni et al. 2015 and Semenova & Chernozhukov 2021. 
+
+Assumption 4. The eigenvalues of QΦ,k (r) are bounded above and away from zero uniformly over 
+
+k.
+
+13 For the cosine basis, we have 
+
+∥Q ˙Φ,k (r)∥op = 2π2
+
+0 00 V Λk(r)V
+
+
+
+> op
+
+,
+
+where V = diag(1 , 2, . . . , k − 1) and Λ k has ( i, j )-entry equal to E[sin {πir (X)} sin {πjr (X)}]. Under Assumption 1, for any unit-norm v ∈ Rk, we have 
+
+v⊺Λk(r)v =
+
+Z 10
+
+
+
+> k
+
+X
+
+> j=1
+
+vj sin( πju )
+
+
+
+> 2
+
+fr(u)du ∈
+
+ 12 inf  
+
+> u
+
+fr(u), 12 sup 
+
+> u
+
+fr(u)
+
+
+
+.
+
+so that 1 ≲ λmin (Λ k) ≲ λmax (Λ k) ≲ 1. Thus, ∥Q ˙Φ,k (r)∥op ≍ k2. By direct calculation, we also have 
+
+∥Q¨Φ,k (r)∥op ≍ k4.In deriving the bounds below, we rely repeatedly on first and second order Taylor expansions applied component wise. Based on an integral representation of Taylor’s remainders, the upper bound on the error then also depends on the operator norms of 
+
+eQΦ,k (r, br) = P
+
+Z 10
+
+Φk(br + u(r − br))Φ k(br + u(r − br)) ⊺du 
+
+eQ ˙Φ,k (r, br) = P
+
+Z 10
+
+˙Φk(br + u(r − br)) ˙Φk(br + u(r − br)) ⊺du 
+
+eQ¨Φ,k (r, br) = P
+
+Z 10
+
+¨Φk(br + u(r − br)) ¨Φk(br + u(r − br)) ⊺du 
+
+
+
+.
+
+We leave the bounds with explicit dependence on the operator norms of the three matrices above. For many commonly employed bases, we expect these norms to be of orders O(1), O(k2), and 
+
+O(k4), respectively, under mild conditions. For example, these orders hold for the cosine basis if, conditional on Dn, the random variable S = r(X) + U {br(X) − r(X)}, where U ∼ Unif[0 , 1] is independent of ( X, D n), admits a density that is uniformly bounded above and away from zero. Finally, following the notation in Belloni et al. 2015, we define ξk = sup u∥Φk(u)∥2. We refer to their Section 3 for a description of available bounds on ξk depending on the choice of the basis vector. When the basis is bounded, such as the cosine basis, one has ξk ≲ √k. We also define 
+
+ηk = sup u∥ ˙Φk(u)∥2 and ζk = sup u∥ ¨Φk(u)∥2. For example, for the cosine basis, we have ηk ≲ k3/2
+
+and ζk ≲ k5/2.
+
+3.1 Influence function-based estimator of the finite-dimensional approximation 
+
+We begin by bounding the error of bβsbc ,k = {Pnφ2(Z, br)}−1Pnφ1(Z, br, bμ), where 
+
+φ1(Z, r, μ ) = ˙Φk(r)( A − r)μ + Φ k(r)Y, φ2(Z, r ) = 
+
+n ˙Φk(r)Φ k(r)⊺ + Φ k(r) ˙Φk(r)⊺o
+
+(A − r) + Φ k(r)Φ ⊺
+
+> k
+
+(r).
+
+The estimator bβsbc ,k is the influence function-based estimator of βk when k is fixed and the model for the data generating distribution is nonparametric. In the following proposition, we bound the norm of bβsbc ,k − βk, allowing for both the possibility of growing k and of a misspecified model Φ ⊺
+
+> k
+
+β.14 Proposition 3. Suppose Assumptions 1 and 4 hold and that ∥ ˙Φ⊺
+
+> k
+
+βk∥∞≲ 1 and ∥ ¨Φ⊺
+
+> k
+
+βk∥∞≲ 1.Further assume that 1. log k ·
+
+
+
+ηkξk + ξ2 
+
+> k
+
++ η2 
+
+> k
+
++ ξ2 
+
+> k
+
+∥Q ˙Φ,k (r)∥op 
+
+
+
+= o(n).
+
+2. ∥ eQ ˙Φ,k (r, br)∥1/2op · min 
+
+n
+
+∥r − br∥∞, ξ k∥r − br∥2,P
+
+o
+
++ min 
+
+n
+
+∥r − br∥2
+
+> ∞
+
+∥ eQ ˙Φ,k (r, br)∥op , η 2
+
+> k
+
+∥r − br∥22,P
+
+o
+
+= oP(1) .
+
+3. ∥ eQ¨Φ,k (r, br)∥1/2op · min 
+
+n
+
+∥r − br∥∞∥Q ˙Φ,k (r)∥1/2op , η k∥r − br∥2,P
+
+o
+
++ min 
+
+n
+
+∥r − br∥2
+
+> ∞
+
+∥ eQ¨Φ,k (r, br)∥op , ζ 2 
+
+> k
+
+∥r − br∥22,P
+
+o
+
+= oP(∥Q ˙Φ,k (r)∥op ).
+
+4. 
+
+min 
+
+h
+
+∥br − r∥2
+
+> ∞
+
+{∥ eQ ˙Φ,k (r, br)∥op +∥ eQ¨Φ,k (r, br)∥1/2op ∥ eQΦ,k (r, br)∥1/2op },
+
+∥r − br∥22,P(η2 
+
+> k
+
++ ξkζk)
+
+i
+
+= oP(1) 
+
+Then the following statements hold: 1. The estimation error in β is bounded as 
+
+∥ bβsbc ,k − βk∥2= OP
+
+ξk + ηk
+
+pE{ρ2(A − r)2}√n + ∥Rn∥2
+
+!
+
+;
+
+2. For any k-dim unit vector α, the estimator is approximately linear: 
+
+α⊺  bβsbc ,k − βk
+
+
+
+= α⊺QΦ,k (r)−1 Pn
+
+h
+
+Φk(r)
+
+n
+
+∆k(r) + ϵ − ˙Φk(r)⊺βk(A − r) + ρ
+
+o
+
++ ˙Φk(r)( A − r)ρ
+
+i| {z }
+
+> := Tn
+
++ α⊺(Rn + Sn)15 where Sn := {Pnφ2(Z, br)}−1 − QΦ,k (r)−1 Tn with 
+
+∥Sn∥2
+
+= OP
+
+(
+
+ξk + ηk
+
+pE{ρ2(A − r)2}√n
+
+)
+
+·
+
+ min 
+
+n
+
+∥br − r∥2
+
+> ∞
+
+
+
+∥ eQ ˙Φ,k (r, br)∥op +∥ eQΦ,k (r, br)∥1/2op ∥ eQ¨Φ,k (r, br)∥1/2op 
+
+
+
+, ∥r − br∥22,P(η2 
+
+> k
+
++ ξkζk)
+
+o
+
++ (ξkηk + ξ2 
+
+> k
+
+) log kn +
+
+vuutn
+
+η2 
+
+> k
+
++ ξ2 
+
+> k
+
+(1 + ∥Q ˙Φ,k (br)∥op )
+
+o
+
+log kn
+
+
+
+∥Rn∥2= OP
+
+
+
+ηk + ξk + ζk · sup 
+
+> t1,t 2
+
+|E(ρ2 | r = t1, br = t2, D n)|1/2
+
+
+
+· ∥r − br∥2,P
+
+√n
+
++ ∥r − br∥24,P+∥ eQ ˙Φ,k (r, br)∥1/2op ∥(r − br)∆ k(r)∥2,P
+
++ ∥Q ˙Φ,k (r)∥1/2op 
+
+∥(r − br)( μ − bμ)∥2,P+∥(r − br)∆ k(br)∥2,P+∥r − br∥24,P
+
++ ηk
+
+√n {∥ μ − bμ∥2,P+∥∆k(br)∥2,P} + ∥ eQ¨Φ,k (r, br)∥1/2op ∥(r − br)2E(ρ | r, br, D n)∥2,P
+
+!
+
+.
+
+Before describing the rate and its implications for inference in more detail, we briefly unpack the four conditions needed in the statement. We do so by introducing the following two simplifying assumptions. 
+
+Assumption 5. The following bounds hold: 
+
+• ξk ≲ √k, ηk ≲ k3/2 and ζk ≲ k5/2;
+
+• ∥QΦ,k (r)∥op ≍ 1 and ∥Q ˙Φ,k (r)∥op ≍ k2.
+
+Assumption 6. The following bounds hold: 
+
+• ∥ eQΦ,k (r, br)∥op ≲ 1, ∥ eQ ˙Φ,k (r, br)∥op ≲ k2 and ∥ eQ¨Φ,k (r, br)∥op ≲ k4.
+
+Under Assumption 5, the first condition reduces to k3(log k)/n → 0. Under Assumptions 5 and 6, the second, third and fourth conditions reduce to 
+
+k2 min {∥ br − r∥2
+
+> ∞
+
+, k ∥br − r∥22,P} = oP(1) . (6) Next, based on Proposition 3, we derive sufficient conditions for inference. We introduce the following assumption, which, analogously to Assumption 2, is made solely to ease the exposition. 
+
+Assumption 7. It holds that ∥(r − br)( bμ − μ)∥2,P ≲ ∥r − br∥24,P and ∥μ − bμ∥2,P≲ ∥r − br∥2,P
+
+The next assumption, akin to Assumption 3, plays a more important role and ensures that the nuisance bias is of smaller order even when ρ is nonzero. 
+
+Assumption 8. The following bounds hold: 
+
+• ∥E(ρ | br, D n)∥2,P ≲ ∥E(ρ | br, r, D n)∥2,P ≲ ∥br − r∥2,P;
+
+16 • ∥(r − br)E(ρ | r, br, D n)∥2,P≲ ∥r − br∥24,P.
+
+In the results below, we assume that the choice of the basis is appropriate for approximating m(t). 
+
+Assumption 9. It holds that ∥∆k∥∞≲ k−s.
+
+Assumption 9 holds, for example, when m(r) is H¨ older smooth of order s and Φ( r) denotes an appropriate basis, such as wavelet or B-spline series (see, e.g., Section 3 in Belloni et al. 2015 and Appendix A in McGrath & Mukherjee 2026). Under Assumptions 5—9, we have 
+
+∥Rn∥2= OP
+
+r k5
+
+n ∥r − br∥2,P+
+
+r k3
+
+n k−s + k∥r − br∥24,P+ ∥r − br∥2,P
+
+ks−1 + k2∥r − br∥∞∥r − br∥24,P
+
+!
+
+If s = 2, choosing k ≍ n1/7 yields that ∥ bmsbc ,k − m∥2,P= OP(n−2/7) if ∥r − br∥4,P = OP(n−3/14 )and ∥r − br∥∞∥br − r∥24,P= OP(n−4/7). If ρ = 0, then, with k ≍ n1/5, ∥ bmsbc ,k − m∥2,P= OP(n−2/5) if 
+
+∥br − r∥4,P= OP(n−3/10 ). Furthermore, define Ω = Q−1Φ,k (r)E
+
+hn 
+
+Φk(r)δ1 + ˙Φk(r)δ2}{ Φk(r)δ1 + ˙Φk(r)δ2
+
+o⊺i
+
+Q−1Φ,k (r), where 
+
+δ1 = ∆ k(r) + ϵ + ρ − ˙Φk(r)⊺βk(A − r) and δ2 = ( A − r)ρ. 
+
+Under the condition that 
+
+|Φk(t)⊺(Sn + Rn)|= oP
+
+r Φk(t)⊺ΩΦ k(t)
+
+n
+
+!
+
+,
+
+we have 
+
+√n{Φk(t)⊺( bβsbc ,k − βk)}
+
+pΦk(t)⊺ΩΦ k(t)
+
+> d
+
+−→ N (0 , 1) .
+
+In the most likely scenario that ρ̸ = 0, it is reasonable to expect that Φ k(t)⊺ΩΦ k(t) ≍ k3 since the term E{ ˙Φk ˙Φ⊺
+
+> k
+
+(A − r)2ρ2} would dominate. If this is the case, a sufficient condition for the remainder negligibility is that ∥Sn∥2+∥Rn∥2= oP(k/ √n). With s = 2 and k ≍ n1/7, this condition would hold if ∥r − br∥4,P= oP(n−1/4) and ∥r − br∥∞= oP(n−5/28 ). If ρ = 0, sufficient conditions to ensure asymptotic normality (at rate n−2/5) are ∥br − r∥4,P= oP(n−7/20 ) and ∥br − r∥∞= oP(n−1/4). 
+
+Remark 1. Suppose that one is interested in specifying a finite-dimensional approximation to m(r)so that k is treated as a fixed constant. Then, since bβsbc ,k solves Pn(φ1(Z, br, bμ)−φ2(Z, br) bβsbc ,k) = 0, we have 
+
+∥Φk(r)⊺( bβsbc ,k − βk)∥2,P= OP
+
+ 1
+
+√n + ∥br − r∥2,P∥bμ − μ∥2,P+∥r − br∥22,P
+
+
+
+,
+
+which involves only second-order nuisance errors. This is expected since, for finite k, βk is a pathwise differentiable parameter. Furthermore, by sample splitting and the conditions that ∥bμ − μ∥2,P=
+
+oP(1) and 
+
+∥br − r∥2,P∥bμ − μ∥2,P+∥r − br∥22,P= oP(n−1/2),
+
+17 we have 
+
+√n( bβsbc ,k − βk) ⇝ N  0, Q Φ,k (r)−1var {φ1(Z, r ) − φ2(Z, r )βk}QΦ,k (r)−1 .
+
+3.2 Direct correction of plug-in bias 
+
+In this section, we study a correction to a plug-in estimator based on sieves that directly subtracts off the term involving the first order bias m′(br)( r − br). We view this estimator as the sieve-based counterpart to bmlcpi (t; h) (Section 2.2): 
+
+bβscpi ,k,q = bβspi ,k − 1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+˙Φq(brj )⊺ bQ−1Φ,q, −j (br)Φ q(bri)Yi × bQ−1Φ,k Φk(brj )( Aj − brj )Here, both k and q index the dimension of the approximating sieve space. In particular, the derivative m′(br) is estimated by first projecting Y onto the q-dimensional space spanned by Φ q(br)and then computing bm′
+
+> q
+
+(br) = ˙Φq(br)⊺ bβspi ,q . Notice that (modulo the removal of observation j
+
+in computing the derivative estimate), summing over i in the double sum above returns exactly 
+
+n−1 Pnj=1 bm′
+
+> q
+
+(brj ) × bQ−1Φ,k (br)Φ k(brj )( Aj − brj ). We derive the following proposition bounding the error of bβscpi ,k,q , which is analogous to Proposition 2. 
+
+Proposition 4. Suppose Assumptions 1 and 4 hold and that ∥ ˙Φ⊺ 
+
+> q
+
+βq∥∞≲ 1 and ∥ ¨Φ⊺ 
+
+> q
+
+βq∥∞≲ 1.Further assume that 1. ξ2 
+
+> k
+
+log k + ξ2 
+
+> q
+
+log q = o(n)
+
+2. ∥ eQ ˙Φ,k (r, br)∥1/2op · min 
+
+n
+
+∥r − br∥∞, ξ k∥r − br∥2,P
+
+o
+
++ min 
+
+n
+
+∥r − br∥2
+
+> ∞
+
+∥ eQ ˙Φ,k (r, br)∥op , η 2
+
+> k
+
+∥r − br∥22,P
+
+o
+
+= oP(1) .
+
+3. ∥ eQ ˙Φ,q (r, br)∥1/2op · min 
+
+n
+
+∥r − br∥∞, ξ q∥r − br∥2,P
+
+o
+
++ min 
+
+n
+
+∥r − br∥2
+
+> ∞
+
+∥ eQ ˙Φ,q (r, br)∥op , η 2 
+
+> q
+
+∥r − br∥22,P
+
+o
+
+= oP(1) .
+
+4. ∥ eQ¨Φ,q (r, br)∥1/2op · min 
+
+n
+
+∥r − br∥∞∥Q ˙Φ,q (r)∥1/2op , η q∥r − br∥2,P
+
+o
+
++ min 
+
+n
+
+∥r − br∥2
+
+> ∞
+
+∥ eQ¨Φ,q (r, br)∥op , ζ 2 
+
+> q
+
+∥r − br∥22,P
+
+o
+
+= oP(∥Q ˙Φ,q (r)∥op ).
+
+Then the following statements hold: 1. The estimation error in β is bounded as 
+
+∥ bβscpi ,k,q − βk∥2= OP
+
+ ξk
+
+√n + ∥Rn∥2
+
+
+
+;
+
+2. For any unit vector α ∈ Rk, the estimator is approximately linear: 
+
+α⊺( bβscpi ,k,q − βk) = α⊺QΦ,k (r)−1 Pn
+
+h
+
+Φk(r)
+
+n
+
+∆k(r) + ˙Φq(r)⊺βq(r − A) + ϵ + ρ
+
+oi | {z }
+
+> := Tn
+
++ α⊺(Sn + Rn),
+
+18 where Sn := { bQΦ,k (br)−1 − QΦ,k (r)−1}Tn and 
+
+∥Sn∥2 = OP
+
+ ξk
+
+√n ·
+
+s
+
+ξ2 
+
+> k
+
+log kn + ∥ eQ ˙Φ,k (r, br)∥1/2op · min 
+
+n
+
+∥r − br∥∞∥QΦ,k (r)∥1/2op , ξ k∥r − br∥2,P
+
+o
+
++ min 
+
+n
+
+∥r − br∥2
+
+> ∞
+
+∥ eQ ˙Φ,k (r, br)∥op , η 2
+
+> k
+
+∥r − br∥22,P
+
+o 
+
+∥Rn∥2 = OP
+
+ξk + ηk
+
+√n ∥r − br∥2,P
+
++ ∥ eQ ˙Φ,k (r, br)∥1/2op ∥(r − br) {∆k(r) + E(ρ|r, br, D n)} ∥ 2,P
+
++
+
+
+
+1 + ξk
+
+√n
+
+ n
+
+∥(r − br) ˙∆q(br)∥2,P+∥ ˙∆k∥∞∥r − br∥2,P+∥(r − br)2∥2,P
+
+o
+
++ ξkηq
+
+n + ξk
+
+√n · ∥ Q ˙Φ,q (br)∥1/2op ·{∥ ∆q(br)∥2,P+∥br − r∥2,P+∥E(ρ | br, D n)∥2,P}
+
++ ξq
+
+√n · min 
+
+n
+
+∥Q ˙Φ,q (br)∥1/2op ∥br − r∥∞, η q∥br − r∥2,P
+
+o
+
++ min 
+
+n
+
+∥br − r∥∞∥Q ˙Φ,q (br)∥1/2op , ∥br − r∥2,Pηq
+
+o
+
+· {∥ ∆q(br)∥2,P+∥br − r∥2,P+∥E(ρ | br, D n)∥2,P}
+
+
+
+The interpretation of the conditions and the result of Proposition 4 is similar to that of Proposition 2. For the corrected plug-in estimator, to further simplify the discussion for the rates, we impose the following assumption. 
+
+Assumption 10. The first-step error satisfies that: 
+
+• ∥r − br∥2
+
+> ∞
+
+≲ min {k, q } · ∥ r − br∥22,P
+
+The purpose of writing the bound on ∥Rn∥2 above in terms of min {∥ br − r∥∞, √q∥br − r∥2,P} is because L2 error rates are available for many function classes and, depending on the function class where r reside, can be much faster than L∞ rates; for H¨ older-smooth classes, however, the two rates match up to log n terms (Tsybakov 2008). For example, if k ≍ nα and q ≍ nβ for any fixed 
+
+α, β > 0, Assumption 10 is satisfied when r is H¨ older-smooth and estimated in a minimax optimal sense (e.g., by using local polynomials). In particular, under Assumptions 5, 6 and 10, the four conditions simplify to, for v = max( k, q ): 
+
+v log( v)/n → 0 and v∥r − br∥∞= oP(1) .
+
+Under Assumption 5–10, and if ∥ ˙∆l∥∞≲ l−s+1 for l ∈ { k, q }, we have 
+
+∥Rn∥2 = OP
+
+r k3
+
+n ∥r − br∥2,P+ ∥br − r∥2,P
+
+ks−1 + ∥br − r∥2,P
+
+qs−1 + k∥br − r∥24,P+
+
+pkq 3
+
+n
+
++
+
+r kq 2
+
+n (q−s + ∥br − r∥2,P) + q∥br − r∥∞
+
+r qn + q−s + ∥br − r∥2,P
+
+!
+
+.
+
+19 Therefore, if s = 2, k ≍ n1/5 and one could ensure q∗ ≍ min {k, ∥r − br∥−1/22,P }, then we have 
+
+∥Rn∥2= OP
+
+∥br − r∥2,P
+
+k + k∥br − r∥24,P+ k2
+
+n + q3/2
+
+> ∗
+
+√n ∥br − r∥∞+q∗∥br − r∥∞∥br − r∥2,P
+
++ ∥br − r∥∞max 
+
+ 1
+
+k , ∥br − r∥1/22,P
+
+ !
+
+.
+
+In this respect, recalling that throughout we have assumed that ∥br − r∥∞= oP(1 /k ), we have 
+
+∥ bmscpi ,k,q−m∥2,P= OP(n−2/5) if ∥r−br∥4,P= OP(n−3/10 ) and ∥r−br∥∞∥br−r∥1/22,P = OP(n−2/5). If ρ = 0, the condition assumed throughout that ∥br − r∥∞= oP(n−1/5) together with ∥r − br∥∞∥br − r∥1/22,P =
+
+OP(n−2/5) suffice since the term k∥br − r∥24,P in the preceding display can be replaced by ∥br − r∥24,P.To achieve the asymptotic Gaussian distribution (at rate pk/n ≍ n−2/5), a sufficient condition is that ∥Sn∥2+∥Rn∥2= oP(n−1/2), which holds if ∥br − r∥∞= oP(n−7/20 ). Under such condition on 
+
+∥br − r∥∞, the choice q ≍ k ≍ n1/5 also works for inference. In this case, 
+
+√n{Φk(t)⊺( bβscpi ,k,q − βk)}
+
+pΦk(t)⊺ΩΦ k(t)
+
+> d
+
+−→ N (0 , 1) ,
+
+where Ω = Q−1Φ,k (r) · E
+
+
+
+Φk(r)Φ k(r)⊺
+
+n
+
+∆k(r) + ϵ + ρ − (A − r) ˙Φq(r)⊺βq
+
+o2
+
+· Q−1Φ,k (r). Table 2 summarizes the rate conditions on the first-step estimation error needed to obtain valid inference. Notice that these two estimators exhibit a similar pattern to that of the local linear. Although bmsbc (t) converges slower than bmscpi (t), it has weaker requirements for the first-step estimation, namely ∥r − br∥4,P= oP(n−1/4) and ∥r − br∥∞= oP(n−5/28 ). Table 2: Summary of sufficient conditions for inference derived from Propositions 3 and 4. 
+
+bmscpi (t) bmsbc (t)
+
+ρ̸ = 0 ρ = 0 ρ̸ = 0 ρ = 0 
+
+Achievable rate n−2/5 n−2/5 n−2/7 n−2/5
+
+Standard error scale (k/n )1/2 (k/n )1/2 (k3/n )1/2 (k/n )1/2
+
+Condition on ∥ˆr − r∥4,P – – oP(n−1/4) oP(n−7/20 )
+
+Condition on ∥ˆr − r∥∞ oP(n−7/20 ) oP(n−7/20 ) oP(n−5/28 ) oP(n−1/4)
+
+## 4 Simulation Studies 
+
+In this section, we explore the finite-sample performance of our proposed estimators in simulations. We consider several different outcome regression designs and estimate the unobserved covariate 
+
+r(x) via the Lasso (with logistic link function). 20 4.1 Setup 
+
+In every scenario, we generate d-dimensional covariates X ∼ N (0 , Σ), where d = 200 and Σ is an AR(1) covariance matrix with correlation parameter 0.7, i.e., Σ ij = 0 .7|i−j|. We generate the variable A by sampling from A | X ∼ Bern( r(X)) and set r(x) = expit( P 
+
+> j
+
+βj xj ) with βj = (2 j)−1.The outcome variable is generated as Y = μ(X) + ϵ, where ϵ ∼ N (0 , 1) is independent noise. We run 500 replications. In each replication, we split the sample into two sub-samples. The training sample is used to estimate r(x), μ(x) and m′(t). The remaining inference sample is used to estimate the target m(t). The outcome model μ(x) is estimated using random forest (ranger ) with default parameters. The derivative term m′(t) is estimated using local linear re-gression ( lprobust ) with Gaussian kernel and default parameters. We estimate r(x) using the Lasso with regularization parameter λ chosen by 5-fold cross-validation. We also consider cali-brating br using isotonic regression ( isoreg ); that is, brcali is obtained by regressing A on br under the monotonicity constraint on the main sample used for inference. All the code is available at https://github.com/Jiaqi0987/Estimated-covariate.git. We investigate the performance of three different estimators: 
+
+• bmpi (t): plug-in estimator regressing Y onto br(X); 
+
+• bmbc (t): influence function-based bias-corrected estimator (Sections 2.1 and 3.1); 
+
+• bmcpi (t): corrected plug-in estimator (Sections 2.2 and 3.2). For benchmarking, we also report the performance of their oracle counterparts: 
+
+• bmor (t): regressing Y onto true r(X); 
+
+• bmbc.or (t): the oracle version of bmbc (t), which uses true regression function μ(X) while retain-ing the estimated covariate br(X); 
+
+• bmcpi.or (t): the oracle version of bmcpi (t), which uses true derivative m′(t) while retaining the estimated covariate br(X). And also the corresponding estimator using calibrated brcali :
+
+• bmpi.cali (t): the calibrated version of bmpi (t), computed using brcali (X); 
+
+• bmbc.cali (t): the calibrated version of bmbc (t), computed using brcali (X); 
+
+• bmbc.cali.or (t): the calibrated oracle version of bmbc .or (t), computed using brcali (X) and the true regression function μ(X). Note that, because calibration enforces Pn{g(brcali )( A − brcali )} = 0 for any function g, the corrected plug-in estimator constructed with brcali (as implemented in this simulation study) coincides with plug-in estimator based on brcali ; we therefore do not list it separately. Each estimator is implemented based on three different models: (i) local linear regression, ii) regression using B-splines, and (iii) regression using cosine basis. For the local linear implementation, the bandwidth h is selected by 
+
+lprobust with default parameters, with the exception of the bandwidths entering the bias-corrected estimators, which are chosen by 5-fold cross validation. For the sieve-based estimators, the number of basis terms are chosen by 5-fold cross-validation. We consider six designs for E(Y | X) = μ(X) of the form μ(X) = f {r(X)} + g(X), where f (t) is (i) a sinusoidal function (M1) , (ii) a quasi-linear function (M2) , and (iii) a smooth function with 21 a localized bump (M3) . The function g(x) is either (i) identically zero or (ii) g(x) = xT βg, where 
+
+βg is a fixed vector generated according to βg,j ∼ N  (2 j)−1, (2 j)−2. The setting with g(x) = 0 corresponds to the case where ρ(X) = μ(X) − m{r(X)} = 0. As a robustness check, we also considered g(x) = x1x2 and the results were essentially unchanged. 
+
+4.2 Results 
+
+4.2.1 Estimation accuracy 
+
+We evaluate the accuracy of the estimators by averaging their squared errors across a grid of 50 equally spaced evaluation points tj ∈ [0 .15 , 0.85], i.e., Average squared error = 150 
+
+P50 
+
+> j=1
+
+( bm(tj ) −
+
+m(tj )) 2. The points 0.15 and 0.85 correspond roughly to the 0.05- and 0.95-quantile of r(X), respectively. A total sample size of n = 5000 is split evenly into a training sample and an inference sample. Figures 1, 6, 7 report the results for the settings with g(X) = xT βg (corresponding to ρ̸ = 0). Each figure consists of 3 plots: (i) the top-left panel displays the true function m(t) along with bmpi , bmcpi 
+
+and bmbc estimates based on local linear smoothing from one replication; (ii) the top-right panel shows the pointwise squared error curves for the estimators based on local linear smoothing, where the gray lines come from individual simulation runs and the red line is their average; and (iii) the box-plots summarize the distribution of the average squared error for each estimator considered. The results show that any form of bias correction yields notable improvements relative to the plug-in estimator. Across all scenarios, calibrating br, in conjunction with the plug-in strategy (equivalent to the corrected plug-in strategy in this case) or the bias-correction based on the influence function of the fixed-dimensional approximating target, appears to yield the best results in terms of average squared-error. Finally, when ρ = 0, Figures 8, 9, 10 show that estimators based on calibrating br
+
+have the best and most stable performance. Without calibrating br, the forms of bias correction considered did not harm the performance relative to the plug-in estimator but they yield substantial gains mostly in scenario M1 (with the corrected plug-in also showing improvements in Scenario M3). 
+
+4.2.2 Coverage and CI length 
+
+We evaluate the coverage of the confidence intervals for the proposed estimators. Because the estimators are nonparametric, the tuning parameters minimizing the mean-square-error (such as cross-validated choices) balance smoothing bias and standard error; the confidence intervals should therefore be interpreted as targeting the corresponding smoothed estimand (for example Φ ⊺
+
+> k
+
+(t)βk for sieves), rather than the true regression function m(t). To make the coverage comparison meaningful, we use a two-stage simulation procedure. First, for each simulation setting, we run a pilot simulation with 50 replications and record the selected bandwidth or the basis dimension for each estimator. We then fix the bandwidth or basis dimension at the median value from the pilot study, separately for each estimator. Using these fixed tuning parameters, we evaluate whether the confidence interval for each estimator covers its corresponding smoothed target. For our coverage analysis, we fix the inference sample size at 2500 and vary the training sample size 
+
+ntr ∈ { 2500 , 10000 }, so that the nuisance estimates are increasingly more accurate. For scenario M1 with ρ̸ = 0, Figures 2 and 3 report the pointwise coverage and the length of intervals, respectively. For all other settings, the results are reported in Appendix B. As expected, as ntr increases, the coverage moves closer to the nominal 95% level for estimators based on some form of bias correction, while the coverage for plug-in estimators remains far below the target. In some scenarios, we notice a drop in coverage in certain regions (for example: evaluation points near t = 0 .5 in Figure 15). 22 −2.5 0.0 2.5 5.0                                 
+
+> 0.2 0.4 0.6 0.8
+> t
+> Y
+> Truth mpi mcpi mbc
+> 0.0 0.5 1.0 1.5
+> 0.2 0.4 0.6 0.8
+> t
+> mpi
+> 0.0 0.5 1.0 1.5
+> 0.2 0.4 0.6 0.8
+> t
+> mor
+> 0.0 0.5 1.0 1.5
+> 0.2 0.4 0.6 0.8
+> t
+> mcpi
+> 0.0 0.5 1.0 1.5
+> 0.2 0.4 0.6 0.8
+> t
+> mbc
+> 0.0 0.5 1.0 1.5
+> 0.2 0.4 0.6 0.8
+> t
+> mpi .cali
+> 0.0 0.5 1.0 1.5
+> 0.2 0.4 0.6 0.8
+> t
+> mbc .cali
+> Cosine B−spline Local linear
+> PI OR CPI CPI_or BC BC_or PI_cali BC_cali BC_or_cali
+> PI OR CPI CPI_or BC BC_or PI_cali BC_cali BC_or_cali
+> PI OR CPI CPI_or BC BC_or PI_cali BC_cali BC_or_cali
+> 0.0 0.5 1.0 1.5
+> Average MSE
+
+Figure 1: M1 (sin–cosine function + linear term in X): μ(X) = 0.15 sin(10 πr (X)) + cos(2 πr (X)) + βTg X, where βg is a fixed coefficient vector. This is likely due to the fact that the true function m(t) changes slope there, and the regularization in br leads to more observations falling in that region, thus reducing the standard errors in a difficult landscape for estimation. This is consistent with the condition that the first-step estimation error should be smaller relative to the smoothing scale, for example ∥br − r∥∞= o(h) for local linear estimator. In regions where the target function varies more rapidly, smaller bandwidths may be needed to reduce smoothing bias, which makes the required first-stage accuracy condition more stringent. 
+
+## 5 Application 
+
+In this section, we investigate the effect of college completion on cumulative unemployment in early to mid-career. We use data from the National Longitudinal Survey of Youth 1997 (NLSY97), which is a nationally representative sample of 8,984 men and women of age 12–16 as of December 31, 1996. We restrict the sample to those who completed at least a high school degree ( n = 7 , 753), those falling within a region of common support ( n = 7 , 626) and to cases with no missing values on key variables including unemployment ( n = 6 , 978) (but where several precollege variables were imputed) . Table 3 reports summary statistics for the precollege covariates used in our analysis. Our goal is to evaluate the causal effect of college completion on cumulative unemployment as a function of the true probability of completely college (propensity score). Previous analyses have shown that college completion reduces time spent unemployed over the career, and the effect is greater for those less likely to complete college (Brand 2023). This finding, termed negative selection, is inconsistent with a rational-behavior model whereby agents decide to complete college based on their expected future career returns. One possible explanation for this finding is that students from advantaged backgrounds may consider college attendance and completion as culturally expected regardless of whether it is advantageous from a future career standpoint. On the contrary, attending 23 Cosine B−spline Local linear 
+
+> n.tr = 2500  n.tr = 10000
+
+0.2 0.4 0.6 0.8 0.2 0.4 0.6 0.8 0.2 0.4 0.6 0.8 
+
+0.00 0.50 0.95 1.00 
+
+0.00 0.50 0.95 1.00 
+
+t
+
+> Coverage
+
+mpi 
+
+mor 
+
+m cpi 
+
+m cpi . or 
+
+mbc 
+
+mbc . or 
+
+m pi . cali 
+
+m bc . cali 
+
+m bc . or . cali Figure 2: Pointwise coverage relative to the matched same-replication semi-oracle target for M1 (sine–cosine function + linear term in X): μ(X) = 0 .15 sin {10 πr (X)} + cos {2πr (X)} + βTg X,where βg is a fixed coefficient vector. Cosine B−spline Local linear                             
+
+> 0.2 0.4 0.6 0.8 0.2 0.4 0.6 0.8 0.2 0.4 0.6 0.8
+> 0.5 1.0 1.5
+> 0.5 1.0 1.5
+> 0.5 1.0 1.5
+> t
+> Mean 95% CI length
+> mpi
+> mor
+> mcpi
+> mcpi .or
+> mbc
+> mbc .or
+> mpi .cali
+> mbc .cali
+> mbc .or .cali
+
+Figure 3: Pointwise confidence interval length for M1 (sine–cosine function + linear term in X): μ(X) = 0 .15 sin {10 πr (X)} + cos {2πr (X)} + βTg X, where βg is a fixed coefficient vector. Training sample uses 2500 observations. 24 college may not be the norm for less advantaged students, and thus it may be justified under more stringent economic gains. Workers from disadvantaged backgrounds who do not complete college face particularly poor labor market outcomes, such that we expect large benefits to degree completion, especially in reducing cumulative unemployment (Brand 2023). By contrast, students from advantaged backgrounds are likely to have stronger labor market opportunities regardless of whether they complete college, suggesting smaller returns. Overall, the theory suggests that the effect of college completion on unemployment should decrease as the propensity score increases. Mathematically, we let A ∈ { 0, 1} denote college completion and ( Y 1, Y 0) the potential cumulative unemployment rates if the unit completes versus does not complete college, respectively. A rich set of background covariates X ∈ Rp are observed, including sociodemographics, parents’ education and income, family structure, students’ high-school achievement, and school characteristics. Asummary is presented in Table 3; certain variables are constructed, we refer to Brand 2023 for their definition. We invoke (i) no-unmeasured-confounding, A ⊥⊥ (Y 1, Y 0) | X, (ii) positivity, 
+
+ϵ ≤ r(X) = P (A = 1 | X) ≤ 1 − ϵ with probability 1 for some ϵ > 0, and (iii) consistency, 
+
+A = a =⇒ Y a = Y . Then, 
+
+τ (t) = E{Y 1 − Y 0 | r(X) = t} = E{μ1(X) − μ0(X) | r(X) = t},
+
+where μa(X) = E(Y | A = a, X ). To estimate τ (t) using the methods described in the previous sections, we propose following the principle of DR-Learning (Kennedy 2023) and regressing the following pseudo-outcome on r(X): 
+
+φ(Z) = Ar(X) {Y − μ1(X)} − 1 − A
+
+1 − r(X) {Y − μ0(X)} + μ1(X) − μ0(X).
+
+As E{φ(Z) | r(X) = t} = τ (t), Propositions 1–4 apply directly when treating φ(Z) as known. In fact, the results translate by viewing φ(Z) as Y and E{φ(Z) | X} = μ1(X) − μ0(X) as μ(X). In practice, φ(Z) needs to be estimated, but because φ(Z) is an orthogonal signal (i.e., regressing its estimate on X results in estimators of the X-conditional CATE that have second-order dependence on the nuisance errors under mild conditions (Foster & Syrgkanis 2023; Kennedy 2023)), we expect the conclusions from Propositions 1-4 continue to hold in this setting as well. In Brand 2023, the propensity score is estimated by a logit regression. The model is based on an iterative procedure considering all possible higher order and interaction terms (Imbens & Rubin 2015) to produce a flexible specification. Heterogeneous treatment effects are estimated by plotting the treated and control unemployment outcomes along a continuous representation of the propensity score using local polynomial smoothing and taking the difference in the nonparametric curves (Xie 
+
+et al. 2012). In other analyses, effects are summarized within propensity score strata and effect heterogeneity is considered across the strata. In our analysis, we adopt a stacked learning approach to estimate r, μ0 and μ1. The ensemble model combines predictions from Random Forests ( ranger ), Lasso with 2-knots, natural-splined contin-uous covariates and up to two-degree interactions ( glmnet ), Generalized Additive Models ( mgcv ), Gradient Boosted Trees ( gbm ), parametric linear / logistic models ( glm ), with cross-validated tun-ing parameters. For the meta learner used for stacking, we employ parametric linear regression for μ0 and μ1 and parametric logistic regression for r. Figure 4 reports the risk estimates for each learner and across nuisances. Figure 5 compares the estimated conditional effects as a function of the estimated propensity score 25 Random Forest Gradient Boosting GAM Lasso Logistic             
+
+> 0.0 0.1 0.2 0.3 0.4
+> r
+> Random Forest Gradient Boosting GAM Lasso Linear
+> 0.00 0.01 0.02 0.03 0.04 0.05
+> μ1
+> Random Forest Gradient Boosting GAM Lasso Linear
+> 0.000 0.025 0.050 0.075
+> Loss
+> μ0
+
+Figure 4: Loss estimates for each learner across nuisances. Gray points represent losses in each fold, and red points indicate the mean loss across folds. when using the plug-in, corrected plug-in, and influence-function-based bias-corrected estimators. All estimates are negative (corresponding to a beneficial effect of college completion on unemploy-ment rates). Importantly, the estimates suggest that individuals who are least likely to obtain college education benefit the most from completing college. 
+
+## 6 Conclusion & practical considerations 
+
+In this work, we proposed and analyzed two ways of debiasing plug-in estimators of a regression on an unobserved, but estimable, covariate. One is based on directly subtracting off an estimate of the plug-in estimator’s bias, while the other one is based on the influence function of the parameter, derived by viewing the second-stage tuning parameter (either the bandwidth in local smoothing or the basis dimension in the sieves regression) as fixed. For each approach, we have considered both local smoothing and regression onto a finite-dimensional space of increasing dimension. Recalling that the generic estimand considered is E(Y | r(X) = t), for r(X) = E(A | X), the upper bounds on the estimators’ errors that we have derived distinguish between the case where the index r(X)is sufficient, i.e., μ(X) := E(Y | X) = E{Y | r(X)}, and the general case where it is not. However, in the application we considered, the general case is much more plausible. The two approaches differ in several ways, which can be summarized as follows (with some simpli-fications for easier exposition, please refer to the technical propositions). First, the way we propose directly subtracting off an estimate of the plug-in’s bias requires estimating the derivative of the regression function given the unobserved covariate. On the other hand, the influence-function-based estimators do not require estimating the derivative function but they rely on estimating 
+
+μ(X) = E(Y | X), which is a standard regression problem since X is observed. Furthermore, while we consider U -statistic-based estimators for the former approach (coming from a leave-one-out es-timator of the derivative), we find that simply regressing Y − bm′(br)( A − br) onto br using off-the-shelf software works reliably in our simulations; here bm′(br) denotes a plug-in estimator of the derivative function treating br(x) as known, which can too be computed using available software. On the contrary, we found the construction of the influence-function-based estimators in simulations to be more delicate because of the presence of the derivative of either the kernel or the basis functions, leading to additional divisions by the bandwidth or multiplications by the number of basis terms, 26 Table 3: Summary Statistics for Precollege Covariates 
+
+Men (N = 3486) Women (N = 3492) Non-college College Non-college College Graduate Graduate Graduate Graduate Variables (N = 2758) (N = 728) (N = 2500) (N = 992) 
+
+Race 
+
+Black (0/1) 0.28 (0.45) 0.14 (0.35) 0.32 (0.47) 0.19 (0.39) Hispanic (0/1) 0.22 (0.41) 0.12 (0.32) 0.24 (0.43) 0.13 (0.34) 
+
+Social Background 
+
+Father’s education (years, 0–20) 12.12 (2.84) 14.58 (2.91) 11.86 (2.82) 14.01 (3.01) Mother’s education (years, 0–20) 12.30 (2.62) 14.31 (2.44) 11.98 (2.61) 13.90 (2.78) Parent’s income ( $1000s) 42.97 (33.34) 71.54 (46.63) 38.95 (30.80) 64.95 (43.02) Intact family (0/1) 0.41 (0.49) 0.72 (0.45) 0.37 (0.48) 0.67 (0.47) Number of siblings 4.54 (2.96) 3.69 (2.53) 4.72 (2.99) 3.76 (2.65) Rural residence (0/1) 0.17 (0.38) 0.18 (0.38) 0.16 (0.37) 0.18 (0.39) Southern residence (0/1) 0.33 (0.47) 0.30 (0.46) 0.34 (0.47) 0.32 (0.47) Married by age 18 (0/1) 0.01 (0.07) 0.00 (0.04) 0.03 (0.17) 0.00 (0.05) Had children by age 18 (0/1) 0.01 (0.11) 0.00 (0.04) 0.07 (0.25) 0.01 (0.07) Delinquency (0–10) 0.64 (0.48) 0.51 (0.50) 0.46 (0.50) 0.33 (0.47) 
+
+Ability and Academics 
+
+ASVAB scale (-3–3) -0.25 (0.57) 0.23 (0.59) -0.27 (0.62) 0.16 (0.56) GPA (0–4) 2.56 (0.71) 3.33 (0.60) 2.82 (0.70) 3.45 (0.54) College-prep (0/1) 0.21 (0.41) 0.58 (0.49) 0.25 (0.43) 0.62 (0.48) 
+
+Social-Psychological 
+
+Good teachers (0/1) 0.17 (0.38) 0.25 (0.43) 0.16 (0.37) 0.22 (0.41) Friends aspire college (0/1) 0.96 (0.19) 0.99 (0.10) 0.96 (0.19) 1.00 (0.06) School safety (0/1) 0.30 (0.46) 0.45 (0.50) 0.26 (0.44) 0.45 (0.50)  
+
+> Notes: Entries report mean values with standard deviations in parentheses.
+
+27 0500 1000 1500                                 
+
+> 0.00 0.25 0.50 0.75 1.00
+> r^
+> Count
+> Estimated propensity score
+> −0.15 −0.10 −0.05 0.00 0.05
+> −0.15 −0.10 −0.05 0.00
+> Cosine B−spline Local linear
+> 0.0 0.2 0.4 0.6 0.8 0.0 0.2 0.4 0.6 0.8 0.0 0.2 0.4 0.6 0.8
+> −0.15 −0.10 −0.05 0.00
+> Propensity score
+> Effect
+> mpi mcpi mbc
+> mpi .cali mbc .cali
+> Estimated effect curve
+
+Figure 5: Distribution of propensity score (top) and estimated effect curve of college completion on cumulative unemployment with 95% confidence band (bottom). respectively. In addition, our theoretical analysis finds that, in the likely case where the index r(X) is not a sufficient statistic, the debiasing approach based on the influence function is unable to return an estimator that can converge as fast as the oracle estimator with access to the true r(x). However, the approach based on directly estimating the plug-in bias can return such estimator even if ∥br−r∥∞
+
+is converging somewhat slower than the oracle rate (with a local linear second-stage regression, our required rate is faster than n−3/10 when the oracle rate is n−2/5). In simulations, selecting the bandwidth that is optimal for estimating the derivative itself (using off-the-shelf software such as 
+
+lprobust (Calonico et al. 2019)) leads to a reasonable performance. The influence-function-based estimators, in the general case, converge to the truth at a slower rate than the oracle. Yet, inference can be carried out at these slower regimes under weaker conditions on the accuracy of br relative to those needed for inference, at the faster oracle rate, for the approach based on direct plug-in debiasing. In the simulations considered, both approaches yielded estimators whose performance was at least as good as, and often much better than, that of the plug-in estimators, albeit worse than that of the oracle estimators. Notably, using a plug-in estimator after calibrating the covariate’s estimate, for instance using isotonic regression, resulted in stable and reliable performance. Our theory, however, does not immediately cover calibration of br(X) because the calibrating step occurs on the same sample used to compute the second-stage regression, while our results assume that br(X)is estimated on a separate sample. A careful analysis of the plug-in estimator with calibrated covariates is thus an important avenue for future work. Overall, our analysis suggests that because the estimators considered have different strengths, it is advisable to try both debiasing approaches to assess the robustness of the inferences. To implement the direct debiasing of plug-in estimators, a promising way is to simply regress the outcome on the calibrated covariate. 28 7 Acknowledgments 
+
+JW and MB gratefully acknowledge support from NSF DMS Grant 2413891. MB thanks Stijn Vansteelandt, Georgi Baklicharov and Oliver Dukes (Ghent University) for very insightful conver-sations. Large language models were used to assist with proofreading and identifying typographical errors during the revision of this manuscript. 
+
+## References 
+
+1. Andrews, D. W. Nonparametric kernel estimation for semiparametric models. Econometric Theory 11, 560–586 (1995). 2. Belloni, A., Chernozhukov, V., Chetverikov, D. & Kato, K. Some new asymptotic theory for least squares series: Pointwise and uniform results. Journal of Econometrics 186, 345–366 (2015). 3. Bickel, P., Klaassen, C. A., Ritov, Y. & Wellner, J. A. Efficient and adaptive estimation for semiparametric models (Springer-Verlag New York, 1993). 4. Bonvini, M. & Kennedy, E. H. Fast convergence rates for dose-response estimation. arXiv preprint arXiv:2207.11825 (2022). 5. Brand, J. E. Overcoming the odds: The benefits of completing college for unlikely graduates 
+
+(Russell Sage Foundation, 2023). 6. Brand, J. E. & Xie, Y. Who benefits most from college? Evidence for negative selection in heterogeneous economic returns to higher education. American sociological review 75, 273– 302 (2010). 7. Calonico, S., Cattaneo, M. D. & Farrell, M. H. nprobust: Nonparametric kernel-based estima-tion and robust bias-corrected inference. arXiv preprint arXiv:1906.00198 (2019). 8. Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W. & Robins, J. Double/debiased machine learning for treatment and structural parameters. The Econo-metrics Journal 21, C1–C68 (2018). 9. Chernozhukov, V., Newey, W. K., Quintas-Martinez, V. & Syrgkanis, V. Automatic debiased machine learning via riesz regression. arXiv preprint arXiv:2104.14737 (2021). 10. Escanciano, J. C., Jacho-Ch´ avez, D. T. & Lewbel, A. Uniform convergence of weighted sums of non and semiparametric residuals for estimation and testing. Journal of Econometrics 178, 
+
+426–443 (2014). 11. Escanciano, J. C. & P´ erez-Izquierdo, T. Automatic Locally Robust Estimation with Generated Regressors. arXiv preprint arXiv:2301.10643 (2023). 12. Fan, J. & Truong, Y. K. Nonparametric regression with errors in variables. The Annals of Statistics, 1900–1925 (1993). 13. Foster, D. J. & Syrgkanis, V. Orthogonal statistical learning. The Annals of Statistics 51, 
+
+879–908 (2023). 14. Hahn, J., Liao, Z. & Ridder, G. Nonparametric two-step sieve M estimation and inference. 
+
+Econometric Theory 34, 1281–1324 (2018). 15. Hahn, J. & Ridder, G. Asymptotic variance of semiparametric estimators with generated regressors. Econometrica 81, 315–340 (2013). 16. Imbens, G. W. & Rubin, D. B. Causal inference in statistics, social, and biomedical sciences 
+
+(Cambridge University Press, 2015). 17. Kennedy, E. H. Semiparametric doubly robust targeted double machine learning: a review. 
+
+arXiv preprint arXiv:2203.06469 (2022). 29 18. Kennedy, E. H. Towards optimal doubly robust estimation of heterogeneous causal effects. 
+
+Electronic Journal of Statistics 17, 3008–3049 (2023). 19. Kennedy, E. H., Balakrishnan, S., Robins, J. M. & Wasserman, L. Minimax rates for hetero-geneous causal effect estimation. arXiv preprint arXiv:2203.00837 (2022). 20. Kennedy, E. H., Ma, Z., McHugh, M. D. & Small, D. S. Nonparametric methods for doubly robust estimation of continuous treatment effects. Journal of the Royal Statistical Society. Series B, Statistical Methodology 79, 1229 (2017). 21. Liu, L., Mukherjee, R., Newey, W. K. & Robins, J. M. Semiparametric efficient empirical higher order influence function estimators. arXiv preprint arXiv:1705.07577 (2017). 22. Luedtke, A. & Chung, I. One-step estimation of differentiable hilbert-valued parameters. The Annals of Statistics 52, 1534–1563 (2024). 23. Mammen, E., Rothe, C. & Schienle, M. Nonparametric regression with nonparametrically generated covariates. The Annals of Statistics 40, 1132–1170 (2012). 24. Mammen, E., Rothe, C. & Schienle, M. Semiparametric estimation with generated covariates. 
+
+Econometric Theory 32, 1140–1177 (2016). 25. McGrath, S. & Mukherjee, R. Nuisance Function Tuning and Sample Splitting for Optimally Estimating a Doubly Robust Functional. Annals of statistics (2026). 26. Nie, X. & Wager, S. Quasi-oracle estimation of heterogeneous treatment effects. Biometrika 
+
+108, 299–319 (2021). 27. Robins, J., Li, L., Mukherjee, R., Tchetgen, E. T. & van der Vaart, A. Higher order estimating equations for high-dimensional models. Annals of statistics 45, 1951 (2017). 28. Robins, J. M., Rotnitzky, A. & Zhao, L. P. Estimation of regression coefficients when some regressors are not always observed. Journal of the American statistical Association 89, 846– 866 (1994). 29. Scholz, M., Sperlich, S. & Nielsen, J. P. Nonparametric long term prediction of stock returns with generated bond yields. Insurance: Mathematics and Economics 69, 82–96 (2016). 30. Semenova, V. & Chernozhukov, V. Debiased machine learning of conditional average treatment effects and other causal functions. The Econometrics Journal 24, 264–289 (2021). 31. Song, K. Uniform convergence of series estimators over function spaces. Econometric Theory 
+
+24, 1463–1499 (2008). 32. Sperlich, S. A note on non-parametric estimation with predicted variables. The Econometrics Journal 12, 382–395 (2009). 33. Tian, P., Yang, F. & Ding, P. Bracketing Relationships of Weighted Average Treatment Effects. 
+
+arXiv preprint arXiv:2606.11715 (2026). 34. Tsiatis, A. A. Semiparametric theory and missing data (Springer Science & Business Media, 2006). 35. Tsybakov, A. B. Introduction to nonparametric estimation (Springer Science & Business Me-dia, 2008). 36. Van der Laan, L., Luedtke, A. & Carone, M. Automatic doubly robust inference for linear functionals via calibrated debiased machine learning. arXiv preprint arXiv:2411.02771 (2024). 37. Vershynin, R. High-Dimensional Probability: An Introduction with Applications in Data Sci-ence 2nd ed. (Cambridge University Press, Cambridge, 2026). 38. Wu, P., Han, S., Tong, X. & Li, R. Propensity Score Regression for Causal Inference with Treatment Heterogeneity. Statistica Sinica 34, 747–769. doi: 10 . 5705 / ss . 202022 . 0008 .
+
+https://doi.org/10.5705/ss.202022.0008 (2024). 39. Xie, Y., Brand, J. E. & Jann, B. Estimating heterogeneous treatment effects with observational data. Sociological methodology 42, 314–347 (2012). 30 40. Zhang, Y., Liu, L. & Zhang, Z. Higher-Order Debiased Estimators for General Treatment Models. arXiv preprint arXiv:2606.01706 (2026). 31 A Estimated outcomes versus estimated covariates 
+
+At the surface level, the problem of estimating a regression function with unobserved, but estimable, covariates resembles that of estimating a regression with an unobserved, but estimable, pseudo-outcome. However, our analysis suggests that this is not the case. Here, we briefly outline a conceptual difference between the two settings in a stylized example. Consider the conditional average treatment effect function (identified under no-unmeasured-confounding): 
+
+θ(t) = E{μ1(X) − μ0(X) | V = t}, μA(X) = E(Y | A, X ), V ⊂ X. 
+
+One key aspect of this problem is that, for any fixed functions r(x) and μA(x), letting 
+
+φa(Z) = I(A = a){Y − μa(X)}
+
+r(X)a{1 − r(X)}1−a + μa(X),
+
+it holds that 
+
+E{φ1(Z) − φ0(Z) | V = t} − θ(t)= E
+
+ r(X)
+
+r(X) − 1
+
+
+
+{μ1(X) − μ1(X)} − 
+
+ 1 − r(X)1 − r(X) − 1
+
+
+
+{μ0(X) − μ0(X)} | V = t
+
+
+
+.
+
+This crucial observation then suggests that an estimator regressing the estimated pseudo-outcome 
+
+bφ(Z) onto V can potentially behave like an oracle estimator with access to φ(Z) as long as the 
+
+product of the errors for estimating r(x) and μA(x) (measured by some suitable norm) is smaller than the oracle rate. A careful analysis would need to take into consideration the properties of the second-stage regression estimator, but this intuition has been formalized and considerably generalized in recent influential works, including Foster & Syrgkanis 2023 and Kennedy 2023. In particular, regressing bφ(Z) on V , the so-called DR-Learner, was analyzed in Kennedy 2023; we build upon this approach in Section 5 where br(X) plays the role of V here. If instead V itself has to be estimated, our results suggest that one should generally not expect the same clean second-order nuisance remainder. To see one obstacle to obtain pure second-order nuisance errors, consider estimating E{μ1(X)} versus E[Kht {μ1(X)}]. The latter parameter would naturally appear when considering a regression onto μ1(X) via local linear smoothing, while the for-mer is the treatment-specific mean functional under no-unmeasured-confounding. The uncentered influence function of the former parameter is φ1(Z), and one has 
+
+E{φ1(Z)} − E{μ1(X)} = E
+
+ r(X)
+
+r(X) − 1
+
+
+
+{μ1(X) − μ1(X)}
+
+
+
+,
+
+paving the way again for the existence of an estimator (the so-called augmented-inverse-probability-weighted estimator (Robins et al. 1994)) exhibiting a pure second-order nuisance error. On the contrary, for a fixed bandwidth h, the (uncentered) influence function of E[Kht {μ1(X)}] is 
+
+κh(Z) = K′
+
+> ht
+
+{μ1(X)} Ar(X) {Y − μ1(X)} + Kht {μ1(X)}, which satisfies 
+
+E{κh(Z)} − E[Kht {μ1(X)}]= E
+
+
+
+K′
+
+> ht
+
+{μ1(X)}
+
+ r(X)
+
+r(X) − 1
+
+
+
+{μ1(X) − μ1(X)}
+
+
+
+− 12 E K′′ 
+
+> ht
+
+{eμ1(X)}{ μ1(X) − μ1(X)}2 ,
+
+32 for some intermediate value eμ1(X) between μ1(X) and μ1(X). Because of the presence of K′ 
+
+> ht
+
+and 
+
+K′′ 
+
+> ht
+
+, by a standard smoothing argument and under mild conditions, these two apparent second-order terms are inflated by h−1 and h−2, respectively. When h goes to zero, the nuisance errors are thus no longer purely second-order in a bandwidth-free sense. Nevertheless, they may still be asymptotically smaller than |E[Kht {μ1(X)} − Kht {μ1(X)}]|; for example, if ∥μ1 − μ1∥∞= o(h), then the quadratic term h−2∥μ1 − μ1∥2 
+
+> ∞
+
+is smaller than h−1∥μ1 − μ1∥∞. Building upon Mammen 
+
+et al. 2012, in this work, we aimed to provide a more nuanced analysis than this crude calculation would imply in this stylized setting. However, the difficulty in obtaining pure second-order nuisance errors when h goes to zero remains. 
+
+## B Main proofs 
+
+B.1 Proof of Proposition 1 
+
+Recall that Y = μ(X) + ϵ and, for shorthand notation, let us write Hht (r) = Kht (r)ght (r) and 
+
+Ght (r) = Kht (r)ght (r)ght (r)⊺ = Hht (r)ght (r)⊺. We interpret all derivatives with respect to the scalar r component-wise. Thus, we have 
+
+φ1(Z, br) = H′
+
+> ht
+
+(br) · (A − br) · bμ + Hht (br) · Y, φ2(Z, br) = G′
+
+> ht
+
+(br) · (A − br) + Ght (br) = H′
+
+> ht
+
+(br)ght (br)⊺ + Hht (br)g′
+
+> ht
+
+(br)⊺ · (A − br) + Ght (br),
+
+and 
+
+φ1(Z, br) = H′
+
+> ht
+
+(br) · (A − br) + Hht (br) · μ + H′
+
+> ht
+
+(br) · (A − br) · (bμ − μ) + Hht (br) · ϵ
+
+=: R1 + R2 + Hht (br) · ϵ. 
+
+Let βht = m(t) h · m′(t)⊺. By a Taylor expansion and definition of ρ(X) := μ(X) − m{r(X)},we have 
+
+μ = ght (br)⊺βht + m′(t)( r − br) + 12 m′′ (t)( r − t)2 + ρ, 
+
+for some intermediate value t between t and r(X). Notice that 
+
+H′
+
+> ht
+
+(br) · (A − br) + Hht (br) · ght (br)⊺βht = φ2(Z, br)βht − Hht (br)g′
+
+> ht
+
+(br)⊺βht · (A − br)= φ2(Z, br)βht − m′(t) · Hht (br) · (A − br)= φ2(Z, br)βht − Hht (br) · m′(t) · { (A − r) + ( r − br)}
+
+Therefore, we have 
+
+R1 = φ2(Z, br)βht − m′(t)Hht (br)( A − r) + H′
+
+> ht
+
+(br) · (A − br) · m′(t) · (r − br)+ H′
+
+> ht
+
+(br) · (A − br) + Hht (br) ·
+
+ 12 m′′ (t)( r − t)2 + ρ
+
+
+
+33 Thus, we can write 
+
+Pn{φ1(Z, br) − φ2(Z, br)βht }
+
+= Pn(R2) + Pn
+
+Hht (br) ϵ − m′(t)( A − r)  + Pn
+
+H′
+
+> ht
+
+(br) · (A − br) · m′(t) · (r − br)
+
++ Pn
+
+H′
+
+> ht
+
+(br) · (A − br) + Hht (br) ·
+
+ 12 m′′ (t)( r − t)2 + ρ
+
+ 
+
+.
+
+Next, we decompose Pn{φ1(Z, br) − φ2(Z, br)βht } into terms of three types: leading terms, terms that have mean zero given X and Dn and nuisance bias terms. To start, we first bound the term ∥Pn(R2)∥2. Note that 
+
+∥H′
+
+> ht
+
+(br)∥2≲ 1
+
+h2 · 1( |br − t|≤ h) ≲ 1
+
+h2 · 1( |r − t|≤ h + ∥r − br∥∞).
+
+So we have 
+
+∥P(R2)∥2 = ∥P{H′
+
+> ht
+
+(br)( r − br)( bμ − μ)}∥ 2
+
+≲ ∥r − br∥∞∥μ − bμ∥∞P∥H′
+
+> ht
+
+(br)∥2
+
+≲ ∥r − br∥∞∥μ − bμ∥∞· 1
+
+h2 · (h + ∥r − br∥∞)And 
+
+P(∥(P − Pn)R2∥22) ≲ 1
+
+n P∥R2∥22
+
+≲ 1
+
+n ∥μ − bμ∥2
+
+> ∞
+
+P∥H′
+
+> ht
+
+(br)∥22
+
+≲ 1
+
+n ∥μ − bμ∥2
+
+> ∞
+
+1
+
+h4 · (h + ∥r − br∥∞)Therefore, 
+
+∥Pn(R2)∥2 = OP
+
+ ∥bμ − μ∥∞
+
+√nh 2 · (h + ∥r − br∥∞)1/2 + ∥bμ − μ∥∞∥br − r∥∞
+
+h2 · (h + ∥r − br∥∞)
+
+
+
+Similarly, we have 
+
+Pn
+
+H′
+
+> ht
+
+(br) · (A − br) · m′(t) · (r − br) 2
+
+= OP
+
+ ∥r − br∥∞
+
+√nh 2 · (h + ∥r − br∥∞)1/2 + ∥br − r∥2
+
+> ∞
+
+h2 · (h + ∥r − br∥∞)
+
+
+
+In addition, since 
+
+Z 10
+
+H′
+
+> ht
+
+(r + u(br − r)) du 2
+
+≲ 1
+
+h2 · 1( |r − t|≤ h + ∥r − br∥∞), (7) 34 we have 
+
+Pn
+
+Hht (br) ϵ − m′(t)( A − r) 
+
+= Pn
+
+Hht (r) ϵ − m′(t)( A − r) 
+
++ Pn
+
+Z 10
+
+H′
+
+> ht
+
+(r + u(br − r))( br − r)du · ϵ − m′(t)( A − r)
+
+
+
+= Pn
+
+Hht (r) ϵ − m′(t)( A − r)  + OP
+
+ ∥br − r∥∞
+
+√nh 2 · (h + ∥r − br∥∞)1/2
+
+
+
+(8) Furthermore, we have 
+
+H′
+
+> ht
+
+(br) · (A − br) + Hht (br) = Hht (r) + H′
+
+> ht
+
+(br) · (A − r) + 
+
+Z 10
+
+{H′(r + u(br − r)) − H′
+
+> ht
+
+(br)}(br − r)du 
+
+= Hht (r) + H′
+
+> ht
+
+(r) · (A − r) + 
+
+Z 10
+
+H′′ 
+
+> ht
+
+(r + u(br − r))( br − r)du · (A − r)+
+
+Z 10
+
+{H′(r + u(br − r)) − H′
+
+> ht
+
+(br)}(br − r)du 
+
+=: Hht (r) + H′
+
+> ht
+
+(r) · (A − r) + I1 + I2
+
+we will have 
+
+Pn
+
+
+
+H′
+
+> ht
+
+(r)( A − r) · 12 m′′ (¯ t)( r − t)2
+
+
+
+> 2
+
+= OP
+
+s
+
+P∥H′
+
+> ht
+
+(r)( r − t)2∥22
+
+n
+
+ = OP
+
+r hn
+
+!
+
+.
+
+Since R 10 H′′ 
+
+> ht
+
+(r + u(br − r)) du 2 ≲ 1 
+
+> h3
+
+· 1( |r − t|≤ h + ∥r − br∥∞), 
+
+P∥I1 · (r − t)2∥22 ≲ P
+
+(
+
+(r − br)2
+
+Z 10
+
+H′′ 
+
+> ht
+
+(r + u(br − r)) du 
+
+> 22
+
+· (r − t)4
+
+)
+
+≲ ∥r − br∥2
+
+> ∞
+
+· 1
+
+h6 (h + ∥r − br∥∞)5 ,
+
+we have 
+
+Pn
+
+
+
+I1 · 12 m′′ (¯ t)( r − t)2
+
+
+
+> 2
+
+= OP
+
+r P∥I1 · (r − t)2∥22
+
+n
+
+!
+
+= OP
+
+ ∥r − br∥∞
+
+√nh 3 · (h + ∥r − br∥∞)5/2
+
+
+
+.
+
+And for the term I2 · 12 m′′ (¯ t)( r − t)2,
+
+P
+
+
+
+I2 · 12 m′′ (¯ t)( r − t)2
+
+
+
+> 2
+
+≲ ∥r − br∥∞P
+
+Z 10
+
+H′
+
+> ht
+
+(r + u(br − r)) du − H′
+
+> ht
+
+(br)
+
+
+
+(r − t)2
+
+> 2
+
+≲ ∥r − br∥∞
+
+h2 · (h + ∥r − br∥∞)3.
+
+35 Also 
+
+P I2 · 12 m′′ (¯ t)( r − t)2
+
+> 22
+
+≲ ∥r − br∥2
+
+> ∞
+
+h4 · (h + ∥r − br∥∞)5.
+
+Then we have 
+
+Pn
+
+
+
+I2 · 12 m′′ (¯ t)( r − t)2
+
+
+
+> 2
+
+= OP
+
+ ∥r − br∥∞
+
+√nh 2 · (h + ∥r − br∥∞)5/2 + ∥r − br∥∞
+
+h2 · (h + ∥r − br∥∞)3
+
+
+
+In this light, we have 
+
+Pn
+
+H′
+
+> ht
+
+(br) · (A − br) + Hht (br) · 12 m′′ (t)( r − t)2
+
+
+
+= 12 m′′ (t) · Pn{Hht (r)( r − t)2} + oP(h2)+ OP
+
+r hn + ∥r − br∥∞
+
+√nh 3 · (h + ∥r − br∥∞)5/2 + ∥r − br∥∞
+
+h2 · (h + ∥r − br∥∞)3
+
+!
+
+Because ρ is not necessarily vanishing as h → 0 and n → ∞ , we have an additional leading term in the following expression: 
+
+Pn
+
+ H′
+
+> ht
+
+(br) · (A − br) + Hht (br) · ρ
+
+= Pn
+
+ Hht (r) + H′
+
+> ht
+
+(r) · (A − r) · ρ
+
++ OP
+
+∥br − r∥∞·{ sup t1,t 2 E(ρ2 | br = t1, r = t2, D n)}1/2
+
+√nh 3 · (h + ∥r − br∥∞)1/2
+
+!
+
++ OP
+
+ ∥br − r∥∞sup t1,t 2 |E(ρ | br = t1, r = t2, D n)|
+
+h2 · (h + ∥r − br∥∞)
+
+
+
+Putting everything together, we have that 
+
+Pn{φ1(Z, br) − φ2(Z, br)βht }
+
+= Pn
+
+Hht (r) ϵ − m′(t)( A − r)  + 12 m′′ (t)P{Hht (r)( r − t)2} + oP(h2)+ Pn
+
+ Hht (r) + H′
+
+> ht
+
+(r) · (A − r) · ρ
+
++ OP
+
+ ∥bμ − μ∥∞
+
+√nh 2 · (h + ∥r − br∥∞)1/2 + ∥bμ − μ∥∞∥br − r∥∞
+
+h2 · (h + ∥r − br∥∞)
+
+
+
++ OP
+
+ ∥r − br∥∞
+
+√nh 2 · (h + ∥r − br∥∞)1/2 + ∥br − r∥2
+
+> ∞
+
+h2 · (h + ∥r − br∥∞)
+
+
+
++ OP
+
+r hn + ∥r − br∥∞
+
+√nh 3 · (h + ∥r − br∥∞)5/2 + ∥r − br∥∞
+
+h2 · (h + ∥r − br∥∞)3
+
+!
+
++ OP
+
+∥br − r∥∞·{ sup t1,t 2 E(ρ2 | br = t1, r = t2, D n)}1/2
+
+√nh 3 · (h + ∥r − br∥∞)1/2
+
+!
+
++ OP
+
+ ∥br − r∥∞sup t1,t 2 |E(ρ | br = t1, r = t2, D n)|
+
+h2 · (h + ∥r − br∥∞)
+
+
+
+36 By definition and change of variable, we have 
+
+Pφ2(Z, r ) = PGht (r) = 
+
+Z
+
+Kht (r)ght (r)g⊺
+
+> ht
+
+(r)fr(r)dr 
+
+=
+
+Z
+
+K(u)g(u)g(u)⊺fr(t + hu )du. 
+
+Since fr(·) is Lipschitz continuous, fr(t + hu ) = fr(t) + O(h). Therefore, 
+
+PGht (r) = fr(t)
+
+1 00 R u2K(u) du 
+
+
+
++ O(h).
+
+Since fr(t) is bounded and away from 0, λmin (Pφ2(Z, r )) ≳ 1. Therefore, we have 
+
+bmlbc (t; h) − m(t)= e⊺
+
+> 1
+
+{Pnφ2(Z, br)}−1 · Pn{φ1(Z, br) − φ2(Z, br)βht }
+
+= e⊺
+
+> 1
+
+{Pφ2(Z, r )}−1{Pφ2(Z, r ) − Pnφ2(Z, br)}{ Pnφ2(Z, br)}−1 · Pn{φ1(Z, br) − φ2(Z, br)βht }
+
++ e⊺
+
+> 1
+
+{Pφ2(Z, r )}−1 · Pn{φ1(Z, br) − φ2(Z, br)βht }
+
+= e⊺
+
+> 1
+
+{Pφ2(Z, r )}−1 · Pn{φ1(Z, br) − φ2(Z, br)βht } + oP (Pn{φ1(Z, br) − φ2(Z, br)βht }) ,
+
+where the last equality follows by lemma 2 and the condition nh 3 → ∞ and ∥br − r∥∞= o(h). In addition, we have e⊺
+
+> 1
+
+{Pφ2(Z, r )}−1 = f −1 
+
+> r
+
+(t) 0 + O(h) and 12 m′′ (t)P{Hht (r)( r − t)2} = 12 m′′ (t)fr(t)h2
+
+Z
+
+K(u)g(u)u2du + o(h2),
+
+where fr denotes the density of r(X). Therefore, relying on ∥br − r∥∞= o(h), we have reached 
+
+bmlbc (t; h) − m(t) − 12 m′′ (t)h2
+
+Z
+
+K(u)u2du 
+
+=
+
+ 1
+
+fr(t) Pn
+
+Kht (r){ϵ + ρ − m′(t)( A − r)} + K′
+
+> ht
+
+(r)( A − r)ρ
+
++ oP(h2)+ oP
+
+ ∥Pn
+
+Kht (r){ϵ + ρ − m′(t)( A − r)} + K′
+
+> ht
+
+(r)( A − r)ρ ∥2
+
+
+
++ OP
+
+∥r − br∥∞+∥μ − bμ∥∞
+
+√nh 3 + ∥br − r∥∞·{ sup t1,t 2 E(ρ2 | br = t1, r = t2, D n)}1/2
+
+√nh 5
+
+!
+
++ OP
+
+∥br − r∥∞
+
+sup t1,t 2 |E(ρ | br = t1, r = t2, D n)|+∥r − br∥∞+∥μ − bμ∥∞
+
+h
+
+!
+
+B.2 Proof of Proposition 2 
+
+To enhance clarity in our proof of this proposition, we don’t use the Pn notation and instead use the regular P notation. We will repeatedly rely on the following expansion, 
+
+Y = m(t) + m′(t)( r − t) + 12 m′′ (t)( r − t)2 + ϵ + ρ, (9) 37 for some intermediate value t between r and t. Recall the notation 
+
+Wit (Xn, br; h) = e⊺ 
+
+> 1
+
+· bQ−1 
+
+> ht
+
+· Hht (bri), Hht (br) = Kht (br)ght (br), bQht = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Kht (bri)ght (bri)ght (bri)⊺,W2,it, −j (Xn, br; b) = e⊺ 
+
+> 2
+
+· bQ−1 
+
+> bt, −j
+
+· b−1 · Hbt (bri), bQbt, −j = 1
+
+n − 1
+
+> n
+
+X
+
+> i=1 ,i ̸=j
+
+Kbt (bri)gbt (bri)gbt (bri)⊺
+
+bφ(Zi, Z j ; h, b ) = W2,it, −j (Xn, br; b)Yi · Wjt (Xn, br; h)( Aj − t)
+
+bmlcpi (t; h, b ) = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Wit (Xn, br; h)Yi − 1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+bφ(Zi, Z j ; h, b )By the properties of local-linear weights (see, e.g., Proposition 1.12 in Tsybakov 2008), we have 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Wit (Xn, br; h) = 1 , 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Wit (Xn, br; h)( bri − t) = 0 , 1
+
+n − 1
+
+> n
+
+X
+
+> i=1 ,i ̸=j
+
+W2,it, −j (Xn, br; b) = 0 ,
+
+and 1
+
+n − 1
+
+> n
+
+X
+
+> i=1 ,i ̸=j
+
+W2,it, −j (Xn, br; b)( bri − t) = 1 .
+
+By (9), we have 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Wit (Xn, br; h)Yi = m(t) + m′(t) · 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Wit (Xn, br; h)( ri − t)+ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Wit (Xn, br; h)
+
+ 12 m′′ (ti)( ri − t)2 + ϵi + ρi
+
+
+
+.
+
+Furthermore, we have 1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+bφ(Zi, Z j ; h, b )= 1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+W2,it, −j (Xn, br; b){m(t) + m′(t)( bri − t)} · Wjt (Xn, br; h)( Aj − t)+ 1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+W2,it, −j (Xn, br; b)
+
+
+
+m′(t)( ri − bri) + 12 m′′ (ti)( ri − t)2 + ϵi + ρi
+
+
+
+× Wjt (Xn, br; h)( Aj − t)= m′(t) · 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Wit (Xn, br; h)( Ai − t)+ 1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+W2,it, −j (Xn, br; b)
+
+
+
+m′(t)( ri − bri) + 12 m′′ (ti)( ri − t)2 + ϵi + ρi
+
+
+
+× Wjt (Xn, br; h)( Aj − t)38 In this light, we have 
+
+bmlcpi (t; h, b ) − m(t)= 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Wit (Xn, br; h)
+
+ 12 m′′ (ti)( ri − t)2 + ϵi − m′(t)( Ai − ri) + ρi
+
+
+
+− 1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+W2,it, −j (Xn, br; b)
+
+
+
+m′(t)( ri − bri) + 12 m′′ (ti)( ri − t)2 + ϵi + ρi
+
+
+
+× Wjt (Xn, br; h)( Aj − t) (10) The first term can be analyzed in a way similar to that of the proof of Proposition 1. In particular, 
+
+Wit (Xn, br; h) = e⊺ 
+
+> 1
+
+bQ−1 
+
+> ht
+
+{Hht (br) − Hht (r)} + e⊺ 
+
+> 1
+
+bQ−1 
+
+> ht
+
+(Qht − bQht )Q−1 
+
+> ht
+
+Hht (r) + e⊺
+
+> 1
+
+Q−1 
+
+> ht
+
+Hht (r).
+
+The same arguments as those from Lemma 2, yields that 
+
+λmin ( bQht ) ≥ c − ∥ bQht − Qht ∥F= c − OP
+
+ 1
+
+√nh · (h + ∥r − br∥∞)1/2 + ∥br − r∥∞
+
+h2 · (h + ∥r − br∥∞)
+
+
+
+.
+
+Furthermore, we have already shown in Eq.(8) 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+{Hht (bri) − Hht (ri)}{ ϵi − m′(t)( Ai − ri)} = OP
+
+ ∥br − r∥∞
+
+√nh 2 · (h + ∥r − br∥∞)1/2
+
+
+
+.
+
+Also because Eq.(7), we have 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+{Hht (bri) − Hht (ri)}ρi = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Z 10
+
+H′
+
+> ht
+
+(ri + u(bri − ri))( bri − ri)du · ρi
+
+= OP
+
+
+
+P
+
+
+
+|r − br|·| E(ρ | r, br, D n)|· 
+
+Z 10
+
+H′
+
+> ht
+
+(r + u(br − r)) du 2
+
+ 
+
++ OP
+
+vuut P{(r − br)2E(ρ2 | r, br, D n) R 10 H′
+
+> ht
+
+(r + u(br − r)) du 22}
+
+n
+
+
+
+= OP
+
+ ∥br − r∥∞sup t1,t 2 |E(ρ | br = t1, r = t2, D n)|
+
+h2 · (h + ∥r − br∥∞)+ ∥br − r∥∞∥E(ρ2 | r, br, D n)∥1/2
+
+> ∞
+
+√nh 2 · (h + ∥r − br∥∞)1/2
+
+!
+
+Similarly, 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+{Hht (bri) − Hht (ri)} · 12 m′′ (¯ ti)( ri − t)2 =
+
+OP
+
+ ∥r − br∥∞
+
+h2 · (h + ∥r − br∥∞)3 + ∥r − br∥∞
+
+√nh 2 · (h + ∥r − br∥∞)5/2
+
+
+
+.
+
+39 Under the assumption the density fr is bounded above and away from zero, Qht has eigenvalues bounded above and below away from zero. In addition, since nh → ∞ and ∥br − r∥∞= o(h), we have ∥ bQ−1 
+
+> ht
+
+∥op is bounded with probability tending to one. Further, 
+
+e⊺
+
+> 1
+
+Q−1 
+
+> ht
+
+Hht (r) = {fr(t)−1 + O(h)}Kht (r),
+
+so that 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Wit (Xn, br; h)
+
+
+
+ϵi + ρi − m′(t)( Ai − ri) + 12 m′′ (ti)( ri − t)2
+
+
+
+= 1
+
+fr(t) ·
+
+"
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Kht (ri){ϵi + ρi − m′(t)( Ai − ri)}
+
+#
+
++ 12 m′′ (t)h2
+
+Z
+
+K(u)u2du 
+
++ OP
+
+ ∥br − r∥∞
+
+h ·
+
+ 1
+
+√nh + sup 
+
+> t1,t 2
+
+|E(ρ | br = t1, r = t2, D n)|
+
+ 
+
++ oP
+
+
+
+h2 + 1
+
+√nh 
+
+
+
+.
+
+Our proof is finished after applying Lemma 1 bounding the order of the U -statistic term in Eq. (10). 
+
+Lemma 1. Under the conditions of Proposition 2, it holds that 
+
+1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+W2,it, −j (Xn, br; b)
+
+
+
+m′(t)( ri − bri) + 12 m′′ (¯ ti)( ri − t)2 + ϵi + ρi
+
+
+
+Wjt (Xn, br; h)( Aj − t)= OP
+
+ 1
+
+√n2hb 3 + ∥br − r∥∞+∥E(ρ | br, r, D n)∥∞
+
+b√nh + ∥br − r∥∞
+
+√nb 3 + b
+
+√nh 
+
+
+
++ OP
+
+
+
+b · ∥ br − r∥∞+ ∥br − r∥∞{∥ br − r∥∞+∥E(ρ | br, r, D n)∥∞}
+
+b
+
+
+
+.
+
+Proof. To prove the statement, we break the double sum into two terms according to: 
+
+Wjt (Xn, br; h)( Aj − t) = Wjt (Xn, br; h)( Aj − brj ) + Wjt (Xn, br; h)( brj − t).
+
+We start with the first term, i.e., 1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+W2,it, −j (Xn, br; b)
+
+
+
+m′(t)( ri − bri) + 12 m′′ (¯ ti)( ri − t)2 + ϵi + ρi
+
+
+
+Wjt (Xn, br; h)( Aj − brj )
+
+≡ 1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+Tij 
+
+Under the assumption that Qbt has eigenvalues bounded above and below away from zero, nb → ∞ ,
+
+∥br − r∥∞= o(b), ∥ bQ−1 
+
+> bt, −j
+
+∥op is also bounded, uniformly over j, with probability tending to one: 
+
+bQbt, −j = nn − 1 bQbt − Kbt (brj )gbt (brj )gbt (brj )⊺
+
+(n − 1) =⇒ min  
+
+> j
+
+λmin ( bQbt, −j ) ≳ 1.
+
+40 Therefore, we have 
+
+|W2,it, −j (Xn, br; b)| ≲ b−1∥Hbt (bri)∥2≲ 1
+
+b2 · 1( |bri − t|≤ b) and 
+
+|Wjt (Xn, br; h)| ≲ ∥Hht (brj )∥2≲ 1
+
+h · 1( |brj − t|≤ h).
+
+For shorthand notation let Si = m′(t)( ri − bri) + 12 m′′ (¯ ti)( ri − t)2 + ϵi + ρi, Gj = Aj − brj . Then 
+
+Tij = W2,it, −j (Xn, br; b) · Si · Wjt (Xn, br; h) · Gj . Let also brn denote the vector of random variables 
+
+br(X1), . . . , br(Xn). Since E(ϵi | Xi, D n) = 0 and |ri − bri + 12 m′′ (¯ ti)( ri − t)2| ≲ ∥br − r∥∞+( bri − t)2, we can bound 
+
+|E(Si | brn, D n)| ≲ ∥br − r∥∞+( bri − t)2 + sup 
+
+> t
+
+|E(ρ | br = t, D n)|,
+
+|E(Gj | brn, D n)| ≤ ∥ r − br∥∞,
+
+and 
+
+|E(SiGi | brn, D n)| ≤ 
+
+q
+
+E(S2 
+
+> i
+
+| brn, D n) · E(G2 
+
+> i
+
+| brn, D n) ≲ 1Under the assumption that ∥br − r∥∞= o(b), we have that 
+
+|P T 2
+
+> ij
+
+ | ≤ P W 22,it, −j (Xn, br; b) · E(S2 
+
+> i
+
+| brn, D n) · W 2
+
+> jt
+
+(Xn, br; h) · E(G2 
+
+> j
+
+| brn, D n)
+
+≲ P
+
+
+
+∥Hht (brj )∥22· 1
+
+b2 ∥Hbt (bri)∥22
+
+
+
+≲ 1
+
+b3h ,
+
+|P(Tij Tji )| ≤ P
+
+h
+
+|W2,it, −j (Xn, br; b)|·| Wjt (Xn, br; h)|·| W2,jt, −i(Xn, br; b)|·| Wit (Xn, br; h)|· | E(SiGi | brn, D n)|·| E(Sj Gj | brn, D n)|
+
+i
+
+≲ 1
+
+b2 · max( b2, h 2) ,
+
+|P(Tij Til )| ≤ P
+
+h
+
+|W2,it, −j (Xn, br; b)|·| W2,it, −l(Xn, br; b)|·| Wjt (Xn, br; h)|·| Wlt (Xn, br; h)|· | E(S2 
+
+> i
+
+| brn, D n)|·| E(Gj | brn, D n)|·| E(Gl | brn, D n)|
+
+i
+
+≲ ∥r − br∥2
+
+> ∞
+
+b3 ,
+
+|P(Tij Tli )| ≤ P
+
+h
+
+|W2,it, −j (Xn, br; b)|·| W2,lt, −i(Xn, br; b)|·| Wjt (Xn, br; h)|·| Wlt (Xn, br; h)|· | E(SiGi | brnDn)|·| E(Gj | brn, D n)|·| E(Sl | brn, D n)|
+
+i
+
+≲ (∥br − r∥∞+b2 + sup t|E(ρ | br, D n)|) · ∥ br − r∥∞
+
+b2 · max( b, h ) ,
+
+41 |P(Tij Tlj )| ≤ P
+
+h
+
+|W2,it, −j (Xn, br; b)|·| W2,lt, −j (Xn, br; b)|·| Wjt (Xn, br; h)|2
+
+· | E(Si | brn, D n)|·| E(G2 
+
+> j
+
+| brn, D n)|·| E(Sl | brn, D n)|
+
+i
+
+≲ {∥ br − r∥∞+b2 + sup t|E(ρ | br = t, D n)|} 2
+
+b2h ,
+
+|P(Tij Tjl )| ≤ P
+
+h
+
+|W2,it, −j (Xn, br; b)|·| W2,jt, −l(Xn, br; b)|·| Wjt (Xn, br; h)|·| Wlt (Xn, br; h)|· | E(Si | brn, D n)|·| E(Sj Gj | brn, D n)|·| E(Gl | brn, D n)|
+
+i
+
+≲ (∥br − r∥∞+b2 + ∥E(ρ | br, D n)∥∞) · ∥ br − r∥∞
+
+b2 · max( b, h ) ,
+
+|P(Tij Tlm )| ≤ P
+
+h
+
+|W2,it, −j (Xn, br; b)|·| W2,lt, −m(Xn, br; b)|·| Wjt (Xn, br; h)|·| Wmt (Xn, br; h)|· | E(Si | brn, D n)|·| E(Gj | brn, D n)|·| E(Sl | brn, D n)|·| E(Gm | brn, D n)|
+
+i
+
+≲ (∥br − r∥∞+b2 + sup t|E(ρ | br = t, D n)|)2 · ∥ br − r∥2
+
+> ∞
+
+b2 .
+
+Next, we write 
+
+ X X 
+
+> 1≤i̸=j≤n
+
+Tij 
+
+
+
+> 2
+
+= X X 
+
+> 1≤i̸=j≤n
+
+(T 2 
+
+> ij
+
++ Tij Tji ) + X X X  
+
+> 1≤i̸=j̸=l≤n
+
+(Tij Til + Tij Tli + Tij Tlj + Tij Tjl )+ X X X X   
+
+> 1≤i̸=j̸=l̸=m≤n
+
+Tij Tlm 
+
+and, using the inequalities above, we bound 
+
+E
+
+ 1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+Tij 
+
+
+
+> 2
+
+
+
+> 1/2
+
+≲ 1
+
+√n2hb 3 + ∥br − r∥∞+ sup t|E(ρ | br = t, D n)|
+
+b√nh + ∥br − r∥∞
+
+√nb 3 + b
+
+√nh 
+
++ b · ∥ br − r∥∞+ ∥br − r∥∞(∥br − r∥∞+ sup t|E(ρ | br, D n)|)
+
+b
+
+The result follows since U = OP(pE(U 2)). Finally, consider the second term, i.e., 1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+W2,it, −j (Xn, br; b){m′(t)( ri − bri) + 12 m′′ (¯ ti)( ri − t)2 + ϵi + ρi}Wjt (Xn, br; h)( brj − t).
+
+42 Fix i and write 1
+
+n − 1
+
+> n
+
+X 
+
+> j=1 ,j ̸=i
+
+Wjt (Xn, br; h)( brj − t) = eT 
+
+> 1
+
+bQ−1
+
+> ht
+
+1
+
+n − 1
+
+> n
+
+X 
+
+> j=1 ,j ̸=i
+
+Kht (brj )ght (brj )gTht (brj )
+
+0
+
+h
+
+
+
+= eT 
+
+> 1
+
+bQ−1
+
+> ht
+
+ 1
+
+n − 1 − 1
+
+n
+
+ nX 
+
+> j=1 ,j ̸=i
+
+Kht (brj )ght (brj )gTht (brj )
+
+0
+
+h
+
+
+
+− eT 
+
+> 1
+
+bQ−1
+
+> ht
+
+1
+
+n Kht (bri)ght (bri)gTht (bri)
+
+0
+
+h
+
+
+
++ eT 
+
+> 1
+
+bQ−1
+
+> ht
+
+1
+
+n
+
+> n
+
+X
+
+> j=1
+
+Kht (brj )ght (brj )gTht (brj )
+
+0
+
+h
+
+
+
+The third term is equal to zero, while the first two terms are O(n−1). Let 
+
+bQht, −i = ( n − 1) −1
+
+> n
+
+X 
+
+> j=1 ,j ̸=i
+
+Kht (brj )ght (brj )gTht (brj ).
+
+We have 1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+W2,it, −j (Xn, br; b) · Si · Wjt (Xn, br; h)( brj − t)= 1
+
+n2
+
+> n
+
+X
+
+> i=1
+
+e⊺ 
+
+> 2
+
+bQ−1 
+
+> bt
+
+b−1Hbt (bri) · Si · eT 
+
+> 1
+
+bQ−1 
+
+> ht
+
+bQht, −i
+
+0
+
+h
+
+
+
++ 1
+
+n(n − 1) 2
+
+X X 
+
+> 1≤i̸=j≤n
+
+e⊺ 
+
+> 2
+
+bQ−1
+
+> bt
+
+n
+
+Kbt (brj )gbt (brj )g⊺
+
+> bt
+
+(brj ) − bQbt 
+
+o bQ−1 
+
+> bt, −j
+
+· b−1Hbt (bri) · Si
+
+· Wjt (Xn; br, h )( brj − t)
+
+− 1
+
+n2
+
+> n
+
+X
+
+> i=1
+
+e⊺ 
+
+> 2
+
+bQ−1 
+
+> bt
+
+b−1Hbt (bri) · Si · eT 
+
+> 1
+
+bQ−1 
+
+> ht
+
+Kht (bri)ght (bri)gTht (bri)
+
+0
+
+h
+
+
+
+= OP
+
+ ∥br − r∥∞+∥E(ρ | br, D n)∥∞
+
+nb + 1
+
+n + 1
+
+n√nb 3
+
+
+
+In this light, this term is negligible. 
+
+B.3 Proof of Proposition 3 
+
+We start by proving the first statement. Consider the decompositions: 
+
+μ = m(r) + ρ = ∆ k(br) + Φ k(br)⊺βk + m′(r)( r − br) + ρμ = ∆ k(r) + ρ + Φ k(br)⊺βk + ( A − br) ˙Φk(br)⊺βk + {Φk(r) − Φk(br) − ˙Φk(br)( A − br)}⊺βk,
+
+43 where ∆ k(u) = m(u) − Φk(u)⊺βk and r is an intermediate value between r and br. In this light, we have 
+
+φ1(Z, br, bμ) = ˙Φk(br)( A − br)bμ + Φ k(br)Y
+
+= ˙Φk(br)( A − br)( bμ − μ) + ˙Φk(br)( A − br){∆k(br) + Φ k(br)⊺βk + m′(r)( r − br) + ρ}
+
++ Φ k(br)
+
+n
+
+∆k(r) + Φ k(br)⊺βk + ( A − br) ˙Φk(br)⊺βk + ρ + ϵ
+
+o
+
++ Φ k(br){Φk(r) − Φk(br) − ˙Φk(br)( A − br)}⊺βk
+
+=
+
+h
+
+Φk(br)Φ k(br)⊺ + ( A − br){Φk(br) ˙Φk(br)⊺ + ˙Φk(br)Φ k(br)⊺}
+
+i
+
+βk
+
++ ˙Φk(br)( A − br){(bμ − μ) + ∆ k(br) + m′(r)( r − br) + ρ}
+
++ Φ k(br)
+
+h
+
+∆k(r) + {Φk(r) − Φk(br) − ˙Φk(br)( r − br)}⊺βk − (A − r) ˙Φk(br)⊺βk + ρ + ϵ
+
+i
+
+Therefore, 
+
+Pn(φ1(Z, br, bμ) − φ2(Z, br)βk) = Pn
+
+h
+
+Φk(br)
+
+n
+
+∆k(r) + ϵ − ˙Φk(br)⊺βk(A − r)
+
+oi 
+
++ Pn
+
+hn 
+
+Φk(br) + ˙Φk(br)( A − br)
+
+o
+
+ρ
+
+i
+
++ Pn
+
+h ˙Φk(br)( A − br) (bμ − μ) + ∆ k(br) + m′(r)( r − br)
+
+i
+
++ Pn
+
+
+
+Φk(br)
+
+Z 10
+
+¨Φk(r + u(br − r)) udu 
+
+⊺
+
+βk(br − r)2
+
+
+
+Consider the first term, we have 
+
+Pn
+
+h
+
+Φk(br)
+
+n
+
+∆k(r) + ϵ − ˙Φk(br)⊺βk(A − r)
+
+oi 
+
+= Pn
+
+h
+
+Φk(r)
+
+n
+
+∆k(r) + ϵ − ˙Φk(r)⊺βk(A − r)
+
+oi 
+
+− Pn
+
+
+
+Φk(r)
+
+Z 10
+
+¨Φk(r + u(br − r)) du 
+
+⊺
+
+(br − r)βk(A − r)
+
+
+
++ Pn
+
+Z 10
+
+˙Φk(r + u(br − r)) du (br − r)
+
+n
+
+∆k(r) + ϵ − ˙Φk(br)⊺βk(A − r)
+
+o
+
+.
+
+Similarly, we expand 
+
+Pn
+
+hn 
+
+Φk(br) + ˙Φk(br)( A − br)
+
+o
+
+ρ
+
+i
+
+= Pn
+
+hn 
+
+Φk(r) + ˙Φk(r)( A − r)
+
+o
+
+ρ
+
+i
+
+− Pn
+
+Z 10
+
+¨Φk(r + u(br − r)) udu (br − r)2
+
+
+
+ρ
+
+
+
++ Pn
+
+Z 10
+
+¨Φk(r + u(br − r)) du (br − r)( A − r)ρ
+
+
+
+.
+
+44 Putting everything together, we have reached 
+
+Pn(φ1(Z, br, bμ) − φ2(Z, br)βk)= Pn
+
+h
+
+Φk(r)
+
+n
+
+∆k(r) + ϵ − ˙Φk(r)⊺βk(A − r)
+
+oi 
+
++ Pn
+
+hn 
+
+Φk(r) + ˙Φk(r)( A − r)
+
+o
+
+ρ
+
+i
+
+− Pn
+
+
+
+Φk(r)
+
+Z 10
+
+¨Φk(r + u(br − r)) du 
+
+⊺
+
+(br − r)βk(A − r)
+
+
+
++ Pn
+
+Z 10
+
+˙Φk(r + u(br − r)) du (br − r)
+
+n
+
+∆k(r) + ϵ − ˙Φk(br)⊺βk(A − r)
+
+o
+
+− Pn
+
+Z 10
+
+¨Φk(r + u(br − r)) udu (br − r)2ρ
+
+
+
++ Pn
+
+Z 10
+
+¨Φk(r + u(br − r)) du (br − r)( A − r)ρ
+
+
+
++ Pn
+
+h ˙Φk(br)( A − br) (bμ − μ) + ∆ k(br) + m′(r)( r − br)
+
+i
+
++ Pn
+
+
+
+Φk(br)
+
+Z 10
+
+¨Φk(r + u(br − r)) udu 
+
+⊺
+
+βk(br − r)2
+
+
+
+≡ Pn
+
+h
+
+Φk(r)
+
+n
+
+∆k(r) + ϵ − ˙Φk(r)⊺βk(A − r)
+
+oi 
+
++ Pn
+
+hn 
+
+Φk(r) + ˙Φk(r)( A − r)
+
+o
+
+ρ
+
+i
+
++
+
+> 6
+
+X
+
+> j=1
+
+Rj .
+
+Since ∥P(R1)∥2= 0, and 
+
+Z 10
+
+¨Φk(r + u(br − r)) du ⊺βk ≤ max 
+
+> t
+
+¨Φk(t)⊺βk = ∥m′′ − ¨∆k∥∞≤ ∥ ¨∆k∥∞+∥m′′ ∥∞,
+
+we have 
+
+P∥R1∥22 ≤ 1
+
+n P Φk(r)⊺Φk(r)( r − br)2(r − A)2 (∥ ¨∆k∥∞+∥m′′ ∥∞)2
+
+≲ ξ2
+
+> k
+
+n ∥r − br∥22,P.
+
+Therefore, 
+
+∥R1∥2= OP
+
+ ξk
+
+√n ∥r − br∥2,P
+
+
+
+.
+
+For R2, similarly we can bound ˙Φk(br)⊺βk by 
+
+˙Φk(br)⊺βk ≤ max 
+
+> t
+
+˙Φk(t)⊺βk ≤ ∥ ˙∆k∥∞+∥m′∥∞.
+
+Using lemma 4, we can get 
+
+∥PR2∥2 = P
+
+Z 10
+
+˙Φk(r + u(br − r)) du · (br − r)∆ k(r)
+
+
+
+> 2
+
+≤ ∥ eQ ˙Φ,k (r, br)∥1/2op ∥(r − br)∆ k(r)∥2,P.
+
+45 Also, 
+
+P∥R2 − PR2∥22 ≲ 1
+
+n P∥R2∥22≲ η2
+
+> k
+
+n P
+
+h
+
+(br − r)2 n
+
+∆k(r)2 + ϵ2 + ( ∥ ˙∆k∥∞+∥m′∥∞)2oi 
+
+Thus, 
+
+∥R2∥2= OP
+
+ ηk
+
+√n ∥r − br∥2,P+∥ eQ ˙Φ,k (r, br)∥1/2op ∥(r − br)∆ k(r)∥2,P
+
+
+
+.
+
+For term R3, similarly we have 
+
+∥PR3∥2 = P
+
+Z 10
+
+¨Φk(r + u(br − r)) udu · (br − r)2E(ρ | r, br, D n)
+
+
+
+> 2
+
+≲ ∥ eQ¨Φ,k (r, br)∥1/2op ∥(r − br)2E(ρ | r, br, D n)∥2,P.
+
+And 
+
+P∥R3 − PR3∥22≲ 1
+
+n P∥R3∥22≲ ζ2 
+
+> k
+
+∥(r − br)2∥22,P
+
+n sup 
+
+> t1,t 2
+
+|E(ρ2 | r = t1, br = t2, D n)|.
+
+Then we have 
+
+∥R3∥2 = OP
+
+
+
+∥ eQ¨Φ,k (r, br)∥1/2op ∥(r − br)2E(ρ | r, br, D n)∥2,P
+
++ ζk
+
+√n ∥(r − br)2∥2,P· sup 
+
+> t1,t 2
+
+|E(ρ2 | r = t1, br = t2, D n)1/2
+
+.
+
+Notice that ∥PR4∥2= 0, therefore 
+
+∥R4∥2= OP
+
+r 1
+
+n P∥R4∥22
+
+!
+
+= OP
+
+ ζk
+
+√n ∥r − br∥2,P· sup 
+
+> t1,t 2
+
+|E(ρ2 | r = t1, br = t2, D n)1/2
+
+
+
+Similarly, we can bound R5
+
+∥R5∥2= OP ∥Q ˙Φ,k (br)∥1/2op 
+
+∥(r − ˆr)(ˆ μ − μ)∥2,P+∥(r − ˆr)∆ k(ˆ r)∥2,P+∥(r − ˆr)2∥2,P
+
++ ηk
+
+√n {∥ ˆμ − μ∥2,P+∥∆k(ˆ r)∥2,P+∥r − ˆr∥2,P}
+
+!
+
+,
+
+And by Lemma 3 and the assumptions we have ∥Q ˙Φ,k (br)∥op ≲ ∥Q ˙Φ,k (r)∥op +oP(∥Q ˙Φ,k (r)∥op ). And R6
+
+∥R6∥2= OP
+
+
+
+∥QΦ,k (br)∥1/2op ∥(r − br)2∥2,P+ ξk
+
+√n ∥(r − br)2∥2,P
+
+
+
+,
+
+where ∥QΦ,k (br)∥op ≲ ∥QΦ,k (r)∥op +oP(∥QΦ,k (r)∥op ) under the assumptions and Lemma 3. Because of Lemma 3, under the assumptions, we have ∥Pnφ2(Z, br)−Pφ2(Z, r )∥op = oP(1). Therefore, 46 it holds that 
+
+bβsbc ,k − βk 2 ≲ Pn
+
+h
+
+Φk(r)
+
+n
+
+∆k(r) + ϵ − ˙Φk(r)⊺βk(A − r)
+
+o
+
++
+
+n
+
+Φk(r) + ˙Φk(r)( A − r)
+
+o
+
+ρ
+
+i
+
+> 2
+
++ OP
+
+
+
+> 6
+
+X
+
+> j=1
+
+∥Rj ∥2
+
+
+
+≲ OP
+
+ ξk + ηk
+
+pE{(A − r)2ρ2}√n +
+
+> 6
+
+X
+
+> j=1
+
+∥Rj ∥2
+
+
+
+And for any unit vector α, we have 
+
+α⊺  bβsbc ,k − βk
+
+
+
+= α⊺Q−1Φ,k Pn
+
+h
+
+Φk(r)
+
+n
+
+∆k(r) + ϵ − ˙Φk(r)⊺βk(A − r) + ρ
+
+oi 
+
++ Pn
+
+n ˙Φk(r)( A − r)ρ
+
+o !
+
++ OP
+
+Sn +
+
+> 6
+
+X
+
+> j=1
+
+∥Rj ∥2
+
+ ,
+
+where 
+
+Sn = α⊺ {Pn bφ2(Z, br)}−1 − { Pφ2(Z, r )}−1
+
+·
+
+
+
+Pn
+
+h
+
+Φk(r)
+
+n
+
+∆k(r) + ϵ − ˙Φk(r)⊺βk(A − r) + ρ
+
+oi 
+
++ Pn
+
+n ˙Φk(r)( A − r)ρ
+
+o 
+
+A crude bound on ∥Sn∥2 is thus 
+
+∥Sn∥2≲ ∥Pnφ2(Z, br) − Pφ2(Z, r )∥op ∥Tn∥2,
+
+where 
+
+Tn = Pn
+
+h
+
+Φk(r)
+
+n
+
+∆k(r) + ϵ − ˙Φk(r)⊺βk(A − r) + ρ
+
+o
+
++ ˙Φk(r)( A − r)ρ
+
+i
+
+.
+
+The bound then follows by Lemma 3 and because 
+
+∥Tn∥2= OP
+
+s
+
+ξ2 
+
+> k
+
++ η2
+
+> k
+
+E{(A − r)2ρ2}
+
+n
+
+ .
+
+B.4 Proof of Proposition 4 
+
+Since 
+
+λmin ( bQΦ,k (br)) ≥ c − ∥ bQΦ,k (br) − QΦ,k (r)∥op ,
+
+given lemma 3 and the assumptions, we have 
+
+∥ bQΦ,k (br) − QΦ,k (r)∥op = oP(1) and ∥ bQΦ,q (br) − QΦ,q (r)∥op = oP(1) .
+
+47 Therefore the minimum eigenvalues of bQΦ,k (br) and bQΦ,q (br) are both bounded away from zero with probability tending to 1. We also have min  
+
+> j
+
+λmin ( bQΦ,q, −j ) ≥ nn − 1 λmin ( bQΦ,q ) − 1
+
+n − 1 · max  
+
+> j
+
+∥Φq(brj )Φ q(brj )⊺∥≳ 1as long as ξ2 
+
+> q
+
+= o(n). And, similarly, sup 
+
+> i
+
+∥ bQΦ,k, −i(br)∥op ≤ 1
+
+n − 1 sup 
+
+> i
+
+∥Φk(bri)Φ k(bri)⊺∥op + nn − 1 ∥ bQΦ,k (br)∥op ≲ 1with probability tending to 1 as long as ξ2 
+
+> k
+
+= o(n). Recall that μ = m(r) + ρ and, for shorthand notation, write ∆ k(u) = m(u) − Φk(u)⊺βk and ˙∆q(u) = m′(u) − ˙Φq(u)⊺βq, with βq = E{Φq(r)Φ q(r)⊺}−1E{Φq(r)m}.From the decomposition 
+
+μ = ρ + ∆ k(br) + ˙∆q(br)( A − br) − m′(br)( A − r) + {m′(¯ r) − m′(br)}(r − br) + Φ k(br)⊺βk + ( A − br) ˙Φq(br)⊺βq,
+
+we have 
+
+bQΦ,k (br)
+
+ bβpi ,k − βk
+
+
+
+= Pn
+
+
+
+Φk(br)
+
+h
+
+∆k(br) + ˙∆q(br)( r − br) + ˙Φq(br)⊺βq(r − A) + {m′(¯ r) − m′(br)}(r − br) + ϵ + ρ
+
+i 
+
++ Pn
+
+n
+
+Φk(br)( A − br) ˙Φq(br)⊺βq
+
+o
+
+.
+
+Then by writing Φ k(br) − Φk(r) = R 10 ˙Φk(r + u(br − r)) du · (br − r) and ˙Φq(br) − ˙Φq(r) = R 10 ¨Φq(r +
+
+u(br − r)) du · (br − r), the first term can be expanded as 
+
+Pn
+
+h
+
+Φk(r)
+
+n
+
+∆k(r) + ˙Φq(r)⊺βq(r − A) + ϵ + ρ
+
+oi 
+
++ Pn
+
+
+
+Φk(br)
+
+Z 10
+
+¨Φq(r + u(br − r)) du ⊺βq (br − r)( r − A)
+
+
+
++ Pn
+
+Z 10
+
+˙Φk(r + u(br − r)) du · (br − r)
+
+n
+
+∆k(r) + ˙Φq(r)⊺βq(r − A) + ϵ + ρ
+
+o
+
++ Pn
+
+
+
+Φk(br)
+
+h ˙∆q(br)( r − br) + {m′(¯ r) − m′(br)}(r − br) + ∆ k(br) − ∆k(r)
+
+i 
+
+.
+
+From the decomposition 
+
+μ = ρ + ∆ q(br) + m′(r)( r − br) + Φ q(br)⊺βq,
+
+48 we have 1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+˙Φq(brj )⊺ bQ−1Φ,q, −j (br)Φ q(bri)Yi × bQΦ,k (br)−1Φk(brj )( Aj − brj )= 1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+˙Φq(brj )⊺ bQ−1Φ,q, −j (br)Φ q(bri) ∆q(bri) + m′(ri)( ri − bri) + ρi + ϵi ×
+
+bQΦ,k (br)−1Φk(brj )( Aj − brj )+ bQΦ,k (br)−1Pn
+
+n
+
+Φk(br)( A − br) ˙Φq(br)⊺βq
+
+o
+
+.
+
+Therefore, 
+
+bQΦ,k (br)( bβscpi ,k,q − βk) = Pn
+
+h
+
+Φk(r)
+
+n
+
+∆k(r) + ˙Φq(r)⊺βq(r − A) + ϵ + ρ
+
+oi 
+
++
+
+> 3
+
+X
+
+> i=1
+
+Ri − 1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+Tij ,
+
+where 
+
+R1 ≡ Pn
+
+
+
+Φk(br)
+
+Z 10
+
+¨Φq(r + u(br − r)) du ⊺βq (br − r)( r − A)
+
+
+
+,R2 ≡ Pn
+
+Z 10
+
+˙Φk(r + u(br − r)) du · (br − r)
+
+n
+
+∆k(r) + ˙Φq(r)⊺βq(r − A) + ϵ + ρ
+
+o
+
+,R3 ≡ Pn
+
+
+
+Φk(br)
+
+h ˙∆q(br)( r − br) + {m′(¯ r) − m′(br)}(r − br) + ∆ k(br) − ∆k(r)
+
+i 
+
+,Tij ≡ ˙Φq(brj )⊺ bQ−1Φ,q, −j (br)Φ q(bri) ∆q(bri) + m′(ri)( ri − bri) + ρi + ϵi Φk(brj )( Aj − brj ).
+
+Since ∥P(R1)∥2= 0, and 
+
+Z 10
+
+¨Φq(r + u(br − r)) du ⊺βq ≤ max 
+
+> t
+
+¨Φq(t)⊺βq = ∥m′′ − ¨∆q∥∞≤ ∥ ¨∆q∥∞+∥m′′ ∥∞,
+
+we have 
+
+P∥R1∥22 ≤ 1
+
+n P Φk(br)⊺Φk(br)( r − br)2(r − A)2 (∥ ¨∆q∥∞+∥m′′ ∥∞)2
+
+≲ ξ2
+
+> k
+
+n ∥r − br∥22,P.
+
+Therefore, 
+
+∥R1∥2= OP
+
+ ξk
+
+√n ∥r − br∥2,P
+
+
+
+.
+
+For R2, similarly we can bound ˙Φq(r)⊺βq by 
+
+˙Φq(r)⊺βq ≤ max 
+
+> r
+
+˙Φq(r)⊺βq ≤ ∥ ˙∆q∥∞+∥m′∥∞.
+
+49 Using lemma 4, we can get 
+
+∥PR2∥2 = P
+
+Z 10
+
+˙Φk(r + u(br − r)) du · (br − r) {∆k(r) + E(ρ|r, br, D n)}
+
+
+
+> 2
+
+≤ ∥ eQ ˙Φ,k (r, br)∥1/2op ∥(r − br){∆k(r) + E(ρ | r, br, D n)}∥ 2,P.
+
+Also, 
+
+P∥R2 − PR2∥22 ≲ 1
+
+n P∥R2∥22≲ η2
+
+> k
+
+n P
+
+h
+
+(br − r)2 n
+
+∆k(r)2 + ϵ2 + ρ2 + ( ∥ ˙∆q∥∞+∥m′∥∞)2oi 
+
+Thus, 
+
+∥R2∥2= OP
+
+ ηk
+
+√n ∥r − br∥2,P+∥ eQ ˙Φ,k (r, br)∥1/2op ∥(r − br) {∆k(r) + E(ρ|r, br, D n)} ∥ 2,P
+
+
+
+For R3, we have that |∆k(br) − ∆k(r)|≤ ∥ ˙∆k∥∞|r − br| and |m′(¯ r) − m′(br)|≤ ∥ m′′ ∥∞|r − br|. Applying Lemma 4, we can show that 
+
+∥PR3∥2 ≤ P
+
+h
+
+Φk(br)( br − r) ˙∆q(br) + Φ k(br)( r − br)2 + Φ k(br)|r − br|∥ ˙∆k∥∞
+
+i
+
+> 2
+
+≲ ∥QΦ,k (br)∥1/2op 
+
+n
+
+∥(r − br) ˙∆q(br)∥2,P+∥(r − br)2∥2,P+∥r − br∥2,P∥ ˙∆k∥∞
+
+o
+
+And 
+
+P∥R3 − PR3∥22 ≲ ξ2
+
+> k
+
+n P
+
+h
+
+(r − br)2 n
+
+∥ ˙∆k∥2
+
+> ∞
+
++ ˙∆q(br)2 + ( r − br)2oi 
+
+.
+
+Therefore, 
+
+∥R3∥2 = OP
+
+ 
+
+∥QΦ,k (br)∥1/2op + ξk
+
+√n
+
+ n
+
+∥(r − br) ˙∆q(br)∥2,P+∥ ˙∆k∥∞∥r − br∥2,P+∥(r − br)2∥2,P
+
+o
+
+.
+
+Using the notation brn = br(X1), . . . , br(Xn), we expand Tij as: 1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+Tij = 1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+Uij + 1
+
+n
+
+> n
+
+X
+
+> j=1
+
+Vj + 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Wi + U , 
+
+where 
+
+Uij = Tij − E(Tij | Aj , brn, D n) − E(Tij | Ai, ϵ i, X i, brn, D n) + E(Tij | brn, D n),Vj = 1
+
+n − 1
+
+> n
+
+X
+
+> i̸=j
+
+{E(Tij | Aj , brn, D n) − E(Tij | brn, D n)} ,Wi = 1
+
+n − 1
+
+> n
+
+X 
+
+> j̸=i
+
+{E(Tij | Ai, X i, ϵ i, brn, D n) − E(Tij | brn, D n)} ,U = 1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+E(Tij | brn, D n).
+
+50 By the law of total expectation, all three terms are mean 0 
+
+E(Uij | brn, D n) = E(Vj | brn, D n) = E(Wi | brn, D n) = 0 .
+
+Note that, 
+
+E(Uij | Aj , brn, D n) = E(Tij | Aj , brn, D n) − E(Tij | Aj , brn, D n)
+
+− E {E(Tij | Ai, X i, ϵ i, brn, D n) | Aj , brn, D n} + E(Tij | brn, D n)= 0 .
+
+And similarly E(Uij | Ai, X i, ϵ i, brn, D n) = 0. By construction, Uij are uncorrelated with Vj and Wi.And for k̸ = j,
+
+E(U ⊺ 
+
+> ij
+
+Uik | brn, D n) = E {E(Uij | Ai, X i, ϵ i, brn, D n)⊺E(Uik | Ai, X i, ϵ i, brn, D n) | brn, D n} = 0 Following the same reasoning, E(U ⊺ 
+
+> ij
+
+Ukj | brn, D n) = 0 for i̸ = k. Therefore, 
+
+E
+
+
+
+1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+Tij 
+
+> 22
+
+| brn, D n
+
+
+
+= E
+
+
+
+1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+Uij + 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+(Vi + Wi) + U
+
+> 22
+
+| brn, D n
+
+
+
+= E
+
+
+
+1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+Uij 
+
+> 22
+
+| brn, D n
+
+ + E
+
+
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+(Vi + Wi)
+
+> 22
+
+| brn, D n
+
+ + ∥U ∥22
+
+= 1
+
+n2(n − 1) 2
+
+X X 
+
+> 1≤i̸=j≤n
+
+E(∥Uij ∥22+U ⊺ 
+
+> ij
+
+Uji | brn, D n) + 1
+
+n2
+
+> n
+
+X
+
+> i=1
+
+E(∥Vi + Wi∥22| brn, D n) + ∥U ∥22
+
+Taking the expectation with respect to brn given Dn, we have 
+
+E
+
+
+
+1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+Tij 
+
+> 22
+
+| Dn
+
+
+
+= 1
+
+n(n − 1) E(∥Uij ∥22+U ⊺ 
+
+> ij
+
+Uji | Dn) + 1
+
+n E(∥Vi + Wi∥22| Dn) + E(∥U ∥22| Dn).
+
+Let si = ∆ q(bri) + E {m′(¯ ri)( ri − bri) | bri, D n} + E(ρi|bri, D n) and 
+
+B−j,n = bQ−1Φ,q, −j
+
+1
+
+n − 1
+
+> n
+
+X
+
+> i=1 ,i ̸=j
+
+Φq(bri)si.
+
+We have 
+
+U = 1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+E(Tij | brn, D n) = 1
+
+n
+
+> n
+
+X
+
+> j=1
+
+Φk(brj )E(rj − brj | brj , D n) ˙Φq(brj )⊺B−j,n 
+
+51 Notice that 
+
+B⊺ 
+
+> −j,n
+
+bQΦ,q, −j B−j,n = 1
+
+n − 1
+
+> n
+
+X
+
+> i=1 ,i ̸=j
+
+{Φq(bri)⊺B−j,n }2 ≤ 1
+
+n − 1
+
+> n
+
+X
+
+> i=1 ,i ̸=j
+
+s2 
+
+> i
+
+,
+
+so that on the event that min j λmin ( bQΦ,q, −j ) ≳ 1, we have 
+
+∥B−j,n ∥22 ≲ 1
+
+n − 1
+
+> n
+
+X
+
+> i=1 ,i ̸=j
+
+s2 
+
+> i
+
+=⇒ max 
+
+> 1≤j≤n
+
+∥B−j,n ∥22 ≤ nn − 1 Pns2 ≲ Pns2.
+
+Furthermore, 
+
+∥U ∥22 ≲ ∥ bQΦ,k (br)∥op 
+
+1
+
+n
+
+> n
+
+X
+
+> j=1
+
+{E(rj − brj | brj , D n)}2B⊺ 
+
+> −j,n
+
+˙Φq(brj ) ˙Φq(brj )⊺B−j,n 
+
+This then yields 
+
+E(∥U ∥22| Dn)
+
+≲ min 
+
+n
+
+∥br − r∥2
+
+> ∞
+
+∥Q ˙Φ,q (br)∥op , ∥br − r∥22,Pη2
+
+> q
+
+o
+
+· ∥ QΦ,k (br)∥op ·{∥ ∆q(br)∥22,P+∥br − r∥22,P+∥E(ρ | br, D n)∥22,P}.
+
+Similarly, we have 
+
+Vj = Φ k(brj ) · { (Aj − brj ) − E(rj − brj | brj , D n)} · ˙Φq(brj )⊺B−j,n 
+
+so that 
+
+E(∥Vj ∥22| brn 
+
+> −j
+
+, D n) ≲ ξ2 
+
+> k
+
+· ∥ Q ˙Φ,q (br)∥op ·∥ B−j,n ∥22
+
+and 
+
+E(∥Vj ∥2| Dn) ≲ ξ2 
+
+> k
+
+· ∥ Q ˙Φ,q (br)∥op ·{∥ ∆q(br)∥22,P+∥br − r∥22,P+∥E(ρ | br, D n)∥22,P}.
+
+Next, letting wi = ∆ q(bri) + m′(ri)( ri − bri) + ρi + ϵi and wi = wi − E(wi | brn, D n), we have 
+
+Wi = 1
+
+n − 1
+
+> n
+
+X 
+
+> j=1 ,j ̸=i
+
+E(rj − brj | brj , D n)Φ k(brj ) ˙Φq(brj )⊺ bQ−1Φ,q, −j (br)Φ q(bri)wi.
+
+Notice that, for any fj , we have, on the event that ∥ bQΦ,k, −i(br)∥op ≲ 1, 
+
+1
+
+n − 1
+
+> n
+
+X 
+
+> j=1 ,j ̸=i
+
+Φk(brj )fj
+
+> 22
+
+≤ ∥ bQΦ,k, −i(br)∥op 
+
+1
+
+n − 1
+
+> n
+
+X 
+
+> j=1 ,j ̸=i
+
+f 2 
+
+> j
+
+≲ 1
+
+n − 1
+
+> n
+
+X 
+
+> j=1 ,j ̸=i
+
+f 2 
+
+> j
+
+.
+
+Applying the inequality above with fj = E(rj − brj | brj , D n) ˙Φq(brj )⊺ bQ−1Φ,q, −j (br)Φ q(bri)wi, we have 
+
+∥Wi∥22≲ w2 
+
+> i
+
+· Φq(bri)⊺
+
+ 1
+
+n − 1
+
+> n
+
+X 
+
+> j=1 ,j ̸=i
+
+h
+
+{E(rj − brj | brj , D n)}2 bQ−1Φ,q, −j (br) ˙Φq(brj ) ˙Φq(brj )⊺ bQ−1Φ,q, −j (br)
+
+i Φq(bri).
+
+52 Therefore, on the even that min j λmin ( bQΦ,q, −j ) ≳ 1, 
+
+E(∥Wi∥22| Dn) ≲ ξ2 
+
+> q
+
+· min 
+
+n
+
+∥Q ˙Φ,q (br)∥op ∥br − r∥2
+
+> ∞
+
+, η 2 
+
+> q
+
+∥br − r∥22,P
+
+o
+
+.
+
+Finally, conditioning on the event that min j λmin ( bQΦ,q, −j ) ≳ 1, 
+
+E(∥Uij ∥22+U ⊺ 
+
+> ij
+
+Uji | Dn) ≲ E(∥Uij ∥22+∥Uji ∥22| Dn)
+
+≲ E(∥Tij ∥22+∥Tji ∥22| Dn)
+
+≲ E
+
+
+
+ξ2
+
+> k
+
+n
+
+> n
+
+X
+
+> j=1
+
+˙Φq(brj )⊺ bQ−1Φ,q, −j ˙Φq(brj ) | Dn
+
+
+
+≲ ξ2 
+
+> k
+
+· η2 
+
+> q
+
+.
+
+By Assumption 4 and Lemma 3, we have ∥QΦ,k (br)∥op = ∥QΦ,k (r)∥op +oP(1), ∥QΦ,q (br)∥op = ∥QΦ,q (r)∥op +oP(1) and ∥Q ˙Φ,q (br)∥op = ∥Q ˙Φ,q (r)∥op +oP(∥Q ˙Φ,q (r)∥op ).
+
+Putting everything together, and invoking Lemma 3 for the second term below, we have reached 
+
+bβscpi ,k,q − βk = QΦ,k (r)−1Pn
+
+h
+
+Φk(r)
+
+n
+
+∆k(r) + ˙Φq(r)⊺βq(r − A) + ϵ + ρ
+
+oi 
+
++ { bQ−1Φ,k (br) − QΦ,k (r)−1}Pn
+
+h
+
+Φk(r)
+
+n
+
+∆k(r) + ˙Φq(r)⊺βq(r − A) + ϵ + ρ
+
+oi 
+
++ bQΦ,k (br)−1
+
+
+
+> 3
+
+X
+
+> i=1
+
+Ri − 1
+
+n(n − 1) 
+
+X X 
+
+> 1≤i̸=j≤n
+
+Tij 
+
+
+
+= QΦ,k (r)−1Pn
+
+h
+
+Φk(r)
+
+n
+
+∆k(r) + ˙Φq(r)⊺βq(r − A) + ϵ + ρ
+
+oi 
+
++ OP
+
+ ξk
+
+√n ·
+
+s
+
+ξ2 
+
+> k
+
+· log kn + ∥br − r∥∞∥ eQ ˙Φ,k (r, br)∥1/2op 
+
+
+
++ OP
+
+ξk
+
+√n ∥r − br∥2,P
+
++ ηk
+
+√n ∥r − br∥2,P+∥ eQ ˙Φ,k (r, br)∥1/2op ∥(r − br) {∆k(r) + E(ρ|r, br, D n)} ∥ 2,P
+
++
+
+
+
+1 + ξk
+
+√n
+
+ n
+
+∥(r − br) ˙∆q(br)∥2,P+∥ ˙∆k∥∞∥r − br∥2,P+∥(r − br)2∥2,P
+
+o
+
++ ξkηq
+
+n + ξk
+
+√n · ∥ Q ˙Φ,q (br)∥1/2op ·{∥ ∆q(br)∥2,P+∥br − r∥2,P+∥E(ρ | br, D n)∥2,P}
+
++ ξq
+
+√n · min 
+
+n
+
+∥Q ˙Φ,q (br)∥1/2op ∥br − r∥∞, η q∥br − r∥2,P
+
+o
+
++ min 
+
+n
+
+∥br − r∥∞∥Q ˙Φ,q (br)∥1/2op , ∥br − r∥2,Pηq
+
+o
+
+· {∥ ∆q(br)∥2,P+∥br − r∥2,P+∥E(ρ | br, D n)∥2,P}
+
+
+
+53 C Supporting Lemmas 
+
+Lemma 2. Let λmin (M ) denote the smallest eigenvalue of a symmetric matrix M . Suppose that 
+
+λmin (E{Kht (r)ght (r)ght (r)⊺}) ≥ c, for some constant c > 0. Then, 
+
+∥Pnφ2(Z, br) − Pφ2(Z, r )∥op = OP
+
+ 1
+
+√nh 2 · (h + ∥r − br∥∞)1/2 + ∥br − r∥2
+
+> ∞
+
+h3 · (h + ∥r − br∥∞)
+
+
+
+, and 
+
+λmin {Pnφ2(Z, br)} ≥ c − OP
+
+ 1
+
+√nh 2 · (h + ∥r − br∥∞)1/2 + ∥br − r∥2
+
+> ∞
+
+h3 · (h + ∥r − br∥∞)
+
+
+
+.
+
+Proof. For any matrices M and cM , we have 
+
+λmin ( cM ) ≥ λmin (M ) − ∥ cM − M ∥op ≥ λmin (M ) − ∥ cM − M ∥F
+
+where ∥M ∥2F= P 
+
+> j,l
+
+M 2 
+
+> jl
+
+denotes (the square of) the Frobenius norm. Thus, it is sufficient to bound 
+
+∥Pnφ2(Z, br) − Pφ2(Z, r )∥F= ∥(Pn − P)φ2(Z, br) + P{φ2(Z, br) − φ2(Z, r )}∥ F.
+
+By direct calculation, we have 
+
+G′
+
+> ht
+
+(s) = K′
+
+> ht
+
+(s)
+
+ 1 s−ths−th
+
+  s−th
+
+2
+
+
+
++ Kht (s) · 1
+
+h
+
+0 11 2( s−t)
+
+> h
+
+
+
+,
+
+and 
+
+G′′ 
+
+> ht
+
+(s) = K′′ 
+
+> ht
+
+(s)
+
+ 1 s−ths−th
+
+  s−th
+
+2
+
+
+
++ 2 · K′
+
+> ht
+
+(s) · 1
+
+h
+
+0 11 2( s−t)
+
+> h
+
+
+
++ Kht (s) ·
+
+0 00 2
+
+> h2
+
+
+
+.
+
+So component-wise, we have G′
+
+> ht
+
+(s) ≲ h−2 · 1( |s − t|≤ h) and G′′ 
+
+> ht
+
+(s) ≲ 1 
+
+> h3
+
+· 1( |s − t|≤ h). We have 
+
+P{φ2(Z, br) − φ2(Z, r )} = P G′
+
+> ht
+
+(br)( r − br) + Ght (br) − Ght (r)
+
+= −P
+
+Z 10
+
+G′′ (r + u(br − r))( r − br)2udu 
+
+
+
+= OP
+
+ ∥br − r∥2
+
+> ∞
+
+h3 · (h + ∥r − br∥∞)
+
+
+
+,
+
+where the OP(·) statement holds component-wise. Similarly, we have 
+
+E(∥(Pn − P)φ2(Z, br)∥2F| Dn) ≤ P(∥φ2(Z, br)∥2F)
+
+n ≲ E ∥G′
+
+> ht
+
+(br)∥2F| Dn
+
+n
+
+Thus, we have reached that 
+
+∥Pnφ2(Z, br) − Pφ2(Z, r )∥F= OP
+
+ 1
+
+√nh 2 · (h + ∥r − br∥∞)1/2 + ∥br − r∥2
+
+> ∞
+
+h3 · (h + ∥r − br∥∞)
+
+
+
+.
+
+and the two statements of the lemma follow. 54 Lemma 3. Suppose sup t∥Φk(t)∥2≲ ξk, sup t∥ ˙Φk(t)∥2≲ ηk and sup t∥ ¨Φk(t)∥2≲ ζk. Then, it holds that: (1) ∥QΦ,k (br) − QΦ,k (r)∥op = OP
+
+
+
+∥ eQ ˙Φ,k (r, br)∥1/2op · min 
+
+n
+
+∥r − br∥∞∥QΦ,k (r)∥1/2op , ξ k∥r − br∥2,P
+
+o
+
++ min 
+
+n
+
+∥r − br∥2
+
+> ∞
+
+∥ eQ ˙Φ,k (r, br)∥op , η 2
+
+> k
+
+∥r − br∥22,P
+
+o  
+
+,
+
+(2) ∥Q ˙Φ,k (br) − Q ˙Φ,k (r)∥op = OP
+
+
+
+∥ eQ¨Φ,k (r, br)∥1/2op · min 
+
+n
+
+∥r − br∥∞∥Q ˙Φ,k (r)∥1/2op , η k∥r − br∥2,P
+
+o
+
++ min 
+
+n
+
+∥r − br∥2
+
+> ∞
+
+∥ eQ¨Φ,k (r, br)∥op , ζ 2 
+
+> k
+
+∥r − br∥22,P
+
+o  
+
+,
+
+(3) ∥ bQΦ,k (br) − QΦ,k (r)∥op = OP
+
+ξ2 
+
+> k
+
+log kn +
+
+s
+
+ξ2 
+
+> k
+
+· ∥ QΦ,k (br)∥op · log kn
+
++ ∥br − r∥∞∥ eQ ˙Φ,k (r, br)∥1/2op +∥br − r∥2
+
+> ∞
+
+∥ eQ ˙Φ,k (r, br)∥op 
+
+!
+
+,
+
+(4) ∥Pnφ2(Z, br) − Pφ2(Z, r )∥op = OP
+
+(ξkηk + ξ2 
+
+> k
+
+) log kn +
+
+s
+
+ξ2 
+
+> k
+
+∥QΦ,k (br)∥op log kn
+
++
+
+s
+
+(η2
+
+> k
+
+∥QΦ,k (br)∥op +ξ2 
+
+> k
+
+∥Q ˙Φ,k (br)∥op ) log kn
+
++ min 
+
+(
+
+∥br − r∥2
+
+> ∞
+
+
+
+∥ eQ ˙Φ,k (r, br)∥op +∥ eQΦ,k (r, br)∥1/2op ∥ eQ¨Φ,k (r, br)∥1/2op 
+
+
+
+,
+
+∥r − br∥22,P(η2 
+
+> k
+
++ ξkζk)
+
+)! 
+
+.
+
+where 
+
+φ2(Z, r ) = 
+
+n ˙Φk(r)Φ k(r)⊺ + Φ k(r) ˙Φk(r)⊺o
+
+(A − r) + Φ k(r)Φ k(r)⊺,
+
+eQΦ,k (r, br) = P
+
+Z 10
+
+Φk(r + u(br − r))Φ ⊺
+
+> k
+
+(r + u(br − r)) du 
+
+
+
+.
+
+eQ ˙Φ,k (r, br) = P
+
+Z 10
+
+˙Φk(r + u(br − r)) ˙Φ⊺
+
+> k
+
+(r + u(br − r)) du 
+
+
+
+, and 
+
+eQ¨Φ,k (r, br) = P
+
+Z 10
+
+¨Φk(r + u(br − r)) ¨Φ⊺
+
+> k
+
+(r + u(br − r)) du 
+
+
+
+.
+
+Proof. First, we notice that, for any v and su = r + u(br − r), we have 
+
+Z 10
+
+{v⊺Φk(su)}2 du ≥
+
+Z 10
+
+v⊺Φk(su)du 
+
+2
+
+=⇒ ∥ eQΦ,k (r, br)∥op ≥ P
+
+Z 10
+
+Φk(su)du 
+
+Z 10
+
+Φk(su)⊺du 
+
+
+
+> op
+
+.
+
+55 By lemma 4 and the inequality above, we have 
+
+P
+
+Z 10
+
+˙Φk(br + u(r − br)) du 
+
+
+
+Φk(r)⊺(br − r)
+
+
+
+> op
+
+= sup 
+
+> v:∥v∥2=1
+
+P
+
+Z 10
+
+˙Φk(br + u(r − br)) du 
+
+
+
+Φk(r)⊺(br − r)v
+
+
+
+> 2
+
+≲ sup 
+
+> v:∥v∥2=1
+
+∥ eQ ˙Φ,k (r, br)∥1/2op 
+
+pP{(r − br)2v⊺Φk(r)Φ k(r)⊺v}
+
+≲∥ eQ ˙Φ,k (r, br)∥1/2op · min 
+
+n
+
+∥r − br∥∞∥QΦ,k (r)∥1/2op , ξ k∥r − br∥2,P
+
+o
+
+.
+
+Then by the expansion of Φ k(br), we have that 
+
+∥QΦ,k (br) − QΦ,k (r)∥op ≤ 2 P
+
+Z 10
+
+˙Φk(br + u(r − br)) du 
+
+
+
+Φk(r)⊺(br − r)
+
+
+
+> op
+
++ min 
+
+n
+
+∥r − br∥2
+
+> ∞
+
+∥ eQ ˙Φ,k (r, br)∥op , η 2
+
+> k
+
+∥r − br∥22,P
+
+o
+
+≲ ∥ eQ ˙Φ,k (r, br)∥1/2op · min 
+
+n
+
+∥r − br∥∞∥QΦ,k (r)∥1/2op , ξ k∥r − br∥2,P
+
+o
+
++ min 
+
+n
+
+∥r − br∥2
+
+> ∞
+
+∥ eQ ˙Φ,k (r, br)∥op , η 2
+
+> k
+
+∥r − br∥22,P
+
+o
+
+.
+
+Similarly, we can show the second statements 
+
+∥Q ˙Φ,k (br) − Q ˙Φ,k (r)∥op = OP
+
+
+
+∥ eQ¨Φ,k (r, br)∥1/2op · min 
+
+n
+
+∥r − br∥∞∥Q ˙Φ,k (r)∥1/2op , η k∥r − br∥2,P
+
+o
+
++ min 
+
+n
+
+∥r − br∥2
+
+> ∞
+
+∥ eQ¨Φ,k (r, br)∥op , ζ 2 
+
+> k
+
+∥r − br∥22,P
+
+o  
+
+Using Lemma 6.2 in Belloni et al. 2015, we obtain 
+
+∥ bQΦ,k (br) − QΦ,k (br)∥op = OP
+
+ ξ2 
+
+> k
+
+log kn +
+
+s
+
+ξ2 
+
+> k
+
+∥QΦ,k (br)∥op log kn
+
+
+
+Then, combine the above together, we get the third statement. For the fourth statement, notice that 
+
+∥Pnφ2(Z, br) − Pφ2(Z, r )∥op 
+
+≤ ∥ (Pn − P)Φ k(br)Φ k(br)⊺∥op + (Pn−P)
+
+h
+
+{ ˙Φk(br)Φ k(br)⊺ + Φ k(br) ˙Φk(br)⊺}(A − br)
+
+i
+
+> op
+
++ ∥P{φ2(Z, br) − φ2(Z, r )}∥ op .
+
+The first term is just ∥ bQΦ,k (br) − QΦ,k (br)∥op . To bound the second term, we rely on Bernstein inequality for matrices (Theorem 5.4.1 in Vershynin 2026). We have 
+
+n ˙Φk(br)Φ k(br)⊺ + Φ k(br) ˙Φk(br)⊺o
+
+(A − br) op ≲ ∥ ˙Φk(br)∥2∥Φk(br)∥2 ≲ ξk · ηk.
+
+56 and 
+
+n ˙Φk(br)Φ k(br)⊺ + Φ k(br) ˙Φk(br)⊺o2
+
+= ∥ ˙Φk(br)∥22·Φk(br)Φ k(br)⊺ + ∥Φk(br)∥22· ˙Φk(br) ˙Φk(br)⊺ + { ˙Φk(br)⊺Φk(br)}{ Φk(br) ˙Φk(br)⊺ + ˙Φk(br)Φ k(br)⊺}.
+
+Notice that, for any v ∈ Rk, we have 
+
+v⊺{ ˙Φk(br)⊺Φk(br)}{ Φk(br) ˙Φk(br)⊺ + ˙Φk(br)Φ k(br)⊺}v
+
+= 2 { ˙Φk(br)⊺Φk(br)}{ v⊺Φk(br)}{ v⊺ ˙Φk(br)}≤ 2∥ ˙Φk(br)∥2∥Φk(br)∥2·| v⊺Φk(br)|·| v⊺ ˙Φk(br)|≤ ∥ ˙Φk(br)∥22{v⊺Φk(br)}2 + ∥Φk(br)∥22{v⊺ ˙Φk(br)}2
+
+= v⊺ n
+
+∥ ˙Φk(br)∥22·Φk(br)Φ k(br)⊺ + ∥Φk(br)∥22· ˙Φk(br) ˙Φk(br)⊺o
+
+v
+
+so that 
+
+P
+
+n ˙Φk(br)Φ k(br)⊺ + Φ k(br) ˙Φk(br)⊺o2
+
+> op
+
+≲ P
+
+n
+
+∥ ˙Φk(br)∥22·Φk(br)Φ k(br)⊺ + ∥Φk(br)∥22· ˙Φk(br) ˙Φk(br)⊺o
+
+> op
+
+≲ η2 
+
+> k
+
+· ∥ P {Φk(br)Φ k(br)⊺}∥ op + ξ2 
+
+> k
+
+· P
+
+n ˙Φk(br) ˙Φk(br)⊺o
+
+> op
+
+Thus, we have reached 
+
+(Pn − P)
+
+h
+
+{ ˙Φk(br)Φ k(br)⊺ + Φ k(br) ˙Φk(br)⊺}(A − br)
+
+i
+
+> op
+
+= OP
+
+
+
+ξk · ηk · log kn +
+
+vuuut
+
+η2 
+
+> k
+
+· ∥ QΦ,k (br)∥op + ξ2 
+
+> k
+
+· Q ˙Φ,k (br) op 
+
+
+
+log kn
+
+ .
+
+Finally, we have 
+
+∥P{φ2(Z, br) − φ2(Z, r )}∥ op = −E
+
+Z 10
+
+∂2
+
+∂s 2 Φk(s)Φ ⊺
+
+> k
+
+(s) s=r+u(br−r)udu · (br − r)2 | Dn
+
+
+
+> op
+
+We have 
+
+∂2
+
+∂s 2 Φk(s)Φ ⊺
+
+> k
+
+(s) = 2 ˙Φk(s) ˙Φk(s)⊺ + Φ k(s) ¨Φk(s)⊺ + ¨Φk(s)Φ k(s)⊺
+
+57 yielding that 
+
+∥P{φ2(Z, br) − φ2(Z, r )}∥ op ≤ 2∥br − r∥2
+
+> ∞
+
+· E
+
+Z 10
+
+˙Φk(su) ˙Φ⊺
+
+> k
+
+(su)udu | Dn
+
+
+
+> op
+
++ 2 ∥br − r∥2 
+
+> ∞
+
+E
+
+Z 10
+
+¨Φk(su) ¨Φ⊺
+
+> k
+
+(su)udu | Dn
+
+ 1/2op 
+
+× E
+
+Z 10
+
+Φk(su)Φ ⊺
+
+> k
+
+(su)udu | Dn
+
+ 1/2op 
+
+where su = r + u(br − r). Another bound also holds: 
+
+∥P{φ2(Z, br) − φ2(Z, r )}∥ op ≤ 2∥br − r∥22,P·(η2 
+
+> k
+
++ ξkζk)
+
+Lemma 4. Let ψ be a random vector and assume that Qψ = P(ψψ ⊺) is positive definite. For any function f , define the projection operator onto the space spanned by ψ:
+
+Πψ(f ) = ψ⊺Q−1 
+
+> ψ
+
+P(ψf ).
+
+Then it holds that 
+
+∥P(ψf )∥2≤ ∥ Qψ∥1/2op ∥f ∥2,P
+
+Proof. By inserting Q1/2 
+
+> ψ
+
+Q−1/2 
+
+> ψ
+
+and applying the operator norm bound, we have: 
+
+∥P(ψf )∥2 = ∥Q1/2 
+
+> ψ
+
+Q−1/2 
+
+> ψ
+
+P(ψf )∥2
+
+≤ ∥ Qψ∥1/2op ·∥ Q−1/2 
+
+> ψ
+
+P(ψf )∥2
+
+= ∥Qψ∥1/2op ·
+
+q
+
+P(f ψ ⊺)Q−1 
+
+> ψ
+
+P(ψf )= ∥Qψ∥1/2op ·
+
+q
+
+P[{Πψ(f )}2]
+
+≤ ∥ Qψ∥1/2op ·∥ f ∥2,P.
+
+The last inequality is because 
+
+P[ψ{f − Πψ(f )}] = P(ψf ) − P(ψψ ⊺)Q−1 
+
+> ψ
+
+P(ψf ) = 0 ,
+
+Πψ(f ) is an orthogonal projection operator onto the space spanned by ψ. Therefore, by Pythagorean theorem ∥f ∥22,P= ∥f − Πψ(f )∥22,P+∥Πψ(f )∥22,P≥ ∥ Πψ(f )∥22,P.
+
+## D Additional Simulation results 
+
+58 0369
+
+0.2 0.4 0.6 0.8 
+
+t
+
+> Y
+
+Truth m pi m cpi mbc 
+
+0.0 0.5 1.0 1.5 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mpi 
+
+0.0 0.5 1.0 1.5 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mor 
+
+0.0 0.5 1.0 1.5 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mcpi 
+
+0.0 0.5 1.0 1.5 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mbc 
+
+0.0 0.5 1.0 1.5 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mpi . cali 
+
+0.0 0.5 1.0 1.5 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mbc . cali 
+
+Cosine B−spline Local linear 
+
+> PI OR CPI CPI_or BC BC_or PI_cali BC_cali BC_or_cali
+> PI OR CPI CPI_or BC BC_or PI_cali BC_cali BC_or_cali
+> PI OR CPI CPI_or BC BC_or PI_cali BC_cali BC_or_cali
+
+012
+
+> Average MSE
+
+Figure 6: M2 (linear model with small sinusodal perturbation + linear term in X): 
+
+μ(X) = 4 + 3 r(X) + 0 .15 sin(4 πr (X)) + βTg X, where βg is a fixed coefficient vector. −2 024
+
+0.2 0.4 0.6 0.8 
+
+t
+
+> Y
+
+Truth mpi mcpi mbc 
+
+0.0 0.5 1.0 1.5 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mpi 
+
+0.0 0.5 1.0 1.5 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mor 
+
+0.0 0.5 1.0 1.5 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mcpi 
+
+0.0 0.5 1.0 1.5 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mbc 
+
+0.0 0.5 1.0 1.5 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mpi . cali 
+
+0.0 0.5 1.0 1.5 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mbc . cali 
+
+Cosine B−spline Local linear 
+
+> PI OR CPI CPI_or BC BC_or PI_cali BC_cali BC_or_cali
+> PI OR CPI CPI_or BC BC_or PI_cali BC_cali BC_or_cali
+> PI OR CPI CPI_or BC BC_or PI_cali BC_cali BC_or_cali
+
+012
+
+> Average MSE
+
+Figure 7: M3 (Sinusoidal function with a localized bump + linear term in X): μ(X) = 1 + 0 .1 sin {2πr (X)} + sin {2πr (X)} ∗ exp[ −40 {r(X) − 0.3}2] + βTg X, where βg is a fixed coefficient vector. 59 −3 −2 −1 012
+
+0.2 0.4 0.6 0.8 
+
+t
+
+> Y
+
+Truth mpi mcpi mbc 
+
+0.0 0.1 0.2 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mpi 
+
+0.0 0.1 0.2 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mor 
+
+0.0 0.1 0.2 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mcpi 
+
+0.0 0.1 0.2 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mbc 
+
+0.0 0.1 0.2 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mpi . cali 
+
+0.0 0.1 0.2 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mbc . cali 
+
+Cosine B−spline Local linear 
+
+> PI OR CPI CPI_or BC BC_or PI_cali BC_cali BC_or_cali
+> PI OR CPI CPI_or BC BC_or PI_cali BC_cali BC_or_cali
+> PI OR CPI CPI_or BC BC_or PI_cali BC_cali BC_or_cali
+
+0.0 0.1 0.2 0.3 
+
+> Average MSE
+
+Figure 8: M1 (sine–cosine function): μ(X) = 0 .15 sin {10 πr (X)} + cos {2πr (X)}468
+
+0.2 0.4 0.6 0.8 
+
+t
+
+> Y
+
+Truth m pi m cpi mbc 
+
+0.00 0.02 0.04 0.06 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mpi 
+
+0.00 0.02 0.04 0.06 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mor 
+
+0.00 0.02 0.04 0.06 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mcpi 
+
+0.00 0.02 0.04 0.06 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mbc 
+
+0.00 0.02 0.04 0.06 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mpi . cali 
+
+0.00 0.02 0.04 0.06 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mbc . cali 
+
+Cosine B−spline Local linear 
+
+> PI OR CPI CPI_or BC BC_or PI_cali BC_cali BC_or_cali
+> PI OR CPI CPI_or BC BC_or PI_cali BC_cali BC_or_cali
+> PI OR CPI CPI_or BC BC_or PI_cali BC_cali BC_or_cali
+
+0.00 0.05 0.10 0.15 0.20 
+
+> Average MSE
+
+Figure 9: M2 (linear model with small sinusodal perturbation): μ(X) = 4 + 3 r(X) + 0.15 sin {4πr (X)}
+
+60 −1 0123
+
+0.2 0.4 0.6 0.8 
+
+t
+
+> Y
+
+Truth mpi mcpi mbc 
+
+0.00 0.05 0.10 0.15 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mpi 
+
+0.00 0.05 0.10 0.15 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mor 
+
+0.00 0.05 0.10 0.15 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mcpi 
+
+0.00 0.05 0.10 0.15 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mbc 
+
+0.00 0.05 0.10 0.15 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mpi . cali 
+
+0.00 0.05 0.10 0.15 
+
+0.2 0.4 0.6 0.8 
+
+t
+
+mbc . cali 
+
+Cosine B−spline Local linear 
+
+> PI OR CPI CPI_or BC BC_or PI_cali BC_cali BC_or_cali
+> PI OR CPI CPI_or BC BC_or PI_cali BC_cali BC_or_cali
+> PI OR CPI CPI_or BC BC_or PI_cali BC_cali BC_or_cali
+> 0.00 0.05 0.10 0.15
+> Average MSE
+
+Figure 10: M3 (Sinusoidal function with a localized bump): μ(X) = 1 + 0 .1 sin {2πr (X)} +sin {2πr (X)} ∗ exp[ −40 {r(X) − 0.3}2]Cosine B−spline Local linear 
+
+> n.tr = 2500  n.tr = 10000
+
+0.2 0.4 0.6 0.8 0.2 0.4 0.6 0.8 0.2 0.4 0.6 0.8 
+
+0.00 0.50 0.95 1.00 
+
+0.00 0.50 0.95 1.00 
+
+t
+
+> Coverage
+
+mpi 
+
+mor 
+
+m cpi 
+
+m cpi . or 
+
+mbc 
+
+mbc . or 
+
+m pi . cali 
+
+m bc . cali 
+
+m bc . or . cali 
+
+Figure 11: Pointwise coverage relative to the matched same-replication semi-oracle target for M2 (linear model with small sinusodal perturbation + linear term in X): μ(X) = 4+3 r(X)+ 0.15 sin(4 πr (X)) + βTg X, where βg is a fixed coefficient vector. 61 Cosine B−spline Local linear                             
+
+> 0.2 0.4 0.6 0.8 0.2 0.4 0.6 0.8 0.2 0.4 0.6 0.8
+> 0.4 0.8 1.2 1.6
+> 0.25 0.50 0.75 1.00
+> 0.5 1.0 1.5
+> t
+> Mean 95% CI length
+> mpi
+> mor
+> mcpi
+> mcpi .or
+> mbc
+> mbc .or
+> mpi .cali
+> mbc .cali
+> mbc .or .cali
+
+Figure 12: Pointwise confidence interval length for M2 (linear model with small sinusodal perturbation + linear term in X): μ(X) = 4 + 3 r(X) + 0 .15 sin(4 πr (X)) + βTg X, where βg is a fixed coefficient vector. Cosine B−spline Local linear 
+
+> n.tr = 2500  n.tr = 10000
+
+0.2 0.4 0.6 0.8 0.2 0.4 0.6 0.8 0.2 0.4 0.6 0.8 
+
+0.00 0.50 0.95 1.00 
+
+0.00 0.50 0.95 1.00 
+
+t
+
+> Coverage
+
+mpi 
+
+mor 
+
+m cpi 
+
+m cpi . or 
+
+mbc 
+
+mbc . or 
+
+m pi . cali 
+
+m bc . cali 
+
+m bc . or . cali 
+
+Figure 13: Pointwise coverage relative to the matched same-replication semi-oracle target for 
+
+M3 (Sinusoidal function with a localized bump + linear term in X): μ(X) = 1 + 0.1 sin {2πr (X)} + sin {2πr (X)} ∗ exp[ −40 {r(X) − 0.3}2] + βTg X, where βg is a fixed coefficient vec-tor. 62 Cosine B−spline Local linear            
+
+> 0.2 0.4 0.6 0.8 0.2 0.4 0.6 0.8 0.2 0.4 0.6 0.8
+> 0.5 1.0 1.5 2.0
+> 0.5 1.0 1.5
+> 0.5 1.0 1.5 2.0
+
+t
+
+> Mean 95% CI length
+
+m pi 
+
+m or 
+
+m cpi 
+
+m cpi . or 
+
+mbc 
+
+mbc . or 
+
+mpi . cali 
+
+mbc . cali 
+
+m bc . or . cali Figure 14: Pointwise confidence interval length for M3 (Sinusoidal function with a localized bump + linear term in X): μ(X) = 1 + 0 .1 sin {2πr (X)} + sin {2πr (X)} ∗ exp[ −40 {r(X) −
+
+0.3}2] + βTg X, where βg is a fixed coefficient vector. Cosine B−spline Local linear 
+
+> n.tr = 2500  n.tr = 10000
+
+0.2 0.4 0.6 0.8 0.2 0.4 0.6 0.8 0.2 0.4 0.6 0.8 
+
+0.00 0.50 0.95 1.00 
+
+0.00 0.50 0.95 1.00 
+
+t
+
+> Coverage
+
+mpi 
+
+mor 
+
+m cpi 
+
+m cpi . or 
+
+mbc 
+
+mbc . or 
+
+m pi . cali 
+
+m bc . cali 
+
+m bc . or . cali 
+
+Figure 15: Pointwise coverage relative to the matched same-replication semi-oracle target for M1 (sin–cosine function): μ(X) = 0 .15 sin(10 πr (X)) + cos(2 πr (X)). 63 Cosine B−spline Local linear            
+
+> 0.2 0.4 0.6 0.8 0.2 0.4 0.6 0.8 0.2 0.4 0.6 0.8
+> 0.2 0.4 0.6 0.8
+> 0.3 0.6 0.9
+> 0.25 0.50 0.75
+
+t
+
+> Mean 95% CI length
+
+mpi 
+
+mor 
+
+mcpi 
+
+mcpi . or 
+
+mbc 
+
+mbc . or 
+
+m pi . cali 
+
+m bc . cali 
+
+mbc . or . cali Figure 16: Pointwise confidence interval length for M1 (sin–cosine function): μ(X) =0.15 sin(10 πr (X)) + cos(2 πr (X)). Cosine B−spline Local linear 
+
+> n.tr = 2500  n.tr = 10000
+
+0.2 0.4 0.6 0.8 0.2 0.4 0.6 0.8 0.2 0.4 0.6 0.8 
+
+0.00 0.50 0.95 1.00 
+
+0.00 0.50 0.95 1.00 
+
+t
+
+> Coverage
+
+mpi 
+
+mor 
+
+m cpi 
+
+m cpi . or 
+
+mbc 
+
+mbc . or 
+
+m pi . cali 
+
+m bc . cali 
+
+m bc . or . cali 
+
+Figure 17: Pointwise coverage relative to the matched same-replication semi-oracle target for M2 (linear model with small sinusodal perturbation): μ(X) = 4 + 3 r(X) + 0 .15 sin {4πr (X)}Cosine B−spline Local linear            
+
+> 0.2 0.4 0.6 0.8 0.2 0.4 0.6 0.8 0.2 0.4 0.6 0.8
+> 0.1 0.2 0.3 0.4 0.5
+> 0.2 0.3 0.4 0.5 0.6
+> 0.2 0.3 0.4 0.5
+
+t
+
+> Mean 95% CI length
+
+m pi 
+
+m or 
+
+m cpi 
+
+m cpi . or 
+
+mbc 
+
+mbc . or 
+
+mpi . cali 
+
+mbc . cali 
+
+m bc . or . cali 
+
+Figure 18: Pointwise confidence interval length for M3 (Sinusoidal function with a localized bump): μ(X) = 1 + 0 .1 sin {2πr (X)} + sin {2πr (X)} ∗ exp[ −40 {r(X) − 0.3}2]64 Cosine B−spline Local linear 
+
+> n.tr = 2500  n.tr = 10000
+
+0.2 0.4 0.6 0.8 0.2 0.4 0.6 0.8 0.2 0.4 0.6 0.8 
+
+0.00 0.50 0.95 1.00 
+
+0.00 0.50 0.95 1.00 
+
+t
+
+> Coverage
+
+mpi 
+
+mor 
+
+m cpi 
+
+m cpi . or 
+
+mbc 
+
+mbc . or 
+
+m pi . cali 
+
+m bc . cali 
+
+m bc . or . cali Figure 19: Pointwise coverage relative to the matched same-replication semi-oracle target for M3 (Sinusoidal function with a localized bump): μ(X) = 1 + 0 .1 sin {2πr (X)} + sin {2πr (X)} ∗ 
+
+exp[ −40 {r(X) − 0.3}2]. Cosine B−spline Local linear            
+
+> 0.2 0.4 0.6 0.8 0.2 0.4 0.6 0.8 0.2 0.4 0.6 0.8
+> 0.2 0.4 0.6
+> 0.5 1.0 1.5
+> 0.2 0.4 0.6 0.8
+
+t
+
+> Mean 95% CI length
+
+m pi 
+
+m or 
+
+m cpi 
+
+m cpi . or 
+
+mbc 
+
+mbc . or 
+
+mpi . cali 
+
+mbc . cali 
+
+m bc . or . cali 
+
+Figure 20: Pointwise confidence interval length for M3 (Sinusoidal function with a localized bump): μ(X) = 1 + 0 .1 sin {2πr (X)} + sin {2πr (X)} ∗ exp[ −40 {r(X) − 0.3}2]. 65

@@ -1,0 +1,2171 @@
+Title: Causally Interpretable Meta-Mediation Analysis With Missing At Random Mediator and Outcome Data
+
+URL Source: https://arxiv.org/pdf/2607.25822v1
+
+Published Time: Wed, 29 Jul 2026 01:21:33 GMT
+
+Number of Pages: 29
+
+Markdown Content:
+# Causally Interpretable Meta-Mediation Analysis With Missing At Random Mediator and Outcome Data 
+
+## Marie-Félicia Beclin 
+
+EPILOGY, Institut Mondor of Biomedical Research, INSERM U955, Université Paris-Est Créteil, France 
+
+mariefelicia.beclin@gmail.com 
+
+## Apolline Courrèges-Vartanian 
+
+Mines Paris, Université Paris Sciences Lettres, France 
+
+apolline.courreges-vartanian@etu.mineparistech.fr 
+
+## Geneviève Lefebvre 
+
+Department of Mathematics, Université du Québec à Montréal, Canada 
+
+lefebvre.gen@uqam.ca 
+
+## Tat-Thang Vo 
+
+EPILOGY, Institut Mondor of Biomedical Research, INSERM U955, Université Paris-Est Créteil, France 
+
+tat-thang.vo@u-pec.fr 
+
+## July 29, 2026 
+
+1arXiv:2607.25822v1 [stat.ME] 28 Jul 2026 Abstract      
+
+> Meta-analyzing natural indirect effect estimates from multiple studies is increas-ingly used to synthesize evidence on causal pathways of interest. However, stan-dard mediation meta-analysis approaches are typically based on structural equation modeling, which fails to account for mediator-outcome confounding, is not read-ily extended to address missing mediator and outcome data, and is often unclear about the target population to which the summary indirect effect pertains. In this work, we propose a novel method that addresses these limitations. Our ap-proach transports study-specific natural indirect effect estimates to a well-defined target population prior to evidence synthesis. The proposed methods enable the integration of studies that do not explicitly investigate mediation but collect data on the mediator to improve extensiveness. Using semiparametric theory, we con-struct flexible, data-adaptive estimators for the target parameter. Novel random-effects models and non-parametric analogues based on ANOVA sums of squares are also developed to decompose between-study heterogeneity into distinct sources that may affect the causal interpretability of the obtained findings. Finite-sample per-formance of the proposed methods is evaluated through simulated and real-world data.
+
+Keywords: Mediation Analysis, Natural Indirect Effect, Meta-analysis, Semiparametric theory. 
+
+# 1 Introduction 
+
+Mediation analysis is a widely used statistical framework for assessing the mechanisms through which an exposure or treatment affects an outcome. The analysis aims to decom-pose the total effect of the exposure into effects operating through a candidate mediator and effects operating independently of it. Foundational work by Pearl [23] and Robins and Greenland [26] introduced the concepts of natural direct and indirect effects, which are identifiable under single- and cross-world independence assumptions encoded within a nonparametric structural equation model with independent errors (NPSEM-IE) [22]. Estimation strategies such as the G-formula and propensity score weighting have been widely applied [27, 15, 10], while more recent developments in semiparametric theory and influence function–based methods have led to efficient estimators that offer increased robustness to model misspecification [30, 31]. The strong methodological foundation of mediation analysis has led to a rapid in-crease in mediation studies across a wide range of scientific disciplines [20, 24, 25, 33]. Consequently, systematic reviews and meta-analyses of mediation studies are increasingly being conducted to synthesize evidence regarding the role of specific mediators [36, 19, 7]. However, the methodology for meta-mediation analysis (MMA) remains underdeveloped, leaving substantial room for methodological advancement. Existing approaches to MMA primarily rely on meta-analytic structural equation modeling (MASEM) [5] or paramet-ric marginal likelihood (ML) methods [12]. Originating largely from the psychology and social science literature, these approaches often fail to account for mediator–outcome confounding and are generally not adaptable to settings involving nonlinear relation-ships, such as treatment–mediator interactions or non-continuous mediators and out-comes [33, 16]. In addition, as extensions of standard random-effect meta-analysis mod-els, MASEM and ML methods generally do not support causal interpretation, as they 2remain implicit about the target population to which the summary indirect effect pertains. This concern is important when mediator and outcome effect modifiers are differentially distributed across studies [6, 35, 37]. Recent advances in evidence synthesis have emphasized the importance of transporting causal effect estimates to a well-defined target population prior to aggregation [6, 35, 37, 28, 11]. However, this causally interpretable meta-analysis framework has not yet been formally developed for MMA. This setting that is inherently more challenging due to the need to integrate information from multiple components of the mediation pathway. For instance, it is common that primary studies may only investigate the treatment–mediator or mediator–outcome association [34, 36, 21]. Although such studies do not directly estimate the indirect effect, they may still provide informative evidence regarding the plausibility and magnitude of the underlying pathway. Incorporating these studies into a causal MMA framework could substantially expand the evidence base and improve the informativeness of synthesized findings, but doing so requires formal methodological development [34]. In this paper, we address the above challenges by proposing novel methods for MMA that enable the evaluation of indirect exposure effects for a well-defined target popula-tion. Specifically, we develop a two-stage framework in which the target indirect effect is estimated by integrating information on the exposure–mediator and mediator–outcome relationships obtained from different eligible studies. To avoid restrictive parametric as-sumptions, we derive the efficient influence function for the target-specific indirect effect and leverage semiparametric efficiency theory to construct flexible estimators that can incorporate modern data-adaptive approaches. We further propose meta-analytic ap-proaches for synthesizing standardized indirect effects, which enable the quantification of two distinct sources of between-study variability: outcome-related heterogeneity and mediator-related heterogeneity. Finally, we apply the proposed methods to examine the role of health in the causal relationship between higher education and self-reported life satisfaction worldwide, while investigating heterogeneities across different countries using data from the 2017–2021 World Values Survey, Wave 7, Master Survey Questionnaire [8]. 
+
+# 2 Transportability of natural direct effect and indi-rect effects 
+
+Consider S = 1 , . . . , K mediation studies that evaluate the role of an intermediate variable 
+
+M in explaining the causal effect of a binary exposure A on an outcome Y . In addition, consider S = K + 1 , . . . , P studies that evaluate the causal effect of A on the mediator 
+
+M . In this work, we focus on a single mediator and outcome; however, no assumptions are imposed regarding the nature of the mediator, which may be binary, discrete, or continuous (see below). Let C denote a set of baseline covariates that are commonly measured across studies. Within each study, we allow for missing mediator and outcome data. Specifically, let R and ˜R denote the missingness indicator for M and Y , respectively. Here, R (or ˜R) takes value 0 if M (or Y ) is observed and 1 otherwise. To account for missing data, we impose the following assumption on the missingness mechanism within each study: 
+
+Assumption 1. (Missing At Random) R ⊥ (M, Y ) | A, C, S and ˜R ⊥ Y | M, A, C, R, S. 
+
+32.1 Pre-existing methods 
+
+Three main approaches have been proposed to meta-analyze mediation findings. The first approach, correlation-based MASEM, pools study-specific correlations. For each study i, the observed correlation vector is defined as ri = ( ̂rAY ,̂ rAM ,̂ rM Y )⊤ and a random-effects model is used ri = ρ + ui + ϵi, with ρ the average correlation vector, ui a normal random effect reflecting between-study heterogeneity and ϵi the residual error. Once the corre-lation model is fitted, the estimated average correlation matrix ˆρ and the corresponding (estimated) covariance matrix V are used to fit the mediation model by weighted least squares [4]. Notably, this approach can accommodate studies with partially missing corre-lation coefficients. For example, studies reporting only the exposure–mediator association can still be incorporated by assuming that the treatment/mediator-outcome correlations in these studies are missing at random. However, confounding adjustment is not natu-rally accommodated within this framework. In practice, implementations often implicitly assume the absence of mediator-outcome confounding beyond that induced by treatment itself. In addition, handling individual-level missing data, as considered in our setting, is generally difficult. The second approach, based on marginal likelihood methods, models the study-specific mediator and outcome regressions as E(M | A, S = i) = α0i + αiA and E(Y | A, M, S =
+
+i) = β0i + β1iA + βiM, with random effects (αi, β i) ∼ N (
+
+(μα, μ β ), Σ)
+
+. The pooled indirect effect is then estimated using the product-of-coefficients [2] approach, i.e., ̂ θ =̂ μα̂ μβ .
+
+Although straightforward to implement in linear settings, extending this framework to nonlinear models is considerably more challenging, since the natural indirect effect within each study is no longer a simple product of regression coeffcients. Accounting for missing data within each study is also challenging. The third approach, parameter-based MASEM, applies a standard random-effects model directly to the study-specific indirect effect estimates ˆθi, i.e., ̂ θi = θ + ui + ϵi, where 
+
+θ denotes the pooled indirect effect, ui denotes a study-specific random effect capturing between-study heterogeneity, and ϵi denotes sampling error [5]. This approach requires confounding and missing data to be appropriately addressed within each eligible study to ensure valid estimation of the summary indirect effect θ. A key limitation, however, is that it can only incorporate studies reporting a formal mediation analysis together with an associated indirect effect estimate. In practice, this restriction may introduce selective reporting bias, as mediation analyses are often conducted as secondary analyses only when the total effect of A on Y , or the component associations between A and M
+
+and between M and Y , are statistically significant. Consequently, excluding studies that report only partial information may lead to distorted or overly optimistic conclusions. While the above approaches have been proposed primarily for aggregate data MMAs (AD-MMAs), methods for individual participant data MMAs (IPD-MMAs) have also been developed [29, 39, 9, 14]. For instance, one-stage IPD-MMAs typically rely on parametric models for the mediator and outcome, which incorporate random effects on model coefficients to account for clustering across studies. The summary indirect effect is then commonly estimated using a product-of-coefficients approach [2], which is difficult to extend to non-linear settings. A common limitation of all MMA approaches described above, regardless of whether they use aggregate or individual participant data, is that they derive summary indirect effect estimates as weighted averages across studies. Consequently, the causal inter-pretation of these pooled estimates may become unclear when included studies involve 4populations with heterogeneous case-mix. Moreover, existing approaches provide only a limited characterization of heterogeneity, as they do not permit a comprehensive de-composition of the distinct sources of between-study heterogeneity. In particular, they do not distinguish whether variability in indirect effect estimates is primarily driven by heterogeneity in the treatment–mediator pathway ( A → M ) or in the mediator–outcome pathway ( M → Y ). To overcome these limitations, in the following section, we instead consider transporting study-specific indirect effect information to a well-defined target population before synthesizing the resulting transported effects. This enables a clearer population-level causal interpretation of the summary indirect effect estimate, alongside a more insightful assessment of clinical and methodological heterogeneity across studies. 
+
+## 2.2 Introducing novel estimands 
+
+In meta-analysis practice, it is widely recognized that, beyond differences in case-mix, eligible studies may also vary with respect to the treatment versions being evaluated [35, 36]. Such heterogeneity may arise, for example, when pharmacological interventions are administered at slightly different doses or through different routes of administration, or when behavioral interventions differ in their implementation protocols. Explicitly acknowledging and quantifying this source of heterogeneity is generally more informative than ignoring it and naively pooling individual-level data across studies. To account for treatment version variation, let Y (a, k, m ) denote the potential outcome if a patient receives version k of treatment a (evaluated in study S = k) and the mediator were set to value m. Likewise, let M (a, p ) denote the potential value of the mediator under version p of treatment a. The nested counterfactual of interest is Y (
+
+a, k, M (a∗, p ))
+
+, which describes the potential outcome value when a patient receives version k of treatment a,while experiencing the mediator value (s)he would have had under version p of treatment 
+
+a∗. Letting θa,a ∗ 
+
+> k,p
+
+= E
+
+> [
+
+Y (
+
+a, k, M (a∗, p ))
+
+| S = 0 
+
+> ]
+
+, our focus is on evaluating the estimand: 
+
+ζk,p = θa,a k,p − θa,a ∗ 
+
+> k,p
+
+,
+
+which describes the expected change in the outcome in an external target population 
+
+S = 0 , when patients in this population are given treatment version (a, k ), but the mediator is changed from values naturally observed under treatment version (a, p ) to treatment version (a∗, p ) with a∗̸ = a.
+
+Remark 2.1 . When there is no treatment version heterogeneity, in the sense that Y (a, k, m ) = 
+
+Y (a, m ) and M (a, p ) = M (a) for all k, p = 1 , . . . , K , Y (
+
+a, k, M (a∗, p ))
+
+reduces to the standard counterfactual Y (a, M (a∗)) and ζk,p reduces to the conventional natural indi-rect effect in the target population S = 0 .
+
+## 2.3 Causal assumptions and identifiability 
+
+To identify θa,a ∗ 
+
+> k,p
+
+from the observed data, we consider the following set of causal assump-tions: 
+
+Assumption 2 (Ignorability) . Y (a, k, m ) ⊥ A | C, S = k and M (a, p ) ⊥ A | C, S = p. 
+
+Assumption 3 (Consistency) . Y = Y (a, k, m ) if (A, S, M ) = ( a, k, m ) and M = M (a, p )
+
+if (A, S ) = ( a, p ).
+
+5Assumption 4 (Cross-world independence) . Y (a, k, m ) ⊥ M (a∗, p ) | C.
+
+Assumption 5 (Transportability) . Y (a, k, m ) ⊥ S | C and M (a, p ) ⊥ S | C.
+
+Assumption 6 (Positivity) . 0 < P(A = a | C, S ), P(M = m | A, C, S ), P(S = s | C) <
+
+1, for all relevant (a, m, s ).
+
+These assumptions are satisfied when the relationships among the variables follow the causal diagram depicted in Figure 1, which encodes an NPSEM-IE. Intuitively, Assump-tion (2) requires the absence of unmeasured confounding of both the treatment–mediator and mediator–outcome relationships, while Assumption (4) rules out mediator–outcome confounders that are themselves affected by treatment. To enable the transport of study 
+
+k-specific information to a common target population, Assumption (5) further requires that all effect modifiers of the relationships between treatment version k and the mediator and outcome that are differentially distributed between study population S = k and the target population S = 0 are measured in C.
+
+A Y
+
+M
+
+C
+
+S     
+
+> Aa
+> C
+> Sk
+> M(a, k )m
+> Y(a, k, m )
+
+Figure 1: Causal diagram and the associated Single World Intervention Graph when intervening on the treatment, mediator and study indicator. A: treatment, Y : outcome, 
+
+C: baseline confounders, M : mediator, S: study indicator. The arrow from S to A
+
+reflects differences in treatment assignment mechanisms across studies. Arrows from S
+
+to Y and M capture study-specific methodological differences affecting the outcome and mediator. Under the proposed causal assumption, θa,a ∗ 
+
+> k,p
+
+can be identified as: 
+
+θa,a ∗ 
+
+> k,p
+
+= E
+
+>  ∑
+> m∈M
+
+E(Y | C, m, a, S = k) · P(m | C, a ∗, S = p)
+
+> ∣∣∣∣∣
+
+S = 0  
+
+> 
+
+(1) This representation shows that θa,a ∗ 
+
+> k,p
+
+can be estimated by combining outcome information from study S = k with mediator information from study S = p, while standardizing both quantities to the covariate distribution of the target population S = 0 .Some remarks are noteworthy here. First, in the presence of missing mediator and outcome data, identification of θa,a ∗ 
+
+> k,p
+
+can still be achieved using only the observed mediator and outcome values, provided that the missingness mechanism within each study satisfies the MAR assumption (1) stated previously, i.e.: 
+
+θa,a ∗ 
+
+> k,p
+
+= E
+
+>  ∑
+> m∈M
+
+E(Y | C, m, a, ˜R = 0 , S = k) · P(m | C, a ∗, R = 0 , S = p)
+
+> ∣∣∣∣∣
+
+S = 0 
+
+> 
+
+. (2) 6Second, in the absence of treatment-version heterogeneity (Remark 2.1), Assumptions (2)–(4) reduce to the standard identification assumptions for the conventional natural indirect effect in the target population. Likewise, Assumption (5) simplifies to the more familiar transportability condition, i.e. {Y (a, m ), M (a)} ⊥ S | C, which implies that the mediator and outcome generating mechanisms are homogeneous across populations. In particular, E(Y | C, M, A, S = k) = E(Y | C, M, A, S = k′) and P(m | C, a ∗, S =
+
+p) = P(m | C, a ∗, S = p′) for k̸ = k′ and p̸ = p′. Under such homogeneity, the target expectation is identifiable via: 
+
+E{Y (a, M (a∗)) | S = 0 } = E
+
+>  ∑
+> m∈M
+
+E(Y | C, m, a, S > 0) · P(m | C, a ∗, S > 0) 
+
+> ∣∣∣∣∣
+
+S = 0 
+
+> 
+
+.
+
+Thus, rather than transporting mediator and outcome information separately from each study to the target population, one may instead fuse data across studies and transport the combined information to S = 0 . However, such an approach has two important limitations. First, when mediator or outcome data are missing, pooled analyses im-plicitly require the missingness mechanisms to be homogeneous across studies, namely 
+
+R ⊥ M |A, C, S > 0 and ˜R ⊥ Y |A, M, C, S > 0, which may be unrealistic in practice. By contrast, separately transporting mediator and outcome information from each study al-lows missing data mechanisms to be handled study-by-study prior to transport. More im-portantly, the proposed framework enables explicit assessment of mediator- and outcome-related heterogeneity across populations. For example, testing whether θa,a ∗ 
+
+> 1,p
+
+= . . . = θa,a ∗
+
+> K,p
+
+provides an indirect assessment of whether the outcome model E(Y |A, M, C, S = k) is homogeneous across studies, because the compared quantities share the same mediator component P(m | A, C, S = p). Analogous comparisons can be used to evaluate hetero-geneity in the mediator component. Measures quantifying the magnitude of these distinct forms of heterogeneity can also be developed, allowing investigators to assess whether im-portant between-study differences exist in either the mediator or outcome mechanisms underlying the indirect effect (see below). Such evaluations are generally not possible when data are simply fused. 
+
+## 2.4 Parametric estimation strategies 
+
+We now discuss different estimation strategies for θa,a ∗ 
+
+> k,p
+
+, based on the identification formula (2). The available data include nk observations from each source population k = 1 . . . K ,of the form (
+
+Ai, Y i, M i, Ci, S i = k, R i, ˜Ri, )
+
+, np observations from each source popula-tion k = K + 1 . . . P , of the form (Ai, M i, Ci, S i = p, R i) and n0 observations from the target population, for which only (Ci, S i = 0) are observed. The total sample size is 
+
+n = ∑Pk=0 nk, where k = 0 denotes the target population. To reduce notational bur-den, we denote I(k) for I(S = k) and so forth. For a, a ∗ = 0 , 1, s′ = 0 , . . . , K and 
+
+s, k, p = 1 , . . . , K , we define η = ( Us, V s, τ as , π as , ˜ρas , ρ as , Q as , b a,a ∗ 
+
+> k,p
+
+) the vector of nuisance parameters, where Us′ = Us′ (C) = P(S = s′ | C); Vs = Vs(C, M ) = P(S = s | C, M, R =0) ; πas = πas (C) = P(A = a | C, s ); τ as = τ as (C, M ) = P(A = a | C, M, R = 0 , s );
+
+˜ρas = ˜ ρas (M, C) = P( ˜R = 0 | a, M, C, R = 0 , s ); ρas = ρas (C) = P(R = 0 | a, C, s );
+
+Qas = Qas (C, M ) = E(Y | a, C, M, s ) and ba,a ∗ 
+
+> k,p
+
+= ba,a ∗ 
+
+> k,p
+
+(C) = E{Qak(C, M ) | a∗, C, p }.In the so-called G-compuation approach, we first postulate and fit a parametric out-come model for Qak(C, M ) on data of individuals receiving treatment a in study k. The fitted model is then used to predict ̂ Qak(Ci, M i) for all individuals i in population p with 7treatment a∗ who have observed mediator values. A second parametric model is then postulated for ba,a ∗ 
+
+> k,p
+
+(C), which can be fitted using ̂ Qak,p (Ci, M i) and data on C of subjects treated by a∗ in population p. The resulting G-formula estimator for θa,a ∗ 
+
+> k,p
+
+, obtained by applying this model to the target population S = 0 , is ̂ θGformula  
+
+> a,a ∗;n
+
+= 1 
+
+> n0
+> ∑
+> i:Si=0 ̂
+
+ba,a ∗ 
+
+> k,p
+
+(Ci).
+
+Alternatively, θa,a ∗ 
+
+> k,p
+
+can also be estimated by inverse weighting upon noting that: 
+
+θa,a ∗ 
+
+> k,p
+
+(P ) = 1
+
+P0
+
+E
+
+> 
+
+Ωa,a ∗ 
+
+> k,p
+
+(C, M ) Y I (a, k, ˜R = 0) 
+
+> 
+
+. (3) where P0 = P(S = 0) . An equivalent representation is given by 
+
+θa,a ∗ 
+
+> k,p
+
+(P ) = 1
+
+P0
+
+E
+
+> [
+
+W a∗ 
+
+> p
+
+(C) I(a∗, p, R = 0) E [
+
+Y | C, M, a, S = k, ˜R = 0 ]]
+
+(4) where 
+
+Ωa,a ∗ 
+
+> k,p
+
+(C, M ) = τ a∗ 
+
+> p
+
+(C, M ) Vp(C, M ) U0(C)
+
+τ ak (C, M ) Vk(C, M ) πa∗,p (C) Up(C) ˜ ρak(M, C) ρa∗ 
+
+> p
+
+(C)
+
+W a∗ 
+
+> p
+
+(C) = U0(C)
+
+Up(C) πa∗ 
+
+> p
+
+(C) ρa∗ 
+
+> p
+
+(C)
+
+Proof of Equations (3) and (4) are available in the Supplementary Materials. The in-verse weighting representation in Equation (3) requires parametric specification of U0,
+
+Up, Vp, Vk, τ ak , τ a∗ 
+
+> p
+
+, πak , πa∗ 
+
+> p
+
+, and the missingness mechanisms ˜ρak, ρ a∗ 
+
+> p
+
+. By contrast, the representation in Equation (4) relies on specification of U0, U p, π a∗ 
+
+> p
+
+, π a∗ 
+
+> p
+
+and the missing-ness mechanisms ρa∗ 
+
+> p
+
+. Consequently, the two representations motivate distinct estimation strategies with different robustness and modeling requirements. Standard errors of the resulting estimators for θa,a ∗ 
+
+> k,p
+
+can be obtained by using M-estimation theory [13]. 
+
+## 2.5 Data-adaptive estimation strategies 
+
+Parametric estimation approaches suffer from an important limitation: they generally fail to provide consistent estimators of θa,a ∗ 
+
+> k,p
+
+when the underlying parametric models are misspecified. In this section, we therefore leverage semiparametric theory to develop efficient, data-driven estimation procedures for θa,a ∗ 
+
+> k,p
+
+. These approaches can achieve √n-rate convergence (where n denotes the total sample size across the populations) to the target parameter even when nuisance functions are estimated at slower rates, for example through flexible machine learning methods. To construct such estimators, we first characterize the efficient influence function (EIF), denoted φa,a ∗ 
+
+> k,p
+
+, of the target parameter θa,a ∗ 
+
+> k,p
+
+. For a fixed nuisance parameter value 
+
+η′ (corresponding, for instanceto a preliminary estimator or its probability limit), for 
+
+θ′ = θa,a ∗ 
+
+> k,p
+
+(η′) and θ0 = θa,a ∗ 
+
+> k,p
+
+(η) the EIF yields the expansion 
+
+θ′ − θ0 = −E{φa,a ∗ 
+
+> k,p
+
+(O; η′, θ ′)} + R(η, η′),
+
+where R(η, η′) is a second-order remainder term that can typically be expressed as sums of products of estimation errors of the form E
+
+> [
+
+c(η, η′){f (η′) − f (η)}{ g(η′) −
+
+g(η)}
+
+> ]
+
+. The first-order terms −E{φa,a ∗ 
+
+> k,p
+
+(O; η′, θ ′} can be rewritten as Pn{(φa,a ∗ 
+
+> k,p
+
+(O; η, θ 0)−
+
+8φa,a ∗ 
+
+> k,p
+
+(O; η′, θ ′)) }+( Pn−P ){φa,a ∗ 
+
+> k,p
+
+(O; η′, θ ′)−φa,a ∗ 
+
+> k,p
+
+(O; η, θ 0)}. Under certain conditions (dis-cussed later) on the estimated nuisance parameters, the first-order bias of the G-formula estimator θa,a ∗ 
+
+> k,p
+
+(η′) is reduced as Pn{φa,a ∗ 
+
+> k,p
+
+(O; η′, θ ′)}, typically called the G-formula bias. The EIF therefore naturally motivates the construction of debiased estimators such as the One-Step (OS) estimator and Targeted Maximum Likelihood Estimator (TMLE). When the remainder term R(η, η′) is sufficiently small, these estimators can be shown to achieve desirable asymptotic properties, including consistency, asymptotic normality, and semiparametric efficiency. In the Online Supplementary Materials, we prove that the EIF of θa,a ∗ 
+
+> k,p
+
+can be expressed as: 
+
+φa,a ∗ 
+
+> k,p
+
+= Ωa,a ∗ 
+
+> k,p
+
+(C, M )I(a, k, ˜R = 0) 
+
+P0
+
+(
+
+Y − Qak(C, M ))
+
+(5) 
+
++ W a∗ 
+
+> p
+
+(C)I(a∗, p, R = 0) 
+
+P0
+
+(
+
+Qak(C, M ) − ba,a ∗ 
+
+> k,p
+
+(C))
+
++ I(0) 
+
+P0
+
+(
+
+ba,a ∗ 
+
+> k,p
+
+(C) − θa,a ∗
+
+> k,p
+
+)
+
+The EIF of ζk,p is φa,a k,p − φa,a ∗ 
+
+> k,p
+
+, as a result of the delta method for influence functions (see, e.g., [17], Section 3.4.3). While our primary focus is on the indirect effect defined on the difference scale, alternative definitions based on other effect scales can also be considered, such as the risk ratio or odds ratio when the outcome is binary. Another causal mediation measure that is commonly used in practice is the proportion of the treatment effect mediated by M , defined as P T E = N IE/T E , which is meaningful when the total effect is non-null [32, 38, 18]. Using the delta-method, we derive the EIFs corresponding to indirect effects defined on these alternative scales (Table 1). Below, we construct OS and TMLE estimators for the indirect effect defined on the difference scale. Analogous estimators for alternative scales can be developed similarly, and details are therefore omitted. Table 1: Natural indirect effect (NIE) and proportion of treatment effect (PTE) estimands with their EIF. OR-PTE simplifies to the natural direct effect on the OR scale. 
+
+Causal Effect Link function h EIF 
+
+RD-NIE (a) θa, 1 − θa, 0 φa, 1 − φa, 0
+
+RR-NIE (a) θa, 1
+
+θa, 0
+
+1
+
+θa, 0
+
+(
+
+φa, 1 − θa, 1
+
+θa, 0
+
+φa, 0
+
+)
+
+OR-NIE (a) θa, 1
+
+1 − θa, 1
+
+1 − θa, 0
+
+θa, 0
+
+1
+
+θa, 0(1 − θa, 1)
+
+( 1 − θa, 0
+
+1 − θa, 1
+
+φa, 1 − θa, 1
+
+θa, 0
+
+φa, 0
+
+)
+
+RD-PTE (a) θa, 1 − θa, 0
+
+θ1,1 − θ0,0
+
+1
+
+θ1,1 − θ0,0
+
+(
+
+φa, 1 − φa, 0 − θa, 1 − θa, 0
+
+θ1,1 − θ0,0
+
+(φ1,1 − φ0,0)
+
+)
+
+RR-PTE (a) θa, 1
+
+θa, 0
+
+θ0,0
+
+θ1,1
+
+θ0,0
+
+θ1,1θa, 0
+
+(
+
+φa, 1 − θa, 1
+
+θa, 0
+
+φa, 0 + θa, 1
+
+θ0,0
+
+φ0,0 − θa, 1
+
+θ1,1
+
+φ1,1
+
+)
+
+OR-PTE (a)
+
+θa, 1(1 − θa, 0)(1 − θa, 1)θa, 0
+
+·
+
+(1 − θ1,1)θ0,0
+
+(1 − θ0,0)θ1,1
+
+OR-TE × φ(OR-NIE (a), P )
+
+9One-Step estimator The One-Step estimator corrects the first-order bias Pn{φ(O;̂ η, θ a,a ∗ 
+
+> k,p
+
+(̂η)) }
+
+by substracting it to the G-formula estimator. So, ̂ θa,a ∗,OS  
+
+> k,p
+
+of θa,a ∗ 
+
+> k,p
+
+is defined as ̂ θa,a ∗,OS  
+
+> k,p
+
+=̂
+
+θa,a ∗ 
+
+> k,p
+
++̂ Aa,a ∗ 
+
+> k,p
+
++̂ Ba,a ∗ 
+
+> k,p
+
+, where ̂
+
+Aa,a ∗ 
+
+> k,p
+
+= 1
+
+n0
+
+∑  
+
+> i:Ai=aSi=k, ˜Ri=0
+
+̂
+
+Ωa,a ∗ 
+
+> k,p
+
+(Ci, M i)
+
+{
+
+Yi −̂ Qak(Ci, M i)
+
+}
+
+,̂
+
+Ba,a ∗ 
+
+> k,p
+
+= 1
+
+n0
+
+∑ 
+
+> i:Ai=a∗
+> Si=p, R i=0
+
+̂
+
+W a∗ 
+
+> p
+
+(Ci)
+
+{̂ 
+
+Qak(Ci, M i) −̂ ba,a ∗ 
+
+> k,p
+
+(Ci)
+
+}
+
+.
+
+Here, ̂ θa,a ∗ 
+
+> k,p
+
+denotes the initial G-computation estimator of θa,a ∗ 
+
+> k,p
+
+, as described in Sec-tion 2.4, but with the nuisance functions Qak and ba,a ∗ 
+
+> k,p
+
+possibly estimated using flexible data-adaptive methods. Similarly, ̂ Ωa,a ∗ 
+
+> k,p
+
+and ̂ W a∗ 
+
+> p
+
+denote estimators of Ωa,a ∗ 
+
+> k,p
+
+and W a∗ 
+
+> p
+
+,respectively, also obtained by using machine learning or other nonparametric estimation procedures. The OS estimator is doubly robust , in the sense that ̂ θa,a ∗OS  
+
+> k,p
+
+= θa,a ∗ 
+
+> k,p
+
++ op(1) , provided that either the outcome regression functions Qak and ba,a ∗ 
+
+> k,p
+
+, or the nuisance parameters involved in the weight functions Ωa,a ∗ 
+
+> k,p
+
+and W a∗ 
+
+> p
+
+, are consistently estimated. This property substantially reduces the risk of model misspecification relative to the fully parametric approaches described in the previous section. A proof of the double robustness property is provided in the Supplementary Materials. 
+
+TMLE estimator The TMLE procedure fluctuates the initial nuisance parameter es-timates ̂ η along a least favorable submodel to obtain updated estimates ̂ ηTMLE satisfying 
+
+Pn{φ(O;̂ ηTMLE )} = 0 . In the present setting, this requires neutralizing both terms ̂ Aa,a ∗
+
+> k,p
+
+and ̂ Ba,a ∗ 
+
+> k,p
+
+. We first update the initial estimator ̂ Qak through the fluctuation submodel ̂
+
+Qa, (1)  
+
+> k
+
+=̂ Qak + α̂ Ωa,a ∗ 
+
+> k,p
+
+, where α is estimated by maximum likelihood. The corresponding score equation is exactly equal to the empirical bias term ̂ Aa,a ∗ 
+
+> k,p
+
+, so that the resulting update removes this component of the bias. Using the updated regression function Qa, (1)  
+
+> k
+
+,we then construct an updated estimator ̂ ba,a ∗,(1)  
+
+> k,p
+
+of E[
+
+Qa, (1)  
+
+> k
+
+| A = a∗, S = p, C ]
+
+. A second targeting step is subsequently performed via ba,a ∗,(2)  
+
+> k,p
+
+=̂ ba,a ∗,(1)  
+
+> k,p
+
++ δ̂ W a∗ 
+
+> p
+
+, where δ is again estimated by maximum likelihood. By construction, the associated score equation cor-responds to ̂ Ba,a ∗ 
+
+> k,p
+
+, thereby eliminating the second empirical bias term. The Algorithm 1 provides a detailed description of this procedure. 
+
+Asymptotic properties of OS and TMLE estimators Let ˆθa,a ∗ 
+
+> k,p
+
+denote the OS or TMLE estimator of θa,a ∗ 
+
+> k,p
+
+. Assume (i) Positivity, described as identification Assump-tion (6); (ii) The second-order term R(ˆη, η) is oP (n−1/2) and (iii) The class of func-tions {o → φa,a ∗ 
+
+> k,p
+
+(o; η′, θ ′) : |θ′ − θ0| < δ, || η′ − η|| < δ } is Donsker for some δ > 0
+
+and such that P [{φa,a ∗ 
+
+> k,p
+
+(O; η′, θ ′) − φa,a ∗ 
+
+> k,p
+
+(O; η, θ 0)}2] → 0. In that case, ˆθa,a ∗ 
+
+> k,p
+
+= θ0 +
+
+> 1
+> n
+
+∑ni=1 φa,a ∗ 
+
+> k,p
+
+(Oi; η, θ 0) + oP (n−1/2), due to which √n(ˆθa,a ∗ 
+
+> k,p
+
+− θ0) D
+
+−→ N (0 , σ a,a ∗ 2 
+
+> k,p
+
+), where 
+
+σa,a ∗ 2 
+
+> k,p
+
+= V {φa,a ∗ 
+
+> k,p
+
+(O; η, θ 0)} is the non parametric efficiency bound. Note that condition (ii) for asymptotic normality is satisfied if all components of ˆη
+
+converges in L2(P ) norm to their true counterparts in η at n−1/4-rate or faster. This is 10 Algorithm 1 Two-Step TMLE Targeting Algorithm 
+
+Require: {(Yi, C i, M i, A i, S i, R i, ˜Ri)}ni=1 ; initial estimators ̂ Qak,̂ ba,a ∗ 
+
+> k,p
+
+,̂ Ωa,a ∗ 
+
+> k,p
+
+,̂ W a∗
+
+> p
+
+Ensure: ̂ θTMLE 
+
+1: Obtain ̂ α by solving: 
+
+∑  
+
+> i:Ai=aSi=k, ˜Ri=0
+
+̂
+
+Ωa,a ∗ 
+
+> k,p
+
+(Ci, M i)
+
+[
+
+Yi −̂ Qak(Ci, M i) − α̂ Ωa,a ∗ 
+
+> k,p
+
+(Ci, M i)
+
+]
+
+= 0 .
+
+This is achieved, for instance, by fitting a linear regression model via maximum likelihood, among subjects with A = a, S = k, and ˜R = 0 , using Y as the outcome, ̂
+
+Qak as an offset, and ̂ Ωa,a ∗ 
+
+> k,p
+
+as a covariate. 
+
+2: Obtain an updated estimate ̂ Qa, (1)  
+
+> k
+
+of Qak:̂
+
+Qa, (1)  
+
+> k
+
+(C, M ) = ̂ Qak(C, M ) + ̂ α̂ Ωa,a ∗ 
+
+> k,p
+
+(C, M ).
+
+3: Obtain an updated estimate ̂ ba,a ∗,(1)  
+
+> k,p
+
+for ba,a ∗ 
+
+> k,p
+
+, by regressing ̂ Qa, (1)  
+
+> k
+
+(C, M ) on C among subjects with A = a∗, S = p, and R = 0 .
+
+4: Estimate ̂ δ by solving: 
+
+∑ 
+
+> i:Ai=aSi=p, R i=0
+
+̂
+
+W a∗ 
+
+> p
+
+(Ci)
+
+[̂ 
+
+Qa, (1)  
+
+> k
+
+(Ci, M i) −̂ ba,a ∗,(1)  
+
+> k,p
+
+(Ci) − δ̂ W a∗ 
+
+> p
+
+(Ci)
+
+]
+
+= 0 .
+
+This is achieved, for instance, by fitting a linear regression model via maximum likelihood, among subjects with A = a, S = p, and R = 0 , using ̂ Qa, (1)  
+
+> k
+
+(C, M ) as the outcome, ̂ ba,a ∗,(1)  
+
+> k,p
+
+as an offset, and ̂ W a∗ 
+
+> p
+
+as a covariate. 
+
+5: Obtain an updated estimate ̂ ba,a ∗,(2)  
+
+> k,p
+
+of ba,a ∗ 
+
+> k,p
+
+:̂
+
+ba,a ∗,(2)  
+
+> k,p
+
+(C) = ̂ ba,a ∗,(1)  
+
+> k,p
+
+(C) + ̂ δ̂ W a∗ 
+
+> p
+
+(C).
+
+return ̂ θTMLE = 1
+
+n0
+
+∑ 
+
+> i:Si=0
+
+̂
+
+ba,a ∗,(2)  
+
+> k,p
+
+(Ci).
+
+the case for many data-adaptive algorithms such as LASSO or highly adaptive LASSO, under certain conditions [3]. In contrast, condition (iii) (i.e. Donsker condition) may be avoided by using cross-fitting in the estimation procedure. To achieve this, the dataset is randomly partitioned into Q sets of approximately equal size, namely D1, . . . , D Q.On each sample Tq = {1, . . . , n } \ Dq, the data-adaptive algorithm will be trained and then used to produce a prediction ˆη∗ of η for each patient in the validation set Vq. The One-Step and TMLE estimators are finally adapted to cross-fitting by substituting all occurrences of ˆη(Oi) by ˆη∗(Oi) in the estimation procedure. As a direct consequence of the above asymptotic result, the variance of the esti-mators ̂ θa,a ∗,OS  
+
+> k,p
+
+,̂ θa,a ∗,TMLE  
+
+> k,p
+
+can be estimated by the sample variance of the EIF, i.e. ̂
+
+σa,a ∗,2 
+
+> k,p
+
+= ˆV (φa,a ∗ 
+
+> k,p
+
+(O; ˆη, ˆθa,a ∗ 
+
+> k,p
+
+)) , with ̂ θa,a ∗ 
+
+> k,p
+
+and the nuisance parameter vector ˆη estimated as described above. In what follows, an estimator for ̂ ζk,p =̂ θa,a k,p −̂ θa,a ∗ 
+
+> k,p
+
+and its variance can be constructed from ̂ θa,a k,p ,̂ θa,a ∗ 
+
+> k,p
+
+and ̂ σa,a k,p ,̂ σa,a ∗ 
+
+> k,p
+
+by applying the Delta method, as is 11 done for the simple G-computation approach. 
+
+## 2.6 Heterogeneity tests 
+
+To assess mediator-related heterogeneity, one may perform a Wald test of the composite null hypothesis that, for every outcome source k, the standardized effects are identical across mediator sources, i.e.: 
+
+H0 : ζk, 1 = . . . = ζk,P ∀k ∈ { 1, . . . , K }.
+
+For each outcome source k, this hypothesis can be expressed as a set of P − 1 linear restrictions, (
+
+ζk, 1 − ζk, 2 ζk, 1 − ζk, 3 . . . ζk, 1 − ζk,P 
+
+> )⊤
+
+= 0P −1.
+
+Collecting all restrictions across outcome sources yields the composite hypothesis H0 :
+
+Gζ = 0, where G is a contrast matrix of dimension K(P − 1) × KP . The Wald statistic is 
+
+W = ( G ˆζ)⊤ (
+
+Ĝ ΣG⊤)−1
+
+(G ˆζ).
+
+where ˆΣ is the (asymptotic) covariance matrix of ˆζ. Under H0 and standard regularity conditions, W ∼χ2 
+
+> K(P−1)
+
+. A significant test indicates that at least one standardized effect 
+
+ζk,p differs across all ζk,p sharing the same outcome component p, which provides evidence of mediator-related heterogeneity. Similarly, outcome-related heterogeneity may be assessed by testing whether, for every mediator source p, the standardized effects are identical across outcome sources; that is, 
+
+H∗ 
+
+> 0
+
+: ζ1,p = . . . = ζK,p ∀p ∈ { 1, . . . , P }.
+
+In practice, however, measures that quantify the magnitude of heterogeneity are generally preferred over formal hypothesis tests, as the assumption of no heterogeneity is often unrealistic and therefore of limited scientific interest. Moreover, heterogeneity measures provide a more informative characterization of the extent to which study-specific effects vary across sources. We therefore develop such measures in the following section. 
+
+# 3 Meta-analysis of standardized effect estimates 
+
+## 3.1 A novel random-effect meta-analysis model 
+
+To summarized the standardized effect estimates ̂ ζ = {̂ζk,p : k = 1 , . . . , K, p = 1 , . . . , P },we posit the following random-effects model: ̂
+
+ζk,p = ζ + γk + αp + εk,p , (6) where ζ denotes the summary effect, εk,p represents sampling variability arising from estimation of ζk,p , while γk and αp are random effects that account for clustering in-duced by the mediator source and outcome source, respectively. The random compo-nents εk,p , γ k, α p are assumed to be pairwise independent. In addition, we assume that 
+
+ε = ( εk,p )k=1 ,...,K p=1 ,...,P 
+
+∼ N (0 , Σ) , where Σ is a known unstructured covariance matrix. This assumption is justified by the asymptotic normality of ̂ ζ. Finally, γk and αp are assumed to be normal with mean zero and variances ξ2 and η2, respectively. 12 Within each subset Sk = {ζk, 1, ζ k, 2, . . . }, the variability across ζk,p is attributed to differences in the mediator distribution across source p. Under model (6), this variability is invariant in k and equals η2, the so-called mediator-related heterogeneity variance. Likewise, the variability across elements in S·p = {ζ1,p , ζ 2,p , . . . } is invariant in p and equals 
+
+ξ2, the so-called outcome-related heterogeneity variance. The total covariance matrix V of ̂
+
+ζ can then be decomposed into three components, including two heterogeneity variances and chance. Specifically, 
+
+V = ξ2(
+
+IK ⊗ 1P 1⊤
+
+> P
+> )
+
++ η2(
+
+1K 1⊤ 
+
+> K
+
+⊗ IP
+
+> )
+
++ Σ , (7) i.e. entry-wise, V(k,p ),(k′,p ′) = ξ2 Ik=k′ +η2 Ip=p′ +Σ (k,p ),(k′,p ′), where IP is the identity matrix in RP ×P , 1P is the column vector of ones of size P , and ⊗ denotes the Kronecker product of matrices. To estimate model (6), one may consider restricted maximum likelihood (REML) estimation or Bayesian Markov chain Monte Carlo (MCMC) methods. REML, however, may encounter convergence difficulties due to the complex covariance structure. MCMC methods, by contrast, offer greater flexibility but may be sensitive to the choice of prior distributions. Furthermore, estimates of the summary effect and heterogeneity variances may be biased if the proposed random-effects model is misspecified, for example, if the two random effects, γk and αp, are correlated. More fundamentally, random-effects models implicitly assume that the eligible studies constitute a random sample drawn from a hypothetical superpopulation of studies. This assumption is largely untestable and is often adopted primarily for statistical convenience. 
+
+## 3.2 A non-parametric meta-analysis approach based on ANOVA decomposition 
+
+To avoid the superpopulation assumption associated with (parametric) random-effect models, one can directly summarize ζk,p by specifying weight vectors (wi)Ki=1 and (qi)Pi=1 
+
+for outcome and mediator sources, respectively, such that ∑ 
+
+> i
+
+wi = 1 and ∑ 
+
+> i
+
+qi = 1 .A simple choice is uniform weighting, i.e., wk = 1 /K and qp = 1 /P . Alternatively, one may choose wk = nk/ ∑Kk=1 nk and qp = mp/ ∑Pp=1 mp, where nk and mp denote the sample sizes corresponding to outcome source k and mediator source p, respectively. This weighting scheme makes the contribution of each data source proportional to its sample size. Importantly, using simple weighting schemes rather than inverse-variance weights, as in standard meta-analysis, can prevent complications in establishing the asymptotic behaviors of the summary effect and heterogeneity variance estimates (see below). Under a prespecified weighting scheme, the summary effect across studies is defined as the weighted average of all standardized effects ζk,p , i.e. ζ = ∑ 
+
+> k,p
+
+wkqpζk,p . In the absence of heterogeneity, this summary effect reduces to the natural indirect effect in the target population. To estimate ζ, one can simply plug in the estimates ˆζk,p of ζk,p 
+
+proposed in the previous section. The asymptotic variance of ˆζ can then be established by using Delta method. In what follows, we define the total variability across studies as the following (weighted) variance: 
+
+τ 2 = ∑
+
+> k,p
+
+wkqp(ζk,p − ζ)2,
+
+13 which takes null value in the absence of heterogeneity. The classical ANOVA sum-of-squares decomposition then implies that: 
+
+τ 2 = ∑
+
+> k
+
+wk(ζk, · − ζ)2  
+
+> ︸︷︷ ︸
+> Outcome-related variation
+
++ ∑
+
+> p
+
+qp(ζ·,p − ζ)2  
+
+> ︸︷︷ ︸
+> Mediator-related variation
+
++ ∑
+
+> k,p
+
+wkqp(ζk,p − ζk, · − ζ·,p + ζ)2  
+
+> ︸︷︷ ︸
+> Interaction
+
+. (8) The first component on the right-hand side measures the variability of the k-specific averages ζk, · around the overall mean ζ. This component equals zero whenever ζk,p = ζk′,p 
+
+for all k, k ′, p , indicating the absence of outcome-related heterogeneity. Similarly, the second term represents the variability of the p-specific averages ζ·,p around the overall mean ζ. This component equals zero whenever ζk,p = ζk,p ′ for all k, p, p ′, indicating the absence of mediator-related heterogeneity. The final component captures variability not attributable to either source alone. Such a component will equal zero whenever the variability across elements in Sk = {ζk, 1, . . . , ζ k,P } and Sp = {ζ1,p , . . . , ζ K,p } are invariant in k and p, respectively. All components can be estimated by plugging in the estimates 
+
+ˆζ of ζ obtained previously. 
+
+Remark 3.1 . To connect the proposed ANOVA decomposition with the random-effects model in (6), note that any collection of standardized effects {ζk,p } can be uniquely decomposed as: 
+
+ζk,p = ζ + γk + αp + δk,p ,
+
+where γk = ζk, · − ζ; αp = ζ·,p − ζ and δk,p = ζk,p − ζk, · − ζ·,p + ζ are the ANOVA effects satisfying the weighted constraints: 
+
+> K∑
+> k=1
+
+wkγk =
+
+> P∑
+> p=1
+
+qpαp =
+
+> K∑
+> k=1
+
+wkδk,p =
+
+> P∑
+> p=1
+
+qpδk,p = 0 .
+
+This decomposition is purely algebraic and does not require any distributional assump-tions. Under the additional additivity assumption that δk,p = 0 ∀k, p , the decomposition reduces to: 
+
+ζk,p = ζ + γk + αp,
+
+which can be viewed as the finite-population analogue of the random-effects model (6). Thus, the interpretation of the total heterogeneity as the sum of outcome- and mediator-related components in this model implicitly relies on the absence of interaction between outcome and mediator sources. 
+
+# 4 Simulations 
+
+We conducted a simulation study to evaluate the finite-sample performance of the pro-posed estimators. In each simulation replicate, we generated data from one target pop-ulation and five trial populations, yielding a total sample size of 4,000 observations. In 14 Scenario 1, the data generation mechanism is presented as follows: 
+
+C1 ∼ U (0 , 1) , C2 ∼ B (0 .5) 
+
+P(S = s | C1, C 2) = P(S = 0 | C1, C 2) exp(( C1, C 2)γs), s = 1 , . . . , 5
+
+P(S = 0 | C1, C 2) = 
+
+> [
+
+1 + 
+
+> 5∑
+> s=1
+
+exp(( C1, C 2)γs)
+
+> ]−1
+
+P(A = 1 | C1, C 2, S ) = 0 .5
+
+P(Y = 1 | A, M, C 1, C 2, S ) = expit 
+
+> (
+
+− 8 I(0 .2 < C 1 ≤ 0.6) + 0 .5C2 + 2 M + M C 2 + AC 2 + βsA
+
+> )
+
+P(M = 1 | A, C 1, C 2, S ) = expit 
+
+> (
+
+− 1 − 2C1 I(0 .2 < C 1 ≤ 0.6) + C2 + ωsA
+
+> )
+
+,
+
+with the following coefficients: 
+
+γ1 = γ2 = γ3 = (0 .15 , −0.10 , −0.10) ⊤, γ4 = γ5 = ( −0.15 , 0.10 , 0.10) ⊤
+
+ω0 = ω5 = (0 .5, 0.8, 0.5, 1.2) ⊤, ω1 =ω3 = (0 .5, 0.8, 0.5, 1.4) ⊤, ω2 = ω4 = (0 .5, 0.8, 0.5, 1.8) ⊤.
+
+In Scenario 2, we adopted the same data generating mechanism but introduced missing data in the mediator and outcome by the following models: 
+
+P(R = 0 | A, C 1, C 2, S ) = expit(0 .1A − C1 − C2S −
+
+> √
+
+C2)
+
+P( ˜R = 0 | A, C 1, C 2, M, S ) = expit(0 .5 IS=1 + 0 .1A − C1 − C2S + 0 .05 M ).
+
+Across both scenarios, we compared parametric estimators (G-formula and the two version of inverse probability weighting called IPW (Equation (3)) and IPW 2 (Equa-tion (4))) with semiparametric estimators OS and TMLE. For the parametric estimators, all nuisance functions were estimated using logistic regression except ba,a ∗ 
+
+> k,p
+
+, which was estimated by using linear regression. For OS and TMLE, we considered two nuisance-estimation strategies. The first strat-egy (OS GLM and TMLE GLM) used parametric methods as above. In the second strategy (OS RF and TMLE RF), random forests from the Python library scikit-learn 
+
+were used to estimate all nuisance functions, except ba,a ∗ 
+
+> k,p
+
+, which was estimated by using honest forests regression from econml .In the meta-analysis step, the standardized effect estimates are summarized by the ANOVA-based method proposed in Section 3.2, using a uniform weighting scheme. For each scenario, we report relative bias, empirical variance, estimated variance, and coverage of the 95% confidence interval of ˆζk,p and the summary effect estimate ˆζ. For ˆζk,p 
+
+(and likewise for ˆζ), relative bias (in %) is defined as 100 × (̂ζk,p − ζk,p )/ζ k,p , and averaged over simulation replicates. Empirical variance, Var( ̂ζk,p ), is the Monte Carlo variance of the estimator across replicates, while ̂ Var( ̂ ζk,p ) is the median of the estimated variances across simulations. Coverage is the proportion of replicates in which the nominal 95% confidence interval contains ζk,p . To assess the performance of the proposed heterogeneity decomposition, we report the median estimated value of each heterogeneity component across simulation replicates and its corresponding true value. Results of this simulation study are presented in Tables 2 and 3. In Table 2, each performance metric is first computed for each of the 25 estimands ζk,p and then averaged across all estimands. Overall, the parametric estimators perform poorly due to model misspecification. In contrast, the OS RF and TMLE RF approaches exhibit satisfactory 15 Table 2: Performance of estimators under outcome and mediator misspecification, under scenarios with and without missing data. RF denotes Random Forest-based nuisance estimation, and GLM denotes generalized linear models. Performances are averaged over the 25 estimators {̂ζk,p }k,p . Var( ̂ ζk,p ) denotes the empirical variance over the Monte Carlo replications and ̂ Var( ̂ ζk,p ) denotes the median of the estimated variances across simulations. No missing data Missing data Bias (%) ̂ Var( ̂ ζk,p ) Var( ̂ζk,p ) Coverage Bias (%) ̂ Var( ̂ ζk,p ) Var( ̂ζk,p ) Coverage OS RF 4.81 × 10 −1 3.00 × 10 −5 3.40 × 10 −5 93 .3% 6.96 × 10 0 5.70 × 10 −5 6.70 × 10 −5 90 .5%                                                                                                                         
+
+> OS GLM 1.16 ×10 26.40 ×10 −56.40 ×10 −50.2% 1.12 ×10 21.03 ×10 −41.01 ×10 −42.1%
+> TMLE RF 3.90 ×10 03.10 ×10 −52.60 ×10 −594 .7% 1.14 ×10 11.79 ×10 −42.09 ×10 −491 .4%
+> TMLE GLM 1.17 ×10 26.40 ×10 −56.70 ×10 −50.2% 1.26 ×10 21.02 ×10 −49.00 ×10 −50.6%
+> IPW GLM 1.20 ×10 23.02 ×10 −43.65 ×10 −432 .5% 1.16 ×10 24.44 ×10 −44.47 ×10 −446 .9%
+> IPW2 GLM 1.15 ×10 23.76 ×10 −43.69 ×10 −441 .4% 1.22 ×10 28.19 ×10 −44.03 ×10 −467 .9%
+> G-formula GLM 1.16 ×10 26.70 ×10 −56.70 ×10 −50.2% 1.27 ×10 29.60 ×10 −59.00 ×10 −50.5%
+
+performance when the nuisance functions are estimated using data-adaptive methods. Although the performance of both approaches deteriorates in the presence of missing mediator and outcome data, the empirical coverage of the corresponding 95% CI re-mains above 90%, indicating adequate finite-sample performance despite the additional missingness. Table (3) reports the median estimated heterogeneity components across simula-tion replicates, together with their corresponding oracle values. As shown in the ta-ble, outcome-related heterogeneity is the primary contributor to the variability across the standardized effects ζk,p , whereas mediator-related heterogeneity and the interaction component are negligible. This pattern is accurately recovered when the standardized effects are estimated consistently, for example using the OS RF or TMLE RF estimators. One limitation is that when the true value of a heterogeneity component is close to zero, that is, on the boundary of the parameter space, its estimator may exhibit finite-sample bias. This phenomenon is observed for the mediator-related heterogeneity η2 in our simulation setting. Overall, TMLE RF yields smaller bias when estimating η2 than OS RF, although the presence of missing mediator and outcome data increases the bias for both estimators. Nevertheless, these biases are sufficiently small that they do not affect the qualitative conclusion regarding the relative importance of the different sources of heterogeneity. Finally, Table (4) reports summary statistics on estimator performance, including bias, variance, and coverage, for the aggregated summary ̂ ζa=1 . RF-based estimators (One-Step RF and TMLE RF) achieve substantially lower bias and near-nominal coverage, whereas linear-based estimators exhibit a much larger bias, driving coverage down to zero. 
+
+# 5 Application on Real Data 
+
+To illustrate the proposed methodology, we investigate the mediating role of self-reported health in the relationship between educational attainment and subjective well-being, using data across different countries from the 2017–2021 World Values Survey, Wave 7, Master Survey Questionnaire [8]. The core model considers three variables: the exposure A,defined as attainment of higher education (coded as a binary indicator); the mediator M ,16 Table 3: Median ANOVA decomposition terms ( η2, ξ2, and interaction) across 500 sim-ulations, by estimator and nuisance model, under scenarios with and without missing data. The oracle values are computed from the true ζk,p values. RF denotes Random Forest-based nuisance estimation, and GLM denotes generalized linear models. No missing data Missing data                                                                                                                                    
+
+> η2ξ2Interaction η2ξ2Interaction Oracle 1.08 ×10 −58.51 ×10 −57.49 ×10 −18 1.08 ×10 −58.51 ×10 −57.49 ×10 −18
+> OS RF 2.09 ×10 −59.14 ×10 −50.00 3.92 ×10 −58.69 ×10 −51.39 ×10 −19
+> OS GLM 2.58 ×10 −54.16 ×10 −40.00 1.59 ×10 −44.07 ×10 −40.00
+> TMLE RF 1.91 ×10 −58.26 ×10 −5−2.78 ×10 −19 3.95 ×10 −51.53 ×10 −40.00
+> TMLE GLM 2.66 ×10 −54.30 ×10 −40.00 1.70 ×10 −44.66 ×10 −40.00
+> IPW GLM 4.74 ×10 −56.05 ×10 −40.00 2.07 ×10 −46.25 ×10 −40.00
+> IPW2 GLM 2.64 ×10 −56.68 ×10 −40.00 1.06 ×10 −46.58 ×10 −4−1.11 ×10 −18
+> G-formula GLM 2.70 ×10 −54.29 ×10 −41.11 ×10 −18 1.59 ×10 −44.81 ×10 −41.11 ×10 −18
+
+Table 4: Performance of the summary estimator ̂ ζ across estimators under scenarios with and without missing data. No missing data Missing data Bias (%) ̂ Var( ̂ ζ) Coverage Bias (%) ̂ Var( ̂ ζ) Coverage OS RF 3.41 × 10 −1 5.00 × 10 −6 92 .8 4.21 × 10 0 8.00 × 10 −6 86 .6
+
+OS GLM 1.16 × 10 2 1.20 × 10 −5 0.0 1.12 × 10 2 1.90 × 10 −5 0.0
+
+TMLE RF 3.91 × 10 0 5.00 × 10 −6 90 .0 1.12 × 10 1 3.20 × 10 −5 85 .6
+
+TMLE GLM 1.16 × 10 2 1.20 × 10 −5 0.0 1.25 × 10 2 1.90 × 10 −5 0.0
+
+IPW GLM 1.19 × 10 2 8.80 × 10 −5 0.0 1.16 × 10 2 8.50 × 10 −5 0.0
+
+IPW2 GLM 1.14 × 10 2 7.60 × 10 −5 0.0 1.21 × 10 2 1.32 × 10 −4 0.0
+
+G-formula GLM 1.15 × 10 2 1.30 × 10 −5 0.0 1.26 × 10 2 1.80 × 10 −5 0.0
+
+representing self-reported health, originally measured on a five-point ordinal scale (0–4); and the outcome Y , denoting overall life satisfaction, measured on a ten-point ordinal scale (1–10). To facilitate estimation, the mediator was dichotomized. Categories 0, 1, and 2 (indicating poor to moderate self-reported health) were regrouped into M = 0 
+
+(“poor health”), while categories 3 and 4 were regrouped into M = 1 (“good health”). 
+
+Country Selection To enable a meaningful comparative analysis while avoiding exces-sive fragmentation of the data, we restricted the initial pool of 60 countries surveyed in Wave 7 to a smaller, purposively selected subset of 10 countries: Australia, Canada, Ger-many, Mongolia, Netherlands, Russia, Slovakia, Ukraine, United Kingdom and United States of America. The chosen target country is Canada. This selection was guided by four criteria: (i) cross-national diversity, prioritizing countries with markedly different health and education systems in order to capture heterogeneity in the exposure–mediator– outcome relationships across institutional contexts; (ii) sample size, favoring countries with larger sample to maximize statistical power and yield more precise parameter esti-mates by reducing standard errors; (iii) data completeness, excluding countries for which one or more required covariates were entirely unavailable, so as to avoid the systematic exclusion of all observations from a given country during complete-case analysis; and (iv) positivity , retaining only countries for which every category defined by the covariates 17 exhibited a non-zero probability of exposure and mediator, thereby ensuring the iden-tifiability of the causal mediation parameters of interest. The corresponding positivity diagnostics for each retained country are reported in Appendix (6). 
+
+Covariates We adjusted for six sociodemographic confounders commonly available across WVS countries: age, employment status, sex, religion, degree of urbanization, and marital status. Age is included as a continuous variable (in years). Employment status is coded as a binary indicator distinguishing individuals currently in paid employ-ment from those who are not (e.g., unemployed, retired, students, or homemakers). Sex is coded as a binary variable (male/female). Self-reported religiosity is coded on a 1–4 scale. Degree of urbanization is coded as a binary variable distinguishing urban from rural areas of residence. Finally, marital status is coded as a binary indicator distin-guishing married (or cohabiting) respondents from all other categories (single, divorced, separated, or widowed). 
+
+Results Table 5 reports the estimation results obtained using the OS and TMLE ap-proaches. For the nuisance parameter estimation, we employ honest random forests from 
+
+econml for the outcome regression models and L2-penalized logistic regression, imple-mented using scikit-learn , for the propensity score models. Aggregate Heterogeneity Contribution of τ 2 (%)                                                           
+
+> ˆζ(95% CI) ˆVˆη2ˆξ2Interaction Mediation Outcome Interaction OS 8.243 ×10 −2[8 .192 ×10 −2,8.294 ×10 −2]2.599 ×10 −41.939 ×10 −33.557 ×10 −33.608 ×10 −18 33 .69 61 .80 4.11 ×10 −13
+> TMLE 9.310 ×10 −2[9 .259 ×10 −2,9.361 ×10 −2]2.599 ×10 −42.669 ×10 −33.355 ×10 −31.263 ×10 −17 42 .47 53 .39 1.27 ×10 −13
+
+Table 5: Comprehensive estimation results: aggregate estimates and heterogeneity de-composition for OS and TMLE estimators. 95% confidence intervals are shown in brackets for ˆζ values. Table (5) reports the estimated aggregated natural indirect effect mediated through health in the relationship between educational attainment and life satisfaction on the additive scale. The analysis highlights substantial cross-country heterogeneity even after accounting for case-mix heterogeneity. This suggests that the mediated effect of higher education on life satisfaction is not uniform across societies, as the outcome and mediator mechanisms linking education to well-being vary across countries. TMLE attributes 42 .47% of total variability to the mediator-related heterogeneity (ˆη2 
+
+> TMLE
+
+= 2 .669 × 10 −3) versus 33 .69% for OS ( ˆη2 
+
+> OS
+
+= 1 .939 × 10 −3). This finding suggests that cross-country differences in the mediator contribute less to the heterogeneity of the indirect effect than cross-country differences in life satisfaction. 
+
+# 6 Conclusion 
+
+In this work, we develop a novel two-stage approach in a defined target population frame-work, where standardized indirect effects are estimated by combining information on exposure–mediator and mediator–outcome relationships obtained from external eligible studies. We propose three parametric and two nonparametric estimators of the natural indirect effect on the risk difference scale, and derive their efficient influence functions under several causal estimands and scales. The asymptotic variance of these estimators 18 is obtained from the empirical variance of the efficient influence function for the non-parametric estimators, and via M-estimation for the parametric estimators. We further introduce a non-parametric meta-analysis approach, based on ANOVA decomposition, that accounts for two distinct sources of variability: treatment–outcome heterogeneity arising from different versions of the treatment, and treatment–mediator heterogeneity. The performance of the proposed methods is assessed through simulation studies under challenging misspecification scenarios in finite samples. Finally, we apply our approach to real-world data to evaluate the heterogeneities in the natural indirect effect of higher education on life satisfaction through health across countries. A key limitation of our methods is their reliance on access to individual participant data (IPD), which are often unavailable in real-world applications [1].The unavailability of IPD may introduce bias due to selective data availability. Future work will focus on extending this framework to accommodate studies without IPD, thereby enabling the incorporation of aggregate-level information and enhancing the utility of the proposed methods for evidence synthesis in a wider range of settings. 
+
+# 7 Competing interests 
+
+No competing interest is declared. 
+
+# 8 Acknowledgments 
+
+T.T.V is supported by the French National Research Agency (Agence Nationale de la Recherche), through a funding for Chaires de Professeur Junior (23R09551S-MEDIATION). 
+
+# References 
+
+[1] Ikhlaaq Ahmed, Alexander J Sutton, and Richard D Riley. Assessment of publi-cation bias, selection bias, and unavailable data in meta-analyses using individual participant data: a database survey. Bmj , 344, 2012. [2] Reuben M Baron and David A Kenny. The moderator–mediator variable distinction in social psychological research: Conceptual, strategic, and statistical considerations. 
+
+Journal of personality and social psychology , 51(6):1173, 1986. [3] David Benkeser and Mark Van Der Laan. The highly adaptive lasso estimator. In 
+
+2016 IEEE international conference on data science and advanced analytics (DSAA) ,pages 689–696. IEEE, 2016. [4] Mike W-L Cheung. Fixed-and random-effects meta-analytic structural equation modeling: Examples and analyses in r. Behavior research methods , 46(1):29–40, 2014. [5] Mike W-L Cheung and Shu Fai Cheung. Random-effects models for meta-analytic structural equation modeling: review, issues, and illustrations. Research synthesis methods , 7(2):140–155, 2016. 19 [6] Issa J Dahabreh, Sarah E Robertson, Lucia C Petito, Miguel A Hernán, and Jon A Steingrimsson. Efficient and robust methods for causally interpretable meta-analysis: Transporting inferences from multiple randomized trials to a target population. Bio-metrics , 79(2):1057–1072, 2023. [7] Audrey-Ann Deneault, Robbie Duschinsky, Marinus H van Ijzendoorn, Glenn I Rois-man, Anh Ly, RM Pasco Fearon, and Sheri Madigan. Does child-mother attachment predict and mediate language and cognitive outcomes? a series of meta-analyses. 
+
+Developmental Review , 70:101093, 2023. [8] Christian Haerpfer, Ronald Inglehart, Alejandro Moreno, Christian Welzel, Kseniya Kizilova, Jaime Diez-Medrano, Marta Lagos, Pippa Norris, Eduard Ponarin, and Bi Puranen. World values survey wave 7 (2017-2020) cross-national data-set. (No Title) , 2020. [9] Anouk Elianne Hiensch. Stepping stones to implement exercise as integral part of cancer care . PhD thesis, Utrecht University, 2021. [10] Keisuke Hirano, Guido W Imbens, and Geert Ridder. Efficient estimation of average treatment effects using the estimated propensity score. Econometrica , 71(4):1161– 1189, 2003. [11] Hwanhee Hong, Lu Liu, and Elizabeth A Stuart. Estimating target population treatment effects in meta-analysis with individual participant-level data. Statistical Methods in Medical Research , 34(2):355–368, 2025. [12] Shi Huang, David P MacKinnon, Tatiana Perrino, Carlos Gallo, Gracelyn Cruden, and C Hendricks Brown. A statistical method for synthesizing mediation analyses using the product of coefficient approach across multiple trials. Statistical methods & applications , 25(4):565–579, 2016. [13] Peter J Huber. Robust estimation of a location parameter. In Breakthroughs in statistics: Methodology and distribution , pages 492–518. Springer, 1992. [14] David Huh, Xiaoyin Li, Zhengyang Zhou, Scott T Walters, Scott A Baldwin, Zhengqi Tan, Mary E Larimer, and Eun-Young Mun. A structural equation modeling ap-proach to meta-analytic mediation analysis using individual participant data: Test-ing protective behavioral strategies as a mediator of brief motivational intervention effects on alcohol-related problems. Prevention Science , 23(3):390–402, 2022. [15] Guido W Imbens and Donald B Rubin. Causal inference in statistics, social, and biomedical sciences . Cambridge university press, 2015. [16] Zhichao Jiang and Tyler J VanderWeele. When is the difference method conservative for assessing mediation? American journal of epidemiology , 182(2):105–108, 2015. [17] Edward H Kennedy. Semiparametric doubly robust targeted double machine learn-ing: a review. Handbook of statistical methods for precision medicine , pages 207–236, 2024. 20 [18] Quentin Le Coent, Catherine Legrand, James J. Dignam, and Virginie Rondeau. Validation of a longitudinal marker as a surrogate using mediation analysis and joint modeling: Evolution of the psa as a surrogate of the disease-free survival. 
+
+Biometrical Journal , 67(4):e70064, 2025. doi: https://doi.org/10.1002/bimj.70064. [19] Hopin Lee, Markus Hübscher, G Lorimer Moseley, Steven J Kamper, Adrian C Traeger, Gemma Mansell, and James H McAuley. How does pain lead to disability? a systematic review and meta-analysis of mediation studies in people with back and neck pain. Pain , 156(6):988–997, 2015. [20] David P MacKinnon, Amanda J Fairchild, and Matthew S Fritz. Mediation analysis. 
+
+Annu. Rev. Psychol. , 58(1):593–614, 2007. [21] Carlos Murillo, Tat-Thang Vo, Stijn Vansteelandt, Lauren E Harrison, Barbara Cagnie, Iris Coppieters, Marjolein Chys, Inge Timmers, and Mira Meeus. How do psychologically based interventions for chronic musculoskeletal pain work? a sys-tematic review and meta-analysis of specific moderators and mediators of treatment. 
+
+Clinical psychology review , 94:102160, 2022. [22] Judea Pearl. Causality . Cambridge university press, 2009. [23] Judea Pearl. Direct and indirect effects. 2011. [24] Kristopher J Preacher. Advances in mediation analysis: A survey and synthesis of new developments. Annual review of psychology , 66(1):825–852, 2015. [25] Lorenzo Richiardi, Rino Bellocco, and Daniela Zugna. Mediation analysis in epi-demiology: methods, interpretation and bias. International journal of epidemiology ,42(5):1511–1519, 2013. [26] James M Robins and Sander Greenland. Identifiability and exchangeability for direct and indirect effects. Epidemiology , 3(2):143–155, 1992. [27] Paul R Rosenbaum and Donald B Rubin. The central role of the propensity score in observational studies for causal effects. Biometrika , 70(1):41–55, 1983. [28] Kollin W Rott, Gert Bronfort, Haitao Chu, Jared D Huling, Brent Leininger, Mo-hammad Hassan Murad, Zhen Wang, and James S Hodges. Causally interpretable meta-analysis: Clearly defined causal effects and two case studies. Research Synthesis Methods , 15(1):61–72, 2024. [29] Katherine RK Saunders, Sabine Landau, Louise M Howard, Helen L Fisher, Louise Arseneault, Geraldine FH McLeod, and Sian Oram. Past-year intimate partner violence perpetration among people with and without depression: an individual participant data (ipd) meta-mediation analysis. Social psychiatry and psychiatric epidemiology , 58(12):1735–1747, 2023. [30] Eric J Tchetgen Tchetgen. On causal mediation analysis with a survival outcome. 
+
+The international journal of biostatistics , 7(1):33, 2011. [31] Eric J Tchetgen Tchetgen and Ilya Shpitser. Semiparametric theory for causal media-tion analysis: efficiency bounds, multiple robustness, and sensitivity analysis. Annals of statistics , 40(3):1816, 2012. 21 [32] Anastasios A Tsiatis, Victor Degruttola, and Michael S Wulfsohn. Modeling the relationship of survival to longitudinal data measured with error. applications to survival and cd4 counts in patients with aids. Journal of the American statistical association , 90(429):27–37, 1995. [33] Tyler J VanderWeele. Mediation analysis: a practitioner’s guide. Annual review of public health , 37:17–32, 2016. [34] Tat-Thang Vo and Stijn Vansteelandt. Challenges in systematic reviews and meta-analyses of mediation analyses. American Journal of Epidemiology , 191(6):1098– 1106, 2022. [35] Tat-Thang Vo, Raphael Porcher, Anna Chaimani, and Stijn Vansteelandt. A novel approach for identifying and addressing case-mix heterogeneity in individual partic-ipant data meta-analysis. Research synthesis methods , 10(4):582–596, 2019. [36] Tat-Thang Vo, Cecilia Superchi, Isabelle Boutron, and Stijn Vansteelandt. The conduct and reporting of mediation analysis in recently published randomized con-trolled trials: results from a methodological systematic review. Journal of clinical epidemiology , 117:78–88, 2020. [37] Tat-Thang Vo, Tran Trong Khoi Le, Sivem Afach, and Stijn Vansteelandt. Integra-tion of aggregated data in causally interpretable meta-analysis by inverse weighting. 
+
+arXiv preprint arXiv:2503.05634 , 2025. [38] Yue Wang and Jeremy MG Taylor. A measure of the proportion of treatment effect explained by a surrogate marker. Biometrics , 58(4):803–812, 2002. [39] Cheng Zhang. Developing Methods for Causal Mediation Analysis of Parenting Inter-ventions to Improve Child Antisocial Behaviour . PhD thesis, King’s College London, 2015. 22 A Identification 
+
+E [Y (a, k, M (a∗, p )) | j] = EC [E [Y (a, k, M (a∗, p ) | C] | j]
+
+Cross-World Ind. ↪→
+
+= EC [EM [E [Y (a, k, M (a∗, p ) | C, M (a∗, p )]] | j]= EC
+
+> [ ∑
+> m∈M
+
+E [Y (a, k, M (a∗, p ) | C, M (a∗, p ) = m]
+
+P(M (a∗, p ) = m | C) | j
+
+> ]
+
+Outcome Transportability ↪→
+
+= EC
+
+> [ ∑
+> m∈M
+
+E [Y (a, k, M (a∗, p ) | C, M (a∗, p ) = m, k ]
+
+P(M (a∗, p ) = m | C) | j
+
+> ]
+
+Outcome Conditionnal ↪→
+
+= EC
+
+> [ ∑
+> m∈M
+
+E [Y (a, k, M (a∗, p ) | C, M (a∗, p ) = m, k, a ]
+
+P(M (a∗, p ) = m | C) | j]
+
+Outcome Constistency ↪→
+
+= EC
+
+> [ ∑
+> m∈M
+
+E [Y | C, M = m, a, k ]
+
+P(M (a∗, p ) = m | C) | j
+
+> ]
+
+Mediator Transportability ↪→
+
+= EC
+
+> [ ∑
+> m∈M
+
+E [Y | C, M = m, a, k ]
+
+P(M (a∗, p ) = m | C, p ) | j
+
+> ]
+
+Mediator Conditionnal Unconfoundness ↪→
+
+= EC
+
+> [ ∑
+> m∈M
+
+E [Y | C, M = m, a, k ]
+
+P(M (a∗, p ) = m | C, p, a ∗) | j
+
+> ]
+
+Mediator Constistency ↪→
+
+= EC
+
+> [ ∑
+> m∈M
+
+E [Y | C, M = m, a, k ]
+
+P(M = m | C, a ∗, p ) | j
+
+> ]
+
+23 By the MAR assumptions, we can express the components as: 
+
+P(M = m | a∗, C, p ) = P(M = m | a∗, C, p, R = 0) ,
+
+E[Y | a, M, C, k ] = E[Y | a, M, C, k, R = 0] = E[Y | a, M, C, k, R = 0 , R ∗ = 0] .
+
+# B Proof IPW formulation 
+
+## B.1 IPW 1 
+
+As we have 
+
+E (Y | c, m, a, k, R ∗ = 0) = E (Y I (m) I(a) I(k) I(R∗ = 0) | c)
+
+P(m | c, a, k, R = 0) P(a | k, c, R = 0) P(R = 0 | c, k )1
+
+P(k | c)
+
+E [Y (a, k, M (a∗, p )) | j] = ∑ 
+
+> (c,m )∈C×M
+> 
+
+E [Y I (m, a, k, R ∗ = 0) | c]
+
+P(m | c, a, k, R = 0) P(a | k, c )
+
+× P(m | c, a ∗, p, R = 0) P(c | j)
+
+P(k | c, R = 0) P(R∗ = 0 | m, a, k, c ) P(R = 0 | c, k )= 1
+
+P(j) 
+
+> ∑
+> (c,m )∈C×M
+> 
+
+E [Y I (m, a, k, R ∗ = 0) | c]
+
+P(a | k, c, R = 0) 
+
+×P(m | c, a ∗, p, R = 0) 
+
+P(m | c, a, k, R = 0) 
+
+P(j | c)
+
+P(k | c) P(R = 0 | k, C ) P(c)
+
+> 
+
+= 1
+
+P(j)
+
+> ∑
+> m∈M
+
+E 
+
+> 
+
+E [Y I (m, a, k, R ∗ = 0)] 
+
+P(a | k, C ) × P(m | C, a ∗, p, R = 0) 
+
+P(m | C, a, k, R = 0) 
+
+× P(j | C)
+
+P(k | C) P(R = 0 | k, C, a ) P(R∗ = 0 | m, a, k, C, R = 0) 
+
+> 
+
+We also have: 
+
+E [Y I (m, a, k, R ∗ = 0)] = P(M = m | C) E [Y I (a, k, R ∗ = 0) | m]
+
+P(M | C, a, k, R = 0) = P(a | C, M, k, R = 0) P(k | C, M, R = 0) 
+
+P(a | C, k, R = 0) P(k | C, R = 0) P(M | C, R = 0) 
+
+θj,k,p ;a,a ∗ (P ) = 1
+
+P(j)E 
+
+> 
+
+Y I (a, k, R ∗ = 0) 
+
+P(a | C, M, k, R = 0) P(k | C, M, R = 0) 
+
+× P(a∗ | C, M, p, R = 0) P(p | C, M, R = 0) P(j | C)
+
+P(a∗ | C, p ) P(p | C) P(R∗ = 0 | M, a, k, C, R = 0) P(R = 0 | a∗, p, C )
+
+> 
+
+.
+
+24 B.2 IPW 2 
+
+E [Y (a, k, M (a∗, p )) | j] = EC
+
+> 
+
+EM
+
+> [
+
+E
+
+> [
+
+Y | C, M, a, k, R ∗ = 0 
+
+> ]
+
+| C, a ∗, p, R = 0 
+
+> ]
+
+| j
+
+> 
+
+= 1
+
+P(j)E
+
+> 
+
+E
+
+> 
+
+I(j)E
+
+> [
+
+E
+
+> [
+
+Y | C, M, a, k, R ∗ = 0 
+
+> ]
+
+| C, a ∗, p, R = 0 
+
+> ]
+
+| C
+
+> 
+
+= 1
+
+P(j)E
+
+> 
+
+E
+
+> [
+
+E
+
+> [
+
+Y | C, M, a, k, R ∗ = 0 
+
+> ]
+
+| C, a ∗, p, R = 0 
+
+> ]
+
+P(j | C)
+
+> 
+
+= 1
+
+P(j)E
+
+> 
+
+E 
+
+> [
+
+I(a∗, p, , R = 0) P(j | C)
+
+P(a∗ | C, p )P(p | C) E
+
+> [
+
+Y | C, M, a, k, R ∗ = 0 
+
+> ]
+
+| C
+
+> ]
+
+= 1
+
+P(j) 
+
+> [
+
+I(a∗, p, R = 0) E [Y | C, M, a, k, R ∗ = 0] P(j | C)
+
+P(a∗ | C, p, R = 0) P(R = 0 | C, p )P(p | C)
+
+> ]
+
+# C Efficient Influent function 
+
+By chain rule, we have : 
+
+ddt (θ(P )) =   
+
+> =A
+> ︷︸︸ ︷∑
+> (c,m )∈C×M
+
+ddt 
+
+> 
+
+E [Y | c, m, a, k, R ∗ = 0] 
+
+> 
+
+P(m | c, a ∗, p, R = 0) P(c | j)+ ∑
+
+> (c,m )∈C×M
+
+E [Y | c, m, a, k, R ∗ = 0] ddt 
+
+> 
+
+P(m | c, a ∗, p, R = 0) 
+
+> 
+
+P(c | j)
+
+> 
+
+= B
+
++ ∑
+
+> (c,m )∈C×M
+
+E [Y | c, m, a, k, R ∗ = 0] P(m | c, a ∗, p, R = 0) ddt (P(c | j))   
+
+> ︸︷︷ ︸
+> =C
+
+It is well known that: 
+
+ddt 
+
+> (
+
+E [Y | c, m, a, k, R ∗ = 0] 
+
+> )
+
+= I(a, c, m, k, R ∗ = 0) 
+
+P(a, c, m, k, R ∗ = 0) 
+
+> (
+
+Y − E [Y | c, m, a, k, R ∗ = 0] 
+
+> )
+
+ddt 
+
+> (
+
+P(m | c, a ∗, p, R = 0) 
+
+> )
+
+= ddt 
+
+> (
+
+E(I(m) | c, a ∗, p, R = 0) 
+
+> )
+
+= I(c, a ∗, p, R = 0) 
+
+P(c, a ∗, p, R = 0) 
+
+> (
+
+I(m) − E(I(m) | c, a ∗, p, R = 0) 
+
+> )
+
+= I(c, a ∗, p, R = 0) 
+
+P(c, a ∗, p, R = 0) 
+
+> (
+
+I(m) − P(m | c, a ∗, p, R = 0) 
+
+> )
+
+ddt (P(c | j)) = ddt (E(I(c) | j)) = I(j)
+
+P(j)×
+
+> (
+
+I(c) − E(I(c) | j)
+
+> )
+
+= I(j)
+
+P(j)
+
+> (
+
+I(c) − P(c | j)
+
+> )
+
+25 So, 
+
+A = ∑
+
+> (c,m )∈C×M
+
+I(a, c, m, k, R ∗ = 0) 
+
+P(a, c, m, k, R ∗ = 0) 
+
+> (
+
+Y − E [Y | c, m, a, k, R ∗ = 0] 
+
+> )
+
+P(m | c, a ∗, p )P(c | j)= I(a, k, R ∗ = 0) P(M | C, a ∗, p, R = 0) P(C | j)
+
+P(a, C, M, k, R ∗ = 0) 
+
+> (
+
+Y − E [Y | C, M, a, k, R ∗ = 0] 
+
+> )
+
+= 1
+
+P(j)
+
+Y I (a, k, R ∗ = 0) P(a∗ | C, M, R = 0) 
+
+P(a | C, M, R = 0) P(k | C, M, R = 0) P(a∗ | C, p, R = 0) P(R = 0 | C, p )
+
+× P(p | C, M, R = 0) P(j | C)
+
+P(p | C) P(R∗ = 0 | M, a, k, C, R = 0) 
+
+> (
+
+Y − E [Y | C, M, a, k, R ∗ = 0] 
+
+> )
+
+B = ∑
+
+> (c,m )∈C×M
+
+E [Y | c, m, a, k, R ∗ = 0] I(c, a ∗, p, R = 0) 
+
+P(c, a ∗, p, R = 0) 
+
+> (
+
+I(m) − P(m | c, a ∗, p, R = 0) 
+
+> )
+
+P(c | j)= I(a∗, p, R = 0) P(C | j)
+
+P(C, a ∗, p, R = 0) 
+
+> (
+
+E [Y | C, M, a, k, R ∗ = 0] 
+
+− ∑
+
+> m∈M
+
+E [Y | C, m, a, k, R ∗ = 0] P(m | C, a ∗, p, R = 0) 
+
+> )
+
+= 1
+
+P(j)
+
+I(a∗, p, R = 0) 
+
+P(a∗ | C, p, R = 0) P(R = 0 | C, p, )
+
+P(j | C)
+
+P(p | C)
+
+> (
+
+E [Y | C, M, a, k, R ∗ = 0] 
+
+−EM
+
+> [
+
+E [Y | C, M, a, k, R ∗ = 0] | C, a ∗, p, R = 0 
+
+> ])
+
+C = ∑
+
+> (c,m )∈C×M
+
+E [Y | c, m, a, k, R ∗ = 0] P(m | c, a ∗, p, R = 0) I(j)
+
+P(j)
+
+> (
+
+I(c) − P(c | j)
+
+> )
+
+= 1
+
+P(j)
+
+> [
+
+I(j) ∑
+
+> m∈M
+
+E [Y | C, m, a, k, R ∗ = 0] P(m | C, a ∗, p, R = 0) 
+
+−I(j) ∑
+
+> (c,m )∈C×M
+
+E [Y | c, m, a, k, R ∗ = 0] P(m | c, a ∗, p, R = 0) P(c | j)
+
+> 
+
+= I(j)
+
+P(j)
+
+> (
+
+EM
+
+> [
+
+E [Y | C, M, a, k, R ∗ = 0] | C, a ∗, p, R = 0 
+
+> ]
+
+− θ(P )
+
+> 
+
+# D Double Robustness 
+
+If ̂ Qak and ̂ ba,a ∗ 
+
+> k,p
+
+are correctly specified and noting the other nuisance parameters, ̂
+
+Qak(C, M ) = E(Y | C, M, A = a, S = k) + oP(1) ̂
+
+ba,a ∗ 
+
+> k,p
+
+(C) = E(E(Y | C, M, A = a, S = k) | C, A = a∗, S = p) + oP(1) 
+
+26 and all the other parameter ˆη converge to ˜η̂
+
+ρa∗,p (Mi, C i)̂ τp(Ci, M i)̂ pj (Ci)̂
+
+ρa,k (Mi, C i)̂ τk(Ci, M i)̂ πa∗,p (Ci)̂ pp(Ci) = ˜ w1 + oP(1) 1̂
+
+πa∗,p (Ci)̂
+
+pj (Ci)̂
+
+pp(Ci) = ˜ w2 + oP(1) 
+
+We also have that nj 
+
+> n
+
+converges to P(S = j) and Oi ∼ P0.
+
+I(Ai = a, S i = k)̂ ρa∗,p (Mi, C i)̂ τp(Ci, M i)̂ pj (Ci)̂
+
+ρa,k (Mi, C i)̂ τk(Ci, M i)̂ πa∗,p (Ci)̂ pp(Ci)
+
+(
+
+Yi −̂ Qak(Ci, M i)
+
+)
+
++I(Ai = a∗, S i = p)̂
+
+πa∗,p (Ci)̂
+
+pj (Ci)̂
+
+pp(Ci)
+
+(̂ 
+
+Qak(Ci, M i) −̂ ba,a ∗ 
+
+> k,p
+
+(Ci)
+
+)
+
++I(Si = j)̂ ba,a ∗ 
+
+> k,p
+
+(Ci)= I(Ai = a, S i = k) ˜ w1
+
+(
+
+Yi − E(Yi | Ci, M i, A = a, S i = k)
+
+)
+
++I(Ai = a∗, S = p) ˜ w2
+
+(
+
+E(Yi | Ci, M i, A = a, S = k) − ba,a ∗ 
+
+> k,p
+
+(Ci)
+
+)
+
++I(Si = j)E(
+
+E(Y | C, M, A = a, S = k) | C, A = a∗, S = p)
+
++ oP(1) 
+
+So by the law of large numbers, ̂ θ(one −step) 
+
+> a,a ∗
+> P
+
+−→
+
+1
+
+P(S = j)EP0
+
+I(A = a, S = k) ˜ w1
+
+(
+
+Y − E(Y | C, M, A = a, S = k)
+
+)
+
++I(A = a∗, S = p) ˜ w2
+
+E(Y | C, M, A = a, S = k) −
+
+E(
+
+E(Y | C, M, A = a, S = k) | C, A = a∗, S = p)
+
++I(S = j)E(
+
+E(Y | C, M, A = a, S = k) | C, A = a∗, S = p)
+
+and the rest follows as in the derivation, yielding ̂ θ(one −step) 
+
+> a,a ∗
+> P
+
+−→ θa,a ∗ .
+
+# E Data Application 
+
+27 Figure 2: Treatment-Mediator heterogeneity across countries. Forest plot of the estimated effects for each country using TMLE and OS. 28 Figure 3: Treatment-Outcome heterogeneity across countries. Forest plot of the estimated effects for each country using TMLE and OS. 29
