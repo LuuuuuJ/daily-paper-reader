@@ -1,0 +1,1137 @@
+Title: Difference-in-differences with "bad controls"
+
+URL Source: https://arxiv.org/pdf/2608.03881v1
+
+Published Time: Wed, 05 Aug 2026 01:19:09 GMT
+
+Number of Pages: 42
+
+Markdown Content:
+# Difference-in-differences with “bad controls” ∗
+
+## Carolina Caetano † Brantly Callaway ‡ Stroud Payne § Hugo Sant’Anna ¶
+
+## August 5, 2026 
+
+Abstract 
+
+This paper considers difference-in-differences identification strategies when the parallel trends assumption holds after conditioning on covariates that may themselves be affected by the treatment (often referred to as “bad controls”). We show that common approaches such as simply dropping bad controls are often ill-advised and develop two alternative approaches that allow bad controls to function as genuine controls despite being affected by treatment. First, we derive explicit conditions that rationalize conditioning only on pre-treatment values of the bad control, leading naturally to the Callaway and Sant’Anna (2021) estimator with pre-treatment values as covariates. Second, under a covariate unconfoundedness condition, we develop imputation and double/debiased machine learning estimators that recover the average treatment effect on the treated. We extend these results to staggered treatment adoption, provide pre-tests for the identifying assumptions, and apply the methods to study the effects of job displacement on earnings. 
+
+JEL Codes: C14, C21, C23 
+
+Keywords: Difference-in-Differences, Time Varying Covariates, Bad Control, Doubly Ro-bust Estimation, Machine Learning, Imputation, Conditional Parallel Trends, Treatment Effect Heterogeneity 
+
+> ∗
+
+Some of the results in this paper were originally in “Difference-in-differences with time-varying covariates” (Caetano, Callaway, Payne, and Sant’Anna 2022). This paper and our companion paper “Difference-in-differences when parallel trends holds conditional on covariates” (Caetano and Callaway 2025) replace that paper. Our Supplementary Appendix is available at https://bcallaway11.github.io/files/badcontrols/CCPS_2026_SA_ v1.pdf . An R package, badcontrols (Caetano, Callaway, Payne, and Sant’Anna 2026), implementing all proposed estimators is available at https://github.com/hugosantanna/badcontrols .
+
+> †
+
+John Munro Godfrey, Sr. Department of Economics, University of Georgia. carol.caetano@uga.edu 
+
+> ‡
+
+John Munro Godfrey, Sr. Department of Economics, University of Georgia. brantly.callaway@uga.edu 
+
+> §
+
+Department of Economics, Vanderbilt University. robert.s.payne@vanderbilt.edu 
+
+> ¶
+
+Department of Marketing, Distribution, and Economics, University of Alabama at Birmingham. hsan-tanna@uab.edu 
+
+1arXiv:2608.03881v1 [econ.EM] 4 Aug 2026 1 Introduction 
+
+In this paper, we study difference-in-differences identification strategies where (i) the parallel trends assumption holds after conditioning on covariates, (ii) some or all of these covariates vary over time, and (iii) some of the time-varying covariates could themselves be affected by the treatment. Covariates that could have been affected by participating in the treatment are often referred to as “post-treatment” or as “bad controls.” Classic examples of bad controls in labor economics include job-related covariates such as an individual’s occupation, industry, or union status. Whether to control for these variables involves a real tension. On the one hand, the parallel trends assumption may be more plausible when it includes job-related characteristics, effectively comparing outcome paths for treated and untreated individuals in similar jobs. On the other hand, if the treatment affects, say, an individual’s occupation, then controlling for observed occupation is not the same thing as controlling for what a worker’s occupation would have been absent the treatment. The received wisdom and most common practice in empirical work is to drop bad controls from the analysis. 1 For example, Angrist and Pischke (2008) note that “...we would do better to control only for variables that are not themselves caused by [the treatment].” 2 We agree that including a bad control directly as an additional covariate yields biased estimates of the ATT. However, simply excluding a bad control alto-gether can also be problematic. The main issue is that it does not respect the original identification strategy. The conditions that rationalize excluding a bad control amount to a revised parallel trends assumption that does not include the bad control at all, effectively saying that the bad control was never needed as a control in the first place. We provide two alternative approaches to dealing with bad controls in difference-in-differences applications. Unlike current common empirical practices, both of our approaches allow for the covariate to be affected by the treatment and play a genuine role as a covariate (so that dropping it from the analysis is inappropriate). First, we provide specific conditions under which it suffices to control for the pre-treatment value of the bad control. For example, in the labor context discussed above, these conditions rationalize conditioning on pre-treatment occupation, industry, and union status. Operationalizing this approach is straightforward, as one can simply apply the 
+
+> 1It is fairly common to include bad controls as a robustness check, but most main specifications do not include bad controls. See Topel (1991), Jacobson, LaLonde, and Sullivan (1993), and Stevens (1997), among many others, for labor applications that follow this approach.
+> 2Angrist and Pischke (2008) discuss bad controls in a cross-sectional setting in the context of deciding whether to control for occupation when studying causal effects of graduating from college on earnings. In that case, occupation is likely to be affected by attending college and, therefore, can make comparisons in earnings among those with the same occupation who graduated or did not graduate from college hard to interpret, even if college were randomly assigned.
+
+2Callaway and Sant’Anna (2021) estimator using pre-treatment values of the bad control as covariates. Second, we generalize the previous approach allowing for the possibility that the researcher needs to control for additional variables in order to account for how the treatment affects the bad control. This leads to a more complicated estimand for the ATT involving nested conditional expectations. In this case, we introduce new imputation, doubly robust, and double/debiased machine learning estimators. At a high level, both of our new approaches use the following logic. First, we treat the bad control as if it were an outcome and use an identification strategy to recover how the treatment affects the covariate (the exact details of this step are what differentiates the two approaches that we propose). From this step, we back out the distribution of the bad control absent the treatment. Then, in a second step, we use this backed-out distribution in the parallel trends assumption, effectively conditioning on the value of the bad control that would have occurred absent the treatment. We conclude the paper with an application about the effects of job displacement on earnings, where we treat a worker’s occupation score as a bad control. First, we show that job displacement decreases workers’ occupation score on average, in line with occupation score being a bad control. Second, we show that the approaches that we introduce lead to roughly 30% smaller estimates of the effect of job displacement on earnings relative to traditional approaches that directly include or altogether exclude the occupation score as a covariate. The remainder of the paper is organized as follows. Section 2 formalizes the setting that we consider and highlights challenges due to bad controls. Section 3 characterizes the bias of the two most common empirical approaches—directly including or dropping the bad control. Section 4 develops our two proposed approaches. Section 5 extends both approaches to staggered treatment adoption. Section 6 develops imputation and doubly robust estimators and discusses machine learning estimation of nuisance func-tions. Section 7 applies our approaches to study the effects of job displacement on earnings. Section 8 concludes. Some proofs and additional results appear in the ap-pendix, with the remaining ones provided in the Supplementary Appendix. 
+
+Related Literature 
+
+The causal inference literature has long recognized that conditioning on variables that are themselves affected by the treatment can lead to biased estimates of target causal effect parameters (see Rosenbaum (1984) for a covariate affected by the treatment as well as Robins and Greenland (1992) and Acharya, Blackwell, and Sen (2016) for mediators). In econometrics, similar to our paper, Lechner (2008) and Flores and Flores-Lagunes (2009) use a notion of treated and untreated potential covariates (al-3lowing for the covariates to be affected by the treatment) and propose approaches to control for counterfactual covariates. These papers are both in the context of cross-sectional data under the assumption of unconfoundedness, while we consider a setting with panel data and where the main assumption is parallel trends. In subsequent work to the first version of our paper, Shahn et al. (2025) and Renson et al. (2023) also consider difference-in-differences with time-varying covariates affected by treatment. In these papers, for a given period, the time-varying covariate realizes, then the treatment, then the outcome. This is in line with the statistics literature on time-varying treatments (Robins 1986; Robins, Hern´ an, and Brumback 2000; Blackwell and Glynn 2018; Hern´ an and Robins 2020), 3 but it is different from the setting that we consider, where the treatment realizes, then the time-varying covariate, then the outcome. Our setting is arguably more relevant for most social science applications and makes dealing with the bad control more challenging. Knaus and Pfleiderer (2026) develop a graphical framework based on Single World Intervention Graphs (SWIGs) to formalize conditioning strategies under conditional parallel trends, and their framework can allow for bad controls. Our paper is also broadly related to work that has used parallel trends or related assumptions in the context of mediation analysis (Deuchert, Huber, and Schelker 2019; Huber, Schelker, and Strittmatter 2022; Blackwell, Glynn, Hilbig, and Phillips 2026). Like a mediator, the bad control in our paper can be affected by the treatment. Unlike a mediator, however, our bad control plays an important role as a covariate for identifying effects of the treatment on the outcome. The mediation literature is typically interested in decomposing treatment effects into direct effects of the treatment and indirect effects due to the effect of the treatment on the mediator (see Huber (2020) for a review of this literature). Our paper is less ambitious on this front in that we only seek to account for the bad control being affected by the treatment, while identifying the overall effect of the treatment on outcomes. It would be interesting to extend our arguments to additionally identifying direct and indirect effects of the treatment, where the indirect effects occur through the effect of the treatment on the bad control. Finally, Zeldow and Hatfield (2021) provide simulations assessing the performance   
+
+> 3The broader time-varying treatments literature is also related to our setting, but is different in important ways. First, in that literature, identification is mainly based on a sequential unconfoundedness assumption where treated and untreated potential outcomes are independent of treatment status conditional on pre-treatment values of covariates and possibly pre-treatment outcomes. This is in contrast to our paper, where the main identify-ing assumption is parallel trends. Another difference between the current paper and much of the time-varying treatments literature is that these papers are typically primarily interested in recovering causal effects of different treatment paths (e.g., where each unit can move into or out of the treatment in each period), but often at the cost of introducing assumptions that limit treatment effect heterogeneity. The arguments in our paper could likely be extended in this direction, but our main results are for cases with either exactly two periods or with staggered treatment adoption, both of which are common in the econometrics literature.
+
+4of different approaches to controlling for covariates in difference-in-differences appli-cations, including cases with bad controls. Brown, Butts, and Westerlund (2026) de-compose treatment effects into direct and indirect effects in a setting with panel data, bad controls, and where the potential outcomes exhibit an interactive fixed effects structure. 
+
+# 2 Setup 
+
+This section introduces the notation that we use in the paper, introduces the parallel trends assumption that we use throughout the paper, and explains the challenges that arise for operationalizing the parallel trends assumption in the presence of a bad control. 
+
+Notation 
+
+For most of our results, we consider a setting with two time periods, which we label 
+
+t∗ and t∗ − 1. In the first time period, no units participate in the treatment. In the second period, some units become treated while other units remain untreated. Let Di denote whether or not a unit participates in the treatment. Next, let Yit 
+
+denote an individual’s outcome in period t, and let Yit (1) and Yit (0) denote treated and untreated potential outcomes for unit i in time period t. Notice that Yit ∗−1 = Yit ∗−1(0) and Yit ∗ = DiYit ∗ (1) + (1 − Di)Yit ∗ (0); i.e., in the first period, we observe untreated potential outcomes for all units because no units have participated in the treatment yet, while in the second period, we observe treated potential outcomes for treated units and untreated potential outcomes for untreated units. Next, we use Xit to denote the bad control (for expositional clarity, we consider the case with a single bad control, but it is straightforward to allow Xit to be a vector). And, in order to allow for it to be affected by the treatment, we use Xit (1) and Xit (0) to denote treated and untreated potential covariates. Like for the outcome, the observed bad control can be related to potential bad controls by Xit ∗−1 = Xit ∗−1(0) and Xit ∗ = DiXit ∗ (1) + (1 − Di)Xit ∗ (0). Finally, we define Zi to be a vector of other covariates that can include exogenous time-varying covariates or pre-treatment/baseline covariates. 4
+
+Assumption 1 (Random Sampling) . The observed data {Yit ∗ , Y it ∗−1, X it ∗ , X it ∗−1, Z i, D i}ni=1 
+
+are independent and identically distributed.  
+
+> 4The discussion above implicitly imposes a no-anticipation assumption, i.e., that treatments do not start affecting outcomes or the bad control before the treatment takes place. See Callaway (2023) for more discussion. We also implicitly impose SUTVA, i.e., that the potential outcomes are well-defined and do not depend on the treatments of other units. Finally, throughout the paper we assume that all expectations exist and that statements about conditional expectations should be taken to hold almost surely.
+
+5Following the vast majority of the difference-in-differences literature, we target identifying the average treatment effect on the treated (ATT), given by ATT := E[Yt∗ (1) − Yt∗ (0) | D = 1] Next, we move to providing a formal definition of a bad control. Consider the following conditions: 
+
+Condition 1 (Outcome Relevance) . For d ∈ { 0, 1},
+
+E[∆ Yt∗ (0) | Xt∗ (0) , X t∗−1, Z, D = d]̸ = E[∆ Yt∗ (0) | Z, D = d].
+
+Condition 2 (Affected by the Treatment) .
+
+
+
+Xt∗ (0) Xt∗−1, Z, D = 1 
+
+̸∼
+
+
+
+Xt∗ (1) Xt∗−1, Z, D = 1 
+
+
+
+Condition 1 says that Xt actually affects the path of untreated potential outcomes. This is essentially a definition of what it means for Xt to be a covariate—if the path of untreated potential outcomes does not depend on Xt, then there is no reason to include 
+
+Xt in the analysis. Condition 2 says that, conditional on the pretreatment covariates (Xt∗−1, Z ), the distribution of the untreated potential covariate Xt∗ (0) is different from the distribution of the treated potential covariate Xt∗ (1). In other words, it says that 
+
+Xt∗ is affected by the treatment. It is also worth comparing this condition to its complement that  Xt∗ (0) | Xt∗−1, Z, D = 1  ∼  Xt∗ (1) | Xt∗−1, Z, D = 1 , which Lechner (2011) and Caetano and Callaway (2025) refer to as covariate exogeneity .Covariate exogeneity allows a covariate to evolve over time, but rules out any kind of systematic effect of the treatment on the covariate. A leading case where it would hold is under the condition that Xit ∗ (1) = Xit ∗ (0) for all units. Condition 2 relaxes covariate exogeneity, allowing the treatment to affect the covariate too. 
+
+Definition 1 (Bad Control) . Xt is a bad control if it satisfies both Conditions 1 and 2. Definition 1 provides a natural, formal definition of a bad control as a time-varying variable that is relevant for the trend in untreated potential outcomes while also being affected by the treatment. Next, we introduce the parallel trends assumption, which is our main identifying assumption, as well as an overlap assumption: 
+
+Assumption 2 (Conditional Parallel Trends) .
+
+E[∆ Yt∗ (0) | Xt∗ (0) , X t∗−1, Z, D = 1] = E[∆ Yt∗ (0) | Xt∗ (0) , X t∗−1, Z, D = 0] .
+
+6Assumption 3 (Overlap) . P(D = 1 | Xt∗ (0) , X t∗−1, Z ) < 1.
+
+Assumption 2 says that, on average, the path of untreated potential outcomes is the same for the treated group as for the untreated group after conditioning on untreated potential bad controls in both periods, Xt∗ (0) and Xt∗−1, and exogenous covariates, Z. In other words, if both groups had remained untreated, then they would follow parallel trends conditional on all covariates. This is a natural assumption that is in line with the literature when Xt is not affected by the treatment (Heckman, Ichimura, and Todd 1997; Abadie 2005; Callaway and Sant’Anna 2021; Caetano and Callaway 2025) except that Assumption 2 is compatible with Xt being affected by the treatment. The untreated potential covariate Xt∗ (0) being unobserved for the treated group leads to substantive complications relative to existing identification strategies, which we discuss in detail below. Assumption 3 is a standard overlap condition that is common in the DiD literature (e.g., Abadie (2005)). It implies that, for any value of the covariates (including the bad control), there exist untreated units that have those characteristics. Without this assumption, there might not exist viable comparison units for some treated units. Next, define 5
+
+m0(Xt∗ (0) , X t∗−1, Z ) := E[∆ Yt∗ | Xt∗ (0) , X t∗−1, Z, D = 0] , (1) which is the average change in outcomes conditional on the untreated potential bad control and exogenous covariates for the untreated group. Since untreated potential covariates are observed for the untreated group, this term is identified. Using standard identification arguments for identifying the ATT under Assumption 2, it follows that ATT = E[∆ Yt∗ | D = 1] − E [m0 (Xt∗ (0) , X t∗−1, Z ) | D = 1] (2) Although this is a correct expression for the ATT, it does not imply that ATT is identified. Even though the m0 term is identified, it is infeasible to average it over the distribution of untreated potential covariates for the treated group. This implies that, in general, the ATT is not identified when Xt is a bad control. To understand the arguments below, it is helpful to rewrite the preceding display in integral form: 
+
+ATT = E[∆ Yt∗ | D = 1] −
+
+Z Z
+
+m0
+
+ xt∗ (0) , x t∗−1, z  d ˜F1(xt∗ (0) | xt∗−1, z )
+
+| {z } dF 1(xt∗−1, z ) (3) 
+
+where ˜F1(xt∗ (0) | xt∗−1, z ) := F Xt∗ (0) |Xt∗−1,Z,D =1 (xt∗ (0) | xt∗−1, z ) and F 1(xt∗−1, z ) :=      
+
+> 5To avoid cluttered notation (though slightly abusing notation), we use m0(·) to denote E[∆ Yt∗| · , D = 0] throughout the paper, allowing for the exact argument to change depending on the context.
+
+7FXt∗−1,Z |D=1 (xt∗−1, z ). 6 The problematic term in the previous display is the underlined one—because untreated potential covariates are not observed for the treated group, ˜F1(xt∗ (0) | xt∗−1, z ) is not identified. An important implication of the discussion above is that, in general, even if condi-tional parallel trends holds, bad controls can lead to identification failure for the ATT. The approaches that we discuss below all have the common feature that they either try to recover ˜F1(xt∗ (0) | xt∗−1, z ) or involve layering on additional assumptions that make it irrelevant that this distribution is not known. It is a real possibility, however, in any given application, that none of the sort of assumptions that we consider below for the bad control are plausible, leaving the ATT unidentified. Figure 1: Unrestricted Causal Graphs of DiD with Bad Controls 
+
+# Xt∗−1 Z
+
+# Xt∗ (0) ∆Yt∗ (0) 
+
+(a) SWIG with D = 0 
+
+# Xt∗D
+
+# Z
+
+# W
+
+# Xt∗−1
+
+(b) DAG for Xt∗
+
+Notes: Panel (a) shows the SWIG for the untreated state D = 0 and corresponds to the parallel trends assumption discussed in Assumption 2. Panel (b) provides the DAG for Xt∗ , where the dashed box around W indicates that it is an unobserved confounder. 
+
+Next, we provide causal graphs describing our setting of difference-in-differences with a bad control in Figure 1. Panel (a) contains a Single World Intervention Graph (SWIG, Richardson and Robins (2013)). The SWIG is essentially the graphical version of the parallel trends assumption. It describes the counterfactual world where no units participate in the treatment. It shows that Xt∗−1 and Z affect Xt∗ (0), and that all three of Xt∗−1, Z, Xt∗ (0) affect ∆ Yt∗ (0), and that this structure is common for the treated group and untreated group—if we were able to condition on ( Xt∗ (0) , X t∗−1, Z ), then the average trend in untreated potential outcomes would be the same across groups. 7
+
+Panel (b) provides a Directed Acyclic Graph (DAG) for Xt∗ . In the DAG, Xt∗−1 and             
+
+> 6Similar to the notation m0above, we more generally use the notation F 1and F 0throughout the paper to denote cdfs conditional on D= 1 and D= 0, respectively, using the arguments to make it clear exactly what cdfs these represent.
+> 7It is not possible to represent Assumption 2 in a standard DAG because (i) it involves untreated potential outcomes only, and (ii) it requires conditioning on Xt∗(0) which can be different from Xt∗in our setting.
+
+8Z are observed confounders for Xt∗ , while W are unobserved confounders (we use the convention of putting a dashed box around unobserved confounders). The arrow from 
+
+D to Xt∗ and the presence of W are what leads to Xt being a bad control and are the sources of the identification failure of the ATT discussed above. 
+
+# 3 Traditional Approaches to Bad Controls 
+
+This section examines the two traditional approaches to dealing with a bad control in empirical work—including the bad control directly, or dropping it entirely. At a high level, we show that each approach is hard to rationalize, as each effectively requires 
+
+Xt not to be a bad control at all, either requiring Xt∗ not to have been affected by the treatment or not to affect the path of untreated potential outcomes. 
+
+## 3.1 Approach 1: Use the Bad Control 
+
+A first approach is to simply include the post-treatment covariate Xt∗ as if it were an ordinary control variable. This is exactly the strategy that is criticized in Angrist and Pischke (2008). This leads to the following estimand 
+
+τ use := E[∆ Yt∗ | D = 1] − E [m0 (Xt∗ , X t∗−1, Z ) | D = 1] = E[∆ Yt∗ | D = 1] −
+
+Z Z
+
+m0(xt∗ , x t∗−1, z ) dF 1(xt∗ | xt∗−1, z ) dF 1(xt∗−1, z )where F 1(xt∗ | xt∗−1, z ) := F Xt∗ |Xt∗−1,Z,D =1 (xt∗ | xt∗−1, z ). τ use comes from replacing the unobserved distribution of untreated potential covariates for the treated group, ˜F1(xt∗ (0) | xt∗−1, z ), in the expression for ATT in Equation (2) with the observed distribution of covariates for the treated group. It is also straightforward to see the bias from using τ use when Xt∗ is a bad control. Notice that 
+
+τ use − ATT = 
+
+Z Z
+
+m0(xt∗ (0) , x t∗−1, z ) d 
+
+˜F1(xt∗ (0) | xt∗−1, z ) − F1(xt∗ | xt∗−1, z )
+
+
+
+dF 1(xt∗−1, z )which is non-zero when the distribution of Xt∗ (0) differs from the distribution of Xt∗ (1) for the treated group—this corresponds exactly to Condition 2 holding. Thus, this approach leads to bias whenever Xt∗ is a bad control. Figure 2 shows the DAG for Xt∗
+
+when τ use = ATT. In this and all subsequent figures that contain DAGs or SWIGs, we use red to highlight changes relative to Figure 1; we use dashes to indicate the removal of arrows. Thus, the red dashed arrow from D to Xt∗ indicates that the causal pathway from D to Xt∗ has been removed, which, in line with the discussion above, results in Xt∗ no longer being a bad control. 9Figure 2: DAG Rationalizing Using Xt∗ Directly as a Covariate 
+
+# Xt∗D
+
+# Z
+
+# W
+
+# Xt∗−1
+
+Notes: The figure modifies Panel (b) of Figure 1 in a way that rationalizes the approach in this section. The dashed red arrow from D to Xt∗ indicates that this DAG removes the causal pathway from D to Xt∗
+
+that was in Panel (b) of Figure 1. 
+
+## 3.2 Approach 2: Discard Bad Controls 
+
+The second approach that we consider is dropping the bad control from the analysis. This is the most common approach for dealing with bad controls in empirical work in economics. A common rationalization for this approach is that by avoiding Xt∗
+
+altogether, the researcher conditions only on exogenous controls. Dropping the bad control from the analysis leads to the following estimand: 
+
+τ discard := E[∆ Yt∗ | D = 1] − E [m0 (Z) | D = 1] = E[∆ Yt∗ | D = 1] −
+
+Z
+
+m0(z)dF 1(z)It is immediately clear that this expression is different from the one for the ATT in Equation (2). The key difference is that, in this case, the trend in untreated potential outcomes is implicitly assumed to only depend on exogenous covariates Z, not on the bad control. Figure 3 shows the implied SWIG. In line with the preceding discussion, the SWIG drops the arrows from Xt∗−1 and Xt∗ (0) to ∆ Yt∗ (0). It is also straightforward to derive the bias of τ discard under Assumptions 1 to 3. In particular, 
+
+τ discard − ATT = 
+
+Z Z 
+
+m0(xt∗ (0) , x t∗−1, z ) − m0(z)
+
+
+
+d˜F1(xt∗ (0) | xt∗−1, z ) dF 1(xt∗−1, z )The bias is equal to 0 when m0(Z) = m0(Xt∗ (0) , X t∗−1, Z ), which arises only in the case where Xt does not affect the change in untreated potential outcomes. However, notice that this violates the definition of a bad control— Xt is not needed as a covariate 10 Figure 3: SWIG Rationalizing Discarding Xt
+
+# Xt∗−1 Z
+
+# Xt∗ (0) ∆Yt∗ (0) 
+
+Notes: The figure modifies the SWIG in Panel (a) of Figure 1 to rationalize dropping the bad control from the analysis altogether. The red dashed arrows from Xt∗ (0) and Xt∗−1 to ∆ Yt∗ (0) indicate that the causal pathway from each of these to the change in untreated potential outcomes is removed relative to Panel (a) of Figure 1. 
+
+at all. In other words, whenever Xt is a bad control, dropping it from the analysis does not eliminate bias. It only changes the form of bias relative to including the bad control. 
+
+Remark 1 (Implications for Dealing with Bad Controls in Different Settings) . The discussion above effectively applies to cross-sectional settings with little modification, except that there would be one period t∗ and by replacing ∆ Yt∗ with Yt∗ . The ap-proaches that we discuss below rely on the researcher having access to panel data and would not be available (at all) with cross-sectional data and (to a large extent) with repeated cross-sections data. Therefore, an important implication of our results is that a researcher’s ability to deal with important covariates being affected by the treatment depends on the setting and nature of data that is available. 
+
+# 4 New Approaches to Bad Controls 
+
+In the previous section, we showed that the two most common approaches to dealing with bad controls essentially violate the definition of a bad control, suggesting that neither approach is attractive for applications with bad controls. In this section, we discuss two alternative approaches for dealing with bad controls that respect the con-cept of a bad control by allowing it to be both affected by the treatment and to play an important role as a covariate. In line with the discussion in the previous section, the key issue is recovering the distribution  Xt∗ (0) | Xt∗−1, Z, D = 1 . This requires additional assumptions. We propose two approaches. The first leads to a standard DiD estimand for the ATT that involves conditioning on ( Xt∗−1, Z ), i.e., the pre-treatment value of the bad-control 11 along with the other exogenous covariates. Second, we propose a generalized (weaker) assumption that leads to a more complicated estimand. In both cases, at a high level, our approach amounts to a two-step identification argument. In the first step, we effectively treat Xt∗ as an outcome and use an identification strategy to recover its counterfactual distribution. In the second step, having recovered its counterfactual distribution allows us to effectively control for it in the parallel trends assumption for ∆Yt∗ (0). 
+
+## 4.1 New Approach 1: Condition on Pre-Treatment Value of the Bad Control 
+
+To start with, we introduce the main assumption that we use in this section: 
+
+Assumption 4 (Simple Covariate Unconfoundedness) .
+
+Xt∗ (0) ⊥⊥ D | Xt∗−1, Z 
+
+Assumption 4 is an unconfoundedness assumption but where Xt∗ is the outcome. It says that the untreated potential covariate Xt∗ (0) is independent of treatment status conditional on ( Xt∗−1, Z ). Notice that Assumption 4 allows Xt to be a genuine bad control. We have not modified Assumption 2, so it still affects the path of untreated potential outcomes. It also does not put any restrictions on Xt∗ (1). Therefore, the treatment can affect Xt∗ in arbitrary ways. What it requires is that we can learn about how untreated potential covariates, Xt∗ (0), would have evolved absent the treatment by looking at the untreated group with the same pre-treatment value of the bad control and other exogenous covariates, ( Xt∗−1, Z ). Under this additional assumption, the ATT is identified, as we show in the next theorem. 
+
+Theorem 1. Under Assumptions 1 to 4, ATT = E[∆ Yt∗ | D = 1] − Em0(Xt∗−1, Z ) | D = 1 
+
+The proof is provided in Appendix A. The expression for the ATT in Theorem 1 is a standard DiD estimand (Heckman, Ichimura, and Todd 1997; Abadie 2005; Call-away and Sant’Anna 2021), but where the covariates include the pre-treatment bad control and other exogenous covariates. An important implication of this is that ex-isting arguments and tools from the DiD literature apply immediately based on this result, with the only differences amounting to the setting (bad control dealt with by Assumption 4) and paying careful attention to which covariates end up being used. 12 Panel (a) of Figure 4 shows the DAG for Xt∗ under this condition. The key restriction is that it rules out other confounders besides Xt∗−1 and Z for Xt∗ .The expression for ATT in Theorem 1 is also interesting because, despite Xt being a genuine bad control, the expression does not involve Xt∗ (the bad control in the post-treatment period) at all. The explanation for this is that, under Assumption 4, conditional on ( Xt∗−1, Z ), Xt∗ (0) is balanced between the treated and untreated group. Because it is already balanced, it does not need to be explicitly controlled for, and controlling for ( Xt∗−1, Z ) suffices. Figure 4: Causal Graphs for Approach 3 
+
+# Xt∗D
+
+# Z
+
+# W
+
+# Xt∗−1
+
+(a) DAG: Assumption 4 
+
+# Xt∗−1 Z
+
+# Xt∗ (0) ∆Yt∗ (0) 
+
+(b) SWIG: Assumption 5 
+
+Notes: Panel (a) modifies the DAG in Panel (b) of Figure 1 so that Assumption 4 holds. The red dashed arrows from W to D and Xt∗ indicates that the causal pathway from W to each of these is removed. Panel (b) modifies the SWIG in Panel (a) of Figure 1 so that Assumption 5 holds. The red dashed arrow from Xt∗ (0) to ∆ Yt∗ (0) indicates that this causal pathway is removed. 
+
+4.1.1 Alternative Conditions for the Same Estimand 
+
+One can also arrive at the same estimand as in Theorem 1 using alternative assump-tions. In particular, consider the following assumption: 
+
+Assumption 5 (Bad Control Redundancy) .
+
+E[∆ Yt∗ (0) | Xt∗ (0) , X t∗−1, Z, D = 0] = E[∆ Yt∗ (0) | Xt∗−1, Z, D = 0] Assumption 5 says that, after conditioning on the bad control in the pre-treatment period and exogenous covariates, the path of untreated potential outcomes does not depend on the bad control in post-treatment periods. This is a kind of dimension re-duction assumption that is common in settings with exogenous time-varying covariates (see Callaway and Sant’Anna (2021) and Caetano and Callaway (2025, Supplementary 13 Appendix SA 2.7)). In the context of job displacement, it implies that controlling for untreated potential occupation in the post-treatment period is redundant/unnecessary as long as one controls for pre-treatment occupation and other exogenous covariates. This assumption is non-nested with Assumption 4, but, like that assumption, it allows for Xt to be a genuine bad control—it can be affected by the treatment in post-treatment periods and the path of untreated potential outcomes can depend on it. Panel (b) of Figure 4 shows the SWIG that includes this assumption, where the key restriction is that the arrow from from Xt∗ (0) to ∆ Yt∗ (0) is removed, indicating that the post-treatment value of the bad control does not directly affect the ∆ Yt∗ (0) once (Xt∗−1, Z ) are controlled for. The following proposition shows that the ATT is identi-fied when Assumption 4 is replaced by Assumption 5 and gives the same estimand as in Theorem 1. 
+
+Proposition 1. Under Assumptions 1 to 3 and 5, ATT = E[∆ Yt∗ | D = 1] − Em0(Xt∗−1, Z ) | D = 1 
+
+The proof of Proposition 1 is provided in Appendix A. 
+
+## 4.2 New Approach 2: Covariate Unconfoundedness 
+
+In this section, we generalize the approach from the previous section. The key re-striction in the previous section was that the only confounders for Xt∗ were Xt∗−1
+
+and Z, which exactly correspond to the pre-treatment covariates that show up in the parallel trends assumption. But there is no strong ex ante reason to suppose that the covariates should be the same for Xt∗ and ∆ Yt∗ (0). For example, since we take the first difference in Yt∗ (0), the number of covariates required for parallel trends may be of lower dimension than for unconfoundedness for the bad control to hold. Relative to the original DAG in Figure 1, in the previous section, we assumed that there were no additional confounders. In this section, we instead suppose that the researcher observes the confounders W . We show this graphically in Figure 5. In line with the discussion above, we make the following additional assumptions: 8
+
+Assumption 6 (Covariate Unconfoundedness) .
+
+Xt∗ (0) ⊥⊥ D | Xt∗−1, W, Z 
+
+Assumption 7 (Overlap) . P(D = 1 | Xt∗−1, W, Z ) < 1   
+
+> 8We also assume that Wis observed, which expands Assumption 1 slightly. We do not explicitly state this expanded assumption for brevity.
+
+14 Figure 5: DAG for Xt∗ under Covariate Unconfoundedness 
+
+# Xt∗D
+
+# Z
+
+# W
+
+# Xt∗−1
+
+Notes: The figure modifies Panel (b) of Figure 1 so that Assumption 6 holds. The red solid box around 
+
+W indicates that W is observed. 
+
+Assumption 6 says that, conditional on the vector of pre-treatment covariates (Xt∗−1, W, Z ), the distribution of the untreated potential covariate Xt∗ (0) is the same for the treated and untreated group. Like Assumption 4 (but unlike the traditional ap-proaches discussed in Section 3), it allows for Xt∗ to both be affected by the treatment and play a genuine role as a covariate. Assumption 7 modifies the overlap assumption from Assumption 3 so that it holds conditional on ( Xt∗−1, W, Z ). Next, we show that the ATT is identified under these assumptions. 
+
+Theorem 2. Under Assumptions 1, 2, 6 and 7, ATT = E[∆ Yt∗ | D = 1] − E
+
+h
+
+Em0(Xt∗ , X t∗−1, Z ) Xt∗−1, W, Z, D = 0  D = 1 
+
+i
+
+(4) The expression for the ATT in Theorem 2 is more complicated than in previous results as it involves doubly nested conditional expectations, but the additional compli-cations can be explained intuitively. The term m0(Xt∗ , X t∗−1, Z ) is the average change in outcomes over time conditional on Xt∗ (0), Xt∗−1, and Z among the untreated group. Under Assumption 2, this is the path of outcomes that, conditional on Xt∗ (0) , X t∗−1,and Z, the treated group would have experienced if it had not participated in the treat-ment. The next expectation is over the distribution of Xt∗ (0) conditional on Xt∗−1, W ,and Z for the untreated group. Under Assumption 6, this is the same conditional distribution that Xt∗ (0) follows for the treated group. This part of the expression al-lows for Xt∗ to have been affected by the treatment, but we use observations from the untreated group with the same ( Xt∗−1, W, Z ) to learn how Xt∗ would have evolved for the treated group absent participating in the treatment. Finally, the outside expecta-tion is over the distribution of Xt∗−1, W , and Z for the treated group and, therefore, allows for these variables to be distributed differently in the treated group than in the 15 untreated group. Theorem 2 can also be explained in the context of our application on job displace-ment, where, for simplicity, suppose that Xt denotes a worker’s occupation in period 
+
+t, W denotes a worker’s earnings in the pre-treatment period t∗ − 1, and Z denotes a worker’s age. Assumption 2 says that, in the absence of job displacement, displaced and non-displaced workers would have experienced the same trend in earnings condi-tional on having the same age and the same occupation in each period. Occupation is a bad control because it is likely to be affected by job displacement, but Assumption 6 says that we can pin down what occupations displaced workers would have had in the absence of job displacement by looking at non-displaced workers who started in the same occupation and had the same age and earnings in period t∗ − 1. Theorem 2 effectively unpacks these assumptions to deliver the ATT. The inside expectation com-putes average earnings growth among non-displaced workers who match on occupation in each period and had the same age. The middle expectation then integrates over the occupations that displaced workers would have held absent displacement, recov-ered from non-displaced workers with the same pre-period occupation, earnings, and age. The outside expectation averages these counterfactual earnings trends over the pre-displacement characteristics of displaced workers, delivering the ATT. 
+
+Remark 2 (Lagged Outcomes as W ). An interesting special case arises when W =
+
+Yt∗−1, so that covariate unconfoundedness holds after conditioning on the pre-treatment outcome in addition to ( Xt∗−1, Z ). In this case, Theorem 2 yields ATT = E[∆ Yt∗ | D = 1] − E
+
+h
+
+Em0(Xt∗ , X t∗−1, Z ) Xt∗−1, Y t∗−1, Z, D = 0  D = 1 
+
+i
+
+.
+
+Several papers have considered the role of lagged outcomes in difference-in-differences designs (e.g., Chab´ e-Ferret (2017), Daw and Hatfield (2018), and Imai, Kim, and Wang (2023)). It is common in empirical work to try to include the lagged outcome as a conditioning variable, though it can be awkward, as in many cases it either reduces the parallel trends assumption to a version of unconfoundedness conditional on the lagged outcome or leads to endogeneity similar to a dynamic panel data model (see, e.g., Marx, Tamer, and Tang (2025)). The expression above provides a case that is genuinely difference-in-differences, while the lagged outcome also plays an important role in dealing with bad control. 
+
+Remark 3 (Parallel Trends for Bad Control) . For both of the approaches discussed in this section, the key additional assumptions were the unconfoundedness assumptions in Assumption 4 and Assumption 6, respectively. A natural alternative would be to invoke parallel trends assumptions directly for the bad control. Importantly, however, the ar-16 guments developed above require identification of the entire conditional distribution of 
+
+Xt∗ (0) for the treated group, rather than only its conditional mean. Methods from the difference-in-differences literature that recover the distribution of untreated potential outcomes, such as those proposed by Bonhomme and Sauder (2011), Callaway and Li (2019), and Callaway, Li, and Oka (2018), could in principle be applied in this con-text, though these approaches rely on additional identifying assumptions. Similarly, change-in-changes methods (Athey and Imbens 2006; Melly and Santangelo 2015), which are designed to recover distributions of untreated potential outcomes, could be adapted to model the evolution of time-varying covariates. A potential limitation of these distributional approaches in the present setting is that they typically point iden-tify distributions only for continuously distributed outcomes. As a result, they may be less suitable for applications involving discrete or mixed discrete-continuous time-varying covariates, which arise frequently in empirical work. Alternatively, under an additional linearity assumption, it is possible to recover the ATT while only recovering 
+
+E[∆ Xt∗ (0) | D = 1]. We explore this possibility in Supplementary Appendix SC. 
+
+# 5 Staggered Treatment Adoption 
+
+In this section, we extend our identification results from the two-period case to settings with more time periods and variation in treatment timing across units. We focus on the identification strategy from Section 4.2, as extending the results from Section 4.1 follows effectively immediately from using the arguments in Callaway and Sant’Anna (2021). 
+
+Assumption MP-1 (Staggered Treatment Adoption) . For t = 2 , . . . , T, Dit −1 =1 = ⇒ Dit = 1 .
+
+Assumption MP-1 says that, once a unit becomes treated, it remains treated in all subsequent periods. This setting is common in empirical work and is also the most common setting that has been considered in the literature on difference-in-differences with treatment effect heterogeneity (de Chaisemartin and D’Haultfoeuille 2020; Call-away and Sant’Anna 2021; Goodman-Bacon 2021; Sun and Abraham 2021; Caetano and Callaway 2025). Let Gi denote the period when unit i first becomes treated, with 
+
+Gi = ∞ for never-treated units. We assume no group is treated in the first period (if an “already treated” group exists, we drop it, since parallel trends does not gener-ally identify treatment effect parameters for this group nor is it useful as a comparison group without additional assumptions). Let G ⊆ { 2, . . . , T}∪{∞} denote the set of all groups and ¯G := G \ {∞} the set of groups that ever participate in the treatment. Let 
+
+Yit (0) denote untreated potential outcomes, Yit (g) denote the potential outcomes in pe-17 riod t of becoming treated in period g, and Xit (0) and Xit (g) denote the corresponding potential versions of the bad control. Let Yi = ( Yi1, . . . , Y iT)′ and Xi = ( Xi1, . . . , X iT)′
+
+denote the T × 1 vector of outcomes across all periods and the T × 1 vector of the bad control across all time periods. We use analogous notation for Di, Yi(0), Yi(g), Xi(0), and Xi(g), which are all T × 1 vectors. For two periods s1 < s 2, we use notation like 
+
+Xi,s 1:s2 := ( Xs1 , . . . , X s2 )′ to denote subvectors of Xi that includes only periods from 
+
+s1 to s2. We continue to use Zi and Wi to denote additional exogenous covariates, where Wi can include additional covariates that show up in the multi-period analog of Assumption 6. Next, we introduce a no anticipation assumption. 
+
+Assumption MP-2 (No anticipation) . For all units and time periods such that t < G i
+
+(i.e., pre-treatment periods for unit i), Yit = Yit (0) and Xit = Xit (0) .
+
+Assumption MP-2 requires that the treatment does not affect the outcome or bad control in periods before the treatment takes place. This assumption extends the standard no anticipation assumption in the DiD literature (Callaway and Sant’Anna 2021; Sun and Abraham 2021) to additionally hold for the bad control. The assumption can be relaxed to “limited anticipation” at the cost of additional notation (Callaway and Sant’Anna 2021). Under Assumptions MP-1 and MP-2, observed outcomes can be expressed as Yit = 1{t ≥ Gi}Yit (Gi) + 1{t < G i}Yit (0). In other words, in pre-treatment periods we observe untreated potential outcomes, and in post-treatment periods we observe the potential outcome corresponding to unit i’s actual treatment date. Similarly, Xit = 1{t ≥ Gi}Xit (Gi) + 1{t < G i}Xit (0). In line with recent work that has considered difference-in-differences approaches under staggered treatment adoption, we focus on identifying group-time average treat-ment effects (Callaway and Sant’Anna 2021; Wooldridge 2025) that are defined as ATT( g, t ) = E[Yt(g) − Yt(0) | G = g]ATT( g, t ) is the average treatment effect for group g in in period t. In some appli-cations, ATT( g, t )’s can be the main target parameters, but Callaway and Sant’Anna (2021) also discuss how ATT( g, t )’s can be aggregated into an overall average treatment effect, an event study, or other target parameters. The reason to focus on identification of AT T (g, t )’s is that, if they can be identified, one can follow known recipes to recover all of the common target parameters in the literature. 
+
+Assumption MP-3 (Multi-Period Random Sampling) . The observed data consists of {Yi1, . . . , Y iT, X i1, . . . , X iT, W i, Z i, D i}ni=1 which are independent and identically dis-tributed across units. 
+
+18 Assumption MP-4 (Multi-Period Conditional Parallel Trends) . For all g ∈ G , and for all t = 2 , . . . , T, 
+
+E[∆ Yt(0) | X(0) , Z, G = g] = E[∆ Yt(0) | X(0) , Z ]
+
+Assumption MP-5 (Multi-Period Covariate Unconfoundedness) . For all t ≥ 2,
+
+Xt(0) ⊥⊥  G, X t−2(0) , . . . , X 1(0)   Xt−1(0) , W, Z 
+
+Assumption MP-6 (Multi-Period Overlap) . For all g ∈ ¯G, there exists some ϵ > 0
+
+such that P (G = g) > ϵ and P (G = ∞ | X(0) , W, Z ) > ϵ .
+
+Assumption MP-3 says that we observe T periods of panel data. Assumption MP-4 extends Assumption 2 to the multi-period setting. It says that conditional paral-lel trends hold across all groups and time periods. Assumption MP-5 extends the two-period Covariate Unconfoundedness assumption (Assumption 6) to the staggered setting. Conditional on the untreated potential bad control in the preceding period, 
+
+Xt−1(0), as well as the other covariates ( W, Z ), the untreated potential bad control in the current period is independent of the group. The assumption also embeds a first-order Markov structure, so that Xt(0) depends on the entire covariate history only through Xt−1(0). Assumption MP-6 is a multiple-period version of the overlap assumption, which implies that there are available comparison groups for all values of the covariates. 
+
+Theorem 3. Under Assumptions MP-1 to MP-6, and for t ≥ g (post-treatment periods for group g),                    
+
+> ATT (g, t ) = E[Yt−Yg−1|G=g]
+> −E
+> h
+> EE[Yt−Yg−1|Xg:T,X1:( g−1) , Z, G =∞]X1:( g−1) , W, Z, G =∞G=g
+> i
+
+Theorem 3 extends the covariate unconfoundedness result from Theorem 2 to the staggered case, producing the same nested expectation structure. One difference is that period ( g − 1) is the “based period” rather than t − 1. This arises because, for group g, period ( g − 1) is the period immediately before treatment begins, and parallel trends allows us to recover the path of untreated potential outcomes from that period to the current period. Theorem 3 also uses the never-treated group as the comparison group as it is the only group for which the untreated potential bad control is observed in all periods. 19 5.1 Extensions 
+
+In this section, we provide two additional identification results for the staggered adop-tion setting. One challenge for operationalizing Theorem 3 is that its identification result involves conditioning on the full vector of bad controls across periods, which will often be relatively high-dimensional. The first extension in this section discusses (typically mild in applications) assumptions that decrease the number of periods in which the bad control needs to be conditioned on. The second extension provides an identification result leading to conditioning only on the pre-treatment value of the bad control based on either a version of simple covariate unconfoundedness (similar to Theorem 1 above) or a redundancy condition (similar to Proposition 1 above) but for the staggered adoption setting considered in this section. 
+
+5.1.1 Extension 1: Dimension Reduction Assumption MP-7 (Multi-Period Bad Control Dimension Reduction) . For all 1 ≤
+
+t1 < t 2 ≤ T, and for all g ∈ G ,
+
+E[Yt2 (0) − Yt1 (0) | X(0) , Z, G = g] = E[Yt2 (0) − Yt1 (0) | Xt2 (0) , X t1 (0) , Z, G = g]Assumption MP-7 says that the path of untreated potential outcomes between any two periods depends on the time-varying covariates only through their values in those two periods, not the full history. This type of assumption is very common in panel data models generally (see, e.g., Equation 10.12 in Wooldridge (2010)). 
+
+Proposition 2. Under Assumptions MP-1 to MP-7, and for t ≥ g (post-treatment periods for group g),                 
+
+> ATT (g, t ) = E[Yt−Yg−1|G=g]
+> −E
+> h
+> EE[Yt−Yg−1|Xt, X g−1, Z, D t= 0] Xg−1, W, Z, D t= 0 G=g
+> i
+
+The key difference in Proposition 2 relative to Theorem 3 is that it only involves conditioning on Xg−1 rather than the entire covariate history, with the downstream implication being that it notably simplifies estimation. It also uses the not-yet-treated group as the comparison group, which is a larger comparison group than the never-treated group in Theorem 3, though we note that effectively the same arguments can rationalize using the never-treated comparison group as well. Proposition 2 is a mild, but practically useful, extension of our earlier identification result, and it is the one that is implemented in our application and accompanying R package. 20 5.1.2 Extension 2: Simple Covariate Unconfoundedness 
+
+Second, we provide a staggered adoption version of the result in Theorem 1 and Propo-sition 1. 
+
+Assumption MP-8 (Multi-Period Simple Covariate Unconfoundedness) . For all t ≥
+
+2,
+
+Xt(0) ⊥⊥  G, X t−2(0) , . . . , X 1(0)   Xt−1(0) , Z 
+
+Assumption MP-9 (Multi-Period Bad Control Redundancy) . For all 1 ≤ t1 < t 2 ≤
+
+T, and for all g ∈ G ,
+
+E[Yt2 (0) − Yt1 (0) | X(0) , Z, G = g] = E[Yt2 (0) − Yt1 (0) | Xt1 (0) , Z, G = g]Assumption MP-8 is the staggered treatment adoption version of Assumption 4 from the case with two periods, which provides an unconfoundedness assumption conditional on  Xg−1(0) , Z . The difference from Assumption MP-5 is that it does not additionally condition on W . Assumption MP-9 is the staggered adoption version of Assumption 5 from the two period setting. Like that assumption, it implies that it is sufficient to control for the pre-treatment value of the bad control in the parallel trends assumption. 
+
+Proposition 3. Under Assumptions MP-1, MP-2, MP-3, MP-4, MP-6, and MP-7, for t ≥ g (post-treatment periods for group g), and if either Assumption MP-8 or MP-9 holds, then               
+
+> ATT (g, t ) = E[Yt−Yg−1|G=g]−E
+> h
+> EYt−Yg−1Xg−1, Z, D t= 0 G=g
+> i
+
+Proposition 3 is the staggered adoption extension of Theorem 1 and Proposition 1 from the two period case. It says that ATT( g, t ) is identified by a notably simpli-fied estimand if either the version of unconfoundedness in Assumption MP-8 holds or the redundancy condition in Assumption MP-9. Like the previous extension, this is basically a straightforward result given the previous ones, but it is practically useful. Under the conditions discussed here, one can directly use Callaway and Sant’Anna (2021) for estimation as long as the pre-treatment value of the bad control is included as a covariate. 
+
+## 5.2 Additional Remarks 
+
+Remark 4 (Aggregating ATT( g, t )’s) . As discussed above, all common target pa-rameters under staggered treatment adoption can be recovered as weighted averages 21 of group-time average treatment effects. For example, letting e denote the length of exposure to the treatment, an event study parameter is given by ATT es (e) = X
+
+> g∈G e
+
+AT T (g, g + e)P( G = g | G ∈ G e)where Ge = {g ∈ ¯G : g + e ∈ [2 , T] }, i.e., the set of groups that are observed to participate in the treatment for e periods. Similarly, an overall ATT is given by ATT o = X 
+
+> g∈¯G
+> T
+
+X
+
+> t=g
+
+P( G = g | G ∈ ¯G)T − g + 1 AT T (g, t ).
+
+See Callaway and Sant’Anna (2021) for more details and more examples. 
+
+Remark 5 (Lagged Outcomes as W in the Multi-Period Case) . As in the two-period case (Remark 2), a natural choice is W = Yg−1, so that covariate unconfoundedness holds after conditioning on the lagged outcome. This argument continues to go through in the staggered adoption setting considered in this section. However, an interesting (and arguably more natural) assumption in the staggered adoption setting is: 
+
+Xt(0) ⊥⊥  G, X t−2(0) , . . . , X 1(0)   Xt−1(0) , Y t−1(0) , Z .
+
+This assumption introduces additional challenges due to Yt−1(0) not always being ob-served for group g, in contrast to Yg−1(0) always being observed. In particular, opera-tionalizing this assumption would require dealing with feedback from the treatment to the bad control that arises through the outcome, which is not straightforward to deal with in a difference-in-differences context. See Bonhomme (2025) and Marx, Tamer, and Tang (2025) for recent discussions about dynamics and feedback in the context of panel data causal inference. 
+
+Remark 6 (Pre-Testing) . None of Assumptions MP-4, MP-5 and MP-8 is directly testable, but the same sort of pre-tests that are commonly used in difference-in-differences applications are useful to assess their plausibility. In particular, one can compute the same estimand as in Proposition 2 or 3 but for pre-treatment peri-ods, in which case these pre-treatment pseudo-ATT( g, t )’s should be equal to zero. To pre-test assumptions about the bad control specifically, under our assumptions, ATT X (g, t ) := E[Xt(g) − Xt(0) | G = g] is identified. Estimating ATT X (g, t ) in pre-treatment periods provides a way to assess Assumption MP-5 or MP-8 in the periods before the treatment occurred. In post-treatment periods, it a test for Xt actually being a bad control as it should be affected by the treatment. 22 6 Estimation and Inference 
+
+This section describes how to estimate the ATT based on the identification results in previous sections. We focus on the case with two time periods, as the extension to estimating ATT( g, t ) is straightforward. We also focus on the setting of Theorem 2, where Assumption 6 holds, rather than Theorem 1 because existing estimation results from Callaway and Sant’Anna (2021) hold essentially immediately in the latter case. We propose two approaches. First, we propose an imputation approach based on imposing linear models. Second, we propose an approach based on a doubly robust estimand for the ATT that can be combined with estimating the nuisance functions with machine learners and, hence, permits estimation of the ATT without imposing strong functional form assumptions. 
+
+## 6.1 Imputation Estimator 
+
+We begin with an imputation estimator that serves as a natural baseline estimator that imposes linear models for unknown nuisance functions, building on the literature on imputation estimators in the context of difference-in-differences (Gardner, Thakral, Tˆ o, and Yap 2023; Borusyak, Jaravel, and Spiess 2024; Liu, Wang, and Xu 2024). This approach is easy to implement and allows for treatment effect heterogeneity. From Theorem 2, the ATT can be written as ATT = E[∆ Yt∗ | D = 1] − τ, τ := E [ν0(Xt∗−1, W, Z ) | D = 1] ,
+
+where ν0 is defined as 
+
+ν0(Xt∗−1, W, Z ) := E[m0(Xt∗ , X t∗−1, Z ) | Xt∗−1, W, Z, D = 0] , (5) which is a nested conditional expectation in the untreated group. Our imputation approach operationalizes estimating these objects by imposing linear models for these nuisance functions. In particular, we make the following assumption. 
+
+Assumption 8 (Linearity Conditions for Imputation) . The outcome regression for the untreated group is given by 
+
+m0(Xt∗ , X t∗−1, Z ) = Xt∗ β1 + Xt∗−1β2 + Z′β3,
+
+and the conditional mean of the post-treatment bad control in the untreated group fol-
+
+23 lows 
+
+E[Xt∗ | Xt∗−1, W, Z, D = 0] = Xt∗−1γ1 + W ′γ2 + Z′γ3.
+
+We estimate estimate ( β1, β 2, β 3) by ordinary least squares in the untreated sample from a regression of ∆ Yt∗ on ( Xt∗ , X t∗−1, Z ), and then ( γ1, γ 2, γ 3) by ordinary least squares in the untreated sample from a regression of Xt∗ on ( Xt∗−1, W, Z ). Let 
+
+bE[Xt∗ | Xt∗−1, W, Z, D = 0] = Xt∗−1bγ1 + W ′bγ2 + Z′bγ3
+
+denote the fitted conditional mean of Xt∗ for untreated units. Then, based on Equa-tion (5), we construct 
+
+bν0(Xt∗−1, W, Z ) = bE[Xt∗ | Xt∗−1, W, Z, D = 0] bβ1 + Xt∗−1 bβ2 + Z′ bβ3.
+
+Let n1 := Pni=1 Di denote the number of treated units in the sample, and define 
+
+bm1 = 1
+
+n1
+
+> n
+
+X
+
+> i=1
+
+Di ∆Yit ∗ , (6) 
+
+bτra = 1
+
+n1
+
+> n
+
+X
+
+> i=1
+
+Di bν0(Xi,t ∗−1, W i, Z i). (7) The imputation estimator of the average treatment effect on the treated is then 
+
+[ATT ra = bm1 − bτra .
+
+In Assumption S1 in the Supplementary Appendix, we provide additional regularity conditions. The following proposition provides the asymptotic properties of [ATT ra .
+
+Proposition 4. Under Assumptions 1, 2, 6, 7, 8, and S1, the imputation estimator 
+
+[ATT ra is consistent and satisfies 
+
+√n [ATT ra − ATT  d
+
+−→ N (0 , Ω),
+
+where Ω = Var( ψra ) and ψra is the influence function defined in Equation S8 in the Supplementary Appendix. 
+
+## 6.2 Neyman Orthogonal Estimator 
+
+The imputation estimator in Section 6.1 is consistent under correct specification of 
+
+m0(Xt∗ , X t∗−1, Z ) and E[Xt∗ | Xt∗−1, W, Z, D = 0]. If these models are misspecified, 24 however, the resulting bias does not vanish with sample size. In this section, we provide a Neyman Orthogonal estimator for the ATT, allowing for (i) doubly robust estimation (i.e., consistent estimation when some of the nuisance functions are misspecified), and (ii) using machine learning to estimate the nuisance functions. We introduce the following additional notation for this section. Let π := P( D = 1), and let 
+
+p(Xt∗−1, W, Z ) = P( D = 1 | Xt∗−1, W, Z ). (8) 
+
+p is the propensity score conditional on the covariates ( Xt∗−1, W, Z ). Additionally, define 
+
+ω0
+
+ Xt∗ (0) , X t∗−1, Z  := E
+
+ p(Xt∗−1, W, Z )1 − p(Xt∗−1, W, Z ) Xt∗ (0) , X t∗−1, Z, D = 0 
+
+
+
+. (9) 
+
+ω0 is the conditional expectation of the odds ratio based on p(Xt∗−1, W, Z ) given (Xt∗ , X t∗−1, Z ) for the untreated group. To conserve on notation, let O = ( Yt∗−1, Y t∗ , X t∗−1, X t∗ , W, Z, D )and define 
+
+φ1(O; η) = Dπ ∆Yt∗ − Dπ ν0(Xt∗−1, W, Z )
+
+− 1 − Dπ (m0(Xt∗ , X t∗−1, Z ) − ν0(Xt∗−1, W, Z )) p(Xt∗−1, W, Z )1 − p(Xt∗−1, W, Z )
+
+− 1 − Dπ (∆ Yt∗ − m0(Xt∗ , X t∗−1, Z )) ω0(Xt∗ , X t∗−1, Z ). (10) The following proposition provides an alternative estimand for the ATT. 
+
+Proposition 5. Under Assumptions 1, 2, 6 and 7, ATT = Eφ1(O; η)
+
+Next, let bη = ( bm0, bν0, bp, bω0) denote estimators of the nuisance functions in Equa-tion (10), bπ = n−1 Pni=1 Di, and bτ = n−11
+
+Pni=1 Di bν0,i , where n1 = Pni=1 Di and 
+
+bν0,i = bν0(Xi,t ∗−1, W i, Z i). The sample analog of the expression in Proposition 5 is 
+
+[ATT dr = bm1 − bτ − 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+"
+
+1 − Di
+
+bπ ( bm0,i − bν0,i ) bpi
+
+1 − bpi
+
++ 1 − Di
+
+bπ (∆ Yit ∗ − bm0,i ) bω0,i 
+
+#
+
+, (11) 
+
+where bm1 is the treated mean of ∆ Yt∗ as in Equation (6), and the remaining shorthand is bm0,i = bm0(Xit ∗ , X i,t ∗−1, Z i), bpi = bp(Xi,t ∗−1, W i, Z i), and bω0,i = bω0(Xit ∗ , X i,t ∗−1, Z i). Next, we provide a double robustness result for [ATT dr . Let η(θ) =  m0(θm), ν 0(θν ), p (θp), ω 0(θω)
+
+denote parametric working models for the nuisance functions. A leading example would be to use the same linear models as in Assumption 8 (from our imputation 25 estimator) for m0(θm) and ν0(θν ), p(θp) to be a logit working model for the propensity score, and ω0(θω) to come from a regression of the estimated odds ratio, ˆ p(ˆθp)/(1 −
+
+ˆp(ˆθp)) on Xt∗ , X t∗−1, and Z using the untreated group. We allow for the possi-bility that the working models are misspecified, e.g., m0(θm)̸ = m0. Let ˆ η(ˆθ) = 
+
+  ˆm0(ˆθm), ˆν0(ˆθν ), ˆp(ˆθp), ˆω0(ˆθω) denote the estimated nuisance functions given the para-metric working models discussed above, and let [ATT dr (ˆθ) denote the estimator based on using the parametric working models in Equation (11). Under mild regularity con-ditions, we have that ˆ η(ˆθ) p
+
+−→ η(θ). We also have that [ATT dr (ˆθ) p
+
+−→ ATT dr (θ), where ATT dr (θ) is the probability limit of [ATT dr (ˆθ) given the parametric working models for the nuisance functions and allowing for the possibility ATT dr (θ)̸ = ATT. 
+
+Proposition 6. Under Assumptions 1, 2, 6 and 7, given parametric working models for the nuisance functions η(θ), and assuming that ˆη(ˆθ) p
+
+−→ η(θ) and [ATT dr (ˆθ) p
+
+−→
+
+ATT dr (θ), and that either (i)  m0(θm), ν 0(θν ) =  m0, ν 0
+
+
+
+(ii)  p(θp), ω 0(θω) =  p, ω 0
+
+
+
+Then, [ATT dr (ˆθ) p
+
+−→ ATT. 
+
+Proposition 5 shows that [ATT dr is doubly robust. Notice that condition (i) in the proposition corresponds to Assumption 8 for our imputation estimator in the previous section. However, condition (ii) in the proposition provides an alternative setting, effectively based on correctly re-weighting, for [ATT dr to be consistent. Also, notice that ν0 and m0 are functionally related. In general, if m0(θm) is misspecified, then it will also be the case that ν0(θν ) is misspecified. Likewise for the re-weighting terms, if 
+
+p(θp) is misspecified, then ω0(θω) will generally be misspecified as well. Next, we move to estimating ATT by estimating the nuisance functions η using machine learning, based on the estimand in Proposition 5. This approach allows us to bypass any strong functional form assumptions in estimating ATT. We summarize our estimator in the following algorithm. 26 Algorithm 1: DDML Estimator of ATT under Covariate Unconfoundedness Input: Data {(∆ Yit ∗ , D i, X it ∗ , X i,t ∗−1, W i, Z i)}ni=1 ; number of folds K.1. Partition {1, . . . , n } into K folds {I 1, . . . , IK }. Set bπ = n−1 Pni=1 Di.2. For each fold k = 1 , . . . , K , estimate nuisance functions on training sample I−k:(a) First stage. Estimate bm(−k)0 using untreated units, and bp(−k) using all units. (b) Second stage. Given the first stage estimate of bm(−k)0 , estimate bν(−k)0 . Likewise, given the first stage estimate of bp(−k), estimate bω(−k)0 , both using untreated units. (c) Third Stage. Evaluate the doubly robust score bφ(k)1,i on held-out fold Ik based on Equation (10) with cross-fitted nuisance estimates, ( bm(−k)0 , bν(−k)0 , bp(−k), bω(−k)0 ). 3. Compute [ATT dr = n−1 PKk=1 
+
+P 
+
+> i∈I k
+
+bφ(k)1,i .4. Compute bVdr = n−1 Pni=1 bφ2 
+
+> i
+
+, and se( [ATT) = 
+
+qbVdr /n , where bφi = bφ1,i − [ATT dr − 
+
+> [ATT dr
+> bπ
+
+(Di − bπ)
+
+The above algorithm implements a cross-fitting estimation procedure as in Cher-nozhukov et al. (2018). We also make the following high-level assumption about the convergence rates of the nuisance functions. 
+
+Assumption 9 (Product Rate for Nuisance Estimators) . The nuisance estimators 
+
+bη = ( bm0, bν0, bp, bω0) satisfy (i) ∥ bm0 − m0∥2 · ∥ bω0 − ω0∥2 = op(n−1/2),
+
+(ii) ∥bν0 − ν0∥2 · ∥ bp − p∥2 = op(n−1/2),
+
+(iii) ∥ bm0 − m0∥2 · ∥ bp − p∥2 = op(n−1/2).
+
+Assumption 9 is similar to the multiplicative convergence rate requirements that are commonly found in the double/de-biased machine learning literature (Chernozhukov et al. 2018). All three conditions hold when each nuisance function converges at rate 
+
+op(n−1/4) in L2 norm, which is achievable by random forests (Wager and Athey 2018) and many other nonparametric and machine learners (Chernozhukov et al. 2018). Conditions (i)-(iii) of Assumption 9 are not independent conditions. For example, Condition (ii) concerns the nested nuisance bν0. Because ν0 = Tm0 m0 where Tm0 is the conditional-expectation operator in Equation (5), the L2 error ∥bν0 − ν0∥2 contains the error from using bm0 in the true operator Tm0 , which is bounded by ∥ bm0 − m0∥2 since conditional expectations are L2-contractions and the second-stage approximation error 
+
+∥( ˆTm0 − Tm0 )m0∥2 from estimating the operator itself. Both terms need to converge 27 fast enough for condition (ii) to be satisfied. This means that poor performance in estimating m0 can spill over into poor performance in estimating ν0. Likewise, given the similar functional relationship between p and ω0, poor performance in estimating 
+
+p can lead to poor performance in estimating ω0.The following proposition provides the asymptotic properties of our ML estimator under the conditions stated above plus the regularity conditions given in Assumption S2 in the Supplementary Appendix. 
+
+Proposition 7. Under Assumptions 1, 2, 6, 7 and 9, and S2, [ATT dr is consistent and satisfies 
+
+√n [ATT dr − ATT  = 1
+
+√n
+
+> n
+
+X
+
+> i=1
+
+φ (Oi; η) + op(1) d
+
+−→ N (0 , V dr ),
+
+where 
+
+φ(Oi; η) := 
+
+
+
+φ1(Oi, η ) − ATT 
+
+
+
+− ATT 
+
+π (Di − π),
+
+and Vdr = Var  φ(O; η). bVdr , given in Algorithm 1, is consistent for Vdr .
+
+Remark 7 (Monte Carlo Simulations) . In Supplementary Appendix SD, we provide Monte Carlo simulations that evaluate the finite sample performance of both the im-putation estimator and double/de-biased machine learning that were proposed in this section. 
+
+Remark 8 (TWFE Regressions) . The estimators above build on the modern DiD estimators in Sant’Anna and Zhao (2020) and Callaway and Sant’Anna (2021), rather than traditional two-way fixed effects (TWFE) regressions such as 
+
+Yit = θt + ηi + αD it + Xit β + Ziδt + eit 
+
+where θt is a time fixed effect, ηi is a unit fixed effect, and α is the coefficient of interest. Caetano and Callaway (2025) study this type of specification in detail and point out limitations due to treatment effect heterogeneity and hidden linearity bias (bias that arises because differencing out the unit fixed effect also differences the time-varying covariates). In our setting with a bad control, an additional bias term arises due to it being affected by the treatment, similar to our discussion in Section 3.1. If the researcher does not include the bad control in the TWFE regression, then a different bias term arises, similar to our discussion in Section 3.2. Finally, because our approach above effectively dealt with the bad control in a distinct step from recovering the ATT, it seems difficult to operationalize a TWFE version of our approaches Sections 4 and 5. 28 7 Application to Job Displacement 
+
+We illustrate the methods developed in the paper in an application to job displace-ment, using data from the National Longitudinal Survey of Youth 1979 (NLSY79). In particular, we study the effect of job displacement on earnings, building on a large lit-erature in economics (e.g., Jacobson, LaLonde, and Sullivan 1993; Stevens 1997; Davis and von Wachter 2011; Couch and Placzek 2010; Barnette, Odongo, and Reynolds 2021; Huckfeldt 2022). We treat a worker’s occupation score—the typical log wage paid by their occupation—as a bad control. Occupation is often thought of as a bad control in the job displacement literature as (i) the parallel trends assumption seems more plausible if it holds conditional on the occupation a worker would hold in the absence of job displacement and (ii) job displacement can shift workers into different occupations (Kambourov and Manovskii 2009; Gathmann and Sch¨ onberg 2010). 
+
+## 7.1 Data 
+
+We use biennial data from 1992–2002. In 1992, NLSY79 respondents were between 28 and 35 years old. We use the logarithm of earnings in the previous year as the outcome. Following the literature, we define job displacement as a worker involuntarily leaving a job through no fault of their own. The NLSY tracks respondents’ jobs, and when a respondent leaves a job, the NLSY records the reason. We categorize a worker as being displaced if they left any job in the previous two years where the reason was either “layoff/job eliminated” or “plant/company/office/workplace closed.” And, for example, this excludes workers who quit, were fired, or whose temporary job ended. We record, at the biennial level, the first year that a worker was displaced from a job. By construction, this leads to staggered treatment adoption, which we account for in our results below. To construct occupation score, we supplement the NLSY data with data from the IPUMS USA 1990 5% sample. We construct occupation score as the median log hourly wage among employed wage/salary workers between 16 and 64 in that occupation. The occupation score is constant for a given occupation across time. For an individual in our main dataset, we construct their occupation score by mapping their observed occupation into the occupation score that we constructed with the IPUMS USA data. Since individuals can change occupation across time, the individual’s occupation score can change across time. We use a person’s race, sex, and years of education as additional covariates. Our final sample is a balanced panel of 3,231 individuals with positive earnings and non-missing data on the outcome, bad control, and other covariates in every period. Sum-29 Table 1: Summary Statistics 
+
+Displaced Non-displaced Diff se(Diff) Log earnings, 1992 9.74 9.91 -0.17 0.04 (0.88) (0.79) Log earnings, 2002 10.30 10.52 -0.22 0.03 (0.84) (0.82) Occupation score, 1992 2.25 2.32 -0.07 0.01 (0.33) (0.35) Occupation score, 2002 2.30 2.36 -0.06 0.01 (0.32) (0.34) Black (%) 29.4 23.8 5.7 1.9 (45.6) (42.6) Hispanic (%) 19.9 16.2 3.7 1.6 (40.0) (36.9) Female (%) 43.4 47.3 -3.8 2.1 (49.6) (49.9) Education (years) 13.57 14.12 -0.56 0.10 (2.32) (2.63) N 748 2,483  
+
+> Notes: The table reports summary statistics for displaced and non-displaced workers. The column “Displaced” refers workers who were displaced from their job in any period from 1994–2002. “Non-displaced” refers to workers who are not displaced in any period from 1992–2002 (we drop workers who become displaced in 1992). Each column reports the mean and standard deviation (in parentheses) for displaced and non-displaced work-ers, respectively. For log earnings and occupation score, the year indicates which year the mean and standard deviation are for. The column “Diff” reports the difference between the means for the two groups, and the column “se(Diff)” reports its standard error.
+
+mary statistics are provided in Table 1. On average, displaced workers have lower earnings than non-displaced workers in 1992 (before any workers in our sample are displaced) and in 2002, with the gap being somewhat larger in 2002 than in 1992. Similarly, displaced workers have occupations with a lower occupation score than non-displaced workers in 1992 and 2002, though the difference is roughly constant over time. Compared to non-displaced workers, displaced workers are also less educated, more likely to be black or Hispanic, and less likely to be female. 
+
+Implementation Details 
+
+For our main results below, we estimate the effect of job displacement on log( Earnings )using nine different estimators: 1. TWFE: include BC — TWFE regression that includes Dit and Xit as regressors 2. TWFE: exclude BC — TWFE regression that only includes Dit as a regressor 3. Imp: include BC — Imputation estimator based on Callaway and Sant’Anna 30 (2021) that includes the bad control in both periods as a covariate. 4. Imp: exclude BC — Imputation estimator based on Callaway and Sant’Anna (2021) that does not include the bad control in either period as a covariate. 5. PT for X — Imputation estimator under parallel trends for the bad control as in Assumption S3 and based on Proposition S1 in the Supplementary Appendix. 6. ML: pre-treatment — Machine learning estimator under simple covariate uncon-foundedness that includes the bad control in the pre-treatment period as a co-variate with group-time average treatment effects estimated based on Sant’Anna and Zhao (2020) with nuisance functions estimated by random forest (same im-plementations as ML below). 7. Imputation — Imputation estimator under covariate unconfoundedness with group-time average treatment effects estimated based on Section 6.1. 8. DR — Doubly robust estimator with group-time average treatment effects esti-mated based on Section 6.2 with nuisance functions specified parametrically. 9. ML — Machine learning estimator with group-time average treatment effects es-timated based on Section 6.2 with nuisance functions estimated using machine learning. 9
+
+The TWFE estimators (1 and 2) do not include any additional covariates, as these are all time-invariant. The seven other estimators all additionally include the additional covariates (race, sex, and education) that were discussed above. Estimators 3-9 also all involve estimating group-time average treatment effects and then aggregating them into either the overall ATT or an event study. Estimators 7-9 are based on our covariate unconfoundedness assumption. For these estimators, we take Wi to be an individual’s log( Earnings ) in the pre-treatment period. 10 
+
+Is the Occupation Score a Bad Control? 
+
+A natural starting point for our analysis is to check whether or not occupation score is affected by the treatment. To answer this question, we maintain the staggered adoption version of our covariate unconfoundedness assumption in Assumption MP-5. Then, we implement the first step of our imputation estimator in Section 6, which yields an estimate of the overall ATT of job displacement on occupation score as well as an event study. These results are provided in Figure 6.          
+
+> 9In particular, we use cross-fitting with five folds, estimating each of the nuisance functions using random forests using the R grf package (Tibshirani, Athey, Sverdrup, and Wager 2026) with grf ’s default tuning parameters.
+> 10 We implement Estimators 1 and 2 using the R fixest package (Berg´ e, Butts, and McDermott 2026), Estimators 3 and 4 using the R ptetools package (Callaway 2026), and Estimators 5-9 using our R badcontrols package (Caetano, Callaway, Payne, and Sant’Anna 2026).
+
+31 Figure 6: Occupation Score Event Study −0.2 −0.1 0.0 0.1 0.2           
+
+> −10 −8 −6 −4 −2 02468
+> Event time (years relative to first displacement)
+> ATT
+> Overall ATT = −0.0194 (SE = 0.0107)
+> Notes: The figure provides estimates of the overall ATT and an event study for occupation score using an imputation estimator based on Assumption MP-5, as discussed in the text.
+
+Our estimates indicate that for displaced workers, on average, job displacement results in their moving to an occupation with 2% lower wages than they would have been in absent job displacement, and this effect is marginally statistically significant. Since not all workers change occupations due to job displacement, the effect for workers that do change occupations would be larger. Turning to the event study, in line with what seems a reasonable expectation, the effect of job displacement is largest in the period in which job displacement occurs, with the effect of job displacement on occupation score reducing in subsequent periods. 
+
+Main Results 
+
+Next, we provide our estimates of the effect of job displacement on earnings. We start by providing estimates of the overall ATT and an event study using our imputation estimator based on covariate unconfoundedness (from Estimator 7 above). The estimates in the figure indicate that, on average, job displacement reduced dis-placed workers’ earnings by about 7%. These effects are concentrated in the four years following displacement and are broadly in line with the job displacement literature. Our main interest, however, is in how sensitive the results are to the different estimators that we discussed above. We focus on differences in estimates of the overall 32 Figure 7: Imputation Event Study for log( Earnings )−0.2 −0.1 0.0 0.1 0.2          
+
+> −10 −8 −6 −4 −2 02468
+> Event time (years relative to first displacement)
+> ATT
+> Overall ATT = −0.0672 (SE = 0.0242)
+
+Notes: The figure provides estimates of the overall ATT and an event study for log( Earnings ) using our imputation estimator based on covariate unconfoundedness (Estimator 7 above). 
+
+ATT, and we provide these results in Figure 8. To start with, all of the results are qualitatively similar—across estimators, the overall effect of job displacement is always estimated to be between 6 and 10% lower earnings on average (in unreported event studies, the pattern is similar across estimators too where the effect of job displacement is largest in the first four years following job displacement and smaller and statistically insignificant in subsequent periods). 11 Still, there are reasonably large quantitative differences across estimators. Both TWFE estimators estimate that job displacement reduces earnings by almost 10%, resulting in estimates that are roughly 40% larger in magnitude than the imputation estimates. The imputation estimators that include or exclude bad control are more similar to our baseline imputation estimator that accounts for occupation being a bad control. They are both 3-4% smaller in magnitude than our baseline estimate. Interestingly, both the TWFE estimates and the imputation estimates that include or exclude the bad control are closer to each other than they are to our baseline imputation estimator, which arguably indicates that the common robustness check of estimating separate regressions that include or exclude the bad control does not necessarily indicate robustness to the tension between including and 
+
+> 11
+
+Note also that the effects of job displacement are quite large in general which provides a further reason why the qualitative results are similar across estimators. In an application with smaller main effects, the qualitative results would tend to be more sensitive to the estimator. 
+
+33 Figure 8: Overall ATT Estimates Relative to Imputation ML DR ML: pre−treatment PT for X Imp: exclude BC Imp: include BC TWFE: exclude BC TWFE: include BC   
+
+> −0.04 −0.02 0.00
+> Difference from Imputation (ATT)
+> Imputation: Overall ATT = −0.0672 (SE = 0.0242)
+
+Notes: The figure provides the differences between the estimates from all of the nine estimators discussed above relative to the imputation estimator in Figure 7. For example, positive differences indicate that the estimator is larger (closer to zero) than our baseline imputation estimate. 
+
+excluding the bad control that is a main motivation of our paper. Assuming parallel trends for the bad control (Estimator 5) provides a similar esti-mate to our baseline imputation estimate. Under simple covariate unconfoundedness, our ML estimate (Estimator 6) is 9% larger in magnitude than our baseline imputation estimate, and the difference is statistically significant. Finally, our doubly robust and ML estimates, which are notably the only ones in Figure 8 that are based on the same covariate unconfoundedness assumption as the baseline imputation estimate, are also quite similar to our baseline imputation estimates. 
+
+# 8 Conclusion 
+
+This paper has considered difference-in-differences identification strategies when the parallel trends assumption holds only after conditioning on time-varying covariates that may have been themselves affected by the treatment. We have shown that the common empirical practices of either including or excluding bad controls can both lead to biased estimates of the average treatment effect on the treated. We provided explicit conditions under which the approach of conditioning only on the pre-treatment value of the bad control suffices for identification. We also provided a generalization of that approach based on a version of unconfoundedness for the bad control. 34 References 
+
+Abadie, Alberto (2005). “Semiparametric difference-in-differences estimators”. The Re-view of Economic Studies 72.1, pp. 1–19. Acharya, Avidit, Matthew Blackwell, and Maya Sen (2016). “Explaining causal findings without bias: Detecting and assessing direct effects”. American Political Science Review 110.3, pp. 512–529. Angrist, Joshua D and Jorn-Steffen Pischke (2008). Mostly Harmless Econometrics: An Empiricist’s Companion . Princeton University Press. Athey, Susan and Guido Imbens (2006). “Identification and inference in nonlinear difference-in-differences models”. Econometrica 74.2, pp. 431–497. Barnette, Justin, Kennedy Odongo, and C Lockwood Reynolds (2021). “Changes over time in the cost of job loss for young men and women”. The BE Journal of Economic Analysis & Policy 21.1, pp. 335–378. Berg´ e, Laurent R., Kyle Butts, and Grant McDermott (2026). “Fast and user-friendly econometrics estimations: The R package fixest”. Working Paper. Blackwell, Matthew and Adam N Glynn (2018). “How to make causal inferences with time-series cross-sectional data under selection on observables”. American Political Science Review 112.4, pp. 1067–1082. Blackwell, Matthew, Adam N Glynn, Hanno Hilbig, and Connor Halloran Phillips (2026). “Estimating controlled direct effects with panel data: An application to re-ducing support for discriminatory policies”. Journal of the Royal Statistical Society Series A: Statistics in Society 189.2, pp. 1070–1089. Bonhomme, St´ ephane (2025). “Back to feedback: Dynamics and heterogeneity in panel data”. Working Paper. Bonhomme, Stephane and Ulrich Sauder (2011). “Recovering distributions in difference-in-differences models: A comparison of selective and comprehensive schooling”. Re-view of Economics and Statistics 93.2, pp. 479–494. Borusyak, Kirill, Xavier Jaravel, and Jann Spiess (2024). “Revisiting event-study de-signs: Robust and efficient estimation”. Review of Economic Studies , rdae007. Brown, Nicholas L, Kyle Butts, and Joakim Westerlund (2026). “Direct and indirect treatment effects with time-varying covariates”. Journal of Applied Econometrics .Caetano, Carolina and Brantly Callaway (2025). “Difference-in-differences when par-allel trends holds conditional on covariates”. Working Paper. Caetano, Carolina, Brantly Callaway, Robert Payne, and Hugo Sant’Anna (2022). “Difference in differences with time-varying covariates”. Working Paper. Caetano, Carolina, Brantly Callaway, Stroud Payne, and Hugo Sant’Anna (2026). bad-controls: Difference-in-Differences with Bad Controls . R package version 1.0.0. url :
+
+https://github.com/hugosantanna/badcontrols .Callaway, Brantly (2023). “Difference-in-differences for policy evaluation”. Handbook of Labor, Human Resources and Population Economics . Ed. by Zimmermann, Klaus F. Springer International Publishing, pp. 1–61. — (2026). ptetools: Panel Treatment Effects Tools . R package version 1.0.2. url :
+
+https://github.com/bcallaway11/ptetools .Callaway, Brantly and Tong Li (2019). “Quantile treatment effects in difference in differences models with panel data”. Quantitative Economics 10.4, pp. 1579–1618. 35 Callaway, Brantly, Tong Li, and Tatsushi Oka (2018). “Quantile treatment effects in difference in differences models under dependence restrictions and with only two time periods”. Journal of Econometrics 206.2, pp. 395–413. Callaway, Brantly and Pedro HC Sant’Anna (2021). “Difference-in-differences with multiple time periods”. Journal of Econometrics 225.2, pp. 200–230. Chab´ e-Ferret, Sylvain (2017). “Should we combine difference in differences with con-ditioning on pre-treatment outcomes?” Working paper. Chernozhukov, Victor, Denis Chetverikov, Mert Demirer, Esther Duflo, Christian Hansen, Whitney Newey, and James Robins (2018). “Double/debiased machine learning for treatment and structural parameters”. The Econometrics Journal 21.1, pp. C1– C68. Couch, Kenneth A and Dana W Placzek (2010). “Earnings losses of displaced workers revisited”. American Economic Review , pp. 572–589. Davis, Steven J and Till von Wachter (2011). “Recessions and the costs of job loss”. 
+
+Brookings Papers on Economic Activity 43.2 (Fall), pp. 1–72. Daw, Jamie R and Laura A Hatfield (2018). “Matching and regression to the mean in difference-in-differences analysis”. Health services research 53.6, pp. 4138–4156. de Chaisemartin, Clement and Xavier D’Haultfoeuille (2020). “Two-way fixed effects estimators with heterogeneous treatment effects”. American Economic Review 110.9, pp. 2964–2996. Deuchert, Eva, Martin Huber, and Mark Schelker (2019). “Direct and indirect effects based on difference-in-differences with an application to political preferences follow-ing the Vietnam draft lottery”. Journal of Business & Economic Statistics 37.4, pp. 710–720. Flores, Carlos and Alfonso Flores-Lagunes (2009). “Identification and estimation of causal mechanisms and net effects of a treatment under unconfoundedness”. Gardner, John, Neil Thakral, Linh T Tˆ o, and Luther Yap (2023). “Two-stage differ-ences in differences”. Working Paper. Gathmann, Christina and Uta Sch¨ onberg (2010). “How general is human capital? A task-based approach”. Journal of Labor Economics 28.1, pp. 1–49. Goodman-Bacon, Andrew (2021). “Difference-in-differences with variation in treat-ment timing”. Journal of Econometrics 225.2, pp. 254–277. Heckman, James, Hidehiko Ichimura, and Petra Todd (1997). “Matching as an econo-metric evaluation estimator: Evidence from evaluating a job training programme”. 
+
+The Review of Economic Studies 64.4, pp. 605–654. Hern´ an, Miguel A. and James M. Robins (2020). Causal Inference: What If . Boca Raton: Chapman & Hall/CRC. Huber, Martin (2020). “Mediation analysis”. Handbook of Labor, Human Resources and Population Economics . Ed. by Zimmermann, Klaus. Springer International Publishing, pp. 1–38. Huber, Martin, Mark Schelker, and Anthony Strittmatter (2022). “Direct and indirect effects based on changes-in-changes”. Journal of Business & Economic Statistics 
+
+40.1, pp. 432–443. Huckfeldt, Christopher (2022). “Understanding the scarring effect of recessions”. Amer-ican Economic Review 112.4, pp. 1273–1310. 36 Imai, Kosuke, In Song Kim, and Erik H Wang (2023). “Matching methods for causal inference with time-series cross-sectional data”. American Journal of Political Sci-ence 67.3, pp. 587–605. Jacobson, Louis S, Robert J LaLonde, and Daniel G Sullivan (1993). “Earnings losses of displaced workers”. American Economic Review , pp. 685–709. Kambourov, Gueorgui and Iourii Manovskii (2009). “Occupational specificity of human capital”. International Economic Review 50.1, pp. 63–115. Knaus, Michael C. and Henri Pfleiderer (2026). “Causal graphs for conditional parallel trends”. Working Paper. Lechner, Michael (2008). “A note on endogenous control variables in causal studies”. 
+
+Statistics & Probability Letters 78.2, pp. 190–195. — (2011). “The estimation of causal effects by difference-in-difference methods”. Foun-dations and Trends in Econometrics 4.3, pp. 165–224. Liu, Licheng, Ye Wang, and Yiqing Xu (2024). “A practical guide to counterfactual estimators for causal inference with time-series cross-sectional data”. American Journal of Political Science 68.1, pp. 160–176. Marx, Philip, Elie Tamer, and Xun Tang (2025). “Heterogeneous treatment effects via linear dynamic panel data models”. Working Paper. Melly, Blaise and Giulia Santangelo (2015). “The changes-in-changes model with co-variates”. Working Paper. Renson, Audrey, Michael G Hudgens, Alexander P Keil, Paul N Zivich, and Allison E Aiello (2023). “Identifying and estimating effects of sustained interventions under parallel trends assumptions”. Biometrics 79.4, pp. 2998–3009. Richardson, Thomas S. and James M. Robins (2013). “Single World Intervention Graphs (SWIGs): A unification of the counterfactual and graphical approaches to causality”. Working Paper. Robins, James (1986). “A new approach to causal inference in mortality studies with a sustained exposure period—application to control of the healthy worker survivor effect”. Mathematical Modelling 7.9-12, pp. 1393–1512. Robins, James M and Sander Greenland (1992). “Identifiability and exchangeability for direct and indirect effects”. Epidemiology 3.2, pp. 143–155. Robins, James M, Miguel Angel Hern´ an, and Babette Brumback (2000). “Marginal structural models and causal inference in Epidemiology”. Epidemiology 11.5, p. 551. Rosenbaum, Paul R (1984). “The consequences of adjustment for a concomitant vari-able that has been affected by the treatment”. Journal of the Royal Statistical Society: Series A (General) 147.5, pp. 656–666. Sant’Anna, Pedro H. C. and Jun Zhao (2020). “Doubly robust difference-in-differences estimators”. Journal of Econometrics 219.1, pp. 101–122. Shahn, Zach, Oliver Dukes, Meghana Shamsunder, David Richardson, Eric Tchetgen Tchetgen, and James Robins (2025). “Structural nested mean models under parallel trends assumptions”. Working Paper. Stevens, Ann Huff (1997). “Persistent effects of job displacement: The importance of multiple job losses”. Journal of Labor Economics , pp. 165–188. Sun, Liyang and Sarah Abraham (2021). “Estimating dynamic treatment effects in event studies with heterogeneous treatment effects”. Journal of Econometrics 225.2, pp. 175–199. 37 Tibshirani, Julie, Susan Athey, Erik Sverdrup, and Stefan Wager (2026). grf: Gener-alized Random Forests . R package version 2.6.1. url : https://CRAN.R-project. org/package=grf .Topel, Robert (1991). “Specific capital, mobility, and wages: Wages rise with job se-niority”. Journal of Political Economy 99.1, pp. 145–176. Wager, Stefan and Susan Athey (2018). “Estimation and inference of heterogeneous treatment effects using random forests”. Journal of the American Statistical Asso-ciation 113.523, pp. 1228–1242. Wooldridge, Jeffrey M (2010). Econometric Analysis of Cross Section and Panel Data .MIT press. — (2025). “Two-way fixed effects, the two-way Mundlak regression, and difference-in-differences estimators”. Empirical Economics 69.5, pp. 2545–2587. Zeldow, Bret and Laura A Hatfield (2021). “Confounding and regression adjustment in difference-in-differences studies”. Health Services Research .
+
+# A Identification Proofs 
+
+As a starting point for the results below, notice that ATT = E[Yt∗ (1) − Yt∗ (0) | D = 1] = E[Yt∗ (1) − Yt∗−1(0) | D = 1] − E[Yt∗ (0) − Yt∗−1(0) | D = 1] = E[∆ Yt∗ | D = 1] − E[∆ Yt∗ (0) | D = 1] , (A.1) which holds by the definition of ATT, adding and subtracting E[Yt∗−1(0) | D = 1], and by replacing potential outcomes with their observed counterparts. Equation (A.1) highlights that identification of the ATT comes down to identifying E[∆ Yt∗ (0) | D = 1]. 
+
+Proof of Theorem 1 . Notice that 
+
+E[∆ Yt∗ (0) | D = 1] = E
+
+h
+
+E∆Yt∗ (0) | Xt∗−1, Z, D = 1  D = 1 
+
+i
+
+= E
+
+h
+
+EE[∆ Yt∗ (0) | Xt∗ (0) , X t∗−1, Z, D = 1] Xt∗−1, Z, D = 1  D = 1 
+
+i
+
+= E
+
+h
+
+EE[∆ Yt∗ (0) | Xt∗ (0) , X t∗−1, Z, D = 0] Xt∗−1, Z, D = 1  D = 1 
+
+i
+
+= E
+
+h
+
+EE[∆ Yt∗ (0) | Xt∗ (0) , X t∗−1, Z, D = 0] Xt∗−1, Z, D = 0  D = 1 
+
+i
+
+= E
+
+h
+
+E∆Yt∗ (0) | Xt∗−1, Z, D = 0  D = 1 
+
+i
+
+= E
+
+h
+
+m0(Xt∗−1, Z ) D = 1 
+
+i
+
+where the first and second equalities both hold by applying the law of iterated ex-pectations, the third equality holds by Assumption 2, the fourth equality holds by Assumption 4, the fifth equality holds by the law of iterated expectations, and the last 38 equality holds by the definition of m0. Given this expression for E[∆ Yt∗(0) | D = 1], identification of the ATT follows immediately from Equation (A.1). 
+
+Proof of Theorem 2 . Notice that 
+
+E[∆ Yt∗ (0) | D = 1] = E
+
+h
+
+E[∆ Yt∗ (0) | Xt∗ (0) , X t∗−1, Z, D = 1] D = 1 
+
+i
+
+= E
+
+h
+
+E[∆ Yt∗ (0) | Xt∗ (0) , X t∗−1, Z, D = 0] D = 1 
+
+i
+
+= E
+
+h
+
+m0
+
+ Xt∗ (0) , X t∗−1, Z  D = 1 
+
+i
+
+= E
+
+h
+
+Em0
+
+ Xt∗ (0) , X t∗−1, Z  Xt∗−1, W, Z, D = 1  D = 1 
+
+i
+
+= E
+
+h
+
+E m0
+
+ Xt∗ (0) , X t∗−1, Z  Xt∗−1, W, Z, D = 0  D = 1 
+
+i
+
+= E
+
+h
+
+E m0
+
+ Xt∗ , X t∗−1, Z  Xt∗−1, W, Z, D = 0  D = 1 
+
+i
+
+where the first equality holds by the law of iterated expectations, the second equality holds by Assumption 2, the third equality holds by the definition of m0, the fourth equality holds by the law of iterated expectations, the fifth equality holds by As-sumption 6, and the last equality holds because the untreated potential bad control is observed for the untreated group. 
+
+Lemma 1. Under Assumptions MP-1 to MP-4 and MP-6, for any post-treatment period t ≥ g and any not-yet-treated group g′ > t ,
+
+AT T (g, t ) = E[Yt − Yg−1 | G = g] − E
+
+h
+
+E[Yt − Yg−1 | X(0) , Z, G = g′] G = g
+
+i
+
+Proof. Notice that ATT( g, t ) = E[Yt(g) − Yt(0) | G = g]= E[Yt(g) − Yg−1(0) | G = g] − E[Yt(0) − Yg−1(0) | G = g]= E[Yt − Yg−1 | G = g] −
+
+> t
+
+X
+
+> s=g
+
+E[Ys(0) − Ys−1(0) | G = g]= E[Yt − Yg−1 | G = g] −
+
+> t
+
+X
+
+> s=g
+
+E
+
+h
+
+E[Ys(0) − Ys−1(0) | X(0) , Z, G = g] G = g
+
+i
+
+= E[Yt − Yg−1 | G = g] − E
+
+" tX
+
+> s=g
+
+E[Ys(0) − Ys−1(0) | X(0) , Z, G = g′] G = g
+
+#
+
+= E[Yt − Yg−1 | G = g] − E
+
+h
+
+E[Yt − Yg−1 | X(0) , Z, G = g′] G = g
+
+i
+
+where the first equality holds by the definition of ATT( g, t ), the second equality holds 39 by adding and subtracting E[Yg−1(0) | G = g] (the outcome for group g in period g − 1, which is group g’s most recent pre-treatment period), the third equality holds because 
+
+Yt(g) and Yg−1(0) are observed outcomes for group g and by adding and subtracting 
+
+E[Ys(0) | G = g] for s = g, . . . t − 1, the fourth equality holds by the law of iterated expectations, the fifth equality changes the order of the summation and expectation and holds by Assumption MP-4, and the last equality holds by canceling all the duplicate conditional expectations from s = g, . . . , t − 1. 
+
+Lemma 2. Under Assumptions MP-5 and MP-6, 
+
+ Xg(0) , . . . X T(0)  ⊥⊥ G Xg−1(0) , . . . X 1(0) , W, Z 
+
+Proof. The proof follows a very similar argument as for Lemma 3 below and is therefore omitted. 
+
+Proof of Theorem 3 . Starting from the second term in Lemma 1 and taking g′ =
+
+∞, notice that 
+
+E
+
+h
+
+E[Yt − Yg−1 | Xg:T (0) , X1:( g−1) , Z, G = ∞] G = g
+
+i
+
+= E
+
+h
+
+EE[Yt − Yg−1 | Xg:T , X1:( g−1) , Z, G = ∞] X1:( g−1) , W, Z, G = g G = g
+
+i
+
+= E
+
+h
+
+EE[Yt − Yg−1 | Xg:T , X1:( g−1) , Z, G = ∞] X1:( g−1) , W, Z, G = ∞ G = g
+
+i
+
+(A.2) 
+
+where the first equality holds by the law of iterated expectations and because Xg:T =
+
+Xg:T (0) for the never-treated group, and the second equality holds under Assump-tion MP-5 by Lemma 2. Plugging this expression into Lemma 1 implies the result. 
+
+Lemma 3. Under Assumptions MP-5 and MP-6, 
+
+ Xg(0) , . . . X T(0)  ⊥⊥ G Xg−1(0) , W, Z 
+
+Proof. Notice that, for any x ∈ support  Xg:T (0) ,P Xg:T (0) ≤ x | Xg−1(0) , W, Z, G 
+
+=
+
+Z
+
+1{˜x ≤ x} dFXg (0) ,...,X T(0) |Xg−1(0) ,W,Z,G (˜ xg, . . . , ˜xT | · )=
+
+Z
+
+1{˜x ≤ x} dFXT(0) |XT−1(0) ,...,X g−1(0) ,W,Z,G (˜ xT | · ) · · · dFXg (0) |Xg−1(0) ,W,Z,G (˜ xg | · )=
+
+Z
+
+1{˜x ≤ x} dFXT(0) |XT−1(0) ,...,X g−1(0) ,W,Z (˜ xT | · ) · · · dFXg (0) |Xg−1(0) ,W,Z (˜ xg | · )= P  Xg:T (0) ≤ x | Xg−1(0) , W, Z 
+
+40 where the first equality holds by writing the probability as an integral and where ˜x := (˜ xg, . . . , ˜xT)′, the second equality holds by repeatedly applying the definition of conditional probability, the third equality holds by Assumption MP-5, and the last equality holds by combining terms. This implies the result. 
+
+Proof of Proposition 2 . Using a similar argument as in the proof of Lemma 1 and by invoking Assumption MP-7, one can show that 
+
+ATT( g, t ) = E[Yt − Yg−1 | G = g] − E
+
+h
+
+E[Yt − Yg−1 | Xt(0) , X g−1, Z, D t = 0] G = g
+
+i
+
+(A.3) 
+
+where the key remaining challenge is that the distribution of Xt(0) | Xg−1, Z, G = g is not directly identified since t is a post-treatment period for group g. However, for the second term in Equation (A.3), it follows that 
+
+E
+
+h
+
+E[Yt − Yg−1 | Xt(0) , X g−1, Z, D t = 0] G = g
+
+i
+
+= E
+
+h
+
+EE[Yt − Yg−1 | Xt(0) , X g−1, Z, D t = 0] Xg−1, W, Z, G = g G = g
+
+i
+
+= E
+
+h
+
+EE[Yt − Yg−1 | Xt(0) , X g−1, Z, D t = 0] Xg−1, W, Z, D t = 0  G = g
+
+i
+
+where the first equality holds by the law of iterated expectations and the second equal-ity holds by Lemma 3. 
+
+Lemma 4. Under Assumptions MP-6 and MP-8, 
+
+ Xg(0) , . . . X T(0)  ⊥⊥ G Xg−1(0) , Z 
+
+Proof. The proof is very similar to that of Lemma 3 and is therefore omitted. 
+
+Proof of Proposition 3 . To start with, since Lemma 1 holds for all not yet treated groups, we have that 
+
+AT T (g, t ) = E[Yt − Yg−1 | G = g] − E
+
+h
+
+E[Yt − Yg−1 | X(0) , Z, D t = 0] G = g
+
+i
+
+(A.4) First, if Assumption MP-9 holds, then the second term in Equation (A.4) is given by 
+
+E
+
+h
+
+E[Yt − Yg−1 | X(0) , Z, D t = 0] G = g
+
+i
+
+= E
+
+h
+
+E[Yt − Yg−1 | Xg−1, Z, D t = 0] G = g
+
+i
+
+which implies the result in this case. If, instead, Assumption MP-8 holds, for the second term in Equation (A.4), it 41 follows that 
+
+E
+
+h
+
+E[Yt − Yg−1 | X(0) , Z, D t = 0] G = g
+
+i
+
+= E
+
+h
+
+E[Yt − Yg−1 | Xt(0) , X g−1, Z, D t = 0] G = g
+
+i
+
+= E
+
+h
+
+EE[Yt − Yg−1 | Xt(0) , X g−1, Z, D t = 0] Xg−1, Z, G = g G = g
+
+i
+
+= E
+
+h
+
+EE[Yt − Yg−1 | Xt(0) , X g−1, Z, D t = 0] Xg−1, Z, D t = 0  G = g
+
+i
+
+= E
+
+h
+
+EYt − Yg−1 Xg−1, Z, D t = 0  G = g
+
+i
+
+where the first equality holds by Assumption MP-7, the second equality holds by the law of iterated expectations, the third equality holds by Lemma 4, and the last equality holds by the law of iterated expectations. Plugging this expression into Equation (A.4) implies the result. 42
