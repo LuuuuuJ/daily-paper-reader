@@ -6,56 +6,58 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-05
-- 运行时间：2026-08-05 21:44:38 UTC
+- 最新运行日期：2026-08-07
+- 运行时间：2026-08-07 02:05:05 UTC
 - 运行状态：成功
-- 本次总论文数：11
-- 精读区：0
+- 本次总论文数：12
+- 精读区：1
 - 速读区：11
 
 ### 今日简报（AI）
-今日速览 11 篇前沿论文，深度聚焦非线性面板数据估计与政策评估方法的实证优化。
-重点关注非平稳面板数据的线性估计新框架，以及离婚法律改革对家庭劳动力供给的深远影响。
-建议优先研读非线性面板的线性化方案，以提升小样本及短面板场景下的政策评估精度。
-- 详情：[/202608/05/README](/202608/05/README)
+今日深挖 12 篇前沿文献，重点聚焦因果森林在行为异质性分析及政策评估方法论上的实战优化。
+核心结论揭示了因果森林捕捉出行选择变化的强大效能，并警示了双重差分法中“坏控制变量”带来的偏误风险。
+建议读者关注机器学习与传统计量的融合趋势，在处理小样本或复杂政策评价时需严审变量选取逻辑。
+- 详情：[/202608/07/README](/202608/07/README)
 
 ### 精读区论文标签
-- 本次无精读推荐。
+1. [Estimating Heterogeneity in Travel Mode Choice Shifts with Causal Forests](/202608/07/2608.04208v1-estimating-heterogeneity-in-travel-mode-choice-shifts-with-causal-forests)  
+   标签：评分：8.0/10、query:profile-1
+   evidence：使用因果森林估计家庭调查中的异质性处理效应
 
 ### 速读区论文标签
-1. [Linear Estimation of Structural and Causal Effects for Nonseparable Panel Data](/202608/05/2607.28291v1-linear-estimation-of-structural-and-causal-effects-for-nonseparable-panel-data)  
-   标签：评分：7.5/10、query:profile-1
-   evidence：使用面板数据对不可分模型的结构和因果参数进行线性估计
-2. [How Divorce Reforms Induced Married Couples to Supply More Labor](/202608/05/2607.27142v1-how-divorce-reforms-induced-married-couples-to-supply-more-labor)  
+1. [Small Samples and Short Panels: Evaluating Policy Evaluation Methods with Realistic Data](/202608/07/2608.01537v1-small-samples-and-short-panels-evaluating-policy-evaluation-methods-with-realistic-data)  
+   标签：评分：7.5/10、query:q9
+   evidence：评估短面板数据中用于政策评价的合成双重差分法
+2. [Difference-in-differences with "bad controls"](/202608/07/2608.03881v1-difference-in-differences-with-bad-controls)  
+   标签：评分：7.5/10、query:q9
+   evidence：带有内生协变量的双重差分识别策略
+3. [How Divorce Reforms Induced Married Couples to Supply More Labor](/202608/07/2607.27142v1-how-divorce-reforms-induced-married-couples-to-supply-more-labor)  
    标签：评分：7.0/10、query:profile-1
-   evidence：家庭相关法律改革对家庭资产和劳动力供给的动态影响
-3. [Small Samples and Short Panels: Evaluating Policy Evaluation Methods with Realistic Data](/202608/05/2608.01537v1-small-samples-and-short-panels-evaluating-policy-evaluation-methods-with-realistic-data)  
-   标签：评分：7.0/10、query:q9
-   evidence：评估用于政策评价的合成双重差分法 (SDiD)
-4. [Difference-in-differences with "bad controls"](/202608/05/2608.03881v1-difference-in-differences-with-bad-controls)  
-   标签：评分：7.0/10、query:q9
-   evidence：双重差分法中内生控制变量的处理方法改进
-5. [Bayesian Mediation Analysis for Individualized Treatment Rules](/202608/05/2607.28804v1-bayesian-mediation-analysis-for-individualized-treatment-rules)  
+   evidence：家庭立法对劳动力和资产的动态影响
+4. [Linear Estimation of Structural and Causal Effects for Nonseparable Panel Data](/202608/07/2607.28291v1-linear-estimation-of-structural-and-causal-effects-for-nonseparable-panel-data)  
+   标签：评分：7.0/10、query:profile-1
+   evidence：具有不可观测异质性的非可分面板数据因果效应线性估计
+5. [Double Machine Learning with High-dimensional Interactive Fixed Effects](/202608/07/2608.01137v1-double-machine-learning-with-high-dimensional-interactive-fixed-effects)  
+   标签：评分：7.0/10、query:profile-1
+   evidence：具有交互固定效应面板模型的双重机器学习
+6. [Doubly Robust Estimators of Quantile Treatment Effects With Semiparametric Cumulative Probability Models](/202608/07/2607.27633v1-doubly-robust-estimators-of-quantile-treatment-effects-with-semiparametric-cumulative-probability-models)  
    标签：评分：6.5/10、query:profile-1
-   evidence：用于将处理效应分解为直接和间接成分的因果中介框架
-6. [Double Machine Learning with High-dimensional Interactive Fixed Effects](/202608/05/2608.01137v1-double-machine-learning-with-high-dimensional-interactive-fixed-effects)  
+   evidence：处理效应在结果分布上的因果推断框架
+7. [Amortized Interventional Forecasting for Multivariate CIR Processes](/202608/07/2608.03715v1-amortized-interventional-forecasting-for-multivariate-cir-processes)  
+   标签：评分：6.5/10、query:q7
+   evidence：金融时间序列的因果影响和干预预测
+8. [Testing for Smooth Structural Change in Cointegrated Systems](/202608/07/2608.03773v1-testing-for-smooth-structural-change-in-cointegrated-systems)  
    标签：评分：6.5/10、query:profile-1
-   evidence：针对具有交互固定效应的高维面板模型的双重机器学习方法
-7. [Spatiotemporal Proximal Causal Inference under Hidden Confounding and Interference](/202608/05/2608.01352v1-spatiotemporal-proximal-causal-inference-under-hidden-confounding-and-interference)  
+   evidence：已知干预时间后结构性变化的计量经济框架
+9. [FinPerMA: A Theory-Informed, Event-Grounded Personalized-Memory Benchmark for LLM Agents](/202608/07/2608.04095v1-finperma-a-theory-informed-event-grounded-personalized-memory-benchmark-for-llm-agents)  
+   标签：评分：6.5/10、query:q8
+   evidence：基于事件的个性化投资者轨迹基准
+10. [Best for which estimand? A known-truth benchmark of longitudinal-matching and target-trial-emulation methods for time-varying treatments](/202608/07/2608.04414v1-best-for-which-estimand-a-known-truth-benchmark-of-longitudinal-matching-and-target-trial-emulation-methods-for-time-varying-treatments)  
    标签：评分：6.5/10、query:profile-1
-   evidence：针对隐藏混杂因素的时空近端因果推断框架
-8. [Generalized propensity score weighting for functional causal inference framework](/202608/05/2608.03200v1-generalized-propensity-score-weighting-for-functional-causal-inference-framework)  
+   evidence：对纵向数据中随时间变化的治疗的因果方法进行基准测试
+11. [Clustered Local Projections for Short and Ultra-Short Time Series -- A Hierarchical Bayesian Framework](/202608/07/2608.04631v1-clustered-local-projections-for-short-and-ultra-short-time-series----a-hierarchical-bayesian-framework)  
    标签：评分：6.5/10、query:profile-1
-   evidence：针对时变处理和混杂因素的函数式因果推断框架
-9. [Causally Interpretable Meta-Mediation Analysis With Missing At Random Mediator and Outcome Data](/202608/05/2607.25822v2-causally-interpretable-meta-mediation-analysis-with-missing-at-random-mediator-and-outcome-data)  
-   标签：评分：6.0/10、query:profile-1
-   evidence：用于综合因果路径证据的具有因果解释力的元中介分析
-10. [Doubly Robust Estimators of Quantile Treatment Effects With Semiparametric Cumulative Probability Models](/202608/05/2607.27633v1-doubly-robust-estimators-of-quantile-treatment-effects-with-semiparametric-cumulative-probability-models)  
-   标签：评分：6.0/10、query:profile-1
-   evidence：处理效应在结果分布上的因果推断
-11. [A robust association between LLM use and scientific productivity: Assessing stopping-time selection](/202608/05/2607.28968v1-a-robust-association-between-llm-use-and-scientific-productivity-assessing-stopping-time-selection)  
-   标签：评分：6.0/10、query:q8
-   evidence：对事件研究法中时间选择偏差的批判与改进
+   evidence：估计短时间序列中经济冲击的动态效应
 
 
 <div class="dpr-home-promo-card">
