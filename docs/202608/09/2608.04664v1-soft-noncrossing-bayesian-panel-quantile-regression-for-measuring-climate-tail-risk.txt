@@ -1,0 +1,2032 @@
+Title: Soft-Noncrossing Bayesian Panel Quantile Regression for Measuring Climate Tail Risk
+
+URL Source: https://arxiv.org/pdf/2608.04664v1
+
+Published Time: Thu, 06 Aug 2026 00:45:25 GMT
+
+Number of Pages: 54
+
+Markdown Content:
+# Soft-Noncrossing Bayesian Panel Quantile Regression for Measuring Climate Tail Risk 
+
+Florian Huber 
+
+University of Salzburg 
+
+Aubrey Poon 
+
+University of Kent 
+
+Dan Zhu 
+
+Monash University 
+
+August 6, 2026 
+
+Abstract 
+
+We develop a hierarchical Bayesian panel quantile regression model in which unit-specific coefficient paths are smoothed across quantiles by Gaussian pro-cesses, while a common time effect absorbs aggregate shocks. Componentwise-monotone Bernstein polynomials, perturbed by unit-specific deviations, deliver soft noncrossing, and we provide identification conditions together with a bound on the crossing probability. Applying the model to 33 countries over 1979–2023, we find that global temperature shocks generate a systemic, non-diversifiable downside risk to output growth. This risk is concentrated in the lower tail and disproportionately affects emerging markets. Finally, we apply our framework to risk analysis and show that the model reduces out-of-sample tail-risk forecast loss by roughly one-third relative to country-specific quantile regressions. 
+
+# 1 Introduction 
+
+Many of the most consequential questions in macroeconomics and finance concern the tails of the outcome distribution rather than its center: the risk of a severe contraction in output, the vulnerability of growth to financial stress, and the downside exposure of an economy to aggregate disturbances (Adrian et al., 2019, 2022). Quantile regression (Koenker and Bassett Jr, 1978; Koenker, 2005) is the natural instrument to apply to answer such questions, since it characterizes how covariates reshape the entire conditional distribution of an outcome rather than only its mean, and does so under weak assumptions on the data generating process (Angrist et al., 2006). Yet the questions that make quantile methods indispensable increasingly arise in panel 1arXiv:2608.04664v1 [econ.EM] 5 Aug 2026 settings where the object of interest is not a single conditional quantile but an entire cross section of unit-specific, quantile-indexed responses. In these settings standard quantile regression confronts three obstacles that existing methods address only in isolation. First, quantile regressions are often estimated separately at each quantile level, which can produce noisy coefficient estimates and crossing quantile curves, especially when the time dimension is short. The problem of noncrossing quantile estimation has therefore received considerable attention in the quantile regression literature (Bondell et al., 2010; Santos and Kneib, 2020), though existing solutions are largely frequentist and tailored to a single cross-section rather than a panel. Second, panel data typically contain both unit-specific heterogeneity and common time-varying shocks. Ignoring such common shocks may confound cross-sectional heterogeneity with aggregate dynamics, while treating time effects independently across quantiles can quickly lead to a high-dimensional and weakly identified model. Third, allowing slope coefficients to vary across both units and quantiles creates a large number of parameters, making regularization or partial pooling essential in moderate-sized panels. This paper develops a hierarchical Bayesian panel quantile regression model that addresses these issues. The model allows unit-specific intercepts and slopes to vary smoothly across quantiles, while introducing a common dynamic time effect that is invariant across quantile levels. The quantile-invariant time effect captures aggregate shocks that shift the conditional distribution in parallel, such as global macroeconomic conditions, policy disturbances, financial shocks, or climate-related common factors. Unit-specific intercepts and slopes capture heterogeneous distributional responses across countries, firms, regions, or individuals. This separation makes it possible to distinguish common aggregate variation from heterogeneous unit-level responses. To link information across quantiles, the unit-specific coefficient paths are modeled as stochastic processes indexed by the quantile level. In particular, we place a multivariate Gaussian process prior on the intercept and slope functions. This prior induces smoothness across nearby quantiles and provides partial pooling across units, improving estimation when the panel is short or when the number of quantile levels is large. This idea is related to recent approaches that smooth quantile functions or quantile coefficients across quantile levels (Li and Megiddo, 2025), but differs by combining smooth coefficient paths with heterogeneous panel slopes and a dynamic common time effect. For Bayesian estimation, we exploit the connection between quantile regression and the asymmetric Laplace likelihood (Kozumi and Kobayashi, 2011). A central difficulty in joint quantile modeling is the possibility of quantile crossing. Because conditional quantile functions must be nondecreasing in the quantile index, 2unrestricted quantile-specific estimates may violate a basic property of conditional distributions. We address this issue by imposing shape restrictions on the population coefficient paths. After transforming covariates to a bounded nonnegative support, componentwise monotonicity of the intercept and slope paths provides a sufficient condition for noncrossing over the transformed covariate space. We implement these restrictions using a Bernstein-polynomial representation of the population path. The unit-specific deviations from this monotone population path are modeled as smooth Gaussian-process deviations, yielding a form of soft noncrossing: individual quantile curves are shrunk toward a globally monotone population curve while still allowing data-driven heterogeneity across units. The paper makes three contributions. First, we introduce a panel quantile regression model in which a quantile-invariant common component acts as a latent factor that absorbs aggregate shocks, cleanly separating systemic distributional variation from heterogeneous, unit-specific responses. This separation is essential whenever unobserved common shocks are present but the object of interest is a distribution rather than an average, as in growth-at-risk and related macro-financial applications. Second, we place a multivariate Gaussian process prior on the quantile-indexed coefficient paths, which borrows information smoothly across adjacent quantiles and partially pools across units. Relative to methods that smooth quantile functions within a single cross-section (Li and Megiddo, 2025), the prior operates jointly across the quantile index and the cross-section and remains tractable in short panels. Third, we establish identification and prove a probability bound showing that quantile crossing becomes arbitrarily unlikely as the unit-specific deviations concentrate around a Bernstein-monotone population path — turning noncrossing from a constraint imposed after estimation into a property the prior delivers by construction. We apply our proposed panel quantile regression framework to a quarterly panel of 33 countries, drawn from Mohaddes and Raissi (2024), to investigate the relationship between climate-related shocks and downside macroeconomic risk over the period 1979–2023. Each country’s climate-related shocks are constructed following the recent methodology of Bilal and K¨ anzig (2026). The application is designed to illustrate what the framework delivers. We decompose climate disturbances into local versus global and level versus volatility components, and by tracing each across the conditional distribution of growth we isolate a systemic, non-diversifiable source of downside risk that neither a country-by-country nor a mean-based analysis can unveil. We find that local temperature shocks generate modest and broadly symmetric responses across the conditional distribution of GDP growth at the panel level, masking substantial heterogeneity across countries that becomes apparent in our 3cross-country analysis. This is consistent with Berg et al. (2024), who similarly document considerable heterogeneity in the sign and magnitude of GDP responses to idiosyncratic temperature shocks across countries, with the direction of the response varying systematically with country characteristics such as income, educational attainment, and trade openness. By contrast, global temperature shocks generate more pronounced negative effects, particularly in the lower tail of the conditional distribution, consistent with Kahn et al. (2021), who show that persistent increases in temperature above historical norms are associated with significant reductions in long-run economic growth. Turning to volatility, local temperature volatility shocks produce a modest response skewed toward the lower tail, with the 90–10 per cent band widening as the horizon progresses. Global temperature volatility shocks, however, display a markedly different pattern, eliciting a positive response in output growth in the short term that dissipates over the medium to long term. For all 33 countries, we construct a climate growth-at-risk measure that isolates the combined impact of the four climate shocks on each country’s downside risk. We find that the impact of climate shocks on growth-at-risk is widespread and uniformly negative at the one-quarter horizon, with all 33 countries recording a deterioration in expected shortfall and a panel average of −0.460 percentage points. Emerging market economies bear a larger short-run climate tail risk than advanced economies, with EM and AE averages of −0.530 and −0.395 percentage points, respectively, and climate tail risks dissipate substantially at medium and longer horizons. To evaluate the practical utility of our proposed framework, we conduct a pseudo-out-of-sample forecasting exercise, comparing one-quarter-ahead tail-risk forecasts from our panel quantile model against a country-specific quantile benchmark. We find strong and consistent evidence that the panel quantile regression produces more accurate growth-at-risk forecasts, reducing tail forecast loss by approximately 34 per cent relative to the country-specific benchmark. The remainder of the paper is organized as follows. Section 2 introduces the panel quantile regression model, discusses identification, presents the monotonicity conditions used to control quantile crossing, and describes the Bayesian estimation strategy. Section 3 applies the model to a panel of 33 countries to study the distributional effects of temperature shocks and temperature volatility. Section 4 carries out three robustness checks, and Section 5 concludes. 42 Econometric Framework 
+
+2.1 Panel data and Standard Two Way Fixed Effect Model 
+
+Panel data consist of repeated observations on the same units (e.g. individuals, firms, regions) over multiple time periods. Formally, let yit ∈ R denote the outcome of unit 
+
+i at time t,
+
+yit = ai + ft + x′
+
+> it
+
+βi + vit , (1) where ai and ft are unit and time-fixed effects, and xit ∈ Rp−1 is a vector of covariates that impacts yit through unit-specific coefficients βi. We impose no parametric or distributional assumptions on the shocks vit ; identification instead rests on the conditional quantile restriction introduced below. This two-way fixed-effects specification is now standard in applied work, as it simultaneously controls for both unit-specific heterogeneity and aggregate time shocks (Arellano and Honor´ e, 2001). Unlike the canonical two-way fixed-effects model, we allow the slopes to be unit-specific: the coefficient βi represents how each unit translates changes in xit into changes in the outcome. Such heterogeneous-coefficient panels move beyond a single “average effect” and provide a richer description of cross-sectional variation (Pesaran and Smith, 1995). The additive time effect ft is, moreover, the leading special case of the common-factor error structures used to capture cross-sectional dependence in large heterogeneous panels (Pesaran, 2006). 
+
+2.2 Panel Quantile Regression with Heterogeneous Slopes 
+
+The mean regression framework in Eq.(1) focuses on average effects. In many applications, however, researchers are interested in how covariates influence the entire conditional distribution of the outcome. For instance, the impact of education on wages may differ between low- and high-income individuals (Buchinsky, 1994; Angrist et al., 2006). Or in time series settings where financial conditions trigger a stronger effect in the left tail of the distribution of output growth (Adrian et al., 2019). Quantile regression is a suitable tool to answer such questions. Quantile regressions allow the parameters of the panel model to vary with the quantile index τ ∈ (0 , 1). Formally, the τ th conditional quantile of yit given the information set Ft is specified as 
+
+Qτ (yit | F t) = ai(τ ) + ft + x′
+
+> it
+
+βi(τ ),
+
+where ai(τ ) captures unit-specific heterogeneity at quantile τ , ft represents common time effects (assumed invariant across τ for parsimony), and βi(τ ) allows for hetero-geneous slope coefficients across units and across quantiles. We choose to maintain 5the assumption that ft is invariant across τ . The motivation is that ft captures unobserved aggregate shocks or macro-level influences that are common to all units in period t. These shocks play a role similar to observed covariates xit that enter the model linearly and are assumed to have the same realization regardless of the quantile being estimated. In other words, just as xit does not change with τ , we interpret ft as an unobserved regressor that is likewise constant across quantiles but time-varying. For the time effects {ft}, we adopt a dynamic specification by modeling them as a latent AR(1) process with observed aggregate predictors. Specifically, 
+
+ft = γf t−1 + ξ′wt + ηt, ηt ∼ N (0 , σ 2 
+
+> f
+
+),
+
+is not just a static time effect but evolves over time in response to global shocks wt,with corresponding coefficients ξ. The dynamic factor ft captures unobserved common forces — such as macroeconomic conditions, policy shifts, or broad financial shocks — that affect all units simultaneously, while wt represents observable indicators of such global disturbances. Importantly, ft is assumed invariant across quantiles, meaning these common shocks shift the conditional distribution of yit in parallel rather than altering its shape across quantiles. This ensures that the role of aggregate dynamics is separated from the heterogeneous unit-level responses embedded in ai(τ ) and βi(τ ). The result is a flexible structure that disentangles individual heterogeneity from evolving global shocks, while preserving tractability within a Bayesian hierarchical framework. It is useful to state the conditions under which the quantile-specific parameters are identified from the panel quantile restriction. Identification requires separating three distinct sources of variation: unit-specific heterogeneity, common time effects, and unit-specific responses to the regressors. Since the common time effect is assumed to be invariant across quantiles, this restriction must be imposed explicitly. In addition, a normalization is needed to separate the unit intercepts from the time effects, and a full-rank condition is required to rule out perfect collinearity among unit effects, time effects, and unit-specific regressors. 
+
+Assumption 1. Fix τ ∈ (0 , 1) and let xit ∈ RK , where K = p − 1. The conditional 
+
+τ -quantile of yit is given by 
+
+Qτ (yit | I it ) = ai(τ ) + ft + x′
+
+> it
+
+βi(τ ),
+
+where Iit denotes the information set with respect to which the conditional quantile is defined. The following conditions hold. 1. The common time effect {ft}Tt=1 is invariant across quantiles. That is, the same sequence {ft}Tt=1 enters the conditional quantile function for every τ ∈ (0 , 1) .
+
+62. The time effects satisfy the normalization 
+
+> T
+
+X
+
+> t=1
+
+ft = 0 .
+
+3. No linear combination of the unit effects, normalized time effects, and unit-specific regressors is perfectly collinear. Equivalently, after imposing PTt=1 ft =0, the stacked panel design containing unit effects, normalized time effects, and unit-specific regressors has full column rank. 4. Define the quantile residual 
+
+vit (τ ) = yit − ai(τ ) − ft − x′
+
+> it
+
+βi(τ ).
+
+Then 
+
+P (vit (τ ) ≤ 0 | I it ) = τ. 
+
+A few remarks on Assumption 1 are in order. First, the information set Iit 
+
+is defined as the σ-algebra generated by the unit-specific intercepts and slopes 
+
+{αi(τ ), βi(τ )}, the common time effects {ft}, and the observed covariates {xit }.The conditional quantile restriction in part (d) therefore requires that, at the true parameter values, xit and ft capture all systematic variation in the τ th conditional quantile, leaving a residual whose τ th conditional quantile is zero. This is a correct-specification condition: it rules out omitted variables that are correlated with the included regressors at the quantile of interest and requires that xit be at least prede-termined with respect to the quantile residual vit (τ ). In the empirical applications below, where the covariates include lagged GDP growth, inflation, and financial conditions, this predeterminedness is plausible, though it should be assessed in each context. Second, part (a)—the invariance of ft across quantiles—is the most substantive restriction in Assumption 1. It implies that common aggregate shocks shift the entire conditional distribution of outcomes in parallel, rather than changing its shape across quantiles. This restriction rules out quantile-dependent common time shocks. Under the specification, all time-varying common variation is captured by the single factor ft, while quantile-specific heterogeneity is attributed to the unit-specific intercepts and slopes. If common shocks were believed to affect the tails and the centre of the distribution differently, one could allow ft(τ ) to vary with τ ,but this would substantially increase the number of time-specific parameters and weaken the separation between common and unit-specific dynamics. We maintain the 
+
+τ -invariant specification for parsimony and because, in the applications we consider, 7the quantile-specific heterogeneity of primary interest operates at the unit level. Third, although parts (a)–(d) are stated as classical identification conditions, the model is estimated in a Bayesian framework with a hierarchical Gaussian-process prior on the unit-specific parameters θi(τ ). When the time dimension is short, unit-specific coefficients may be weakly identified from the likelihood alone. The hierarchical prior provides regularisation and partial pooling across units and quantiles, thereby stabilising posterior inference. This regularisation should be distinguished from identification from the sampling model: Assumption 1 describes the restrictions under which the conditional quantile parameters are well defined, whereas the prior controls finite-sample uncertainty and shrinkage. In addition to these identifying restrictions, we impose a standard regularity condition on the conditional distribution of the outcome. This condition is not a separate source of identification; rather, it guarantees that the conditional quantile is locally well defined and that the associated quantile regression objective has stable local behaviour around the identified parameter values. 
+
+Assumption 2. The conditional distribution of yit given Iit is continuous, and its conditional density is strictly positive and finite at the conditional quantile 
+
+qit (τ ) = ai(τ ) + ft + x′
+
+> it
+
+βi(τ ).
+
+That is, for some constants 0 < c < C < ∞,
+
+c ≤ fy|I (qit (τ ) | I it ) ≤ C. 
+
+Assumption 2 is the standard regularity condition for quantile regression (see, e.g., Koenker (2005), Theorem 4.1, and Angrist et al. (2006)). Continuity of the conditional distribution rules out mass points in the outcome, which is plausible for the continuously measured macroeconomic variables we study (GDP growth, consumption growth, investment growth). The requirement that the conditional density is bounded away from zero and infinity, 0 < c ≤ fy|I (qit (τ ) | I it ) ≤ C < ∞,ensures that the conditional quantile is locally unique and that the Hessian of the check-loss objective is well behaved. In the Bayesian framework adopted below, this condition also guarantees that the asymmetric Laplace working likelihood provides a valid characterisation of the quantile of interest (Sriram et al., 2013). The uniform lower bound c > 0 deserves brief comment. In the extreme tails (say, τ < 0.05 or τ > 0.95), the conditional density of a continuously distributed outcome naturally thins, and the assumption of a uniform positive bound across all ( i, t ) pairs may be strained. In practice, the Bayesian estimator based on the asymmetric Laplace likelihood is robust to mild violations of this condition, and 8the finite-sample regularisation provided by the hierarchical prior further stabilises inference in the tails. We therefore view Assumption 2 as an asymptotic idealisation that justifies the use of quantile regression methods, while recognising that its literal satisfaction at extreme quantiles is an approximation. To address the high dimensionality of allowing unit-specific coefficients at each quantile, one can impose a random-coefficients structure. Specifically, define 
+
+θi(τ ) = αi(τ )
+
+βi(τ )
+
+!
+
+,
+
+which collects the unit-specific intercept and slope parameters at quantile τ . We assume that 
+
+θi(τ ) ∼ N (μ(τ ), Σ(τ )) , (2) independently across i, where μ(τ ) is the mean vector and Σ(τ ) the covariance matrix. This hierarchical specification provides two advantages. First, it introduces partial pooling: the estimates of θi(τ ) borrow strength across units, stabilizing inference when T is small. Second, the covariance structure Σ(τ ) allows for systematic heterogeneity in how different units respond to the covariates at different quantiles, while keeping the model parsimonious and estimable. Rather than treating θi(τ ) as independent across quantiles, it is natural to view the collection {θi(τ ) : τ ∈ (0 , 1) } as a stochastic process indexed by τ . In particular, we may assume that θi(τ ) follows a multivariate Gaussian process with mean function 
+
+μ(τ ) and covariance kernel K(τ, τ ′), i.e. 
+
+θi(·) ∼ GP  μ(·), K (·, ·).
+
+This formulation links parameters across quantiles smoothly, so that estimates at nearby quantiles borrow strength from one another. Intuitively, the Gaussian process prior regularizes the quantile-specific heterogeneity by ruling out arbitrary jumps across τ , while still allowing flexible nonlinear variation in both intercepts and slopes. As a result, the model can capture how the entire conditional distribution of outcomes shifts across units, rather than treating quantiles in isolation. Specifically, we write 
+
+θi(τ ) = μ(τ ) + ui(τ ),
+
+where the mean function is represented as 
+
+μ(τ ) = ΓΦ (τ ),
+
+with Φ(τ ) denoting a vector of basis functions (e.g. polynomials, splines, or Fourier 9terms) and Γ the associated coefficients. This flexible specification captures smooth systematic trends across quantiles. The mean function μ(τ ) = ΓΦ (τ ) captures the central trend of coefficient evolution across quantiles. In theory, for continuous dis-tributions, the true quantile process θ(τ ) is a smooth function of τ . We approximate this unknown smooth function using a sieve, where the basis Φ(τ ) provides a flexible yet parsimonious representation. Li and Megiddo (2025) propose spline quantile regression (SQR), a joint estima-tion framework that smooths across quantile levels by representing the regression coefficients as smoothing-spline functions of τ . Their univaraite method augments the standard quantile loss with a roughness penalty in τ , producing coefficient paths that vary smoothly over quantiles and are computed via a large but structured linear program. In contrast, our panel model introduces a τ -invariant dynamic common factor to capture aggregate shocks, places a multivariate Gaussian-process prior on the parameter paths to induce probabilistic smoothness and pooling across quantiles and units. A similar formulation via GP is Santos and Kneib (2020), that is placed on the quantile function across τ , i.e. on the output Qτ (·) (or on a directional/linear predictor implied by it), rather than directly on the parameter paths . Econometrically, our model as oppose to Santos and Kneib (2020) captures how the marginal effect of a regressor changes continuously along the conditional distribution, while preserving a low-dimensional functional form that is easily interpretable. Statistically, the multivariate GP prior acts as a flexible regularizer that shrinks the entire coefficient trajectory toward a smooth mean function, yielding efficiency gains when the number of quantile levels is large or when individual panels are short. For the covariance structure, we adopt a kernel that decays with the distance between quantiles, so that parameters at nearby quantiles are more strongly correlated than those far apart. A convenient choice is the exponential kernel 
+
+K(τ, τ ′) = Σ exp 
+
+
+
+−|τ − τ ′|
+
+λ
+
+
+
+,
+
+where the diagonal elements of Σ control the marginal variances and λ > 0 is a length-scale parameter governing how quickly dependence fades as |τ − τ ′| increases. This ensures that coefficients evolve smoothly across quantiles while allowing sufficient flexibility for different behaviour at the tails. Combined with a basis-function representation of the mean, this structure balances flexibility with parsimony in describing how heterogeneous slopes and intercepts vary across the conditional distribution. The Gaussian process specification can be interpreted along three dimensions: 1. the exponential kernel K(τ, τ ′) = Σ exp( −| τ −τ ′|/λ ) governs dependence across 10 quantiles such that 
+
+"
+
+θi(τ )
+
+θi(τ ′)
+
+#
+
+∼ N 
+
+"
+
+ΓΦ (τ )
+
+ΓΦ (τ ′)
+
+#
+
+,
+
+ 1 exp 
+
+
+
+−|τ −τ ′|
+
+> λ
+
+
+
+exp 
+
+
+
+−|τ −τ ′|
+
+> λ
+
+
+
+1
+
+ ⊗ Σ
+
+
+
+2. the matrix Σ encodes the dependence across coefficients within a given quantile; for example, the intercept and slope are correlated if Σ has nonzero off-diagonal elements, while a diagonal Σ implies independence 3. conditional on the Gaussian process prior, the unit-level coefficients θi(τ ) are independent draws across i. In the special case Σ = 0 × I, all units share the same coefficient function given by the mean μ(τ ), so the Gaussian process collapses to a common set of coefficients with no cross-unit heterogeneity. 
+
+2.3 Monotonicity across quantiles and covariate scaling 
+
+Because conditional quantiles must be nondecreasing in τ , it is desirable to rule out quantile crossing by construction. Throughout this subsection we work with 
+
+transformed covariates zit =  T1(xit, 1), . . . , T K (xit,K )′ ∈ [0 , 1] K , where each Tk :
+
+R → [0 , 1] is a monotone scaling map such as min–max scaling, an empirical rank transform, or a logistic squash. These are applied to the original regressor xit,k of Eq.(1). The transformed regressors, labeled zit , are the arguments of the quantile function below. Notice that they are distinct from the observed aggregate predictors 
+
+wt that enter the time effect ft.
+
+Lemma 1. Let the conditional quantile function be 
+
+Qτ (yit | I it ) = ai(τ ) + ft + z′
+
+> it
+
+βi(τ ),
+
+where zit ∈ [0 , 1] K and the common time effect ft is invariant across quantiles. Suppose that for every 0 < τ < τ ′ < 1,
+
+ai(τ ′) ≥ ai(τ )
+
+and 
+
+βik (τ ′) ≥ βik (τ ), k = 1 , . . . , K. 
+
+Then, for every zit ∈ [0 , 1] K ,
+
+Qτ ′ (yit | I it ) ≥ Qτ (yit | I it ).
+
+Hence the fitted conditional quantile function is nondecreasing in τ .
+
+11 The transformation Tk is introduced to place the covariates on a bounded nonneg-ative support. It is nonnegativity of zit that makes the componentwise monotonicity condition sufficient for global noncrossing (Lemma 1); the upper bound zit,k ≤ 1is not needed for the Lemma itself, but is used to control the constants in the probabilistic bound of Theorem 1 below. When Tk is strictly increasing, it preserves the ordering of the original covariate. However, nonlinear transformations such as rank transformations or logistic squashing change the scale of the regressor, so the associated coefficients should be interpreted as effects of the transformed covariates rather than effects of the original covariates. Note that by restricting the covariate space to the K-dimensional unit box [0 , 1] K ,our approach is related to that of Bondell et al. (2010). Yet, their quantile curve is fitted as a function of x (e.g., via penalized splines), and non-crossing is ensured by a simple constrained optimization that ties together the fits at multiple τ ; there is no explicit basis or stochastic process placed on the coefficient paths as functions of 
+
+τ . In contrast, our specification smooths across τ at the parameter level by treating 
+
+θi(τ ) as a multivariate Gaussian process in τ , with (later) non-crossing enforced via a Bernstein-polynomial representation. This separates regularization over quantile levels from the choice of flexibility in x and provides a direct handle on the evolution of coefficient functions across the distribution. To implement these monotonicity requirements in a stochastic specification, let 
+
+θi(τ ) =  ai(τ ), βi(τ )′′ = μ(τ ) + ui(τ ), where μ(τ ) is a population mean path and 
+
+ui(·) is a zero-mean stochastic deviation. Panel-wise monotonicity means that for all 0 < τ < τ ′ < 1, θi(τ ′) − θi(τ ) ⪰ 0 componentwise. On a grid 0 < τ 1 < · · · <τL < 1, the requirement θi(τℓ+1 ) − θi(τℓ) ⪰ 0 (componentwise) yields p(L − 1) linear inequalities per unit , i.e. N p (L − 1) constraints in total. Instead, we enforce μ(·)to be monotone and control the probability that the unit-specific deviation ui(·)overturns this ordering through the scale of its Gaussian-process covariance. Aconvenient way to parametrise a monotone mean path is to expand each component in the Bernstein basis on [0 , 1]: 
+
+μj (τ ) = 
+
+> M
+
+X
+
+> m=0
+
+θj,m bm,M (τ ), bm,M (τ ) = 
+
+Mm
+
+
+
+τ m(1 − τ )M −m.
+
+The Bernstein basis {bm,M }Mm=0 on [0 , 1] is nonnegative and forms a partition of unity, 
+
+PMm=0 bm,M (τ ) = 1. Hence μj (τ ) always lies in the convex hull of its coefficients 
+
+{θj,m }, which makes shape constraints transparent. In particular, a sufficient and convenient condition for μj (·) to be nondecreasing on [0 , 1] is θj, 0 ≤ · · · ≤ θj,M .Imposing this reduces to linear inequalities on θj, ·, so estimation under monotonicity remains a convex quadratic/linear program. Bernstein polynomials also enjoy uniform 12 approximation: any continuous (and, in particular, any monotone) function on [0 , 1] can be approximated arbitrarily well as M → ∞ , while avoiding knot placement issues that arise with splines. The coefficients are interpretable: θj, 0 and θj,M anchor the boundary levels (near τ = 0 , 1), and intermediate θj,m approximate μj (m/M ), providing a clear link between parameter values and the quantile index. Rather than enforcing panel-wise monotonicity for each unit (which entails 
+
+N p (L−1) inequalities on a grid), we impose monotonicity only on the population path μ(·) and let unit-specific deviations be small and smooth in τ . Choosing small diagonal elements of Σ (with a prior centered near zero) shrinks θi(·) toward the monotone mean μ(·), delivering soft monotonicity—unit-level curves are nearly nondecreasing with high probability—while still allowing data-driven departures when warranted; the length scale λ controls how smoothly such departures evolve across quantiles. If rare local crossings remain, a post-estimation monotone rearrangement can be applied as a diagnostic or post-processing step to restore monotonicity of the reported quantile curves, although this may slightly alter the original empirical objective. Componentwise monotonicity of the population path μ(·) guarantees that the population conditional quantile function is nondecreasing in τ . However, unit-specific GP deviations can still generate local crossings. The probability of such crossings is small only when the population quantile curve has a positive separation margin between τ and τ ′ relative to the variance of the GP increment. The following theorem formalizes this soft noncrossing property. 
+
+Assumption 3 (Smooth GP Prior) . The unit-specific deviation ui(·) = ( ui, 1(·), . . . , u i,p (·)) ′
+
+follows a mean-zero Gaussian process prior with separable covariance structure, 
+
+Cov  ui(τ ), ui(τ ′) = Kλ(τ, τ ′)Σ,
+
+where Σ ∈ Rp×p is a positive semidefinite matrix capturing within-quantile dependence across the p intercept and slope components, and Kλ is a stationary kernel, normalized so that Kλ(τ, τ ) = 1 for all τ ∈ [0 , 1] , and satisfying Kλ(τ, τ ′) ≤ 1.
+
+Fix 0 < τ < τ ′ < 1 and let 
+
+r(z) = (1 , z′)′ ∈ Rp, z ∈ Z ⊆ [0 , 1] K , p = K + 1 .
+
+Write 
+
+θi(τ ) = μ(τ ) + ui(τ ),
+
+where θi(τ ) = ( ai(τ ), βi(τ )′)′ and ui(·) satisfies Assumption 3. Define the population margin 
+
+mτ,τ ′ = inf  
+
+> z∈Z
+
+r(z)′ {μ(τ ′) − μ(τ )} .
+
+13 Theorem 1. Suppose that 
+
+mτ,τ ′ > 0.
+
+Let 
+
+di(τ, τ ′) = ui(τ ′) − ui(τ ).
+
+Under Assumption 3, each component dij (τ, τ ′) is mean-zero Gaussian with variance 
+
+Var( dij (τ, τ ′)) = 2 {1 − Kλ(τ, τ ′)}Σjj . Define the maximum marginal variance 
+
+¯ν2  
+
+> τ,τ ′
+
+= 2 {1 − Kλ(τ, τ ′)} max  
+
+> 1≤j≤p
+
+Σjj .
+
+Then, for a given unit i, writing Q iτ (z) = ai(τ ) + ft + z′βi(τ ) for the fitted conditional quantile at a generic covariate value z ∈ Z ,
+
+Pr  ∃z ∈ Z : Q iτ ′ (z) < Q iτ (z) ≤ p exp − m2 
+
+> τ,τ ′
+
+2p2 ¯ν2 
+
+> τ,τ ′
+
+!
+
+.
+
+In particular, for the exponential kernel 
+
+Kλ(τ, τ ′) = exp 
+
+
+
+−|τ − τ ′|
+
+λ
+
+
+
+,
+
+the bound becomes 
+
+Pr  ∃z ∈ Z : Q iτ ′ (z) < Q iτ (z) ≤ p exp 
+
+
+
+− m2 
+
+> τ,τ ′
+
+4p2 max 1≤j≤p Σjj {1 − exp( −| τ ′ − τ |/λ )}
+
+
+
+.
+
+Thus, for fixed τ < τ ′ and fixed positive margin mτ,τ ′ > 0, the probability of crossing converges to zero as max j Σjj → 0.
+
+Theorem 1 relies on two modelling choices that merit comment. First, the theorem uses only the maximum marginal variance max j Σjj rather than requiring independent components; the union bound remains valid under arbitrary within-quantile dependence because it bounds the probability that any component of the GP deviation is large enough to cause crossing. If Σ is diagonal, the bound reduces to the independent-components case, while nonzero off-diagonal entries (which imply correlated intercept and slope deviations) leave the bound unchanged. The bound is therefore consistent with the general separable covariance structure Kλ ⊗ Σ used throughout the paper. Second, the noncrossing guarantees—both the deterministic Lemma 1 and the probabilistic Theorem 1—assume that the transformed covariates lie in [0 , 1] K with all components nonnegative. This is satisfied by construction after applying the scaling transformations Tk introduced above (min–max scaling, rank transforms, or logistic squashing). Without such a transformation, Lemma 1 would not hold for 14 covariates that can take negative values, and the noncrossing property would need to be enforced through alternative means, such as constrained optimisation over the full covariate support. The transformation thus provides a simple sufficient condition for global noncrossing at the cost of reinterpreting the coefficients as effects of the transformed, rather than original, covariates. 
+
+2.4 Bayesian Estimation 
+
+Quantile regression can be conveniently estimated in a Bayesian framework by exploiting the connection between the check loss function and the asymmetric Laplace distribution (ALD). Specifically, the τ th conditional quantile of yit given covariates xit can be represented as the location parameter of an ALD with density 
+
+fτ (u | σ) = τ (1 − τ )
+
+σ exp 
+
+n
+
+−ρτ
+
+ uσ
+
+o 
+
+,
+
+where u = yit − ai(τ ) − ft − x′
+
+> it
+
+βi(τ ), σ > 0 is a scale parameter, and ρτ (u) = u(τ −
+
+1{u < 0}) denotes the check function. This distributional representation provides a likelihood-based interpretation of quantile regression, enabling straightforward Bayesian inference through standard simulation methods. An important property of the asymmetric Laplace distribution is that it admits a location–scale mixture representation involving a normal and an exponential distribution (see Kozumi and Kobayashi (2011)). Let T = {τ1, . . . , τ L} denote the quantile grid and write the quantile residual as 
+
+uit (τ ) = yit − ai(τ ) − ft − x′
+
+> it
+
+βi(τ ).
+
+For each τ ∈ T we introduce latent mixing variables Ω τ = {ωit,τ }i≤N,t ≤T . Using the ALD mixture representation, for each τ define 
+
+κτ = 1 − 2ττ (1 − τ ), ϕτ = 2
+
+τ (1 − τ ),
+
+and allow either a common scale σ or quantile-specific scales {στ }. We adopt the unit-mean parametrisation of the mixing variable, ωit,τ ∼ Exp(1), under which the asymmetric Laplace residual admits the location–scale mixture 
+
+uit (τ ) = κτ στ ωit,τ + στ
+
+pϕτ ωit,τ eit,τ , eit,τ ∼ N (0 , 1) ,
+
+so that, conditionally on ωit,τ , the residual is Gaussian with mean κτ στ ωit,τ and vari-ance σ2 
+
+> τ
+
+ϕτ ωit,τ . Conditionally on ( ΘT , f 1: T ) with ΘT = {θi(τ ) = ( ai(τ ), βi(τ )′)′}i≤N,τ ∈T ,15 the complete-data likelihood of ( y, ΩT ) across all quantiles factorizes as 
+
+L⋆(y, ΩT | ΘT , f 1: T , {στ }) = Y 
+
+> τ∈T
+> N
+
+Y
+
+> i=1
+> T
+
+Y
+
+> t=1
+
+ϕ
+
+
+
+yit ; ai(τ ) + ft + x′
+
+> it
+
+βi(τ ) + κτ στ ωit,τ ,σ2 
+
+> τ
+
+ϕτ ωit,τ 
+
+
+
+exp( −ωit,τ )subject to the normalization PTt=1 ft = 0. Here the latent term exp( −ωit,τ ) is the Exp(1) density of ωit,τ and carries no dependence on στ ; the only στ -dependence outside the exponent is the Gaussian normalising factor (2 πσ 2 
+
+> τ
+
+ϕτ ωit,τ )−1/2 retained inside ϕ(·; ·, ·). Because στ is itself sampled, this factor (which contributes σ−1 
+
+> τ
+
+per observation) must be kept; only constants free of all model parameters are omitted from the complete-data likelihood. With proper initialization f1 ∼ N (m0, C 0), the state likelihood is 
+
+Lstate (γ, ξ, σ 2 
+
+> f
+
+| f1: T , w1: T ) = ϕ f1; m0, C 0
+
+ TY
+
+> t=2
+
+ϕ ft; γf t−1 + ξ′wt, σ 2
+
+> f
+
+.
+
+The conditional posterior distribution of the dynamic factors f1: T is Gaussian on a hyperplane, and their sampling follows the standard precision sampler (Chan et al., 2023) used in linear Gaussian state-space models. Equivalently, one may introduce an unconstrained latent process gt satisfying the state equation gt = γg t−1 + ξ′wt + ηt
+
+and define ft = gt − ¯g, where ¯ g = T −1 PTt=1 gt. This centering imposes PTt=1 ft = 0 without changing the interpretation of ft as a common time effect. Given Gaussian and inverse-Gamma priors, the posterior of the state equation parameters can be sampled in very standard Gibbs steps. Stack quantile parameters over quantiles: 
+
+Θi =  θi(τ1)′, . . . , θi(τL)′′ ∈ RpL , μ =  μ(τ1)′, . . . , μ(τL)′′.
+
+Place a separable GP prior across quantiles and coefficients, 
+
+Θi ∼ N  μ, Kλ ⊗ Σ, Kλ(τ, τ ′) = exp   − | τ − τ ′|/λ 
+
+independently across i, where Kλ ∈ RL×L correlates nearby quantiles and Σ ∈ Rp×p
+
+couples intercept/slope components. To make the update explicit, collect the within-unit design and working response. For unit i let rit = (1 , x′
+
+> it
+
+)′ ∈ Rp and Ri = ( ri1, . . . , riT )′ ∈ RT ×p, and for each 16 quantile τℓ define the working response and working precision ˜yit,ℓ = yit − ft − κτℓ στℓ ωit,ℓ , Wiℓ = diag 
+
+ 1
+
+σ2 
+
+> τℓ
+
+ϕτℓ ωit,ℓ 
+
+Tt=1 
+
+,
+
+so that, conditional on the latent scales, the mixture representation gives ˜ yiℓ =
+
+Riθi(τℓ) + εiℓ with εiℓ ∼ N (0 , W −1 
+
+> iℓ
+
+). Because the likelihood factorizes across quantiles while the GP prior couples them, the conditional posterior of Θi is Gaussian, 
+
+Θi | · ∼ N ( ¯ mi, ¯Vi),
+
+with ¯V −1 
+
+> i
+
+= ( K−1 
+
+> λ
+
+⊗Σ−1)+ L
+
+blockdiag 
+
+> ℓ=1
+
+ R′
+
+> i
+
+Wiℓ Ri
+
+, ¯mi = ¯Vi
+
+h
+
+(K−1 
+
+> λ
+
+⊗Σ−1)μ+vec 
+
+> ℓ
+
+R′
+
+> i
+
+Wiℓ ˜yiℓ 
+
+i
+
+.
+
+The prior precision K−1 
+
+> λ
+
+⊗ Σ−1 borrows strength across adjacent quantiles, while the block-diagonal data precision R′
+
+> i
+
+Wiℓ Ri enters quantile by quantile; both are of modest dimension ( pL ), so the draw is a single multivariate Gaussian sample. Stack all Bernstein coefficients into 
+
+Γ =
+
+
+
+ϑ′
+
+> 1
+
+...
+
+ϑ′
+
+> p
+
+ ∈ Rp×(M +1) .
+
+Let 
+
+γ = vec( Γ′) ∈ Rp(M +1) .
+
+The mean path μ(τ ) = ΓΦ (τ ) is monotone in τ when each row of Γ is nondecreasing, i.e. 
+
+DΓ′ ⪰ 0, D =
+
+
+
+−1 1 0 · · · 00 −1 1 · · · 0... . . . . . . ...0 · · · 0 −1 1
+
+ ∈ RM ×(M +1) .
+
+The row-wise monotonicity constraints are equivalent to (Ip ⊗ D)γ ⪰ 0.
+
+We therefore assign a joint truncated Gaussian prior 
+
+γ ∼ N C
+
+ mΓ, VΓ
+
+, C = {γ ∈ Rp(M +1) : ( Ip ⊗ D)γ ⪰ 0},
+
+17 with density (up to normalization) 
+
+π(Γ) ∝ ϕ γ; mΓ, VΓ
+
+1{(Ip ⊗ D)γ ⪰ 0},
+
+where mΓ and VΓ are the mean vector and covariance of a multivariate Gaussian prior. The conditional posterior of γ follows from the same conjugate structure. Writing the population path as a linear map of γ, μ(τℓ) = ( Ip ⊗ Φ(τℓ)′)γ, stack these maps over the quantile grid into the design 
+
+μ = Ψγ, Ψ = Ip ⊗ Φ(τ1)′, . . . , Ip ⊗ Φ(τL)′′ ∈ RpL ×p(M +1) .
+
+Since Θi | γ ∼ N (Ψγ, Kλ ⊗ Σ) independently across i = 1 , . . . , N , combining the units with the truncated Gaussian prior yields 
+
+γ | · ∼ N C
+
+  ¯mΓ, ¯VΓ
+
+, C = {γ : ( Ip ⊗ D)γ ⪰ 0},
+
+where ¯V −1Γ = V −1Γ +N Ψ′(K−1 
+
+> λ
+
+⊗Σ−1)Ψ, ¯mΓ = ¯VΓ
+
+h
+
+V −1Γ mΓ +Ψ′(K−1 
+
+> λ
+
+⊗Σ−1)
+
+> N
+
+X
+
+> i=1
+
+Θi
+
+i
+
+.
+
+This is the unconstrained Gaussian update N ( ¯ mΓ, ¯VΓ) truncated to the monotone cone C.Sampling from the joint truncated Gaussian can be challenging, as the linear inequality constraints define a high-dimensional convex polytope with correlated components. Fortunately, the dimensionality of Γ in our implementation is modest, since the Bernstein basis representation already reduces the parameter space to a small set of smooth coefficients. This makes it feasible to employ the efficient algorithm of Botev (2017), which provides exact and numerically stable simulation from multivariate truncated normal distributions using minimax tilting. As a result, posterior sampling of Γ remains computationally tractable even under joint monotonicity constraints. 
+
+# 3 Climate Shocks and International Downside Risk 
+
+Standard empirical work on the relationship between climate shocks and the macroe-conomy estimates the average response of macroeconomic quantities such as output growth or inflation to temperature shocks. The implicit assumption is that climate shocks shift the centre of the distribution of a macroeconomic target without altering 18 its shape (Colacito et al., 2019; Bilal and K¨ anzig, 2026). This assumption is question-able on both theoretical and empirical grounds. Real-options theory predicts that uncertainty about future conditions suppresses irreversible investment (Bloom et al., 2018), depressing the lower tail of growth realisations without necessarily moving the median (Jovanovic and Ma, 2022; Huang et al., 2024). Similarly, international transmission channels may amplify climate tail risks heterogeneously, with commod-ity importers bearing the bulk of downside risk from global climate disturbances while exporters of affected commodities enjoy countercyclical terms-of-trade gains. These considerations motivate studying how climate shocks impact the conditional distribution of, e.g., output growth rather than their average effects alone. In this section, we apply the Bayesian quantile panel model of Section 2 and use it to analyze how temperature shocks and temperature volatility shocks shape the entire conditional distribution of output growth across 33 countries over 1979Q3–2023Q3. To do so, we cast the quantile panel model in a local projections framework and distinguish between level shocks—unexpected deviations in temperature—and volatil-ity shocks—unexpected increases in the variance of temperature fluctuations—and within each type between local (idiosyncratic) and global (common) components. This two-by-two decomposition allows us to test three nested hypotheses: (i) tem-perature level shocks generate asymmetric downside risks relative to the mean; (ii) temperature volatility shocks compound this asymmetry, shifting the left tail inde-pendently of the median; and (iii) the global component of climate shocks constitutes a systemic, non-diversifiable risk that is absent from country-specific models. 
+
+3.1 International macroeconomic data and the measurement of temperature shocks 
+
+We construct a balanced quarterly panel of 33 countries spanning the period 1979Q3– 2023Q3. 1 Macroeconomic data are sourced from the 2023 vintage of the GVAR database compiled by Mohaddes and Raissi (2024), which draws primarily on Haver Analytics, the International Monetary Fund’s International Financial Statistics (IFS), and Bloomberg. The 33 countries are organised into five regional groups—(1) Asia-Pacific, (2) North America, (3) South America, (4) the Middle East and Africa, and (5) Europe—and together account for more than 90 per cent of world GDP (Mohaddes and Raissi, 2024). 2 A full list of countries is provided in Table 3 in the    
+
+> 1The original raw data from Mohaddes and Raissi (2024) start in 1979Q2. However, since GDP is transformed by taking log differences, the first usable observation is 1979Q3.
+> 2The countries in each group, together with the abbreviations used in the remainder of the paper, are as follows. Asia-Pacific : Australia (AUS), China (CHN), India (IND), Indonesia (IDN), Japan (JPN), Korea (KOR), Malaysia (MYS), New Zealand (NZL), the Philippines (PHL), Singapore (SGP), and Thailand (THA). North America : Canada (CAN), Mexico (MEX), and the United States (US). South America : Argentina (ARG), Brazil (BRA), Chile (CHL), and Peru (PER).
+
+19 Data Appendix. From this database, we extract five macroeconomic variables: real GDP, inflation, the short-term interest rate, the real exchange rate, and a global oil price index. As is standard in the local projections literature, real GDP is transformed into a cumulative annualised growth rate at each horizon h, defined as 
+
+yi,t +h = 400 
+
+h
+
+> h
+
+X
+
+> j=1
+
+∆ log(GDP i,t +j ), (3) where the factor of 400 converts log-differences of quarterly data to annualised percentage points. Climate data are obtained from the unified country-level temperature dataset of Gortan et al. (2024), 3 which provides monthly average surface temperatures for each country in our sample. Since the raw temperature series exhibit strong seasonal pat-terns, we remove seasonality prior to constructing our shock and volatility measures. Following Colacito et al. (2019), we regress each country’s temperature series on a full set of monthly dummy variables and retain the residuals as the deseasonalised temperature series. These residuals capture deviations from the estimated seasonal cycle and are free of predictable calendar variation. The deseasonalised monthly series are then aggregated to quarterly frequency to align with the macroeconomic data. Temperature shocks are constructed following the autoregressive filtering approach of Bilal and K¨ anzig (2026). For each country i, we estimate the regression 
+
+bTit = Tit −
+
+
+
+ˆαi + ˆβi, 1 Ti,t −h + · · · + ˆβi,P +1 Ti,t −h−P
+
+
+
+, (4) where Tit denotes the deseasonalised temperature for country i in period t, ˆβi,j is the coefficient estimate on the lag of order h + j − 1, and bTit is the resulting temperature shock, defined as the residual deviation from the estimated autoregressive component. In their original annual-frequency analysis, Bilal and K¨ anzig (2026) set P = 2 and 
+
+h = 2. Since our empirical analysis is conducted at the quarterly frequency, we set 
+
+P = 8 and h = 8, which preserves the same span of dependence in calendar time. Each country’s AR coefficients are estimated by OLS over the full sample. The resulting residuals bTit measure quasi-exogenous temperature surprises after removing predictable inertia in the local temperature process. Figure 1 displays the estimated temperature shock series for a selection of advanced  
+
+> Middle East and Africa : Saudi Arabia (SAU) and South Africa (ZAF). Europe : Austria (AUT), Belgium (BEL), Finland (FIN), France (FRA), Germany (DEU), Italy (ITA), the Netherlands (NLD), Norway (NOR), Spain (ESP), Sweden (SWE), Switzerland (CHE), Turkey (TUR), and the United Kingdom (UK).
+> 3Available at https://weightedclimatedata.streamlit.app.
+
+20 and emerging market economies. The series exhibit considerable cross-country heterogeneity, both in the magnitude and persistence of shocks, consistent with the view that climate exposures differ markedly across regions and development stages. GBR JPN MEX ZAF DEU FRA CHN IND AUS CAN ARG BRA                     
+
+> 1980 '90 2000 '10 '20 1980 '90 2000 '10 '20 1980 '90 2000 '10 '20 1980 '90 2000 '10 '20 -2 024-2 024-2 024Temperature shock Advanced economies Emerging markets
+> Notes : The Advanced Economies are Australia, Canada, Germany, France, UK and Japan. The Emerging Economies are Argentina, Brazil, China, India, Mexico and South Africa.
+
+Figure 1: Temperature shocks for selected advanced and emerging market economies. Temperature volatility is measured as the realised volatility of the temperature shock series, constructed using a rolling window estimator. Specifically, for each country, we compute 
+
+bσRV  
+
+> it
+
+=
+
+vuut14
+
+> 3
+
+X
+
+> j=0
+
+ bTi,t −j
+
+2
+
+, (5) where bTi,t −j denotes the temperature shock defined in equation (4), and bσRV  
+
+> it
+
+is the root mean square (RMS) of shocks over the preceding four quarters. This estimator is analogous to a time-varying standard deviation under the assumption of zero mean shocks, and captures within-year fluctuations in climate variability over a one-year rolling window. Figure 2 displays the estimated temperature volatility series for the same selection of advanced and emerging market economies shown in Figure 1. As with the shock series, substantial cross-country heterogeneity is evident, though the ordering broadly tracks latitude rather than income: volatility is highest in the mid- and high-latitude economies of the sample, such as Germany and Canada, and lowest in the tropical ones, such as Brazil and India. 21 GBR JPN MEX ZAF DEU FRA CHN IND AUS CAN ARG BRA                     
+
+> 1980 '90 2000 '10 '20 1980 '90 2000 '10 '20 1980 '90 2000 '10 '20 1980 '90 2000 '10 '20 012012012Temperature volatility Advanced economies Emerging markets Notes : The Advanced Economies are Australia, Canada, Germany, France, UK and Japan. The Emerging Economies are Argentina, Brazil, China, India, Mexico and South Africa. Temperature volatility is computed as the root mean square of temperature shocks over a rolling window of four quarters, as defined in equation (5).
+
+Figure 2: Temperature volatility for selected advanced and emerging market economies. To distinguish domestic climate conditions from common global climate distur-bances, we decompose the temperature shock series defined in equation (4) into local and global components. The global temperature shock is constructed as the GDP-weighted cross-sectional average 
+
+bT Gt =
+
+> N
+
+X
+
+> i=1
+
+ωi bTit ,
+
+> N
+
+X
+
+> i=1
+
+ωi = 1 , (6) where bTit is the temperature shock for country i in period t, and ωi denotes country 
+
+i’s GDP weight. The local temperature shock is then defined as the deviation of each country’s shock from the global component, 
+
+bT Lit = bTit − bT Gt . (7) Each country’s shock therefore splits additively into the two components, bTit =
+
+bT Lit + bT Gt , with the local pieces satisfying PNi=1 ωi bT Lit = 0 by construction. The undecomposed shock bTit thus sits one level above the local–global split, which is why it carries no superscript. An analogous decomposition is applied to the realised volatility measure defined 22 in equation (5), 
+
+bσG, RV  
+
+> t
+
+=
+
+> N
+
+X
+
+> i=1
+
+ωibσRV  
+
+> it
+
+, bσL, RV  
+
+> it
+
+= bσRV  
+
+> it
+
+− bσG, RV  
+
+> t
+
+. (8) Following Mohaddes and Raissi (2024), GDP weights are computed using each country’s average GDP at purchasing power parity (PPP) over the period 2014–2016, ensuring that the global factor reflects the relative economic size of each country in our panel. In what follows, we let each climate disturbance carry a pair of superscripts. The first records whether the shock is local ( L) or global ( G) while the second indicates whether it is a temperature level shock ( T ) or a temperature volatility shock ( V ). The four regressors defined above are therefore bT Lit and bT Gt for the level shocks, and 
+
+bσL, RV  
+
+> it
+
+and bσG, RV  
+
+> t
+
+for the volatility shocks. We index the resulting shock types by 
+
+s ∈ S = {(L, T ), (G, T ), (L, V ), (G, V )}.1982-83 1997-98 2003 2009-10 2015-16 (b) Global temperature volatility (a) Global temperature shock 1980 1985 1990 1995 2000 2005 2010 2015 2020 -1.5 -1.0 -0.5 0.0 0.5 1.0 1.5 0.6 0.8 1.0 1.2 
+
+> Notes : The global temperature shock and volatility series are constructed as GDP-PPP-weighted cross-sectional averages of the country-level measures defined in equations (4) and (5), respectively, following equations (6) and (8). Shaded bands denote major El Ni˜ no episodes: 1982–83, 1997–98, 2002–03, 2009–10, and 2015–16.
+
+Figure 3: Global temperature shocks and volatility, 1979Q3–2023Q3. Figure 3 plots the constructed global temperature shock and volatility series over the sample period 1979Q3–2023Q3. Five shaded bands indicate episodes of major El Ni˜ no events: 1982–83, 1997–98, 2002–03, 2009–10, and 2015–16. These episodes coincide with pronounced spikes in both the shock and volatility series. 23 3.2 Model specification 
+
+For each horizon h = 1 , . . . , H , we estimate the following panel quantile local projection: 
+
+Qτ (yi,t +h | F t) = αi,h (τ ) + ft,h + bT Lit θL,T i,h (τ ) + bT Gt θG,T i,h (τ )+ bσL, RV  
+
+> it
+
+θL,V i,h (τ ) + bσG, RV  
+
+> t
+
+θG,V i,h (τ ) + x′
+
+> it
+
+βi,h (τ ), (9) where yi,t +h is the cumulative annualised GDP growth rate defined in equation (3), 
+
+Qτ (· | F t) denotes the τ th conditional quantile given the information set Ft, αi,h (τ )is a country-specific intercept, and ft,h is a horizon-specific common time effect that is invariant across quantiles , exactly as in the model of Section 2. Consistent with that specification, ft,h is modelled as a restricted latent factor driven by the observed global predictors wt (an AR(1) process with innovation variance σ2 
+
+> f
+
+), rather than as an unrestricted set of time dummies. This restriction is not merely cosmetic; it is required for identification of the global climate effects. The global regressors bT Gt and bσG, RV  
+
+> t
+
+vary only over time and are common to all countries, so they are collinear with any unrestricted time effect. Writing the unit-specific loading as a level plus a deviation, θG,T i,h (τ ) = ¯θG,T h (τ ) + ˜θG,T i,h (τ ), the common component bT Gt ¯θG,T h (τ ) is a pure function of t and would be absorbed by a full set of time dummies, leaving the average global climate effect unidentified; only the heterogeneous deviations bT Gt ˜θG,T i,h (τ ) would survive. By contrast, the restricted factor ft,h lives in a low-dimensional space and does not span the time variation in bT Gt , so both the average and heterogeneous global effects are identified. Because ft,h retains a free innovation ηt each period, this separation is achieved through the AR(1) restriction together with the prior on σ2 
+
+> f
+
+and the heterogeneity of the loadings, rather than through the likelihood alone; we therefore keep σ2 
+
+> f
+
+tightly centred and exclude the global climate regressors from wt. The local and global climate regressors bT Lit , bT Gt , bσL, RV  
+
+> it
+
+, and bσG, RV  
+
+> t
+
+are constructed as described in equations (7)–(8), and τ ∈ T = {0.01 , 0.02 , 0.03 , . . . , 0.98 , 0.99 } is the quantile index. We estimate equation (9) separately for each horizon h = 1 , . . . , 10 quarters. A separate concern with the local projection specification in equation (9) is that constructing yi,t +h as a cumulative h-quarter growth rate mechanically induces a moving-average structure of order h − 1 in the regression residuals, since observations at adjacent origin dates t share overlapping periods of the underlying growth process. We address this concern via simulation rather than through an explicit correction: Appendix C.1 evaluates whether posterior credible interval coverage is sensitive to this induced dependence, using a Monte Carlo design that replicates the overlapping-horizon structure while holding the true quantile coefficients fixed across h. Coverage remains close to the nominal 90 per cent level at every horizon and coefficient 24 (0.89–0.91 across R = 100 replications), with no systematic decline as h increases, providing no evidence that the induced MA( h − 1) structure distorts inference in our setting. The baseline control vector is 
+
+xit = yit , π it , ∆rer it 
+
+′, wt = oilp t, r ∗
+
+> t
+
+′, (10) where yit denotes lagged output growth, πit is inflation, ∆ rer it is the change in the real exchange rate, oilp t is the global oil price, and r∗ 
+
+> t
+
+is the global short-term interest rate. The vector wt collects the observed aggregate predictors that drive the common factor ft,h , as in Section 2; it does not enter equation (9) directly. All variables are sourced from the GVAR database of Mohaddes and Raissi (2024) as described in the previous section. The coefficients of interest are θL,T i,h (τ ), θG,T i,h (τ ), θL,V i,h (τ ), and θG,V i,h (τ ), which measure the effect of local temperature shocks, global temperature shocks, local temperature volatility, and global temperature volatility, respectively, on the τ th 
+
+quantile of the conditional distribution of future output growth at horizon h. Esti-mating equation (9) across the full quantile grid T traces out the entire conditional distribution of yi,t +h, allowing us to assess whether climate shocks shift the mean, compress or widen the distribution, or generate asymmetric tail risks. Prior to estimation, all four climate regressors— bT Lit , bT Gt , bσL, RV  
+
+> it
+
+, and bσG, RV  
+
+> t
+
+—are standardised to have unit variance in the cross-time distribution. This scaling means that estimated coefficients in equation (9) below are interpretable as the response to a one-standard-deviation climate disturbance, facilitating direct comparison across shock types. 
+
+3.3 Baseline Distributional Responses 
+
+We now present the baseline distributional impulse responses of cumulative output growth to each of the four climate shocks. For shock type s, horizon h, and quantile 
+
+τ , the distributional impulse response function (DIRF) is defined directly from the estimated coefficients of equation (9): DIRF si,h (τ ) = θsi,h (τ ). (11) At a given τ , equation (11) is the response of the τ th conditional quantile. The distri-butional response is the collection of these ordinates across the full grid, {θsi,h (τ )}τ ∈T ,since it is the entire coefficient path that determines how the shape of the predictive distribution changes; this path is what we report in the figures below. 25 To summarise the cross-country evidence, we report the panel-average response DIRF sh (τ ) = 1
+
+N
+
+NX
+
+i=1 
+
+DIRF si,h (τ ), (12) which aggregates country-level responses into a single summary measure at each quantile τ ∈ T and horizon h. We report posterior medians together with 68 and 90 per cent credible bands throughout. The central hypothesis of this paper is that temperature volatility shocks generate disproportionately large contractions in the lower tail of the output growth distribution relative to the median, that is, DIRF sh (0 .10) < DIRF sh (0 .50) , s ∈ { (L, V ), (G, V )}, (13) particularly at medium-run horizons ( h = 4–10 quarters). Evidence in favour of equation (13) would indicate that temperature volatility acts primarily as a tail risk, compressing downside outcomes without necessarily shifting the median forecast, consistent with the uncertainty channel identified in the climate-macroeconomics literature. Horizon (Quarters)                                        
+
+> 12345678910
+> Response
+> -0.04 -0.02 00.02 0.04 Response to a Local Temperature Shock
+> Horizon (Quarters)
+> 12345678910
+> Response
+> -0.2 -0.15 -0.1 -0.05 00.05 Response to a Global Temperature Shock
+> Horizon (Quarters)
+> 12345678910
+> Response
+> -0.06 -0.04 -0.02 00.02
+> Response to Local Temperature Volatility Shock
+> Horizon (Quarters)
+> 12345678910
+> Response
+> -0.05 00.05 0.1 0.15 Response to Global Temperature Volatility Shock
+> 90-10% Band 75-25% Band Median
+
+Notes : Each panel plots DIRF sh (τ ) as defined in equation (12) for h = 1 , . . . , 10 quarters. The solid line is the median response ( τ = 0 .50). Dark and light shaded bands correspond to the 25 th –75 th and 10 th –90 th quantile responses, respectively. Panels report responses to: (a) local temperature shock; (b) global temperature shock; (c) local temperature volatility shock; (d) global temperature volatility shock. 
+
+Figure 4: Panel-average distributional impulse responses to local and global climate shocks. Figure 4 plots DIRF sh (τ ) across forecast horizons h = 1 , . . . , 10 quarters for each of the four climate shocks. Several findings emerge. First, local temperature shocks generate modest and broadly symmetric responses across the conditional distribution, with the effects centred around zero and the 90–10 per cent quantile range spanning approximately [ −0.04 , 0.04] percentage points. This finding is consistent with the 26 existing literature, which documents substantial heterogeneity in the economic effects of temperature shocks across countries. In particular, the adverse consequences of temperature increases appear to be concentrated in countries with hotter climates and lower levels of income, where economic activity is more vulnerable to climatic conditions (see Sachs and Warner (1997); Jones and Olken (2010); Dell et al. (2012); Burke et al. (2015)). In contrast, global temperature shocks generate more pronounced negative effects, particularly in the lower tail of the conditional distribution. The response at τ = 0 .10 declines to approximately −0.2 percentage points at short-to-medium horizons, while responses at higher quantiles remain close to zero or mildly positive. This pattern indicates the presence of asymmetric downside risks associated with the global climate disturbances, whereby adverse climate developments disproportionately affect weaker economic outcomes. This result is consistent with the findings of Kahn et al. (2021), who show that persistent increases in temperatures above historical norms are associated with significant reductions in long-run economic growth. Third, local temperature volatility shocks produce a modest response that is skewed toward the lower tail, with the 90–10 per cent band spanning approximately [−0.06 , 0.02] percentage points and widening somewhat at longer horizons. This asymmetry suggests that increases in local climate uncertainty are associated with a mild downward shift in the lower tail of the output growth distribution, rather than a purely symmetric widening of uncertainty around an unchanged centre. Finally, global temperature volatility shocks display a different pattern, generating a positive response in output growth in the short term that dissipates over the medium to long term. One possible explanation for this unexpected positive response is that global temperature volatility may partly capture broader fluctuations associated with global commodity markets. For example, Brunner (2002) show that El Ni˜ no–Southern Oscillation events can raise world commodity prices and affect global real GDP through international transmission channels. A positive global temperature volatil-ity shock may therefore generate heterogeneous effects across countries through commodity-price and terms-of-trade channels. Countries that benefit from higher commodity prices may experience stronger output responses, which could explain the positive effects observed in the upper quantiles of the distribution. Turning to the central hypothesis in equation (13), the evidence presents a mixed picture at the panel level. While lower quantile responses lie below the median for local volatility shocks at most horizons, the global volatility shock generates the opposite pattern, with upper quantiles diverging sharply from the median. This tension between the two volatility components suggests that the aggregate panel average may conceal systematic differences across economies at different stages 27 of development. We investigate this possibility below by examining country-level responses separately for advanced and emerging market economies. 
+
+3.4 Cross-Country Heterogeneity 
+
+The panel-average responses in Figure 4 provide a useful summary of the aggregate evidence but may obscure considerable heterogeneity across economies. To examine this, we present country-level distributional impulse responses for a selection of ten advanced economies (AE) — Australia, Canada, France, Germany, Italy, Japan, Norway, Spain, the United Kingdom, and the United States — and ten emerging market economies (EM) — Argentina, Brazil, China, India, Indonesia, Korea, Mexico, South Africa, Thailand, and Turkey. Figures 5–8 plot DIRF si,h (τ ) as defined in equation (11) for each country, shock, and quantile across horizons h = 1 , . . . , 10 quarters. 
+
+Local temperature shocks. Figure 5 shows that responses to local temperature shocks are generally modest for advanced economies, with 90–10 per cent quantile bands typically spanning approximately [ −0.02 , 0.04] percentage points; Germany, Japan, and Norway exhibit somewhat wider bands, of approximately [ −0.05 , 0.05]. This is broadly consistent with idiosyncratic domestic temperature fluctuations having limited systematic macroeconomic impact in developed economies. Emerging markets display substantially greater cross-country dispersion: India exhibits markedly wider quantile bands than any advanced economy, spanning approximately [ −0.10 , 0.10], while Thailand and Turkey show comparably wide bands. China is notable for a band that lies entirely in non-negative territory. These results indicate that local temperature shocks generate meaningful, but heterogeneous, downside risks across several emerging economies, consistent with Berg et al. (2024), who similarly document considerable heterogeneity in the sign and magnitude of GDP responses to idiosyncratic temperature shocks across countries, with the direction of the response varying systematically with country characteristics such as income, educational attainment, and trade openness. 
+
+Global temperature shocks. Figure 6 shows that global temperature shocks generate a negative response across essentially all economies. Most countries – in-cluding Canada, France, Germany, Italy, Japan, Norway, Spain, the United Kingdom, and the emerging markets in the sample – exhibit quantile bands extending to approximately −0.20 percentage points. Australia and the United States are notable exceptions, with substantially narrower bands not exceeding approximately −0.15 and −0.10 respectively, suggesting a comparatively muted response. Indonesia is the only country whose band extends into positive territory. These results indicate that 28 global temperature shocks generate a broadly shared downside risk to output growth across both advanced and emerging economies, consistent with Bilal and K¨ anzig (2026) and Byrne and Vitenu-Sackey (2024), who similarly find that global climate disturbances generate negative macroeconomic effects shared broadly across both advanced and emerging economies, in contrast to the more limited and heterogeneous effects of country-specific temperature shocks. 
+
+Local temperature volatility shocks. Figure 7 shows that, with the exception of a handful of countries such as France, the United Kingdom, the United States, India, Indonesia, and Mexico, most economies exhibit a negative median response to a local temperature volatility shock in the short term, consistent with Alessandri and Mumtaz (2025), who show that a rise in temperature risk – controlling for temperature levels – is followed by a period of both lower and more volatile GDP growth. Among advanced economies, Canada, Italy, Japan, and Spain exhibits persistently negative median responses through much of the horizon, while Australia, France, the United Kingdom, and the United States display a mildly positive median response instead. Among emerging markets, the negative short-term response is more pronounced: Argentina, Brazil, Korea, and Thailand exhibit sharply negative median responses on impact, with Brazil falling to approximately −0.11 percentage points, while China and Turkey begin negative before reverting toward positive territory at longer horizons. By contrast, India, Indonesia, and Mexico display persistently positive median responses throughout. A negative short-term response to local temperature volatility is thus the dominant pattern across the panel, though the persistence and magnitude of this response varies considerably by country, and the negative lower-tail responses observed for several emerging markets provide some country-level support for the hypothesis in equation (13), even where the panel average does not strongly confirm it. 
+
+Global temperature volatility shocks. Finally, figure 8 shows that a global temperature volatility shock generates a large positive response on impact for every economy in the panel, with median responses ranging from approximately 0 .07 to 0 .20 percentage points on impact, before decaying over the following four to five quarters. This impact-horizon uniformity is not fully explained by the commodity-price channel discussed above and is left as an open question for future work. 29 2 4 6 8 10 
+
+> Percent
+
+-0.02 00.02 
+
+[AE] AUS 
+
+2 4 6 8 10 -0.02 00.02 0.04 CAN 
+
+2 4 6 8 10 -0.04 -0.02 00.02 
+
+FRA 
+
+2 4 6 8 10 -0.05 00.05 DEU 
+
+2 4 6 8 10 -0.02 00.02 ITA 
+
+2 4 6 8 10 
+
+> Percent
+
+-0.05 00.05 JPN 
+
+2 4 6 8 10 -0.05 00.05 NOR 
+
+2 4 6 8 10 -0.02 00.02 0.04 ESP 
+
+2 4 6 8 10 -0.02 00.02 
+
+GBR 
+
+2 4 6 8 10 -0.02 00.02 0.04 
+
+USA 
+
+2 4 6 8 10 
+
+> Percent
+
+-0.05 00.05 
+
+[EM] ARG 
+
+2 4 6 8 10 -0.05 00.05 BRA 
+
+2 4 6 8 10 00.02 0.04 0.06 CHN 
+
+2 4 6 8 10 -0.1 00.1 IND 
+
+2 4 6 8 10 -0.04 -0.02 00.02 
+
+IDN 
+
+Quarters 
+
+2 4 6 8 10 
+
+> Percent
+
+-0.05 00.05 KOR 
+
+Quarters 
+
+2 4 6 8 10 -0.05 00.05 MEX 
+
+Quarters 
+
+2 4 6 8 10 -0.05 00.05 ZAF 
+
+Quarters 
+
+2 4 6 8 10 -0.1 -0.05 00.05 THA 
+
+Quarters 
+
+2 4 6 8 10 -0.1 -0.05 00.05 TUR 
+
+90–10% Band 75–25% Band Median 
+
+Response to a Local Temperature Shock Notes : Each panel plots DIRF (L,T )
+
+i,h (τ ) as defined in equation (11) for h = 1 , . . . , 10 quarters. The solid line is the median response ( τ = 0 .50). Dark and light shaded bands correspond to the 25 th –75 th and 10 th –90 th 
+
+quantile responses, respectively. Countries labelled [AE] and [EM] denote advanced and emerging market economies, respectively. 
+
+Figure 5: Country-level distributional impulse responses to a local temperature shock. 2 4 6 8 10 
+
+> Percent
+
+-0.15 -0.1 -0.05 0
+
+[AE] AUS 
+
+2 4 6 8 10 -0.2 -0.1 0
+
+CAN 
+
+2 4 6 8 10 -0.2 -0.1 0
+
+FRA 
+
+2 4 6 8 10 -0.2 -0.1 0
+
+DEU 
+
+2 4 6 8 10 -0.2 -0.1 0
+
+ITA 
+
+2 4 6 8 10 
+
+> Percent
+
+-0.2 -0.1 0
+
+JPN 
+
+2 4 6 8 10 -0.2 -0.1 0
+
+NOR 
+
+2 4 6 8 10 -0.2 -0.1 0
+
+ESP 
+
+2 4 6 8 10 -0.2 -0.1 0
+
+GBR 
+
+2 4 6 8 10 -0.1 -0.05 0
+
+USA 
+
+2 4 6 8 10 
+
+> Percent
+
+-0.2 -0.1 0
+
+[EM] ARG 
+
+2 4 6 8 10 -0.2 -0.1 0
+
+BRA 
+
+2 4 6 8 10 -0.2 -0.1 0
+
+CHN 
+
+2 4 6 8 10 -0.2 -0.1 0
+
+IND 
+
+2 4 6 8 10 -0.2 -0.1 00.1 IDN 
+
+Quarters 
+
+2 4 6 8 10 
+
+> Percent
+
+-0.2 -0.1 0
+
+KOR 
+
+Quarters 
+
+2 4 6 8 10 -0.2 -0.1 0
+
+MEX 
+
+Quarters 
+
+2 4 6 8 10 -0.2 -0.1 0
+
+ZAF 
+
+Quarters 
+
+2 4 6 8 10 -0.2 -0.1 0
+
+THA 
+
+Quarters 
+
+2 4 6 8 10 -0.2 -0.1 0
+
+TUR 
+
+90–10% Band 75–25% Band Median 
+
+Response to a Global Temperature Shock 
+
+Notes : Each panel plots DIRF (G,T )
+
+i,h (τ ) as defined in equation (11) for h = 1 , . . . , 10 quarters. See notes to Figure 5 for further details. 
+
+Figure 6: Country-level distributional impulse responses to a global temperature shock. 30 2 4 6 8 10 
+
+> Percent
+
+-0.04 -0.02 00.02 
+
+[AE] AUS 
+
+2 4 6 8 10 -0.04 -0.02 0
+
+CAN 
+
+2 4 6 8 10 -0.02 00.02 0.04 FRA 
+
+2 4 6 8 10 -0.02 00.02 
+
+DEU 
+
+2 4 6 8 10 -0.04 -0.02 0
+
+ITA 
+
+2 4 6 8 10 
+
+> Percent
+
+-0.04 -0.02 0
+
+JPN 
+
+2 4 6 8 10 -0.02 00.02 0.04 NOR 
+
+2 4 6 8 10 -0.06 -0.04 -0.02 0
+
+ESP 
+
+2 4 6 8 10 -0.04 -0.02 00.02 
+
+GBR 
+
+2 4 6 8 10 -0.02 00.02 0.04 
+
+USA 
+
+2 4 6 8 10 
+
+> Percent
+
+-0.1 -0.05 0
+
+[EM] ARG 
+
+2 4 6 8 10 -0.15 -0.1 -0.05 0 BRA 
+
+2 4 6 8 10 -0.05 00.05 
+
+CHN 
+
+2 4 6 8 10 00.05 0.1 
+
+IND 
+
+2 4 6 8 10 00.02 0.04 
+
+IDN 
+
+Quarters 
+
+2 4 6 8 10 
+
+> Percent
+
+-0.2 -0.1 0 KOR 
+
+Quarters 
+
+2 4 6 8 10 -0.1 00.1 MEX 
+
+Quarters 
+
+2 4 6 8 10 -0.04 -0.02 00.02 ZAF 
+
+Quarters 
+
+2 4 6 8 10 -0.1 -0.05 0
+
+THA 
+
+Quarters 
+
+2 4 6 8 10 -0.05 00.05 TUR 
+
+90–10% Band 75–25% Band Median 
+
+Response to a Local Temperature Volatility Shock Notes : Each panel plots DIRF (L,V )
+
+i,h (τ ) as defined in equation (11) for h = 1 , . . . , 10 quarters. See notes to Figure 5 for further details. 
+
+Figure 7: Country-level distributional impulse responses to a local temperature volatility shock. 2 4 6 8 10 
+
+> Percent
+
+-0.1 00.1 0.2 [AE] AUS 
+
+2 4 6 8 10 -0.1 00.1 
+
+CAN 
+
+2 4 6 8 10 00.05 0.1 
+
+FRA 
+
+2 4 6 8 10 00.05 0.1 
+
+DEU 
+
+2 4 6 8 10 00.05 0.1 
+
+ITA 
+
+2 4 6 8 10 
+
+> Percent
+
+-0.1 00.1 
+
+JPN 
+
+2 4 6 8 10 00.1 0.2 NOR 
+
+2 4 6 8 10 00.05 0.1 
+
+ESP 
+
+2 4 6 8 10 -0.05 00.05 0.1 
+
+GBR 
+
+2 4 6 8 10 -0.05 00.05 0.1 
+
+USA 
+
+2 4 6 8 10 
+
+> Percent
+
+00.05 0.1 
+
+[EM] ARG 
+
+2 4 6 8 10 00.05 0.1 
+
+BRA 
+
+2 4 6 8 10 00.1 0.2 CHN 
+
+2 4 6 8 10 00.1 0.2 
+
+IND 
+
+2 4 6 8 10 00.1 0.2 IDN 
+
+Quarters 
+
+2 4 6 8 10 
+
+> Percent
+
+00.1 0.2 KOR 
+
+Quarters 
+
+2 4 6 8 10 -0.1 00.1 
+
+MEX 
+
+Quarters 
+
+2 4 6 8 10 -0.05 00.05 0.1 
+
+ZAF 
+
+Quarters 
+
+2 4 6 8 10 00.1 0.2 THA 
+
+Quarters 
+
+2 4 6 8 10 00.1 0.2 
+
+TUR 
+
+90–10% Band 75–25% Band Median 
+
+Response to a Global Temperature Volatility Shock 
+
+Notes : Each panel plots DIRF (G,V )
+
+i,h (τ ) as defined in equation (11) for h = 1 , . . . , 10 quarters. See notes to Figure 5 for further details. 
+
+Figure 8: Country-level distributional impulse responses to a global temperature volatility shock. 31 3.5 Climate Growth-at-Risk 
+
+To translate the estimated quantile responses into an economically interpretable measure of downside risk, we compute climate growth-at-risk (GaR). For country i
+
+and horizon h, define GaR si,h (τ ) = Qτ (yi,t +h | F t, s ) , (14) where s denotes a counterfactual climate scenario and Qτ (· | F t, s ) is the τ th con-ditional quantile of output growth under scenario s. The baseline scenario sets all climate regressors — bT Lit , bT Gt , bσL, RV  
+
+> it
+
+, and bσG, RV  
+
+> t
+
+— to zero, corresponding to a counterfactual in which no climate disturbance occurs. The shock scenario increases a single climate regressor by one standard deviation, holding all others at zero. The climate impact on growth-at-risk is then measured by the change ∆GaR si,h (τ ) = GaR si,h (τ ) − GaR 0
+
+> i,h
+
+(τ ), (15) where GaR 0
+
+> i,h
+
+(τ ) denotes the baseline. A negative value of ∆GaR si,h (τ ) indicates that the climate shock shifts the τ th quantile of the output growth distribution downward, representing a deterioration in downside risk. We focus primarily on the left tail of the conditional distribution, corresponding to either the 5 th or 10 th quantile, which are the standard thresholds in the growth-at-risk literature (Adrian et al., 2019). To summarise the full left-tail impact of each climate scenario, we complement the quantile-specific GaR measure with the expected shortfall: ES si,h (α) = 1
+
+α
+
+Z α
+
+> 0
+
+Qu (yi,t +h | F t, s ) du, (16) which averages the conditional quantile function over the entire lower tail [0 , α ] and thereby captures the severity of adverse outcomes beyond a given threshold. On the estimated quantile grid T , equation (16) is approximated by 
+
+cES si,h (α) = 1
+
+|T α|
+
+X 
+
+> τ∈T α
+
+bQτ (yi,t +h | F t, s ) , Tα = {τ ∈ T : τ ≤ α} , (17) where Tα collects all quantiles in the estimation grid at or below the threshold α.The corresponding change in expected shortfall relative to the baseline is ∆ cES si,h (α) = cES si,h (α) − cES 0
+
+> i,h
+
+(α), (18) where a negative value indicates that the climate shock worsens the average outcome in the lower tail of the conditional distribution beyond what is captured by any single quantile. We evaluate equations (17) and (18) at α = 0 .05, so that Tα includes all quantiles in T at or below the 5 th percentile. 32 Table 1: Climate growth-at-risk: change in expected shortfall ∆ cES si,h (0 .05). 
+
+Country h = 1 h = 4 h = 10 Country h = 1 h = 4 h = 10 
+
+Panel A: Advanced Economies Panel B: Emerging Market Economies 
+
+Australia −0.43 −0.04 −0.07 Argentina −0.54 −0.23 +0.09 Austria −0.33 +0.01 −0.06 Brazil −0.54 −0.17 +0.03 Belgium −0.37 −0.04 −0.03 Chile −0.60 −0.39 −0.26 Canada −0.48 −0.14 −0.05 China −0.36 +0.05 −0.04 Finland −0.44 −0.17 −0.19 India −0.36 −0.07 −0.03 France −0.41 −0.05 −0.05 Indonesia −0.21 −0.09 +0.10 Germany −0.36 −0.08 −0.05 Korea −0.60 −0.20 −0.11 Italy −0.41 −0.10 −0.06 Malaysia −0.48 −0.03 +0.08 Japan −0.45 −0.15 −0.04 Mexico −0.76 −0.36 −0.02 Netherlands −0.40 −0.02 +0.01 Peru −0.81 −0.29 −0.04 New Zealand −0.38 −0.11 −0.08 Philippines −0.52 −0.31 −0.23 Norway −0.40 −0.08 +0.04 Saudi Arabia −0.40 +0.06 −0.12 Spain −0.36 +0.01 +0.01 Singapore −0.44 +0.09 −0.03 Sweden −0.31 −0.05 −0.05 South Africa −0.48 −0.10 −0.12 Switzerland −0.31 −0.02 −0.08 Thailand −0.48 −0.01 +0.16 United Kingdom −0.48 −0.05 −0.10 Turkey −0.90 −0.20 −0.17 USA −0.39 −0.08 −0.06 
+
+AE average −0.395 −0.068 −0.054 EM average −0.530 −0.141 −0.044 Panel average (All Countries) −0.460 −0.103 −0.049 
+
+Notes : Entries report ∆ cES si,h (0 .05) as defined in equation (18), evaluated at α = 0 .05 for horizons 
+
+h ∈ { 1, 4, 10 } quarters. A negative value indicates that a one-standard-deviation climate shock shifts the lower tail of the conditional output growth distribution downward relative to the baseline, representing a deterioration in growth-at-risk. Positive values, indicating an improvement relative to baseline, are prefixed with +. Panel averages are computed as simple cross-country means within each group and are displayed in bold. 
+
+Table 1 reports ∆ cES si,h (0 .05) for horizons h ∈ { 1, 4, 10 } quarters, where a negative entry indicates that a one-standard-deviation climate shock worsens the expected shortfall at the 5 per cent tail of the conditional output growth distribution. Figure 9 maps the short-horizon ( h = 1) column of the table across the panel. Three findings stand out. First, the impact of climate shocks on growth-at-risk is widespread and uniformly negative at the short horizon ( h = 1): all 33 countries record a negative ∆ cES, with a panel average of −0.460 percentage points. Emerging market economies bear a larger short-run climate tail risk than advanced economies, with EM and AE averages of −0.530 and −0.395, respectively, consistent with their greater exposure to weather-sensitive sectors. The largest short-run deteriorations are recorded for Turkey ( −0.90), Peru ( −0.81), and Mexico ( −0.76), while Sweden and Switzerland exhibit the smallest impacts among the advanced economies, both at −0.31. The map, depicted in Figure 9, emphasizes this pattern. The most pronounced deteriorations are concentrated in Latin America, Turkey, and emerging Asia, while continental Europe and the smaller advanced economies form a comparatively lightly shaded band. 33 Singapore               
+
+> ΔES i,1s(0.05 )(percentage points)
+> -0.9 -0.7 -0.5 -0.3 Notes : Each sample country is shaded by its change in expected shortfall ∆ cES si,h (0 .05) at horizon h= 1, as defined in equation (18) and reported in the h= 1 column of Table 1. Darker shading indicates a larger deterioration in the 5 per cent expected shortfall of the conditional output growth distribution following a one-standard-deviation climate shock; all 33 countries record a negative value at this horizon. Countries shaded in light grey are not part of the estimation sample. Singapore is marked with a separate symbol because it is not visible at this scale. Cross-country averages are −0.395 for advanced economies, −0.530 for emerging market economies, and −0.460 for the full panel.
+
+Figure 9: Geography of climate growth-at-risk: change in expected shortfall at h = 1. Second, climate tail risks dissipate substantially at medium and longer horizons. The panel-average ∆ cES falls sharply from −0.460 at h = 1 to −0.103 at h = 4 and −0.049 at h = 10, suggesting that while climate shocks generate significant short-run downside risks, economies partially recover their growth trajectory over time. Third, a small number of economies record positive ∆ cES at medium and longer horizons — notably Austria, Spain, China, Saudi Arabia, and Singapore at 
+
+h = 4, and Netherlands, Norway, Spain, Argentina, Brazil, Indonesia, Malaysia, and Thailand at h = 10 — indicating that climate shocks may improve expected shortfall for these economies at longer horizons, potentially reflecting structural features such as sectoral reallocation or terms-of-trade benefits. By contrast, Chile ( −0.60, 
+
+−0.39, −0.26) and the Philippines ( −0.52, −0.31, −0.23) are the only economies that sustain large and persistent deteriorations across all three horizons, underscoring their exceptional vulnerability to climate tail risk throughout the forecast horizon. 
+
+3.6 Model Comparison and Out-of-Sample Tail Forecast Performance 
+
+In this final section, we evaluate whether the panel quantile model in equation (9) delivers superior tail risk forecast accuracy relative to a less parameterised alterna-tive. To this end, we conduct a pseudo-out-of-sample forecasting exercise under an expanding window scheme. The initial estimation window covers 1979Q3–1999Q4, 34 and forecasts are evaluated over the period 2000Q1–2023Q3, yielding Toos = 95 out-of-sample quarters and a total evaluation set of |O| = N × Toos country-period pairs. We focus on the one-step-ahead horizon ( h = 1), at which forecast score differences between competing models are most precisely estimated. At each evaluation period 
+
+t, the model is re-estimated on the expanding sample, and a quantile forecast bQτ,i,t +1 
+
+is produced for each country i and each τ ∈ T .We compare our proposed model against a country-specific quantile regression (CSQR) benchmark. The CSQR estimates equation (9) separately for each country 
+
+i, retaining all four climate regressors bT Lit , bT Gt , bσL, RV  
+
+> it
+
+, and bσG, RV  
+
+> t
+
+, but omitting the common time effect ft,h . The CSQR is therefore nested within our proposed model. Because both specifications use the same four climate regressors, the comparison isolates the gains from the panel structure itself: the common time effect ft,h and the hierarchical Gaussian-process prior that pools coefficient paths across countries and quantiles. It does not speak to the contribution of the climate regressors, which are common to both models. Forecast accuracy is evaluated via the quantile scores of Gneiting and Ranjan (2011). For each model, quantile τ , and evaluation set O,QS τ = 1
+
+|O| 
+
+X
+
+> (i,t )∈O
+
+ρτ
+
+
+
+yi,t +1 − bQτ,i,t +1 
+
+
+
+, (19) where the tick loss function is 
+
+ρτ (u) = u (τ − 1{u < 0}) , (20) and O denotes the out-of-sample evaluation set. We normalise by |O| to obtain a mean score comparable across models, with a lower value of QS τ indicating better forecast accuracy at quantile τ . As our primary interest lies in the left tail of the conditional distribution of output growth, we focus on the lower-tail quantile set 
+
+TL = {0.01 , 0.02 , . . . , 0.10 } ⊂ T , (21) and report the mean tail quantile score QS tail = 1
+
+|T L|
+
+X 
+
+> τ∈T L
+
+QS τ , (22) which aggregates forecast accuracy across the lowest decile of the conditional distri-bution. Table 2 reports out-of-sample tail quantile scores expressed relative to the CSQR benchmark, where a value below unity indicates superior growth-at-risk forecast 35 accuracy from our proposed model. The results provide strong and consistent evidence that the proposed panel quantile regression produces more accurate growth-at-risk forecasts than the country-specific quantile regression: the panel-average QS tail of 0.663 indicates a reduction in tail risk forecast loss of approximately 34 per cent relative to the country-specific benchmark, with every country in the sample recording a QS tail below unity. Since both models condition on the same four climate regressors, these gains are attributable to the panel structure alone: the common time effect ft,h and the hierarchical prior allow each country to borrow information from the rest of the panel, so that climate-driven tail risks estimated imprecisely in isolation are recovered more accurately under partial pooling. Forecast improvements are largest at the extreme left tail ( τ = 0 .01, panel average 0.490), consistent with the view that extreme growth-at-risk events have a strong global climate component that country-specific models cannot adequately capture; at this quantile the largest gains accrue to Spain (0.084), the United Kingdom (0.095), France (0.097), and Mexico (0.100). Averaged across the full tail, the strongest performers are Sweden (0.415), the United Kingdom (0.436), Brazil (0.456), and Mexico (0.464). A small number of country-quantile combinations record scores above unity. At the extreme left tail ( τ = 0 .01), Germany (1.022) and Thailand (1.246) show modest underperformance, while Australia (2.046) is a notable outlier, more than doubling the benchmark loss at this quantile. At τ = 0 .05 and τ = 0 .10, a handful of countries — Canada, Spain, France, and Saudi Arabia — record scores only marginally above unity. In all cases, however, the QS tail averaged across the full tail remains below unity, confirming that the panel quantile regression outperforms the country-specific benchmark for every economy in the sample. 36 Table 2: Out-of-sample relative tail quantile scores, 2000Q1–2023Q3. 
+
+Panel A: Advanced Economies Panel B: Emerging Market Economies 
+
+Country τ =0 .01 τ =0 .05 τ =0 .10 QS tail Country τ =0 .01 τ =0 .05 τ =0 .10 QS tail 
+
+Australia 2.046 0.838 0.900 0.951 Argentina 0.538 0.701 0.965 0.768 Austria 0.671 0.571 0.544 0.633 Brazil 0.241 0.438 0.642 0.456 Belgium 0.213 0.466 0.589 0.519 Chile 0.380 0.697 0.750 0.679 Canada 0.175 1.325 1.071 0.982 China 0.829 0.857 0.917 0.888 Finland 0.454 0.569 0.592 0.546 India 0.780 0.597 0.672 0.641 France 0.097 0.788 1.112 0.674 Indonesia 0.277 0.770 0.799 0.716 Germany 1.022 0.639 0.681 0.781 Korea 0.322 0.557 0.642 0.550 Italy 0.167 0.765 0.651 0.603 Malaysia 0.257 0.569 0.615 0.522 Japan 0.459 0.698 0.649 0.637 Mexico 0.100 0.585 0.496 0.464 Netherlands 0.324 0.417 0.613 0.495 Peru 0.849 0.565 0.574 0.728 New Zealand 0.273 0.562 0.715 0.523 Philippines 0.354 0.864 0.830 0.729 Norway 0.266 0.541 0.662 0.522 Saudi Arabia 0.396 0.932 1.044 0.855 Spain 0.084 1.129 1.059 0.905 Singapore 0.861 0.640 0.653 0.665 Sweden 0.255 0.391 0.505 0.415 South Africa 0.511 0.416 0.716 0.501 Switzerland 0.571 0.609 0.813 0.667 Thailand 1.246 0.915 0.974 0.993 United Kingdom 0.095 0.510 0.543 0.436 Turkey 0.729 0.671 0.660 0.682 USA 0.323 0.909 0.822 0.763 
+
+Panel average: τ =0 .01 : 0.490 τ =0 .05 : 0.682 τ =0 .10 : 0.742 QS tail : 0.663 
+
+Notes : Entries report the ratio QS panel  
+
+> τ
+
+/QS CSQR  
+
+> τ
+
+of the panel model’s quantile score to that of the country-specific quantile regression (CSQR) benchmark, for selected quantiles τ ∈ { 0.01 , 0.05 , 0.10 }
+
+and for the mean tail score QS tail averaged over TL = {0.01 , 0.02 , . . . , 0.10 }, with QS τ and QS tail 
+
+defined in equations (19) and (22). A value below unity indicates superior tail forecast accuracy from the panel quantile model. The evaluation period is 2000Q1–2023Q3 under an expanding window scheme with initial training sample 1979Q3–1999Q4. 
+
+# 4 Robustness 
+
+In this section, we undertake three robustness checks to assess the sensitivity of our empirical results to key modeling choices, focusing on the role of the common factor ft,h , the local/global decomposition of climate shocks, and the stability of the AE/EM heterogeneity documented above. The first check re-estimates the panel quantile model with the common factor ft,h removed entirely, isolating how much of the baseline climate responses this component accounts for. Figure 10 plots the resulting panel-average DIRFs. The two local shocks are essentially unaffected, both in timing and magnitude, relative to the baseline in Figure 4. The two global shocks retain the same sign and horizon profile as in the baseline but are noticeably smaller in magnitude once the common factor is removed. This is consistent with the identification argument in Section 3.2: since the global climate regressors are collinear with any unrestricted common time variation, ft,h is what allows the model to recover the full magnitude of the average global climate effect, separately from the country-level heterogeneity. The attenuation of the global responses in this restricted 37 specification therefore corroborates, rather than undermines, the role of the common factor in the baseline model. Horizon (Quarters)                                         
+
+> 12345678910
+> Response
+> -0.04 -0.02 00.02 0.04 Response to a Local Temperature Shock
+> Horizon (Quarters)
+> 12345678910
+> Response
+> -0.1 -0.08 -0.06 -0.04 -0.02 00.02 Response to a Global Temperature Shock
+> Horizon (Quarters)
+> 12345678910
+> Response
+> -0.06 -0.04 -0.02 00.02 0.04 Response to Local Temperature Volatility Shock
+> Horizon (Quarters)
+> 12345678910
+> Response
+> -0.05 00.05 0.1 0.15 Response to Global Temperature Volatility Shock
+> 90-10% Band 75-25% Band Median
+
+Notes : Each panel plots DIRF sh (τ ) as defined in equation (12) for h = 1 , . . . , 10 quarters, estimated from the panel quantile model in equation (9) with the common factor ft,h removed. The solid line is the median response ( τ = 0 .50). Dark and light shaded bands correspond to the 25 th –75 th and 10 th –90 th quantile responses, respectively. Panels report responses to: (a) local temperature shock; (b) global temperature shock; (c) local temperature volatility shock; (d) global temperature volatility shock. 
+
+Figure 10: Panel-average distributional impulse responses to local and global climate shocks with the common factor removed ( ft,h = 0). We further evaluate this restricted specification along two additional dimensions: the stability of its expected shortfall estimates and its out-of-sample forecasting performance. In terms of expected shortfall, estimates from the restricted model are considerably less stable across horizons than the baseline: the panel-average deterioration roughly doubles at h = 1 and reverses sign at h = 4 (Table 4 in the appendix). This instability provides further evidence that the common factor contributes to producing well-behaved tail-risk estimates. We next compare the out-of-sample forecasting tail risk performance of our baseline model to that of the restricted specification, following the procedure described in Section 3.6. Table 5 in the appendix reports the baseline’s quantile scores relative to the restricted model, where a value below unity indicates that the baseline yields more accurate tail risk forecasts. The baseline outperforms the restricted specification for every country in the sample except Saudi Arabia and Thailand, where the two models perform comparably. The panel-average relative score is 0.70, indicating a reduction in tail risk forecast loss of approximately 30 per cent when the common factor is included, with the largest gains concentrated at the extreme left tail ( τ = 0 .01, panel average 0.55). Taken together, these results indicate that the common factor ft,h materially improves both the stability and the out-of-sample accuracy of the model’s climate-driven tail-risk estimates, rather than serving as a 38 purely specification-driven addition. Next, for the second robustness check, we estimate a restricted version of the model in which the global climate regressors are excluded ( bT Gt = bσG, RV 
+
+t = 0), retaining only the local temperature and local volatility shocks. Figure 11 reports the resulting panel-average DIRFs. Both the local temperature and local temperature volatility responses are close to the baseline in Figure 4, in both timing and magnitude. This indicates that the local shock responses are not an artefact of jointly estimating the global climate regressors, and that the local and global components of the model are identified largely independently of one another. Horizon (Quarters)                     
+
+> 12345678910
+> Response
+> -0.04 -0.03 -0.02 -0.01 00.01 0.02 0.03 Response to a Local Temperature Shock
+> Horizon (Quarters)
+> 12345678910
+> Response
+> -0.05 -0.04 -0.03 -0.02 -0.01 00.01 0.02 Response to Local Temperature Volatility Shock
+> 90-10% Band 75-25% Band Median
+
+Notes : Each panel plots DIRF sh (τ ) as defined in equation (12) for h = 1 , . . . , 10 quarters, estimated from the panel quantile model in equation (9) with the global temperature and global volatility regressors removed. The solid line is the median response ( τ = 0 .50). Dark and light shaded bands correspond to the 25 th –75 th and 10 th –90 th quantile responses, respectively. Compare to Figure 4 for the baseline specification. 
+
+Figure 11: Panel-average distributional impulse responses to local climate shocks with the global climate regressors removed ( bT Gt = bσG, RV 
+
+t = 0). 39 Horizon (Quarters)                                        
+
+> 12345678910
+> Response
+> -0.02 00.02 0.04 Response to a Local Temperature Shock
+> Horizon (Quarters)
+> 12345678910
+> Response
+> -0.1 -0.08 -0.06 -0.04 -0.02 0
+> Response to a Global Temperature Shock
+> Horizon (Quarters)
+> 12345678910
+> Response
+> -0.04 -0.02 00.02 0.04 Response to Local Temperature Volatility Shock
+> Horizon (Quarters)
+> 12345678910
+> Response
+> -0.05 00.05 0.1 Response to Global Temperature Volatility Shock
+> 90-10% Band 75-25% Band Median
+
+Notes : Each panel plots DIRF sh (τ ) as defined in equation (12) for h = 1 , . . . , 10 quarters, estimated from the panel quantile model in equation (9) on the advanced economy subsample only. The solid line is the median response (τ = 0 .50). Dark and light shaded bands correspond to the 25 th –75 th and 10 th –90 th quantile responses, respectively. Panels report responses to: (a) local temperature shock; (b) global temperature shock; (c) local temperature volatility shock; (d) global temperature volatility shock. 
+
+Figure 12: Panel-average distributional impulse responses to local and global climate shocks, advanced economies only. Finally, in the last robustness check, we estimate the panel quantile model separately on the advanced- and emerging-economy subsamples. This tests whether the AE/EM heterogeneity documented in Section 3.4 persists when each group is estimated entirely independently, with its own dynamic common factor ft,h and its own local and global climate regressors, rather than emerging only under partial pooling across a single global hierarchical prior. Figures 12 and 13 report the resulting panel-average DIRFs for the AE and EM subsamples, respectively. The overall dynamics of the responses are broadly similar to the pooled baseline in Figure 4, both in sign and horizon profile, across all four climate shocks. This indicates that our baseline results are not driven by pooling advanced and emerging economies under a single hierarchical prior. 40 Horizon (Quarters)                                        
+
+> 12345678910
+> Response
+> -0.15 -0.1 -0.05 00.05
+> Response to a Local Temperature Shock
+> Horizon (Quarters)
+> 12345678910
+> Response
+> -0.3 -0.2 -0.1 00.1 Response to a Global Temperature Shock
+> Horizon (Quarters)
+> 12345678910
+> Response
+> -0.15 -0.1 -0.05 00.05 0.1 Response to Local Temperature Volatility Shock
+> Horizon (Quarters)
+> 12345678910
+> Response
+> -0.1 00.1 0.2 Response to Global Temperature Volatility Shock
+> 90-10% Band 75-25% Band Median
+
+Notes : Each panel plots DIRF sh (τ ) as defined in equation (12) for h = 1 , . . . , 10 quarters, estimated from the panel quantile model in equation (9) on the emerging market economy subsample only. The solid line is the median response (τ = 0 .50). Dark and light shaded bands correspond to the 25 th –75 th and 10 th –90 th quantile responses, respectively. Panels report responses to: (a) local temperature shock; (b) global temperature shock; (c) local temperature volatility shock; (d) global temperature volatility shock. 
+
+Figure 13: Panel-average distributional impulse responses to local and global climate shocks, emerging economies only. 
+
+# 5 Conclusion 
+
+This paper developed a hierarchical Bayesian panel quantile regression framework, combining Gaussian-process-smoothed coefficient paths with Bernstein-polynomial monotonicity constraints to address quantile crossing, and applied it to characterize the distributional macroeconomic effects of climate shocks across a 33-country quarterly panel spanning 1979–2023. We find that global temperature shocks generate a systemic downside risk to output growth shared broadly across advanced and emerging economies, while global temperature volatility shocks generate a short-lived positive response instead. Both stand in contrast to local, idiosyncratic shocks, whose effects are modest on average but substantially heterogeneous across countries. Combining the effects of all four climate shocks, our climate growth-at-risk mea-sure shows that downside risk is pervasive and uniformly negative in the immediate aftermath of a shock, disproportionately affecting emerging market economies, before dissipating substantially at longer horizons. In an out-of-sample forecasting exercise, our proposed panel quantile model reduces tail-risk forecast loss by approximately 34 per cent relative to a country-specific benchmark, underscoring the practical value of pooling information across countries when forecasting climate-driven downside risk. 41 References 
+
+Adrian, T., Boyarchenko, N., and Giannone, D. (2019). Vulnerable growth. American Economic Review , 109(4):1263–1289. Adrian, T., Grinberg, F., Liang, N., Malik, S., and Yu, J. (2022). The term structure of growth-at-risk. American Economic Journal: Macroeconomics , 14(3):283–323. Alessandri, P. and Mumtaz, H. (2025). The macroeconomic cost of temperature risk. 
+
+Journal of International Economics , page 104157. Angrist, J., Chernozhukov, V., and Fern´ andez-Val, I. (2006). Quantile regression un-der misspecification, with an application to the U.S. wage structure. Econometrica ,74(2):539–563. Arellano, M. and Honor´ e, B. (2001). Panel data models: some recent developments. In Heckman, J. J. and Leamer, E., editors, Handbook of Econometrics , volume 5, pages 3229–3296. Elsevier, Amsterdam. Berg, K. A., Curtis, C. C., and Mark, N. C. (2024). Gdp and temperature: Evidence on cross-country response heterogeneity. European Economic Review , 169:104833. Bilal, A. and K¨ anzig, D. R. (2026). The macroeconomic impact of climate change: Global versus local temperature. The Quarterly Journal of Economics , 141(2):889– 944. Bloom, N., Floetotto, M., Jaimovich, N., Saporta-Eksten, I., and Terry, S. J. (2018). Really uncertain business cycles. Econometrica , 86(3):1031–1065. Bondell, H. D., Reich, B. J., and Wang, H. (2010). Noncrossing quantile regression curve estimation. Biometrika , 97(4):825–838. Botev, Z. I. (2017). The normal law under linear restrictions: simulation and estimation via minimax tilting. Journal of the Royal Statistical Society Series B: Statistical Methodology , 79(1):125–148. Brunner, A. D. (2002). El nino and world primary commodity prices: warm water or hot air? Review of Economics and statistics , 84(1):176–183. Buchinsky, M. (1994). Changes in the U.S. wage structure 1963–1987: application of quantile regression. Econometrica , 62(2):405–458. Burke, M., Hsiang, S. M., and Miguel, E. (2015). Global non-linear effect of temperature on economic production. Nature , 527(7577):235–239. 42 Byrne, J. P. and Vitenu-Sackey, P. A. (2024). The macroeconomic impact of global and country-specific climate risk: Jp byrne, pa vitenu-sackey. Environmental and Resource Economics , 87(3):655–682. Chan, J. C., Poon, A., and Zhu, D. (2023). High-dimensional conditionally gaussian state space models with missing data. Journal of Econometrics , 236(1):105468. Colacito, R., Hoffmann, B., and Phan, T. (2019). Temperature and growth: A panel analysis of the united states. Journal of Money, Credit and Banking , 51(2-3):313– 368. Dell, M., Jones, B. F., and Olken, B. A. (2012). Temperature shocks and eco-nomic growth: Evidence from the last half century. American Economic Journal: Macroeconomics , 4(3):66–95. Gneiting, T. and Ranjan, R. (2011). Comparing density forecasts using threshold-and quantile-weighted scoring rules. Journal of Business & Economic Statistics ,29(3):411–422. Gortan, M., Testa, L., Fagiolo, G., and Lamperti, F. (2024). A unified dataset for pre-processed climate indicators weighted by gridded economic activity. Scientific Data , 11(1):533. Huang, Y.-F., Liao, W., Luo, S., and Ma, J. (2024). Financial conditions, macroeco-nomic uncertainty, and macroeconomic tail risks. Journal of Economic Dynamics and Control , 163:104871. Jones, B. F. and Olken, B. A. (2010). Climate shocks and exports. American Economic Review , 100(2):454–459. Jord` a, `O. (2005). Estimation and inference of impulse responses by local projections. 
+
+American economic review , 95(1):161–182. Jovanovic, B. and Ma, S. (2022). Uncertainty and growth disasters. Review of Economic Dynamics , 44:33–64. Kahn, M. E., Mohaddes, K., Ng, R. N., Pesaran, M. H., Raissi, M., and Yang, J.-C. (2021). Long-term macroeconomic effects of climate change: A cross-country analysis. Energy Economics , 104:105624. Koenker, R. (2005). Quantile Regression . Econometric Society Monographs. Cam-bridge University Press, Cambridge. Koenker, R. and Bassett Jr, G. (1978). Regression quantiles. Econometrica: journal of the Econometric Society , pages 33–50. 43 Kozumi, H. and Kobayashi, G. (2011). Gibbs sampling methods for bayesian quantile regression. Journal of statistical computation and simulation , 81(11):1565–1578. Li, T.-H. and Megiddo, N. (2025). Spline quantile regression. arXiv preprint arXiv:2501.03883 .Mohaddes, K. and Raissi, M. (2024). Compilation, revision and updating of the global var (gvar) database, 1979q2-2023q3. Pesaran, M. H. (2006). Estimation and inference in large heterogeneous panels with a multifactor error structure. Econometrica , 74(4):967–1012. Pesaran, M. H. and Smith, R. (1995). Estimating long-run relationships from dynamic heterogeneous panels. Journal of Econometrics , 68(1):79–113. Sachs, J. D. and Warner, A. M. (1997). Sources of slow growth in african economies. 
+
+Journal of African economies , 6(3):335–376. Santos, B. and Kneib, T. (2020). Noncrossing structured additive multiple-output bayesian quantile regression models. Statistics and Computing , 30(4):855–869. Sriram, K., Ramamoorthi, R. V., and Ghosh, P. (2013). Posterior consistency of Bayesian quantile regression based on the misspecified asymmetric Laplace density. 
+
+Bayesian Analysis , 8(2):479–504. 44 A Proofs of Theoretical Results 
+
+We first present the proof of Lemma 1. 
+
+Proof. Fix 0 < τ < τ ′ < 1. The difference between the two conditional quantiles is 
+
+Qτ ′ (yit | I it ) − Qτ (yit | I it ) = [ ai(τ ′) + ft + z′
+
+> it
+
+βi(τ ′)] − [ai(τ ) + ft + z′
+
+> it
+
+βi(τ )] = ai(τ ′) − ai(τ ) + z′ 
+
+> it
+
+{βi(τ ′) − βi(τ )} .
+
+The common time effect cancels because it is invariant across quantiles. By assump-tion, 
+
+ai(τ ′) − ai(τ ) ≥ 0and, for every k = 1 , . . . , K ,
+
+βik (τ ′) − βik (τ ) ≥ 0.
+
+Since zit ∈ [0 , 1] K , each component satisfies zitk ≥ 0. Therefore, 
+
+z′ 
+
+> it
+
+{βi(τ ′) − βi(τ )} =
+
+> K
+
+X
+
+> k=1
+
+zitk {βik (τ ′) − βik (τ )} ≥ 0.
+
+Thus, 
+
+Qτ ′ (yit | I it ) − Qτ (yit | I it ) ≥ 0,
+
+which proves the result. We shall now present the proof of Theorem 1. 
+
+Proof. Fix 0 < τ < τ ′ < 1. For any z ∈ Z , the difference between the two fitted conditional quantiles is 
+
+Qτ ′ (yit | I it ) − Qτ (yit | I it ) = r(z)′ {θi(τ ′) − θi(τ )}
+
+= r(z)′ {μ(τ ′) − μ(τ )} + r(z)′di(τ, τ ′),
+
+where 
+
+di(τ, τ ′) = ui(τ ′) − ui(τ ).
+
+By definition of the population margin, 
+
+r(z)′ {μ(τ ′) − μ(τ )} ≥ mτ,τ ′ for all z ∈ Z .
+
+Therefore, crossing can occur only if there exists some z ∈ Z such that 
+
+r(z)′di(τ, τ ′) < −mτ,τ ′ .
+
+45 Let dij (τ, τ ′) denote the jth component of di(τ, τ ′), for j = 1 , . . . , p . Since 
+
+r(z) = (1 , z′)′ and z ∈ [0 , 1] K , all components of r(z) are nonnegative and 
+
+> p
+
+X
+
+> j=1
+
+rj (z) ≤ p. 
+
+If 
+
+dij (τ, τ ′) ≥ − mτ,τ ′
+
+p for all j = 1 , . . . , p, 
+
+then 
+
+r(z)′di(τ, τ ′) = 
+
+> p
+
+X
+
+> j=1
+
+rj (z)dij (τ, τ ′) ≥ − mτ,τ ′
+
+p
+
+> p
+
+X
+
+> j=1
+
+rj (z) ≥ − mτ,τ ′ .
+
+Hence crossing implies that at least one component satisfies 
+
+dij (τ, τ ′) < −mτ,τ ′
+
+p .
+
+By the union bound, Pr(crossing) ≤
+
+> p
+
+X
+
+> j=1
+
+Pr 
+
+
+
+dij (τ, τ ′) < −mτ,τ ′
+
+p
+
+
+
+.
+
+Under Assumption 3, each dij (τ, τ ′) is mean-zero Gaussian with variance Var( dij (τ, τ ′)) = 2{1 − Kλ(τ, τ ′)}Σjj ≤ ¯ν2  
+
+> τ,τ ′
+
+. Using the standard Gaussian tail bound, Pr 
+
+
+
+dij (τ, τ ′) < −mτ,τ ′
+
+p
+
+
+
+≤ exp 
+
+
+
+− m2 
+
+> τ,τ ′
+
+2p2 Var( dij (τ, τ ′)) 
+
+
+
+≤ exp − m2 
+
+> τ,τ ′
+
+2p2 ¯ν2 
+
+> τ,τ ′
+
+!
+
+.
+
+Summing over j = 1 , . . . , p gives Pr(crossing) ≤ p exp − m2 
+
+> τ,τ ′
+
+2p2 ¯ν2 
+
+> τ,τ ′
+
+!
+
+.
+
+For the exponential kernel, ¯ν2  
+
+> τ,τ ′
+
+= 2 {1 − exp( −| τ ′ − τ |/λ )} max  
+
+> 1≤j≤p
+
+Σjj ,
+
+which yields the stated bound. 
+
+Corollary 2. Let 0 < τ 1 < · · · < τ L < 1 be the finite grid of quantile indices used in estimation, and let 
+
+r(z) = (1 , z′)′ ∈ Rp, z ∈ Z ⊆ [0 , 1] K , p = K + 1 .
+
+46 For each adjacent pair (τℓ, τ ℓ+1 ), define the population margin 
+
+mℓ = inf  
+
+> z∈Z
+
+r(z)′ {μ(τℓ+1 ) − μ(τℓ)} , ℓ = 1 , . . . , L − 1.
+
+Suppose that 
+
+m∗ = min  
+
+> ℓ=1 ,...,L −1
+
+mℓ > 0.
+
+Then, for a given unit i,
+
+Pr  ∃ℓ ∈ { 1, . . . , L − 1}, ∃z ∈ Z : Qτℓ+1 (yit | I it ) < Q τℓ (yit | I it ) ≤ p
+
+> L−1
+
+X
+
+> ℓ=1
+
+exp 
+
+
+
+− m2
+
+> ℓ
+
+2p2 ¯ν2
+
+> ℓ
+
+
+
+,
+
+where p = K + 1 and 
+
+¯ν2 
+
+> ℓ
+
+= 2 {1 − Kλ(τℓ+1 , τ ℓ)} max  
+
+> 1≤j≤p
+
+Σjj .
+
+In particular, for the exponential kernel 
+
+Kλ(τ, τ ′) = exp 
+
+
+
+−|τ − τ ′|
+
+λ
+
+
+
+,
+
+we have 
+
+Pr  ∃ℓ, ∃z : Qτℓ+1 (yit | I it ) < Q τℓ (yit | I it ) ≤ p
+
+> L−1
+
+X
+
+> ℓ=1
+
+exp 
+
+
+
+− m2
+
+> ℓ
+
+4p2 max 1≤j≤p Σjj {1 − exp( −| τℓ+1 − τℓ|/λ )}
+
+Consequently, if the adjacent population margins are uniformly positive, that is 
+
+m∗ > 0, then the probability of a crossing on the finite quantile grid converges to zero as max j Σjj → 0.Proof. For each adjacent pair ( τℓ, τ ℓ+1 ), Theorem 1 gives Pr  ∃z ∈ Z : Qτℓ+1 (yit | I it ) < Q τℓ (yit | I it ) ≤ p exp 
+
+
+
+− m2
+
+> ℓ
+
+2p2 ¯ν2
+
+> ℓ
+
+
+
+.
+
+Taking a union bound over the adjacent pairs ℓ = 1 , . . . , L − 1 yields Pr  ∃ℓ, ∃z : Qτℓ+1 (yit | I it ) < Q τℓ (yit | I it ) ≤ p
+
+> L−1
+
+X
+
+> ℓ=1
+
+exp 
+
+
+
+− m2
+
+> ℓ
+
+2p2 ¯ν2
+
+> ℓ
+
+
+
+.
+
+For the exponential kernel, ¯ν2 
+
+> ℓ
+
+= 2 {1 − exp( −| τℓ+1 − τℓ|/λ )} max  
+
+> 1≤j≤p
+
+Σjj ,
+
+which gives the stated expression. 47 Finally, if m∗ = min ℓ mℓ > 0, then each term in the bound converges to zero as max j Σjj → 0. Since the grid is finite, the whole sum converges to zero. This proves the result. 
+
+# B Data Appendix 
+
+Table 3: List of Countries by Region 
+
+Region Countries 
+
+Asia and Pacific Australia, China, India, Indonesia, Japan, Korea, Malaysia, New Zealand, Philippines, Singapore, Thailand 
+
+North America Canada, Mexico, United States 
+
+South America Argentina, Brazil, Chile, Peru 
+
+Europe Austria, Belgium, Fin-land, France, Germany, Italy, Netherlands, Norway, Spain, Sweden, Switzerland, Turkey, United Kingdom 
+
+Middle East and Africa Saudi Arabia, South Africa 48 C Additional Robustness Results 
+
+Table 4: Robustness: change in expected shortfall ∆ cES si,h (0 .05) with and without the common factor. 
+
+h = 1 h = 4 h = 10 Country No factor Baseline ∆ No factor Baseline ∆ No factor Baseline ∆Argentina −1.43 −0.54 −0.89 +0.02 −0.23 +0.25 +0.15 +0.09 +0.06 Australia −0.23 −0.43 +0.20 +0.07 −0.04 +0.11 −0.07 −0.07 +0.00 Austria −0.48 −0.33 −0.15 +0.08 +0.01 +0.07 −0.06 −0.06 +0.00 Belgium −0.48 −0.37 −0.11 +0.05 −0.04 +0.09 −0.05 −0.03 −0.02 Brazil −0.75 −0.54 −0.21 +0.11 −0.17 +0.28 +0.05 +0.03 +0.02 Canada −0.38 −0.48 +0.10 +0.21 −0.14 +0.35 −0.06 −0.05 −0.01 China −0.01 −0.36 +0.35 +0.11 +0.05 +0.06 +0.03 −0.04 +0.07 Chile −1.94 −0.60 −1.34 −0.10 −0.39 +0.29 −0.20 −0.26 +0.06 Finland −0.38 −0.44 +0.06 +0.22 −0.17 +0.39 −0.20 −0.19 −0.01 France −0.79 −0.41 −0.38 −0.09 −0.05 −0.04 −0.09 −0.05 −0.04 Germany −0.19 −0.36 +0.17 +0.27 −0.08 +0.35 +0.00 −0.05 +0.05 India −0.51 −0.36 −0.15 +0.03 −0.07 +0.10 +0.02 −0.03 +0.05 Indonesia −0.61 −0.21 −0.40 +0.25 −0.09 +0.34 +0.16 +0.10 +0.06 Italy −0.12 −0.41 +0.29 +0.29 −0.10 +0.39 −0.08 −0.06 −0.02 Japan −0.86 −0.45 −0.41 +0.29 −0.15 +0.44 +0.03 −0.04 +0.07 Korea −0.62 −0.60 −0.02 +0.14 −0.20 +0.34 −0.10 −0.11 +0.01 Malaysia −0.93 −0.48 −0.45 +0.28 −0.03 +0.31 +0.17 +0.08 +0.09 Mexico −1.48 −0.76 −0.72 +0.16 −0.36 +0.52 +0.10 −0.02 +0.12 Netherlands −0.67 −0.40 −0.27 +0.25 −0.02 +0.27 +0.03 +0.01 +0.02 Norway −0.49 −0.40 −0.09 +0.19 −0.08 +0.27 +0.01 +0.04 −0.03 New Zealand −0.36 −0.38 +0.02 +0.15 −0.11 +0.26 −0.01 −0.08 +0.07 Peru −1.29 −0.81 −0.48 +0.01 −0.29 +0.30 +0.03 −0.04 +0.07 Philippines −1.31 −0.52 −0.79 +0.22 −0.31 +0.53 −0.14 −0.23 +0.09 South Africa −0.49 −0.48 −0.01 +0.10 −0.10 +0.20 −0.21 −0.12 −0.09 Saudi Arabia −0.70 −0.40 −0.30 +0.41 +0.06 +0.35 −0.08 −0.12 +0.04 Singapore −1.07 −0.44 −0.63 +0.39 +0.09 +0.30 +0.00 −0.03 +0.03 Spain +0.04 −0.36 +0.40 +0.33 +0.01 +0.32 +0.08 +0.01 +0.07 Sweden −0.62 −0.31 −0.31 +0.30 −0.05 +0.35 +0.02 −0.05 +0.07 Switzerland −0.58 −0.31 −0.27 +0.03 −0.02 +0.05 −0.04 −0.08 +0.04 Thailand −1.29 −0.48 −0.81 +0.27 −0.01 +0.28 +0.20 +0.16 +0.04 Turkey −2.21 −0.90 −1.31 +0.12 −0.20 +0.32 −0.09 −0.17 +0.08 United Kingdom −0.24 −0.48 +0.24 +0.37 −0.05 +0.42 −0.11 −0.10 −0.01 USA −0.35 −0.39 +0.04 +0.14 −0.08 +0.22 −0.02 −0.06 +0.04 
+
+Panel average −0.722 −0.460 −0.262 +0.172 −0.103 +0.275 −0.016 −0.049 +0.033 
+
+Notes : Entries report ∆ cES si,h (0 .05) as defined in equation (18), evaluated at α = 0 .05 for horizons 
+
+h ∈ { 1, 4, 10 } quarters, comparing the baseline panel quantile model to a restricted specification with the common factor ft,h removed entirely. In the “No factor” and “Baseline” columns, a negative value indicates that a one-standard-deviation climate shock shifts the lower tail of the conditional output growth distribution downward, representing a deterioration in growth-at-risk. The ∆ column reports the difference between the two specifications (no factor minus baseline) and is therefore not itself a growth-at-risk measure: a negative entry means the restricted model attributes a larger deterioration to the shock than the baseline does. Panel averages are computed as simple cross-country means and are displayed in bold. 
+
+49 Table 5: Robustness: out-of-sample relative tail quantile scores, baseline versus restricted model without the common factor.                                                                                                                                                                           
+
+> Quantile τQuantile τ
+> Country τ=0 .01 τ=0 .05 τ=0 .10 Average Country τ=0 .01 τ=0 .05 τ=0 .10 Average Argentina 0.89 0.90 0.94 0.91 New Zealand 0.42 0.58 0.73 0.59 Australia 0.51 0.71 0.86 0.72 Peru 0.35 0.53 0.59 0.51 Austria 0.78 0.79 0.73 0.77 Philippines 0.66 0.88 0.77 0.82 Belgium 0.41 0.56 0.61 0.55 South Africa 0.24 0.47 0.65 0.47 Brazil 0.39 0.61 0.73 0.60 Saudi Arabia 0.92 0.96 1.07 0.97 Canada 0.48 0.77 0.84 0.74 Singapore 0.39 0.71 0.79 0.67 China 0.72 0.88 0.99 0.88 Spain 0.55 0.74 0.79 0.73 Chile 0.49 0.76 0.80 0.72 Sweden 0.34 0.56 0.65 0.54 Finland 0.53 0.65 0.73 0.65 Switzerland 0.51 0.70 0.85 0.71 France 0.51 0.78 0.77 0.74 Thailand 1.08 0.96 0.94 0.98 Germany 0.46 0.62 0.65 0.60 Turkey 0.63 0.68 0.76 0.70 India 0.51 0.66 0.75 0.66 United Kingdom 0.45 0.62 0.66 0.61 Indonesia 0.70 0.80 0.87 0.80 USA 0.42 0.70 0.85 0.69 Italy 0.61 0.74 0.72 0.71 Japan 0.59 0.74 0.79 0.73 Korea 0.58 0.69 0.82 0.71 Malaysia 0.39 0.55 0.55 0.53 Mexico 0.29 0.50 0.52 0.47 Netherlands 0.48 0.68 0.74 0.66 Norway 0.76 0.82 0.87 0.82
+> Panel average: τ=0 .01 : 0.55 τ=0 .05 : 0.70 τ=0 .10 : 0.77 Average: 0.70
+
+Notes : Entries report the baseline model’s quantile score QS τ relative to that of the restricted specification without the common factor ft,h , for selected quantiles τ ∈ { 0.01 , 0.05 , 0.10 } and the average across TL = {0.01 , 0.02 , . . . , 0.10 }. A value below unity indicates that the baseline model produces more accurate tail forecasts than the restricted specification. The evaluation period and expanding-window procedure follow Section 3.6. 
+
+C.1 Simulation Evidence on Overlapping Local-Projection Horizons 
+
+The local projection specification in equation (9) estimates a separate regression for each horizon h, with the dependent variable yi,t +h constructed as a cumulative h-quarter growth rate. As is well known in the local projection literature (Jord` a, 2005), this construction induces a moving-average structure of order h − 1 in the regression residuals within each horizon-specific regression: for a fixed h, the outcomes yi,t +h
+
+and yi,t +1+ h share h − 1 overlapping periods of the underlying quarterly growth process and are therefore mechanically correlated. Left unaddressed, this dependence does not bias point estimates, but it can in principle understate posterior uncertainty, since observations treated as conditionally independent given the model in fact share common underlying shocks. To assess whether this issue affects inference in our setting, we conduct a Monte Carlo exercise in which the data-generating process explicitly replicates 50 the overlapping-horizon structure of equation (9), while holding the true quantile coefficients fixed across horizons. This design isolates the effect of the horizon-induced overlap from any change in the underlying data-generating coefficients, so that any degradation in inference can be attributed directly to the estimator’s treatment of the overlap rather than to a confound. 
+
+Data-generating process. Let t = 1 , . . . , T index the local-projection origin date, 
+
+i = 1 , . . . , N index cross-sectional units, and h = 1 , . . . , H index the forecast horizon. Let p denote the number of covariates, with the first column of the design fixed as an intercept and the remaining p − 1 columns genuine slope regressors, and let 
+
+T = {τ1, . . . , τ L} denote the quantile grid. 
+
+Common factor. We draw Zt ∼ N (0 , I 2) i.i.d. and construct the common factor 
+
+ft = γf t−1 + ξ′Zt + ηt, ηt ∼ N (0 , σ 2 
+
+> f
+
+),
+
+using the same restricted AR(1) structure and precision-based sampling approach as in the baseline specification of Section 3.2, subject to the identifying normalization 
+
+PTt=1 ft = 0. 
+
+Population and unit-specific quantile paths. We draw a population coefficient path represented via a monotone Bernstein polynomial, 
+
+μj (τ ) = 
+
+> M
+
+X
+
+> m=0
+
+θj,m bm,M (τ ), j = 1 , . . . , p, 
+
+with the Bernstein coefficients {θj,m }Mm=0 drawn from a Gaussian distribution and sorted in ascending order in m, guaranteeing that μj (·) is nondecreasing in τ by construction. Unit-level deviations from this population path are drawn from a Gaussian process with an exponential kernel, 
+
+θi(τ ) = μ(τ )+ ui(τ ), ui(·) ∼ GP  0, K 0(τ, τ ′), K0(τ, τ ′) = σ20 exp 
+
+
+
+−|τ − τ ′|
+
+λ0
+
+
+
+,
+
+independently across units i = 1 , . . . , N and across coefficients j = 1 , . . . , p , mirroring the hierarchical prior structure of our proposed model in Section 2. We denote the resulting true intercept and slope paths α0(τ, i ) and β0(τ, i, ·), respectively. Only the population path μ(·) is guaranteed monotone by construction; individual unit-level paths may exhibit local departures from monotonicity, consistent with the soft-noncrossing property established in Theorem 1. 
+
+Predetermined covariates. The first covariate column is fixed at unity; the remaining p − 1 columns are drawn as X(t, j, i ) ∼ Unif(0 , 1) i.i.d. across t, for each unit i.51 Primitive shocks, drawn once and shared across all horizons. For each unit i,we simulate a single AR(1) innovation series over T + H + 50 periods (discarding a 50-period burn-in), 
+
+ui, 1 = ei, 1, ui,t = ρiui,t −1+ei,t , ρi ∼ Unif(0 .3, 0.7) , ei,t ∼ N (0 , σ 2 
+
+> i
+
+), σi ∼ Unif(0 .5, 1.5) .
+
+Critically, this series is drawn once per Monte Carlo replication and is reused, unmodified, to construct the outcome at every horizon h = 1 , . . . , H . At this stage, every object drawn – the common factor ft, the true coefficient paths α0 and β0,the covariates X, and the primitive shocks {ui,t } – is fixed for the remainder of the replication and does not vary with h.
+
+Horizon-h cumulation and the mechanical overlap. For a given horizon h, we cumulate h leads of the shared primitive shock series, raw i,t (h) = 
+
+> h
+
+X
+
+> ℓ=1
+
+ui,t +ℓ, t = 1 , . . . , T, 
+
+directly mirroring the cumulative construction of yi,t +h in equation (3). Because raw i,t (h) and raw i,t ′ (h) share h−| t−t′| common innovation terms whenever |t−t′| < h ,this reproduces exactly the mechanically-induced serial dependence of interest, at lags up to h − 1. We convert raw i,t (h) to a within-unit empirical quantile rank, 
+
+Ui,t (h) = rank  raw i,t (h) − 0.5
+
+T ∈ (0 , 1) , idx i,t (h) = min 
+
+
+
+L, max  1, ⌈Ui,t (h) L⌉
+
+.
+
+Constructing the horizon-h outcome. The simulated outcome at horizon h is then 
+
+yi,t +h = X(t, ·, i )
+
+"
+
+α0
+
+ τidx i,t (h), i 
+
+β0
+
+ τidx i,t (h), i, ·′
+
+#
+
++ ft.
+
+Because α0, β0, ft, and X are identical across every horizon, only the index idx i,t (h)– and hence which point on the fixed true quantile path is selected at each ( i, t ) – varies with h, through the horizon-specific cumulation of the shared primitive shocks. This construction guarantees that the conditional quantile function of yi,t +h is known exactly at every ( τ, i, h ), while the degree of mechanically-induced overlap across origin dates t increases with h exactly as in the empirical local projection. 
+
+Coverage check. For each of R Monte Carlo replications, we draw a new realization of the true coefficient paths and primitive shock series as described above, and for each horizon h = 1 , . . . , H construct the corresponding overlapping panel and estimate our proposed hierarchical Bayesian panel quantile model exactly as in the baseline empirical specification, with no explicit correction for the horizon-induced serial 52 dependence. We record whether the true intercept and slope coefficients, at each quantile and unit, fall within the resulting 90 per cent posterior credible interval, and compute the empirical coverage rate by averaging this indicator across quantiles, units, and replications, separately for each horizon h.
+
+Results. Table 6 reports the resulting coverage rates by horizon, averaged across 
+
+R = 100 Monte Carlo replications, for a data-generating process calibrated with 
+
+N = 33, T = 180, and p = 4 to roughly mimic the dimensions of our empirical application. Coverage remains close to the nominal 90 per cent level at every horizon and for every coefficient, ranging from 0.89 to 0.91, with numerical standard errors of approximately 0.01 throughout. Critically, there is no systematic decline in coverage as the horizon h increases: the slope coefficients ( βj ) exhibit a stable coverage rate of 0.90–0.91 uniformly across h = 1 , . . . , 10, and the intercept ( α) exhibits a coverage rate of 0.89 at short horizons that rises slightly to 0.90 from h = 6 onward, if anything moving closer to the nominal level as the horizon increases rather than deteriorating. This provides no evidence that the mechanically-induced MA( h−1) structure from the overlapping local-projection construction distorts posterior credible interval coverage in our setting, consistent with related findings that a flexible hierarchical conditional mean structure combined with a quantile specification can deliver well-calibrated inference without an explicit serial-correlation correction. 53 Table 6: Posterior credible interval coverage by horizon. Horizon h α β1 β2 β3
+
+1 0.89 0.90 0.90 0.90 (0.01) (0.01) (0.01) (0.01) 2 0.89 0.90 0.91 0.90 (0.01) (0.01) (0.01) (0.01) 3 0.89 0.90 0.91 0.90 (0.01) (0.01) (0.01) (0.01) 4 0.89 0.91 0.91 0.91 (0.01) (0.01) (0.01) (0.01) 5 0.89 0.91 0.91 0.91 (0.01) (0.01) (0.01) (0.01) 6 0.90 0.91 0.91 0.91 (0.01) (0.01) (0.01) (0.01) 7 0.90 0.90 0.90 0.91 (0.01) (0.01) (0.01) (0.01) 8 0.90 0.90 0.90 0.91 (0.01) (0.01) (0.01) (0.01) 9 0.90 0.90 0.90 0.91 (0.01) (0.01) (0.01) (0.01) 10 0.90 0.90 0.90 0.91 (0.01) (0.01) (0.01) (0.01) 
+
+Notes : Entries report the empirical coverage rate of the 90 per cent posterior credible interval, computed across R = 100 Monte Carlo replications, pooled over the quantile grid and cross-sectional units, for the true coefficient values used to generate the data. Numerical standard errors of the average coverage rate across replications are reported in parentheses. The data-generating coefficients are held fixed across all horizons; only the degree of mechanically-induced serial dependence from the overlapping local-projection construction varies with h, as described in Section C.1. 
+
+54
