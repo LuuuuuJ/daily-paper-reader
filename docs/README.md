@@ -6,56 +6,61 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-09
-- 运行时间：2026-08-09 19:45:49 UTC
+- 最新运行日期：2026-08-10
+- 运行时间：2026-08-10 20:57:26 UTC
 - 运行状态：成功
-- 本次总论文数：11
-- 精读区：0
+- 本次总论文数：13
+- 精读区：2
 - 速读区：11
 
 ### 今日简报（AI）
-今日速览 11 篇前沿论文，深度聚焦因果推断中的高维交互效应与控制变量陷阱。
-重点关注双重机器学习（DML）在高维固定效应下的应用，以及双重差分法（DiD）中“坏控制变量”的识别与规避。
-建议优先研读 DiD 避坑指南与时变处理效应的方法仿真对比，以提升实证研究的稳健性。
-- 详情：[/202608/09/README](/202608/09/README)
+今日深挖 13 篇前沿计量论文，重点攻克小样本政策评估与双重差分中的控制变量难题。
+核心结论揭示了真实数据下评估方法的稳健性差异，并为识别 DiD 模型中的“坏控制”陷阱提供了新准则。
+建议优先研读 DiD 控制变量选择指南，以规避实证研究中常见的内生性偏误。
+- 详情：[/202608/10/README](/202608/10/README)
 
 ### 精读区论文标签
-- 本次无精读推荐。
+1. [Small Samples and Short Panels: Evaluating Policy Evaluation Methods with Realistic Data](/202608/10/2608.01537v1-small-samples-and-short-panels-evaluating-policy-evaluation-methods-with-realistic-data)  
+   标签：评分：8.5/10、query:q9
+   evidence：纵向背景下评估合成双重差分法的强方法匹配
+2. [Difference-in-differences with "bad controls"](/202608/10/2608.03881v1-difference-in-differences-with-bad-controls)  
+   标签：评分：8.5/10、query:q9
+   evidence：受处理影响协变量的双重差分识别
 
 ### 速读区论文标签
-1. [Double Machine Learning with High-dimensional Interactive Fixed Effects](/202608/09/2608.01137v1-double-machine-learning-with-high-dimensional-interactive-fixed-effects)  
+1. [Identification and Information after Nuisance Projection](/202608/10/2608.03847v1-identification-and-information-after-nuisance-projection)  
    标签：评分：7.5/10、query:profile-1
-   evidence：经济学中具有交互固定效应面板模型的双重机器学习
-2. [Difference-in-differences with "bad controls"](/202608/09/2608.03881v1-difference-in-differences-with-bad-controls)  
-   标签：评分：7.5/10、query:q9
-   evidence：带有坏控制变量的双重差分识别策略
-3. [Best for which estimand? A known-truth benchmark of longitudinal-matching and target-trial-emulation methods for time-varying treatments](/202608/09/2608.04414v1-best-for-which-estimand-a-known-truth-benchmark-of-longitudinal-matching-and-target-trial-emulation-methods-for-time-varying-treatments)  
-   标签：评分：7.5/10、query:profile-1
-   evidence：针对时变处理因果问题的目标试验模拟和纵向匹配基准。
-4. [Small Samples and Short Panels: Evaluating Policy Evaluation Methods with Realistic Data](/202608/09/2608.01537v1-small-samples-and-short-panels-evaluating-policy-evaluation-methods-with-realistic-data)  
-   标签：评分：7.0/10、query:q9
-   evidence：在纵向背景下评估合成双重差分法 (SDiD)
-5. [Bayesian hierarchical bootstrap framework for causal subgroup estimation with a time-to-event outcome](/202608/09/2608.00789v1-bayesian-hierarchical-bootstrap-framework-for-causal-subgroup-estimation-with-a-time-to-event-outcome)  
+   evidence：干扰投影后的因果识别与线性面板工具变量
+2. [Clustered Local Projections for Short and Ultra-Short Time Series -- A Hierarchical Bayesian Framework](/202608/10/2608.04631v2-clustered-local-projections-for-short-and-ultra-short-time-series----a-hierarchical-bayesian-framework)  
+   标签：评分：7.5/10、query:q8
+   evidence：估计短时间序列中冲击的动态效应
+3. [Double Machine Learning with High-dimensional Interactive Fixed Effects](/202608/10/2608.01137v1-double-machine-learning-with-high-dimensional-interactive-fixed-effects)  
+   标签：评分：7.0/10、query:profile-1
+   evidence：具有交互固定效应的面板数据双重机器学习
+4. [Spatiotemporal Proximal Causal Inference under Hidden Confounding and Interference](/202608/10/2608.01352v1-spatiotemporal-proximal-causal-inference-under-hidden-confounding-and-interference)  
+   标签：评分：6.8/10、query:profile-1
+   evidence：时空背景下隐藏混杂因素的近端因果推断
+5. [High-Dimensional Panel Data Models with Interactive Fixed Effects: Beyond the Linear Case](/202608/10/2608.02055v1-high-dimensional-panel-data-models-with-interactive-fixed-effects-beyond-the-linear-case)  
    标签：评分：6.5/10、query:profile-1
-   evidence：使用时间-事件结果对人口统计群体内的处理效应进行因果估计。
-6. [High-Dimensional Panel Data Models with Interactive Fixed Effects: Beyond the Linear Case](/202608/09/2608.02055v1-high-dimensional-panel-data-models-with-interactive-fixed-effects-beyond-the-linear-case)  
-   标签：评分：6.5/10、query:q9
-   evidence：具有交互固定效应的高维面板数据模型，适用于经济数据集。
-7. [Calibrated Bayesian Inference for Stochastic Intervention Effects](/202608/09/2608.02924v1-calibrated-bayesian-inference-for-stochastic-intervention-effects)  
+   evidence：具有交互固定效应的高维面板数据模型
+6. [Regression-based approach for natural direct and indirect relative risk in case of multiple mediators](/202608/10/2608.02167v1-regression-based-approach-for-natural-direct-and-indirect-relative-risk-in-case-of-multiple-mediators)  
    标签：评分：6.5/10、query:q7
-   evidence：随机干预效应因果推断的方法论桥梁
-8. [Identification and Information after Nuisance Projection](/202608/09/2608.03847v1-identification-and-information-after-nuisance-projection)  
+   evidence：处理效应的因果中介分析
+7. [Calibrated Bayesian Inference for Stochastic Intervention Effects](/202608/10/2608.02924v1-calibrated-bayesian-inference-for-stochastic-intervention-effects)  
+   标签：评分：6.5/10、query:q7
+   evidence：随机干预因果效应的贝叶斯推断
+8. [Generalized propensity score weighting for functional causal inference framework](/202608/10/2608.03200v1-generalized-propensity-score-weighting-for-functional-causal-inference-framework)  
+   标签：评分：6.5/10、query:q7
+   evidence：具有随时间变化的治疗和混杂因素的函数因果推断方法论桥梁
+9. [Optimal Life Insurance Decision in Mean-Variance DC Management with Mortality Improvements](/202608/10/2608.04532v1-optimal-life-insurance-decision-in-mean-variance-dc-management-with-mortality-improvements)  
+   标签：评分：6.5/10、query:q4
+   evidence：死亡风险下的投资与保险决策
+10. [Clustered Local Projections for Short and Ultra-Short Time Series -- A Hierarchical Bayesian Framework](/202608/10/2608.04631v1-clustered-local-projections-for-short-and-ultra-short-time-series----a-hierarchical-bayesian-framework)  
+   标签：评分：6.5/10、query:q8
+   evidence：使用局部投影估计经济冲击的动态影响
+11. [Exact Inference in Fixed-Effect Regressions with Concentrated Identifying Variation](/202608/10/2608.04839v1-exact-inference-in-fixed-effect-regressions-with-concentrated-identifying-variation)  
    标签：评分：6.5/10、query:profile-1
-   evidence：移除固定效应或潜在因子后面板数据的计量经济学识别
-9. [Clustered Local Projections for Short and Ultra-Short Time Series -- A Hierarchical Bayesian Framework](/202608/09/2608.04631v1-clustered-local-projections-for-short-and-ultra-short-time-series----a-hierarchical-bayesian-framework)  
-   标签：评分：6.5/10、query:profile-1
-   evidence：估计短时间序列面板中经济冲击的动态效应
-10. [Soft-Noncrossing Bayesian Panel Quantile Regression for Measuring Climate Tail Risk](/202608/09/2608.04664v1-soft-noncrossing-bayesian-panel-quantile-regression-for-measuring-climate-tail-risk)  
-   标签：评分：6.5/10、query:q5
-   evidence：用于风险衡量的贝叶斯面板分位数回归
-11. [Exact Inference in Fixed-Effect Regressions with Concentrated Identifying Variation](/202608/09/2608.04839v1-exact-inference-in-fixed-effect-regressions-with-concentrated-identifying-variation)  
-   标签：评分：6.5/10、query:profile-1
-   evidence：具有识别变异的固定效应回归推断
+   evidence：固定效应回归中识别变异的精确推断方法
 
 
 <div class="dpr-home-promo-card">
