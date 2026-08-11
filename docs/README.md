@@ -6,61 +6,58 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-10
-- 运行时间：2026-08-10 20:57:26 UTC
+- 最新运行日期：2026-08-11
+- 运行时间：2026-08-11 20:53:10 UTC
 - 运行状态：成功
-- 本次总论文数：13
-- 精读区：2
+- 本次总论文数：12
+- 精读区：1
 - 速读区：11
 
 ### 今日简报（AI）
-今日深挖 13 篇前沿计量论文，重点攻克小样本政策评估与双重差分中的控制变量难题。
-核心结论揭示了真实数据下评估方法的稳健性差异，并为识别 DiD 模型中的“坏控制”陷阱提供了新准则。
-建议优先研读 DiD 控制变量选择指南，以规避实证研究中常见的内生性偏误。
-- 详情：[/202608/10/README](/202608/10/README)
+今日聚焦固定效应回归的精确推断，深度解析了识别变异集中时的统计挑战及 12 篇计量经济学前沿进展。
+核心结论指出在小样本或非线性交互效应下，需警惕“坏控制变量”对双重差分等政策评估模型造成的偏误。
+建议研究者重新审视面板数据的推断稳健性，并优先掌握识别变异集中时的最新修正方案。
+- 详情：[/202608/11/README](/202608/11/README)
 
 ### 精读区论文标签
-1. [Small Samples and Short Panels: Evaluating Policy Evaluation Methods with Realistic Data](/202608/10/2608.01537v1-small-samples-and-short-panels-evaluating-policy-evaluation-methods-with-realistic-data)  
-   标签：评分：8.5/10、query:q9
-   evidence：纵向背景下评估合成双重差分法的强方法匹配
-2. [Difference-in-differences with "bad controls"](/202608/10/2608.03881v1-difference-in-differences-with-bad-controls)  
-   标签：评分：8.5/10、query:q9
-   evidence：受处理影响协变量的双重差分识别
+1. [Exact Inference in Fixed-Effect Regressions with Concentrated Identifying Variation](/202608/11/2608.04839v1-exact-inference-in-fixed-effect-regressions-with-concentrated-identifying-variation)  
+   标签：评分：8.0/10、query:profile-1
+   evidence：因果识别中固定效应回归的精确推断
 
 ### 速读区论文标签
-1. [Identification and Information after Nuisance Projection](/202608/10/2608.03847v1-identification-and-information-after-nuisance-projection)  
+1. [Small Samples and Short Panels: Evaluating Policy Evaluation Methods with Realistic Data](/202608/11/2608.01537v1-small-samples-and-short-panels-evaluating-policy-evaluation-methods-with-realistic-data)  
    标签：评分：7.5/10、query:profile-1
-   evidence：干扰投影后的因果识别与线性面板工具变量
-2. [Clustered Local Projections for Short and Ultra-Short Time Series -- A Hierarchical Bayesian Framework](/202608/10/2608.04631v2-clustered-local-projections-for-short-and-ultra-short-time-series----a-hierarchical-bayesian-framework)  
-   标签：评分：7.5/10、query:q8
-   evidence：估计短时间序列中冲击的动态效应
-3. [Double Machine Learning with High-dimensional Interactive Fixed Effects](/202608/10/2608.01137v1-double-machine-learning-with-high-dimensional-interactive-fixed-effects)  
-   标签：评分：7.0/10、query:profile-1
-   evidence：具有交互固定效应的面板数据双重机器学习
-4. [Spatiotemporal Proximal Causal Inference under Hidden Confounding and Interference](/202608/10/2608.01352v1-spatiotemporal-proximal-causal-inference-under-hidden-confounding-and-interference)  
-   标签：评分：6.8/10、query:profile-1
-   evidence：时空背景下隐藏混杂因素的近端因果推断
-5. [High-Dimensional Panel Data Models with Interactive Fixed Effects: Beyond the Linear Case](/202608/10/2608.02055v1-high-dimensional-panel-data-models-with-interactive-fixed-effects-beyond-the-linear-case)  
+   evidence：评估纵向准实验设置中的因果效应，如合成双重差分法
+2. [High-Dimensional Panel Data Models with Interactive Fixed Effects: Beyond the Linear Case](/202608/11/2608.02055v1-high-dimensional-panel-data-models-with-interactive-fixed-effects-beyond-the-linear-case)  
+   标签：评分：7.5/10、query:profile-1
+   evidence：具有固定效应的高维面板数据模型
+3. [Difference-in-differences with "bad controls"](/202608/11/2608.03881v1-difference-in-differences-with-bad-controls)  
+   标签：评分：7.5/10、query:profile-1
+   evidence：针对受处理影响的控制变量改进了双重差分识别策略
+4. [FinPerMA: A Theory-Informed, Event-Grounded Personalized-Memory Benchmark for LLM Agents](/202608/11/2608.04095v1-finperma-a-theory-informed-event-grounded-personalized-memory-benchmark-for-llm-agents)  
+   标签：评分：7.5/10、query:profile-1
+   evidence：基于事件的个性化财务建议和偏好调整基准
+5. [Bias-robust causal inference for panel data](/202608/11/2608.09837v1-bias-robust-causal-inference-for-panel-data)  
+   标签：评分：7.5/10、query:profile-1
+   evidence：面板数据的偏误稳健因果推断及处理组平均效应
+6. [Partial Homogeneity in Staggered Difference-in-Differences](/202608/11/2608.08047v1-partial-homogeneity-in-staggered-difference-in-differences)  
+   标签：评分：7.2/10、query:profile-1
+   evidence：解决了交错双重差分设计中的异质性问题
+7. [Regression-based approach for natural direct and indirect relative risk in case of multiple mediators](/202608/11/2608.02167v1-regression-based-approach-for-natural-direct-and-indirect-relative-risk-in-case-of-multiple-mediators)  
+   标签：评分：6.5/10、query:q7
+   evidence：用于分解处理效应的因果中介分析
+8. [Calibrated Bayesian Inference for Stochastic Intervention Effects](/202608/11/2608.02924v1-calibrated-bayesian-inference-for-stochastic-intervention-effects)  
    标签：评分：6.5/10、query:profile-1
-   evidence：具有交互固定效应的高维面板数据模型
-6. [Regression-based approach for natural direct and indirect relative risk in case of multiple mediators](/202608/10/2608.02167v1-regression-based-approach-for-natural-direct-and-indirect-relative-risk-in-case-of-multiple-mediators)  
-   标签：评分：6.5/10、query:q7
-   evidence：处理效应的因果中介分析
-7. [Calibrated Bayesian Inference for Stochastic Intervention Effects](/202608/10/2608.02924v1-calibrated-bayesian-inference-for-stochastic-intervention-effects)  
-   标签：评分：6.5/10、query:q7
-   evidence：随机干预因果效应的贝叶斯推断
-8. [Generalized propensity score weighting for functional causal inference framework](/202608/10/2608.03200v1-generalized-propensity-score-weighting-for-functional-causal-inference-framework)  
-   标签：评分：6.5/10、query:q7
-   evidence：具有随时间变化的治疗和混杂因素的函数因果推断方法论桥梁
-9. [Optimal Life Insurance Decision in Mean-Variance DC Management with Mortality Improvements](/202608/10/2608.04532v1-optimal-life-insurance-decision-in-mean-variance-dc-management-with-mortality-improvements)  
-   标签：评分：6.5/10、query:q4
-   evidence：死亡风险下的投资与保险决策
-10. [Clustered Local Projections for Short and Ultra-Short Time Series -- A Hierarchical Bayesian Framework](/202608/10/2608.04631v1-clustered-local-projections-for-short-and-ultra-short-time-series----a-hierarchical-bayesian-framework)  
-   标签：评分：6.5/10、query:q8
-   evidence：使用局部投影估计经济冲击的动态影响
-11. [Exact Inference in Fixed-Effect Regressions with Concentrated Identifying Variation](/202608/10/2608.04839v1-exact-inference-in-fixed-effect-regressions-with-concentrated-identifying-variation)  
+   evidence：为随机干预效应开发了贝叶斯推断，增强了因果推断方法论。
+9. [Clustered Local Projections for Short and Ultra-Short Time Series -- A Hierarchical Bayesian Framework](/202608/11/2608.04631v1-clustered-local-projections-for-short-and-ultra-short-time-series----a-hierarchical-bayesian-framework)  
    标签：评分：6.5/10、query:profile-1
-   evidence：固定效应回归中识别变异的精确推断方法
+   evidence：使用局部投影脉冲响应函数估计经济冲击的动态影响
+10. [Clustered Local Projections for Short and Ultra-Short Time Series -- A Hierarchical Bayesian Framework](/202608/11/2608.04631v2-clustered-local-projections-for-short-and-ultra-short-time-series----a-hierarchical-bayesian-framework)  
+   标签：评分：6.5/10、query:profile-1
+   evidence：使用局部投影脉冲响应函数估计经济冲击的动态影响
+11. [Proximal Individualized Functional Treatment Regimes](/202608/11/2608.07832v1-proximal-individualized-functional-treatment-regimes)  
+   标签：评分：6.5/10、query:profile-1
+   evidence：观察数据中功能性处理的近端因果推断
 
 
 <div class="dpr-home-promo-card">

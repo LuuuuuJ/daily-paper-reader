@@ -1,0 +1,764 @@
+Title: Proximal Individualized Functional Treatment Regimes
+
+URL Source: https://arxiv.org/pdf/2608.07832v1
+
+Published Time: Tue, 11 Aug 2026 00:20:24 GMT
+
+Number of Pages: 26
+
+Markdown Content:
+# Proximal Individualized Functional Treatment Regimes 
+
+Zhuoxin Long 1, Xiaoke Zhang 1∗
+
+> 1
+
+Department of Statistics, George Washington University, Washington, DC, USA 
+
+Abstract 
+
+Estimating individualized treatment regimes (ITRs) is fundamental in data-driven person-alized decision-making problems, such as precision medicine. Most of the ITR literature either focuses on categorical/continuous treatments or assumes no unmeasured confounding. In this paper, we make the first attempt to estimate the optimal individualized functional treatment regime (IFTR) for observational data where the treatment is a function and unmeasured con-founding is present. We establish an identification result for a class of IFTRs under the proximal causal inference framework. Based on the identification result, we develop an algorithm of finding the optimal IFTR. The appealing practical performance of the proposed method is demonstrated by a simulation study. The proposed method is applied to an accelerometry dataset collected by the US National Health and Nutrition Examination Survey to find the optimal physical activity distribution for the best of the Triglyceride-Glucose index. 
+
+Keywords: observational studies; functional data; wearable device data; penalized splines 
+
+# 1 Introduction 
+
+Identifying personalized treatment regimes for patients based on their individual characteristics in observational studies has gained great interest in recent decades. Typically, one wants to identify an optimal treatment regime that maximizes the mean health outcome among patients under its implementation. A vast number of statistical methods have been proposed for this objective (e.g., Brinkley et al., 2010; Qian and Murphy, 2011; Zhao et al., 2012; Zhang et al., 2012a,b; Laber and Zhao, 2015; Shi et al., 2018; Chernozhukov et al., 2019). The majority of these works focus on binary or multi-categorical treatments, while fewer works study continuous treatments (e.g., Chen et al., 2016; Kallus and Zhou, 2018; Chernozhukov et al., 2019; Zou et al., 2022; Schweisthal et al., 2023). Recently, as data collection techniques have become more advanced, the functional treatment, where the treatment is a function/curve, has attracted increasing attention in observational causal inference (e.g., Zhang et al., 2021; Zhao et al., 2025b; Tan et al., 2025; Long and Zhang, 2025; Wang et al., 2026; Jiang et al., 2026). However, to date, there is limited work that estimates the optimal individualized treatment regime for functional treatments. To the best of our knowledge, Lin et al. 
+
+> ∗Corresponding author: xkzhang@gwu.edu
+
+1arXiv:2608.07832v1 [stat.ME] 8 Aug 2026 (2026), developed under an offline reinforcement learning framework, is the only closely related work. In this paper, we aim to narrow this gap and develop a new methodology of optimizing the individualized functional treatment regime (IFTR) in the presence of unmeasured confounding. Our interest in this problem is motivated by accelerometry data collected by the National Health and Nutrition Examination Survey (NHANES) during 2013-2014. The data contains the 24-hour physical activity (PA) of participants measured during seven consecutive days by accelerometers. The full trajectory of the PA data not only provides an objective measure of the PA, but also contains substantial and valuable information for free-living PA, including the volume, frequency, distribution, types of PA, etc. In this paper, we use the PA distributions derived from the ac-celerometry data as functional treatments, and we are interested in recommending individualized PA distributions for each participant for the best of his/her Triglyceride-Glucose index. A great number of studies have utilized the accelerometry data to investigated the relationship between PA and health outcomes. Most PA studies reduce accelerometry data to one or more summary measures, such as total PA, light PA, moderate-to-vigorous PA, sedentary time, etc (Schmid et al., 2015; Fishman et al., 2016). Although this approach is simple to implement, it results in information loss and relies on the identification of cutoff points to define different types of PA. Lately, there have been attempts to treat the entire PA trajectory or PA distribution as a functional variable and investigate its correlational relationship with health outcomes using functional data analysis methods (e.g., Matabuena and Petersen, 2023; Rogovchenko et al., 2024; Matabuena et al., 2025). More recently, Long and Zhang (2025), Wang et al. (2026), Jiang et al. (2026), and Barnard et al. (2026) utilize the PA trajectory or PA distribution as the functional treatment and estimate its causal effect on a scalar outcome. Despite the increasing interest in treating the PA distribution as a functional treatment, there has been essentially no work on recommending the optimal PA distribution tailored to individual characteristics, which can be formulated as an IFTR learning problem. The only exception, to the best of our knowledge, is Lin et al. (2026) that learns optimal 90-day step-count distributions associated with cardiometabolic risk. One issue regarding the causal relationship between PA and the Triglyceride-Glucose index is that the relationship may be confounded by various factors including demographic, diet, lifestyle, socioeconomic, genetic factors, etc. While most of these factors have been measured in NHANES 2013-2014, the information of other potential confounders such as genetic factors are not collected. Thus, the typical unconfoundedness assumption is likely to be violated in this data and ITRs derived under this assumption can be therefore misleading. Although Lin et al. (2026) provides an impor-tant step toward learning individualized regimes for functional treatments, its offline reinforcement learning framework relies on a Markov decision process assumption with no unmeasured confound-ing. Thus, existing methods remain insufficient for learning ITRs from observational accelerometry data when unmeasured confounding may be present. To address unmeasured confounding in ITR studies, a popular method is to use the proximal causal inference framework recently formulated by Miao et al. (2018) and Tchetgen Tchetgen et al. (2024). Assuming that a rich set of proxies have been collected, and can be correctly allocated 2into three types: outcome-inducing proxies, treatment-inducing proxies and common causes of treatment and outcome, the framework can identify the mean treatment effect via a bridge function under the existence of unmeasured variables. This framework was adopted by Qi et al. (2024) to identify and learn optimal ITRs for a binary treatment. Shen and Cui (2023) extended this work by proposing a new class of ITRs that map all collected proxies to the treatment space, thereby further generalizing the regimes considered in Qi et al. (2024). In addition to binary treatments, there are some applications of this framework to ITR estimations for continuous treatments (e.g., Chen et al., 2023; Li et al., 2026). However, these works focus on the regime of multiple time points and is thus out of the scope of this paper. To date, existing applications to ITRs only focus on categorical and continuous treatments, and there are no ITR methods for functional treatments in the presence of unmeasured confounding. It is worth mentioning that the instrumental variable has also been employed to address unmeasured confounding in ITR learning (e.g., Cui and Tchetgen Tchetgen, 2021; Qiu et al., 2021) However, the applicability of this approach is limited given the restrictions on the binary treatment and instrumental variables (Qi et al., 2024). In this paper, we adopt the proximal causal inference framework to account for unmeasured confounding in IFTR learning. We extend the value identification result in Qi et al. (2024) to func-tional treatments, where the value function is identified by an outcome-inducing bridge function. We estimate the bridge function by solving the conditional moment restriction problem using the minimax optimization in Mastouri et al. (2021). We later obtain the optimal treatment regime by directly maximizing the empirical value function within a restricted class of IFTRs. To the best of our knowledge, this is the first article that provide a solution for deriving ITR for functional treatments in the presence of unmeasured confounding. The performance of our method is demon-strated by a simulation study. We also apply our estimation method to the NHANES 2013-2014 accelerometry data and provide individualized PA distribution recommendations to participants based on their characteristics for the best of the Triglyceride-Glucose index. The main contribution of this paper is twofold. First, this paper makes the first attempt to study ITR for functional treatments in the presence of unmeasured confounding. The proposed ITR learning algorithm is flexible to learn both linear and nonlinear IFTRs. Moreover, we provide the first analysis of recommending optimal PA distributions for the best of the Triglyceride-Glucose index via NHANES data in the presence of possible unmeasured confounding. Our recommendation generally suggests participants increase their PA, while specific recommendations may vary over covariate subgroups. Some of the recommendations are aligned with the current PA guidelines. The rest of the paper proceeds as follows. In Section 2, we provide the IFTR formulation and identification result under the proximal causal inference framework. Based on the identification result, we develop the IFTR learning method in Section 3. In Section 4, we present a simulation study to evaluate the performance of our proposed methods. The analysis of NHANES data is in Section 5. The conclusion and discussion are given in Section 6. The code for this paper is publicly available on GitHub via https://github.com/zlong66/IFTR .3ZYAXUW
+
+Figure 1: A causal directed acyclic graph that illustrates variables under the proximal causal inference framework. 
+
+# 2 IFTR Identification 
+
+2.1 Problem setup 
+
+Let Y denote the observed continuous outcome, and we assume that larger values of Y imply bet-ter results. We let A(·) be the treatment, which is a function belonging to space A. Without loss of generality, we assume that the domain of the functional treatment is [0 , 1]. The unmeasured confounders are denoted as U . Suppose that we collect a set of proxy variables to account for unmeasured confounding and can accurately allocate them into three types of proxies ( W, X, Z ), where X are proxies that are common causes of treatment A and outcome Y , W represents the outcome-inducing proxies that are related to A only through ( U, X ), and Z denotes the treatment-inducing proxies that are related to Y only through ( U, A, X ). An example of the causal model under consideration is illustrated by Figure 1. Under this causal model, the assumption of un-confoundedness is no longer valid, since when conditioning on X, Y (a) and A may be associated through the path A − U − Y .Under the potential outcome framework, we denote Y (a) as the potential outcome when treat-ment A = a, where a is a function in A. We adopt the standard consistency assumption Y (A) = Y ,which connects the observed outcome Y to the potential outcome Y (a) when A = a. An individu-alized functional treatment regime (IFTR) d is a mapping from the observable covariate space into a treatment space A. The value function is the expected potential outcomes had the IFTR d been implemented, or specifically, V (d) = E{Y (d)}, where Y (d) is the potential outcome if the IFTR d
+
+were given. The optimal treatment regime dopt ∈ argmax d∈D E{Y (d)} is the regime that maximize the value function within an IFTR class D.
+
+2.2 Value function identification 
+
+In the presence of unmeasured confounders, the value function identification results under the proximal causal inference framework have been developed by Qi et al. (2024). Their identification results mainly focus on binary treatments, and here we extend their results to functional treatments. We first list the basic assumptions needed for the identification result. 4Assumption 1 (Assumptions for proxies) .
+
+W (a, z ) = W, Y (a, z ) = Y (a) for all a and z almost surely. 
+
+Assumption 2 (Latent unconfoundedness) . (Z, A ) ⊥ (Y (a), W )|(U, X ) for all a. 
+
+Assumption 1 states that A and Z do not have a causal effect on W and that Z does not have a direct effect on Y when intervening with A (Tchetgen Tchetgen et al., 2024). This assumption will hold if Z and W are correctly specified as treatment-inducing and outcome-inducing proxies, respectively. Assumption 2 is the generalization of the common unconfoundedness assumption, i.e., 
+
+Y (a) ⊥ A|X for all a. The latent unconfoundedness allows the existence of U , and will generally hold if U is sufficient enough to include all the confounding between ( Z, A ) and ( Y (a), W ) not included in X. This assumption basically states that conditioning on U, X , the causal effect of (Z, A ) on ( Y (a), W ) is identifiable. 
+
+Assumption 3 (Completeness) . 1) For any a,x, if E{g(U )|Z, A = a, X = x} = 0 almost surely, then g(U ) = 0 almost surely. 2) For any a,x, if E{g(Z)|W, A = a, X = x} = 0 almost surely, then g(Z) = 0 almost surely. 
+
+Assumption 4. There exists an outcome confounding bridge function h(w, a, x ) that solves the following integral equation 
+
+E[Y |Z, A, X ] = 
+
+Z
+
+h(w, A, X )dF (w|Z, A, X ), (1) 
+
+almost surely. 
+
+The completeness assumption is a commonly made condition for identification problems of nonparametric and semi-parametric models (Newey and Powell, 2003; Chen and Christensen, 2018; Blundell et al., 2007; An and Hu, 2012; Carroll et al., 2010; Shiu and Hu, 2013). Eq. (1) in Assumption 4 connects the observed/primary outcome with a transformation of the negative control outcome, and Assumption 4 simply states that this transformation function h exists. Note that Eq. (1) is a Fredholm integral equation of the first kind, and the existence of its solution is ensured under Assumption 3 (2) and some regularity conditions. If all assumptions listed above hold, then we are capable to identify the value function based on the observed variables using the following theorem, even though there exist unmeasured con-founders. 
+
+Theorem 1. Let D be the class of IFTRs that map from X × Z to A. Under Assumptions 1-2, 3(1) and 4, for any d ∈ D, the value function V (d) can be nonparametrically identified by 
+
+V (d) = E{h(W, d (X, Z ), X )}. (2) 5Theorem 1 indicates that the value function is identifiable over the class D when unmeasured confounding is present, and can be estimated if h is known. This theorem is an extension of Theorem 3.1 in Qi et al. (2024) to functional treatments. The proof of Theorem 1 is given in Appendix A. Based on the value identification result in Theorem 1, the optimal treatment regime can then be identified by 
+
+dopt ∈ argmax 
+
+> d∈D
+
+E{h(W, d (X, Z ), X }. (3) 
+
+# 3 IFTR learning 
+
+In this section, we propose an IFTR learning method based on the identification result in Theorem 1. We start with the estimation of the nuisance function h. Then, we develop methods to learn optimal linear and nonlinear IFTRs respectively. Our first step is to obtain the nuisance function h that solve the Eq. (1). Note that the Eq. (1) can be written as 
+
+E{Y − h(W, A, X )|Z, A, X } = 0 .
+
+Then, solving h is a conditional moment restriction problem, for which various methods have been proposed (e.g., Dikkala et al., 2020; Zhang et al., 2023). We adopt the Proxy Maximum Moment Restriction (PMMR) method proposed by Mastouri et al. (2021) to estimate h. Specifically, we obtain ˆh by solving ˆh = arg min 
+
+> h∈H
+
+ 1
+
+n2
+
+> n
+
+X
+
+> i,j =1
+
+(Yi − hi)( Yj − hj )kij + λ∥h∥2
+
+> H
+
+ , (4) where λ > 0 is a hyperparameter, ∥h∥H is the norm of h in space H, and hi := h(Wi, A i, X i), 
+
+kij := kF ([ Zi, A i, X i], [Zj , A j , X j ]) 1. Assuming that H is a reproducing kernel Hilbert space, there is a closed-form solution for ˆh. See more details in Mastouri et al. (2021). With the estimated nuisance function ˆh, the optimal treatment regime can be obtained by directly maximizing the empirical version of the value function within the class D, i.e., we can estimate IFTR via ˆd ∈ argmax d∈D n−1 Pni=1 ˆh(Wi, d (Xi, Z i), X i).
+
+To ensure that the estimated IFTR is a smooth function on its domain [0 , 1], we further penalize the roughness of the treatment regime. Consequently, the final optimal IFTR is obtained by solving the following optimization problem ˆd ∈ argmax 
+
+> d∈D
+
+"
+
+n−1
+
+> n
+
+X
+
+> i=1
+
+ˆh{Wi, d (Xi, Z i), X i} − ρ · E(X,Z )
+
+Z 10
+
+h
+
+d(2) (X, Z )( t)
+
+i2
+
+dt 
+
+ #
+
+. (5) where d(2) (x, z )( t) is the second derivative of the IFTR with respect to t, and ρ > 0 is a smoothing parameter.          
+
+> 1The space Fis a reproducing kernel Hilbert space, and any f∈ F is a function on Z × A × X . The function kF
+> is the kernel function in F.
+
+6The treatment regime maps from X × Z to the treatment space A. In the following section, we consider two functional classes for linear and nonlinear treatment regimes, respectively, and present the algorithms for learning IFTRs in these two classes. 
+
+3.1 Linear IFTR 
+
+Let v = ( x⊤, z ⊤)⊤. We consider the class of linear IFTRs: ˜Dl =
+
+n ˜d(v) : ˜d(v)( t) = β0(t) + 
+
+> q
+
+X
+
+> k=1
+
+βk(t)vk, all βk are twice differentiable in t
+
+o
+
+.
+
+where t ∈ [0 , 1], q is the dimension of ( x, z ). Suppose that we can approximate βk(t) ≈ PJj=1 bk,j θj (t)for every k where {θj }Jj=1 are cubic B-spline basis functions. Then, for each d(v) ∈ ˜Dl, we have 
+
+d(v)( t) ≈ ˜v⊤Bθ(t)⊤, where ˜v = (1 , x ⊤, z ⊤)⊤,
+
+B =
+
+
+
+b0,1 · · · b0,J 
+
+... . . . ...
+
+bq, 1 . . . bq,J 
+
+ ,
+
+and 
+
+θ(t) = 
+
+h
+
+θ1(t) θ2(t) · · · θJ (t)
+
+i
+
+.
+
+Similarly, we can approximate the penalty term in (5) as follows 
+
+EV
+
+Z 10
+
+d(2) (V)( t)2dt 
+
+
+
+≈ EV
+
+Z 
+
+( ˜V⊤Bθ(2)(t)) 2dt 
+
+
+
+= tr 
+
+
+
+BRB ⊤EV ( ˜V ˜V ⊤)
+
+
+
+,
+
+where V = ( X⊤, Z⊤)⊤, θ(2) (t) = 
+
+h
+
+θ(2) 1 (t), θ (2) 2 (t), · · · , θ (2)  
+
+> J
+
+(t)
+
+i
+
+and R = R θ(2) (t)⊤θ(2) (t)dt .In the optimization process, we approximate E( ˜V ˜V ⊤) by ˆΣ = n−1 P 
+
+> i
+
+˜Vi ˜Vi
+
+> ⊤
+
+, where ˜Vi =(1 , X ⊤ 
+
+> i
+
+, Z ⊤ 
+
+> i
+
+)⊤. The optimization problem in (5) can then be transformed to the optimization of the parameter matrix B, which is ˆB ∈ argmax 
+
+> B
+
+"
+
+n−1
+
+> n
+
+X
+
+> i=1
+
+ˆh{Wi, ˜V ⊤ 
+
+> i
+
+Bθ ⊤, X i} − ρ · tr 
+
+
+
+BRB ⊤ ˆΣ
+
+#
+
+. (6) The optimal IFTR is then obtained by ˆd(v)( t) = v⊤ ˆBθ(t)⊤.
+
+73.2 Nonlinear IFTR 
+
+The linear regime can be restrictive when the optimal treatment regime has a more complex re-lationship with covariates. Therefore, we consider another class for the treatment regime, which does not assume the linearity between the regime and the covariates and provides greater flexibility. Suppose that each regime d : v → a(t), belongs to the following class of nonlinear IFTRs: ˜Dnl =
+
+n ˜d(v) : ˜d(v)( t) = f (v, t ), f is twice differentiable in both v and t
+
+o
+
+.
+
+for t ∈ [0 , 1]. Suppose that f can be well approximated by tensor product splines, that is, 
+
+f (v, t ) ≈
+
+> N0
+
+X
+
+> j0=1
+> N1
+
+X
+
+> j1=1
+
+· · · 
+
+> Nq
+
+X 
+
+> jq=1
+
+bj0,j 1,...,j q
+
+(
+
+θ0,j 0 (t)
+
+> q
+
+Y
+
+> k=1
+
+θk,j k (vk)
+
+)
+
+,
+
+where θk,j k are cubic B-spline basis functions for vk, and θ0,j 0 are cubic B-spline basis functions for 
+
+t. Then for each d(v) ∈ ˜Dnl , we have ˜d(v)( t) = 
+
+> N0
+
+X
+
+> j0=1
+
+
+
+> N1
+
+X
+
+> j1=1
+
+· · · 
+
+> Nq
+
+X 
+
+> jq=1
+
+bj0,j 1,...,j q
+
+> q
+
+Y
+
+> k=1
+
+θk,j k (vk)
+
+ θ0,j 0 (t) = ψ(v)Bθ 0(t)⊤,
+
+where ψ(v) is defined as 
+
+ψ(v) =
+
+h
+
+θ1(v1) ⊗ θ2(v2) ⊗ · · · ⊗ θq(vq)
+
+i
+
+with θk(vk) = [ θk, 1(vk), ..., θ k,N k (vk)] and θ0(t) = [ θ0,1(t), ..., θ 0,N 0 (t)] be the set of B-spline basis functions for vk and t, respectively, and ⊗ is the Kronecker product. The coefficient matrix is defined as 
+
+B =
+
+
+
+b1,1,..., 1 · · · bN0,1,... 1
+
+... . . . ...
+
+b1,N 1,...,N q · · · bN0,N 1,...,N q
+
+
+
+with the ith matrix column arranged as ( bi11 ... 11 , ..., b i11 ... 1Nq , b i11 ... 21 , ..., b i11 ... 2Nq , ..., b i11 ...N q−1Nq , ..., b iN 1...N q ). We solve the optimization problem for the coefficient matrix BˆB ∈ argmax 
+
+> B
+
+h
+
+n−1
+
+> n
+
+X
+
+> i=1
+
+ˆh{Wi, ψ(Vi)Bθ ⊤ 
+
+> 0
+
+, X i} − ρ · tr 
+
+
+
+BRB ⊤ ˆΣψ
+
+ i 
+
+, (7) where Vi = ( X⊤ 
+
+> i
+
+, Z ⊤ 
+
+> i
+
+)⊤ and ˆΣψ = n−1 P 
+
+> i
+
+ψ(Vi)⊤ψ(Vi). The estimated optimal IFTR is therefore ˆd(v)( t) = ψ(v) ˆ Bθ0(t)⊤.
+
+83.3 Numerical optimizations and cross-fitting 
+
+Note that the objective functions for both linear and nonlinear IFTRs, i.e., Eq. (6) and (7), are not convex with respect to B, but we can use the L-BFGS optimizer to find the local maximum ˆB.When optimizing linear IFTRs, we choose the initial value of B as the least squares estimator to predict A with V as predictors. Details of computing the initial values are given in Appendix B. For nonlinear IFTR learning, we use multiple random restarts and select the best runs. We adopt the cross-fitting procedure (e.g., Schick, 1986; Chernozhukov et al., 2018; Zhao et al., 2025a) for IFTR learning. First, we divide the data into L folds. For each l = 1 , ..., L , we estimate the nuisance function ˆh(−l) using data without the lth fold and obtain an estimate of the value function ˆV (l)(B) using the lth fold and estimated nuisance function ˆh(−l). We aggregate values from L folds and obtain the cross-fitted value ˆVCF (B) = L−1 PLl=1 ˆV (l)(B). Then, the optimal IFTR is estimated by ˆB = argmax B ˆVCF (B) + ρ · P EN , where P EN is defined as tr (BRB ⊤Σ)for linear IFTR learning and as tr (BRB ⊤Σψ) for nonlinear IFTR learning. 
+
+# 4 Simulation Study 
+
+We evaluate the performance of the proposed method via a simulation study. 
+
+4.1 Data generation 
+
+The simulated datasets are generated using the following process. 
+
+U ∼ U nif (0 , 4) ,X = [ X1, X 2]⊤; X ∼ N ([1 , 1] ⊤, ΣX ), where Σ X =
+
+"
+
+1 0.60.6 1
+
+#
+
+,A := 0 .25 U sin(4 πt ) + 0 .25 X1 sin(2 πt ) + 0 .25 X2cos (2 πt ) + ϵcos (6 πt ), where ϵ ∼ Normal(0 , 0.12)
+
+Z := 1 .5U + 2 X1 + 1 .5X2 + 6 
+
+Z 10
+
+sin(2 πt )A(t)dt + Normal(0 , 0.52),W := U + 2 X1 + 3 X2 + Normal(0 , 0.52),Y := 1 .2U + 0 .8X1 + 0 .8X2 − 10 
+
+Z 10
+
+(A(t) − dopt (t)) 2dt + Normal(0 , 0.52).
+
+Note that the conditional mean of Y given ( U, A, X ) is a nonlinear function of the treatment A
+
+and dopt (t), which is a function of covariates ( U, X ) and will be defined later. The conditional mean of Y also depends on the unmeasured covariate U . In addition, the value function will be maximized if the treatment d(t) = dopt (t), and thus dopt (t) is the true optimal treatment regime. Let 
+
+β1(t) = 0 .12 B1(t) + 0 .36 B2(t) − 0.36 B3(t) + 0 .36 B4(t) + 0 .36 B5(t) − 0.6B6(t) + 0 .24 B7(t), β2(t) = 0.16 B1(t) + 0 .32 B2(t) + 0 .16 B3(t), β3(t) = 0 .05 B3(t) + 0 .1B4(t) + 0 .1B5(t), where Bi : i = 1 , ... 7are cubic B-spline basis functions on [0 , 1] with three equally spaces interior knots. We consider two scenarios for dopt (t), where dopt (t) is a linear function of covariates. 9(L1) dopt (t) := X1β1(t) + X2β2(t) + U β 3(t). (L2) dopt (t) := X1β1(t) + X2β2(t). In scenario L1, there is a linear relationship between dopt (t) and covariates X1, X 2, U . In scenario L2, the true treatment regime only depends on the observed covariates. We also consider two scenarios where dopt (t) is a nonlinear function. Define ˜β1(t) = 0 .2B1(t) + 0.4B2(t), ˜β2(t) = 0 .12 B3(t) + 0 .24 B4(t), ˜β3(t) = −0.4B5(t) + 0 .4B7(t). The true regime func-tions are (N1) dopt (t) := X1X2 ˜β1(t) + U X 1 ˜β2(t) + U X 2 ˜β3(t). (N2) dopt (t) := X1X2 ˜β1(t) + X1 ˜β2(t) + X2 ˜β3(x). Both N1 and N2 encode a nonlinear relationship between the dopt (t) and covariates, but dopt (t) in N1 relies on U while dopt (t) in N2 does not. In scenarios L1 and L2, we generated simulated datasets with sample sizes n = 500 and 1000 per dataset, whereas in scenarios N 1 and N 2, the datasets have a larger sample size with n = 5 , 000. For each scenario, we also generate a test dataset with ntest = 10 , 000, with which we obtain estimated values. The estimated values are calculated using the equation bE{Y ( ˆd)} = n−1 Pni=1 (1 .2Ui +0.8X1i + 0 .8X2i − 10 R 10 ( ˆdi(t) − dopt i (t)) 2dt ), where ˆd is the estimated IFTR. We run 100 simulations for each scenario. 
+
+4.2 Estimators in comparison 
+
+We compare our proposed method with three other estimators denoted by ˆdORC , ˆd1 and ˆd2 respec-tively. If ( U, X ) were observable, then according to Assumption 2, we have 
+
+V (d) = E{Y (d)}
+
+= E[E{Y (d)|X, U }]= E[E{Y |A = d(X, U ), X, U }]= E[m(X, U, d (X, U ))] ,
+
+where m is the conditional mean of Y given ( U, A, X ). The conditional mean model maps scalar covariates and functional treatment to a scalar outcome and can be approximated by regression methods that accommodate functional covariates. In our simulation, we use the kernel ridge re-gression (KRR) to estimate m, that is, ˆ m is obtained by: ˆm = argmin 
+
+> m∈H U AX
+
+(
+
+n−1
+
+> n
+
+X
+
+> i=1
+
+(Yi − m(Ui, X i, A i)) 2 + λ∥m∥2
+
+> HU AX
+
+)
+
+.2                             
+
+> 2HU AX is a RKHS with kernel k:(U × A × X )2→R.According to the representation theorem, ˆm=Pni=1 α′
+> iK([ Xi, U i, A i],·),where α′= ( K+nλ I)−1Y,and Kis a n×nmatrix with k([ Ui, X i, A i],[Uj, X j, A j]) as its ( i, j )th entry.
+
+10 Unlike typical scalar-on-function regressions which assume linearity, KRR provides a flexible way to model the nonlinear relationship between predictors and the outcome. Let D1 be a class of functions that map U × X to A, we then obtain the estimated oracle IFTR by solving ˆdORC ∈ argmax 
+
+> d∈D1
+
+"
+
+n−1
+
+> n
+
+X
+
+> i=1
+
+ˆm{Xi, U i, d (Xi, U i)}− ρ · E(U,X )
+
+Z 
+
+d(2) (U, X )( t)2dt 
+
+ #
+
+.
+
+The objective function is similar to (5). Thus, we can use the same process described in Section 3 to convert the optimization problem for dORC to an optimization problem for B.We consider two other IFTR estimators that ignore the existence of unmeasured confounders. Let D1 be a class of functions mapping X to A. For the estimator d1(X) ∈ D1, we only use X and 
+
+A to estimate the conditional mean regression, then we learn the optimal IFTR ˆd1 only in terms of X. For d2(X) ∈ D2, we use all observed variables ( X, W, Z ) together with A to estimate the conditional mean regression function, and then obtain the optimal regime ˆd2 that depends only on 
+
+X. All conditional mean regressions are fitted using KRR. 
+
+4.3 Implementation details 
+
+In L1 and L2, the regimes are fitted as linear functions of covariates, and we use 7 cubic B-spline bases to expand the coefficient functions. A sensitivity analysis was also conducted using 15 cubic B-spline basis functions, and the results are in Appendix C. For scenarios N 1 and N 2, the regimes are fitted using the nonlinear IFTR learning method, where we use four cubic B-spline bases for each covariate and for t. The smoothing parameter ρ is selected by the three-fold cross-validation, and we set the number of folds for cross-fitting J = 3. In N 1 and N 2, the kernels are approximated by Nystroem method (Williams and Seeger, 2000) to accelerate computation. Algorithm 1 summarizes the IFTR learning with cross-fitting, where P EN is defined as tr (BRB ⊤Σ)for linear IFTR learning or as tr (BRB ⊤Σψ) for nonlinear IFTR learning. 
+
+4.4 Simulation results 
+
+The boxplots of empirical values estimated using four methods under Scenarios L1 and L2 are shown in Figure 2 and 3, and the results for Scenarios N1 and N2 are given in Figure 4. In both L1 and N1, the oracle method is the best among all methods, followed by the proposed method. It is reasonable since the oracle method incorporates the unmeasured covariate in the regime, while the proposed method does not. Regimes ˆd1 and ˆd2 perform worse than the proposed method and the oracle method because they fail to account for the unmeasured confounder U . In Scenarios L2 and N2, where the true regime does not contain U , we observe a similar pattern, except that the proposed method is more comparable with or even has a better performance than the oracle method. 11 (a) L1 (b) L2 
+
+Figure 2: The boxplots of values in scenarios L1 and L2 with n = 500 and 7 basis functions.  
+
+> (a) L1 (b) L2
+
+Figure 3: The boxplots of values in scenarios L1 and L2 with n = 1 , 000 and 7 basis functions.  
+
+> (a) N1 (b) N2
+
+Figure 4: The boxplots of values in scenarios N1 and N2 with n = 5 , 000. 12 Algorithm 1 Algorithm for IFTR learning  
+
+> 1:
+
+Input: train data ( Xi, W i, Z i, A i, Y i)ni=1  
+
+> 2:
+
+Standardize train data( Xi, W i, Z i)ni=1 , and find the best λ in h. 
+
+> 3:
+
+for ρ in a pre-specified collection with size M do  
+
+> 4:
+
+for k = 1 , . . . , K do  
+
+> 5:
+
+for l = 1 , . . . , L do  
+
+> 6:
+
+Estimate ˆh(−k, −l) with data of indices I(−k, −l) 
+
+> 7:
+
+end for  
+
+> 8:
+
+Find ˆB(k) maximizes averaged empirical value L−1 PLl=1 ˆV (l)(B, ˆh(−k, −l)) − ρ · P EN  
+
+> 9:
+
+Calculate vk = ˆV (k)( ˆB(k), ˆh(−k)) 
+
+> 10:
+
+end for  
+
+> 11:
+
+end for  
+
+> 12:
+
+Find ρ∗ that maximizes averaged empirical value K−1 PKk=1 vk among M tuning parameters.  
+
+> 13:
+
+for l = 1 , . . . , L do  
+
+> 14:
+
+Estimate ˆh(−l) with data of indices I(−l) 
+
+> 15:
+
+end for  
+
+> 16:
+
+Find ˆB by maximizing L−1 PLl=1 ˆV (l)(B, ˆh(−l)) − ρ · P EN using penalty coefficient ρ = ρ∗ 
+
+> 17:
+
+Output: Estimator ˆB and penalty ρ∗ 
+
+> 18:
+
+The value function is calculated in test data as ˆV test ( ˆB, ˆhtrain )
+
+# 5 Real data analysis 
+
+5.1 Data description 
+
+The National Health and Nutrition Examination Survey (NHANES) collects information from around 5,000 participants representing different populations in the US on their health and nutri-tion status. Typically, participants undergo an interview, body and health measurements, and laboratory tests. During the 2011-2014 cycle, participants were also asked to wear physical activity monitors (PAM) for seven consecutive days to collect their 24-hour movements. Every 1/80 second (80 Hz), the PAM collects the acceleration of the subject on three axes (x-, y-, z-axis). The raw PAM data were then summarized at the minute level using an open-source algorithm, specified in Monitor-Independent Movement Summary (MIMS) units. In addition to minute-level PA intensity measures, the data also contains a variable representing the predicted status, i.e., “sleep”, “wake”, “non-wake”, or “unknown”, for each minute. In this analysis, we use data collected during the 2013-2014 cycle. We focus on participants who wear PAM on the non-dominant wrist and have PA records for at least 3 valid weekdays and 1 valid weekend day. Following the criteria of To et al. (2022), a valid day is a day with at least 1389 valid minutes, fewer than 72 minutes of non-wear time, and less than 17 hours of sleeping wear. The health biomarker of interest in this analysis is Triglyceride-Glucose index (TyG). TyG is a composite biomarker composed of fasting triglyceride and fasting glucose levels, and it is calculated as log(Triglyceride × Fasting Glucose /2) . In addition to being an accessible tool that measures insulin resistance and metabolic health of subjects, recent studies have shown its predictive power for the risk of diseases like type 2 diabetes, cardiovascular diseases, and non-alcoholic fatty liver 13 disease among others (Tao et al., 2022; Nayak et al., 2024). The outcome Y is defined as 1 /TyG so that a larger value of Y generally indicates better metabolic health and insulin sensitivity. We identified 8 proxy variables, with two outcome-inducing variables ( W ) related to the family history of diabetes or heart attack, one treatment-inducing variable ( Z) measuring the frequency of using sunscreen, and five common cause variables ( X), including age, sex, race, body mass index and an indicator for cardiovascular symptoms. The cardiovascular symptoms indicator is set to 1 if the subject aged greater or equal to 40, and has chest pain or short breath, and 0 otherwise. Detailed information on the selected proxy is provided in Table D1. After removing incomplete data from proxy variables and the outcome, the dataset contains 1044 participants. We further removed subjects identified as “Other” race, as the number of subjects in the other races is relatively small in the dataset. After the data preprocessing, our final dataset has 1,009 participants. We took the following steps to obtain the functional treatment A. First, based on nonzero MIMS measurements only, we obtained the density of log-transformed PA intensity ( M IM S →
+
+log (M IM S + 1) ) within a range (0 , 5) using the kernel density estimator. The bandwidth was selected by Silverman’s rule of thumb method. We chose the upper bound 5 because less than 1% of the PA measurements exceeded this value. Then, to ensure that all PA density functions are strictly positive on (0 , 5), each density was regularized by mixing it with a uniform distribution on (0 , 5). The mixing coefficient was selected so that the resulting density was bounded below by 0.005 throughout the interval (Petersen et al., 2021). Since each kernel density is subject to the constraint that its integral must equal to one, we finally applied the log-quantile density transformation to the kernel densities to obtain the ultimate functional treatments Ai which are unconstrained functions (Petersen and M¨ uller, 2016). The goal of this analysis is to estimate an optimal treatment regime that assigns a distribution of physical activity to a participant based on his/her characteristics for the best of TyG. Due to the limited sample size, we focus on linear IFTRs for our proposed method as well as ˆd1 and ˆd2
+
+that ignore unmeasured confounding. When optimizing IFTRs as described in Section 3.1, we used 15 cubic B-spline basis functions defined over the interval [0 , 1] with equally spaced interior knots. 
+
+5.2 Results 
+
+First, we compute empirical values by three-fold cross-validation. Specifically, we divide the data into three folds, using two folds as the training data for the treatment regime estimation, and the remaining fold as the test data, with which we calculate the empirical value using the estimated regime. The process is then repeated three times until all folds have been used as test data once. The obtained empirical values are summarized in Table 1. Table 1 shows that the proposed method has the highest empirical values uniformly and thus outperforms the other two methods, which ignore the existence of unmeasured confounders. Next we assess the difference between the recommended PA distributions by our proposed method and behavior PA distributions for all subjects as well as subgroups stratified by a few covariates. For ease of interpretations, after we obtain the optimal IFTR in the log-quantile density 14 Table 1: The empirical values obtained using three estimators. Methods CV1 CV2 CV3 Average 
+
+d1 0.130 0.135 0.130 0.132 
+
+d2 0.131 0.134 0.129 0.131 Proposed 0.147 0.148 0.149 0.148 
+
+scale, we transform it to a quantile function. Figure 5 illustrates the recommended PA distributions by our proposed method against behavior PA distributions for all subjects. As shown in Figure 5, the proposed method suggests people uniformly engage in more PA than their behaviors to improve their TyG. 
+
+Figure 5: Comparison of the observed PA distributions and the PA distributions recommended by the estimated IFTR. The x-axis represents the percentile/quantile level, and the y-axis represents the corresponding quantile function values in the scale of log(MIMS + 1). The transparent red curves represent the recommended PA distributions, while the transparent black curves represent the observed PA distributions. The bold red and black curves denote their cross-sectional means respectively. The dashed vertical lines are located at p = 0 .33 and p = 0 .67. We also conduct a subgroup analysis to examine how the recommended PA distributions vary according to important covariates. Here we only focus on subgroups of subjects stratified by hav-ing cardiovascular symptoms or not, body mass index (BMI), age, and sex respectively. Within each subgroup, we applied the interval-wise testing procedure for functional data (Pini and Van-tini, 2017) to test significance for the paired difference between the recommended and observed PA quantile distributions. The results are presented in Figures 6–9. In each figure, the shaded regions among [0 , 0.33], [0 .33 , 0.67], and [0 .67 , 1] indicate quantile intervals where the means of the recommended and observed PA quantile distributions differ significantly, defined as regions where the adjusted p-value function was less than the interval-wise Type I error probability 0 .05. The 15 (a) (b) 
+
+Figure 6: Comparison of the observed and recommended PA distributions for participants with and without cardiovascular symptoms. See Figure 5 for a description of the graphical elements.   
+
+> (a) (b) (c)
+
+Figure 7: Comparison of the observed and recommended PA distributions by BMI. See Figure 5 for a description of the graphical elements. 16 (a) (b) 
+
+Figure 8: Comparison of the observed and recommended PA distributions by age. See Figure 5 for a description of the graphical elements.  
+
+> (a) (b)
+
+Figure 9: Comparison of the observed and recommended PA distributions by sex. See Figure 5 for a description of the graphical elements. 17 three quantile intervals [0 , 0.33], [0 .33 , 0.67], and [0 .67 , 1] may be understood to correspond to PA of lower, moderate, and higher intensities, respectively. As shown in Figure 6 (a), the mean recommended PA distribution for participants with cardio-vascular symptoms is significantly higher than the mean observed PA distribution across all three quantile intervals. In contrast, for participants without symptoms, significant differences are ob-served only in the first two quantile intervals as illustrated in Figure 6 (b). These findings suggest that the proposed method recommends increasing overall PA intensity for individuals with cardio-vascular symptoms, whereas individuals without symptoms are mainly encouraged to increase PA at lower and moderate intensity levels. Furthermore, we observe that participants with cardiovas-cular symptoms are recommended a lower-intensity PA distribution than those without symptoms. This suggests that, although individuals with symptoms are suggested to increase their PA, their recommended intensity should not be as high as that for asymptomatic individuals to ensure safety (e.g., Whitfield et al., 2017). Similarly, for BMI subgroups, Figure 7 suggests obese participants improve their overall PA intensity, while recommend the healthy and overweight participants to mainly increase their PA intensity at lower and moderate intensity levels. In addition, the recommended PA levels for obese individuals are lower than their healthy or overweight counterparts. The results are aligned with the recommendations that individuals with obesity are advised to begin with moderate-intensity PA before progressing to vigorous-intensity PA (e.g., Pescatello et al., 2021). As shown in Figure 8, for age subgroups, the recommended PA distributions have significantly higher intensity than the observed PA distributions for both younger participants (aged 20–39) and older participants (aged 40–60). In addition, the proposed method recommends a slightly lower PA intensity for older participants than for younger participants. This echoes the recommendation that although the general adult guidelines also apply to older adults, older individuals should determine an appropriate PA level based on their fitness and functional abilities (e.g., Piercy et al., 2018). Regarding sex subgroups, Figure 9 shows that, although the observed PA distributions among males have lower intensity than those among females, the proposed method recommends similar PA distributions for both sexes. 
+
+# 6 Conclusion and Discussion 
+
+In this paper, we make the first attempt to learn ITR for functional treatments under unmeasured confounding. Under the proximal causal inference framework, we establish the value function iden-tification result based on which, together with penalized spline smoothing, we propose an algorithm to learn the optimal and smooth IFTR. Applying our proposed method to the NHANES accelerom-etry data, we obtain the first individualized PA distribution recommendation that optimizes the Triglyceride-Glucose index. It generally suggests participants increase their PA, while specific rec-ommendations may vary over covariate subgroups. Some of the recommendations are aligned with the current PA guidelines. Our simulation study also shows that the proposed method has better 18 performance than methods that do not account for unmeasured confounding. When the number of covariates is large, nonlinear IFTRs may involve a substantial number of basis coefficients, and the sample size of data may not be sufficient for the coefficients optimization. Variable selection is therefore important for reducing complexity and improving the interpretabil-ity of the estimated regime. Future work may incorporate group LASSO or related penalization methods to select relevant covariates. Such methods may also be useful for linear IFTRs, since covariates included for nuisance function estimation are not necessarily relevant to the treatment regime. For future work, we will study the theoretical properties of our proposed method. Moreover, our proposed method is applicable to find individualized PA distribution recommendations for other health outcomes if suitable proxy variables can be identified. The number of variables used in the NHANES analysis is relatively small. Future work could include more covariates when recommending the individualized PA distribution, for example, taking into account exercise goals and more health conditions, including hypertension, diabetes, etc. 
+
+Acknowledgments 
+
+Zhang’s research is partially supported by the George Washington University Cross-Disciplinary Research Fund. 
+
+Conflicts of Interest 
+
+The authors declare no conflicts of interest. 
+
+Data Availability Statement 
+
+The data that support the findings of this study are openly available in NHANES at https: //wwwn.cdc.gov/nchs/nhanes/default.aspx .
+
+# References 
+
+An, Y. and Hu, Y. (2012). Well-posedness of measurement error models for self-reported data. 
+
+Journal of Econometrics , 168(2):259–269. Barnard, M., Huling, J. D., and Wolfson, J. (2026). Causal inference for functional treatments with stochastic policies. arXiv preprint arXiv:2606.27518 .Blundell, R., Chen, X., and Kristensen, D. (2007). Semi-nonparametric IV estimation of shape-invariant engel curves. Econometrica , 75(6):1613–1669. Brinkley, J., Tsiatis, A., and Anstrom, K. J. (2010). A generalized estimator of the attributable benefit of an optimal treatment regime. Biometrics , 66(2):512–522. 19 Carroll, R. J., Chen, X., and Hu, Y. (2010). Identification and estimation of nonlinear models using two samples with nonclassical measurement errors. Journal of Nonparametric Statistics ,22(4):379–399. Chen, G., Zeng, D., and Kosorok, M. R. (2016). Personalized dose finding using outcome weighted learning. Journal of the American Statistical Association , 111(516):1509–1521. Chen, S., Wang, Y., Wang, Z., and Yang, Z. (2023). A unified framework of policy learning for con-textual bandit with confounding bias and missing observations. arXiv preprint arXiv:2303.11187 .Chen, X. and Christensen, T. M. (2018). Optimal sup-norm rates and uniform inference on non-linear functionals of nonparametric IV regression. Quantitative Economics , 9(1):39–84. Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W., and Robins, J. (2018). Double/debiased machine learning for treatment and structural parameters. The Econometrics Journal , 21(1):C1–C68. Chernozhukov, V., Demirer, M., Lewis, G., and Syrgkanis, V. (2019). Semi-parametric efficient policy learning with continuous actions. Advances in Neural Information Processing Systems , 32. Cui, Y. and Tchetgen Tchetgen, E. (2021). A semiparametric instrumental variable approach to optimal treatment regimes under endogeneity. Journal of the American Statistical Association ,116(533):162–173. Dikkala, N., Lewis, G., Mackey, L., and Syrgkanis, V. (2020). Minimax estimation of conditional moment models. Advances in Neural Information Processing Systems , 33:12248–12262. Fishman, E. I., Steeves, J. A., Zipunnikov, V., Koster, A., Berrigan, D., Harris, T. A., and Murphy, R. (2016). Association between objectively measured physical activity and mortality in NHANES. 
+
+Medicine and Science in Sports and Exercise , 48(7):1303. Jiang, Z., Cui, E., and Huling, J. D. (2026). Estimating causal effects of functional treatments with modified functional treatment policies. arXiv preprint arXiv:2602.09145 .Kallus, N. and Zhou, A. (2018). Policy evaluation and optimization with continuous treatments. In International Conference on Artificial Intelligence and Statistics , pages 1243–1251. PMLR. Laber, E. B. and Zhao, Y.-Q. (2015). Tree-based methods for individualized treatment regimes. 
+
+Biometrika , 102(3):501–514. Li, Y., Han, E., Hu, Y., Zhou, W., Qi, Z., Cui, Y., and Zhu, R. (2026). Reinforcement learning with continuous actions under unmeasured confounding. Journal of the American Statistical Association , pages 1–14. Lin, G., Miao, R., Sacheck, J., and Zhang, X. (2026). Precision physical activity prescription via reinforcement learning for functional actions. arXiv preprint arXiv:2605.19208 .20 Long, Z. and Zhang, X. (2025). Learning causal effect of physical activity distribution: an applica-tion of functional treatment effect estimation with unmeasured confounding. Journal of Applied Statistics , 52(14):2759–2776. Mastouri, A., Zhu, Y., Gultchin, L., Korba, A., Silva, R., Kusner, M., Gretton, A., and Muandet, K. (2021). Proximal causal learning with kernels: two-stage estimation and moment restriction. In International Conference on Machine Learning , pages 7512–7523. PMLR. Matabuena, M., Ghosal, A., Meiring, W., and Petersen, A. (2025). Predicting distributions of physical activity profiles in the National Health and Nutrition Examination Survey database using a partially linear Fr´ echet single index model. Biostatistics , 26(1):kxaf013. Matabuena, M. and Petersen, A. (2023). Distributional data analysis of accelerometer data from the NHANES database using nonparametric survey regression models. Journal of the Royal Statistical Society Series C: Applied Statistics , 72(2):294–313. Miao, W., Geng, Z., and Tchetgen Tchetgen, E. J. (2018). Identifying causal effects with proxy variables of an unmeasured confounder. Biometrika , 105(4):987–993. Nayak, S. S., Kuriyakose, D., Polisetty, L. D., Patil, A. A., Ameen, D., Bonu, R., Shetty, S. P., Biswas, P., Ulrich, M. T., Letafatkar, N., et al. (2024). Diagnostic and prognostic value of triglyc-eride glucose index: a comprehensive evaluation of meta-analysis. Cardiovascular Diabetology ,23(1):310. Newey, W. K. and Powell, J. L. (2003). Instrumental variable estimation of nonparametric models. 
+
+Econometrica , 71(5):1565–1578. Pescatello, L. S., Wu, Y., Panza, G. A., Zaleski, A., and Guidry, M. (2021). Development of a novel clinical decision support system for exercise prescription among patients with multiple cardiovascular disease risk factors. Mayo Clinic Proceedings: Innovations, Quality & Outcomes ,5(1):193–203. Petersen, A., Liu, X., and Divani, A. A. (2021). Wasserstein F-tests and confidence bands for the Fr´ echet regression of density response curves. Annals of Statistics , 49(1):590–611. Petersen, A. and M¨ uller, H.-G. (2016). Functional data analysis for density functions by transfor-mation to a Hilbert space. Annals of Statistics , pages 183–218. Piercy, K. L., Troiano, R. P., Ballard, R. M., Carlson, S. A., Fulton, J. E., Galuska, D. A., George, S. M., and Olson, R. D. (2018). The physical activity guidelines for Americans. JAMA ,320(19):2020–2028. Pini, A. and Vantini, S. (2017). Interval-wise testing for functional data. Journal of Nonparametric Statistics , 29(2):407–424. 21 Qi, Z., Miao, R., and Zhang, X. (2024). Proximal learning for individualized treatment regimes under unmeasured confounding. Journal of the American Statistical Association , 119(546):915– 928. Qian, M. and Murphy, S. A. (2011). Performance guarantees for individualized treatment rules. 
+
+Annals of Statistics , 39(2):1180. Qiu, H., Carone, M., Sadikova, E., Petukhova, M., Kessler, R. C., and Luedtke, A. (2021). Optimal individualized decision rules using instrumental variable methods. Journal of the American Statistical Association , 116(533):174–191. Ramsay, J. O. and Silverman, B. W. (2005). Functional data analysis . Springer Series in Statistics. Springer New York, 2 edition. Rogovchenko, V., Sibu, A., and Ni, Y. (2024). Scalar-function causal discovery for generating causal hypotheses with observational wearable device data. In Pacific Symposium on Biocomputing. ,volume 29, pages 201–213. Schick, A. (1986). On asymptotically efficient estimation in semiparametric models. Annals of Statistics , pages 1139–1151. Schmid, D., Ricci, C., and Leitzmann, M. F. (2015). Associations of objectively assessed physical activity and sedentary time with all-cause mortality in us adults: the NHANES study. PLOS ONE , 10(3):e0119591. Schweisthal, J., Frauen, D., Melnychuk, V., and Feuerriegel, S. (2023). Reliable off-policy learning for dosage combinations. Advances in Neural Information Processing Systems , 36:67900–67924. Shen, T. and Cui, Y. (2023). Optimal treatment regimes for proximal causal learning. Advances in Neural Information Processing Systems , 36:47735–47748. Shi, C., Fan, A., Song, R., and Lu, W. (2018). High-dimensional A-learning for optimal dynamic treatment regimes. Annals of Statistics , 46(3):925. Shiu, J.-L. and Hu, Y. (2013). Identification and estimation of nonlinear dynamic panel data models with unobserved covariates. Journal of Econometrics , 175(2):116–131. Tan, R., Huang, W., Zhang, Z., and Yin, G. (2025). Causal effect of functional treatment. Journal of Machine Learning Research , 26(91):1–39. Tao, L.-C., Xu, J.-n., Wang, T.-t., Hua, F., and Li, J.-J. (2022). Triglyceride-glucose index as a marker in cardiovascular diseases: landscape and limitations. Cardiovascular Diabetology ,21(1):68. Tchetgen Tchetgen, E. J., Ying, A., Cui, Y., Shi, X., and Miao, W. (2024). An introduction to proximal causal inference. Statistical Science , 39(3):375–390. 22 To, Q. G., Stanton, R., Schoeppe, S., Doering, T., and Vandelanotte, C. (2022). Differences in physical activity between weekdays and weekend days among us children and adults: Cross-sectional analysis of NHANES 2011–2014 data. Preventive Medicine Reports , 28:101892. Wang, J., Wong, R. K. W., Zhang, X., and Chan, K. C. G. (2026). Flexible functional treatment effect estimation. Journal of Machine Learning Research , 27(16):1–48. Whitfield, G. P., Riebe, D., Magal, M., and Liguori, G. (2017). Applying the ACSM preparticipa-tion screening algorithm to US adults, NHANES 2001–04. Medicine and Science in Sports and Exercise , 49(10):2056. Williams, C. and Seeger, M. (2000). Using the Nystr¨ om method to speed up kernel machines. 
+
+Advances in Neural Information Processing Systems , 13. Zhang, B., Tsiatis, A. A., Davidian, M., Zhang, M., and Laber, E. (2012a). Estimating optimal treatment regimes from a classification perspective. Stat , 1(1):103–114. Zhang, B., Tsiatis, A. A., Laber, E. B., and Davidian, M. (2012b). A robust method for estimating optimal treatment regimes. Biometrics , 68(4):1010–1018. Zhang, R., Imaizumi, M., Sch¨ olkopf, B., and Muandet, K. (2023). Instrumental variable regression via kernel maximum moment loss. Journal of Causal Inference , 11(1):20220073. Zhang, X., Xue, W., and Wang, Q. (2021). Covariate balancing functional propensity score for functional treatments in cross-sectional observational studies. Computational Statistics & Data Analysis , 163:107303. Zhao, P., Josse, J., and Yang, S. (2025a). Efficient and robust transfer learning of optimal indi-vidualized treatment regimes with right-censored survival data. Journal of Machine Learning Research , 26(48):1–54. Zhao, Y., Luo, X., Sobel, M. E., Lindquist, M. A., and Caffo, B. S. (2025b). Causal functional me-diation analysis with an application to functional magnetic resonance imaging data. Biostatistics ,26(1):kxaf019. Zhao, Y., Zeng, D., Rush, A. J., and Kosorok, M. R. (2012). Estimating individualized treat-ment rules using outcome weighted learning. Journal of the American Statistical Association ,107(499):1106–1118. Zou, H., Li, B., Han, J., Chen, S., Ding, X., and Cui, P. (2022). Counterfactual prediction for outcome-oriented treatments. In International Conference on Machine Learning , pages 27693– 27706. PMLR. 23 Appendix 
+
+The appendix includes the proof of Theorem 1, initialization for the linear IFTR optimization, additional simulation results for linear IFTR, and detailed information on the variables used in the real data analysis. 
+
+# A Proof of Theorem 1 
+
+First, we show that 
+
+E{Y (d)|X, Z } = E[E{Y (d)|X, U, Z }| X, Z ]= E[E{Y (d)|X, U }| X, Z ]= E[E{Y |X, U, A = d(X, Z )}| X, Z ]= E[E{h0(W, d (X, Z ), X )|X, U }| X, Z ]= E[E{h0(W, d (X, Z ), X )|X, U, Z }| X, Z ]= E{h(W, d (X, Z ), X )|X, Z }.
+
+The second, third and fifth equality are due to Assumption 2, and the fourth equality is shown by Theorem 1 in Miao et al. (2018) under Assumptions 3 (1) and 4. Therefore, we have 
+
+V (d) = E{Y (d)}
+
+= E[E{Y (d)|X, Z }]= E{E[h{W, d (X, Z ), X }| X, Z ]}
+
+= E{h(W, d (X, Z ), X )}.
+
+# B Initialization for Linear IFTR 
+
+We assume 
+
+E(A(t)|V ) = β0(t) + 
+
+> q
+
+X
+
+> k=1
+
+Vkβk(t) ≈
+
+> q
+
+X
+
+> k=0
+> J
+
+X
+
+> j=1
+
+bk,j Vkθj (t) = ˜V ⊤Bθ(t)⊤.
+
+Let ˜V be the n × (q + 1) matrix with ˜V = [ 1, V1, · · · , Vq], and b = vec (B⊤) = [ b⊤ 
+
+> 0
+
+, b1⊤, ..., bq⊤].
+
+Let A and Θ( t) be the matrices that evaluate A(·) and θ(·) at points t = ( t1, ..., t N ), respectively. Then, we have 
+
+E(vec (A⊤)) = [ ˜V ⊗ Θ( t)]b.
+
+The ordinary least squares (OLS) estimator (Ramsay and Silverman, 2005) ˆbols =
+
+h
+
+( ˜V⊤ ˜V) ⊗ (Θ ⊤Θ) 
+
+i−1
+
+( ˜V ⊗ Θ)⊤vec (A⊤),
+
+24 is then obtained and used as the initial value for b. We further transform it back to the matrix form to obtain B0, the initial values for B.
+
+# C Additional simulation results 
+
+To assess sensitivity to the number of basis functions when estimating linear IFTR, we conduct additional simulations for scenarios L1 and L2, using 15 cubic B-spline basis functions to expand the coefficient functions. The boxplots of estimated values from four methods for n = 500 and 
+
+n = 1 , 000 are shown in Figures C1 and C2. The results obtained using 15 basis functions are similar to those obtained using 7 basis functions. In the L1 scenario, the boxplots for d1, d2, and dORC contain several extreme outliers. To facilitate a clearer comparison of the boxplots, we truncate the x-axis limits in these figures. For completeness, the original boxplots with the full x-axis are provided in Figure C3.  
+
+> (a) L1 (b) L2
+
+Figure C1: The boxplots of values in scenarios L1 and L2 with n = 500 and 15 basis functions.  
+
+> (a) L1 (b) L2
+
+Figure C2: The boxplots of values in scenarios L1 and L2 with n = 1 , 000 and 15 basis functions. 25 (a) L1 ( n = 500) (b) L1 ( n = 1 , 000) 
+
+Figure C3: The original boxplots of values in scenarios L1 with 15 basis functions. 
+
+# D Variables used in real data analysis 
+
+The detailed information for variables used in NHANES analysis is listed in table D1. Table D1: Proxy variables in the NHANES data. Proxy type Variable Description Coding W MCQ300a Close relative had heart attack? 1 = Yes, 2 = No MCQ300c Close relative had diabetes? 1 = Yes, 2 = No Z DEQ034D Use sunscreen? 1 = Always, 2 = Most of the time, 3 = Sometimes, 4 = Rarely, 5 = Never X BMXBMI Body mass index RIDAGEYR Age in years RIAGENDR Gender 1 = Male, 2 = Female RIDRETH3 Race 1 = Mexican American; 2 = Other Hispanic; 3 = Non-Hispanic White; 4 = Non-Hispanic Black; 6 = Non-Hispanic Asian; 7 = Other race CDQ001 Ever had pain or discomfort in chest 1 = Yes, 2 = No CDQ010 Shortness of breath on stairs/inclines 1 = Yes, 2 = No 26
