@@ -1,0 +1,908 @@
+Title: 2608.04208v1.pdf
+
+URL Source: https://arxiv.org/pdf/2608.04208v1
+
+Published Time: Thu, 06 Aug 2026 00:09:57 GMT
+
+Number of Pages: 20
+
+Markdown Content:
+Estimating Heterogeneity in Travel Mode Choice Shifts with Causal Forests 
+
+Rishabh S. Chauhan 
+
+Industry Assistant Professor 
+
+Center for Urban Science and Progress, Tandon School of Engineering 
+
+New York University, Brooklyn, NY 11201 
+
+Email:  rsc9107@nyu.edu 
+
+Mahdi Ghadimi* 
+
+Graduate Research Assistant 
+
+Center for Urban Science and Progress, Tandon School of Engineering 
+
+New York University, Brooklyn, NY 11201 
+
+Email:  mg8786@nyu.edu 
+
+Lishun Liu Gaara 
+
+Graduate Research Assistant 
+
+Center for Urban Science and Progress, Tandon School of Engineering 
+
+New York University, Brooklyn, NY 11201 
+
+Email:  ll5548@nyu.edu 
+
+Total Number of Pages: 20 
+
+*Corresponding Author Rishabh S. Chauhan, Mahdi Ghadimi, and Lishun Liu Gaara 
+
+# 2
+
+## ABSTRACT 
+
+Objectives: While causal analysis of travel behavior is an emerging field, estimating heterogeneity in mode choice through causal modeling remains unexplored. This study demonstrates the application of a novel causal method, causal forest, to quantify the heterogeneity in travel mode choice shifts caused by the COVID-19 pandemic. 
+
+Methods: We applied causal forests, a non-parametric causal machine learning method, to 802,935 trip records from the 2017 and 2022 waves of the National Household Travel Survey. The 2017 wave serves as the pre-pandemic control group, while the 2022 wave represents the treatment condition. Within the potential outcomes framework, we estimate average treatment effects (ATE), heterogeneous treatment effects (HTE), and conditional average treatment effects (CATE) across diverse socio-demographic groups and trip characteristics. 
+
+Findings: Our results reveal an estimated ATE of a 1.86 percentage point (pp) increase in car-mode share, contrasted with decreases of 0.38 pp and 1.57 pp in public transit and walking, respectively. The largest increases in car use appeared for short-distance trips (one mile or less), households with annual incomes exceeding $200,000, and female travelers. 
+
+Novelty: This is one of the first applications of causal forests to travel mode choice, and the first to use causal machine learning to estimate the pandemic's causal effect on mode choice analysis. 
+
+Practical Applications:  This study discusses methodological advantages, inherent assumptions, and limitations of causal forests within the context of transportation planning. This methodology is applied to COVID-19 travel data to illustrate how causal heterogeneity analysis can offer a deeper understanding of changes in mode choice. These insights are valuable for planners and policymakers in making policies related to mode shifts under an intervention. Rishabh S. Chauhan, Mahdi Ghadimi, and Lishun Liu Gaara 
+
+# 3
+
+INTRODUCTION 
+
+Travel behavior analysis is crucial for effective transportation planning. It has traditionally been conducted 
+
+using discrete choice modeling and random utility maximization (McFadden 2001; Derrible 2025). Such a 
+
+statistically driven framework allows researchers to quantify associations between demographics, built 
+
+environments, and mode choices. As computational capabilities expanded, machine learning and deep learning 
+
+algorithms, particularly artificial neural networks and gradient boosting machines, emerged as promising 
+
+alternatives. These advanced algorithms drastically improve predictive accuracy by capturing complex, non-linear 
+
+relationships from travel data (Karlaftis and Vlahogianni 2011). However, almost all statistical, machine learning, 
+
+and deep learning methods suffer from a fundamental conceptual roadblock: causality (Chauhan, Riis, et al. 2024; 
+
+Pearl and Mackenzie 2018). These methods are built to study correlations (or associations), not causation, and thus, 
+
+they cannot explain why something happened, differentiate between cause and effect, or estimate the effect of an 
+
+intervention (Pearl and Mackenzie 2018). 
+
+In fields such as technology and medical science, randomized controlled trials, frequently implemented as 
+
+A/B testing, represent the gold standard for extracting unconfounded causal effects (Imbens and Rubin 2015; 
+
+Kohavi et al. 2009). However, conducting large-scale randomized trials to analyze travel behavior would likely be 
+
+infeasible and unethical. A preferred approach would estimate causal effects directly from observational data. As 
+
+recently demonstrated by Chauhan et al. (2026) causal discovery and inference methods provide valuable 
+
+opportunities to examine mode choice within a causal framework. This approach allows tracing the decision-making 
+
+process through a structural causal graph and estimating quantitative causal effects from travel survey data. 
+
+Still, a global causal effect relies on broad generalization of the population; however, travel behavior is 
+
+notoriously heterogeneous. Different socioeconomic demographic groups have different Value of Time (VOT), 
+
+affordability, and travel preferences (Hossan et al. 2016). Incorporating heterogeneity in causal mode choice 
+
+analysis allows for different estimates across various population groups, reflecting the reality that different 
+
+demographic groups make choices in unique ways. To fill this critical methodological gap, this study employs a 
+
+recently developed nonparametric causal machine learning method, known as causal forests, to study mode choice. 
+
+Causal forests are grounded in causality and are recognized for their ability to estimate heterogeneous treatment 
+
+effects (Athey and Wager 2019). 
+
+The COVID-19 pandemic serves as a significant case study for this analysis due to its unparalleled impact 
+
+on global mobility, drastically altering travel behavior worldwide (De Vos 2020; Salon, Conway, Capasso Da Silva, 
+
+et al. 2021). This disruption provides a unique opportunity to demonstrate the effectiveness of causal forests in 
+
+estimating heterogeneous causal effects. 
+
+By analyzing over 800,000 trip records from the 2017 and 2022 waves of the National Household Travel Survey (NHTS), we utilize Causal Forests to isolate the true treatment effect of the pandemic on car, public transit, and walking mode choices. We focus on estimating heterogeneous treatment effects across key sociodemographic and trip characteristics to show which groups changed their travel behavior and by how much. 
+
+LITERATURE REVIEW 
+
+Although causality may be an intuitive concept, its formal development as a computational framework is 
+
+relatively recent. The earliest application of potential outcomes can be traced to Neyman’s study of a hypothetical 
+
+agricultural experiment (Neyman 1923; Rubin 2005). Rubin (Rubin 1974) subsequently extended Neyman's notations to formalize the potential outcomes framework, enabling the estimation of causal effects by comparing outcomes under treatment versus control. The foundation for using propensity scores to estimate causal effects in observational studies was later laid by Rosenbaum and Rubin (Rosenbaum and Rubin 1983). Furthermore, Pearl (Pearl 2000) introduced Structural Causal Models (SCM), establishing a mathematical framework for analyzing causes and counterfactuals. In recent decades, the causal effects of interventions have been evaluated using observational data across fields such as medicine, epidemiology, biostatistics, economics, and other social sciences (Dahabreh and Bibbins-Domingo 2024). 
+
+Causal analysis has seen very limited application in the context of travel mode choice. Initial efforts involved using Bayesian Networks for mode choice analysis (Xie and Waller 2010; Ma et al. 2017). Later, Monteiro (Monteiro 2020) applied a causal discovery algorithm to construct a mode choice causal graph. To estimate both Rishabh S. Chauhan, Mahdi Ghadimi, and Lishun Liu Gaara 
+
+# 4
+
+causal graphs and causal effects, Chauhan et al. (2024) introduced a framework integrating causal discovery algorithms with Structural Equation Models (SEM). More recently, researchers have combined causal discovery with causal inference techniques to investigate mode choice behavior (Chauhan et al. 2026, 2025). Additionally, quasi-experimental approaches, including propensity score matching and difference-in-differences, have been utilized to evaluate the effects of specific interventions, like the addition of a new metro line or stations, on travel mode choice (Chiu 2022; Dai et al. 2020). 
+
+To evaluate heterogeneity in causal effects, Athey and Imbens (Athey and Imbens 2016) developed the causal trees methodology. Wager and Athey (Wager and Athey 2018) extended this idea to develop causal forests based on the random forest framework. Causal forests are nonparametric and can estimate heterogeneous treatment effects (HTE). Despite these advantages, causal forests have rarely been used in travel mode analysis. As per our knowledge, Blättler et al. (2024) is the only study to do so. Blättler et al. (2024) examined how a fare-free public transit policy for overnight visitors affected travel mode choice to a tourist destination in Switzerland. However, their research was restricted in scope, focusing exclusively on tourism-related travel to a single location. Furthermore, while their work analyzed conditional average treatment effects (CATE) among different guest categories, it yielded only positive outcomes, and they offered limited insight into how population heterogeneity manifests across distinct trip types and socio-demographic variables. 
+
+The COVID-19 pandemic was a major disruption to travel, driven by changes such as remote work, online shopping, risk perception, and travel restrictions. The effects of the pandemic on travel behavior are extensively studied (Drummond and Hasnine 2022; Conway et al. 2020; Shamshiripour et al. 2020; Salon et al. 2022; Mohammadi et al. 2022). Longitudinal surveys were conducted to track the evolution of these behavioral shifts (Chauhan, Bhagat-Conway, et al. 2024; Chauhan, Conway, et al. 2021; Salon et al. 2020). Although these studies provide deep insight into travel mode choice shifts, the existing literature relies on correlation-based methodologies (Salon, Conway, Capasso Da Silva, et al. 2021; Javadinasr et al. 2022; Magassy et al. 2023), leaving a critical gap in causal understanding. 
+
+Our study demonstrates the application of causal forests to analyze the heterogeneous shifts in travel mode choice. We apply this methodology to examine the shifts in travel mode choices caused by the COVID-19 pandemic. Our research fills the gap in literature in two ways: (i) It is one of the first applications of causal forests within the domain of travel mode choice analysis. (ii) To the best of our knowledge, this work is the first attempt to implement a causal inference framework, specifically causal machine learning, to evaluate the causal impact of the pandemic on mode choices. (iii) This article offers guidance for future research on the effective application, interpretation, strengths, and limitations of this methodology for mode choice analysis. 
+
+METHODOLOGY 
+
+Survey Data and Sample Selection 
+
+This study utilizes the 2017 and 2022 National Household Travel Survey (NHTS) datasets (Federal Highway Administration 2022). The 2017 wave establishes the pre-pandemic control baseline, while the 2022 wave captures the pandemic-era treatment condition. The 2022 wave was conducted between January 2022 and January 2023, which is later in the pandemic when travel began to rebound (International Trade Administration, n.d.). Thus, the NHTS 2022 wave was deemed an appropriate proxy for more stable travel behavior later in the pandemic. 
+
+During initial data processing, we removed any trip records containing indeterminate responses (e.g., "I don't know" or "appropriate skip"). We also strictly limited the analytical scope to adult decision-makers, thereby excluding all respondents under 18. To distinguish the temporal cohorts, we constructed a binary treatment indicator 
+
+𝑊 𝑖 . Trips originating from the 2017 baseline received a value of  𝑊 𝑖 = 0 . Trips from the 2022 wave received  𝑊 𝑖 =1. The final harmonized dataset encompasses 802,935 independent trip observations. 
+
+The analytical outcome space centers on three binary dependent variables. Each represents a primary travel mode: 
+
+I.  Car_x : Drove a private vehicle (car, pickup truck, SUV, or van). 
+
+II.  Public_x : Used shared public transit (bus, subway, commuter rail, streetcar, or Amtrak). 
+
+III.  Walk_x : Walked as the primary mode of travel. Rishabh S. Chauhan, Mahdi Ghadimi, and Lishun Liu Gaara 
+
+# 5
+
+Variables and Covariates 
+
+To truly isolate the pandemic's temporal shock, the estimation must be conditioned on a comprehensive matrix of exogenous covariates. As detailed in  Table 1 , the feature space spans geographic, personal, household, and trip-level dimensions. Passing these specific vectors into the causal algorithm controls for underlying demographic drift over the five-year survey gap. This ensures that any estimated modal shift is attributable to the pandemic era rather than to sampling variance. 
+
+TABLE 1 Descriptive Statistics and Covariate Definitions 
+
+Group  Variable  Description  Category  Interpretation  %
+
+Place characteristic 
+
+Region  Census region classification for home address 
+
+1 Northeast  15.95 
+
+2 Midwest  16.00 
+
+3 South  43.05 
+
+4 West  25.00 
+
+Urban area  Household urban area classification, based on 2020 TIGER/Line Shapefile 
+
+0 Outside of urban area or urban cluster 
+
+21.68 
+
+1 In an urban area or urban cluster 
+
+78.32 
+
+Personal characteristic 
+
+Sex  Male  0 No  53.80 
+
+1 Yes  46.20 
+
+Age  Traveler's age (years)  1 18-29  10.15 
+
+2 30-45  22.60 
+
+3 46-65  40.57 
+
+4 65+  26.68 
+
+Education  Educational Attainment  1 Less than a high school graduate 
+
+2.83 
+
+2 High school graduate or GED 
+
+17.02 
+
+3 Some college or associates degree 
+
+29.29 
+
+4 Bachelor's degree 
+
+26.67 
+
+5 Graduate degree or professional degree 
+
+24.19 
+
+Household characteristics 
+
+Household income  Household yearly income (USD) 
+
+1 $24,999 or less  13.22 
+
+2 $25,000 -$49,999 
+
+19.49 
+
+3 $50,000 -$99,999 
+
+33.13 
+
+4 $100,000 -$199,999 
+
+26.35 
+
+5 $200,000 or more 
+
+7.82 
+
+Household size  Count of household members 
+
+1 1 18.97 
+
+2 2 46.10 
+
+3 3 or more  34.93 
+
+Vehicle ownership  Count of Household vehicles 
+
+0 0 2.33 
+
+1 1 23.61 Rishabh S. Chauhan, Mahdi Ghadimi, and Lishun Liu Gaara 
+
+# 6
+
+2 2 or more  74.07 
+
+Trip characteristics 
+
+Trip distance  Trip distance (miles)  1 ≤ 1  19.19 
+
+2 > 1 and ≤ 5  40.70 
+
+3 > 5 and ≤ 20  30.29 
+
+4 > 20 and ≤ 50  7.34 
+
+5 > 50  2.49 
+
+Trip purpose  Purpose of trip  0 Not home-based  34.08 
+
+1 Home-based  65.92 
+
+Weekend trip  Trip of weekend  0 No  76.64 
+
+1 Yes  23.36 
+
+Year  Year of data collection  0 2017  96.76 
+
+1 2022  3.24 
+
+Mode choice  Public transit  Used Public Transit (Public or commuter bus, Subway or elevated rail, Commuter rail, Street car or trolley car, or Amtrak) 
+
+0 No  98.71 
+
+1 Yes  1.29 
+
+Car  Drove a private vehicle (Car, Pickup truck, SUV, or Van) 
+
+0 No  10.16 
+
+1 Yes  89.84 
+
+Walking  Walk  0 No  91.13 
+
+1 Yes  8.87 
+
+Total number of observations  802,935 
+
+Potential Outcomes Framework 
+
+This analysis utilizes the Rubin Causal Model (Rubin 1974) to formally identify causal effects from observational cross-sections. Let  𝑖 = 1, … , 𝑁  index the individual trip observations. Let  𝑊 𝑖 ∈ {0,1}  denote the binary treatment assignment. For each unit  𝑖 , the framework posits two distinct potential outcomes.  𝑌 𝑖 (1)  denotes the mode choice decision if exposed to the pandemic environment, and  𝑌 𝑖 (0)  denotes the mode choice decision if the unit  𝑖  existed in the pre-pandemic baseline. 
+
+The fundamental causal effect of the temporal shock on an individual unit is defined as the arithmetic difference between these potential outcomes in Equation 1: 
+
+𝜏 𝑖 = 𝑌 𝑖 (1) − 𝑌 𝑖 (0) (1) 
+
+As Holland (Holland 1986) formalized, observing both potential outcomes for a single unit simultaneously is impossible. Therefore, the observed outcome  𝑌 𝑖  functions as a combination of the potential outcomes mapped to the realized treatment assignment, as shown in Equation 2: 
+
+𝑌 𝑖 = 𝑊 𝑖 𝑌 𝑖 (1) + (1 − 𝑊 𝑖 )𝑌 𝑖 (0) (2) 
+
+Because individual-level effects ( 𝜏 𝑖  ) contain unobservable counterfactuals, estimation requires several assumptions. First, Unconfoundedness assumes that, conditional on the pre-treatment covariate vector  𝑋 𝑖 , the treatment assignment is statistically independent of the potential outcomes as formalized in Equation 3: 
+
+{𝑌 𝑖 (0), 𝑌 𝑖 (1)} ⫫ 𝑊 𝑖 ∣ 𝑋 𝑖 (3) 
+
+Second, the Overlap (Positivity) assumption mandates that every covariate profile  𝑥  maintains a non-zero probability of assignment to either condition (Equation 4): 
+
+0 < 𝑃( 𝑊 𝑖 = 1 ∣ ∣ 𝑋 𝑖 = 𝑥 ) < 1 ∀𝑥 ∈ 𝑋 (4) Rishabh S. Chauhan, Mahdi Ghadimi, and Lishun Liu Gaara 
+
+# 7
+
+Average Treatment Effect and Selection Bias 
+
+Observational survey data inherently contain selection bias due to changing demographic compositions across sampling waves. As demonstrated by Holland (1986), a naive difference in observed means actually yields a composite of the true causal effect and selection bias (Equation 5): 
+
+𝐸[ 𝑌 ∣ 𝑊 = 1 ] − 𝐸[ 𝑌 ∣ 𝑊 = 0 ] = 𝐸[ 𝑌(1) − 𝑌(0) ∣ 𝑊 = 1 ] ⏟
+
+> 𝐴𝑇𝑇
+
++ (𝐸[ 𝑌(0) ∣ 𝑊 = 1 ] − 𝐸[ 𝑌(0) ∣ 𝑊 = 0 ]) ⏟
+
+> 𝑆𝑒𝑙𝑒𝑐𝑡𝑖𝑜𝑛 𝐵𝑖𝑎𝑠
+
+(5) 
+
+In this equation,  𝐸[𝑌(1) − 𝑌(0) ∣ 𝑊 = 1]  is defined as the Average Treatment Effect on the Treated (ATT). Rigorous causal frameworks seek to isolate this ATT by removing the selection bias under appropriate identification assumptions. 
+
+The Average Treatment Effect (ATE) represents the expected mean difference between the potential outcome under treatment and control outcomes across the population, as presented in Equation 6 (Rubin 1974): 
+
+𝜏 𝐴𝑇𝐸 = 𝐸[𝑌 𝑖 (1) − 𝑌 𝑖 (0)] (6) 
+
+The causal forest first estimates Conditional Average Treatment Effects (CATE),  𝜏̂(𝑋 𝑖 ), and then calculates ATE by averaging them, as shown in Equation 7 (Wager and Athey 2018): 
+
+𝜏 𝐴𝑇𝐸 = 1𝑛 ∑ 𝜏̂(𝑋 𝑖 )
+
+> 𝑛 𝑖=1
+
+(7) 
+
+Covariate Balance 
+
+Validating the removal of selection bias requires assessing the distributional balance of covariates between the treated and control cohorts. This study utilizes the Standardized Mean Difference (SMD) (Austin 2009) as a scale-free diagnostic metric. For any specific covariate, the SMD is calculated as follows in Equation 8: 
+
+SMD = ∣ 𝑋 ˉ1 − 𝑋 ˉ0 ∣√𝑆 12 + 𝑆 02
+
+2(8) 
+
+Here,  𝑋 ˉ1 and  𝑋 ˉ0 denote the sample means of the covariate in the treatment (2022 cohort) and control (2017 cohort) groups, respectively.  𝑆 12 and  𝑆 02 denote their corresponding sample variances. In observational causal inference, an absolute SMD threshold of 0.1 or below generally indicates that covariate balance has been successfully achieved. 
+
+Heterogeneous Treatment Effects (HTEs) via Causal Forests 
+
+While the ATE provides a population-level summary, it obscures distributional impact variances. Measuring these localized shifts requires estimating HTEs. The mathematical parameter of interest is the CATE, which defines the expected causal impact conditional on a specific covariate profile  𝑥  (Equation 9): 
+
+𝜏(𝑥) = 𝐸[ 𝑌 𝑖 (1) − 𝑌 𝑖 (0) ∣ ∣ 𝑋 𝑖 = 𝑥 ] (9) 
+
+CATE is estimated using Causal Forests. Building upon the foundational architecture of Random Forests and Causal Trees, causal forests pivot away from minimizing standard predictive error. Instead, Athey and Imbens (2016) adapted the tree-splitting criterion to maximize heterogeneity in the treatment effect itself. 
+
+Wager and Athey (2018) expanded this concept into a forest ensemble. The algorithm recursively partitions the covariate space  𝑋  into terminal nodes. Within each causal tree, the localized treatment effect for any terminal leaf node  𝐿  containing a profile  𝑥  is estimated by contrasting the treated and control outcomes strictly within that leaf, as shown in Equation 10 (Athey and Imbens 2016): 
+
+𝜏̂(𝑥) = 1∣ {𝑖: 𝑊 𝑖 = 1, 𝑋 𝑖 ∈ 𝐿(𝑥)} ∣ ∑ 𝑌 𝑖 𝑖:𝑊 𝑖 =1,𝑋 𝑖 ∈𝐿(𝑥) 
+
+− 1∣ {𝑖: 𝑊 𝑖 = 0, 𝑋 𝑖 ∈ 𝐿(𝑥)} ∣ ∑ 𝑌 𝑖 𝑖:𝑊 𝑖 =0,𝑋 𝑖 ∈𝐿(𝑥) 
+
+(10) Rishabh S. Chauhan, Mahdi Ghadimi, and Lishun Liu Gaara 
+
+# 8
+
+where  𝐿(𝑥)  denotes the terminal leaf containing the target covariate vector  𝑥 , and  ∣ {𝑖: 𝑊 𝑖 = 𝑤, 𝑋 𝑖 ∈ 𝐿(𝑥)} ∣ 
+
+represents the cardinality of units under treatment status  𝑤  residing within that specific leaf. 
+
+The leaf-specific treatment estimates across all trees in the ensemble are averaged by the causal forests (Wager and Athey 2018) (Equation 11): 
+
+𝜏̂(𝑥) = 1𝑇 ∑ 𝜏̂ 𝑡 (𝑥) 
+
+> 𝑇 𝑡=1
+
+(11) 
+
+Where  𝜏̂ 𝑡 (𝑥)  is the treatment estimate from the terminal leaf containing x in tree t, and T is the total number of trees in the forest. 
+
+Honest Estimation and Inference 
+
+Traditional decision trees exhibit severe overfitting when assessing unobservable parameters due to adaptive splitting. This is the practice of using identical data to both construct the tree topology and compute the leaf parameters. Wager and Athey (2018) mitigate this via an architectural constraint termed the Honesty property. 
+
+During algorithm execution, the training data is randomly partitioned into a splitting subsample and an estimation subsample. The model utilizes the splitting subsample exclusively to determine feature thresholds and define the  𝐿(𝑥)  geometry. It then calculates the actual causal parameters  𝜏̂(𝑥)  using only the orthogonal estimation subsample. Under regularity conditions, the honest estimation provides consistent estimates (Wager and Athey 2018). 
+
+Conditional Average Treatment Effect (CATE) 
+
+CATE profiles were calculated to estimate the variation in conditional treatment effect across observed covariate categories using the following equation (Equation 12): 
+
+𝜏̂ 𝑔 = 1𝑛 𝑔 
+
+∑ 𝜏̂(𝑋 𝑖 )
+
+> 𝑖:𝑋 𝑖 =𝑔
+
+(12) 
+
+where  𝑛 𝑔  represents the number of observations in category g. The estimated CATE profiles are accompanied by bootstrap confidence intervals computed by resampling the resulting CATE values within each subgroup. 
+
+Feature importance 
+
+The feature importance scores were extracted from the fitted causal forest model. These scores represent the relative contribution of the covariates in explaining heterogeneity in the estimated treatment effects (Wager and Athey 2018). A larger value of feature importance implies greater importance. 
+
+Computational Tools 
+
+All data ingestion and harmonization processes were executed via  Python  utilizing  pandas  and  scikit-learn . The honest causal forest architecture was initialized and trained using the  Econml  library. Visual diagnostic outputs were synthesized with  seaborn . Global random seeds were strictly declared to guarantee computational reproducibility across all stochastic tree-splitting and bootstrap resampling iterations. 
+
+RESULTS 
+
+Preliminary Data Analysis and Variable Independence 
+
+Before applying the causal framework, we examined the foundational relationships between our study variables using a Spearman rank correlation matrix. Because our feature space consists primarily of ordinal categorical and binary variables, the Spearman method provides a more accurate nonparametric measure of monotonic relationships than the standard Pearson correlation. 
+
+As illustrated in  Figure 1 , the correlation values between any pair of independent covariates remain strictly below 0.5. The highest observed correlation in the feature space is between household vehicle count and household size, at 0.47, which is expected and falls below the commonly accepted multicollinearity threshold. It is worth noting that the correlation between the dependent outcome variables for car usage and walking is highly negative (-0.93). However, because the causal forest estimates treatment effects for each transport mode in entirely separate models, this high negative correlation in the outcome space does not confound the estimates. Rishabh S. Chauhan, Mahdi Ghadimi, and Lishun Liu Gaara 
+
+# 9
+
+Figure 1: Spearman correlation matrix of independent covariates and dependent mode choice variables. 
+
+Covariate Balance and the Standardized Mean Difference 
+
+Validating the causal framework requires proving that our control group (2017) and treatment group (2022) are structurally comparable. We visualized the Standardized Mean Differences (SMD) across all independent variables using a Love plot ( Figure 2 ). 
+
+Strict causal inference literature generally targets an absolute SMD threshold below 0.1 for perfect balance, though values up to 0.2 are frequently accepted in complex observational studies  (Austin 2011) . The Love plot reveals that almost all demographic and spatial variables fall comfortably within this acceptable threshold. We observe slight imbalances that exceed the strict 0.2 threshold in trip purpose and household income. Specifically, the 2017 baseline cohort had a slightly higher proportion of home-based trips and of higher-income households than the 2022 sample. 
+
+In traditional propensity score matching, this residual imbalance may require additional data trimming. This is not required for Causal Forest since tree-based ensemble methods natively partition the covariate space and adjust for localized imbalances during the splitting process; thus, the algorithm successfully neutralizes these slight distributional drifts without requiring the artificial destruction of valid survey data. This highlights the specific architectural advantage of the Causal Forest. Rishabh S. Chauhan, Mahdi Ghadimi, and Lishun Liu Gaara 
+
+# 10 
+
+Figure 2 Love plot demonstrating covariate balance via standardized mean differences between the 2017 and 2022 survey samples. 
+
+The Average Treatment Effect (ATE) 
+
+Conditional on the observed covariates, the causal forest estimated that the transition from 2017 to 2022 increased the probability of car use by an average of 1.86 percentage points (pp), decreased the probability of public transit use by 0.38 pp, and decreased the probability of walking by 1.57 pp. It should be noted that these are average treatment effects; the distribution of estimated individual treatment effects across the sample (Figure 3) provides a more comprehensive view of treatment heterogeneity. The distribution indicates that, for at least a small proportion of the population, the transition from 2017 to 2022 was associated with reduced car use, increased public transit use, or increased walking, highlighting substantial heterogeneity in travel-behavior responses. 
+
+To quantify ATE precision, we used a non-parametric bootstrap resampling procedure with 1000 bootstrap samples. The bootstrapped standard errors were remarkably small (SE = 0.0001 across all three models), confirming that these ATE estimates are highly stable under the bootstrap sampling procedure: 
+
+I.  Car: ATE: 0.0186, Bootstrap SE = 0.0001, Bootstrap 95% CI = [0.0183, 0.0188] 
+
+II.  Public Transit: ATE: -0.0038, Bootstrap SE = 0.0001, Bootstrap 95% CI = [-0.0039, -0.0037] 
+
+III.  Walking: ATE: -0.0157, Bootstrap SE = 0.0001, Bootstrap 95% CI = [-0.0160, -0.0155] 
+
+Figure 3: Distribution of estimated average treatment effects across modes. 
+
+Robustness Across Estimation Methods 
+
+To assess the robustness of the estimated ATE, the causal forest estimates were compared with those computed from an unadjusted difference-in-means estimator and a conventional multivariable linear regression. Across all three travel modes, the three approaches produced a consistent direction of the estimated effects and only slight variation in magnitude ( Table 2 ). Rishabh S. Chauhan, Mahdi Ghadimi, and Lishun Liu Gaara 
+
+# 11 
+
+TABLE 2 Comparison of ATE Estimates Across Estimation Methods 
+
+Travel mode  Difference in Means (pp)  Adjusted Regression (pp)  Causal Forest (pp) 
+
+Car  2.56  2.61  1.86 
+
+Public Transit  -0.09  -0.55  -0.38 
+
+Walking  -2.47  -2.06  -1.57 
+
+For both car use and walking, the causal forest estimated a slightly smaller ATE than both the unadjusted comparison and the adjusted regression. For public transit, all three approaches agreed on the direction and modest size of the effect, though the est imates varied more across methods, ranging from −0.09 to −0.55 pp, reflecting the 
+
+small magnitude of the transit shift relative to the other modes. 
+
+Heterogeneous Treatment Effects (HTE) Across Population Groups 
+
+The global ATE masks severe behavioral disparities beneath the surface. To uncover the exact mechanics of the pandemic shock, we extracted the Conditional Average Treatment Effects (CATE) across specific sociodemographic categories.  Figure 4  illustrates how the treatment effects varied across feature sub-levels. 
+
+Figure 4: Heterogeneous treatment effects isolated across distinct covariate subcategories. 
+
+The algorithm exposes several critical demographic divergences, such as: 
+
+I.  Trips of 1 mile or less witnessed the most drastic increase in car use (+7.06 pp) and decrease in walking (-7.85 pp). The estimated treatment effect on walking became increasingly negative with greater trip distance. Rishabh S. Chauhan, Mahdi Ghadimi, and Lishun Liu Gaara 
+
+# 12 
+
+II.  Households earning over $200,000 experienced a substantial increase in car usage (+3.06 pp) and the sharpest decrease in active walking (-2.21 pp). 
+
+III.  Households with zero vehicles experienced a major drop in public transit usage (-2.71 pp) and a negligible shift toward walking (+0.06 pp). 
+
+IV.  The data reveal that female travelers shifted away from walking (-2.01 pp) and towards cars (+2.55 pp) substantially more than males turned to cars (+1.04 pp). 
+
+V.  The age groups 30- 45 years and 46 –65 years drove the bulk of the car surge, +2.49 pp and +2.39 pp, respectively. The senior citizens (65+ years) exhibited deep behavioral inertia, with negligible change in mode use. 
+
+VI.  Out of all Census divisions, the western U.S. experienced the largest increase in car use (+2.39 pp) and the largest decrease in public transit use (-0.63 pp) and walking (-1.82 pp). 
+
+VII.  The change in mode use in urban versus rural U.S. was similar. 
+
+VIII.  Work-related trips saw a larger increase in car use (+2.13 pp) and decrease in public transit use (-0.55 pp) than non-work-related trips (+1.33 pp and 0.05 pp, respectively). 
+
+CATE Profiles Across Covariate Values 
+
+To further understand treatment effect heterogeneity within each covariate category, CATE profiles were estimated. While the HTE analysis compared average treatment effects across population groups, CATE profiles illustrate how the estimated treatment effects (expressed in pp) vary across the observed levels of each covariate, thus providing insight into potential gradients and nonlinear relationships ( Figure 5 ). 
+
+Figure 5: CATE profiles across covariate values. 
+
+Variable Importance 
+
+Variable importance was estimated using the causal forest model to identify covariates that contributed most strongly to treatment-level heterogeneity. These indicate only the relative contribution of each covariate in explaining the variation in estimated heterogeneous effects, rather than the direction and magnitude. Rishabh S. Chauhan, Mahdi Ghadimi, and Lishun Liu Gaara 
+
+# 13 
+
+Figure 6 Variable importance. 
+
+As shown in  Figure 6 , trip distance was by far the most influential predictor of car use and walking, while household vehicles and trip distance were among the top contributors to public transit use. 
+
+Exploratory Subgroup Analysis 
+
+While ATEs report the overall effect of the pandemic on mode choice, they do not identify population group combinations with exceptionally different treatment effects. Thus, we conducted an exploratory subgroup analysis by evaluating all such combinations of up to three features and with more than 30 observations. The differences in estimated treatment effects between each feature combination and the remainder of the sample were assessed using Welch's two-sample t-tests, with statistical significance determined after Benjamini –Hochberg false discovery rate (FDR) c orrection (α = 0.05).  Table 3  presents feature combinations with the highest and lowest estimated treatment effects for each mode that are statistically significant after the FDR correction. It must be noted that this analysis is exploratory, not confirmatory. Rishabh S. Chauhan, Mahdi Ghadimi, and Lishun Liu Gaara 
+
+# 14 
+
+TABLE 3 Exploratory Subgroup Analysis 
+
+Target Mode  Intersecting Subgroup Profile 
+
+Size (n)  Group ATE 
+
+Rest of Sample ATE 
+
+Causal Difference 
+
+P value 
+
+Car (Highest increase) 
+
+West region, income $25,000 –$49,999, 
+
+trip ≤ 1 mile 
+
+8442  18.05  1.68  16.37  0.00 
+
+Car (Highest decrease) 
+
+No household vehicles, 
+
+trip > 5 and ≤ 20 miles, 
+
+non-home-based trip 
+
+874  -14.84  1.87  -16.72  0.00 
+
+Transit (Highest increase) 
+
+West region, 
+
+no household vehicles, 
+
+age 46 –65 
+
+1573  8.58  -0.40  8.98  0.00 
+
+Transit (Highest decrease) 
+
+Income ≥ $200,000, 
+
+no household vehicles, 
+
+trip > 1 and ≤ 5 miles 
+
+126  -21.18  -0.38  -20.80  0.00 
+
+Walk (Highest increase) 
+
+Northeast region, 
+
+no household vehicles, 
+
+trip > 1 and ≤ 5 miles 
+
+1640  21.67  -1.62  23.30  0.00 
+
+Walk (Highest decrease) 
+
+Income ≥ $200,000, 
+
+trip ≤ 1 mile, 
+
+outside an urban area 
+
+1369  -17.49  -1.55  -15.94  0.00 
+
+DISCUSSION 
+
+Heterogeneity in Travel Behavior 
+
+The biggest advantage of using causal forests for mode choice analysis lies in their ability to capture heterogeneity 
+
+in travelers’ mode choice behavior. The ATEs can obscure substantial, localized behavioral disparities. In contrast, causal forests extend beyond ATEs, yielding a rich set of outputs, including HTE, CATE, and subgroup-level exploratory analyses. These insights are particularly valuable for policymakers, as they enable a more nuanced understanding of how interventions affect different population segments. For instance, our causal analysis estimated ATEs indicate a 1.86 pp increase in car-use mode share, alongside 0.38 and 1.57 pp decreases in public transit and walking mode shares, respectively. However, the HTE analysis reveals differences in mode choice shifts across trip characteristics and socio-demographics. In particular, short-distance trips (1 mile or less), households with incomes of $200,000 or more, and female travelers exhibit the largest increases in car-use mode share. 
+
+Causal Forest Modeling of Travel Behavior 
+
+Observational travel behavior studies frequently fall into the correlation trap. They study the correlation or association between two variables but fail to identify causality  (Chauhan 2023) . By deploying a causal machine learning framework, this study goes beyond correlations to infer causality in shifts in travel behavior directly from observational data. Although this study demonstrated the use of causal forests to examine the causal effect of the COVID-19 pandemic on travel mode choice, the methodology can be applied to a wide range of travel behavior studies. 
+
+The causal forests offer several key advantages over traditional methods, for the following reasons: 
+
+i.  Causal forests are designed explicitly for causal inference  (Wager and Athey 2018) . This alone is a major advancement over traditional travel mode choice studies, which are largely dominated by correlation-based methods (Chauhan, Riis, et al. 2024) .
+
+ii.  They capture heterogeneity in causal treatment effects. This is particularly useful for travel behavior analysis since behavior may vary across individuals and groups. 
+
+iii.  They offer very high flexibility . Causal forests are non-parametric and can capture complex non-linear relations  (Athey and Wager 2019; Wager and Athey 2018) . This makes travel behavior analysis data-driven and avoids strong assumptions on data structure. Rishabh S. Chauhan, Mahdi Ghadimi, and Lishun Liu Gaara 
+
+# 15 
+
+iv.  As demonstrated in this study, causal forests can be used for a wide range of analysis , including the estimation of ATE and its distribution, HTE across population groups, CATE profiles across covariate values, feature importance, and exploratory subgroup analysis. Each of these analyses offers a unique insight into shifts in travel behavior. 
+
+Caveats to Causal Forest Result Interpretation 
+
+The current study demonstrates how causal forests can be applied to mode choice analysis. There are important caveats to keep in mind when interpreting the results. These observations offer deeper insights into the findings and may also serve as important considerations for the future use of this methodology. 
+
+i.  Overall, the estimated causal effects appear to be intuitively reasonable.  Consistent with our findings, previous studies have also reported declines in public transit use and walking between the pre-pandemic period and 2022 (Clarridge et al. 2023; Urban Transit Systems Labor Productivity 2025). Similarly, researchers have noted the associational effect of demographic characteristics on mode choice (Magassy et al. 2024). However, it must be acknowledged that the effect of the pandemic on mode choice evolved over time, and thus, our findings should only be seen as a snapshot in time (Ciuffini et al. 2023; Javadinasr et al. 2022; Chauhan, Bhagat-Conway, et al. 2024). 
+
+ii.  It is estimated that the average number of person trips declined substantially, from 36.1 trips per day in 2017 to only 23.9 trips per day in 2022 (“COVID -19 Related Transportation Statistics | Bureau of 
+
+Transportation Statistics” 2022) . Many workers switched to working from home, while some lost their jobs (Javadinasr et al. 2022). However, the current study focuses only on mode share rather than travel demand. Thus, the estimated change in mode use corresponds to the shift in mode share and not the absolute change in mode use. 
+
+iii.  The estimated ATE, HTE, CATE, and other effects reported in this study are expressed in pp rather than in absolute terms. The practical significance of these estimates depends on the 2017 baseline 
+
+values. For example, we estimate a treatment effect on car use of +1.86 pp and on walking of −1.57 pp. 
+
+While these effects are similar in magnitude, baseline car use in 2017 is overwhelmingly higher than walking. Consequently, a change of similar magnitude can have a disproportionately larger impact when the baseline value is higher. 
+
+iv.  Some covariates used in this study, including the number of household vehicles and household income, may themselves have been affected by the pandemic. The causal forest methodology and the cross-sectional data used in this study cannot capture such causal effects. A more sophisticated methodology, or longitudinal data following the same individuals over time (Chauhan, Bhagat-Conway, et al. 2024), would be required to take this additional step. The current study does not account for these potential effects. 
+
+v.  We found that the ATEs estimated using causal forests differed only modestly in magnitude from those obtained via differences in means and adjusted regression, while the directions of the effects were consistent across all three methods. Nevertheless, the primary advantage of causal forests lies in their ability to estimate heterogeneous treatment effects, which are not captured by aggregate estimates. 
+
+Assumptions of the Study 
+
+As with other observational causal inference methods, machine learning approaches, and conventional statistical 
+
+models, the treatment effects estimated by causal forests should be understood as model-based estimates contingent 
+
+on the analysis's underlying assumptions. That said, because causal forests are data-driven and non-parametric, they 
+
+rely on fewer assumptions. Below are the main assumptions of our methodology: 
+
+i.  Conditional exchangeability : It assumes that there are no unmeasured variables (confounders), beyond 
+
+the covariates already included, that affect both the survey year and travel mode choice. While the 
+
+study included several key socio-demographic and trip-related covariates, this assumption may still be 
+
+the most stringent. Factors such as remote working, online learning, online shopping, urban exodus, 
+
+attitudes, and risk perception may be relevant but were not included (Chauhan, Capasso Da Silva, et al. 
+
+2021; Salon, Conway, Silva, et al. 2021; Capasso da Silva et al. 2021; Mirtich et al. 2021). Future 
+
+studies must pay extra attention to the extent of covariates included. 
+
+ii.  Positivity or overlap : It assumes that all combinations of characteristics must be represented in both 
+
+the treatment as well as the control group. With our final dataset of over 800K trips, this assumption is 
+
+likely satisfied. This may, however, be a concern for smaller datasets. Rishabh S. Chauhan, Mahdi Ghadimi, and Lishun Liu Gaara 
+
+# 16 
+
+iii.  SUTVA (Stable Unit Treatment Value Assumption): It assumes that one individual’s treatment does 
+
+not affect another individual’s outcome, and that the treatment is administered consistently. The 
+
+validity of the assumption may depend primarily on the sampling method and the treatment under 
+
+study. 
+
+CONCLUSION 
+
+Causal models have under-explored potential in transport planning (Chauhan 2023). Recent research has 
+
+demonstrated the value of causal discovery and inference in mode choice analysis (Chauhan, Riis, et al. 2024; 
+
+Chauhan et al. 2026, 2025), yet heterogeneity in causal analysis remains unexamined. This gap is critical because 
+
+heterogeneity is central to understanding travel behavior and to informing travel-related policies, as it reveals 
+
+variability in behavior across individuals and population groups. 
+
+In this study, we demonstrate the use of causal forests to estimate heterogeneity in shifts in travel behavior 
+
+caused by the COVID-19 pandemic, using NHTS travel survey data collected both before and during the pandemic. 
+
+Our findings reveal substantial variation in mode choice shifts across socio-demographic and trip characteristics. 
+
+Causal forests, which are causality-based, data-driven, and nonparametric, emerge as a promising modeling 
+
+approach for studying heterogeneity in shifts in travel mode choice. They provide not only ATE estimates of the 
+
+pandemic’s impact on mode choice but also HTE, CATE, feature importance, and exploratory subgroup analysis, 
+
+enabling an in-depth understanding of shifts in travel behavior. 
+
+ACKNOWLEDGMENTS 
+
+None 
+
+AUTHOR CONTRIBUTIONS 
+
+Study conception and design: RSC. Data collection and processing: LLG, RSC. Analysis and interpretation of results: RSC, MG, LLG. Draft manuscript preparation: RSC, MG, LLG. All authors reviewed the results and approved the final version of the manuscript. 
+
+DATA AVAILABILITY STATEMENT 
+
+The data used in this study are publicly available. The 2017 and 2022 National Household Travel Survey datasets can be accessed at  https://nhts.ornl.gov . No proprietary or restricted data were used. 
+
+DECLARATION OF GENERATIVE AI USE 
+
+During the preparation of this manuscript, the authors used ChatGPT (OpenAI) to assist with code debugging and language editing. All scientific content, analyses, interpretations, and conclusions were developed and verified by the authors, who take full responsibility for the manuscript. 
+
+DECLARATION OF CONFLICTING INTERESTS 
+
+The authors declare no potential conflicts of interest with respect to the research, authorship, or publication of this article. 
+
+FUNDING 
+
+The authors disclosed no financial support for the research, authorship, and/or publication of this article. 
+
+REFERENCES 
+
+# At hey, Susan, and Guido Imbens. 2016. “Recursive Partitioning for Heterogeneous Causal Effects.” Proceedings of the National Academy of Sciences 113 (27): 7353 –60. https://doi.org/10.1073/pnas.1510489113. 
+
+Athey, Susan, and Stefan Wager. 2019. “Estimating Treatment Effects with Causal Forests: An Application.” 
+
+Observational Studies 5 (2): 37 –51. Rishabh S. Chauhan, Mahdi Ghadimi, and Lishun Liu Gaara 
+
+# 17 
+
+Austin, Peter C. 2009. “Balance Diagnostics for Comparing the Distribution of Baseline Covariates between Treatment Groups in Propensity‐score Matched Samples.” Statistics in Medicine 28 (25): 3083 –107. 
+
+Austin, Peter C. 2011. “An Introduction to Propensity Score Methods for Reducing the Effects of Confounding in Observational Studies.” Multivariate Behavioral Research 46 (3): 399 –424. https://doi.org/10.1080/00273171.2011.568786. 
+
+Blättler, Kevin, Hannes Wallimann, and Widar von Arx. 2024. “Free Public Transport to the Destination: A Causal Analysis of Tourists’ Travel Mode Choice.” Transportation Research Part A: Policy and Practice 187: 104166. 
+
+Capasso da Silva, Denise, Sara Khoeini, Deborah Salon, et al. 2021. “How Are Attitudes Toward COVID -19 
+
+Associated with Traveler Behavior During the Pandemic?” Findings .
+
+Chauhan, Rishabh Singh. 2023. From Correlation to Causation: Travel Behavior Modeling with Causal Discovery and Inference .
+
+Chauhan, Rishabh Singh, Juan Acosta, and Sybil Derrible. 2026. “Causal Modeling of Energy and Resource Demand.” Npj Urban Sustainability .
+
+Chauhan, Rishabh Singh, M. Bhagat-Conway, TB Magassy, et al. 2024. “COVID Future Panel Survey: A Unique Public Dataset Documenting How US Residents’ Travel -Related Choices Changed during the COVID-19 
+
+Pandemic.” Transportation , 1 –20. 
+
+Chauhan, Rishabh Singh, Denise Capasso Da Silva, Deborah Salon, et al. 2021. “COVID -19 Related Attitudes and 
+
+Risk Perceptions across Urban, Rural, and Suburban Areas in the United States.” Findings , ahead of print, June 7. https://doi.org/10.32866/001c.23714. 
+
+Chauhan, Rishabh Singh, Matthew Conway, Denise Capasso da Silva, et al. 2021. “A Database of Travel -Related Behaviors and Attitudes Before, During, and After COVID-19 in the United States.” Scientific Data .
+
+Chauhan, Rishabh Singh, Christoffer Riis, Shishir Adhikari, et al. 2024. “Determining Causality in Travel Mode Choice.” Travel Behaviour and Society 36: 100789. 
+
+Chauhan, Rishabh Singh, Uttara Sutradhar, Anton Rozhkov, and Sybil Derrible. 2025. “Causation versus Prediction in Travel Mode Choice Modeling.” Npj Sustainable Mobility and Transport 2 (1): 5. https://doi.org/10.1038/s44333-024-00022-4. 
+
+Chiu, Bing-yu. 2022. “Does the Metro Reduce Motorcycle Use? Difference -in-Differences and Propensity Score 
+
+Matching Analyses of the Taipei Metropolitan Area, Taiwan.” Difference-in-Differences and Propensity Score Matching Analyses of the Taipei Metropolitan Area, Taiwan .
+
+Ciuffini, Francesca, Simone Tengattini, and Alexander York Bigazzi. 2023. “Mitigating Increased Driving after the 
+
+COVID-19 Pandemic: An Analysis on Mode Share, Travel Demand, and Public Transport Capacity.” 
+
+Transportation Research Record 2677 (4): 154 –67. 
+
+Clarridge, Christine, Alex Fitzpatrick, and Kavya Beheraj. 2023. “Walking in Seattle Is Way down from 2019.” 
+
+Axios , November 28. https://www.axios.com/local/seattle/2023/11/28/walking-rates-decline-pandemic-seattle. 
+
+Conway, Matthew W., Deborah Salon, Denise C. da Silva, and Laura Mirtich. 2020. “How Will the COVID -19 Pandemic Affect the Future of Urban Life? Early Evidence from Highly-Educated Respondents in the 
+
+United States.” Urban Science 4 (4). https://doi.org/10.3390/urbansci4040050. Rishabh S. Chauhan, Mahdi Ghadimi, and Lishun Liu Gaara 
+
+# 18 
+
+“COVID -19 Related Transportation Statistics | Bureau of Transportation Statistics.” 2022. 
+
+https://www.bts.gov/covid-19. 
+
+Dahabreh, Issa J., and Kirsten Bibbins-Domingo. 2024. “Causal Inference about the Effects of Interventions from Observational Studies in Medical Journals.” Jama 331 (21): 1845 –53. 
+
+Dai, Fangzhou, Mi Diao, and Tien Foo Sing. 2020. “Effects of Rail Transit on Individual Travel Mode Shares: A 
+
+Two-Dimensional Propensity Score Matching Approach.” Transportation Research Part D: Transport and Environment 89: 102601. 
+
+De Vos, Jonas. 2020. “The Effect of COVID -19 and Subsequent Social Distancing on Travel Behavior.” 
+
+Transportation Research Interdisciplinary Perspectives 5 (May): 100121. https://doi.org/10.1016/j.trip.2020.100121. 
+
+Derrible, Sybil. 2025. “The Infrastructure Book: How Cities Work and Power Our Lives.” Prometheus Books .
+
+Drummond, Justin, and Md Sami Hasnine. 2022. “Online and In -Store Shopping Behavior During COVID-19 
+
+Pandemic: Lesson Learned from a Panel Survey in New York City.” Paper presented at Transportation 
+
+Research Board 101st Annual MeetingTransportation Research Board. TRBAM-22-02462. TRBAM-22-02462. https://trid.trb.org/view/1900894. 
+
+Federal Highway Administration. 2022. “National Household Travel Survey.” https://doi.org/nhts.ornl.gov. 
+
+Holland, Paul W. 1986. “Statistics and Causal Inference.” Journal of the American Statistical Association 81 (396): 945 –60. https://doi.org/10.1080/01621459.1986.10478354. 
+
+Hossan, Md Sakoat, Hamidreza Asgari, and Xia Jin. 2016. “Investigating Preference Heterogeneity in Value of Time (VOT) and Value of Reliability (VOR) Estimation for Managed Lanes.” Transportation Research Part A: Policy and Practice 94: 638 –49. 
+
+Imbens, Guido W., and Donald B. Rubin. 2015. Causal Inference for Statistics, Social, and Biomedical Sciences: An Introduction . 1st ed. Cambridge University Press. https://doi.org/10.1017/CBO9781139025751. 
+
+International Trade Administration. n.d. 2022 Annual and 2023 Year-to-Date Outbound Results .
+
+Javadinasr, Mohammadjavad, Tassio Maggasy, Motahare Mohammadi, et al. 2022. “The Long -Term Effects of COVID-19 on Travel Behavior in the United States: A Panel Study on Work from Home, Mode Choice, 
+
+Online Shopping, and Air Travel.” Transportation Research Part F: Traffic Psychology and Behaviour .
+
+Karlaftis, M. G., and E. I. Vlahogianni. 2011. “Statistical Methods versus Neural Networks in Transportation Research: Differences, Similarities and Some Insights.” Transportation Research Part C: Emerging Technologies 19 (3): 387 –99. https://doi.org/10.1016/j.trc.2010.10.004. 
+
+Kohavi, Ron, Roger Longbotham, Dan Sommerfield, and Randal M. Henne. 2009. “Controlled Experiments on the Web: Survey and Practical Guide.” Data Mining and Knowledge Discovery 18 (1): 140 –81. https://doi.org/10.1007/s10618-008-0114-1. 
+
+Ma, Tai-Yu, Joseph YJ Chow, and Jia Xu. 2017. “Causal Structure Learning for Travel Mode Choice Using Structural Restrictions and Model Averaging Algorithm.” Transportmetrica A: Transport Science 13 (4): 299 –325. 
+
+Magassy, Tassio B., Irfan Batur, Aupal Mondal, et al. 2023. “Evolution of Mode Use During the COVID -19 
+
+Pandemic in the United States: Implications for the Future of Transit.” Transportation Research Record ,03611981231166942. Rishabh S. Chauhan, Mahdi Ghadimi, and Lishun Liu Gaara 
+
+# 19 
+
+Magassy, Tassio B., Irfan Batur, Aupal Mondal, et al. 2024. “Evolution of Mode Use During the COVID -19 
+
+Pandemic in the United States: Implications for the Future of Transit.” Transportation Research Record: Journal of the Transportation Research Board 2678 (12): 567 –79. https://doi.org/10.1177/03611981231166942. 
+
+McFadden, Daniel. 2001. “Economic Choices.” American Economic Review 91 (3): 351 –78. https://doi.org/10.1257/aer.91.3.351. 
+
+Mirtich, Laura, Matthew Wigginton Conway, Deborah Salon, et al. 2021. “How Stable Are Transport -Related 
+
+Attitudes over Time?” Findings .
+
+Mohammadi, Motahare (Yalda), Ehsan Rahimi, Amir Davatgari, et al. 2022. “Examining the Persistence of 
+
+Telecommuting after the COVID-19 Pandemic.” Transportation Letters , May 26. World. https://www.tandfonline.com/doi/abs/10.1080/19427867.2022.2077582. 
+
+Monteiro, Mayara Moraes. 2020. “Adaptation of Transnational Short -Term Residents: Understanding the Factors 
+
+Influencing Residential Location Choice and Travel Behavior.” Universidade do Porto (Portugal). 
+
+Neyman, Jerzy. 1923. “On the Application of Probability Theory to Agricultural Experiments. Essay on Principles.” 
+
+Ann. Agricultural Sciences , 1 –51. 
+
+Pearl, Judea. 2000. “Models, Reasoning and Inference.” Cambridge, UK: CambridgeUniversityPress 19 (2). 
+
+Pearl, Judea, and Dana Mackenzie. 2018. The Book of Why: The New Science of Cause and Effect . Basic books. 
+
+Rosenbaum, Paul R., and Donald B. Rubin. 1983. “The Central Role of the Propensity Score in Observational Studies for Causal Effects.” Biometrika 70 (1): 41 –55. 
+
+Rubin, Donald B. 1974. “Estimating Causal Effects of Treatments in Randomized and Nonrandomized Studies.” 
+
+Journal of Educational Psychology 66 (5): 688 –701. https://doi.org/10.1037/h0037350. 
+
+Rubin, Donald B. 2005. “Causal Inference Using Potential Outcomes: Design, Modeling, Decisions.” Journal of the American Statistical Association 100 (469): 322 –31. 
+
+Salon, Deborah, Matthew Wigginton Conway, Denise Capasso da Silva, et al. 2020. “COVID Future Wave 1 Survey Data v1.0.0.” Translated by NSF, CONVERGE -NSF, TOMNET - US Department of Transportation, and Knowledge Exchange for Resilience at Arizona State University. ASU Library Research Data Repository, April 14. https://doi.org/10.48349/ASU/QO7BTC. 
+
+Salon, Deborah, Matthew Wigginton Conway, Denise Capasso Da Silva, et al. 2021. “The Potential Stickiness of 
+
+Pandemic-Induced Behavior Changes in the United States.” Proceedings of the National Academy of Sciences 118 (27): e2106499118. https://doi.org/10.1073/pnas.2106499118. 
+
+Salon, Deborah, Matthew Wigginton Conway, Denise Capasso da Silva, et al. 2021. “The Potential Stickiness of 
+
+Pandemic-Induced Behavior Changes in the United States.” Social Sciences. Proceedings of the National Academy of Sciences 118 (27). https://doi.org/10.1073/pnas.2106499118. 
+
+Salon, Deborah, Laura Mirtich, Matthew Wigginton Bhagat-Conway, et al. 2022. “The COVID -19 Pandemic and 
+
+the Future of Telecommuting in the United States.” Transportation Research Part D: Transport and Environment , 103473. 
+
+Shamshiripour, Ali, Ehsan Rahimi, Ramin Shabanpour, and Abolfazl (Kouros) Mohammadian. 2020. “How Is 
+
+COVID-19 Reshaping Activity-Travel Behavior? Evidence from a Comprehensive Survey in Chicago.” 
+
+Transportation Research Interdisciplinary Perspectives 7 (September): 100216. https://doi.org/10.1016/j.trip.2020.100216. Rishabh S. Chauhan, Mahdi Ghadimi, and Lishun Liu Gaara 
+
+# 20 
+
+Urban Transit Systems Labor Productivity . 2025. US Bureau of Labor Statistics. https://www.bls.gov/productivity/highlights/urban-transit-systems-labor-productivity.htm? 
+
+Wager, Stefan, and Susan Athey. 2018. “Estimation and Inference of Heterogeneous Treatment Effects Using Random Forests.” Journal of the American Statistical Association 113 (523): 1228 –42. https://doi.org/10.1080/01621459.2017.1319839. 
+
+Xie, Chi, and S. Waller. 2010. “Estimation and Application of a Bayesian Network Model for Discrete Travel Choice Analysis.” Transportation Letters 2 (2): 125 –44.
