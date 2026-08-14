@@ -6,58 +6,58 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-13
-- 运行时间：2026-08-13 19:44:46 UTC
+- 最新运行日期：2026-08-14
+- 运行时间：2026-08-14 20:51:19 UTC
 - 运行状态：成功
 - 本次总论文数：12
 - 精读区：1
 - 速读区：11
 
 ### 今日简报（AI）
-今日追踪12篇因果推断前沿进展，重点攻克交错双重差分（Staggered DiD）中的局部同质性难题。
-核心结论聚焦于面板数据的偏差稳健推断，并展示了因果森林在出行方式选择异质性分析中的实证潜力。
-建议优先研读高分篇目以掌握复杂政策评估中的偏误修正技巧，并关注固定效应回归中的精确推断方法。
-- 详情：[/202608/13/README](/202608/13/README)
+今日深度复盘家庭资产配置理论并速览因果推断前沿，共完成 12 篇高质量文献研读。
+核心聚焦集体模型在家庭投资应用中的潜在陷阱，同时关注交错 DiD 与面板数据推断的稳健性优化。
+建议重点研读 9.5 分的家庭决策论文以规避建模误区，并同步更新对复杂因果推断工具的认知。
+- 详情：[/202608/14/README](/202608/14/README)
 
 ### 精读区论文标签
-1. [Partial Homogeneity in Staggered Difference-in-Differences](/202608/13/2608.08047v1-partial-homogeneity-in-staggered-difference-in-differences)  
-   标签：评分：8.0/10、query:q9
-   evidence：交错双重差分设计和处理效应异质性
+1. [Theory of Household Portfolio Choice: Pitfalls in Applications of the Collective Model](/202608/14/2608.12411v1-theory-of-household-portfolio-choice-pitfalls-in-applications-of-the-collective-model)  
+   标签：评分：9.5/10、query:profile-1
+   evidence：分析了家庭集体投资组合选择、配偶风险偏好和家庭内部博弈。
 
 ### 速读区论文标签
-1. [Bias-robust causal inference for panel data](/202608/13/2608.09837v1-bias-robust-causal-inference-for-panel-data)  
+1. [Partial Homogeneity in Staggered Difference-in-Differences](/202608/14/2608.08047v1-partial-homogeneity-in-staggered-difference-in-differences)  
+   标签：评分：7.5/10、query:q9
+   evidence：交错双重差分法与处理效应异质性
+2. [Bias-robust causal inference for panel data](/202608/14/2608.09837v1-bias-robust-causal-inference-for-panel-data)  
    标签：评分：7.5/10、query:profile-1
-   evidence：面板数据和处理效应的偏误稳健因果推断
-2. [Estimating Heterogeneity in Travel Mode Choice Shifts with Causal Forests](/202608/13/2608.04208v1-estimating-heterogeneity-in-travel-mode-choice-shifts-with-causal-forests)  
+   evidence：针对面板数据和处理效应的偏误稳健因果推断
+3. [Mastering Stochastic OLG Models in Continuous Time](/202608/14/2608.11134v1-mastering-stochastic-olg-models-in-continuous-time)  
+   标签：评分：7.5/10、query:q6
+   evidence：具有特质财富和年龄状态的随机重叠世代模型
+4. [Local conformal prediction for individual causal effects](/202608/14/2608.09612v1-local-conformal-prediction-for-individual-causal-effects)  
+   标签：评分：7.0/10、query:q7
+   evidence：使用符合预测的个体化因果预测框架，用于处理异质性处理效应
+5. [COMPACT: Spectral Adjustment Scores from a Complete and Irreducible Causal Criterion](/202608/14/2608.10305v1-compact-spectral-adjustment-scores-from-a-complete-and-irreducible-causal-criterion)  
    标签：评分：7.0/10、query:profile-1
-   evidence：用于估计家庭调查中处理效应的因果森林
-3. [Exact Inference in Fixed-Effect Regressions with Concentrated Identifying Variation](/202608/13/2608.04839v1-exact-inference-in-fixed-effect-regressions-with-concentrated-identifying-variation)  
+   evidence：观察数据中的因果调整集和倾向得分
+6. [Stationary Errors and Quantile Regression in Short Panels](/202608/14/2608.08750v1-stationary-errors-and-quantile-regression-in-short-panels)  
+   标签：评分：6.5/10、query:q9
+   evidence：短面板数据分析和个体效应处理的方法论桥梁
+7. [Clustering Informed Inverse Probability Weighting Strategies for Causal Effect Estimation in Observational Studies](/202608/14/2608.09839v1-clustering-informed-inverse-probability-weighting-strategies-for-causal-effect-estimation-in-observational-studies)  
    标签：评分：6.5/10、query:profile-1
-   evidence：变异集中时的固定效应回归推断
-4. [Clustered Local Projections for Short and Ultra-Short Time Series -- A Hierarchical Bayesian Framework](/202608/13/2608.04631v1-clustered-local-projections-for-short-and-ultra-short-time-series----a-hierarchical-bayesian-framework)  
-   标签：评分：6.0/10、query:q8
-   evidence：在短时间序列中使用局部投影估计经济冲击的动态效应
-5. [Estimating and Testing Kinks in Panel Data Models](/202608/13/2608.07162v1-estimating-and-testing-kinks-in-panel-data-models)  
+   evidence：使用逆概率加权进行观察性研究中的因果效应估计
+8. [Causal Mediation Analysis for Network Data with Graph Neural Network](/202608/14/2608.13274v1-causal-mediation-analysis-for-network-data-with-graph-neural-network)  
+   标签：评分：6.5/10、query:profile-1
+   evidence：用于识别直接和间接效应的因果中介分析
+9. [Deep Generalised Mixed Models: a Novel Neural Network Structure for Analysing Hierarchical Data](/202608/14/2608.05930v2-deep-generalised-mixed-models-a-novel-neural-network-structure-for-analysing-hierarchical-data)  
    标签：评分：6.0/10、query:profile-1
-   evidence：具有时变系数和固定效应的面板数据模型
-6. [Conditional Diffusion for Nonparametric Instrumental Variable Quantile Regression](/202608/13/2608.08204v1-conditional-diffusion-for-nonparametric-instrumental-variable-quantile-regression)  
+   evidence：用于处理具有选择偏差的纵向层级数据的深度广义混合模型
+10. [Conditional Diffusion for Nonparametric Instrumental Variable Quantile Regression](/202608/14/2608.08204v1-conditional-diffusion-for-nonparametric-instrumental-variable-quantile-regression)  
    标签：评分：6.0/10、query:profile-1
-   evidence：用于因果识别的非参数工具变量分位数回归
-7. [Causal State-Space Model for Causal Inference: Estimating Longitudinal Individual Treatment Effects](/202608/13/2608.08288v2-causal-state-space-model-for-causal-inference-estimating-longitudinal-individual-treatment-effects)  
+   evidence：用于因果分析的非参数工具变量分位数回归
+11. [Estimating the Average Treatment Effect under Limited Overlap via Polynomial Approximation and Extrapolation](/202608/14/2608.09329v1-estimating-the-average-treatment-effect-under-limited-overlap-via-polynomial-approximation-and-extrapolation)  
    标签：评分：6.0/10、query:q7
-   evidence：估计纵向个体治疗效应和反事实结果
-8. [Estimating the Average Treatment Effect under Limited Overlap via Polynomial Approximation and Extrapolation](/202608/13/2608.09329v1-estimating-the-average-treatment-effect-under-limited-overlap-via-polynomial-approximation-and-extrapolation)  
-   标签：评分：6.0/10、query:q7
-   evidence：在重叠有限的观察性研究中估计平均处理效应
-9. [Local conformal prediction for individual causal effects](/202608/13/2608.09612v1-local-conformal-prediction-for-individual-causal-effects)  
-   标签：评分：6.0/10、query:q7
-   evidence：个体因果效应和个体反事实效应的共形预测
-10. [Early Pregnancy Treatment Decisions: Designing Perinatal Pharmacoepidemiology Studies using Real-World Data](/202608/13/2608.11108v1-early-pregnancy-treatment-decisions-designing-perinatal-pharmacoepidemiology-studies-using-real-world-data)  
-   标签：评分：6.0/10、query:profile-1
-   evidence：妊娠环境下的目标试验模拟
-11. [Inverse Confounding Analysis: An Exact Method for Quantifying the Significance of Confounding](/202608/13/2608.11991v1-inverse-confounding-analysis-an-exact-method-for-quantifying-the-significance-of-confounding)  
-   标签：评分：6.0/10、query:q7
-   evidence：量化因果推断中未测量混杂因素的显著性
+   evidence：估计观察性研究中的平均处理效应
 
 
 <div class="dpr-home-promo-card">

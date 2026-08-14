@@ -1,0 +1,1157 @@
+Title: Partial Homogeneity in Staggered Difference-in-Differences
+
+URL Source: https://arxiv.org/pdf/2608.08047v1
+
+Published Time: Tue, 11 Aug 2026 00:43:03 GMT
+
+Number of Pages: 46
+
+Markdown Content:
+# Partial Homogeneity in Staggered Difference-in-Differences 
+
+# Parush Arora ∗ and Rohan Wagle ‗
+
+Abstract 
+
+In staggered difference-in-differences (DiD) designs, units enter treatment at different calendar times, so the treatment effect is not a single number but a set of Cohort-Average Treatment effects on the Treated (CATTs), one per cohort-time cell. Estimat-ing every CATT as its own parameter, as the standard fully flexible estimator does, is unbiased but inefficient when some of these effects are in fact equal, whereas pooling them all into a single two-way fixed effects (TWFE) coefficient is efficient but, whenever the heterogeneity is genuine, biased for the individual effects. We frame the choice between these extremes as a partition-selection problem on the cohort-time cells and address it with a Dirichlet Process (DP) mixture prior on the CATTs. The model favors parsimonious groupings without fixing their number, and a collapsed Gibbs sampler delivers point estimates, credible intervals that marginalize the unknown partition, and co-clustering probabilities for every pair of CATTs. With the error variance held fixed and a pairwise penalty placed on the partition, a maximum a posteriori (MAP) partition reduces to an ℓ0-penalized regression, connecting the Bayesian formulation to the homogeneity-pursuit literature. In a calibrated simulation, the model cuts the sampling variance of the cohort-time effects by 26–52% relative to the fully flex-ible estimator, without the pooled estimator’s bias, provided the distinct effects are separated enough to be recovered, and the posterior delivers near-nominal confidence-interval coverage by averaging over the unknown partition. In two applications the method recovers a precision-improving partial-homogeneity structure in one, where the cohort-time effects are genuinely heterogeneous, and reports that full pooling is adequate in the other, where they are not. 
+
+Keywords: difference-in-differences, staggered treatment, TWFE, model specification, Bayesian estimation, Gibbs sampler, treatment effect heterogeneity, causal inference. 
+
+JEL Codes: C11, C14, C23, C52. 
+
+> ‗
+
+Department of Economics, Ashoka University. 
+
+1arXiv:2608.08047v1 [econ.EM] 8 Aug 2026 1 Introduction 
+
+Difference-in-differences (DiD) has become one of the workhorses of empirical economics. In its canonical form, a treatment cohort and a control cohort are observed before and after a single policy change, and the researcher estimates a single average treatment effect (ATT or average treatment effect on treated). In a simple setting with two time periods, ATT is recovered by taking the difference between the change in the average outcome over time for the treatment and control cohorts, commonly referred to as a simple 2 ×2 DiD estimate. In a general setting with 𝑁 observations and 𝑇 time periods, the most popular way to estimate the ATT with a binary treatment indicator is the two-way fixed effects regression (TWFE): 
+
+𝑌 𝑖𝑡 = 𝛼 𝑖 + 𝜆 𝑡 + 𝜏 𝐷 𝑖𝑡 + 𝜀 𝑖𝑡 , (1) where 𝑌 𝑖𝑡 is the observed outcome for 𝑖 𝑡 ℎ unit in time 𝑡 , 𝛼 𝑖 is the unit fixed effect, 𝜆 𝑡 is the time fixed effect, 𝐷 𝑖𝑡 is the treatment dummy and 𝜏 is the ATT. We will refer to Eq. 1 as pooled TWFE. The pooled TWFE estimator ( ˆ𝜏 pool ) is directly related to the 2 × 2 DiD estimator, as it can be represented as a weighted average of all possible 2 ×2 DiD estimates (Goodman-Bacon, 2021). Modern policy evaluations, however, rarely fit this clean template. Minimum wage increases, Medicaid expansions, trade liberalizations, and school reforms typically roll out across states, cities, or firms in a staggered fashion, with different units adopting treatment at different calendar times. We update the notation so that 𝑌 𝑖 𝑔𝑡 and 𝐷 𝑖 𝑔𝑡 denote the outcome and treatment indicator for unit 𝑖 in cohort 𝑔 at time 𝑡 . The estimator ˆ𝜏 pool is unbiased in staggered timing if the treatment effect for each 𝑔 × 𝑡 case (cohort-time specific ATT or CATT) is homogeneous. The econometrics of staggered DiD has seen remarkable progress in recent years. de Chaisemartin and D’Haultfœuille (2020), Callaway and Sant’Anna (2021), Sun and Abraham (2021), Goodman-Bacon (2021), Gardner (2022), and Borusyak et al. (2024), among others, have shown that the TWFE regression can produce a biased estimate of the ATT when there is heterogeneity among CATTs. de Chaisemartin and D’Haultfœuille (2023) and Roth et al. (2023) survey this literature. The bias arises due to the inclusion of an already-treated cohort as a control, which violates the parallel trends assumption. Goodman-Bacon (2021) showed that the decomposition of TWFE can contain negative weights when the treatment effects are heterogeneous. The recommended solution is to either drop the already-treated cohorts from the control or estimate the CATTs one coeffi-cient per (cohort-time) cell and then aggregate them as desired. For the latter, Wooldridge (2025) discussed the flexible TWFE that allows interaction between the treatment dummy and the cohort-time dummy and recovers unbiased CATTs. Their estimate is identical to Gardner (2022) and Borusyak et al. (2024) in certain settings and more efficient than Call-away and Sant’Anna (2021) and Sun and Abraham (2021), which drop the already-treated cohorts from the control. These heterogeneity-robust estimators are efficient only under spherical errors. Arora and Bĳani (2026) show that efficiency under arbitrary within-unit serial correlation is attainable through an optimally weighted GMM in the space of clean comparisons. 2This fully flexible approach solves the bias problem but introduces a new challenge, namely model specification. With 𝐺 treated cohorts and 𝑇 time periods, there can be 
+
+𝐾 = Í𝑇 𝑔 =2(𝑇 − 𝑔 + 1) distinct CATT cells, where 𝑔 = 2, 3, . . . , 𝑇 indexes the treated cohorts by the period in which each is first treated and 𝑔 = 0 denotes the never-treated cohort, which contributes no post-treatment cells. Estimating all 𝐾 separately is unbiased, but may be inefficient if some CATTs share the same true effect. Conversely, pooling all CATTs into a single parameter (classical TWFE) is efficient but biased when effects genuinely differ across cohorts or periods. The specification question is which CATTs can be pooled, and which must be kept separate? This is a model selection problem on the space of partitions of the 𝐾 CATT cells. Getting the partition right matters, because under the true partition, the estimator is both unbiased and more efficient than the fully flexible approach, exploiting the additional identifying restriction that some effects are equal without imposing false restrictions on others. Although the recent staggered-DiD literature has focused overwhelmingly on remov-ing the bias of pooled TWFE, the complementary question of how to efficiently pool the resulting cohort-time effects has received comparatively little attention. The problem of grouping otherwise distinct coefficients that share a common value is, however, well studied in the broader panel-data and statistics literatures, and our approach draws on established machinery from both traditions. On the penalized-regression side, penalizing pairwise differences to recover latent groups underlies the classifier-Lasso of Su et al. (2016) and the homogeneity-pursuit estimators of Ke et al. (2015) and Wang et al. (2018), as well as the grouping-pursuit surface of Shen and Huang (2010). Related ideas appear in the grouped fixed-effects approach of Bonhomme and Manresa (2015) and in work on de-termining the number of latent groups (Lu and Su, 2017). Relative to these ℓ1-type fusion penalties, we use an ℓ0 penalty because it produces exact equality of coefficients rather than continuous shrinkage. On the Bayesian side, clustering coefficients through a Dirich-let Process mixture or an explicit partition prior is standard in Bayesian nonparametrics (Ferguson, 1973; Antoniak, 1974; Hartigan, 1990; Barry and Hartigan, 1992), and Bayesian nonparametric methods have also been applied directly to causal-effect estimation (Hill, 2011). Our contribution is to bring these tools to bear on the specification problem in stag-gered DiD, to characterize the resulting bias-variance and identification trade-offs in that setting, and to connect the two traditions, since the ℓ0 fusion penalty is the fixed-variance maximum a posteriori estimator of a partition model in the same family as our Dirichlet Process model, differing from it only in the partition prior. Our restriction is also related to, but distinct from, recent work that bounds the mag-nitude of treatment-effect heterogeneity rather than its structure. Kwon and Sun (2026) restrict the variance of conditional average treatment effects and conduct bias-aware sen-sitivity analysis over that bound, shrinking heterogeneous effects smoothly toward a common value; Armstrong et al. (2025) adapt to misspecification of a restricted model, and Armstrong and Kolesár (2018) give the underlying optimal-inference theory; in a similar honest-inference spirit but for a different DiD assumption, Rambachan and Roth (2023) allow bounded violations of parallel trends. Where these papers impose a contin-3uous bound and never assert that any two effects are exactly equal, we impose a discrete partial-homogeneity restriction and attempt to recover the grouping from the data. The two views are complementary, in that the continuous bound is agnostic about which effects coincide, whereas the discrete view is informative about the grouping structure itself, at the cost of a stronger assumption whose selection uncertainty must be confronted (a point we return to below and in the simulations). This paper makes three contributions. First, we formalize the specification problem in staggered DiD as a partition-selection problem and characterize the bias and variance of the fully flexible, partially homogeneous, and fully pooled estimators under a partial-homogeneity data-generating process. Second, we propose a Bayesian solution, a Dirichlet Process (DP) mixture prior over the CATTs that assigns positive probability to every partition while favoring parsimonious groupings. A collapsed Gibbs sampler estimates the model, and the posterior delivers point estimates, credible intervals that marginalize the unknown partition, and co-clustering probabilities for every pair of CATTs. Third, we record a connection to the penalized-regression literature. With the error variance fixed and a flat prior on the group effects, the maximum a posteriori (MAP) partition under a pairwise partition prior (a proper prior in the same family as, but distinct from, the Dirichlet Process) is exactly an ℓ0-penalized least-squares estimator whose penalty equals that log prior. Under the Dirichlet Process prior itself the collapsed posterior instead carries determinant and shrinkage terms, and integrating the variance out gives a BIC-type criterion via a Schwarz approximation. This links the Bayesian formulation to ℓ0
+
+homogeneity pursuit. The DP prior is the standard nonparametric choice for models in which the number of components is unknown (Ferguson, 1973; Antoniak, 1974). Escobar and West (1995) show how DP mixture models can be used for density estimation with an unknown number of mixture components, and Müller et al. (1996) extend the approach to regression. Neal (2000) develops efficient MCMC algorithms for posterior inference, including the collapsed Gibbs sampler that allows for efficient drawing from the posterior (which we employ). Müller and Quintana (2004) provide a survey of nonparametric Bayesian methods for applied researchers. Miller and Harrison (2018) study the finite mixture model with a prior on the number of components, which shares the spirit of our approach. The remainder of the paper is organized as follows. Section 2 formalizes the specifica-tion problem, establishes the bias-variance trade-off under partial homogeneity. Section 3 develops the Dirichlet Process model, covering its specification, estimation, and inference, and records the ℓ0-penalized estimator that arises as a fixed-variance MAP within the same partition-model family. Section 4 reports the simulation results, Section 5 presents two empirical applications, and Section 6 concludes. 42 The Framework 
+
+# 2.1 Setup and Assumptions 
+
+Consider a balanced panel with 𝑁 units observed over 𝑇 time periods. We are interested in estimating the effect of a binary treatment, 𝐷 𝑖𝑡 ∈ { 0, 1}, on the outcome variable, 𝑌 𝑖 𝑔𝑡 ∈ R.Let 𝑌 𝑖 𝑔𝑡 (1) and 𝑌 𝑖 𝑔𝑡 (0) denote the potential outcomes with and without treatment, related to the observed outcome by 𝑌 𝑖 𝑔𝑡 = 𝐷 𝑖𝑡 𝑌 𝑖 𝑔𝑡 (1) + ( 1 − 𝐷 𝑖𝑡 ) 𝑌 𝑖 𝑔𝑡 (0). Assume we observe the sample {𝑌 𝑖 𝑔 1, . . . , 𝑌 𝑖 𝑔𝑇 , 𝐷 𝑖 𝑔 1, . . . , 𝐷 𝑖 𝑔𝑇 } where 𝑖 = 1, . . . , 𝑁 indexes units and 𝑡 = 1, . . . , 𝑇 
+
+indexes time. Units belong to one of 𝑔 treated cohorts (indexed by treatment entry date 
+
+𝑔 ∈ { 2, 3, . . . , 𝑇 } = 𝒢 ) or a never-treated group ( 𝑔 = 0). Period 1 is assumed to be pre-treatment for all cohorts, which means 𝑔 ≠ 1. Let 𝑁 𝑔 be the number of units in the cohort 
+
+𝑔 and thus Í𝑔 𝑁 𝑔 = 𝑁 . We make the following assumptions about the treatment process: 
+
+Assumption 1 (Random Sample): {𝑌 𝑖 𝑔 1, . . . , 𝑌 𝑖 𝑔𝑇 , 𝐷 𝑖 1, . . . , 𝐷 𝑖𝑇 }𝑁 𝑖 =1 are independent and identically distributed. Each sampled unit contributes its complete length-𝑇 
+
+trajectory, consistent with the balanced panel maintained throughout. 
+
+Assumption 2 (Irreversibility of Treatment): It implies that once a unit is treated, that unit remains treated in the next period. Units do not “forget” about the treatment experience. If 𝐷 𝑖,𝑡 −1 = 1 then 𝐷 𝑖,𝑡 = 1. 
+
+Assumption 3 (Parallel Trends): In the absence of treatment, the outcome follows the same trend across cohorts. Formally, for every pair of adjacent periods (𝑡 −
+
+1, 𝑡 ), the expected change in the untreated potential outcome, 𝐸 𝑌 𝑖 𝑔𝑡 (0) − 𝑌 𝑖 𝑔,𝑡 −1(0),does not depend on the cohort 𝑔 (with 𝑔 = 0 the never-treated group). Because it is stated on the untreated potential outcome, the restriction is well defined in every period, including post-adoption periods 𝑡 ≥ 𝑔 where 𝑌 𝑖 𝑔𝑡 (0) is counterfactual, and it is unaffected by which cohorts have already adopted. The assumption may hold either unconditionally or only after conditioning on covariates; we allow the conditional version, that 𝐸 𝑌 𝑖 𝑔𝑡 (0) − 𝑌 𝑖 𝑔,𝑡 −1(0) | 𝑋 𝑖 𝑔𝑡 
+
+ does not depend on 𝑔 , which accommodates (1) covariate-specific trends in 𝑌 𝑖 𝑔𝑡 (0) and (2) different distributions of covariates across cohorts, provided the compared cohorts share common support in 𝑋 𝑖 𝑔𝑡 , without requiring it. We impose it at the unit level, though our estimator remains valid under the cohort-level version. 
+
+Assumption 4 (No Treatment Anticipation): There is no treatment effect in pre-treatment periods. The outcome 𝑌 𝑖 𝑔𝑡 in any period before 𝑔 is, on average, equal to the untreated outcome. 52.2 The Specification Problem 
+
+Under homogeneous effects the CATTs all equal the ATT and ˆ𝜏 pool is unbiased. Under heterogeneity they differ, and the target ATT is a weighted average of the CATTs, 
+
+𝜏 =
+
+Õ
+
+> 𝑔
+
+Õ
+
+> 𝑡
+
+𝑤 𝑔𝑡 𝜏 𝑔𝑡 , (2) where 𝜏 𝑔𝑡 is the CATT for cohort 𝑔 at calendar time 𝑡 and Callaway and Sant’Anna (2021) discusses the choice of weights. As reviewed in Section 1, ˆ𝜏 pool is then biased for 𝜏 , because already-treated units enter as controls (the forbidden comparison) and some weights in the Goodman-Bacon (2021) decomposition turn negative. The literature offers several unbiased alternatives, restricting the controls to never- or not-yet-treated units (Callaway and Sant’Anna, 2021; Sun and Abraham, 2021), allowing treatment to switch on and off (de Chaisemartin and D’Haultfœuille, 2020), or estimating one coefficient per cohort-time cell through the flexible and imputation estimators of Wooldridge (2025), Gardner (2022), Borusyak et al. (2024), and Liu et al. (2024), which are unbiased and efficient under spherical errors, with Arora and Bĳani (2026) extending efficiency to arbitrary within-unit serial correlation. We build on the flexible TWFE of Wooldridge (2025), which interacts the treatment dummy with the cohort-time dummies, 
+
+𝑌 𝑖 𝑔𝑡 = 𝛼 𝑖 + 𝜆 𝑡 +
+
+Õ
+
+> 𝑔 ∈𝒢
+
+Õ
+
+> 𝑡 ≥𝑔
+
+𝜏 𝑔𝑡 𝐷 𝑖 𝑔𝑡 + 𝜀 𝑖𝑡 , (3) and recovers unbiased CATTs ˆ𝜏 𝑔𝑡 , from which the ATT is estimated as ˆ𝜏 flex = Í𝑔 
+
+Í𝑡 𝑤 𝑔𝑡 ˆ𝜏 𝑔𝑡 .Let 𝑌 be the 𝑁𝑇 × 1 vector of outcomes and 𝐷 = [𝐷 1, . . . , 𝐷 𝐾 ] be the 𝑁𝑇 × 𝐾 matrix of cohort-time dummies. Let ˜𝑌 = 𝑌 − ¯ 𝑌 𝑖 − ¯ 𝑌 𝑡 + ¯ 𝑌 be the vector of within-transformed outcomes and ˜𝐷 = [ ˜ 𝐷 1, . . . , ˜𝐷 𝐾 ] be the matrix of within-transformed cohort-time dummies where 
+
+˜𝐷 𝑘 = 𝐷 𝑘 − ¯ 𝐷 𝑘𝑖 − ¯ 𝐷 𝑘𝑡 + ¯ 𝐷 𝑘 . Here, ¯𝑌 𝑖 and ¯𝐷 𝑘𝑖 are the unit-specific averages over time, ¯𝑌 𝑡 
+
+and ¯𝐷 𝑘𝑡 are the time-specific averages over units and ¯𝑌 and ¯𝐷 𝑘 are the overall averages. Double-demeaning is the orthogonal projection onto the residual space of the unit and time fixed effects, a subspace of dimension 𝑟 = 𝑁𝑇 − 𝑁 − 𝑇 + 1. Representing that space by an orthonormal basis 𝑄 with 𝑄 ′𝑄 = 𝐼 𝑟 , and reading ˜𝑌 and ˜𝐷 in these 𝑟 coordinates, the within-transformed model is 
+
+˜𝑌 = ˜𝐷 𝜏 + ˜ 𝜀 , ˜𝜀 ∼  0, 𝜎 2𝐼 𝑟 
+
+ , (4) where 𝜏 = (𝜏 1, . . . , 𝜏 𝐾 )′ collects all 𝐾 CATTs. The transformation enters every estimator below only through the cross-products ˜𝐷 ′ ˜𝐷 and ˜𝐷 ′ ˜𝑌 , which coincide in the double-demeaned and orthonormal representations, so we use the two interchangeably. Ordinary least squares on (4) yields the fully flexible estimator 
+
+ˆ𝜏 flex =   ˜𝐷 ′ ˜𝐷 −1 ˜𝐷 ′ ˜𝑌 = [ ˆ 𝜏 1,flex , . . . , ˆ𝜏 𝐾, flex ]′ Var   ˆ𝝉 flex 
+
+ = 𝜎 2   ˜𝐷 ′ ˜𝐷 −1. (5) The 𝑘 𝑡 ℎ diagonal element of 𝜎 2[( ˜ 𝐷 ′ ˜𝐷 )−1] is the sampling variance of the 𝑘 𝑡 ℎ CATT esti-mate. Because each CATT is estimated from the variation in its own within-transformed 6indicator, this variance is governed by how much identifying variation CATT 𝑘 possesses individually. In large panels with many cohorts and long post-treatment windows, 𝐾 is large and the variation attributable to any single CATT cell is correspondingly modest, leading to imprecise estimates even when the overall sample size 𝑁𝑇 is large. The opposite extreme imposes a single common coefficient 𝜏 for every cohort-time cell. Writing ˜𝐷 pool = Í𝐾 𝑘 =1 ˜𝐷 𝑘 for the aggregate within-transformed treatment indicator, the fully pooled estimator is 
+
+ˆ𝜏 pool =   ˜𝐷 ′ 
+
+> pool
+
+˜𝐷 pool 
+
+−1 ˜𝐷 ′ 
+
+> pool
+
+˜𝑌, Var   ˆ𝜏 pool 
+
+ = 𝜎 2
+
+˜𝐷 pool  
+
+> 2
+
+. (6) Since ˜𝐷 pool aggregates the variation of all 𝐾 cells, ∥ ˜ 𝐷 pool ∥2 > ∥ ˜ 𝐷 𝑘 ∥2 for any individual 
+
+𝑘 , and the pooled estimator is correspondingly precise. The cost is bias. The pooled estimator is consistent for a weighted average of the true CATTs, Í𝐾 𝑘 =1 𝑤 𝑘 𝜏 ∗ 
+
+> 𝑘
+
+, not for any individual 𝜏 ∗ 
+
+> 𝑘
+
+. Formally, the bias of ˆ𝜏 pool as an estimator of 𝜏 ∗ 
+
+> 𝑘
+
+is 
+
+E ˆ𝜏 pool 
+
+ − 𝜏 ∗ 
+
+> 𝑘
+
+=
+
+> 𝐾
+
+Õ
+
+> 𝑗 =1
+
+𝑤 𝑗 
+
+ 𝜏 ∗ 
+
+> 𝑗
+
+− 𝜏 ∗
+
+> 𝑘
+
+ , 𝑤 𝑗 =
+
+˜𝐷 ′ 
+
+> pool
+
+˜𝐷 𝑗 
+
+˜𝐷 ′ 
+
+> pool
+
+˜𝐷 pool 
+
+, (7) the implicit weights pooled TWFE places on the cohort-time effects, which sum to one. When the within-transformed dummies are mutually orthogonal these reduce to the positive norm weights 𝑤 𝑗 = ∥ ˜ 𝐷 𝑗 ∥2/Íℓ ∥ ˜ 𝐷 ℓ ∥2; in general the cross-products ˜𝐷 ′ 
+
+> pool
+
+˜𝐷 𝑗 left by the shared fixed effects need not be positive, and 𝑤 𝑗 then coincides with the Goodman– Bacon weighting, which can turn negative where already-treated units serve as controls. The bias in (7) for cell 𝑘 equals Í𝑗 𝑤 𝑗 𝜏 ∗ 
+
+> 𝑗
+
+− 𝜏 ∗ 
+
+> 𝑘
+
+, the gap between the weighted average and cell 𝑘 ; it is zero for every cell simultaneously only when all true CATTs are equal, the case in which the pooled model is correctly specified, though for a particular cell it can vanish when that cell’s effect happens to coincide with the weighted average. Under genuine heterogeneity a single pooled coefficient cannot reproduce the full CATT vector, whatever weighted average it targets, so it is uninformative for heterogeneity-aware policy analysis even where it happens to be unbiased for an individual cell. The estimators we propose pool clean cohort-time effects rather than raw observations, so any grouping short of full pooling combines only clean comparisons; away from that corner the specification problem we study is one of aggregation among clean effects rather than the negative-weight problem of raw TWFE, with which the fully pooled benchmark coincides. The flexible specification (3) is an ordinary linear regression, so covariate adjustment needs no new machinery. To accommodate the conditional version of Assumption 3, we augment it with covariates 𝑋 𝑖 𝑔𝑡 , time-varying controls or covariate-cohort interactions that permit covariate-specific trends, 
+
+𝑌 𝑖 𝑔𝑡 = 𝛼 𝑖 + 𝜆 𝑡 + 𝑋 ′ 
+
+> 𝑖 𝑔𝑡
+
+𝛽 +
+
+Õ
+
+> 𝑔 ∈𝒢
+
+Õ
+
+> 𝑡 ≥𝑔
+
+𝜏 𝑔𝑡 𝐷 𝑖 𝑔𝑡 + 𝜀 𝑖𝑡 . (8) 7By the Frisch–Waugh–Lovell theorem the CATT estimates are identical whether 𝑋 enters the regression directly or is partialled out beforehand. Writing 𝑀 for the residual-maker that projects off the unit and time fixed effects together with 𝑋 , and redefining the within-transformed quantities as ˜𝑌 = 𝑀𝑌, ˜𝐷 𝑘 = 𝑀𝐷 𝑘 , (9) which generalizes the double-demeaning of (4) to residualize on the covariates as well, the flexible estimator (5), the Bayesian model of Section 3, and the ℓ0-PH estimator all apply verbatim with ˜𝑌 and ˜𝐷 read as these covariate-residualized quantities. Covariate adjustment thus enters entirely through the within transformation and leaves the partition-selection problem unchanged. 
+
+# 2.3 Partial Homogeneity 
+
+Let the true parameter vector 𝜏 = (𝜏 1, . . . , 𝜏 𝐾 )′ exhibit partial homogeneity : there is a partition 𝒫 = {𝐶 1, . . . , 𝐶 𝑚 } of {1, . . . , 𝐾 } into 𝑚 ≤ 𝐾 groups with 
+
+𝜏 𝑘 = 𝜙 𝑝 for all 𝑘 ∈ 𝐶 𝑝 , 𝑝 = 1, . . . , 𝑚, (10) where the group effects 𝜙 1, . . . , 𝜙 𝑚 are distinct. The groups may have arbitrary sizes 
+
+|𝐶 1|, . . . , |𝐶 𝑚 |, and we call 𝒫 the true partition. Partial homogeneity is the regime 𝑚 < 𝐾 ,where the true model has only 𝑚 distinct parameters and the fully flexible model is over-parameterized by 𝐾 − 𝑚 . Nothing below restricts the shape of 𝒫 ; the efficiency gain accrues to every group 𝐶 𝑝 with |𝐶 𝑝 | ≥ 2, and a singleton group contributes none. (The special case of one large group together with singletons is the sharpest illustration but is not assumed.) To estimate the correctly specified model under 𝒫 , define the group regressors ˜𝐷 𝑝 =
+
+Í𝑘 ∈𝐶 𝑝 
+
+˜𝐷 𝑘 and collect them into the 𝑁𝑇 ×𝑚 matrix ˜𝐷 ∗ = [ ˜ 𝐷 1, . . . , ˜𝐷 𝑚 ], where for a singleton 
+
+𝐶 𝑝 = {𝑘 𝑝 } we have ˜𝐷 𝑝 = ˜𝐷 𝑘 𝑝 . We assume a homoskedastic error and proceed with the restricted model ˜𝑌 = ˜𝐷 ∗𝜙 + ˜ 𝜀 , ˜𝜀 ∼  0, 𝜎 2𝐼 𝑟 
+
+ , (11) whose OLS estimator is 
+
+ˆ𝜙 PH =   ˜𝐷 ∗′ ˜𝐷 ∗−1 ˜𝐷 ∗′ ˜𝑌, Var   ˆ𝜙  = 𝜎 2   ˜𝐷 ∗′ ˜𝐷 ∗−1. (12) The 𝑝 -th diagonal element of 𝜎 2( ˜ 𝐷 ∗′ ˜𝐷 ∗)−1 governs the precision of ˆ𝜙 𝑝 , the estimate of the common effect of group 𝐶 𝑝 . For any 𝑘 ∈ 𝐶 𝑝 the estimate of 𝜏 𝑘 = 𝜙 𝑝 is ˆ𝜙 𝑝 , which pools the identifying variation of every cell in 𝐶 𝑝 , whereas the flexible estimator uses only the variation in ˜𝐷 𝑘 . This difference in the effective information set is the source of the variance gap. We call ˆ𝜙 PH the partial homogeneity (PH) estimator for the rest of the paper. We now establish that, group by group, the PH estimator dominates the fully flexible estimator. Because both are unbiased for 𝜙 𝑝 under the true model, the Gauss–Markov theorem determines which is more efficient. 8Proposition 1 (PH efficiency dominance) . Under the true partition 𝒫 , for every group 𝐶 𝑝 and every 𝑘 ∈ 𝐶 𝑝 ,
+
+Var   ˆ𝜙 𝑝 
+
+ ≤ Var   ˆ𝜏 𝑘, flex 
+
+ , (13) 
+
+with strict inequality whenever |𝐶 𝑝 | ≥ 2 and the pooled cells contribute identifying variation about 𝜙 𝑝 beyond that in ˜𝐷 𝑘 (in particular, always under orthogonality with ∥ ˜ 𝐷 𝑘 ∥2 > 0); under orthogonality a singleton group attains equality. Proof. Under 𝒫 we have 𝜏 𝑘 = 𝜙 𝑝 for 𝑘 ∈ 𝐶 𝑝 , so ˆ𝜏 𝑘, flex is a linear, unbiased estimator of 𝜙 𝑝 . By the Gauss–Markov theorem, ˆ𝜙 𝑝 is the best linear unbiased estimator (BLUE) of 𝜙 𝑝 among all linear functions of ˜𝑌 , hence Var ( ˆ 𝜏 𝑘, flex ) ≥ Var ( ˆ 𝜙 𝑝 ); this holds for any design. The inequality is strict whenever ˆ𝜙 𝑝 ≠ ˆ𝜏 𝑘, flex with positive probability, that is whenever the partition imposes a binding restriction on the estimation of cell 𝑘 . This holds whenever the other cells in 𝐶 𝑝 carry identifying variation about 𝜙 𝑝 beyond that in ˜𝐷 𝑘 —generically, and always under orthogonality with ∥ ˜ 𝐷 𝑘 ∥2 > 0—but it can fail if a group member contributes no independent variation (a collinear or unidentified cell, as in Appendix A), in which case pooling that cell leaves ˆ𝜏 𝑘, flex unchanged and the dominance is only weak. Under orthogonality a singleton group imposes no such restriction and the two estimators coincide; in a non-orthogonal design, however, pooling the remaining groups can lower Var ( ˆ 𝜙 𝑝 ) even for a singleton, so the equality is special to the orthogonal case. The result holds for every group at once, so the total efficiency gain is the sum of the within-group gains. Under orthogonality only groups of size at least two contribute; in non-orthogonal designs even a singleton can gain, since the restricted estimator borrows strength across the correlated cells (Section 5.1). To make the variance reduction explicit, we work under the additional assumption that the within-transformed cohort-time dummies are mutually orthogonal, ˜𝐷 ′ 
+
+> 𝑗
+
+˜𝐷 𝑘 = 0for 𝑗 ≠ 𝑘 , which holds approximately for balanced panels in which each unit belongs to exactly one cohort and which we impose exactly to obtain closed-form expressions. Under orthogonality, ˜𝐷 ′ ˜𝐷 = diag (𝑛 1, . . . , 𝑛 𝐾 ) with 𝑛 𝑘 = ∥ ˜ 𝐷 𝑘 ∥2 the effective sample size for CATT 
+
+𝑘 . The flexible variance is then Var   ˆ𝜏 𝑘, flex 
+
+ = 𝜎 2
+
+𝑛 𝑘 
+
+, 𝑘 = 1, . . . , 𝐾, (14) while ∥ ˜ 𝐷 𝑝 ∥2 = Í𝑘 ∈𝐶 𝑝 𝑛 𝑘 , so the PH variance for group 𝐶 𝑝 is Var   ˆ𝜙 𝑝 
+
+ = 𝜎 2
+
+Õ
+
+> 𝑘 ∈𝐶 𝑝
+
+𝑛 𝑘 
+
+. (15) 9Taking the ratio for any 𝑘 ∈ 𝐶 𝑝 ,Var ( ˆ 𝜙 𝑝 )
+
+Var ( ˆ 𝜏 𝑘, flex ) = 𝑛 𝑘 
+
+Õ
+
+> 𝑗 ∈𝐶 𝑝
+
+𝑛 𝑗 
+
+≤ 1, (16) strictly less than one whenever |𝐶 𝑝 | ≥ 2 and decreasing in the effective sample sizes of the other cells in the group. In the balanced case 𝑛 𝑘 = 𝑛 the ratio is 1 /| 𝐶 𝑝 |, so the PH estimator is exactly |𝐶 𝑝 | times more efficient than the flexible estimator for every cell in group 𝐶 𝑝 . The gain grows with group size, as pooling |𝐶 𝑝 | cells concentrates |𝐶 𝑝 | times as much effective sample size onto a single coefficient. The fully pooled estimator lowers the variance further by imposing a single coefficient across all 𝐾 cells, at the cost of bias in every group. Under Eq. 11 with orthogonal dummies its probability limit is 
+
+E ˆ𝜏 pool 
+
+ =
+
+> 𝐾
+
+Õ
+
+> 𝑘 =1
+
+𝑤 𝑘 𝜏 𝑘 =
+
+> 𝑚
+
+Õ
+
+> 𝑝 =1
+
+𝑊 𝑝 𝜙 𝑝 , 𝑤 𝑘 = 𝑛 𝑘 
+
+Í𝑗 𝑛 𝑗 
+
+, 𝑊 𝑝 =
+
+Õ
+
+> 𝑘 ∈𝐶 𝑝
+
+𝑤 𝑘 , (17) where 𝑊 𝑝 is the total weight of group 𝐶 𝑝 . For any cell 𝑘 ∈ 𝐶 𝑝 the bias is therefore 
+
+E ˆ𝜏 pool 
+
+ − 𝜙 𝑝 =
+
+Õ
+
+> 𝑞 ≠𝑝
+
+𝑊 𝑞 
+
+ 𝜙 𝑞 − 𝜙 𝑝 
+
+ , (18) a weight-averaged sum of the gaps between group 𝑝 and every other group, equal to Í𝑞 𝑊 𝑞 𝜙 𝑞 − 𝜙 𝑝 . It is non-zero for generic 𝜙 and does not vanish as 𝑛 → ∞ , but it is zero for a particular group whenever 𝜙 𝑝 equals the weight-averaged group effect Í𝑞 𝑊 𝑞 𝜙 𝑞 , which can occur through cancellation of groups above and below 𝜙 𝑝 . The signals of the other groups bleed into the pooled estimate, so 𝜙 𝑝 is estimated as a distorted mixture of all 𝑚 
+
+true effects. The practical challenge is that 𝒫 is unknown. A researcher who uses the fully flexible estimator by default leaves 𝐾 −𝑚 degrees of freedom on the table and reports unnecessarily wide intervals, while one who collapses to a single pooled coefficient introduces bias that cannot be detected without further structure. What is needed is a data-driven procedure that recovers 𝒫 , or a close approximation, from the data. The ℓ0-penalized estimator and the Bayesian Dirichlet Process approach of the following sections provide two principled answers. 1
+
+Table 1 collects the notation used throughout the paper for reference.  
+
+> 1Partial homogeneity also aids identification under limited overlap. A cohort-time cell with no clean comparison, and hence no independent identifying variation, can inherit the common effect of its group whenever that group contains an identified cell, though this is identification by assumption, untestable for the very cell that lacks overlap. Appendix A gives the formal statement.
+
+10 Table 1: Notation used throughout the paper. 
+
+Symbol Meaning 
+
+𝑁 , 𝑇 number of units; number of time periods 
+
+𝑔 cohort, i.e. period of first treatment ( 𝑔 = 0: never-treated) 
+
+𝒢 = {2, . . . , 𝑇 } set of treated cohorts 
+
+𝐾 number of post-treatment cohort-time (CATT) cells 
+
+𝜏 𝑔𝑡 , 𝜏 𝑘 CATT of cohort 𝑔 at time 𝑡 ; generic cell effect 
+
+𝜏 = (𝜏 1 , . . . , 𝜏 𝐾 )′ vector of all 𝐾 CATTs 
+
+˜𝑌, ˜𝐷 within-transformed outcome; full 𝑟 × 𝐾 design 
+
+˜𝐷 𝑘 , 𝑛 𝑘 = ∥ ˜ 𝐷 𝑘 ∥2 column and effective sample size of cell 𝑘 𝑟 = 𝑁𝑇 − 𝑁 − 𝑇 + 1 dimension of the within (residual) space 
+
+𝒫 = {𝐶 1 , . . . , 𝐶 𝑚 } partition of the 𝐾 cells into 𝑚 groups 
+
+𝜙 = (𝜙 1 , . . . , 𝜙 𝑚 )′ group effects ( 𝜏 𝑘 = 𝜙 𝑝 for 𝑘 ∈ 𝐶 𝑝 )
+
+˜𝐷 ∗ = ˜𝐷 𝒫 grouped 𝑟 × 𝑚 design under 𝒫 ˆ𝜏 flex , ˆ𝜏 pool , ˆ𝜙 PH flexible, pooled, and partial-homogeneity estimators 
+
+𝛼 ; 𝐺 0 = 𝒩 ( 𝜇 0 , 𝜎 20 ) DP concentration; DP base measure 
+
+𝜅 = 𝜎 20 /𝜎 2 prior-to-error variance ratio 
+
+𝑐 (𝒫) ; 𝜆 number of cross-group CATT pairs; ℓ0 penalty 
+
+ˆΣ first-stage covariance of ˆ𝜏 (applications) 
+
+ˆ𝜋 𝑗𝑘 posterior co-clustering probability of cells 𝑗, 𝑘 
+
+# 3 A Bayesian Model for Partition Selection 
+
+We develop the Dirichlet Process (DP) mixture model for the CATTs, specifying it in Section 3.1, treating its error variance and the fixed-variance ℓ0 maximum-a-posteriori estimator in Section 3.2, and estimating it with a collapsed Gibbs sampler in Section 3.3. 
+
+# 3.1 Model Specification 
+
+Recall the within-transformed model from (11), 
+
+˜𝑌 = ˜𝐷 𝜏 + ˜𝜀 , ˜𝜀 | ˜ 𝐷 ∼ 𝑁  0, 𝜎 2𝐼 𝑟 
+
+ . (19) We treat the 𝜏 𝑘 as exchangeable draws from an unknown mixing distribution 𝐺 and place a Dirichlet Process prior on 𝐺 :
+
+𝐺 ∼ DP (𝛼 , 𝐺 0), (20) 
+
+𝜏 𝑘 | 𝐺 iid 
+
+∼ 𝐺, 𝑘 = 1, . . . , 𝐾, (21) 
+
+𝐺 0 = 𝒩  𝜇 0, 𝜎 20
+
+ . (22) Following Ferguson (1973), draws from a Dirichlet Process are almost surely discrete, so realisations of 𝐺 assign positive probability to ties among the 𝜏 𝑘 . These ties induce 11 a random clustering of the 𝐾 CATTs into 𝑚 ≤ 𝐾 distinct values, which is precisely the partition structure of interest. The base measure 𝐺 0 governs the location of cluster effects, and its variance 𝜎 20 encodes the analyst’s prior dispersion of treatment effects across distinct groups. In the absence of prior information we recommend a diffuse choice ( 𝜎 20
+
+large relative to 𝜎 2). The concentration parameter 𝛼 > 0 controls the prior expected number of clusters, 
+
+E[𝑚 | 𝛼 , 𝐾 ] ≈ 𝛼 log (1 + 𝐾 /𝛼 ) , (23) with 𝛼 → 0 favoring the fully pooled specification and 𝛼 → ∞ favoring the fully flexible specification. Marginalizing 𝐺 in (20)–(21) yields a Pólya-urn predictive distribution for the cluster labels 𝑧 = (𝑧 1, . . . , 𝑧 𝐾 ), commonly referred to as the Chinese Restaurant Process (CRP). Conditional on the previous 𝑘 − 1 assignments, Pr (𝑧 𝑘 = 𝑐 | 𝑧 1, . . . , 𝑧 𝑘 −1) =
+
+
+
+𝑛 𝑐 
+
+𝑘 − 1 + 𝛼 , cluster 𝑐 has 𝑛 𝑐 members, 
+
+𝛼 
+
+𝑘 − 1 + 𝛼 , 𝑐 is a new cluster. (24) The CRP exhibits the rich-get-richer property, whereby clusters with more members are more likely to attract additional CATTs, but a fresh cluster can always be opened with weight proportional to 𝛼 . Equivalently, the marginal prior probability of any partition 
+
+𝒫 = {𝐶 1, . . . , 𝐶 𝑚 } of {1, . . . , 𝐾 } takes the closed form Pr (𝒫) = 𝛼 𝑚 Î𝑚 𝑙 =1
+
+ |𝐶 𝑙 | − 1!
+
+𝛼 (𝐾 ) , 𝛼 (𝐾 ) = 𝛼 (𝛼 + 1) · · · ( 𝛼 + 𝐾 − 1), (25) which depends on 𝒫 only through the cluster sizes and the number of clusters. Equa-tion (25) delivers the partition prior we combine with the data likelihood below. The complete hierarchical model places a conjugate prior on the error variance as well. Under a partition 𝒫 , write ˜𝐷 ∗ = ˜𝐷 𝒫 for the 𝑟 × 𝑚 grouped design of Section 2, whose 𝑚 
+
+columns sum the within-transformed cell columns of each group, so that ˜𝐷 denotes the full 𝐾 -column design and ˜𝐷 ∗ its partition-collapsed form: 
+
+˜𝑦 | 𝒫 , 𝜙 , 𝜎 2 ∼ 𝒩   ˜𝐷 ∗ 𝜙 , 𝜎 2𝐼 𝑟 
+
+ , (26) 
+
+𝜙 | 𝒫 ∼ 𝒩  𝜇 01𝑚 , 𝜎 20 𝐼 𝑚 
+
+ , (27) 
+
+𝜎 2 ∼ Inv-Gamma (𝑎 0, 𝑏 0), (28) so that no quantity is fixed by plug-in and the specification is a complete Bayesian model. We take this full model, with 𝜎 2 random, as our primary specification throughout, and it is what the simulations and applications report. The inverse-gamma prior is condi-tionally conjugate, which keeps the collapsed sampler tractable. In an application the sampler needs only the first-stage cohort-time estimates and their joint covariance, enter-ing through ˜𝐷 ∗′ ˜𝐷 ∗ and ˜𝐷 ∗′ ˜𝑌 , rather than the micro panel; Lemma 1 makes this two-stage reading precise and is how the empirical applications of Section 5 are run. At any value of 𝜎 2, the value the sampler conditions on at a given sweep, the prior on 
+
+𝜙 is conjugate to the Gaussian likelihood, so the group effects integrate out analytically. 12 Standard calculations yield 
+
+˜𝑦 | 𝒫 ∼ 𝒩  𝜇 0 ˜𝐷 ∗ 1𝑚 , 𝜎 2𝐼 𝑟 + 𝜎 20 ˜𝐷 ∗ ˜𝐷 ∗′  . (29) Direct evaluation of the density implied by (29) would require inverting the 𝑟 ×𝑟 covariance matrix, which is computationally prohibitive in panels of empirical scale. The matrix determinant lemma and the Woodbury identity reduce the calculation to operations on 
+
+𝑚 × 𝑚 matrices. Letting 𝜅 = 𝜎 20/𝜎 2, writing ˜𝑌 0 = ˜𝑌 − 𝜇 0 ˜𝐷 ∗1𝑚 for the outcome centered at the prior mean (its ˜𝐷 ∗1𝑚 is the total treatment indicator, common to every 𝒫 ), and dropping additive constants in 𝒫 , the log marginal likelihood admits the form log 𝑝 ( ˜ 𝑦 | 𝒫) ∝ − 12 log 𝐼 𝑚 + 𝜅 ˜𝐷 ∗′ ˜𝐷 ∗ + 𝜅 
+
+2𝜎 2
+
+  ˜𝐷 ∗′ ˜𝑌 0
+
+′ 𝐼 𝑚 + 𝜅 ˜𝐷 ∗′ ˜𝐷 ∗−1  ˜𝐷 ∗′ ˜𝑌 0
+
+. (30) The posterior of 𝜙 given 𝒫 and 𝜎 2 is 𝑁 (𝜇 ∗, Σ∗) with 
+
+Σ∗ =   ˜𝐷 ∗′ ˜𝐷 ∗/𝜎 2 + 𝐼 𝑚 /𝜎 20
+
+−1 , 𝜇 ∗ = Σ ∗   ˜𝐷 ∗′ ˜𝑌 /𝜎 2 + 𝜇 01𝑚 /𝜎 20
+
+ . (31) The collapsed Gibbs sampler (Section 3.3) draws 𝜎 2 from its inverse-gamma full conditional each sweep and evaluates (30)–(31) at that draw. 
+
+Remark 1 (The design covariance) . The grouped posterior (31) must be built from the exact within-design cross-product ˜𝐷 ′ ˜𝐷 of the full flexible model (its grouped version being ˜𝐷 ∗′ ˜𝐷 ∗). The cohort-time estimates ˆ𝜏 𝑘 are jointly 𝑁 (𝜏 , 𝜎 2( ˜ 𝐷 ′ ˜𝐷 )−1) and are correlated through the shared fixed effects. Treating them as independent understates the posterior variance of linear aggregates such as the overall ATT, in our design by a factor of about 3.5, and produces overconfident, undercovering intervals. The model above already uses this exact cross-product; we flag the point because the diagonal shortcut is tempting and its effect on coverage is large. 
+
+# 3.2 Fixed and Random 𝜎 2
+
+Under the full random-𝜎 2 specification of Section 3.1, integrating (𝜙 , 𝜎 2) out of a partition’s marginal likelihood gives a scale mixture of Gaussians. Because the base-measure variance 
+
+𝜎 20 is not scaled by 𝜎 2, the marginal covariance is 𝜎 2𝐼 𝑟 + 𝜎 20 ˜𝐷 ∗ ˜𝐷 ∗′ and the mixture is not a standard multivariate-𝑡 ; nonetheless a Schwarz (Laplace) approximation to its log marginal density shows that the MAP partition approximately minimizes a BIC-type criterion on the log residual sum of squares, 
+
+𝒫 MAP ≈ arg min  
+
+> 𝒫
+
+𝑁𝑇 log  RSS (𝒫)/ 𝑁𝑇  + 𝑚 log (𝑁𝑇 ) − 2 log Pr (𝒫) , (32) so the fit enters on the log scale with 𝜎 2 profiled out, the Occam term 𝑚 log (𝑁𝑇 ) comes from integrating the 𝑚 group effects and grows at the Schwarz rate, and Pr (𝒫) is the CRP prior (25); the expansion drops terms of order 𝑂 (1) in 𝑁𝑇 (Remark 2). Holding 𝜎 2 fixed at the plug-in ˆ𝜎 2 = RSS flex /( 𝑁𝑇 − 𝑁 − 𝑇 + 1 − 𝐾 ), the residual variance from the fully flexible regression (3), is a useful special case. With 𝜎 2 constant the model is Gaussian, the 13 group-effect posterior (31) is Normal, and the sampler draws partitions from the Gaussian marginal likelihood (30). Because the residual degrees of freedom 𝑁𝑇 − 𝑁 − 𝑇 + 1 − 𝐾 
+
+are large, the fixed- and random-𝜎 2 versions deliver essentially the same coverage and interval length in our experiments (Appendix D), so the choice is immaterial for the reported results. The homoskedastic assumption itself can be relaxed, and Appendix C extends the model to a heterogeneous error covariance and augments the sampler with a Gibbs update for group-specific error variances. At fixed 𝜎 2 the connection to the ℓ0 homogeneity-pursuit estimators of the panel-data and statistics literatures becomes exact rather than asymptotic. It is cleanest under a 
+
+pairwise partition prior that charges each pair of CATTs assigned to different groups, Pr (𝒫) ∝ exp  −𝜆 0 𝑐 (𝒫)  , 𝑐 (𝒫) =
+
+𝐾 
+
+2
+
+
+
+−
+
+> 𝑚
+
+Õ
+
+> 𝑝 =1
+
+|𝐶 𝑝 |
+
+2
+
+
+
+, (33) where 𝑐 (𝒫) counts the cross-group CATT pairs. This is a proper prior over partitions, in the same modeling family as Section 3.1, but it is not the CRP prior (25): the CRP weights a partition through 𝛼 𝑚 Î𝑙 (| 𝐶 𝑙 | − 1)!, which favors a few large clusters, whereas (33) imposes a flat cost per separated pair. We use (33) for the point estimator and retain the CRP for the sampler of Section 3.3. 
+
+Proposition 2 (ℓ0-PH as a fixed-variance MAP) . Fix 𝜎 2, place an improper flat prior 𝑝 (𝜙 |𝒫) ∝ 1 on the group effects, and adopt the pairwise prior (33) . Then the joint maximum a posteriori estimator of (𝒫 , 𝜙 ) has group-effect component equal to the restricted least-squares estimate ˆ𝜙 = ( ˜ 𝐷 ∗′ ˜𝐷 ∗)−1 ˜𝐷 ∗′ ˜𝑌 under 𝒫 , and partition component 
+
+ˆ𝒫 = arg min  
+
+> 𝒫
+
+𝑄 (𝒫) , 𝑄 (𝒫) = RSS (𝒫) + 𝜆 𝑐 (𝒫) , 𝜆 = 2𝜎 2𝜆 0. (34) 
+
+Proof. For fixed 𝒫 the flat prior leaves the Gaussian likelihood, whose profile over 𝜙 is maximized at the restricted least-squares estimate and equals exp  −RSS (𝒫)/ 2𝜎 2 up to a factor constant in 𝒫 . Multiplying by (33) and taking −2𝜎 2 log gives RSS (𝒫) + 2𝜎 2𝜆 0 𝑐 (𝒫) 
+
+up to an additive constant, which is 𝑄 (𝒫) with 𝜆 = 2𝜎 2𝜆 0.Written out in the outcome equation, 𝑄 (𝒫) trades fit against an ℓ0 penalty on the cross-group CATT pairs, pairs of CATTs placed in different groups and hence estimated with different coefficients, 
+
+𝑄 (𝒫) =
+
+Õ
+
+> 𝑖
+
+Õ
+
+> 𝑡
+
+
+
+𝑌 𝑖 𝑔𝑡 − 𝛼 𝑖 − 𝛾 𝑡 −
+
+Õ
+
+> 𝑔 ∈𝒢
+
+Õ
+
+> 𝑡 ≥𝑔
+
+𝜏 𝑔𝑡 𝐷 𝑖 𝑔𝑡 
+
+2
+
+| {z }
+
+> RSS (𝒫)
+
++ 𝜆 
+
+Õ
+
+> 𝑔 ≠𝑔 ′
+
+1[𝜏 𝑔𝑡 ≠ 𝜏 𝑔 ′𝑡 ]
+
+| {z } 
+
+> ℓ0penalty
+
+, (35) so the ℓ0-PH estimator is the MAP of the model (33) rather than a separate procedure. Here 𝜆 > 0 is the penalty parameter and 1 the indicator function. The penalty discourages splitting groups, which increases 𝑐 (𝒫) , unless the resulting reduction in RSS is large 14 enough to compensate. When 𝜆 = 0, 𝑄 (𝒫) = RSS (𝒫) , which is minimized by the fully flexible partition with 𝐾 groups. As 𝜆 → ∞ , the penalty dominates and 𝑄 (𝒫) is minimized by the fully pooled partition with 1 group. For intermediate 𝜆 , the optimal partition reflects the data’s evidence on which CATTs are equal. Merge groups 𝐴 and 𝐵 if and only if the increase in RSS from constraining them equal is smaller than 𝜆 · | 𝐴 | · | 𝐵 |, the factor |𝐴 | · | 𝐵 |
+
+being the number of cross-group pairs a merge eliminates. 
+
+Remark 2 (Which MAP is which) . Four related objects should be kept distinct. (i) The joint 
+
+MAP of Proposition 2, under a flat base measure and the pairwise prior (33) , is the exact ℓ0
+
+objective (35) . (ii) The marginal MAP that integrates the Gaussian group effects out of (30) 
+
+retains a log-determinant and a shrinkage term and does not reduce to a residual sum of squares; in the diffuse-base limit 𝜎 20 → ∞ its complexity charge is 𝑚  
+
+> 2
+
+log (𝜎 20/𝜎 2), a penalty on the number of groups rather than on cross-group pairs. (iii) Integrating the variance out as well yields a scale mixture of Gaussians (not a standard multivariate-𝑡 , since the base-measure variance 𝜎 20 is not scaled by 𝜎 2), whose Schwarz (Laplace) approximation is the BIC criterion (32) , exact only up to 
+
+𝑂 (1) terms. (iv) The agglomerative search of Appendix B minimizes (35) up to the orthogonal approximation of its merge cost. The point estimator we report is (i), computed by the two-step procedure below; the sampler of Section 3.3 targets the full posterior under the CRP prior and relies on none of these approximations. 
+
+Proposition 3 (Threshold interpretation) . For two singleton groups {𝑗 } and {𝑘 }, the merge criterion ΔObj (𝑗, 𝑘 ) < 0 is equivalent to 
+
+  ˆ𝜏 𝑗 − ˆ 𝜏 𝑘 
+
+2 · 𝑛 𝑗 𝑛 𝑘 
+
+𝑛 𝑗 + 𝑛 𝑘 
+
+< 𝜆 , (36) 
+
+where 𝑛 𝑗 = ∥ ˜ 𝐷 𝑗 ∥2 is the effective sample size for CATT 𝑗 . Two CATTs are pooled if and only if their squared difference, scaled by their harmonic-mean sample size, falls below the threshold 𝜆 .
+
+The merge cost in (36) is the orthogonal (diagonal-approximation) RSS increment of Ap-pendix B: it is exact when the within-transformed dummies are orthogonal, whereas in a non-orthogonal design the exact increment depends on the full cross-product ˜𝐷 ′ ˜𝐷 , and the Step-2 OLS re-estimation restores the exact fit in either case. Read as a rate calculation, the result clarifies why a wide range of 𝜆 separates correct from incorrect merges: the cost of a correct merge (two CATTs with the same true effect) is 𝑂 𝑝 (𝜎 2), the harmonic-weighted squared difference of two estimates separated only by noise, distributed as 𝜎 2
+
+times a 𝜒 21, whereas the cost of a wrong merge (different true effects) is 𝑂 (𝑁 · Δ𝜏 2), where 
+
+Δ𝜏 is the effect gap. Because the correct-merge cost is 𝑂 𝑝 (𝜎 2) rather than vanishing, a fixed 
+
+𝜆 = 𝑐 𝜎 2 leaves a constant probability of over-splitting (the upper 𝜒 21 tail); recovering 𝒫 
+
+with probability approaching one for fixed separated effects therefore requires a threshold that grows, with 𝜎 2 = 𝑜 (𝜆 𝑁 ) to suppress spurious splits and 𝜆 𝑁 = 𝑜 (𝑁 Δ𝜏 2) to prevent wrong merges. The BIC choice, whose effective per-merge threshold is 𝜆 ≍ 𝜎 2 log (𝑁𝑇 ),sits in this window, and the window widens with the separation; a formal consistency statement is left to Section 6. The penalty in (35) counts the number of distinct pairs across groups, which is the 
+
+ℓ0 norm applied to the vector of all  𝐾 
+
+> 2
+
+ pairwise differences {𝜏 𝑗 − 𝜏 𝑘 }𝑗 <𝑘 . The fused 15 LASSO (Tibshirani et al., 2005) instead uses the ℓ1 norm of pairwise differences (for ordered indices), producing a convex but inexact version of equality. The advantage of the ℓ0 formulation is that it produces exact equality constraints rather than approximate shrinkage. Computing the estimator takes two steps, an agglomerative search that returns ˆ𝒫 in 
+
+𝑂 (𝐾 3) time and an ordinary least squares re-estimation of the grouped model under ˆ𝒫 .2
+
+# 3.3 Estimation and Inference 
+
+We sample from the posterior Pr (𝒫 | ˜𝑦 ) ∝ 𝑝 ( ˜ 𝑦 | 𝒫) Pr (𝒫) using the collapsed Gibbs sampler of Neal (2000) (Algorithm 3), which integrates 𝜙 out analytically at each cluster-assignment step and, at the end of every sweep, reinstates it and updates the error variance 
+
+𝜎 2 by conjugate draws. At each iteration, we cycle over all 𝐾 CATTs. For CATT 𝑘 :1. Remove 𝑘 from its current cluster; delete the cluster if empty. 2. For each existing cluster 𝑐 and for a new cluster, compute the conditional probability Pr (𝑧 𝑘 = 𝑐 | 𝑧 −𝑘 , ˜𝑦 ) ∝ 
+
+(𝑛 −𝑘,𝑐 × 𝑝 ( ˜ 𝑦 | 𝑧 𝑘 = 𝑐, 𝑧 −𝑘 ), existing, 
+
+𝛼 × 𝑝 ( ˜ 𝑦 | 𝑧 𝑘 = 𝑐 new , 𝑧 −𝑘 ), new, , (37) where the marginal likelihoods are computed via (30). 3. Draw 𝑧 𝑘 from the normalized probabilities (37). After updating all cluster assignments, draw 𝜙 from the conjugate posterior 𝑁 (𝜇 ∗, Σ∗)
+
+and then, in the primary random-variance model, draw 𝜎 2 from its inverse-gamma full conditional given the current partition and group effects (the conjugate update of the prior (28)); the cluster-assignment marginals (30) of the next sweep are evaluated at this draw. The sequence of draws {𝑧 (𝑠 ), 𝜙 (𝑠 ), 𝜎 2(𝑠 )}𝑆 𝑠 =1 approximates the posterior. Fixing 𝜎 2 at the plug-in ˆ𝜎 2 omits this final draw and yields the fixed-variance sampler of Section 3.2. The posterior mean of 𝜏 𝑘 is 
+
+ˆ𝜏 Bayes  
+
+> 𝑘
+
+= (𝑆 − 𝑆 𝐵 )−1
+
+> 𝑆
+
+Õ
+
+> 𝑠 =𝑆 𝐵 +1
+
+𝜙 (𝑠 )
+
+> 𝑧 (𝑠 )
+> 𝑘
+
+, (38) 
+
+> 2Appendix B gives the agglomerative merge criterion and the re-estimation, and explains why the second step is needed. The agglomerative search minimizes an orthogonal approximation to the objective, and its pooled coefficients equal the restricted OLS only when the within-transformed cohort-time dummies are orthogonal, so the OLS re-estimation recovers the BLUE in general panels.
+
+16 where 𝑆 𝐵 is the burn-in sample. The 95% credible interval is obtained from the empirical quantiles of the draws. The co-clustering probability 
+
+ˆ𝜋 𝑗𝑘 = (𝑆 − 𝑆 𝐵 )−1
+
+> 𝑆
+
+Õ
+
+> 𝑠 =𝑆 𝐵 +1
+
+1𝑧 (𝑠 ) 
+
+> 𝑗
+
+= 𝑧 (𝑠 ) 
+
+> 𝑘
+
+(39) gives the posterior probability that CATTs 𝑗 and 𝑘 belong to the same group. The 𝐾 × 𝐾 
+
+matrix ˆΠ = [ ˆ 𝜋 𝑗𝑘 ] is the posterior similarity matrix, summarizing the full uncertainty over the grouping structure; when a single representative partition is desired, it can be obtained from the posterior together with a credible region using the loss-based summaries of Lau and Green (2007) and Wade and Ghahramani (2018). Aggregated estimands (e.g. the overall ATT or event-study coefficients) are computed by applying the linear aggregator of interest to each posterior draw and summarizing across the chain, which delivers uncertainty quantification that incorporates the uncertainty in the partition itself. The MAP partition of Section 3.2 and the posterior mean differ in what they report. The MAP is a single grouping of the cohort-time effects into a few distinct levels, the minimizer of the penalized residual sum of squares. The posterior mean, by contrast, averages over partitions and returns values that match no single grouping, so extracting a representative partition from it requires a separate loss-based summary of the co-clustering matrix. We do not claim that the mode is a less biased point estimate than the posterior mean. Holding the regularization fixed, the two nearly coincide, so choosing between the MAP and the posterior mean is about whether a single partition or the full partition-averaged summary is wanted, not about small-sample bias, and inference should come from the posterior in either case. 
+
+Remark 3 (Inference after partition selection) . The variance formula for ˆ𝜙 in (50) treats the partition ˆ𝒫 as fixed. In finite samples ˆ𝒫 is itself estimated, so confidence intervals built from 𝜎 2[( ˜ 𝐷 ∗′ ˜𝐷 ∗)−1]𝑝𝑝 are valid only conditional on the selected partition and can under-cover unconditionally, as with inference after any model-selection step (Leeb and Pötscher, 2005). When the recovery interval of Proposition 3 is wide, so that the true partition is selected with probability approaching one, this gap is small, and the simulations of Section 4 confirm that the plug-in intervals are then only mildly anti-conservative. The Bayesian estimator of Section 3 avoids the issue entirely by averaging over the partition rather than conditioning on a single one, and attains near-nominal coverage in our experiments; it is our preferred route to honest uncertainty quantification. 3 
+
+> 3An obvious alternative, sample splitting, selecting the partition on one subsample and estimating the coefficients on another, does not help, because halving the sample degrades recovery and a wrongly merged partition induces a specification bias that no standard-error correction removes. A selective-inference correction that conditions on the selection event (Fithian et al., 2014; Rinaldo et al., 2019) is a further route we do not pursue.
+
+17 4 Simulation Study 
+
+This section reports a Monte Carlo study with three aims: (i) to document, on the variance scale that matters for causal estimands, the efficiency of the Dirichlet-Process (DP) estima-tor relative to the fully flexible and fully pooled benchmarks under partial homogeneity; (ii) to show how those gains depend on how well separated the distinct effects are; and (iii) to evaluate honest inference by measuring confidence- and credible-interval coverage. We also carry the ℓ0 MAP estimator through the same experiments to see how the model’s mode compares with its posterior, and it behaves much like the DP throughout. 
+
+# 4.1 Design 
+
+We simulate a balanced panel with 𝑁 = 2,000 units and 𝑇 = 10 periods. Units are split equally across four cohorts, a never-treated group ( 𝑔 = 0) and three treated cohorts entering at 𝑡 = 3, 5, 7. This yields 𝐾 = 18 post-treatment cohort-time cells. Outcomes follow 
+
+𝑌 𝑖𝑡 = 𝛼 𝑖 + 𝜆 𝑡 + 𝜏 ∗ 
+
+> 𝑔 (𝑖 ),𝑡
+
+1{𝑡 ≥ 𝑔 (𝑖 )} + 𝜀 𝑖𝑡 , 𝛼 𝑖 ∼ 𝒩 ( 0, 1), 𝜆 𝑡 = 0.1(𝑡 − 1), 𝜀 𝑖𝑡 ∼ 𝒩 ( 0, 1). (40) The unit and time fixed effects are removed by the within transformation, so the estimators’ sampling behavior is driven entirely by 𝜀 .The partial-homogeneity truth is parameterized by the number of distinct effects and their separation. For a given number of distinct effects 𝑚 ∗, we partition the 𝐾 = 18 cells into 𝑚 ∗ near-equal groups and assign each group a mean on an evenly spaced grid with adjacent gap Δ. We sweep 𝑚 ∗ ∈ { 1, 3, 6, 9, 18 }, from fully homogeneous ( 𝑚 ∗ = 1, where pooling is correct) to fully heterogeneous ( 𝑚 ∗ = 18, where the flexible estimator is correct). The gap is calibrated to a unit-free separation 𝛿 ≡ Δ/sd ( ˆ 𝜏 flex ), the distance between adjacent group means in standard errors of the flexible cohort-time estimates; 𝛿 
+
+governs how easily the groups can be told apart. We report 𝛿 ∈ { 3, 6, 12 }, with 𝛿 = 6 as the headline. We compare five estimators, pooled TWFE (the biased-but-precise benchmark), flexible TWFE (unbiased-but-imprecise, in this balanced design it coincides with the Gardner (2022) two-stage estimator), the infeasible oracle partial-homogeneity estimator that is handed the true partition (the efficiency floor), the ℓ0-PH estimator, and the Bayes-PH estimator. The ℓ0 penalty is chosen by BIC (Schwarz, 1978) along the agglomeration path, BIC (𝑚 ) = 𝑁𝑇 log (RSS ( ˆ 𝒫 𝑚 )/ 𝑁𝑇 ) + 𝑚 log (𝑁𝑇 ), the flat-partition-prior case of (32), requiring no tuning grid. The DP sampler uses a diffuse base measure ( 𝜇 0 = 0, 𝜎 20 = 100) and concentration 𝛼 = 7 (so the prior expected number of groups is about 𝐾 /2), run for 150 Gibbs sweeps with a 50-sweep burn-in, drawing 𝜎 2 from its inverse-gamma full conditional each sweep (the full Bayesian model), and using the exact within-design covariance of the cohort-time estimates throughout, in both the cluster-assignment moves and the recorded draws (Remark 1). The overall ATT is the equal-weight average of the 𝐾 
+
+18 CATTs; aggregator choice is orthogonal to the specification question and does not affect the conclusions. All results use 500 Monte Carlo replications. 
+
+# 4.2 Variance and recovery under partial homogeneity 
+
+Table 2 reports, for the headline separation 𝛿 = 6, the sampling variance of the cohort-time estimates relative to flexible TWFE (lower is more precise), the average absolute CATT bias (a unbiasedness check), and the adjusted Rand index (ARI) measuring how well the true partition is recovered. Table 2: Sampling variance (ratio to flexible), bias, and partition recovery under partial homogeneity, 𝛿 = 6. “Var ratio” is the average per-cell Monte Carlo variance divided by that of flexible TWFE; “ |Bias |” is the average absolute CATT bias; ARI is the adjusted Rand index against the true partition. Oracle PH is infeasible (true partition known). 500 replications. 
+
+Scenario Method Var ratio |Bias | ARI 
+
+𝑚 ∗ = 1 (homogeneous) Pooled 0.14 0.001 1.00 Flexible 1.00 0.004 0.00 Oracle PH 0.14 0.001 1.00 
+
+ℓ0-PH 0.50 0.002 0.40 Bayes-PH 0.16 0.001 0.77 
+
+𝑚 ∗ = 3 (partial) Pooled 0.13 0.236 0.00 Flexible 1.00 0.002 0.00 Oracle PH 0.26 0.001 1.00 
+
+ℓ0-PH 0.56 0.003 0.94 Bayes-PH 0.48 0.005 0.91 
+
+𝑚 ∗ = 6 (partial) Pooled 0.14 0.490 0.00 Flexible 1.00 0.002 0.00 Oracle PH 0.42 0.002 1.00 
+
+ℓ0-PH 0.74 0.004 0.95 Bayes-PH 0.70 0.005 0.89 
+
+𝑚 ∗ = 9 (partial) Pooled 0.14 0.741 0.00 Flexible 1.00 0.003 0.00 Oracle PH 0.64 0.002 1.00 
+
+ℓ0-PH 1.26 0.005 0.91 Bayes-PH 1.63 0.009 0.77 
+
+𝑚 ∗ = 18 (heterogeneous) Pooled 0.15 1.483 0.00 Flexible 1.00 0.002 1.00 Oracle PH 1.00 0.002 1.00 
+
+ℓ0-PH 3.38 0.008 0.01 Bayes-PH 2.36 0.009 0.05 
+
+19 Three patterns stand out. First, pooled TWFE is always the most precise (variance ratio ≈ 0.14) but is severely biased under any heterogeneity, with an average CATT bias rising from 0 .24 at 𝑚 ∗ = 3 to 1 .48 at 𝑚 ∗ = 18; it is unusable for cohort-time effects. Second, at the partial-homogeneity scenarios that motivate the paper ( 𝑚 ∗ = 3, 6) the ℓ0-PH and Bayes-PH estimators cut the sampling variance of the CATTs by 26–52% relative to flexible TWFE while remaining essentially unbiased (average |bias | ≤ 0.005), and they recover the partition well (ARI ≈ 0.9). Third, the methods correctly degrade at the extremes, in that at 
+
+𝑚 ∗ = 1 they shrink toward pooling (though not all the way), and at 𝑚 ∗ = 18, where every cell is genuinely distinct, any pooling hurts and the flexible estimator is preferred. At this moderate separation the feasible estimators do not fully revert to flexible at 𝑚 ∗ = 18 but carry a selection overhead (variance ratios 3 .4 and 2 .4), the price of choosing the partition when there is no poolable structure; the overhead disappears once the effects are well separated, where at 𝛿 = 12, 𝑚 ∗ = 18 both recover all 𝐾 cells and match flexible (variance ratios 1 .00 and 1 .00). Figure 1 plots the variance ordering across 𝑚 ∗.
+
+Figure 1: Average sampling variance of the cohort-time estimates against the true number of distinct effects 𝑚 ∗ (𝛿 = 6). The ℓ0 and DP estimators track the infeasible oracle in the partial-homogeneity region ( 𝑚 ∗ = 3, 6); when every cell is genuinely distinct ( 𝑚 ∗ → 𝐾 )at this moderate separation they carry a selection overhead above flexible TWFE, which vanishes once the effects are well separated ( 𝛿 = 12; see Table 3 and the text). The realized gain depends on how well separated the distinct effects are, exactly as the recovery interval of Proposition 3 suggests. Table 3 fixes 𝑚 ∗ = 6 and varies 𝛿 .20 Table 3: Effect of separation 𝛿 on precision and recovery, 𝑚 ∗ = 6. Variance ratio to flexible and ARI. 500 replications.                                 
+
+> 𝛿 =3𝛿 =6𝛿 =12 Method Var ratio ARI Var ratio ARI Var ratio ARI Oracle PH 0.40 1.00 0.42 1.00 0.38 1.00
+> ℓ0-PH 1.46 0.53 0.74 0.95 0.41 1.00 Bayes-PH 1.34 0.40 0.70 0.89 0.42 0.94
+
+When the effects are close ( 𝛿 = 3) the partition cannot be recovered reliably (ARI 
+
+≈ 0.5) and the selection noise erases, indeed reverses, the variance advantage, and both feasible estimators are then less precise than flexible TWFE. As separation grows the gap to the oracle closes, and at 𝛿 = 12 the feasible ℓ0-PH estimator essentially attains the oracle variance reduction (0.41 versus 0.38) with near-perfect recovery. Figure 2 shows the monotone relationship. The practical message is that the methods deliver their promised gains when heterogeneity is “clumpy”, a modest number of well-separated effect levels, and should not be expected to when the effects form a near-continuum. In the hard regimes neither feasible estimator beats flexible TWFE on variance, and both can fall behind it, at 𝛿 = 3 (variance ratios 1 .46 for ℓ0-PH and 1 .34 for Bayes-PH) and at 𝛿 = 6 with the fine 𝑚 ∗ = 9 partition; the efficiency gains are specific to the clumpy regime. Where the two estimators differ sharply is in inference rather than variance: Section 4.3 shows the Bayes-PH intervals stay far better calibrated than the ℓ0-PH plug-in when the partition is uncertain. 
+
+Figure 2: Precision (left) and partition recovery (right) as functions of the separation 𝛿 ,at 𝑚 ∗ = 6. The variance advantage over flexible TWFE (values below the dashed line) is realized only once the effects are separated enough to be recovered. 21 4.3 Honest inference: coverage 
+
+Table 4 evaluates the calibration of 95% intervals at 𝑚 ∗ = 6, 𝛿 = 6, reporting coverage and average length for the cohort-time effects and for the overall ATT. For the ℓ0-PH estimator we report the plug-in interval that treats the selected partition as fixed. The Bayes-PH interval is the 2 .5–97 .5% posterior credible interval. Table 4: Coverage and average length of nominal 95% intervals at 𝑚 ∗ = 6, 𝛿 = 6; targets are the true CATTs and the true ATT. Oracle PH is infeasible. 500 replications. 
+
+CATT ATT Method Coverage Length Coverage Length Pooled 0.04 0.10 0.05 0.10 Flexible 0.95 0.27 0.94 0.12 Oracle PH 0.95 0.17 0.95 0.11 
+
+ℓ0-PH 0.90 0.17 0.92 0.11 Bayes-PH 0.93 0.20 0.92 0.11 
+
+The pooled intervals collapse (coverage 0 .04–0 .05): they are short but centered on a biased estimand. The flexible and oracle intervals are correctly calibrated, the oracle being much shorter, and they bracket the feasible estimators. The Bayes-PH credible intervals attain near-nominal coverage (0 .93 for the CATTs, 0 .92 for the ATT) at a length between oracle and flexible, honest and informative uncertainty. The ℓ0-PH interval is mildly anti-conservative here (0 .90 CATT, 0 .92 ATT): at this separation the correct partition is recovered often enough that the conditional-on-selection distortion is modest. 4 Honest uncertainty under partition selection thus comes not from adjusting the variance but from averaging over the partition, which is what the DP posterior does. It is also worth noting what does drive the result. The calibration hinges on using the exact cross-cell covariance of the cohort-time estimates (Remark 1), whereas the treatment of 𝜎 2 is immaterial. The full Bayesian sampler draws 𝜎 2 from its inverse-gamma full conditional, and holding it fixed at a plug-in value gives essentially the same coverage and interval length (Appendix D). The headline design is favorable, so Table 5 extends the coverage check across the grid, from the homogeneous case ( 𝑚 ∗ = 1) through partial homogeneity ( 𝑚 ∗ = 6) to full heterogeneity ( 𝑚 ∗ = 18), and across separations 𝛿 ∈ { 3, 6, 12 }. Two patterns matter. First, the overall ATT is well calibrated everywhere for both feasible estimators, with Bayes-PH coverage between 0 .91 and 0 .96 across every cell, because aggregation averages the cell-level errors. Second, the cohort-time (CATT) intervals are where the regime bites, and the two estimators part ways. When the effects are separable ( 𝛿 = 12, or 𝛿 = 6 at 𝑚 ∗ = 6) both attain near-nominal CATT coverage (the 𝛿 = 6, 𝑚 ∗ = 6 cell reproduces the headline 
+
+> 4A natural alternative removes this distortion by sample splitting, selecting the partition on one half of the units and computing coefficients and standard errors on the other. It does not help, its coverage is in fact lower (0 .75 CATT, 0 .90 ATT). Splitting halves the sample, which degrades recovery, and a wrongly merged partition then injects a specification bias that a correctly sized standard error cannot undo.
+
+22 Table 4 within Monte Carlo error). In the hard regimes, at low separation ( 𝛿 = 3) or full heterogeneity ( 𝑚 ∗ = 18), Bayes-PH degrades gracefully, to 0 .79–0 .81, while the ℓ0-PH plug-in interval collapses to 0 .57–0 .62: committing to one wrong partition and treating it as known is far more damaging than averaging over partitions, which is again the DP posterior’s advantage. Table 5: Coverage of nominal 95% intervals across the (𝑚 ∗, 𝛿 ) grid, for the cohort-time effects (CATT) and the overall ATT. 𝑚 ∗ = 1 is homogeneous (separation irrelevant). Flexible is the unbiased benchmark; ℓ0-PH uses the plug-in interval that treats the selected partition as fixed; Bayes-PH is the posterior credible interval. 500 replications.                                                          
+
+> CATT coverage ATT coverage Scenario 𝛿 Flexible ℓ0-PH Bayes-PH Flexible ℓ0-PH Bayes-PH
+> 𝑚 ∗=1 (homog.) —0.95 0.76 0.94 0.94 0.92 0.93
+> 𝑚 ∗=6 (partial) 30.95 0.62 0.81 0.95 0.89 0.91 60.95 0.90 0.94 0.96 0.94 0.94 12 0.95 0.95 0.94 0.94 0.95 0.92
+> 𝑚 ∗=18 (heterog.) 30.95 0.58 0.79 0.95 0.91 0.91 60.95 0.57 0.80 0.94 0.90 0.92 12 0.95 0.95 0.94 0.96 0.96 0.94
+
+# 4.4 Solution paths 
+
+Figure 3 traces the bias-variance trade-off as a function of the regularization strength, for 
+
+ℓ0-PH along the agglomeration path indexed by the number of groups 𝑚 (small 𝑚 = strong penalty), and for DP across the concentration 𝛼 . Two features are worth emphasizing. First, the overall ATT is remarkably robust to over-pooling, where its bias stays small (≲ 0.015) across the entire ℓ0 path down to 𝑚 = 3 and only spikes once the path collapses toward a single group ( |bias | = 0.10 at 𝑚 = 1). The aggregate thus tolerates a wide range of penalties, whereas the cohort-time effects require getting the partition approximately right, the CATT variance is minimized near the true 𝑚 = 6 and inflates when the path is forced into wrong merges. Second, the DP path is nearly flat in 𝛼 : both the ATT bias and variance barely move over 𝛼 ∈ { 1, . . . , 30 }, so the practitioner’s choice of concentration has little effect on the reported estimates. The mean BIC-selected number of groups ( ≈ 6.1) sits in the flat, low-bias region of the ℓ0 path, confirming that the plateau in ˆ𝑚 is a serviceable tuning diagnostic. 23 Figure 3: Solution paths at 𝑚 ∗ = 6, 𝛿 = 6. Left: ℓ0, indexed by the number of groups 𝑚 
+
+(dashed line = mean BIC selection). Right: DP, indexed by the concentration 𝛼 (log scale). The overall ATT bias (red) stays near zero across a wide range, while the CATT variance (green) is non-monotone: it dips at the true partition ( 𝑚 = 6), inflates as further pooling forces wrong merges, and drops again only at full pooling ( 𝑚 = 1), where the bias spikes. 
+
+# 5 Empirical Applications 
+
+We present two applications that exhibit the two regimes the method is built for, one where the cohort-time effects carry recoverable heterogeneity and one where they are indistinguishable from a common value. The simulations generate the micro panel directly, but the natural inputs in an appli-cation are a vector of first-stage cohort-time effects and their joint sampling covariance, produced by whichever heterogeneity-robust estimator suits the design, on which the partition model then operates. Write ˆ𝜏 for the fully flexible estimator of the 𝐾 cohort-time effects and ˆΣ for its covariance, and collect a partition 𝒫 = {𝐶 1, . . . , 𝐶 𝑚 } into the 𝐾 × 𝑚 
+
+group-indicator matrix 𝑅 , so that partial homogeneity is the restriction 𝜏 = 𝑅 𝜙 . The first-stage estimator is asymptotically Gaussian, which gives the two-stage likelihood 
+
+ˆ𝜏 | 𝜙 , 𝒫 ∼ 𝑁 
+
+
+
+𝑅 𝜙 , ˆΣ
+
+
+
+, (41) the model of Section 3.1 read in the coordinates of the first-stage estimates: the group effects keep the conjugate prior (27) and integrate out as before. Nothing downstream depends on the first stage beyond the pair ( ˆ 𝜏 , ˆΣ).
+
+Lemma 1 (First-stage summaries are sufficient) . For any partition 𝒫 with group-indicator matrix 𝑅 , the collapsed marginal likelihood (30) and the group-effect posterior (31) depend on the 
+
+24 data only through 𝑅 ′ ˆΣ−1 ˆ𝜏 and 𝑅 ′ ˆΣ−1𝑅 . Hence the within-transformed model of Section 3.1 and the summary-statistic model (41) induce the same posterior, and any consistent first-stage covariance 
+
+ˆΣ enters in place of 𝜎 2( ˜ 𝐷 ′ ˜𝐷 )−1.Proof. The flexible estimator satisfies ˜𝐷 ′Ω−1 ˜𝐷 = ˆΣ−1 and ˜𝐷 ′Ω−1 ˜𝑌 = ˆΣ−1 ˆ𝜏 for the first-stage error covariance Ω. Under 𝒫 the grouped design is ˜𝐷 ∗ = ˜𝐷𝑅 , so the two moments that carry the data into (30) and (31) (Appendix C, eq. (53) with Ω the first-stage covariance) are ˜𝐷 ∗′ Ω−1 ˜𝐷 ∗ = 𝑅 ′ ˆΣ−1𝑅 and ˜𝐷 ∗′ Ω−1 ˜𝑌 = 𝑅 ′ ˆΣ−1 ˆ𝜏 . Taking ˆΣ = 𝜎 2( ˜ 𝐷 ′ ˜𝐷 )−1 returns the homoskedastic moments of Section 3.1. The covariance ˆΣ is thus the only channel through which the design enters, and in each application we take it from the first-stage estimator itself, so the grouping is applied to exactly the covariance the design implies. 
+
+# 5.1 Minimum Wages and Teen Employment: Recovering Partial Homo-geneity 
+
+We revisit the county-level analysis of minimum wages and teen employment from Call-away and Sant’Anna (2021), using their publicly available panel of 500 U.S. counties observed over 2003–2007, with cohorts first raising the minimum wage in 2004, 2006, and 2007 and a not-yet-treated control group. We estimate the 𝐾 = 7 post-treatment cohort-time effects ATT (𝑔, 𝑡 ) with the Callaway and Sant’Anna (2021) estimator and take their exact joint covariance ˆΣ from the estimator’s influence functions, the pair ( ˆ 𝜏 , ˆΣ) of Lemma 1. Because the cells share counties, ˆΣ is non-diagonal; as in the simulations, we use it exactly in both estimators, and the DP posterior draws use the corresponding Gauss–Markov posterior (Remark 1). Unlike a homogeneous design, here there is real structure to recover: the cross-cell dis-persion of the estimates (0 .050) is more than twice the typical standard error (0 .022), so the spread exceeds what sampling noise alone would produce and, unlike the homogeneous case of Section 5.2, reflects genuine heterogeneity. This descriptive signal-to-noise ratio is not the separation 𝛿 of Section 4, which is defined on the true adjacent-group gaps and the full joint covariance; it signals recoverable heterogeneity without fixing its exact position on the 𝛿 scale, which the co-clustering results below assess directly. Table 6 reports the seven effects, the ℓ0 grouping selected by BIC, and the per-cell variance reduction. 25 Table 6: Cohort-time effects on log teen employment, Callaway and Sant’Anna (2021) data. ATT (𝑔, 𝑡 ) and its standard error; the BIC-selected ℓ0 group and grouped effect; and the ratio of the ℓ0-grouped variance to the flexible variance for each cell (lower = more precise).                                          
+
+> cohort:year ATT (𝑔, 𝑡 )SE ℓ0group grouped effect var. ratio 2004:2004 −0.019 0.022 1−0.029 0.28 2006:2007 −0.041 0.020 1−0.029 0.33 2007:2007 −0.026 0.017 1−0.029 0.49 2004:2005 −0.078 0.030 2−0.087 0.77 2004:2007 −0.101 0.034 2−0.087 0.61 2004:2006 −0.136 0.035 3−0.140 0.78 2006:2006 +0.005 0.016 4+0.011 0.78
+
+The ℓ0-PH estimator collapses the seven cells into four effect levels: a near-zero group containing the 2004 impact effect and the recent cohorts’ effects, the 2004 cohort’s larger mature effects, its peak, and the lone positive cell. Pooling roughly halves the variance of the cells that share a group (the near-zero group’s variance ratios are 0 .28–0 .49), and even the singleton cells gain precision because the Gauss–Markov estimator borrows across the correlated cells. The overall (cohort-size-weighted) average effect is essentially unchanged and slightly more precise, −0.040 (SE 0 .012) under the flexible estimator versus −0.039 (SE 0 .012) under ℓ0, so the substantive conclusion of a roughly 4% teen-employment reduction is preserved while the estimates are summarized by a handful of interpretable effect levels. These point estimates agree on the headline, but both condition on a single grouping, and the Dirichlet-Process posterior that follows both gauges how firmly that grouping is identified and, given the small number of cells, shows how much the overall summary can move once that conditioning is relaxed. The DP posterior sharpens the interpretation by quantifying which groupings are certain. Figure 4 plots the effects colored by ℓ0 group and the posterior co-clustering matrix, formed with the exact within-cell covariance at the parsimonious prior 𝛼 = 1. The small-effect cells recur together with moderate-to-high probability, the 2004 impact effect co-clustering with the lone positive 2006:2006 cell at 0 .86 and with the 2004:2005 effect at 0.77, so a low-effect cluster is a robust feature. The large mature 2004 effects are more distinct, with the peak 2004:2006 co-clustering with every other cell at 0 .54 or below. The matrix is more diffuse than any single partition, correctly signaling that with only seven correlated cells the finer grouping is genuinely uncertain rather than a firm partition. This is the honest reading the co-clustering is meant to deliver, a recurring coarse structure with calibrated uncertainty about the finer detail. Because the co-clustering probabilities are conditional on 𝛼 , we checked their sensitivity: across 𝛼 ∈ [ 0.5, 14 ] the near-zero cells co-cluster more tightly with one another (mean pairwise probability falling from 0 .66 to 0.32 as larger 𝛼 favors finer partitions) than the peak 2004:2006 cell does with any other cell (0 .63 down to 0 .22). The absolute probabilities decline with 𝛼 , but the ordering—a cohesive low-effect group and a distinct peak—persists throughout, so the coarse structure is not an artifact of the prior. 26 Figure 4: Left: the seven cohort-time effects (with 95% intervals) colored by ℓ0 group, hor-izontal bars mark the grouped effects. Right: the DP posterior co-clustering probabilities; darker cells co-cluster more often. Because the number of cells is small, the DP overall effect, unlike the flexible and 
+
+ℓ0-PH point estimates, is sensitive to the concentration 𝛼 . Figure 5 traces the population-weighted effect and its 95% credible band across 𝛼 from 0 .1 to 100, against the fully pooled (−0.010) and flexible ( −0.040) anchors. The effect slides monotonically from about −0.017 under heavy pooling to about −0.038 as 𝛼 grows and the model approaches the flexible fit, and it is bounded away from zero only for 𝛼 ≳ 1. Rather than fix 𝛼 , we report the whole path. As a reference point, a BIC pass on the agglomeration path selects four groups, which the DP’s posterior expected number of groups matches at 𝛼 ≈ 14 (panel b), where the DP effect is about −0.032 and close to the flexible estimate. We offer this only as a suggestion. Choosing 𝛼 from the data turns the prior into a data-dependent object, with the usual consequences of empirical Bayes (understated posterior uncertainty and a double use of the data), so we prefer to show the sensitivity rather than commit to a single value. 27 Figure 5: Sensitivity of the Callaway and Sant’Anna (2021) overall effect to the DP con-centration 𝛼 . Panel (a), the population-weighted overall ATT (solid) with its 95% credible band (shaded), against the fully pooled (red dotted, −0.010) and flexible (blue dashed, 
+
+−0.040) benchmarks. Panel (b), the posterior expected number of groups. The vertical line marks 𝛼 ≈ 14, where the posterior expected number of groups equals the four groups selected by BIC on the agglomeration path. The dynamic (event-study) aggregation in Figure 6 clarifies what the estimators are grouping. The effect on teen employment is small at impact (event time 0, −0.019) and grows over the horizon to −0.054, −0.136, and −0.101 at event times 1 through 3, the familiar pattern of a minimum-wage effect that accumulates over several years. This accumulation is, however, a within-cohort reading: the composition of the event-time aggregate changes across the horizon, and event times 2 and 3 are identified off the 2004 cohort alone, so the longer-run trajectory is that cohort’s and the design cannot say whether later cohorts would follow it. The impact-year effects, by contrast, are small and similar across cohorts. The partial homogeneity the method recovers is, in this application, largely the homogeneity of the short-run response across cohorts, with the accumulating longer-run effects, carried by the 2004 cohort’s later cells, kept separate. The pre-treatment coefficients are small (event times −2 and −1), with a modest positive value at the longest lead that is identified off a single early cohort. 28 Figure 6: Dynamic (event-study) aggregation of the Callaway and Sant’Anna (2021) ef-fects: the teen-employment effect is near zero at impact and builds over event time. Pre-treatment coefficients (left of the dashed line) are small. 
+
+# 5.2 Minimum Wages and Low-Wage Jobs: A Specification Test 
+
+Our second application is the influential study of minimum wages and low-wage jobs by Cengiz et al. (2019), which estimates the employment effect of 138 state-level minimum wage increases between 1979 and 2016 using a “stacked” event-study design. Here the method plays the complementary role of a specification test. 
+
+5.2.1 Context and Stacked Event-Study Design 
+
+In the stacked design, a separate dataset (a “stack” or “event”) is created for each of the 
+
+𝐸 = 138 minimum wage hikes. Each stack 𝑔 ∈ { 1, . . . , 𝐸 } contains the treated state and a set of clean control states observed over a 5-year window around the policy implementation. The stacks are then appended together. The authors’ baseline specification is a fully pooled TWFE regression on the stacked data, which imposes a single, homogeneous treatment effect across all 138 events: 
+
+𝑌 𝑖𝑡 𝑔 = 𝛼 𝑖 𝑔 + 𝛾 𝑡 𝑔 + 𝜃 · 𝐷 𝑖𝑡 𝑔 + 𝜖 𝑖𝑡 𝑔 , (42) where 𝑌 𝑖𝑡 𝑔 is the employment outcome for state 𝑖 at time 𝑡 in stack 𝑔 . The terms 𝛼 𝑖 𝑔 and 
+
+𝛾 𝑡 𝑔 are state-by-stack and time-by-stack fixed effects, ensuring that treated units are only compared to control units within their specific sub-experiment. 𝐷 𝑖𝑡 𝑔 is an indicator equal to 1 if state 𝑖 is treated in stack 𝑔 in the post-treatment period. Under this specification, the authors report a near-zero average effect on net low-wage employment. However, as established in Section 2, under heterogeneity this pooled estimator ˆ𝜃 is efficient but biased for the individual event effects 𝜏 𝑔 and for any aggregate weighted 29 differently from the design; it remains unbiased for its own design-weighted average, so “bias” here is relative to the disaggregated target rather than to that aggregate. To allow for heterogeneity, we relax Equation 42 into a fully flexible Interacted TWFE (ITWFE) model— the stacked-design counterpart of the flexible specification (3) of Section 2—assigning a distinct Cohort-Average Treatment Effect on the Treated (CATT), 𝜏 𝑔 , to each event: 
+
+𝑌 𝑖𝑡 𝑔 = 𝛼 𝑖 𝑔 + 𝛾 𝑡 𝑔 +
+
+> 𝐸
+
+Õ
+
+> 𝑒 =1
+
+𝜏 𝑒 
+
+ 𝐷 𝑖𝑡 𝑔 × I{𝑒𝑣𝑒𝑛𝑡 = 𝑒 } + 𝜖 𝑖𝑡 𝑔 (43) Because the design matrix of Equation 43 is block-diagonal, the estimation of each 
+
+ˆ𝜏 𝑔 is perfectly separable. Block-diagonality makes the point estimates separable but not their sampling errors, since control states recur across stacks, so the event estimates need not be independent. Our homogeneity assessment is robust to this: the within-event randomization test below holds the cross-event dependence fixed by construction, and the pre-trend noise reference enters the signal-to-noise comparison symmetrically with the post-treatment spread, so a common dependence largely cancels. The grouping and the aggregate credible interval, by contrast, use a diagonal covariance and would be sharpened by a joint state-clustered ˆΣ, which enters the estimators unchanged through Lemma 1 but requires the stacked micro panel rather than the event-level summaries in the replication package; because the events carry no recoverable heterogeneity, this refinement does not alter the substantive conclusion. While this flexible model is unbiased, relying strictly on state-level variation yields highly noisy estimates for individual events. To recover the latent structure, we apply our ℓ0-penalized estimator, which selects a partition of the 138 minimum wage effects by minimizing the penalized residual sum of squares: min 
+
+> 𝝉 ,𝜶 ,𝜸
+
+
+
+> 𝐸
+
+Õ
+
+> 𝑔 =1
+
+Õ
+
+> 𝑖,𝑡
+
+ 𝑌 𝑖𝑡 𝑔 − 𝛼 𝑖 𝑔 − 𝛾 𝑡 𝑔 − 𝐷 𝑖𝑡 𝑔 𝜏 𝑔 
+
+2 + 𝜆 
+
+Õ
+
+> 𝑗 <𝑘
+
+I(𝜏 𝑗 ≠ 𝜏 𝑘 )
+
+
+
+, (44) Exact minimization over partitions is intractable, so the greedy agglomerative search of Appendix B returns the selected partition; 𝜆 is the hyperparameter determining the thresh-old for model parsimony. The penalty forces states with sufficiently similar independent estimates to share a single coefficient, achieving partial homogeneity without imposing the strict global restriction of Equation 42. 
+
+5.2.2 Baseline Replication and Data Hygiene 
+
+Before applying the penalized estimator to explore latent heterogeneity, we first replicate the fully pooled TWFE specification from Cengiz et al. (2019) to establish a baseline. Table 7 demonstrates that our replication sample accurately recovers the primary pooled estimates reported by the authors. The pooled model implies a near-zero average net effect on low-wage employment, driven by the destruction of jobs below the new minimum wage 30 (Δ𝑏 ) being largely offset by the “bunching” of new compliance jobs at or slightly above the new minimum wage ( Δ𝑎 ). Table 7: Baseline Pooled ITWFE Replication 
+
+Employment Outcome Pooled Estimate 
+
+Missing Jobs ( Δ𝑏 ) −0.016 ∗∗∗ 
+
+Excess Jobs ( Δ𝑎 ) 0.019 ∗∗∗ 
+
+Net Employment Change 0.003 
+
+> Note: Estimates represent the change in employment as a fraction of the affected workforce. These pooled point estimates closely mirror the benchmark findings of the original study, suggesting a negligible average disemployment effect.
+
+While the pooled model provides a stable average, estimating Equation 43 flexibly for all 138 independent events reveals severe localized sampling anomalies. Because the employment effects are normalized by ¯𝑏 −1 (the share of the state’s workforce earning below the new minimum wage in the year prior to the hike), regions with very thin survey samples can produce a denominator approaching zero. Dividing the raw job counts by a near-zero denominator causes the resulting percentage estimate to artificially explode to economically impossible magnitudes. A handful of events yield mathematically anomalous net percentage effects (exceeding several hundred percent of the affected workforce) for exactly this reason. To sidestep the near-zero-denominator problem, our specification analysis below summarizes each event by its average post-treatment event-study coefficient on affected employment rather than by the ratio-normalized percentage effect; the event-study coefficient is well behaved (its cross-event standard deviation is 0 .005, with no explosive outliers). This substitution changes the analyzed object from the ¯𝑏 −1-normalized percentage effect to the response on the affected-employment scale. Because ¯𝑏 −1 varies across events, homogeneity and aggregation need not transfer between the two scales; the specification analysis below therefore concerns the affected-employment responses, the object that carries the employ-ment signal and the natural scale on which to aggregate a total-employment effect, and complements rather than re-derives the normalized headline of Cengiz et al. (2019). 
+
+5.2.3 Specification Analysis: Is the Null Effect Homogeneous? 
+
+We obtain the 𝐸 = 138 event-level effects from the authors’ Harvard Dataverse replication package for Cengiz et al. (2019), summarizing event 𝑔 by ˆ𝜏 𝑔 , the average of its post-treatment event-study coefficients on affected employment (event times 1 through 4), con-structed symmetrically with the four pre-treatment coefficients (event times −4 through 
+
+−1). Before selecting a specification, we ask whether there is any heterogeneity to recover. The design provides an internal noise gauge: under no-anticipation the pre-treatment 31 coefficients have expectation zero, and because each event’s pre- and post-treatment sum-maries average the same number of event-study coefficients from the same design, the cross-event dispersion of the pre-treatment averages estimates the sampling variance of the post-treatment averages under the null of a common effect. We find a pre-treatment (noise) standard deviation of 𝑠 pre = 0.0065, which exceeds the post-treatment cross-event spread of 𝑠 post = 0.0050. Decomposing the post-treatment cross-event variance into sam-pling noise and genuine heterogeneity, ˆ𝜎 2het = max {0, 𝑠 2post − 𝑠 2pre }, yields ˆ𝜎 2het = 0 (a 0% heterogeneity share) at a signal-to-noise ratio 𝑠 post /𝑠 pre = 0.77, so the 138 event effects are statistically indistinguishable from a common value. A within-event randomization test makes this precise: under the null of a common effect we exchange each event’s pre-and post-treatment averages, an exchange internal to each event that holds the cross-event dependence structure fixed, and compare the observed post-treatment dispersion to the resulting reference distribution. It sits below the reference median (one-sided 𝑝 = 0.71), so a common effect cannot be rejected. This places the application squarely in the low-separation regime that Section 4 iden-tifies as the boundary of reliable recovery, and the estimators behave accordingly. The BIC-tuned ℓ0-PH estimator splits the events into five effect-ordered bands (of sizes 51, 47, 36, 3, 1), and the Bayes-PH estimator returns between 2 .7 groups (parsimonious prior, 
+
+𝛼 = 1) and 7 .6 groups ( 𝛼 = 5). As our simulations show, at a signal-to-noise ratio below one these “groups” are quantiles of noise rather than genuine effect clusters, and should not be interpreted as evidence of systematic heterogeneity; indeed, the randomization test above does not reject a common effect. The disagreement between the two estimators is itself a symptom of the regime. None of this proves an exactly common effect, since a null of equality cannot be accepted; but the failure to reject, together with the zero estimated heterogeneity share, supports pooling as an adequate specification for the aggregate rather than establishing a literally homogeneous set of effects. What is robust, and what matters for the applied conclusion, is that the overall average effect is invariant to the specification. Table 8 reports it, showing that the pooled, ℓ0,and Bayes-PH estimates of the population-weighted average of the affected-employment responses are all near zero and mutually indistinguishable, and the DP posterior credible interval is a tight band of small positive values, economically negligible and far from any meaningful disemployment effect; its width, which conditions on cross-event inde-pendence, is not the basis for any conclusion here. Allowing for arbitrary event-level heterogeneity in these responses creates no recoverable structure for a pooled specifica-tion to miss, so on the affected-employment scale pooling is adequate. This is stated on the coefficient scale of Table 8 rather than the ¯𝑏 −1-normalized scale of Table 7, 5 and so complements, rather than re-derives, the near-zero normalized net-employment finding           
+
+> 5The two aggregates are on different scales and are not directly comparable. Table 8 averages the affected-employment event-study coefficients ˆ𝜏 𝑔 , whereas Table 7 reports the ¯𝑏 −1-normalized pooled effect; per event the two are related by 𝜏 pct
+> 𝑔 =ˆ𝜏 𝑔 / ¯𝑏 −1,𝑔 , and the near-zero denominators in thin cells are what make the per-event normalized effects explode (here from roughly −130% to +420%) and motivate the coefficient-scale summary. Neither number is a simple rescaling of the other, since the normalized benchmark is a single pooled coefficient rather than an average of the per-event ratios; both are small and positive.
+
+32 of Cengiz et al. (2019). Figure 7 displays the 138 flexible event effects with the pooled effect superimposed. Table 8: Overall employment effect under alternative specifications, Cengiz et al. (2019) events. Effects are average post-treatment coefficients on affected employment (population-weighted for the aggregate). The Bayes-PH interval is the 95% posterior credible interval.               
+
+> Specification Groups Overall effect Pooled (single effect) 10.0015 Flexible (per event) 138 0.0018
+> ℓ0-PH (BIC) 50.0016 Bayes-PH ( 𝛼 =1) 2.70.0014 [0.0003 ,0.0026 ]
+
+Figure 7: The 138 event-level employment effects (average post-treatment coefficient on affected employment), sorted; the dashed line is the pooled effect and the shaded region is the 95% placebo band, the spread of the pre-treatment coefficients expected under a common effect. The cross-event dispersion is no larger than this noise band (within-event randomization test 𝑝 = 0.71), and the pooled effect is near zero. Finally, we note that Cengiz et al. (2019) themselves group events into three “Card– Krueger” bins defined ex ante by how binding the minimum wage is. Our exercise asks, and answers in the negative, a different question, whether the employment effects, taken as estimated, cluster into distinct levels. The two are complementary, in that grouping by a policy covariate is a modeling choice about expected heterogeneity, whereas our data-driven partition tests for realized heterogeneity in the effects and, here, finds none beyond noise. 33 5.2.4 Diagnosing Canonical TWFE Bias: The Goodman-Bacon Decomposition 
+
+To motivate the stacked design, we decompose the canonical (unstacked) two-way fixed effects estimand following Goodman-Bacon (2021). Two adjustments are needed to apply the decomposition here, since we proxy the affected workforce by employment below a fixed $10 threshold (the true minimum-wage threshold moves across states and years), and we define treatment by the first increase a state enacts (to obtain an absorbing treatment). Both are conservative and, if anything, understate this contamination. Table 9 reports the result. About 20% of the estimand’s weight comes from “forbid-den” comparisons that use already-treated states as controls, carrying a negative average estimate ( −0.006), against the positive (0 .006) of the clean treated-versus-untreated com-parisons (about 57% of the weight). The pooled coefficient is the weighted average of these components, so the forbidden comparisons enter it negatively and pull it below the clean comparisons; since the clean and forbidden blocks weight different cohorts and exposure horizons, what the decomposition exposes is contamination of the pooled esti-mand rather than a signed bias against a fixed target. This contamination is the standard rationale for the stacked event-study design used above, and more broadly for taking the cohort-time effects, rather than a single pooled coefficient, as the objects of interest that the specification methods of this paper then group. Table 9: Goodman–Bacon decomposition of the canonical TWFE estimand (simplified absorbing-treatment panel). Comparison type Weight Average estimate Earlier vs. later treated 0.236 0.001 Later vs. earlier treated 0.195 −0.006 Treated vs. untreated 0.569 0.006 
+
+# 6 Conclusion 
+
+This paper addresses a step in the staggered DiD workflow that has received compara-tively little attention, model specification. Once cohort-time effects are identified as the estimands of interest, the researcher must still decide how many distinct parameters to estimate. We frame this as a partition-selection problem and address it with a Dirichlet Process mixture over the cohort-time effects. The DP posterior assigns a probability to every grouping and reports full uncertainty, including the uncertainty in the grouping itself, and is the object we recommend for inference. Holding the error variance fixed and adopting a pairwise penalty on the partition, the maximum a posteriori estimator coin-cides with an ℓ0-penalized estimator, a connection to the homogeneity-pursuit literature. As a secondary benefit, the partial-homogeneity restriction can also supply identifying in-formation for a cell that lacks a clean comparison, though that identification rests entirely 34 on the assumed grouping and is untestable for the cell that needs it. The simulations and applications make the trade-offs concrete. Under partial homo-geneity with well-separated effect levels, both estimators cut the sampling variance of the cohort-time effects by 26–52% relative to the fully flexible estimator at no bias cost, approaching the infeasible oracle as the separation grows, with the advantage narrowing and, once the effects are too close to separate reliably, reversing into a precision loss as the feasible estimators fall behind flexible TWFE, and the DP posterior attains near-nominal coverage by marginalizing over the partition where naive ℓ0-PH intervals are usable but mildly anti-conservative. The two applications show both regimes on real data. In the minimum-wage and teen-employment data of Callaway and Sant’Anna (2021) the effects are genuinely heterogeneous and the method recovers a partially homogeneous structure, collapsing seven effects into a few interpretable levels and roughly halving the variance of the pooled cells while preserving the headline effect, whereas in the low-wage-jobs study of Cengiz et al. (2019) the 138 event-level affected-employment responses are statistically indistinguishable from a common value and the method correctly reports that pooling is adequate on that scale, functioning as a formal specification test. The same procedure thus both exploits real heterogeneity and declines to manufacture it where none exists. Several directions merit future work. First, the agglomerative algorithm is a heuristic; developing exact or near-exact algorithms for small 𝐾 , or theoretical guarantees on ap-proximation quality, would be valuable. Second, honest inference after partition selection deserves a fuller theoretical treatment, since the naive ℓ0-PH intervals are conditional on the selected grouping (Remark 3), so developing valid selective-inference corrections for them (the Bayesian posterior already propagates partition uncertainty) is an open prob-lem. Third, formal asymptotic theory establishing consistency of the partition estimator, as both 𝑁 and the effective sample size per CATT grow, would solidify the method’s the-oretical foundations, and would formalize the separation threshold that our simulations identify as the determinant of the efficiency gain. Finally, whereas covariate adjustment in the outcome equation is immediate (Section 2, equations (8)–(9)), letting observable characteristics inform the grouping itself, through a covariate-dependent partition prior, is a more substantial extension that could improve performance in settings with richer data. 35 References 
+
+Antoniak, Charles E. , “Mixtures of Dirichlet Processes with Applications to Bayesian Nonparametric Problems,” The Annals of Statistics , 1974, 2 (6), 1152–1174. 
+
+Armstrong, Timothy B. and Michal Kolesár , “Optimal Inference in a Class of Regression Models,” Econometrica , 2018, 86 (2), 655–683. 
+
+, Patrick Kline, and Liyang Sun , “Adapting to Misspecification,” Forthcoming at Econo-metrica , 2025. 
+
+Arora, Parush and Rishabh Bĳani , “Estimating Treatment Effects under Staggered Timing and Non-Spherical Errors,” 2026. Working paper, SSRN Working Paper No. 6558759. 
+
+Barry, Daniel and John A. Hartigan , “Product Partition Models for Change Point Prob-lems,” The Annals of Statistics , 1992, 20 (1), 260–279. 
+
+Bonhomme, Stéphane and Elena Manresa , “Grouped Patterns of Heterogeneity in Panel Data,” Econometrica , 2015, 83 (3), 1147–1184. 
+
+Borusyak, Kirill, Xavier Jaravel, and Jann Spiess , “Revisiting Event-Study Designs: Ro-bust and Efficient Estimation,” Review of Economic Studies , 2024, 91 (6), 3253–3285. 
+
+Callaway, Brantly and Pedro H. C. Sant’Anna , “Difference-in-Differences with Multiple Time Periods,” Journal of Econometrics , 2021, 225 (2), 200–230. 
+
+Cengiz, Doruk, Arindrajit Dube, Attila Lindner, and Ben Zipperer , “The Effect of Min-imum Wages on Low-Wage Jobs,” The Quarterly Journal of Economics , 2019, 134 (3), 1405–1454. 
+
+de Chaisemartin, Clément and Xavier D’Haultfœuille , “Two-Way Fixed Effects Estima-tors with Heterogeneous Treatment Effects,” American Economic Review , 2020, 110 (9), 2964–2996. 
+
+and , “Two-Way Fixed Effects and Differences-in-Differences with Heterogeneous Treatment Effects: A Survey,” The Econometrics Journal , 2023, 26 (3), C1–C30. 
+
+Escobar, Michael D. and Mike West , “Bayesian Density Estimation and Inference Using Mixtures,” Journal of the American Statistical Association , 1995, 90 (430), 577–588. 
+
+Ferguson, Thomas S. , “A Bayesian Analysis of Some Nonparametric Problems,” The Annals of Statistics , 1973, 1 (2), 209–230. 
+
+Fisher, Walter D. , “On Grouping for Maximum Homogeneity,” Journal of the American Statistical Association , 1958, 53 (284), 789–798. 
+
+Fithian, William, Dennis Sun, and Jonathan Taylor , “Optimal Inference After Model Selection,” arXiv:1410.2597 , 2014. 36 Gardner, John , “Two-Stage Differences in Differences,” arXiv preprint arXiv:2207.05943 ,2022. 
+
+Goodman-Bacon, Andrew , “Difference-in-Differences with Variation in Treatment Tim-ing,” Journal of Econometrics , 2021, 225 (2), 254–277. 
+
+Hartigan, John A. , “Partition Models,” Communications in Statistics - Theory and Methods ,1990, 19 (8), 2745–2756. 
+
+Hill, Jennifer L. , “Bayesian Nonparametric Modeling for Causal Inference,” Journal of Computational and Graphical Statistics , 2011, 20 (1), 217–240. 
+
+Ke, Yuan, Jianqing Fan, and Yichao Wu , “Homogeneity Pursuit,” Journal of the American Statistical Association , 2015, 110 (509), 175–194. 
+
+Kwon, Soonwoo and Liyang Sun , “Estimating Treatment Effects Under Bounded Het-erogeneity,” Working paper, arXiv:2510.05454 , 2026. 
+
+Lau, John W. and Peter J. Green , “Bayesian Model-Based Clustering Procedures,” Journal of Computational and Graphical Statistics , 2007, 16 (3), 526–558. 
+
+Leeb, Hannes and Benedikt M. Pötscher , “Model Selection and Inference: Facts and Fiction,” Econometric Theory , 2005, 21 (1), 21–59. 
+
+Liu, Licheng, Ye Wang, and Yiqing Xu , “A Practical Guide to Counterfactual Estimators for Causal Inference with Time-Series Cross-Sectional Data,” American Journal of Political Science , 2024, 68 (1), 160–176. 
+
+Lu, Xun and Liangjun Su , “Determining the Number of Groups in Latent Panel Structures with an Application to Income Democracy,” Quantitative Economics , 2017, 8 (3), 729–760. 
+
+Miller, Jeffrey W. and Matthew T. Harrison , “Mixture Models with a Prior on the Number of Components,” Journal of the American Statistical Association , 2018, 113 (521), 340–356. 
+
+Müller, Peter, Alaattin Erkanli, and Mike West , “Bayesian Curve Fitting Using Multi-variate Normal Mixtures,” Biometrika , 1996, 83 (1), 67–79. 
+
+and Fernando A. Quintana , “Nonparametric Bayesian Data Analysis,” Statistical Sci-ence , 2004, 19 (1), 95–110. 
+
+Neal, Radford M. , “Markov Chain Sampling Methods for Dirichlet Process Mixture Mod-els,” Journal of Computational and Graphical Statistics , 2000, 9 (2), 249–265. 
+
+Rambachan, Ashesh and Jonathan Roth , “A More Credible Approach to Parallel Trends,” 
+
+The Review of Economic Studies , 2023, 90 (5), 2555–2591. 
+
+Rinaldo, Alessandro, Larry Wasserman, and Max G’Sell , “Bootstrapping and Sample Splitting for High-Dimensional, Assumption-Lean Inference,” The Annals of Statistics ,2019, 47 (6), 3438–3469. 37 Roth, Jonathan, Pedro H. C. Sant’Anna, Alyssa Bilinski, and John Poe , “What’s Trend-ing in Difference-in-Differences? A Synthesis of the Recent Econometrics Literature,” 
+
+Journal of Econometrics , 2023, 235 (2), 2218–2244. 
+
+Schwarz, Gideon , “Estimating the Dimension of a Model,” The Annals of Statistics , 1978, 6
+
+(2), 461–464. 
+
+Shen, Xiaotong and Hsin-Cheng Huang , “Grouping Pursuit Through a Regularization Solution Surface,” Journal of the American Statistical Association , 2010, 105 (490), 727–739. 
+
+Su, Liangjun, Zhentao Shi, and Peter C. B. Phillips , “Identifying Latent Structures in Panel Data,” Econometrica , 2016, 84 (6), 2215–2264. 
+
+Sun, Liyang and Sarah Abraham , “Estimating Dynamic Treatment Effects in Event Studies with Heterogeneous Treatment Effects,” Journal of Econometrics , 2021, 225 (2), 175–199. 
+
+Tibshirani, Robert, Michael Saunders, Saharon Rosset, Ji Zhu, and Keith Knight , “Spar-sity and Smoothness via the Fused Lasso,” Journal of the Royal Statistical Society: Series B ,2005, 67 (1), 91–108. 
+
+Wade, Sara and Zoubin Ghahramani , “Bayesian Cluster Analysis: Point Estimation and Credible Balls (with Discussion),” Bayesian Analysis , 2018, 13 (2), 559–626. 
+
+Wang, Wuyi, Peter C. B. Phillips, and Liangjun Su , “Homogeneity Pursuit in Panel Data Models: Theory and Application,” Journal of Applied Econometrics , 2018, 33 (6), 797–815. 
+
+Wooldridge, Jeffrey M. , “Two-Way Fixed Effects, the Two-Way Mundlak Regression, and Difference-in-Differences Estimators,” Empirical Economics , 2025, 69 , 2545–2587. 38 A Identification under Limited Overlap 
+
+In some staggered designs a cohort-time cell lacks a clean comparison group, for example when every unit is eventually treated and the last-treated cells have no not-yet-treated or never-treated controls. Such a cell 𝑘 then contributes no independent identifying variation, its within-transformed column ˜𝐷 𝑘 is collinear with the others, ˜𝐷 ′ ˜𝐷 is singular, and the flexible estimator ˆ𝜏 𝑘, flex is undefined for that coordinate. This is the staggered-DiD counterpart of the lack-of-overlap problem in cross-sectional designs, where the fully interacted (“long”) regression is not well defined (Kwon and Sun, 2026). Partial homogeneity offers a route through it, by letting the unidentified cell inherit its group’s effect. Let 𝒰 ⊆ { 1, . . . , 𝐾 } be the set of cells not identified by the flexible model and 𝒰 𝑐 
+
+its complement. 
+
+Proposition 4 (Identification via partial homogeneity) . Suppose the true partition is 𝒫 =
+
+{𝐶 1, . . . , 𝐶 𝑚 } and each group contains at least one identified cell, 𝐶 𝑝 ∩ 𝒰 𝑐 ≠ ∅ for every 𝑝 . Then under the restricted model (11) the group effect 𝜙 𝑝 is identified for every 𝑝 , and hence 𝜏 𝑘 = 𝜙 𝑝 is identified for every 𝑘 ∈ 𝐶 𝑝 , including the unidentified cells 𝑘 ∈ 𝐶 𝑝 ∩ 𝒰 .Proof. The group effect 𝜙 is identified in (11) exactly when the grouped design ˜𝐷 ∗ =
+
+[ ˜ 𝐷 1, . . . , ˜𝐷 𝑚 ], with ˜𝐷 𝑝 = Í𝑘 ∈𝐶 𝑝 
+
+˜𝐷 𝑘 , has full column rank. Suppose Í𝑝 𝑎 𝑝 ˜𝐷 𝑝 = 0 and set 
+
+𝑏 𝑘 = 𝑎 𝑝 (𝑘 ), the coefficient of the group containing 𝑘 ; then Í𝑘 𝑏 𝑘 ˜𝐷 𝑘 = 0, so 𝑏 lies in the null space of the flexible design ˜𝐷 . A cell 𝑘 is identified ( 𝑘 ∈ 𝒰 𝑐 ) precisely when its column is not in the span of the others, equivalently when every null-space vector of ˜𝐷 vanishes in coordinate 𝑘 . Each group 𝐶 𝑝 contains such a cell 𝑘 ∗ 
+
+> 𝑝
+
+∈ 𝐶 𝑝 ∩ 𝒰 𝑐 , so 𝑏 𝑘 ∗ 
+
+> 𝑝
+
+= 𝑎 𝑝 = 0; since this holds for every 𝑝 , 𝑎 = 0 and the group columns are linearly independent. Hence ˜𝐷 ∗′ ˜𝐷 ∗
+
+is invertible, each 𝜙 𝑝 is estimable from (12), and assigning 𝜏 𝑘 = 𝜙 𝑝 identifies every cell in the group, including the unidentified 𝑘 ∈ 𝐶 𝑝 ∩ 𝒰 .Two caveats bound the result’s practical reach. First, the identifying content comes entirely from the restriction, not the data. An unidentified cell carries no independent variation, so which group it belongs to cannot be learned from the outcomes, and Proposi-tion 4 is an identification result conditional on the grouping whose recovered effect is only as credible as the (untestable) assignment. Second, the condition that each group contains an identified cell is exactly what the result needs, and it is not tied to orthogonality: the argument uses only that each group holds a cell outside the null space of ˜𝐷 , so it covers arbitrary collinear designs, and it is sharp, since a group made up entirely of unidenti-fied cells leaves its effect 𝜙 𝑝 unidentified. Orthogonality only simplifies the picture, an unidentified cell is then a zero column that contributes nothing to its group, whereas under general collinearity the cell folds its dependent variation into the group regressor and 𝜙 𝑝 is identified but defined to include it. The Bayesian estimator’s co-clustering prob-abilities describe this assignment, but for a genuinely unidentified cell they are governed by the prior rather than by evidence, so they should be read as prior belief rather than as data. 39 B Computing the ℓ0-PH Estimator 
+
+The ℓ0-PH estimator is computed in two steps, an agglomerative search (a greedy sequence of pairwise merges) for the partition and an ordinary least squares re-estimation of the grouped model under it. This appendix gives both and shows why the re-estimation is necessary. 
+
+Step 1: Partition recovery. Exact minimization of 𝑄 (𝒫) over all partitions would require searching the partitions of {1, . . . , 𝐾 }, whose number is the Bell number 𝐵 𝐾 and grows faster than exponentially, so exhaustive evaluation is infeasible beyond small 𝐾 ; we instead use an agglomerative algorithm that runs in 𝑂 (𝐾 3) time, in the spirit of classical optimal-grouping procedures (Fisher, 1958). Initialise with 𝐾 singleton groups, each assigned the flexible CATT estimate ˆ𝜏 𝑘, flex and effective sample size 𝑛 𝑘 = ∥ ˜ 𝐷 𝑘 ∥2. At each iteration, compute for every pair of current groups (𝐴, 𝐵 )
+
+ΔObj (𝐴, 𝐵 ) = 𝑛 𝐴 𝑛 𝐵 
+
+𝑛 𝐴 + 𝑛 𝐵 
+
+  ˆ𝜏 𝐴 − ˆ 𝜏 𝐵 
+
+2 − 𝜆 · | 𝐴 | · | 𝐵 |, (45) where 𝑛 𝐴 , 𝑛 𝐵 and ˆ𝜏 𝐴 , ˆ𝜏 𝐵 are the current effective sample sizes and pooled estimates for groups 𝐴 and 𝐵 respectively. If min 𝐴 ≠𝐵 ΔObj (𝐴, 𝐵 ) ≥ 0, terminate and return the current partition ˆ𝒫 . Otherwise merge the minimizing pair, updating 
+
+ˆ𝜏 𝐴 ∪𝐵 = 𝑛 𝐴 ˆ𝜏 𝐴 + 𝑛 𝐵 ˆ𝜏 𝐵 
+
+𝑛 𝐴 + 𝑛 𝐵 
+
+, 𝑛 𝐴 ∪𝐵 = 𝑛 𝐴 + 𝑛 𝐵 . (46) The algorithm terminates after at most 𝐾 − 1 merges. 
+
+Step 2: Re-estimation under the discovered partition. Let ˆ𝒫 = { ˆ 𝐶 1, . . . , ˆ𝐶 ˆ𝑚 } denote the partition returned by Step 1. For each group ˆ𝐶 𝑝 , define the group regressor ˜𝐷 𝑝 = Í
+
+> 𝑘 ∈ ˆ 𝐶 𝑝
+
+˜𝐷 𝑘 
+
+and collect the ˆ𝑚 group regressors into the restricted within-transformed design matrix 
+
+˜𝐷 ∗ = [ ˜ 𝐷 1, . . . , ˜𝐷 ˆ𝑚 ]. Estimate the restricted model 
+
+˜𝑌 = ˜𝐷 ∗𝜙 + ˜ 𝜀 , ˜𝜀 ∼  0, 𝜎 2𝐼 𝑟 
+
+ , (47) by OLS to obtain ˆ𝜙 = ( ˜ 𝐷 ∗′ ˜𝐷 ∗)−1 ˜𝐷 ∗′ ˜𝑌 . The ℓ0-PH CATT estimate for cell 𝑘 is ˆ𝜏 ℓ0 
+
+> 𝑘
+
+= ˆ𝜙 𝑝 for all 𝑘 ∈ ˆ 𝐶 𝑝 . Equivalently, (47) corresponds to the TWFE regression 
+
+𝑌 𝑖 𝑔𝑡 = 𝛼 𝑖 + 𝛾 𝑡 +
+
+> ˆ𝑚
+
+Õ
+
+> 𝑝 =1
+
+𝜙 𝑝 
+
+Õ
+
+> 𝑘 ∈ ˆ 𝐶 𝑝
+
+𝐷 𝑘,𝑖 𝑔𝑡 + 𝜀 𝑖𝑡 , (48) estimated on the full panel. We refer to the complete two-step procedure as the ℓ0-PH estimator. 40 Why re-estimation is essential. A natural one-step alternative uses the greedy-pooled values (46) directly as CATT estimates. We show that this approach is generically ineffi-cient and that the OLS re-estimation in Step 2 is a necessary correction, not a refinement. The greedy update ˆ𝜏 𝐴 ∪𝐵 in (46) is the weighted mean of the flexible estimates with weights 𝑛 𝑘 = ∥ ˜ 𝐷 𝑘 ∥2. Under the orthogonality condition ˜𝐷 ′ 
+
+> 𝑗
+
+˜𝐷 𝑘 = 0 for 𝑗 ≠ 𝑘 , which holds approximately in balanced panels in which each unit belongs to exactly one cohort, ˜𝐷 ∗′ ˜𝐷 ∗
+
+is diagonal with 𝑝 -th diagonal entry ∥ ˜ 𝐷 𝑝 ∥2 = Í 
+
+> 𝑘 ∈ ˆ 𝐶 𝑝
+
+𝑛 𝑘 . In this case, the OLS estimate from Step 2 reduces to 
+
+ˆ𝜙 𝑝 =
+
+˜𝐷 ′ 
+
+> 𝑝
+
+˜𝑌 
+
+∥ ˜ 𝐷 𝑝 ∥2 =
+
+Õ
+
+> 𝑘 ∈ ˆ 𝐶 𝑝
+
+𝑛 𝑘 ˆ𝜏 𝑘, flex 
+
+Õ
+
+> 𝑘 ∈ ˆ 𝐶 𝑝
+
+𝑛 𝑘 
+
+, (49) which coincides with the greedy-pooled value (46). By Proposition 1, ˆ𝜙 𝑝 is therefore the BLUE of the group treatment effect, and Steps 1 and 2 deliver the same answer when the design is orthogonal. In general panels, however, cells belonging to the same treatment cohort share unit fixed effects, and cells falling on the same calendar period share time fixed effects. Both sources of co-occurrence produce non-zero off-diagonal elements in ˜𝐷 ∗′ ˜𝐷 ∗, so the OLS estimate from Step 2, 
+
+ˆ𝜙 =   ˜𝐷 ∗′ ˜𝐷 ∗−1 ˜𝐷 ∗′ ˜𝑌, (50) no longer reduces to the weighted mean (46). Three consequences follow. First, the greedy-pooled estimator does not satisfy the normal equations of (47) and therefore fails to be BLUE. Second, the ΔObj criterion (45) is an approximation, in that it treats ˜𝐷 ∗′ ˜𝐷 ∗ as diagonal when computing the RSS cost of each candidate merge, so partition selection in Step 1 rests on an approximate objective. Third, in a non-orthogonal design the greedy-pooled mean is inefficient rather than inconsistent: under a correct merge 𝜏 ∗ 
+
+> 𝐴
+
+= 𝜏 ∗ 
+
+> 𝐵
+
+= 𝜙 𝑝 ,so its probability limit (𝑛 𝐴 𝜏 ∗ 
+
+> 𝐴
+
++ 𝑛 𝐵 𝜏 ∗
+
+> 𝐵
+
+)/( 𝑛 𝐴 + 𝑛 𝐵 ) equals 𝜙 𝑝 whatever the design, but it is not the cross-product-weighted combination that (47) solves for and so is not efficient. Inconsistency for the cell effects arises only when cells with distinct true effects are merged, a Step-1 selection error, not from non-orthogonality. Step 2 corrects the two estimation shortcomings exactly and for any design. Given the partition ˆ𝒫 returned by Step 1, ˆ𝜙 in (50) solves the exact grouped normal equations, so it is the best linear unbiased estimator of the group effects under ˆ𝒫 whether or not the de-sign is orthogonal, with variance 𝜎 2[( ˜ 𝐷 ∗′ ˜𝐷 ∗)−1]𝑝𝑝 ; under orthogonality this is 𝜎 2/Í 
+
+> 𝑘 ∈ ˆ 𝐶 𝑝
+
+𝑛 𝑘 ,strictly below 𝜎 2/𝑛 𝑘 for every 𝑘 ∈ ˆ 𝐶 𝑝 with | ˆ 𝐶 𝑝 | ≥ 2, the ratio 𝑛 𝑘 /Í 
+
+> 𝑗 ∈ ˆ 𝐶 𝑝
+
+𝑛 𝑗 < 1 of (16), and the variance reduction grows with the group size. The one-step greedy-pooled estimator at-tains this fit only under exact orthogonality; Step 2 attains it for any design. The remaining shortcoming is of a different kind: it concerns which merges Step 1 selects, and Step 2 re-estimates within ˆ𝒫 rather than reopening the approximate search, so it takes the partition 41 as given. The unbiased efficiency dominance of Proposition 1 is therefore inherited only when ˆ𝒫 is the true partition; a false merge trades the variance gain for a specification bias that re-estimation cannot remove (Remark 3), the low-separation behavior documented in Section 4. The Bayesian estimator underscores the same point. Given a partition, its posterior mean of 𝜙 in (31) solves the same grouped normal equations as (47) and, in the diffuse limit 
+
+𝜎 20 → ∞ , equals ˆ𝜙 in (50). Both target the PH estimator under the discovered partition, whereas the one-step greedy-pooled mean does not. 
+
+# C Heterogeneous Errors 
+
+The model of Section 3 assumes a scalar error variance, ˜𝜀 | ˜𝐷 ∼ 𝑁 (0, 𝜎 2𝐼 𝑟 ) in (19). This appendix relaxes that assumption to a heterogeneous error covariance and records the few quantities that change, together with the augmented Gibbs sampler. Neither the partition prior (25) nor the sampler’s cluster-assignment logic is affected. The only changes are the design moments that enter the marginal likelihood and the group-effect posterior, and one additional Gibbs block that updates the variance parameters. 
+
+The modified model. Replace the scalar covariance in (19) with a structured positive-definite matrix on the transformed model, 
+
+˜𝜀 | ˜ 𝐷 ∼ 𝑁 (0, Ω), Ω = 
+
+> 𝐽
+
+Ê
+
+> 𝑗 =1
+
+𝜎 2 
+
+> 𝑗
+
+𝐼 𝑛 𝑗 , (51) where the within-transformed observations are partitioned into 𝐽 variance blocks ℬ1, . . . , ℬ𝐽 
+
+of sizes 𝑛 1, . . . , 𝑛 𝐽 , indexed by a known label 𝑣 (𝑖 ) ∈ { 1, . . . , 𝐽 }. The blocks collect observa-tions expected to share a noise level, for instance by cohort, by treated versus comparison status, or by an observed cluster. The homoskedastic model is the special case 𝐽 = 1. A fully general non-diagonal Ω, such as the clustered influence-function covariance already used in the empirical applications (Remark 1), enters the formulas below in the same way through Ω−1; a covariance that is block-diagonal in the original observations residualizes to such a dense Ω, so the per-block update (56) is specific to the block-diagonal working parameterization, while the marginal likelihood and group-effect posterior below hold for any Ω. We complete the model with an independent conjugate prior on each variance level, 
+
+𝜎 2 
+
+> 𝑗
+
+∼ Inv-Gamma (𝑎 0, 𝑏 0), 𝑗 = 1, . . . , 𝐽, (52) the natural generalization of (28). 42 What changes in the theory. Every appearance of the precision 𝜎 −2𝐼 𝑟 becomes Ω−1.Writing the two design moments in the Ω−1 metric, 
+
+𝑆 = ˜𝐷 ∗′ Ω−1 ˜𝐷 ∗, 𝑢 = ˜𝐷 ∗′ Ω−1 ˜𝑌, (53) the group effects still integrate out in closed form. Conditional on Ω, the marginal likelihood (29) becomes ˜𝑦 | 𝒫 ∼ 𝑁 (𝜇 0 ˜𝐷 ∗1𝑚 , Ω + 𝜎 20 ˜𝐷 ∗ ˜𝐷 ∗′ ), and the Woodbury reduction (30), dropping terms constant in 𝒫 , reads log 𝑝 ( ˜ 𝑦 | 𝒫 , Ω) ∝ − 12 log 𝐼 𝑚 + 𝜎 20 𝑆 + 𝜎 20 
+
+> 2
+
+𝑢 ′
+
+> 0
+
+ 𝐼 𝑚 + 𝜎 20 𝑆 −1𝑢 0, 𝑢 0 = 𝑢 − 𝜇 0 𝑆 1𝑚 . (54) The group-effect posterior (31) becomes 𝜙 | 𝒫 , Ω ∼ 𝑁 (𝜇 ∗, Σ∗) with 
+
+Σ∗ =  𝑆 + 𝐼 𝑚 /𝜎 20
+
+−1, 𝜇 ∗ = Σ ∗  𝑢 + 𝜇 01𝑚 /𝜎 20
+
+ , (55) which is the ridge-regularized GLS estimator of the group effects. Setting Ω = 𝜎 2𝐼 𝑟 gives 
+
+𝑆 = ˜𝐷 ∗′ ˜𝐷 ∗/𝜎 2 and 𝑢 = ˜𝐷 ∗′ ˜𝑌 /𝜎 2 and recovers (30) and (31) exactly. The computational cost is unchanged, the 𝑚 × 𝑚 matrix 𝑆 still governs the calculation, and forming it costs one weighting of the design by Ω−1, which is 𝑂 (𝑁𝑇 ) for the diagonal case (51). The ℓ0 correspondence of Section 3.2 survives as long as the covariance is held fixed. With Ω known, the profile over the group effects replaces the ordinary residual sum of squares by its Ω−1-weighted (GLS) counterpart ( ˜ 𝑌 − ˜ 𝐷 ∗ ˆ𝜙 )′Ω−1( ˜ 𝑌 − ˜ 𝐷 ∗ ˆ𝜙 ), while log |Ω| is constant across partitions and drops out, so the MAP partition still minimizes a residual sum of squares plus a fixed penalty of 2 𝜆 0 per cross-group pair, now with the GLS fit in place of the least-squares fit. This is the relevant form when a plug-in covariance is used, as in the applications, where Ω is the fixed first-stage ˆΣ of Lemma 1. What does not carry over is the case of an unknown Ω: once the variance levels are estimated, profiled, or integrated out, they enter through log |Ω| and through their dependence on the fitted residuals, and the objective is no longer a fixed penalty added to a residual sum of squares. Heterogeneous errors with unknown variances are therefore handled inside the sampler, which averages over the variance levels along with the partition. 
+
+The augmented Gibbs sampler. The collapsed sampler of Section 3.3 gains one block. Given a current Ω, one sweep runs the following three steps. 1. For each CATT 𝑘 , remove 𝑘 from its cluster, delete the cluster if it is empty, and draw 𝑧 𝑘 from the conditional probabilities (37) with the marginal likelihoods now evaluated from (54). 2. Draw the group effects 𝜙 ∼ 𝑁 (𝜇 ∗, Σ∗) from (55). 3. Form the within-transformed residuals ˆ˜𝜀 = ˜𝑌 − ˜ 𝐷 ∗𝜙 under the current partition, and for each variance block draw 
+
+𝜎 2 
+
+> 𝑗
+
+| 𝜙 , 𝒫 , ˜𝑌 ∼ Inv-Gamma 
+
+
+
+𝑎 0 + 𝑛 𝑗  
+
+> 2
+
+, 𝑏 0 + 12
+
+Õ  
+
+> 𝑖 :𝑣 (𝑖 )=𝑗
+
+ˆ˜𝜀 2
+
+> 𝑖
+
+
+
+, (56) 43 then assemble Ω = É 
+
+> 𝑗
+
+𝜎 2 
+
+> 𝑗
+
+𝐼 𝑛 𝑗 for the next sweep. Reinstating 𝜙 in Step 2 before the variance draw is what makes Step 3 conjugate, exactly as the original sampler reinstates 𝜙 to report the group effects. All posterior summaries of Section 3.3, the CATT posterior mean (38), the co-clustering matrix (39), and the aggre-gated estimands, are formed from the augmented draws {𝑧 (𝑠 ), 𝜙 (𝑠 ), Ω(𝑠 )} without further change, so the reported credible intervals now propagate uncertainty in the error variances alongside the partition. When a plug-in covariance is preferred, fixing Ω at an estimate 
+
+ˆΩ and omitting Step 3 recovers a single GLS-posterior sampler, the direct analog of the fixed- ˆ𝜎 2 special case of Section 3.2. 
+
+# D Fixed versus Random 𝜎 2
+
+The main text draws 𝜎 2 from its inverse-gamma full conditional each sweep, the full Bayesian model of Section 3.1. Holding 𝜎 2 fixed at the plug-in ˆ𝜎 2 is the special case that yields the exact ℓ0 correspondence (Section 3.2). This appendix shows the two give the same inference. We rerun the coverage experiment of Section 4.3 at 𝑚 ∗ = 6 and 𝛿 = 6over 500 replications, running two separate collapsed chains on each replication, one that draws 𝜎 2 from its full conditional each sweep and one that holds it at the plug-in ˆ𝜎 2.Each evaluates the cluster-assignment marginal likelihood (30) at its own 𝜎 2, so the two partition posteriors are targeted separately, and the credible intervals of Table 10 come from the matching chain. Table 10: Coverage and average length of nominal 95% DP credible intervals under a random (full Bayesian) and a fixed (plug-in) error variance, 𝑚 ∗ = 6, 𝛿 = 6, 500 replications.               
+
+> CATT ATT
+> 𝜎 2treatment Coverage Length Coverage Length Random (full Bayesian) 0.93 0.20 0.92 0.11 Fixed (plug-in) 0.93 0.20 0.93 0.11
+
+Table 10 reports the result. The two samplers deliver essentially the same coverage and interval length, for the cohort-time effects and for the overall ATT. The reason is the one given in Section 3.2, the residual degrees of freedom 𝑁𝑇 − 𝑁 − 𝑇 + 1 − 𝐾 are large, so 𝜎 2 is pinned down and the estimation error a prior on it would propagate is negligible. The choice is therefore immaterial for the reported results, and we use the fixed-𝜎 2 case in the main text only to make the ℓ0 connection concrete. 44 E MCMC Diagnostics 
+
+This appendix documents that the reported credible intervals and co-clustering probabili-ties reflect the stationary posterior rather than transient short-chain behavior. We validate the collapsed Gibbs sampler in two ways: against an exact enumeration of the posterior in the small-𝐾 application, and through standard multi-chain convergence diagnostics in the simulation. 
+
+Exact-enumeration benchmark ( 𝐾 = 7). In the Callaway and Sant’Anna (2021) appli-cation the seven cohort-time cells admit only 𝐵 7 = 877 partitions, so the exact partition posterior can be computed in closed form: for each partition we evaluate the collapsed marginal likelihood under the exact within-cell covariance and the CRP prior, and nor-malize over all 877. Table 11 compares the sampler (one chain of 20 ,000 sweeps after 2 ,000 burn-in) against this exact posterior. The two agree to within Monte Carlo error: the poste-rior expected number of groups matches (2 .20), the distribution of the group count agrees to within 0 .004 at every value, the overall-ATT posterior mean and 95% interval coincide, and the largest discrepancy over all 21 pairwise co-clustering probabilities is 0 .012. The exact within-cell covariance is what makes this agreement possible: a diagonal (indepen-dence) approximation to the cluster-assignment moves reproduces the same aggregates but misstates individual co-clustering probabilities by up to 0 .39 in this correlated design, so we use the exact covariance throughout (Remark 1). Figure 8 (left) plots the sampler’s co-clustering probabilities against the exact values. Table 11: Exact-enumeration benchmark for the Callaway and Sant’Anna (2021) applica-tion ( 𝐾 = 7, 𝐵 7 = 877 partitions). The collapsed Gibbs sampler against the exact partition posterior computed in closed form.             
+
+> Quantity Gibbs sampler Exact enumeration Posterior E[# groups] 2.20 2.20 Overall-ATT posterior mean −0.024 −0.024 Overall-ATT 95% interval [− 0.047 ,−0.000 ][− 0.048 ,−0.000 ]
+> Max pairwise co-clustering gap vs. exact 0.012 —
+
+Multi-chain diagnostics ( 𝐾 = 18 ). In the simulation, where 𝐾 = 18 makes enumeration infeasible, we run four chains from dispersed initializations, all singletons, one pooled group, and two random partitions into nine and three groups, at 𝑚 ∗ = 6, 𝛿 = 6. The Gelman–Rubin statistic is ˆ𝑅 = 1.00 for both the overall ATT and the number of groups, and the effective sample size across the four chains is about 11 ,400 for the ATT and 8 ,600 for the group count. Figure 8 (right) shows the cluster-count traces converging to a common region within the burn-in from all four starts. As a check on chain length, the 100-draw setting used in the main experiments returns an overall-ATT interval close to that of a 45 3,000-draw chain, with a stable center and an upper endpoint that moves only from about 0.078 to 0 .085, confirming that the reported quantities are not artifacts of chain length. 
+
+Figure 8: Left: Callaway application ( 𝐾 = 7), Gibbs co-clustering probabilities against the exact enumeration (filled points on the 45 ◦ line); the diagonal approximation (open points) is shown for contrast. Right: simulation ( 𝐾 = 18), cluster-count traces from four dispersed initializations converging within the burn-in (dashed line). 46

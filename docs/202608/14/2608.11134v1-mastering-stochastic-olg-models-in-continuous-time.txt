@@ -1,0 +1,904 @@
+Title: Mastering Stochastic OLG Models in Continuous Time
+
+URL Source: https://arxiv.org/pdf/2608.11134v1
+
+Published Time: Wed, 12 Aug 2026 01:24:31 GMT
+
+Number of Pages: 35
+
+Markdown Content:
+# Mastering Stochastic OLG Models in Continuous Time ∗
+
+## Yves Achdou † Johannes Brumm ‡ Lukas Frank §
+
+## August 12, 2026 — Preliminary and Incomplete —
+
+Abstract 
+
+We propose a comprehensive framework for solving overlapping-generations (OLG) models in continuous time with both idiosyncratic and aggregate risk. Our general characterization of equilibrium through the master equation operates on the joint distribution over the continuous idiosyncratic states, age and wealth. Our compu-tational strategy is to take a finite-dimensional representation of this distribution as an input of a neural net which in turn outputs a finite-difference representation of the (conditional) value function. This idea can be applied generally to heteroge-neous agent models with aggregate risk, and we call it finite-difference neural operator .Our method combines advantages from modern neural nets and traditional finite-difference methods: It is grid-free in the high-dimensional distribution, and retains control on boundary conditions in low-dimensional state variables. Moreover, our method is able to enforce shape constraints. We showcase its flexibility by solving a continuous-time OLG model with aggregate risk alone where we characterize the distribution by its supporting function; and to an OLG model with both types of risk. 
+
+> ∗
+
+We thank participants of the 32nd International Conference on Computational Economics and Finance (Venice, 2026), the workshop on mean field games and mean field control in economics (Paris, 2025), the conference on machine learning for economics and finance (Torino, 2025), the doctoral seminar UMA at ENSTA (Paris, 2026), and of the seminar at KIT (Karlsruhe, 2025) for helpful comments. We acknowledge financial support from the ERC project SOLG for Policy (101042908). Moreover, we acknowledge sup-port by the state of Baden-W ¨ urttemberg through bwHPC and the German Research Foundation (DFG) through grant INST 35/1597-1 FUGG. 
+
+> †
+
+Laboratoire Jacques-Louis Lions (LJLL), University Paris Cit´ e, achdou@ljll.univ-paris-diderot.fr 
+
+> ‡
+
+Karlsruhe Institute of Technology, johannes.brumm@kit.edu 
+
+> §
+
+Karlsruhe Institute of Technology and LJLL, Universit´ e Paris Cit´ e, lukas.frank@kit.edu 
+
+1arXiv:2608.11134v1 [econ.GN] 11 Aug 2026 1 Introduction 
+
+Overlapping generations (OLG) models have been used to study intergenerational wel-fare effects of public policy since the seminal work of Samuelson (1958) and Diamond (1965). In this model class, agents are necessarily heterogeneous, at least in their age. Further drivers of heterogeneity, such as idiosyncratic risk, might enter the model on top of that. At the same time, one often wishes to include sources of aggregate risk, for instance to properly account for risk-sharing effects of public policy. However, solving rational expectations models with heterogeneous agents and aggregate risk is notori-ously difficult as it requires agents to keep track of the entire distribution to forecast prices. 1 This poses a formidable numerical challenge. To address the computational challenge in OLG models with aggregate risk, (1) we cast these models in continuous time and characterize equilibrium as the solution to a master equation that operates on the joint distribution over idiosyncratic states, (2) we project the infinite-dimensional distribution on a finite-dimensional representation, and (3) we propose a novel approach, the finite-difference neural operator , to efficiently solve the mas-ter equation using that representation. Recasting the OLG model in continuous-time allows to leverage recent advances from the literature on mean-field games and to characterize equilibrium by means of a so-called master equation (Cardaliaguet et al., 2019). This master equation features a deriva-tive term with respect to the infinite-dimensional distribution of agents over their id-iosyncratic states. Said derivative term is the main difficulty in solving the model. In a model without idiosyncratic risk, we can exploit the fact that the distribution of agents of a given age becomes singular: all agents of one generation are equal. This enables us to represent the distribution of agents as a one-dimensional function, the generational wealth function . In a model with idiosyncratic risk, the distribution is truly non-singular; an additional challenge that we embrace to showcase the flexibility of our method. In the next step, we project the distribution – or the generational wealth function in the case with aggregate risk alone – on a finite but relatively high-dimensional space. There-fore the derivative of the value function with respect to the distribution reduces to com-puting a gradient on a high-dimensional space. Our approach is, in principle, agnostic to the projection method. In practice, the chosen projection must at the same time be fast and still reflect the features of the distribution that matter for the application at hand. 
+
+> 1There have been several attempts of avoiding this challenge by relaxing the rationality assumption, see, e.g., Sargent (1993), Kubler and Scheidegger (2025), and Moll (2025).
+
+2To solve the model with a finite-dimensional representation of the distribution, cru-cially, we construct a neural net that takes this distribution as an input and outputs a finite-difference discretization of the value function conditional on the given distribu-tion. This approach is a natural extension of the finite-difference solution to a model without aggregate risk as presented, e.g., in Achdou et al. (2022), and we refer to it as 
+
+finite-difference neural operator . Importantly, it allows to control boundary conditions and to enforce shape-constraints. For instance, we can treat Dirichlet conditions on terminal ages and a state-constraint at zero wealth (the borrowing constraint) in exactly the same way as in the model without aggregate risk. Additionally, we enforce concavity in the wealth dimension by learning second partial derivatives of the value function instead of plain values. By constraining these second derivatives to negative values, we obtain, after integration, a concave value function. Neural nets are an appropriate choice as they excel in high dimensions and allow for fast computations of the high-dimensional gra-dient with respect to the discretized distribution by means of automatic differentiation. Hence, we can efficiently evaluate the master equation, i.e., the equilibrium conditions. We then use a gradient-descent method to minimize violations of these equilibrium con-ditions in the spirit of Maliar et al. (2021) and Azinovic et al. (2022). We apply our finite-difference neural operator to a challenging overlapping-generations model with substantial aggregate (and idiosyncratic) risk. Aggregate risk takes the form of shocks to total factor productivity and depreciation. Idiosyncratic risk, on the other hand, manifests as shocks to labor income. We equip the continuous-time OLG model with a sufficiently rich structure to showcase the capabilities of our method: a stochas-tic death process, a pay-as-you-go social security system, and a bequest motive ` a la De Nardi (2004). We consider two applications: A model with aggregate risk alone – where the sole source of heterogeneity is ageing – as well as a model with aggregate and id-iosyncratic risk, with heterogeneity along age and labor income. Our finite-difference neural operator solves the OLG model with substantial aggregate (and idiosyncratic) risk to satisfactory levels of accuracy. In particular, thanks to the finite-difference representation, we are able to capture individual dynamics around the borrowing constraint well. 2 All experiments converge in less than 24 hours on a state-of-the-art GPU (Nvidia H200). 
+
+Related Literature This paper is part of the growing literature on global solution meth-ods for high-dimensional economic models. Early contributions to the literature are 
+
+> 2Accounting for the borrowing constraint is a considerable challenge, as highlighted by Gu et al. (2024).
+
+3grid-based and mitigate the curse of dimensionality through (adaptive) sparse grids (Krueger and Kubler, 2004; Judd et al., 2014; Brumm and Scheidegger, 2017; Schaab and Zhang, 2022). More recent grid-free methods include Gaussian processes (Scheidegger and Bilionis, 2019; Eftekhari and Scheidegger, 2022) and tensor-train approximations (Brumm and Hußmann, 2026). However, the majority of the literature focuses on tech-niques from deep learning. After a first wave of pioneering work has provided solid proof-of-concepts (Maliar et al., 2021; Azinovic et al., 2022; Ebrahimi Kahou et al., 2021; Han et al., 2022), the ongoing second wave of research is demonstrating broad applicabil-ity and explores refinements in the methodology (Kase et al., 2024; Pascal, 2024; Kahou et al., 2024; Gu et al., 2024; Azinovic and ˇZemliˇ cka, 2024; Folini et al., 2025; Fernandez-Villaverde et al., 2025; Gopalakrishna and Wu, 2026; Gopalakrishna et al., 2026; Yang et al., 2026; Kase et al., 2026; Payne et al., 2026; Zhong, 2026; Azinovic-Yang and ˇZemliˇ cka, 2026; Druedahl et al., 2026). Among this second wave, Gu et al. (2024) is particularly important for our research as it is, to the best of our knowledge, the first attempt to approximate solution to a mas-ter equation in a continuous-time Krusell-Smith model. We bring this continuous-time master equation approach to the class of OLG models and advance on several challenges emphasized by Gu et al. (2024), i.e., ensuring crucial shape properties of the value func-tion and dealing with a hard borrowing-constraint. Regarding our computational methodology, the closest papers are Zhong (2026) and Azinovic-Yang and ˇZemliˇ cka (2026) that both apply neural operators, although in quite different versions. Like Zhong (2026), we take discretized distributions as an input, while Azinovic-Yang and ˇZemliˇ cka (2026) use a truncated sequence of shock histories. Like Azinovic-Yang and ˇZemliˇ cka (2026), our neural operator yields coefficients of a simple grid function, whereas Zhong (2026) remains more faithful to the original work of Li et al. (2021) and learns mappings in Fourier space. Similar to Azinovic-Yang and ˇZemliˇ cka (2026), we leverage the grid-representation for shape-preservation of the ap-proximated value function. Beyond this, we also exploit it to employ an upwind scheme and to enforce boundary conditions. From a model perspective, to the best of our knowledge, we are the first to solve a continuous-time stochastic OLG model with aggregate risk. In discrete time, the inclu-sion of aggregate risk has been studied by, among others, Krueger and Kubler (2006), Brumm et al. (2017), Harenberg and Ludwig (2019), Azinovic et al. (2022), Brumm and Hußmann (2025), and Azinovic-Yang and ˇZemliˇ cka (2026). The few existing continuous-4time OLG studies feature idiosyncratic risk only (Barczyk and Kredler, 2018; Schaab and Zhang, 2022; Chen et al., 2026). 
+
+Contents. The remainder of this paper is organized as follows. Section 2 describes our general solution method for heterogeneous-agent models with aggregate risk. Section 3 presents an OLG model with aggregate and idiosyncratic risk in continuous time. In section 4, we show how to apply our general method to solve a version of said OLG model where idiosyncratic risk is turned off. Section 5 treats the case with both risks, i.e. aggregate and idiosyncratic risk. 52 A general method for HA models with aggregate risk 
+
+In this section, we describe in an abstract way the general idea of our solution method, the finite-difference neural operator. Notation in this section is independent from the other sections. Let X = X1 × X2 be a vector space. In the applications below, X will be the state space, with X1 being a low-dimensional component (e.g., the idiosyncratic state variables), and 
+
+X2 a relatively high-dimensional approximation to an infinite-dimensional distribution. Hence, X1 ∼= Rq1 and X2 ∼= Rq2 , with q2 ≫ q1. Our goal is to approximate a value function V : X1 × X2 → R that solves a nonlinear, first-order PDE 
+
+F(x1, x2, V, ∂x1 V, ∂x2 V) = 0, (x1, x2) ∈ E,on a subset E ⊂ X. In practice, this subset may be, for instance, the ergodic set. Before defining our solution method, let us reinterpret the task. We denote by RY the space of functions from Y to R. Instead of approximating a function V ∈ RX1×X2 , we search for an operator V : X2 → RX1 and define 
+
+V(x1, x2) := V(x2)( x1). We thus approximate the value function in two steps: First, approximate the elements of RX1 by a family of functions G(·| θ1) : X1 → R, with parameters θ1 ∈ RM. We denote the set of these functions by G. Second, approximate the discretized value operator eV :
+
+X2 → G with the help of a function f (·| θ2) : X2 → RM. We also write, in short, fθ2 .This function is parameterized by θ2 ∈ RN , takes high-dimensional inputs x2 ∈ X2, and outputs parameter values θ1 for G conditional on x2. The overall approximation of the value function is given by 
+
+eVθ2 (x1, x2) := G x1 fθ2 (x2) ≈ V(x1, x2). More specifically, for the approximation G(·| θ1), we use a q1-dimensional grid with 
+
+M grid points. 3 This offers two advantages: We keep tight control on the behavior at           
+
+> 3In general, Mscales badly with dimension q1. For instance, with a uniform grid and mpoints per dimension, one has M=mq1. Sparse grids (Krueger and Kubler, 2004) mitigate this curse of dimension-ality, and adaptive sparse grids (Brumm and Scheidegger, 2017) even more so. In principle, our approach can easily be combined with a sparse grid on X1, not so trivially with an adaptive one, though.
+
+6x2 ∈ Rq2 f (x2|θ2) G(x1|θ1) ˜v
+
+# ˜Vθ2(x1, x2) =: ˜v  
+
+> θ1∈RM
+
+Figure 1: General finite-difference neural operator. It takes the high-dimensional variable x2 as an input and outputs the M values on a low-dimensional grid in X1. We obtain the evaluation of 
+
+x1 7 → eVθ2 (·, x2) by interpolation on said grid. 
+
+boundaries of X1 and we can additionally enforce shape-constraints or other qualitative properties of the solution, as described in the subsequent sections. For the latter ap-proximation, fθ2 , we use a neural net with N parameters because they are known to cope well with high dimensions (Berner et al., 2022). In particular, we can compute partial derivatives ∂x2 fθ2 by means of automatic differentiation. 4
+
+In total, our method is specified by choosing a grid G of size M and defining a neural net architecture with N parameters, that maps a q2-dimensional input vector of high-dimensional state variables on an M-dimensional output vector of grid values in the low-dimensional state space components. To learn the free parameters θ2 ∈ RN , we use a stochastic gradient-descent method min-imizing the squared PDE residuals |F(x1, x2, eVθ2 , ∂x1 eVθ2 , ∂x2 eVθ2 ) − 0|2 on a finite ap-proximation eE of E. We refer to this method as finite-difference neural operator , since fθ2
+
+constitutes a neural operator 5, and, in practice, we use upwind finite differences on grid 
+
+G to compute ∂x1 eVθ2 .                   
+
+> 4Our neural operator has, typically, a much larger output size than input size, M>q1. We therefore compute partial derivatives ∂x2fθ2in forward mode with complexity O(q1·cost( fθ2)) as opposed to reverse-mode automatic differentiation with complexity O(M·cost( fθ2)), where cost( fθ2) designates the number of operations required to evaluate fθ2(Baydin et al., 2015). This means, however, that we need to keep q1
+> of moderate size. In our applications, q1is not larger than a few hundreds – a number we find sufficient to approximate the distributions at hand.
+> 5Neural operators have been pioneered in the deep learning community by Lu et al. (2021) and Li et al. (2021).
+
+73 Model 
+
+## 3.1 General model description 
+
+Demographics. Time is continuous, t ≥ 0. At each point in time t, a new generation of mass G is “born to the economy” at age a = a, consisting of infinitely many hetero-geneous agents. Time to death τ follows a Poisson process with inhomogeneous death rate π(a). All surviving households die at maximum age a.We denote the exogenous demographic measure by λt ∈ M (A). 6 This measure depends only on generation sizes at birth and on death probabilities, 
+
+λt(·) = 
+
+Z
+
+> ·
+
+Ge − R aa π(b)db 
+
+| {z }  
+
+> =: fλ
+> t(a)
+
+da . (1) We denote its Lebesgue density by f λ 
+
+> t
+
+and call it demographic density. 
+
+Risk. The economy is subject to aggregate risk via a stationary continuous-time Markov chain ( Zt) with finite states Z = {z1, . . . , zp} and Q-matrix QZ ∈ Rp×p.7 Let the Markov chain have a stationary distribution which we denote by ηZ. The stochastic variable Zt
+
+affects the economy through the production process, see below. Additionally, households face idiosyncratic risk. Consider a household i from generation born at time s. Their labor productivity follows a stationary continuous-time Markov chain ( εsi t ) with finite states E = {e1, . . . , eq} and Q-matrix Qε ∈ Rq×q. Let the Markov chain have a stationary distribution which we denote by ηε. Processes ( εsi t ) are iid within generation s for all i, independent from the individual time-to-death probabilities τ , and independent from ( Zt). We drop superscripts si when there is no risk of ambiguity. 
+
+Households. Households supply labor according to an exogenous labor profile ℓ, earn wage w, and either spend their income on consumption, c, or accumulate savings to a stock of assets, x. Assets yield interest at rate r and are subject to a borrowing con-straint, x ≥ 0. Households stop working when they reach retirement age aret . We equip households with CRRA preferences on consumption and non-homothetic preferences     
+
+> 6For every set Y, let M(Y) be the set of measures on the Borel σ-algebra of Y.
+> 7We adopt the definition of continuous-time Markov chains as given in, e.g., Chung (1960).
+
+8on bequests ` a la De Nardi (2004). That is, consumption preferences are given by 
+
+u(c) = c1−σ − 11 − σ , σ > 0, σ̸ = 1, (2) with risk aversion parameter σ. The bequest motive is 
+
+U(B) = ϕ1
+
+ 1 + B
+
+ϕ2
+
+1−σ, (3) with bequest desirability parameter ϕ1 and luxury good parameter ϕ2.The economy features a standard pay-as-you-go (PAYG) social security system with de-fined contributions: Young households, a < aret , pay a fixed share ζ on their gross labor income, wεℓ (a), to finance the retirement benefits ς of the old, a ≥ aret . Retirement ben-efits are thus simply given as contributions divided by the mass of beneficiaries 
+
+ς =
+
+R aret  
+
+> a
+
+ζwεℓ (a) ηε(dε) λ(da )
+
+λ([ aret , a]) . (4) When dying, households leave bequests. We model parental links between genera-tions with an exogenous “parent-age” probability distribution p(a) over age when giving birth. We collect the bequests left per generation, bout (a), and distribute them equally among their children, bin (a). 8 A precise formula for this procedure will be given in equations (13)-(14). We denote by ι the total net income of households, i.e. capital income, net labor income, retirement benefits, and received bequests. It is given by 
+
+ι(a, x, ε, r, w, b) = 
+
+
+
+rx + (1 − ζ)wεℓ (a) + b, if a < aret ,
+
+rx + ς(w) + b, if a ≥ aret .(5) At a fixed time s, consider a living household. Observing their current idiosyncratic state  
+
+> 8When households die before their children are economically active, they bequeath to their “siblings” from the same generations. This assumption is quantitatively not important since few households die young.
+
+9(a, x, ε), they solve the following optimization problem 
+
+V := sup 
+
+> c
+
+Es
+
+h Z s+τ
+
+> s
+
+e−ρ(t−s)u(ct) dt + e−ρτ U( xs+τ )
+
+i
+
+(6) s.t. as = a, (7) 
+
+˙at = 1, ∀t ∈ [s, s + τ ], (8) 
+
+xs = x, (9) 
+
+˙xt = ι(at, xt, εt,ert, ewt, ebt) − ct, ∀t ∈ [s, s + τ ], (10) 
+
+xt ≥ 0, ∀t ∈ [s, s + τ ], (11) where Es denotes the expectation conditional on the natural filtration generated jointly by the stochastic processes, and {ert}, {ewt}, and {ebt} are household’s belief processes for interest rate, wage, and received bequests, respectively. In a recursive rational ex-pectations equilibrium, beliefs coincide with model reality and hence depend on the distribution of households, see below. 
+
+Distribution of households. The distribution of households over their idiosyncratic state variables is a key element in the model. Since the drift on age is positive and con-stant, it will be useful to distinguish two distribution objects – the distribution over eco-nomic variables wealth and labor productivity conditional on age, and the distribution on the entire idiosyncratic state space including age. In the remainder, let A = [ a, a] and 
+
+X = R+.First, within a generation of age a, there is a probability distribution over economic id-iosyncratic state variables, X × E . We call the mapping from age to this distribution a 
+
+generational distribution mapping νt : A → M (X × E ). The distributions {νt(a), a ∈ A} are endogenously determined in equilibrium and describe how wealth and productivity are distributed within generations, conditional on their age. Second, there is a measure μt over the entire idiosyncratic state space, A×X ×E . It deter-mines the mass of households in the given idiosyncratic states. This measure satisfies, for each measurable function ϕ : A × X × E → R,
+
+Z
+
+> A×X×E
+
+ϕ μ t(da , dx , dε) = 
+
+Z
+
+> A
+
+Z
+
+> X×E
+
+ϕ ν t(a)( dx , dε)λt(da ). (12) Hence, the family {νt(a), a ∈ A} constitutes the disintegration of μt with respect to the demographic measure λt.10 Bequest flows Equipped with notation of distributions defined above, we can state the formulas for bequest flows. The collected bequests can be written as Lebesgue density 
+
+bout  
+
+> t
+
+(a) = 
+
+Z
+
+> X×E
+
+(1a<aπ(a) + δa(a)) x νt(a)( dx , dε)
+
+| {z } 
+
+> collected bequests within generation a
+
+· f λ 
+
+> t
+
+(a), 
+
+| {z } 
+
+> gen. size
+
+(13) where δa denotes the Dirac delta at a. We distribute bequests as described above which results in the convolution formula 
+
+bin  
+
+> t
+
+(a) = 1
+
+f λ 
+
+> t
+
+(a)
+
+n Z a−a
+
+> 0
+
+bout  
+
+> t
+
+(a + t)p(t) dt 
+
+| {z }
+
+> bequest to children
+
++ bout  
+
+> t
+
+(a)
+
+
+
+1 −
+
+Z a
+
+> 0
+
+p(t)dt 
+
+| {z }
+
+> bequest to siblings
+
+o
+
+, (14) Note that no bequest is destroyed or created, R bin f λda = R bout da .9
+
+Firms. Production is determined by a representative firm with Cobb-Douglas produc-tion technology, 
+
+F(K, L, Z) = Γ (Z)KαL1−α − δ(Z)K, (15) with the total factor productivity Γ and depreciation rate δ depending on the aggregate shock Z.First-order conditions of the profit-maximizing firm require 
+
+rt = ∂KF(Kt, Lt, Zt), (16) 
+
+wt = ∂LF(Kt, Lt, Zt). (17) 
+
+Equilibrium. In a recursive rational expectations equilibrium, households’ choices are optimal given their beliefs over prices, households’ beliefs are consistent with model reality, firms’ choices are optimal given prices, and markets clear, 
+
+K =
+
+Z
+
+x d μ(a, x, ε) (18) 
+
+L =
+
+Z aret 
+
+> a
+
+Z
+
+> E
+
+εℓ (a) ηε(dε) λ(da ). (19) 
+
+> 9Conservation of bequest mass follows from a change of variables and Fubini’s theorem.
+
+11 4 Solving OLG models with aggregate risk 
+
+Consider the OLG model from section 3 with aggregate, but without idiosyncratic risk. That is, the set of idiosyncratic shock values is a singleton, E = {ε}, and the stationary distribution is a Dirac measure, ηε = δε. This setting retains the main difficulty – ag-gregate risk in a rational expectations heterogeneous-agent model. At the same time, it simplifies the treatment of the infinite-dimensional distribution μ thanks to the follow-ing observation: without idiosyncratic risk, all agents within one generation are ex post identical, so we only need to keep track of the generation-wise asset holdings. In other words, the generational distribution ν(a)( dx , dz ) concentrates on the graph of a function, the generational wealth function g : A → X. For all a ∈ A,
+
+ν(a)( dx , dε) = ( δg(a) ⊗ δE )( dx , dε). (20) Hence, from equation (20) together with (12), the entire distribution μ ∈ M (A × X × E )can be characterized by the function g ∈ XA =: G.
+
+## 4.1 Equilibrium conditions 
+
+We adopt recursive notion of equilibrium. Hence, optimal consumption c∗ and saving 
+
+s∗, as well as value function V depend on the recursive state ( a, x, z, g) ∈ A × X × Z × G. Since the set of aggregate shock realizations Z is finite, we write, e.g., Vk(a, x, g) := 
+
+V(a, x, zk, g), k ∈ { 1, . . . , p}.
+
+Master equation. In equilibrium, V satisfies the master equation 
+
+ρVk = ∂aVk + Hk(∂xVk) + 
+
+> p
+
+X
+
+> l=1
+
+QZkl Vl + π(a)( U(x) − Vk)+
+
+Z
+
+> A
+
+(Tkg)( a′)
+
+hδVk
+
+δg
+
+i
+
+(da ′), (21) with Hamiltonian Hk(p|a, x, g) := sup c{u(c) + sk(c|a, x, g)p}, and transport operator (Tkg)( a) := −g′(a) + s∗ 
+
+> k
+
+(a, g(a), g). (22) As in equation (10), unoptimized savings are given by sk(c|a, x, g) := ιk(a, x, g) − c. We derive the above master equation formally in appendix D. 12 Boundary conditions. We impose boundary conditions 
+
+Vk(a, x, g) = U(x), (23) 
+
+x ≥ 0. (24) The terminal condition (23) is determined by the bequest motive while the state con-straint (24) corresponds to the borrowing constraint. 
+
+## 4.2 Calibration 
+
+Aggregate shocks to total factor productivity and depreciation are externally calibrated and chosen to deliver substantial aggregate volatility. All other parameters are either also externally calibrated or internally calibrated in the model without aggregate risk. 10 
+
+For the latter calibration, our strategy is analogous to De Nardi (2004). 
+
+Demographics and retirement system. We consider the age interval [ a, a] = [20, 95]. Death rates π(a) are taken from the Human Mortality Database for the US in 2015 (HMD, 2025). We set the distribution of parent ages p(a) to a symmetric distribution between ages 20 and 40, see appendix C.1. Retirement age is fixed at aret = 65. The contribution is ζ = 0.12, roughly equal to the Social Security contribution rate in the US. 
+
+Households. We calibrate household parameters analogously to De Nardi (2004). Risk aversion is σ = 1.5. The discount rate ρ and the bequest utility parameters ϕ1 and ϕ2 are calibrated to match the following data: An interest rate of 3%, a transfer wealth share 11 
+
+of 60%, and a 30% share of households with wealth of less than 6.25% of the median income. The labor productivity profile is fitted to PSID data from 2015, see appendix C.1. 
+
+Production and aggregate risk. As in De Nardi (2004), we choose α = 0.36. For the aggregate shocks Zt, we set realizations of total factor productivity Γ ∈ { 0.95, 1.05 } and depreciation δ ∈ { 0.08, 0.12 }. In total, Zt has four realizations, consisting of the cross-product of both two-shock realizations. We choose jump rates such that jumps for Γ and      
+
+> 10 Equilibrium conditions for the model without aggregate risk are given by a system of (finite-dimensional) PDEs and corresponding boundary conditions and can be solved with classical techniques from Achdou et al. (2022). See appendix A for details.
+> 11 By transfer wealth share, we mean the share of aggregate wealth that is accumulated due to bequest flows, including interest. It is given by ( B/r)/ K, where B=Rbout (a)da is the aggregate bequest flow at each time which is constant without aggregate risk.
+
+13 δ are independent and occur, in expectation, every ten years for Γ and every three years for δ, see table 1.                                                                      
+
+> Parameter Value Description Target / Source
+> Demographics
+> [a,a][20, 95] lifespan ah-hoc
+> π(a)see text death rates Human Mortality Database, US 2015.
+> p(a)see text parent-age distribution ad-hoc, children are born between ages 20-40.
+> Household
+> ρ0.0241 discount rate interest rate r≈3%
+> l(a)see text labor profile PSID, 2015.
+> σ1.5 risk aversion De Nardi (2004)
+> ϕ1-7.4 bequest desirability De Nardi (2004), target: ( B/r)/ K= 0.6
+> ϕ25.0 bequest non-homo. De Nardi (2004), target: cdf beq. (6.25%med. income) = 30%
+> ε1.0 labor productivity (deterministic) normalized
+> Qε[−0.0] transition rates for εno idiosyncratic risk
+> Retirement system aret 65 retirement age ad-hoc
+> ζ0.12 contribution rate ad-hoc
+> Production
+> α0.36 capital share De Nardi (2004)
+> A(Z)[0.95, 0.95, 1.05, 1.05] total factor productivity ad-hoc
+> δ(Z)[0.12, 0.08, 0.12, 0.08] depreciation ad-hoc
+> QZ
+> 
+> −0.43 0.33 0.1 0.0 0.33 −0.43 0.1 0.0 0.1 0.0 −0.43 0.33 0.0 0.1 0.33 −0.43
+> transition rates for Zad-hoc
+
+Table 1: Parameters of the model with aggregate risk. 
+
+## 4.3 Solution method 
+
+We use our general solution method from section 2. In the notation of section 2, we choose X1 = A × X × Z and X2 = C0(A, X) for the low- and high-dimensional parts of the state space, respectively. 12 Before applying our method, we need to approximate the infinite-dimensional distribution with a finite number of parameters. 
+
+Finite-dimensional distribution approximation. Since the distribution μ ∈ M (A, X)is characterized by the generational wealth function g ∈ C 0(A, X), we need to approxi-mate only a continuous, one-dimensional function on a bounded domain. We do so on a space of linear splines with n parameters and obtain gγ ∈ S1
+
+n(A, X), with the vector of parameters γ ∈ Rn. We choose a non-uniform discretization with n = 26. 13 
+
+12 The model generates continuous g functions in simulations as long as the initial distribution is con-tinuous since one can bound the optimal savings away from ±∞ .
+
+13 We perform first experiments with a uniform grid, and refine the grid in those regions where house-holds leave or hit the borrowing constraint to capture the shape of g more accurately. 
+
+14 G(a, x, z|θ1)ax gγ(a)f (γ|θ2) ˜v
+
+# ˜Vθ2(a, x, z, g) =: ˜v      
+
+> γ∈Rnθ1∈RM
+> M1
+> M2
+> M3
+> L2-projection on S1
+> n
+
+Figure 2: Finite-difference neural operator for the model with aggregate risk. This operator takes the projected generational wealth function gγ as an input and outputs a grid of values on the low-dimensional state space A × X × Z . Finally, we obtain values at off-grid states by interpolation. 
+
+Finite-difference neural operator. We discretize the low-dimensional part of the state-space with a grid of sizes M1, M2, and M3 in dimensions A, X, and Z, respectively. 14 In this specific example, we truncate X at a sufficiently large upper boundary x = 30 and set M1 = 151 with uniform grid points, M2 = 155 with decreasing mesh size towards the borrowing constraint, and M3 = 4 as implied by the shock choice. Figure 2 sketches the resulting finite-difference neural operator. It takes an n-dimensional vector of parame-ters γ as an input and outputs a vector of grid values of size M = M1M2M3, conditional on gγ . The resulting grid function G a, x, z fθ2 (γ) approximates the target value func-tion V(a, x, z, gγ ). 
+
+Transport of distribution. During training, we use simulated data which requires us to transport any given gγ ∈ S1
+
+> n
+
+(A, X). To capture the dynamics more accurately, we eval-uate the discrete version of the transport operator (22) on the (fine) age grid of size M1
+
+as chosen in the output grid. Consequently, however, the resulting, transported gener-ational wealth function gt+∆t 
+
+> γ
+
+∈ S1 
+
+> M1
+
+(A, X) does not need to be an element of S1
+
+> n
+
+(A, X). To approximate gt+∆t 
+
+> γ
+
+in S1
+
+> n
+
+, we choose the L2-projection. 
+
+Neural net architecture. We implement the discrete operator from above fθ2 as neural net in PyTorch (Ansel et al., 2024). A thoughtful design of architecture (and training) is crucial for convergence of the overall method. We use a standard feed-forward neu-   
+
+> 14 We choose the grid in the age dimension as refinement of the grid to approximate generational wealth functions. In particular, M1≥n.
+
+15 ral net. With the finite-dimensional distribution approximation and the finite-difference grid fixed (see above), our solution method prescribes input layer size n and output layer size M. We are free to choose the number of hidden layers, their sizes, and the activation functions. We make a standard choice of three layers with size 128, together with a CELU activation function (Barron, 2017). To facilitate training, the neural net learns deviations from a reference solution – a steady state value function V and corresponding gener-ational wealth function g. We compute this value function by fixing aggregate shock values to their mean levels and obtaining steady-state solution V to the corresponding heterogeneous-agent model without aggregate risk using the upwind finite-difference method from Achdou et al. (2022). 
+
+Shape preservation. Training the neural net as is turned out to be fragile and delivered non-monotonic policy functions. This observation is in line with problems documented in Gu et al. (2024). To cure this pathological behavior, we propose a method to enforce concavity of the value function with respect to the wealth dimension. We do so by ap-proximating second partial derivatives ∂xx V instead of plain values V.15 Next, we en-force negativity of second derivatives using an exponential transformation. Let y be the output given by the neural net. We define the approximated second partial derivative by ∂xx V := ∂xx Ve y, where V is the reference solution from above. Finally, backing out 
+
+V requires solving a tridiagonal system – an operation that can be efficiently performed in O(M2). The resulting value function retains the sign in the second partial derivative of the reference solution; in our case, this implies concavity in x. In a similar way, one can enforce monotonicity of the neural net output. This is an important ingredient of the elegant method by Azinovic-Yang and ˇZemliˇ cka (2026) which was developed indepen-dently of ours. 
+
+Training. As in Maliar et al. (2021) and Azinovic et al. (2022), we minimize squared residuals in equilibrium conditions using a stochastic gradient descent method. More precisely, we make the following standard choices. We initialize neural net weights with the Kaiming uniform method (He et al., 2015) and update them iteratively using the ADAM optimizer (Kingma and Ba, 2017) with an exponential decay in the learning rate. We use a batch size of 32 and divide training in three phases. In the first phase, we       
+
+> 15 To be precise, the neural net learns ∂xx Vin the interior of Xplus two boundary values V(x) and V(x). Since partial derivatives and boundary values might be different in scales, we use two separate neural nets of the same size to approximate them.
+
+16 0 10000 20000 30000 40000 
+
+Epochs    
+
+> 10 −6
+> 10 −5
+> 10 −4
+> 10 −3
+> 10 −2
+> Loss Moving average 020 40 60
+
+a
+
+> 0510 15 20
+> x
+> mean 5% percentile 95% percentile
+
+Figure 3: Training loss (left) and approximated ergodic set (right) for the OLG model with ag-gregate risk. The three marked loss regimes reflect the fact that, during training, we go from a fully artificial data set with large noise magnitude to fully simulated data with minimal noise. The approximated ergodic set is visualized using minimum and maximum wealth values to-gether with mean and 5th/95th-percentiles, pointwise in age. This confirms that the resulting value function implies stable but substantial dynamics in the generational wealth function. Sav-ing occurs relatively late in the working life due to the labor profile and the timing of bequests reception; the borrowing constraint binds for the youngest generations. The oldest generations dissave their entire wealth, suggesting that the calibrated bequest motive is dominated by con-sumption utility in all shock realizations. 
+
+construct artificial training data based on solutions to the deterministic problem. 16 After rough convergence, we enter the second phase and take a mixed batch of artificial and simulated data. Finally, once the loss has stabilized at low values, we switch to entirely simulated data. In all phases, we train three times on the same generated data, perturbed by a small noise to avoid overfitting. 
+
+## 4.4 Results 
+
+Figure 3 summarizes the results of our finite-difference neural operator. Overall training takes about eight hours on a high-performance Nvidia H200 GPU. Panel (a) confirms that the loss converges to values of the order of 10 −6. Moreover, the resulting value function implies stable dynamics, as suggested by Panel (b): the set of simulated gen-erational wealth functions (i.e., distributions) shows substantial variation, but remains bounded within reasonable wealth ranges. 
+
+> 16 We construct artificial data as convex combinations of solutions to the deterministic problem with the extreme realizations of the aggregate shock, with random weights.
+
+17 To assess accuracy, we construct a set of residuals observed over a set of simulated gener-ational wealth functions and all points from the finite-difference grid. Mean and 99.9% percentile of these residuals remain at low values of 0.0008 and 0.0045, respectively. Im-portantly, we do not observe systematic errors around the borrowing constraint and sav-ing policies satisfy s∗(x = 0) ≥ 0 up to discretization error, as confirmed by spatial error plots in appendix F.1. This suggests that our approximation is able to capture the bor-rowing constraint well, which is a considerable challenge (Gu et al., 2024). 18 5 Solving OLG models with aggregate and idiosyncratic risk 
+
+In this section, we turn to the full model with aggregate and idiosyncratic risk. In this case, we cannot simplify the distribution as in section 4. Hence, equilibrium conditions will be given in terms of the full distribution μ. This will pose additional challenges on the finite-dimensional approximation of the distribution – however, once discretized, our finite-difference neural operator is constructed in the same way as in the previous case. We therefore keep this section focussed on the novel ingredients. 
+
+## 5.1 Equilibrium conditions 
+
+Optimal consumption c∗ and saving s∗, as well as the value function V depend on the recursive state ( a, x, ε, z, μ) ∈ A×X ×E ×Z ×M . As before, stochastic processes ( εt) and (Zt) have a finite number of realizations, and we write, Vik (a, x, μ) = V(a, x, εi, zk, μ), and analogously for other variables. We omit dependencies when there is no risk of ambiguity. 
+
+Master equation. Equilibrium is characterized by the master equation (cf. Appendix D) 
+
+ρVik = ∂aVik + Hik (∂xVik ) + 
+
+> q
+
+X
+
+> j=1
+
+Qε
+
+> ij
+
+Vjk +
+
+> p
+
+X
+
+> l=1
+
+QZkl Vil + π(a)( U(x) − Vik )+
+
+Z
+
+> A
+
+Z
+
+> Xq
+
+X
+
+> j=1
+
+δVik 
+
+δμ j
+
+(a′, x′)Tkμj
+
+(da ′, dx ′), (25) with Hamiltonian Hik (p|a, x, μ) := sup c{u(c) + sik (c|a, x, μ)p}, and transport operator 
+
+Tkμi := −∂aμi − ∂x[μis∗
+
+> ik
+
+] + 
+
+> q
+
+X
+
+> j=1
+
+Qji μj − π(a)μi. (26) As in equation (10), unoptimized savings s are given by sik (c|a, x, μ) := ιik (a, x, μ) − c.19 Parameter Value Description Target / Source 
+
+Demographics 
+
+[a, a] [20, 95] lifespan ah-hoc 
+
+π(a) see text death rates Human Mortality Database, US 2015. 
+
+Household 
+
+ρ 0.068 discount rate interest rate r ≈ 3% 
+
+l(a) see text labor profile PSID, 2015 
+
+p(a) see text parent-age profile ad-hoc, children are born between biological ages 20-40. 
+
+σ 1.5 risk aversion De Nardi (2004) 
+
+ϕ1 -26.0 bequest desirability De Nardi (2004), target: ( B/r)/ K = 0.6 
+
+ϕ2 6.1 bequest non-homo. De Nardi (2004), target: cdf beq. (6.25%med. income) = 30% 
+
+ε [0.354, 2.829] ⊤ labor productivity De Nardi (2004), transformed 5-year AR(1) to Ornstein-Uhlenbeck process with discretized innovations 
+
+Qε
+
+ −0.033 0.033 0.033 −0.033 
+
+
+
+transition rates for ε De Nardi (2004), transformed as above 
+
+Retirement system aret 65 retirement age ad-hoc 
+
+ζ 0.12 contribution rate ad-hoc 
+
+Production 
+
+α 0.36 capital share De Nardi (2004) 
+
+A(Z) [0.95, 0.95, 1.05, 1.05] total factor productivity ad-hoc 
+
+δ(Z) [0.12, 0.08, 0.12, 0.08] depreciation ad-hoc 
+
+QZ
+
+
+
+−0.43 0.33 0.1 0.0 0.33 −0.43 0.1 0.0 0.1 0.0 −0.43 0.33 0.0 0.1 0.33 −0.43 
+
+ transition rates for Z ad-hoc 
+
+Table 2: Calibration of the model with idiosyncratic risk. Our calibration strategy is, in large parts, analogous to De Nardi (2004). 
+
+Boundary conditions. We impose boundary conditions 
+
+Vik (a, x, μ) = U(x), (27) 
+
+x ≥ 0. (28) The terminal condition (27) is determined by the bequest motive while the state con-straint (28) corresponds to the borrowing constraint. 
+
+## 5.2 Calibration 
+
+Our calibration is analogous to section 4.2. Table 2 lists the calibrated parameter values. 
+
+## 5.3 Solution method 
+
+This section parallels the descriptions for the case with aggregate risk alone from sec-tion 4.3. The main complication is, as mentioned, the approximation of distribution μ.In the notation of section 2, we choose X1 = A × X × E × Z and X2 = M(A × X × E ) for the low- and high-dimensional parts of the state space, respectively. Again, we need to approximate X2 in finite dimensions. 20 G(a, x, ε, z|θ1)mγ
+
+> ax
+
+f (γ|θ2) ˜v
+
+# ˜Vθ2(a, x, ε, z, μ) =: ˜v     
+
+> γ∈Rnθ1∈RM
+> M1
+> M2
+> M3M4
+> discretization & dim reduction
+
+Figure 4: Finite-difference neural operator for the model with aggregate risk. This operator takes the distribution approximation mγ as an input and outputs a grid of values on the low-dimensional state space A × X × Z . Finally, we obtain values at off-grid states ( a, x, ε, z) from grid values θ1 by interpolation. 
+
+Finite-dimensional distribution approximation. We approximate μ with a density m
+
+on the same grid as used for the finite-difference neural operator below. Hence m has 
+
+M1M2M3 parameters. Since this number is, in practice, substantially larger than what is feasible for our method, we propose a further dimensionality reduction, to mγ ≈ m,with γ ∈ Rn.17 A detailed description of our dimensionality reduction technique is postponed to appendix E. 
+
+Finite-difference neural operator. We discretize the low-dimensional part of the state-space with a non-uniform grid of sizes M1, M2, M3, and M4 in dimensions A, X, E,and Z, respectively. We truncate X at a sufficiently large upper limit x = 55 and set 
+
+M1 = 151 with uniform grid points, M2 = 205 with decreasing mesh size towards the borrowing constraint, as well as M3 = 2 and M4 = 4 as implied by the shock choices. The upwind finite difference scheme and in particular the discrete version of the transport operator from equation (26) are constructed taking into account the non-uniformity of the grid in the x variable. Figure 4 sketches the resulting finite-difference neural operator. It takes an n-dimensional vector of parameters γ as an input and outputs a vector of grid values of size M = M1M2M3M4, conditional on mγ . The resulting grid function 
+
+G a, x, ε, z f (γ|θ2) approximates the target value function V(a, x, ε, z, mγ ).        
+
+> 17 The number of input parameters nmust not be too high for the reasons outlined in footnote 4. In the subsequent computation, n≤200, while M1M2M3= 61, 910.
+
+21 0 5000 10000 15000 20000 
+
+Epochs    
+
+> 10 −7
+> 10 −6
+> 10 −5
+> 10 −4
+> 10 −3
+> 10 −2
+> Loss Moving average 020 40 60
+
+a
+
+> 0510 15 20 25 30
+> mean wealth (cross-section)  median (time series) 5th perc. (time series) 95th perc. (time series)
+
+Figure 5: Training loss (left) and approximate ergodic distribution of age-specific mean wealth (right) for the OLG model with aggregate and idiosyncratic risk. More precisely, the right plot displays time-series percentiles, as well as min and max, over long simulations. The graph con-firms that the computed value function implies substantial dynamics in the wealth distribution. Compared to the case without idiosyncratic risk, households hold, on average, more wealth when young because of the additional precautionary savings motive. 
+
+Training. Since the law of motion implied by the initial value function turned out to be rather well-behaved, we directly start training from simulated data. 18 That is, we immediately start with training phase 3 from above. 
+
+## 5.4 Results 
+
+Figure 5 shows the results of our finite-difference neural operator, after 22 hours of train-ing on a high-performance Nvidia H200 GPU. As in the case without idiosyncratic risk, the loss converges to values of the order of 10 −6, see panel (a). Panel (b) suggests sub-stantial but stable dynamics-; the cross-sectional mean wealth, conditional on age, shows substantial variation, but remains bounded within reasonable wealth ranges. This find-ing is confirmed when looking at 50th and 99th percentiles of wealth, see figure 6. 19 
+
+To assess accuracy, we construct a set of residuals observed over a set of simulated ap-proximate densities mγ and all points from the finite-difference grid. Mean and 99.9% percentile of these residuals remain at low values of 0.0005 and 0.0068, respectively. 20 
+
+> 18
+
+So far, we suspect that the simulation with both risks is better behaved due to the simulated path being “smoother” than in the case with the degenerate measure. 
+
+> 19
+
+We checked other statistics to verify stability of the simulations, too. For instance, aggregate capital realizes within a range of approximately [3, 8]. 
+
+> 20
+
+This error measure is a mix of simulation and state space error. It is the natural way to assess accuracy 
+
+22 0 20 40 60 
+
+a
+
+> 010 20 30 40 50
+> median (cross-section)  median (time series) 5th perc. (time series) 95th perc. (time series)
+
+(a) 0 20 40 60 
+
+a 
+
+> 010 20 30 40 50
+> 99th perc. (cross-section)  median 5th perc. 95th perc.
+
+(b) 
+
+Figure 6: Variation in the cross-sectional wealth median (a) and 99th percentile (b) of the ap-proximated ergodic set in the OLG model with aggregate and idiosyncratic risk. More precisely, the plots display time-series percentiles of said quantities, as well as min and max, over long simulations. 
+
+As in the case without aggregate risk, our results suggest that the borrowing constraint is well-captured by our method, see appendix F.2. 
+
+since our method is defined on simulated paths in the distribution and on the full state space in low-dimensional variables. 
+
+23 References 
+
+Achdou, Yves, Jiequn Han, Jean-Michel Lasry, Pierre-Louis Lions, and Benjamin Moll (2022). “Income and Wealth Distribution in Macroeconomics: A Continuous-Time Approach”. In: The Review of Economic Studies 89.1, pp. 45–86. doi: 10.1093/restud/ rdab002 .Ansel, Jason, Edward Yang, Horace He, Natalia Gimelshein, Animesh Jain, Michael Voz-nesensky, Bin Bao, Peter Bell, David Berard, Evgeni Burovski, et al. (2024). “PyTorch 2: Faster machine learning through dynamic python bytecode transformation and graph compilation”. In: 29th ACM international conference on architectural support for programming languages and operating systems, volume 2 (ASPLOS ’24) . ACM. doi: 10. 1145/3620665.3640366 .Azinovic, Marlon, Luca Gaegauf, and Simon Scheidegger (2022). “DEEP EQUILIBRIUM NETS”. In: International Economic Review 63.4, pp. 1471–1525. doi: 10 . 1111 / iere . 12575 .Azinovic, Marlon and Jan ˇZemliˇ cka (2024). Intergenerational Consequences of Rare Disas-ters .Azinovic-Yang, Marlon and Jan ˇZemliˇ cka (2026). Deep Learning in the Sequence Space .arXiv:2509.13623 [econ.GN]. doi: 10.48550/arXiv.2509.13623 .Barczyk, Daniel and Matthias Kredler (2018). “Evaluating Long-Term-Care Policy Op-tions, Taking the Family Seriously*”. In: The Review of Economic Studies 85.2, pp. 766– 809. doi: 10.1093/restud/rdx036 .Barron, Jonathan T. (2017). Continuously Differentiable Exponential Linear Units . arXiv:1704.07483 [cs.LG]. doi: 10.48550/arXiv.1704.07483 .Baydin, Atilim Gunes, Barak A. Pearlmutter, Alexey Andreyevich Radul, and Jeffrey Mark Siskind (2015). “Automatic differentiation in machine learning: a survey”. In: Version Number: 4. doi: 10.48550/ARXIV.1502.05767 .Berner, Julius, Philipp Grohs, Gitta Kutyniok, and Philipp Petersen (2022). “The Mod-ern Mathematics of Deep Learning”. In: Mathematical Aspects of Deep Learning . Ed. by Philipp Grohs and Gitta Kutyniok. 1st ed. Cambridge University Press, pp. 1–111. isbn: 978-1-009-02509-6. doi: 10.1017/9781009025096.002 .Brumm, Johannes and Jakob Hußmann (2025). Public Debt in Calibrated OLG Models: Fiscal Arithmetic versus Welfare Analysis . SSRN Scholarly Paper. Rochester, NY. doi: 
+
+10.2139/ssrn.4510125 .— (2026). Tensor-Train Decomposition for High-Dimensional Economic Models .24 Brumm, Johannes, Felix Kubler, and Simon Scheidegger (2017). “Computing Equilib-ria in Dynamic Stochastic Macro-Models with Heterogeneous Agents”. In: Advances in Economics and Econometrics . Ed. by Bo Honor´ e, Ariel Pakes, Monika Piazzesi, and Larry Samuelson. 1st ed. Cambridge University Press, pp. 185–230. isbn: 978-1-108-41498-2. doi: 10.1017/9781108227223.007 .Brumm, Johannes and Simon Scheidegger (2017). “Using Adaptive Sparse Grids to Solve High-Dimensional Dynamic Models”. In: Econometrica 85.5, pp. 1575–1612. doi: 10. 3982/ECTA12216 .Cardaliaguet, Pierre, Franc ¸ois Delarue, Jean-Michel Lasry, and Pierre-Louis Lions (2019). 
+
+The Master Equation and the Convergence Problem in Mean Field Games . 1st ed. Princeton University Press. isbn: 978-0-691-19371-7. doi: 10.23943/princeton/9780691190716. 001.0001 .Chen, Cangxiong, Sigmund Ellingsrud, Fabian N. Harang, Alfonso Irarrazabal, and Avi Mayorcas (2026). “Stochastic analysis of overlapping generations models under in-complete markets”. In: Mathematics and Financial Economics . doi: 10.1007/s11579-026-00418-5 .Chung, Kai Lai (1960). Markov Chains with Stationary Transition Probabilities . Berlin, Hei-delberg: Springer Berlin Heidelberg. isbn: 978-3-642-49408-6. doi: 10.1007/978- 3-642-49686-8 .De Nardi, Mariacristina (2004). “Wealth Inequality and Intergenerational Links”. In: The Review of Economic Studies 71.3, pp. 743–768. doi: 10.1111/j.1467-937X.2004.00302. x.Diamond, Peter (1965). “National Debt in a Neoclassical Growth Model”. In: American Economic Review 55.5, pp. 1126–1150. Druedahl, Jeppe, Jacob Røpke, and Rapha¨ el Huleux (2026). Fiscal Multipliers in Globally Solved HANK Model with Aggregate Risk .Ebrahimi Kahou, Mahdi, Jes ´ us Fern´ andez-Villaverde, Jesse Perla, and Arnav Sood (2021). 
+
+Exploiting Symmetry in High-Dimensional Dynamic Programming . Working Paper. doi: 
+
+10.3386/w28981 .Eftekhari, Aryan and Simon Scheidegger (2022). “High-Dimensional Dynamic Stochas-tic Model Representation”. In: SIAM Journal on Scientific Computing 44.3, pp. C210– C236. doi: 10.1137/21M1392231 .Fernandez-Villaverde, Jesus, Galo Nu ˜ no, and Jesse Perla (2025). Taming the Curse of Di-mensionality: Quantitative Economics with Deep Learning .25 Folini, Doris, Aleksandra Friedl, Felix K ¨ ubler, and Simon Scheidegger (2025). “The Cli-mate in Climate Economics”. In: The Review of Economic Studies 92.1, pp. 299–338. doi: 
+
+10.1093/restud/rdae011 .Gangbo, Wilfrid and Robert J. McCann (1996). “The geometry of optimal transporta-tion”. In: Acta Mathematica 177.2, pp. 113–161. doi: 10.1007/BF02392620 .Gopalakrishna, Goutham, Zhouzhou Gu, and Jonathan Payne (2026). Institutional Asset Pricing with Segmentation and Household Heterogeneity .Gopalakrishna, Goutham and Yuntao Wu (2026). ALIENs for Continuous Time Economies .SSRN Scholarly Paper. Rochester, NY. doi: 10.2139/ssrn.3848657 .Gu, Zhouzhou, Mathieu Lauri` ere, Sebastian Merkel, and Jonathan Payne (2024). Global Solutions to Master Equations for Continuous Time Heterogeneous Agent Macroeconomic Models . arXiv:2406.13726 [math]. doi: 10.48550/arXiv.2406.13726 .Han, Jiequn, Yucheng Yang, and Weinan E (2022). DeepHAM: A Global Solution Method for Heterogeneous Agent Models with Aggregate Shocks . arXiv:2112.14377 [econ]. doi: 10. 48550/arXiv.2112.14377 .Harenberg, Daniel and Alexander Ludwig (2019). “Idiosyncratic Risk, Aggregate Risk, and the Welfare Effects of Social Security”. In: International Economic Review 60.2, pp. 661–692. doi: 10.1111/iere.12365 .He, Kaiming, Xiangyu Zhang, Shaoqing Ren, and Jian Sun (2015). “Delving Deep into Rectifiers: Surpassing Human-Level Performance on ImageNet Classification”. In: 
+
+2015 IEEE International Conference on Computer Vision (ICCV) . Santiago, Chile: IEEE, pp. 1026–1034. isbn: 978-1-4673-8391-2. doi: 10.1109/ICCV.2015.123 .Judd, Kenneth L., Lilia Maliar, Serguei Maliar, and Rafael Valero (2014). “Smolyak method for solving dynamic economic models: Lagrange interpolation, anisotropic grid and adaptive domain”. In: Journal of Economic Dynamics and Control 44, pp. 92–123. doi: 
+
+10.1016/j.jedc.2014.03.003 .Kahou, Mahdi E., Jes ´ us Fern´ andez-Villaverde, Sebastian Gomez-Cardona, Jesse Perla, and Jan Rosa (2024). Spooky Boundaries at a Distance: Inductive Bias, Dynamic Models, and Behavioral Macro . Working Paper. doi: 10.3386/w32850 .Kase, Hanno, Leonardo Melosi, and Matthias Rottner (2024). Estimating Nonlinear Het-erogeneous Agent Models with Neural Networks .Kase, Hanno, Matthias Rottner, and Fabio Stohler (2026). Generative Economic Modeling .Kingma, Diederik P. and Jimmy Ba (2017). Adam: A Method for Stochastic Optimization .arXiv:1412.6980 [cs]. doi: 10.48550/arXiv.1412.6980 .26 Krueger, Dirk and Felix Kubler (2004). “Computing equilibrium in OLG models with stochastic production”. In: Journal of Economic Dynamics and Control 28.7, pp. 1411– 1436. doi: 10.1016/S0165-1889(03)00111-8 .— (2006). “Pareto-Improving Social Security Reform when Financial Markets are In-complete!?” In: American Economic Review 96.3, pp. 737–755. doi: 10.1257/aer.96.3. 737 .Kubler, Felix and Simon Scheidegger (2025). “Self-Justified Equilibria: Existence and Computation”. In: Journal of the European Economic Association , jvaf062. doi: 10.1093/ jeea/jvaf062 .Li, Zongyi, Nikola Kovachki, Kamyar Azizzadenesheli, Burigede Liu, Kaushik Bhat-tacharya, Andrew Stuart, and Anima Anandkumar (2021). Fourier Neural Operator for Parametric Partial Differential Equations . arXiv:2010.08895 [cs.LG]. doi: 10.48550/ arXiv.2010.08895 .Lu, Lu, Pengzhan Jin, and George Em Karniadakis (2021). “DeepONet: Learning non-linear operators for identifying differential equations based on the universal approx-imation theorem of operators”. In: Nature Machine Intelligence 3.3. arXiv:1910.03193 [cs], pp. 218–229. doi: 10.1038/s42256-021-00302-5 .Maliar, Lilia, Serguei Maliar, and Pablo Winant (2021). “Deep learning for solving dy-namic economic models.” In: Journal of Monetary Economics 122, pp. 76–101. doi: 10. 1016/j.jmoneco.2021.07.004 .Max Planck Institute for Demographic Research (Germany), University of California, Berkeley (USA), and French Institute for Demographic Studies (France) (2025). Hu-man Mortality Database (HMD) . Available at www.mortality.org (data downloaded on 28.07.2026). doi: DOI:10.4054/HMD.Countries.20251211 .Moll, Benjamin (2025). The Trouble with the Master Equation in Macroeconomics Mean Field Games .Pascal, Julien (2024). “Artificial neural networks to solve dynamic programming prob-lems: A bias-corrected Monte Carlo operator”. In: Journal of Economic Dynamics and Control 162, p. 104853. doi: 10.1016/j.jedc.2024.104853 .Payne, Jonathan, Adam Rebei, and Yucheng Yang (2026). Deep Learning for Search and Matching Models . SSRN Scholarly Paper. Rochester, NY. doi: 10.2139/ssrn.4768566 .Peyr´ e, Gabriel and Marco Cuturi (2020). Computational Optimal Transport . arXiv:1803.00567 [stat]. doi: 10.48550/arXiv.1803.00567 .27 Samuelson, Paul A. (1958). “An Exact Consumption-Loan Model of Interest with or without the Social Contrivance of Money”. In: Journal of Political Economy 66.6, pp. 467– 482. doi: 10.1086/258100 .Sargent, Thomas J (1993). Bounded Rationality in Macroeconomics: The Arne Ryde Memorial Lectures . Oxford University PressOxford. isbn: 978-0-19-828864-0. doi: 10.1093/oso/ 9780198288640.001.0001 .Schaab, Andreas and Allen Zhang (2022). “Dynamic Programming in Continuous Time with Adaptive Sparse Grids”. In: SSRN Electronic Journal . doi: 10.2139/ssrn.4125702 .Scheidegger, Simon and Ilias Bilionis (2019). “Machine learning for high-dimensional dynamic stochastic economies”. In: Journal of Computational Science 33, pp. 68–82. doi: 
+
+10.1016/j.jocs.2019.03.004 .Social Research Center (2026). Panel Study of Income Dynamics, public use dataset. Ann Arbor, MI. Yang, Yucheng, Chiyuan Wang, Andreas Schaab, and Benjamin Moll (2026). Structural Reinforcement Learning for Heterogeneous Agent Macroeconomics . arXiv:2512.18892 [econ]. doi: 10.48550/arXiv.2512.18892 .Zhong, Yaolang (2026). Operator Learning in Macroeconomics .28 A Solving the model without risk 
+
+In this section, we consider the continuous-time OLG model from section 3 without id-iosyncratic and aggregate risk, i.e., its deterministic version. This model will serve two purposes; first for internal calibration in section 4.2 and second as a reference solution 
+
+V in the solution method from section 4.3. 
+
+## A.1 Equilibrium conditions 
+
+We use the same notation as in the main part. Equilibrium for the deterministic model is characterized by the forward-backward system of an HJB equation and an ODE on the generational wealth function 21 
+
+ρV = ∂aV + H(∂xV) + π(a)( U(x) − V), (29) 0 = −g′(a) + s∗(a, g(a)), (30) 
+
+V(a, x) = U(x), (31) 
+
+g(a) = 0. (32) 
+
+## A.2 Solving the PDE system 
+
+We solve the system (29)-(32) using upwind finite-differences from Achdou et al. (2022). 
+
+– TO BE COMPLETED – 
+
+> 21 This ODE is implied by the KFP equation that one typically expects in these applications.
+
+29 B Solving the model with idiosyncratic risk 
+
+In this section, we consider the continuous-time OLG model from section 3 with idiosyn-cratic risk alone, i.e., without aggregate risk. This model will serve two purposes; first for internal calibration in section 5.2 and second as a reference solution V in the solution method from section 5.3. 
+
+## B.1 Equilibrium conditions 
+
+We use the same notation as in the main part. Equilibrium for the model with idiosyn-cratic risk only is characterized by the forward-backward system of HJB and KFP equa-tion (Achdou et al., 2022) 
+
+ρVi = ∂aVi + H(∂xVi) + 
+
+> q
+
+X
+
+> j=1
+
+Qε
+
+> ij
+
+Vj + π(a)( U(x) − Vi), (33) 0 = −∂aμi − ∂x[μisi] + 
+
+> q
+
+X
+
+> j=1
+
+Qε
+
+> ji
+
+μj − π(a)μi, (34) 
+
+Vi(a, x) = U(x), (35) 
+
+ν(a) = ( δ0 ⊗ ηε)( dx , dε), and f λ(a) = 1
+
+a − a. (36) Note that, somewhat unusually, we formulate the initial condition for μ in terms of ν(a)together with the generational density fλ since we want to prescribe the measure μ con-ditional on a = a.
+
+## B.2 Solving the PDE system 
+
+We solve the system (33)-(36) using upwind finite-differences from Achdou et al. (2022). 
+
+– TO BE COMPLETED – 
+
+30 C Calibration details 
+
+This section details on the external calibration for all model versions as well as the inter-nal calibration in the model without risk and in the model with idiosyncratic risk alone. 
+
+## C.1 External calibration 
+
+Death probabilities. We take death probabilities from the Human Mortality Database for the US in 2015 (HMD, 2025). We interpolate death rates linearly between integer ages. The resulting demographic density is shown in figure 7a. 
+
+Parent-age distribution. We choose a symmetric density between ages 20 and 40 to model the inter-generational links. Our simple approach uses a constant function be-tween ages 25 and 35 and linearly interpolates down to zero on the remaining parts. In principle, one could fit a functional form to real data. However, since results turned out to be insensitive to reasonable choices of p(a), we stick with the simple approach. The corresponding density is depicted in figure 7b. 
+
+Labor profile. We fit the labor productivity profile to 2015 data from the Panel Study of Income Dynamics (PSID, 2026). We take labor productivity as the hourly regular wage rate as defined in the PSID and fit a quadratic polynomial. We include ages between 20 and 65. 22 The resulting normalized productivity profile is shown in figure 7c. 20 30 40 50 60 70 80 90 
+
+> a
+> 0.00.20.40.60.81.0
+
+(a) Demographic density f λ(a)0 10 20 30 40 50 60 70  
+
+> a
+> 0.00 0.01 0.02 0.03 0.04 0.05 0.06 0.07
+
+(b) Parent-age density p(a)20 30 40 50 60 70 80 90  
+
+> a
+> 0.000 0.005 0.010 0.015 0.020 0.025
+
+(c) Labor profile ℓ(a)
+
+Figure 7: Choice of age-dependent parameter profiles. Parent-age density is normalized such that it integrates to one. The labor profile is normalized such that aggregate labor supply inte-grates to one. All plots are with respect to biological age a.
+
+> 22
+
+The actual procedure used so far deviates slightly from the one described above and will be updated in the next version of this working paper. Differences in the implied labor profiles are quantitatively negligible. 
+
+31 C.2 Internal calibration of the model without risk 
+
+– TO BE COMPLETED – 
+
+## C.3 Internal calibration of the model with idiosyncratic risk 
+
+The model with idiosyncratic risk only can be solved via a finite-difference upwind method for the system (33)-(36), as described in appendix B. Calibration delivers pa-rameter values from table 2. The calibrated model does a fairly good job in matching the empirical age-wealth shares, as table 3 suggests. Age group Wealth share model data below 40 0.091 0.051 40-54 0.236 0.234 55-69 0.422 0.472 above 70 0.251 0.242  
+
+> Table 3: Untargeted age-wealth shares in the model and in the data. We report 2015 data from the FED. Age is given as biological age.
+
+– TO BE COMPLETED – 
+
+32 D Formal derivation of the Master equation 
+
+In this section, we formally derive the master equation for the case with aggregate risk alone. To do so, we start from the case with both risks, where the derivation is close to Cardaliaguet et al. (2019). We then specialize the master equation to the case where the distribution μ ∈ M (A × X × E ) can be characterized via a generational wealth function 
+
+g ∈ G = XA.
+
+– TO BE COMPLETED – 
+
+33 E Distribution approximation 
+
+In this section, we describe our dimensionality reduction strategy for the discrete density 
+
+m. This density is defined on a cartesian-product grid over A × X × E of size M1M2M3.Since E is finite with p values, we treat the approximation of mi = m(a, x, εi) independent of each other. Moreover, because the drift in age is constant, it is natural to approximate 
+
+m in age slices. 
+
+Approximation along age. We exploit the fact that policies are, in large parts of the domain, smooth in age. 23 We therefore approximate the conditional densities mi(al, ·)at a small set of ages {al}Ll=1 and interpolate said conditional densities between these ages. Once the conditional distributions are approximated at all age slices (see below), we interpolate to arbitrary ages by “displacement interpolation”, a method from optimal transport that interpolates distributions along the shortest path in Wasserstein space (Gangbo and McCann, 1996; Peyr´ e and Cuturi, 2020). 24 We perform said interpolation on normalized densities and rescale with exogenous generation masses afterwards. 
+
+Approximation along wealth. We perform the approximation of the one-dimensional 
+
+mi(al, ·) in two steps. A single parameter γ0 describes the mass contained in the interval [0, ϵ] (near the lower bound), and the part of the measure supported in ( ϵ, ¯x] is pro-jected on the space of exponentiated polynomials of degree n − 2, yielding parameters 
+
+γ1, . . . , γn−1. This ensures that the resulting density is non-negative; and a further nor-malization guarantees mass preservation. In total, our method approximates m with Lnp , parameters, where L < M1, n < M2, and 
+
+p = M3.
+
+> 23 In our model, the sole exception is retirement, which causes a drift discontinuity at retirement age.
+> 24 This approach is relatively cheap in one dimension. In higher dimensions, however, computing the optimal transport map is a challenging task.
+
+34 F Additional results 
+
+## F.1 Errors in the case with aggregate risk 
+
+– TO BE COMPLETED – 
+
+## F.2 Errors in the case with aggregate and idiosyncratic risk 
+
+To assess the spatial distribution of errors, we compute average errors over long simu-lations and shock realizations for each grid point ( ai, xj). Figure 8 displays these errors. Errors are slightly more pronounced for young ages; but importantly, they are not sys-tematically larger around the borrowing constraint. 0 20 40 60 010 20 30 40 50 
+
+10 −4
+
+10 −3
+
+10 −2    
+
+> Figure 8: Errors over A×X, averaged over shock values and over distributions from long simu-lations.
+
+35
