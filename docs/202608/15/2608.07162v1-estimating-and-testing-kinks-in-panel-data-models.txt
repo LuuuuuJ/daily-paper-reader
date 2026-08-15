@@ -1,0 +1,8996 @@
+Estimating and Testing Kinks in Panel Data
+Models
+Yousef Kaddoura∗
+Örebro University
+August 10, 2026
+Abstract
+Many economic and financial relationships may change gradually rather than
+abruptly. We study panel data models in which the coefficient vector is continuous
+and piecewise linear in calendar time, with a finite number of unknown kink dates at
+which its slope changes. We propose a penalised least squares estimator that applies
+adaptive weighted group penalties to the second differences of the coefficient path,
+and develop asymptotic theory showing that it recovers both the number and the
+locations of the kinks with probability approaching one. To our knowledge, this is
+the first panel framework to estimate an unknown number of common kink dates
+in a time-varying coefficient path under fixed effects. We establish that endpoint
+slopes converge at the usual cubic regime-length rate and interior slopes at rates
+determined by their own and adjacent regime lengths. We also develop a coefficient-
+by-coefficient extension allowing individual regressors to kink at different dates.
+Monte Carlo evidence supports the good finite sample properties, and we illustrate
+the method through an application in macro-finance, specifically the relationship
+between debt and growth.
+Keywords: Adaptive group lasso; Kink detection; Panel data; Structural change;
+Time-varying coefficients; Growth.
+JEL Classification: C13; C23; C33.
+1
+Introduction
+Certain economic and financial relationships may not change overnight. When a central
+bank shifts its policy stance, when a trade agreement phases in, or when a tax reform
+gradually alters incentives, the response of economic and financial agents unfolds over
+time. The coefficients governing these relationships may not jump discontinuously, but
+they might “bend.” Yet the dominant paradigm in the structural change literature focuses
+precisely on such jumps: abrupt, discrete breaks in parameters that partition a sample
+into distinct regimes with different levels (see Andrews, 1993; Bai and Perron, 1998, 2003;
+∗Örebro University E-mail address: yousef.kaddoura@oru.se.
+1
+arXiv:2608.07162v1  [econ.EM]  7 Aug 2026
+
+
+Horváth and Hušková, 2012; Horváth et al., 2017; Antoch et al., 2019, among others).
+This paper argues that for a broad and economically important class of phenomena, the
+right model is not a break but a kink, i.e. a change in the rate at which a coefficient
+evolves.
+Kink models have a growing presence in the threshold literature (see, for example,
+Hidalgo et al., 2019; Zhong et al., 2022; Sun et al., 2024; Zhang et al., 2025). Hansen
+(2017) formalizes estimation and inference for the regression kink model in time series,
+where the effect of a threshold variable x on the response is linear on each side of an
+unknown threshold γ but continuous at γ itself, producing a “kink” in the regression
+function at that point. Zhang et al. (2017) extend this framework to panel data. These
+papers model nonlinearity as a function of where agents are: the coefficient path bends
+when a covariate crosses some threshold level γ, and crucially, an agent can move back
+and forth across that threshold as the variable fluctuates. This is distinct again from the
+regression kink design of Card et al. (2015), where the kink is located in a known running
+variable at a policy threshold and the change in slope identifies a causal effect. There the
+kink is a feature of the cross-sectional design.
+The present paper takes a different and complementary perspective. We model nonlin-
+earity as a function of when agents are. The coefficient vector is modeled as piecewise
+linear in time, with multiple unknown kink dates at which the rate of change shifts per-
+manently. This distinction matters economically. A central bank may not react because
+inflation crossed some level last quarter, but it may do so because of a persistent shift in
+its policy framework. Clarida et al. (2000) document a shift around the Volcker appoint-
+ment in 1979, but such a transition need not be instantaneous as credibility may need
+to be established. Similarly, Trefler (2004) shows that the employment and productivity
+effects of the Canada–US Free Trade Agreement unfolded over several years after ratifica-
+tion. Returning to the growth literature, Hansen (2017) studies the relationship between
+public debt and growth studied by Reinhart and Rogoff (2010). The question is whether
+the effect of debt on growth changes once the debt-to-GDP ratio crosses some threshold.
+In our empirical application we revisit a similar question and find that the bend is date-
+able and that the relationship was already evolving before that date. This complements
+his analysis and emphasizes that when agents are is an important complement to where
+agents are in obtaining a fuller picture of the underlying economic relationship.
+Another related literature allows coefficients to evolve smoothly over time. In panel
+data, however, this literature remains relatively sparse; see Li et al. (2011), Su et al.
+(2019), Chen (2019), Dong et al. (2021), and Su and Jin (2012).
+Besides the when
+agents are point, a natural question, then, is why one should prefer the kink model
+for this task over its two closest neighbours: the level break model on one side and
+the fully nonparametric time-varying parameter (TVP) model on the other. The break
+model, as in Bai and Perron (1998), is well suited to changes that occur overnight, but
+it rules out, by assumption, the possibility that the relationship was already evolving
+before the break date, constraining the within-regime path to be flat and discarding the
+information about the speed at which structural change unfolds. The TVP model imposes
+no such restriction, since its goal is to recover the function itself rather than to identify
+a small number of structural change dates. The cost, however, is that it delivers neither
+2
+
+
+a dateable event nor a within-regime slope with a clear economic interpretation. Our
+model lies between these two extremes. It identifies a dateable kink and estimates how
+fast the relationship was evolving on each side of that date. The within-regime slope
+measures the speed of structural change in a way that neither alternative can provide,
+making the kink model the natural choice whenever both the timing and the pace of a
+shifting economic relationship are objects of interest.
+The estimator suggested in this paper proceeds in two steps. We first run an unpe-
+nalised regression of the first-period differenced model, which eliminates the fixed effects
+while leaving the time-varying structure of the coefficients (see Kaddoura and Westerlund,
+2023; Kaddoura, 2025, for a discussion in related settings), to construct adaptive weights
+in the spirit of Zou (2006) that are small where the coefficient path already appears to
+bend and large where it is locally linear. We then minimise a penalised least squares
+objective that penalises the second differences of the coefficient path using a weighted
+group-ℓ2 norm (see Yuan and Lin, 2006; Zou, 2006, for the group lasso and its adaptive
+extension). Since a nonzero second difference at period t is equivalent to a kink at t, the
+penalty directly targets slope changes while enforcing continuity throughout, distinguish-
+ing our approach from level break estimators that allow jumps. The adaptive weights
+recover the oracle property in the sense of Zou (2006), where the estimated kink dates
+coincide with the true ones with probability approaching one, recovering both the correct
+number of kinks and their exact locations. Conditional on correct recovery, a post-kink
+ordinary least squares regression on the piecewise linear basis estimates the initial level
+and within-regime slopes, delivering asymptotic normality.
+The estimation strategy proposed in this paper is related to several strands of the
+penalisation literature, though it differs from each in important ways. At a conceptual
+level, our use of second differences is reminiscent of the Hodrick–Prescott filter (Hodrick
+and Prescott, 1997). Our method is not an HP filter, however, since we work in a panel
+regression setting with observed covariates and fixed effects, and use an adaptive group
+penalty on second differences to induce sparse kinks. This panel structure, where first-
+period differencing removes the incidental fixed effect before the penalty is applied, is
+what separates our setting from the time series filtering and trend filtering literature
+(Kim et al., 2009; Tibshirani, 2014) and the generalised lasso of Tibshirani and Taylor
+(2011). The closest to our setting is Qian and Su (2016b) and Qian and Su (2016a) who
+apply an adaptive group fused Lasso to detect level breaks by penalising first differences
+of the coefficient path. We penalise second differences instead, which induces piecewise
+linearity rather than jumps and so targets kinks rather than breaks. Because a slope
+keeps shifting the coefficient path in every later regime, it is identified over the whole
+subsequent span rather than within a single regime alone.
+The contributions of this paper are therefore threefold. First, we are the first to in-
+troduce the kink panel model as a new class of structural change specifications in which
+the coefficient path is continuous and piecewise linear in time, filling the gap between
+the fully flexible time-varying parameter literature and the level break literature. To the
+best of our knowledge, this is the first panel-data structural-change framework in which
+common unknown kink dates are estimated in a time-varying coefficient path. Second,
+we establish selection consistency, exact recovery of the kink dates, and oracle asymp-
+3
+
+
+totic normality for the post-kink estimator. Unlike the level-break model of Qian and
+Su (2016a), in which each regime coefficient is identified from observations within that
+regime, continuity in our kink model links adjacent segments and changes the conver-
+gence rates of the slopes. Endpoint slopes retain the classical within-regime trend rates,
+whereas interior slopes borrow strength from neighboring regimes through their shared
+boundary levels. To the best of our knowledge, this is the first explicit characterization of
+such adjacent-regime slope rates in a panel model with multiple unknown kinks. Third,
+we introduce a coefficient-by-coefficient extension, in the spirit of Kaddoura (2025), in
+which each regressor is permitted to kink at its own set of dates independently of the
+others, accommodating richer forms of partial structural change in which some coeffi-
+cients bend while others remain globally linear. Together, these contributions provide
+applied researchers with a toolkit for dating and estimating gradual, continuous shifts in
+economic relationships.
+The remainder of the paper is organized as follows. Section 2 sets out the kink panel
+model and its key representation. Section 3 introduces the penalised estimator and the
+post-kink estimation step. Section 4 develops the asymptotic theory, including selection
+consistency, recovery of the kink dates, asymptotic normality of the post-kink estimator,
+and the coefficient-by-coefficient extension. Section 5 reports the Monte Carlo evidence,
+and Section 6 presents the empirical applications.
+2
+Model
+Consider a scalar variable yi,t ∈R and a vector of covariates xi,t := [xi,t,1, . . . , xi,t,p]′ ∈
+Rp×1, observed for cross-sectional units i = 1, . . . , N over time periods t = 1, . . . , T, where
+p is fixed. Consider the following data-generating process (DGP):
+yi,t = µi + x′
+i,tθt + εi,t,
+(2.1)
+where θt ∈Rp×1 is a conformable vector of unknown coefficients that may vary across
+time periods in a manner made precise below, µi ∈R is a cross-sectional fixed effect, and
+εi,t ∈R is an idiosyncratic error term. Throughout this paper “a := b” indicates that a
+is defined by b.
+The object of interest is to estimate θt and its kink behaviour. To allow for kinks, we
+let θt evolve over K + 1 distinct regimes. Let 1 =: T0 < T1 < · · · < TK < T < TK+1 :=
+T + 1 and define the ℓth regime set as Kℓ:= {Tℓ−1, . . . , Tℓ−1}, for ℓ= 1, . . . , K + 1,
+where K ∈{0, . . . , T −2}. For each regime ℓ, let κℓ∈Rp×1 denote the within-regime
+slope (in t). We model θt as piecewise linear in t via
+θt = θTℓ−1 + (t −Tℓ−1)κℓ
+(2.2)
+for t ∈Kℓand ℓ= 1, . . . , K + 1. Under (2.2), θTℓ−1 is the level of the coefficient path at
+the start of regime ℓ, and κℓgoverns the linear evolution of θt within that regime. Kinks
+occur at periods t ∈TK := {T1, . . . , TK}, where the slope changes across regimes. Since
+regime ℓends at time Tℓ−1 and regime ℓ+ 1 starts at time Tℓ, we impose continuity at
+4
+
+
+kink locations (no jumps) via the recursion
+θTℓ= θTℓ−1 + (Tℓ−Tℓ−1)κℓ
+(2.3)
+for ℓ= 1, . . . , K. In particular, (2.3) implies θTℓ−θTℓ−1 = κℓ,1 so the coefficient path
+does not jump when moving from Tℓ−1 to Tℓ.
+In fact, how we model the parameters is closely related to the literature in which local
+linear methods are used to approximate smoothly evolving coefficient functions (see, for
+example, Fan and Zhang 1999; Cai 2007). The key difference is that, in our setting,
+piecewise linearity is imposed as a global structural approximation with a set of unknown
+kink dates, rather than serving as a local approximation to an otherwise smooth coefficient
+path.2
+Remark 2.1 (Unified representation). Equations (2.2)–(2.3) can be condensed into a
+single representation. Iterating (2.3) yields θTℓ−1 = θ1 + Pℓ−1
+j=1(Tj −Tj−1)κj for ℓ=
+1, . . . , K +1, where the sum is empty (hence zero) when ℓ= 1. Substituting this into (2.2)
+gives, for t ∈Kℓ,
+θt = θ1 +
+ℓ−1
+X
+j=1
+(Tj −Tj−1)κj + (t −Tℓ−1)κℓ
+(2.4)
+for ℓ= 1, . . . , K + 1. Hence, the entire path {θt}T
+t=1 is determined by the initial level θ1,
+the within-regime slopes κ1, . . . , κK+1, and the kink dates TK.
+An equivalent way of expressing the piecewise-linear restriction (2.2)–(2.3) is through
+first differences. Define ∆θt := θt −θt−1 for t = 2, . . . , T and consider the following
+proposition.
+Proposition 2.1 (Piecewise-constant first differences). Under (2.2)–(2.3), the first dif-
+ferences are piecewise constant:
+∆θt = κℓ
+(2.5)
+for t ∈{Tℓ−1 + 1, . . . , min(Tℓ, T)} and ℓ= 1, . . . , K + 1. Conversely, (2.5) implies (2.2)
+and (2.3).
+Proof. Forward direction. Fix a regime ℓ∈{1, . . . , K +1}. For t ∈{Tℓ−1 +1, . . . , Tℓ−1},
+both t and t−1 belong to Kℓ, so (2.2) applies to both and ∆θt =
+
+θTℓ−1 +(t−Tℓ−1)κℓ
+
+−
+
+θTℓ−1 + (t −1 −Tℓ−1)κℓ
+
+= κℓ. For ℓ≤K and t = Tℓ, continuity (2.3) combined
+with (2.2) at t = Tℓ−1 gives θTℓ−θTℓ−1 = κℓ, so ∆θTℓ= κℓas well. For the last
+regime ℓ= K + 1, no boundary t = TK+1 = T + 1 exists since ∆θt is defined only for
+t = 2, . . . , T. This establishes (2.5). Converse direction. Assume (2.5). Fix ℓand any
+t ∈Kℓ. For every s ∈{Tℓ−1 + 1, . . . , t}, we have s ≤t ≤Tℓ−1 ≤min(Tℓ, T), with
+1To see this, note that Tℓ−1 ∈Kℓ, so (2.2) gives θTℓ−1 = θTℓ−1 +
+ (Tℓ−1) −Tℓ−1
+
+κℓ, while (2.3)
+gives θTℓ= θTℓ−1 + (Tℓ−Tℓ−1)κℓ. Subtracting yields θTℓ−θTℓ−1 = κℓ.
+2In the special case where K = 1, p = 1, xi,t,1 = 1, our model becomes close to the deterministic
+panel trend-break model of Kim (2011).
+5
+
+
+equality in the last bound only in the final regime ℓ= K + 1, where TK+1 = T + 1 and
+min(Tℓ, T) = T. In every case s ≤min(Tℓ, T), so (2.5) gives ∆θs = κℓ. Telescoping
+yields θt = θTℓ−1 + Pt
+s=Tℓ−1+1 ∆θs = θTℓ−1 + (t −Tℓ−1)κℓ, which is (2.2). For ℓ≤K,
+taking t = Tℓ−1 in this identity gives θTℓ−1 = θTℓ−1 + (Tℓ−1 −Tℓ−1)κℓ, and combining
+with ∆θTℓ= κℓfrom (2.5) gives θTℓ= θTℓ−1 + (Tℓ−Tℓ−1)κℓ, which is (2.3).
+An immediate consequence of Proposition 2.1 is that a kink at Tℓcorresponds to a
+change in slope:
+κℓ+1̸ = κℓ⇐⇒∥∆θTℓ+1 −∆θTℓ∥= ∥κℓ+1 −κℓ∥> 0.
+(2.6)
+Hence, estimating kink locations reduces to detecting the times at which the second
+differences ∆2θt := ∆θt+1 −∆θt are nonzero. This motivates a sparsity assumption on
+{∆2θt}T−1
+t=2 : most second differences are zero (corresponding to the linear segments), and
+the nonzero ones identify the kink dates. Take Figure 1 as an illustration. The upper
+panel shows a coefficient path θt across three regimes K1, K2, K3, while the lower panel
+shows the corresponding piecewise constant slope κℓ, with jumps at the two kink dates.
+θT0
+θT1
+θT2
+θt
+Regime 1
+Regime 2
+Regime 3
+K1
+K2
+K3
+continuity
+1  (slope, regime 1)
+2  (slope, regime 2)
+3  (slope, regime 3)
+Kink location
+T0=1
+T1
+T2
+T
+t
+1
+3
+2
+j
+2 −
+1
+3 −
+2
+K1
+K2
+K3
+Figure 1: Example of the piecewise-linear coefficient path. The upper panel shows θt across three
+regimes K1, K2, K3, with kinks at T1 and T2. The lower panel shows the corresponding piecewise-constant
+first differences ∆θt.
+Remark 2.2 (Second-derivative interpretation). The second difference has a natural
+continuous time counterpart. For a twice differentiable function b(·), the standard finite-
+difference approximation gives b′′(t) ≈
+
+b(t + 1) −2b(t) + b(t −1)
+
+. In our discrete-time
+6
+
+
+setting, ∆2θt = θt+1 −2θt + θt−1 is the exact analog. Hence, penalising PT−1
+t=2 ∥∆2θt∥
+can be interpreted as penalising the “curvature” of the coefficient path: the penalty is zero
+when θt is globally linear and nonzero only at kink points.
+It is also worth asking what happens if the truth contains a level break rather than
+a kink.
+In fact, the kink model contains the break model as a class of discrete-time
+observed sequences. Suppose the coefficient equals θA through T ∗−1 and θA + α from
+T ∗onward, similar to Bai and Perron (1998). Although continuity rules out a literal
+jump in the interpolated path, it does not rule out the same sequence at the observed
+integer dates. Suppose further that K = 2 with T1 = T ∗−1 and T2 = T ∗, θ1 = θA,
+κ1 = κ3 = 0p×1 and κ2 = α, equations (2.2) and (2.3) reproduce the break path exactly,
+with the jump carried by the middle slope. Thus, the observed level break is represented
+by two adjacent kinks, with slopes 0p×1, α, and 0p×1. The reason is that the coefficient is
+only ever observed at integer dates. Between T ∗−1 and T ∗there are no observations, so
+the data cannot distinguish a literal jump from a steep but continuous movement across
+that interval. The kink model therefore connects the two observed coefficient levels by a
+straight line. A change occurring over several sampling periods is gradual, whereas one
+occurring over a single period is abrupt at the observed sampling frequency.
+3
+Estimator
+By (2.2), the behaviour of the coefficient path ΘT := [θ′
+1, . . . , θ′
+T]′ ∈RTp×1 is governed by
+the within-regime slopes KK := [κ′
+1, . . . , κ′
+K+1]′ ∈R(K+1)p×1, the initial level θ1, and the
+kink dates TK. Conversely, once θ1, KK, and TK are known, the entire path ΘT can be
+recovered via (2.4). We use superscript “0” to denote true values: K0 is the true number
+of kinks, T 0
+K0 := {T 0
+1 , . . . , T 0
+K0} the true kink dates, K0
+K0 := [κ0′
+1 , . . . , κ0′
+K0+1]′ ∈R(K0+1)p×1
+the true slopes, and Θ0
+T := [θ0′
+1 , . . . , θ0′
+T ]′ ∈RTp×1 the true coefficient path.
+Two transformations of the data are used to handle the fixed effects µi, one per
+estimation stage. The selection stage works with deviations from the initial observation.
+For each i and t = 2, . . . , T, define ˇai,t := ai,t −ai,1, and in particular ˇyi,t := yi,t −yi,1 and
+ˇεi,t := εi,t −εi,1. The post-kink stage instead removes µi by the within transformation.
+For each i and t = 1, . . . , T, define ¨ai,t := ai,t −T −1 PT
+s=1 ai,s, and in particular ¨yi,t and
+¨εi,t.
+3.1
+Penalised estimator
+As a preliminary step, we compute an unpenalised OLS estimator from the first-period-
+differenced model:
+{ ˙θt}T
+t=1 := arg min
+{θt}T
+t=1
+1
+NT
+N
+X
+i=1
+T
+X
+t=2
+ ˇyi,t −x′
+i,tθt + x′
+i,1θ1
+2.
+(3.1)
+Since (3.1) imposes no piecewise-linear structure, the resulting estimator ˙θt is
+√
+N-
+consistent for θ0
+t under the assumptions stated in Section 4.1, but does not exploit the
+kink structure.
+7
+
+
+The initial estimator is used to construct adaptive weights that steer the penalty in
+the penalised objective function defined below. Specifically, define for all t = 2, . . . , T −1
+˙ωt := ∥∆˙θt+1 −∆˙θt∥−ζ1, where ζ1 > 0 is a user-specified constant (typically ζ1 = 2).
+This adaptive weighting is essential for the oracle property established later.3 Now, given
+these weights, we propose minimising the following objective function:
+Lϑ1(ΘT) :=
+1
+NT
+N
+X
+i=1
+T
+X
+t=2
+ ˇyi,t −x′
+i,tθt + x′
+i,1θ1
+2 + ϑ1
+T−1
+X
+t=2
+˙ωt ∥∆θt+1 −∆θt∥,
+(3.2)
+where ϑ1 = ϑ1(N, T) > 0 is a tuning parameter that can be chosen by minimizing an
+information criterion (see Qian and Su 2016a for details). We do this explicitly Sections
+5 and 6. Three features of (3.2) are worth commenting on.
+(i) Loss function. The first term is a least-squares loss computed on the first-period-
+differenced data. Taking first-period differences of (2.1) gives ˇyi,t = x′
+i,tθt −x′
+i,1θ1 + ˇεi,t,
+so the fixed effect µi cancels. The initial level θ1 enters through the term x′
+i,1θ1.
+(ii) Penalty.
+The second term penalises the second differences ∆2θt = ∆θt+1 −∆θt
+using the group-ℓ2 norm ∥· ∥.
+By (2.6), ∥∆2θt∥> 0 if and only if there is a kink
+at t. The group-ℓ2 structure encourages the entire p × 1 vector ∆2θt to be set to zero
+simultaneously, thereby inducing piecewise linearity in the coefficient path. The sum runs
+over t = 2, . . . , T −1 because ∆2θt = θt+1 −2θt + θt−1 requires t −1 ≥1 and t + 1 ≤T.
+(iii) Adaptive weights.
+The weights ˙ωt make the penalty adaptive.
+At true kink
+dates, the penalty is weak (small ˙ωt), so the nonzero second differences survive; at non-
+kink dates, the penalty is strong (large ˙ωt), so ∆2θt is shrunk to 0p×1 exactly. This is the
+mechanism by which the estimator simultaneously detects kink locations and estimates
+the coefficient path.
+The penalised estimator of Θ0
+T is then given by
+bΘT :=
+
+
+bθ1
+...
+bθT
+
+= arg min
+ΘT
+Lϑ1(ΘT).
+(3.3)
+From the penalised estimator bΘT, we extract the estimated kink dates and regime sets
+as follows.4
+Definition 3.1 (Estimated kinks and regimes). For a given bΘT, define the set of esti-
+mated kink locations as
+bT b
+K :=
+n
+t ∈{2, . . . , T −1} : ∥∆bθt+1 −∆bθt∥> 0
+o
+=
+n
+bT1, . . . , bT b
+K
+o
+,
+(3.4)
+3For numerical stability, one may replace ∥∆˙θt+1 −∆˙θt∥−ζ1 with
+ ∥∆˙θt+1 −∆˙θt∥+ δt
+−ζ1, where
+δt > 0 is a small perturbation of order O(N −1/2) satisfying δt →0 as N →∞. This prevents near-
+division-by-zero in finite samples while leaving the asymptotic properties unchanged.
+4Demeaning would also eliminate µi and is linear in ΘT , so it could serve at this stage too. However,
+under the within transformation the regressor attaching to θs at observation (i, t) is xi,t1{s = t} −
+T −1xi,s, so every date enters every equation which leads to a matrix of order Tp × Tp. Differencing
+against t = 1 instead reduces the dimension to 2p × 2p.
+8
+
+
+where bT1 < · · · < bT b
+K are the ordered elements and bK := |bT b
+K| is the estimated number
+of kinks. By convention, set bT0 := 1 and bT b
+K+1 := T + 1. These kink dates partition
+{1, . . . , T} into bK+1 estimated regime sets: bKℓ:=
+n
+bTℓ−1, . . . , bTℓ−1
+o
+for ℓ= 1, . . . , bK+1.
+If ∥∆bθt+1 −∆bθt∥= 0 for all t = 2, . . . , T −1, then bK = 0 and bT0 = ∅, corresponding to
+a single linear regime spanning all periods.
+3.2
+Post kink estimator
+Recall from Definition 3.1 that bT b
+K = { bT1, . . . , bT b
+K}, with bT0 := 1 and bT b
+K+1 := T + 1, and
+that the induced regime sets are bKℓ:= { bTℓ−1, . . . , bTℓ−1} for ℓ= 1, . . . , bK + 1. Holding
+bT b
+K fixed, the unified representation in Remark 2.1 gives for t ∈bKℓ
+θt = θ1 +
+ℓ−1
+X
+j=1
+  bTj −bTj−1
+
+κj +
+ t −bTℓ−1
+
+κℓ,
+(3.5)
+where θ1 is the initial level and κℓthe slope in regime bKℓ. The continuity conditions (2.3)
+are already embedded in (3.5), so the entire Tp-dimensional path ΘT is determined by
+the ( bK + 2)p-dimensional parameter vector ψ b
+K := [θ′
+1, K′
+b
+K]′ =
+
+θ′
+1, κ′
+1, . . . , κ′
+b
+K+1
+′. To
+express (3.5) as a function of ψ b
+K, define for each t ∈bKℓand each j = 1, . . . , bK + 1 the
+scalar basis loading
+dj,t
+ bT b
+K
+
+:=
+
+
+
+
+
+
+
+
+
+bTj −bTj−1
+j < ℓ,
+t −bTℓ−1
+j = ℓ,
+0
+j > ℓ,
+(3.6)
+where ℓis the unique regime with t ∈bKℓ. The loading measures how long the slope κj
+has been active by period t, i.e. the full length bTj −bTj−1 of bKj once that regime has
+ended, the time elapsed since the current regime began while t lies within it, and zero
+before it starts. With this notation (3.5) takes the compact form
+θt = θ1 +
+b
+K+1
+X
+j=1
+dj,t
+ bT b
+K
+
+κj
+(3.7)
+for each t = 1, . . . T and is linear in ψ b
+K. Collecting the loadings into the ( bK + 2)p × 1
+regressor ϕi,t
+ bT b
+K
+
+:=
+
+x′
+i,t, d1,t
+ bT b
+K
+
+x′
+i,t, . . . , d b
+K+1,t
+ bT b
+K
+
+x′
+i,t
+′ gives x′
+i,tθt = ϕi,t
+ bT b
+K
+′ψ b
+K
+for every t, so that the DGP (2.1) reads for each i = 1, . . . , N and t = 1, . . . , T,
+yi,t = µi + ϕi,t
+ bT b
+K
+′ψ b
+K + εi,t,
+(3.8)
+a standard linear panel regression in which the coefficient vector ψ b
+K is common to all i
+and t and the time variation of the path is carried entirely by the regressor.
+It remains to remove µi, and here the choice of transformation matters in a way it
+did not for selection. The penalised problem of Section 3.1 differences against the initial
+period, which is enough to recover bT b
+K but subtracts the single equation t = 1 from every
+9
+
+
+other, returning the error εi,1 in all T −1 rows, where it accumulates with the time index.
+The post-kink stage subtracts the unit mean instead, which spreads the transformation
+evenly across periods and leaves a transformed error whose covariance remains bounded
+in T. Averaging the DGP (2.1) over t for fixed i and subtracting gives
+¨yi,t = x′
+i,tθt −1
+T
+T
+X
+s=1
+x′
+i,sθs + ¨εi,t,
+(3.9)
+and the subtracted term carries a different coefficient θs at every date, so the equation
+for period t involves the entire path θ1, . . . , θT rather than θt alone. However, every co-
+efficient in the sum is the same linear function of ψ b
+K. Substituting x′
+i,sθs = ϕi,s
+ bT b
+K
+′ψ b
+K
+at every date s, the common vector factors out of the sum,
+1
+T
+T
+X
+s=1
+x′
+i,sθs = 1
+T
+T
+X
+s=1
+ϕi,s
+ bT b
+K
+′ψ b
+K
+=
+ 1
+T
+T
+X
+s=1
+ϕi,s
+ bT b
+K
+′
+ψ b
+K
+= ¯ϕi
+ bT b
+K
+′ψ b
+K,
+(3.10)
+so the path collapses to the single structural vector and (3.9) becomes
+¨yi,t = ¨ϕi,t
+ bT b
+K
+′ψ b
+K + ¨εi,t
+(3.11)
+for all i = 1, . . . , N and t = 1, . . . , T, a regression on the same parameter vector as (3.8),
+with no coefficients of other periods entering. The transformation acts on the regressor
+alone.
+In matrix form, stack the observations as y := [y1,1, . . . , y1,T, . . . , yN,T]′ ∈RNT×1,
+let Φ
+ bT b
+K
+
+∈RNT×( b
+K+2)p collect the rows ϕi,t
+ bT b
+K
+′ in the same order, and let ε be
+conformable. The transformation in (3.11) is then the centering matrix C := IN ⊗CT,
+with CT := IT −1
+T ιTι′
+T, which is symmetric and idempotent, demeans each unit’s T
+observations, and satisfies C(IN ⊗ιT) = 0, so that the fixed effects are annihilated. The
+post-kink estimator of ψ b
+K is the OLS solution in (3.11),
+eψ b
+K :=
+arg min
+ψ b
+K∈R( b
+K+2)p
+1
+NT
+N
+X
+i=1
+T
+X
+t=1
+ ¨yi,t −¨ϕi,t
+ bT b
+K
+′ψ b
+K
+2
+=
+arg min
+ψ b
+K∈R( b
+K+2)p
+1
+NT
+ y −Φ
+ bT b
+K
+
+ψ b
+K
+′C
+ y −Φ
+ bT b
+K
+
+ψ b
+K
+
+=
+
+Φ
+ bT b
+K
+′C Φ
+ bT b
+K
+−1Φ
+ bT b
+K
+′C y,
+(3.12)
+where the second equality holds by symmetry and idempotency of C, and the third
+holding under Assumption 4.2 below. Partitioning eψ b
+K = [eθ
+′
+1, eκ′
+1, . . . , eκ′
+b
+K+1]′ and defining
+the p × ( bK + 2)p loading matrix Lt
+ bT b
+K
+
+:=
+
+Ip, d1,t
+ bT b
+K
+
+Ip, . . . , d b
+K+1,t
+ bT b
+K
+
+Ip
+
+, the post-
+kink coefficient path for each t = 1, . . . , T follows from (3.7) as
+eθt := Lt
+ bT b
+K
+eψ b
+K = eθ1 +
+b
+K+1
+X
+j=1
+dj,t
+ bT b
+K
+ eκj
+(3.13)
+10
+
+
+Remark 3.1 (The regressor matrix). Sorting rows by regime, the raw design is block
+lower triangular,
+Φ
+ bT b
+K
+
+=
+
+
+D1,θ
+D1,1
+0
+· · ·
+0
+D2,θ
+D2,1
+D2,2
+· · ·
+0
+...
+...
+...
+...
+...
+D b
+K+1,θ
+D b
+K+1,1
+D b
+K+1,2
+· · ·
+D b
+K+1, b
+K+1
+
+
+,
+with row block ℓcollecting the observations (i, t), t ∈bKℓ, and Dℓ,θ :=
+
+x′
+i,t
+
+i, t∈bKℓ, Dℓ,j :=
+
+dj,t
+ bT b
+K
+
+x′
+i,t
+
+i, t∈bKℓfor j = 1, . . . , ℓ. The blocks above the diagonal vanish because slopes
+from regimes not yet begun contribute nothing at t. The diagonal block carries the loading
+t −bTℓ−1, whose variation in t separates κℓfrom the level θ1, and the blocks below it carry
+the frozen loading dj,t = bTj −bTj−1, through which an earlier slope keeps shifting the path
+in every later regime.
+4
+Asymptotic results
+We first introduce some notation. If A is a matrix, µmin(A) and µmax(A) denote its small-
+est and largest singular values (its smallest and largest eigenvalues when A is symmetric),
+tr A its trace, ∥A∥:=
+√
+tr A′A its Frobenius norm, and ∥A∥op := µmax(A) its operator
+norm, so that ∥A∥op ≤∥A∥. For two symmetric matrices A and B, we write A ⪯B if
+B −A is positive semidefinite. All limits are taken as N, T →∞jointly unless stated
+otherwise, and we abbreviate limN,T→∞to lim where no confusion arises. For a sequence
+of random variables or vectors {ZN}, we write ZN = Op(aN) if ZN/aN is bounded in prob-
+ability, i.e. for every ε > 0 there exists M < ∞such that supN P(|ZN/aN| > M) < ε,
+and ZN = op(aN) if ZN/aN →p 0. For two positive sequences {aN} and {bN}, we write
+aN ≍bN if there exist finite constants 0 < c ≤C < ∞such that c ≤aN/bN ≤C for
+all N sufficiently large. For positive scalars a and b, we write a ∧b := min{a, b}. The
+terms w.p.1, w.p.a.1, →d, →p, N(·, ·), and 0r×1 signify with probability one, with proba-
+bility approaching one, convergence in distribution, convergence in probability, a normal
+distribution, and an r × 1 vector of zeros, respectively.
+4.1
+Assumptions for selection
+Let I0
+ℓ:= T 0
+ℓ−T 0
+ℓ−1 denote the length of regime ℓfor ℓ= 1, . . . , K0 + 1, and let I0
+min :=
+min1≤ℓ≤K0+1 I0
+ℓbe the length of the shortest regime, with the conventions I0
+0 := 0 and
+I0
+K0+2 := 0, which will be convenient at the sample endpoints. When K0 ≥1, the relevant
+signal for selection is Jmin := min1≤ℓ≤K0
+κ0
+ℓ+1−κ0
+ℓ
+, the smallest change in slope at a true
+kink date or, equivalently, the smallest nonzero second difference of the true coefficient
+path. This is the quantity that the adaptive penalty must distinguish from the estimation
+error in the unrestricted path. Because selection works with deviations from the initial
+observation, the transformed error is ˇεi,t = εi,t −εi,1 for t = 2, . . . , T, and the following
+moment conditions are stated in terms of it.
+11
+
+
+Assumption 4.1 (Selection: errors and regressors).
+(a) We have that E(εi,txi,s) = 0p×1 for all i, t and s;
+(b) We have that for any N and T, sup2≤t≤T
+1
+N
+PN
+i=1
+PN
+j=1
+E(ˇεi,tx′
+i,txj,tˇεj,t)
+ ≤C and
+sup2≤t≤T
+1
+N
+PN
+i=1
+PN
+j=1
+E(ˇεi,tx′
+i,1xj,1ˇεj,t)
+ ≤C for some finite constant C;
+(c) We have that for any N and T,
+1
+N
+PN
+i=1
+PN
+j=1 E
+
+x′
+i,1xj,1
+PT
+t=2 ˇεi,t
+PT
+s=2 ˇεj,s
+
+=
+O(T 2).
+Assumption 4.1 controls the score of the first-period-differenced least squares criterion.
+Part (a) imposes strict exogeneity, and parts (b) and (c) permit at most weak cross-
+sectional dependence together with heteroskedasticity of unrestricted form (see Kaddoura
+and Westerlund 2023; Kaddoura 2025). Part (c) is specific to first-period differencing.
+The reference error εi,1 is repeated in all T −1 transformed equations of unit i, so its
+cumulative score contribution may grow with T. The strict exogeneity in part (a) can
+be relaxed by replacing the penalised least squares objective with a GMM-type analog
+as in Qian and Su (2016a). The preliminary estimator of (3.1) must also identify θ0
+1 and
+each θ0
+t well enough for the adaptive weights to be informative. For t = 2, . . . , T, let
+zi,t := [x′
+i,1, (xi,t −xi,1)′]′ and Gt := N −1 PN
+i=1 zi,tz′
+i,t, the joint second moment matrix of
+the initial-period regressor and its deviation at date t.
+Assumption 4.2 (Selection: identification and rank). There exist constants 0 < c ≤c <
+∞such that, w.p.1, c ≤inf2≤t≤T µmin(Gt) ≤sup2≤t≤T µmax(Gt) ≤c.
+The lower bound in Assumption 4.2 ensures that θ1 and θt are jointly identified in
+every differenced cross-section, which is what the unrestricted regression (3.1) estimates,
+while the upper bound prevents the design from becoming arbitrarily ill scaled. The
+condition concerns the selection stage only. The tuning parameter has two tasks. It
+must be small enough at the true kink dates that a genuine change in slope survives the
+shrinkage, and large enough at the remaining dates that a second difference generated
+only by sampling noise is set exactly to zero.
+Assumption 4.3 (Selection: signal strength and tuning parameter).
+(a)
+√
+NTK0 ϑ1J−ζ1
+min →p c1 ∈[0, ∞) and
+p
+N/K0 Jmin →∞as N, T →∞;
+(b) N (ζ1+1)/2 ϑ1
+T 1+ζ1/2
+→p ∞as N, T →∞.
+Assumption 4.3 is similar in spirit to the corresponding condition in Qian and Su
+(2016a), to which we refer for further discussion. The first clause of part (a) and part (b)
+squeeze ϑ1 from both sides, small enough that the penalty vanishes at the true kinks and
+large enough that it diverges at the non-kinks. The power T 1+ζ1/2 in part (b) exceeds the
+corresponding requirement in Qian and Su (2016a) because a slope loads on dj,t = t−T 0
+j−1
+with P
+t d2
+j,t of order up to T 3, rather than the order T of the indicator loading in the flat
+break case; at fixed T, part (b) reduces to their Assumption A.2(iii). The second clause
+of part (a) keeps the adaptive weights bounded at every true kink, and permits Jmin to
+12
+
+
+be fixed or to shrink at any rate slower than
+p
+K0/N. No separate detection condition
+is needed: combining parts (a) and (b) yields
+p
+N/T Jmin →∞whenever a tuning
+parameter satisfying both parts exists, so any kink small enough to escape detection is
+also too small for the tuning window to accommodate.5 Parts (a) and (b) are compatible
+whenever (
+√
+N Jmin)ζ1 ≫T (3+ζ1)/2√
+K0. At ζ1 = 2 with K0 fixed and Jmin bounded away
+from zero, this reduces to N/T 5/2 →∞. The constant ζ1 > 0 enters through the adaptive
+weights and is set to ζ1 = 2 in practice (see, e.g., Qian and Su 2016a; Kaddoura 2025).6
+4.2
+Selection consistency
+The selection argument proceeds in three steps. We first control the penalised estimator
+of the unrestricted coefficient path, which bounds the error in its second differences. We
+then show that the adaptive penalty sets every second difference outside the true kink
+set exactly to zero. The minimum-signal condition finally guarantees that no true kink
+is lost, and exact recovery follows.
+Theorem 4.1 (Consistency of the penalised estimator). Suppose that Assumptions 4.1,
+4.2 and 4.3(a) hold. Then, as N, T →∞,
+(a) bθ1 −θ0
+1 = Op
+ N −1/2
+;
+(b) 1
+T
+T
+X
+t=1
+bθt −θ0
+t
+2 = Op
+ N −1
+;
+(c) max
+1≤t≤T
+bθt −θ0
+t
+ = Op
+p
+T/N
+
+.
+Theorem 4.1 establishes three rates for the penalised estimator. Part (a) gives the
+√
+N
+rate for the initial level, part (b) the N−1 rate for the path on average over t, and part
+(c) the uniform rate
+p
+T/N. Part (c) bounds the largest deviation along the whole path
+and should not be read as a pointwise
+√
+N rate at each date. The reason is the second
+difference penalty: a slope shift at one date moves the path in every later period, so the
+penalty loads cumulatively and the dates cannot be separated before the kink structure
+is known. These are rates for the unrestricted Tp-dimensional selection problem; the
+faster rates available after refitting the selected model are the subject of Section 4.3.7
+The theorem says that the estimated path is steered towards the truth, but it does not
+by itself establish that the estimated kink dates coincide with the true ones, which is the
+content of the next result.
+5By part (a), w.p.a.1 ϑ1 ≤(c1 + 1)Jζ1
+min(NTK0)−1/2, which is compatible with part (b) only if
+Jζ1
+minN ζ1/2T −(3+ζ1)/2(K0)−1/2 →∞. Multiplying by T 3/2√
+K0 ≥1 gives the claim.
+6When K0 = 0, the coefficient path is globally linear and Jmin is not needed; part (a) is replaced by
+the single requirement ϑ1 →p 0.
+7These rates can be improved upon. Under cross-sectional independence and sub-Gaussian errors,
+a maximal inequality should give Op(
+p
+log T/N) instead, weakening the requirement at ζ1 = 2 from
+N/T 5/2 →∞to N/(T 3/2 log T) →∞.
+13
+
+
+Theorem 4.2 (Elimination of false kinks). Suppose that Assumptions 4.1, 4.2 and 4.3
+hold. Then, as N, T →∞,
+P
+n∆bθt+1 −∆bθt
+ = 0 ∀t ∈T 0c
+K0
+o
+→1,
+where T 0c
+K0 := {2, . . . , T −1} \ T 0
+K0.
+Theorem 4.2 establishes one half of the recovery argument, namely that bT b
+K ⊆T 0
+K0
+w.p.a.1. The other half follows from Theorem 4.1 and the triangle inequality. At a true
+kink date t ∈T 0
+K0,
+∆2bθt
+ ≥
+∆2θ0
+t
+−
+∆2 bθt−θ0
+t
+ ≥Jmin−4 max1≤s≤T
+bθs−θ0
+s
+. The
+maximum is Op(
+p
+T/N) by Theorem 4.1(c), and
+p
+N/T Jmin →∞under Assumption 4.3,
+so the right side is strictly positive w.p.a.1 and every true kink date survives. Combining
+the two halves gives the following corollary.
+Corollary 4.3 (Exact recovery of the kink structure). Suppose that the assumptions of
+Theorem 4.2 hold. Then, as N, T →∞,
+1. P
+n
+bK = K0o
+→1;
+2. P
+n
+bT1 = T 0
+1 , . . . , bTK0 = T 0
+K0
+ bK = K0o
+→1.
+Corollary 4.3 is the oracle property of the estimator. It recovers both the correct
+number of kinks and their exact locations w.p.a.1. Consequently, for all N and T large
+enough, the post-kink regression (3.12) is run on the correct design matrix Φ(T 0
+K0), and
+we may now study its distribution in the next subsection.
+4.3
+Post-selection asymptotics
+Now that exact recovery has been established, we turn to the post-kink estimator of
+Section 3.2. On the event {bT b
+K = T 0
+K0}, whose probability tends to one by Corollary 4.3,
+the feasible estimator coincides with the oracle estimator that treats the kink dates as
+known. The distribution theory can therefore be developed for the oracle regression, which
+is ordinary least squares in a (K0 + 2)p-dimensional panel regression, and transferred to
+the feasible estimator at the end.
+The estimator is computed in the cumulative coordinates ψ0
+K0 = [θ0′
+1 , κ0′
+1 , . . . , κ0′
+K0+1]′,
+but these are not the coordinates in which the rates are read. For t ∈K0
+ℓ, the coefficient
+path satisfies θ0
+t = θ0
+T 0
+ℓ−1 + (t −T 0
+ℓ−1)κ0
+ℓ, so regime ℓis directly informative about its
+starting level θ0
+T 0
+ℓ−1 = θ0
+1 + Pℓ−1
+j=1 I0
+j κ0
+j and its own slope, but not about the individual
+terms of the sum, which are separated only by the early regimes themselves. The precision
+of a cumulative coordinate therefore depends on the full configuration of regime lengths.
+We therefore reparameterise the model in terms of the boundary levels, which are exactly
+what the regimes identify. Each is informative only through its two adjacent regimes, so
+each carries its own rate, and the within-regime slopes are recovered as scaled differences
+of consecutive boundary levels.
+14
+
+
+To that end, we consider the following reparameterisation. For j = 0, . . . , K0 + 1,
+define the boundary levels
+η0
+j := θ0
+1 +
+j
+X
+m=1
+I0
+mκ0
+m,
+(4.1)
+where the sum is empty when j = 0, so that η0
+0 = θ0
+1. Each interior η0
+j is the level of the
+coefficient path at the jth kink date. Indeed, T 0
+0 = 1, so the continuity recursion (2.3)
+at ℓ= 1 gives θ0
+T 0
+1 = θ0
+1 +
+ T 0
+1 −T 0
+0
+
+κ0
+1 = θ0
+1 + I0
+1κ0
+1 = η0
+1, and if θ0
+T 0
+j−1 = η0
+j−1 for some
+j ≤K0, then (2.3) at ℓ= j gives
+θ0
+T 0
+j = θ0
+T 0
+j−1 + I0
+j κ0
+j = η0
+j−1 + I0
+j κ0
+j = η0
+j,
+(4.2)
+so that η0
+j = θ0
+T 0
+j for j = 1, . . . , K0 by induction. The final coordinate is the endpoint
+obtained by extending the last linear segment one period beyond the sample. To see this,
+note that T ∈K0
+K0+1, so (2.2) and I0
+K0+1 = T 0
+K0+1 −T 0
+K0 = T + 1 −T 0
+K0 give
+η0
+K0+1 −θ0
+T =
+
+η0
+K0 + I0
+K0+1κ0
+K0+1
+
+−
+
+η0
+K0 +
+ T −T 0
+K0
+
+κ0
+K0+1
+
+= κ0
+K0+1.
+(4.3)
+It is not a new parameter, since T 0
+K0 < T implies I0
+K0+1 ≥2, so the last slope, and with it
+the endpoint, is identified from the observed part of the final regime. Including it makes
+every regime an interval between two boundary levels.
+Stacking η0 := [η0′
+0 , . . . , η0′
+K0+1]′, equation (4.1) reads η0 = MK0ψ0
+K0 with
+MK0 :=
+
+
+Ip
+0
+0
+· · ·
+0
+Ip
+I0
+1Ip
+0
+· · ·
+0
+Ip
+I0
+1Ip
+I0
+2Ip
+· · ·
+0
+...
+...
+...
+...
+...
+Ip
+I0
+1Ip
+I0
+2Ip
+· · ·
+I0
+K0+1Ip
+
+
+,
+(4.4)
+which is block lower triangular with diagonal blocks Ip, I0
+1Ip, . . . , I0
+K0+1Ip and hence non-
+singular for every N and T, every regime length being positive. Its inverse is the successive
+difference operator. Subtracting consecutive terms in (4.1),
+η0
+j −η0
+j−1 =
+
+θ0
+1 +
+j
+X
+m=1
+I0
+mκ0
+m
+
+−
+
+θ0
+1 +
+j−1
+X
+m=1
+I0
+mκ0
+m
+
+= I0
+j κ0
+j,
+(4.5)
+so that θ0
+1 = η0
+0 and
+κ0
+j = η0
+j −η0
+j−1
+I0
+j
+=
+θ0
+T 0
+j −θ0
+T 0
+j−1
+T 0
+j −T 0
+j−1
+(4.6)
+for j = 1, . . . , K0 + 1, or, In matrix form, we have ψ0
+K0 = M−1
+K0η0, where
+M−1
+K0 =
+
+
+Ip
+0
+0
+· · ·
+0
+−(I0
+1)−1Ip
+(I0
+1)−1Ip
+0
+· · ·
+0
+0
+−(I0
+2)−1Ip
+(I0
+2)−1Ip
+· · ·
+0
+...
+...
+...
+...
+...
+0
+0
+· · ·
+−(I0
+K0+1)−1Ip
+(I0
+K0+1)−1Ip
+
+
+.
+(4.7)
+15
+
+
+Equation (4.6) is the map by which the slopes are reported once the boundary levels
+have been estimated, and it is exact and linear, so no approximation is involved at any
+point. The boundary levels are therefore an exact nonsingular reparameterisation of the
+post-kink model, changing the coordinates of the theory but neither the estimator, its
+fitted values, nor the column space of the design. It shows that the rate of eκj depends
+locally on the rates of the two boundary-level estimators enclosing regime j, rather than
+on the full span of subsequent regimes.
+The representation of the path in the new coordinates is an interpolation.
+Fix a
+regime ℓand a date t ∈K0
+ℓ, and let uℓ,t := (t −T 0
+ℓ−1)/I0
+ℓdenote the fraction of regime
+ℓelapsed by date t, so that uℓ,t ∈[0, 1) at observed dates. Substituting θ0
+T 0
+ℓ−1 = η0
+ℓ−1
+and (4.6) into (2.2) gives
+θ0
+t = (1 −uℓ,t)η0
+ℓ−1 + uℓ,tη0
+ℓ,
+(4.8)
+so that every date is a convex combination of the two boundary levels enclosing its regime.
+The identity is exact, being nothing but the model’s continuity and piecewise linearity,
+and it makes the source of the convergence rates transparent, where the information
+about θ0
+t is the information about the two boundary levels adjacent to date t.
+The implied loading of date t on η0
+j is
+hj,t :=
+
+
+
+
+
+
+
+
+
+
+
+
+
+uj,t = t −T 0
+j−1
+T 0
+j −T 0
+j−1
+,
+t ∈K0
+j,
+1 −uj+1,t = T 0
+j+1 −t
+T 0
+j+1 −T 0
+j
+,
+t ∈K0
+j+1,
+0,
+otherwise,
+(4.9)
+for j = 0, . . . , K0 + 1, with the conventions K0
+0 = K0
+K0+2 := ∅. The loading is supported
+only on the two regimes adjacent to boundary j. It rises linearly from zero over regime
+j, falls back linearly over regime j + 1, and vanishes elsewhere. At any date exactly two
+loadings are nonzero and they sum to one, so (4.8) reads θ0
+t = PK0+1
+j=0
+hj,tη0
+j.
+Remark 4.1 (Linear B-spline representation). A useful and perhaps surprising implica-
+tion of this representation is that the coefficient path admits an exact B-spline form. In
+particular, the path t 7→θ0
+t is a spline of degree one with knots at the kink dates, and
+h0,t, . . . , hK0+1,t are precisely its first-degree B-spline basis functions, restricted to the ob-
+served dates (de Boor, 2001). The associated B-spline coefficients are the boundary levels
+and, because first-degree B-splines interpolate at the knots, they coincide with the values
+of the coefficient path at those dates. Unlike in nonparametric spline regression, however,
+the spline is not an approximation as it is the exact data-generating coefficient path with
+finitely many unknown knots and therefore introduces no approximation bias.
+Collecting the loadings into the regressor ϕη
+i,t := [h0,tx′
+i,t, . . . , hK0+1,tx′
+i,t]′, DGP (2.1)
+becomes yi,t = µi + ϕη′
+i,tη0 + εi,t, a linear panel regression in which every observation
+loads on at most two parameter blocks. As noted earlier, this representation is equivalent
+to a varying-coefficient regression in which the time variation in the coefficient on xi,t
+is captured by a B-spline basis (Hastie and Tibshirani, 1993; Huang et al., 2002). This
+16
+
+
+connection is noteworthy in the sense that although the estimator is derived from a
+structural kink model rather than from a conventional spline specification, the post-kink
+regression admits an exact first-degree B-spline representation. Now, let Φη(T 0
+K0) stack
+the rows ϕη′
+i,t conformably with (3.8). The two designs are related through the partial
+sums of the loadings. Fix t ∈K0
+ℓ. By (4.9), the only potentially nonzero loadings at date
+t are hℓ−1,t = 1 −uℓ,t and hℓ,t = uℓ,t, so, for m = 0, . . . , K0 + 1,
+K0+1
+X
+j=m
+hj,t = 1{m < ℓ} + uℓ,t 1{m = ℓ},
+(4.10)
+and multiplying by I0
+m and using I0
+ℓuℓ,t = t −T 0
+ℓ−1,
+I0
+m
+K0+1
+X
+j=m
+hj,t = I0
+m 1{m < ℓ} +
+ t −T 0
+ℓ−1
+
+1{m = ℓ}
+= dm,t
+ T 0
+K0
+
+,
+(4.11)
+where the second equality follows from (3.6) for m = 1, . . . , K0+1 and from the convention
+of setting d0,t(T 0
+K0) := 0 for m = 0. Now consider the product Φη(T 0
+K0)MK0. By (4.4),
+block column 0 of MK0 carries Ip in every block row, and block column m ≥1 carries
+I0
+mIp in block rows j ≥m and 0p×p above, so the row belonging to observation (i, t) has
+mth block entry
+
+ϕη′
+i,tMK0
+m = I0
+m
+K0+1
+X
+j=m
+hj,t
+
+x′
+i,t 1{m ≥1} +
+K0+1
+X
+j=0
+hj,t
+
+x′
+i,t 1{m = 0}
+= dm,t
+ T 0
+K0
+
+x′
+i,t 1{m ≥1} + x′
+i,t 1{m = 0}
+=
+
+ϕi,t
+ T 0
+K0
+′
+m,
+(4.12)
+where the second equality holds by (4.11) and by the case m = 0 of (4.10), which is the
+partition of unity PK0+1
+j=0
+hj,t = 1, and the third by the definition of ϕi,t(T 0
+K0). Since (4.12)
+holds at every observation, stacking the rows gives
+Φ(T 0
+K0) = Φη(T 0
+K0) MK0,
+(4.13)
+so the two designs share the same column space and identical fitted values, and the OLS
+estimators satisfy eη = MK0 eψ exactly in finite samples.8
+Remark 4.2 (Identification as a degree-one B-spline basis). To identify the basis pre-
+cisely, let τ := (T 0
+0 , T 0
+0 , T 0
+1 , . . . , T 0
+K0, T 0
+K0+1, T 0
+K0+1) be the open knot vector. Starting from
+the degree-zero interval indicators Bj,0(t) := 1{τj ≤t < τj+1}, the Cox–de Boor recursion
+gives Bj,1(t) =
+t −τj
+τj+1 −τj
+Bj,0(t) +
+τj+2 −t
+τj+2 −τj+1
+Bj+1,0(t), where a term with zero denomi-
+nator is defined as zero. On the interval to the left of T 0
+j , this recursion yields uj,t, while
+on the interval to its right it yields 1 −uj+1,t. Hence hj,t = Bj,1(t) for j = 0, . . . , K0 + 1.
+8The identity (4.13) is what permits the distribution theory to be developed on Φη(T 0
+K0) while the
+estimator is computed in the ψ coordinates of (3.12). The two designs have identical fitted values and
+residuals, so eη = MK0 eψ holds exactly in finite samples, covariance matrices transform by the fixed
+nonsingular map MK0.
+17
+
+
+Different boundary levels are estimated at different rates, and the right scale for η0
+j is
+the norm of its own loading sequence, r2
+j := PT
+t=1 h2
+j,t for j = 0, . . . , K0 + 1. Dividing the
+jth block of the design by rj produces a time loading of unit length, so rj removes the
+deterministic magnitude of the basis before the regressors and the within transformation
+are brought in. The norms are available in closed form. By (4.9), hj,t is nonzero only on
+K0
+j ∪K0
+j+1, rising linearly over regime j and falling linearly over regime j + 1, so the sum
+splits into two ramp contributions, r2
+j = P
+t∈K0
+j u2
+j,t + P
+t∈K0
+j+1(1 −uj+1,t)2. Substituting
+q = t −T 0
+j−1 in the first sum and q = t −T 0
+j in the second, so that uj,t = q/I0
+j and
+uj+1,t = q/I0
+j+1 with q running over the regime, gives r2
+j = A(I0
+j ) + B(I0
+j+1), where
+for an integer L ≥1, A(L) := PL−1
+q=0 (q/L)2 = (L −1)(2L −1)/(6L) and B(L) :=
+PL−1
+q=0 (1 −q/L)2 = (L + 1)(2L + 1)/(6L), with A(0) := B(0) := 0 at the endpoints,
+so that r2
+0 = B(I0
+1) and r2
+K0+1 = A(I0
+K0+1).
+A ramp over a regime of length L thus
+contributes L/3 per regime up to a bounded term, and r2
+j ≍I0
+j + I0
+j+1, so r2
+j counts the
+periods in the two regimes adjacent to boundary j, which are the only ones informative
+about η0
+j. The following lemma records the exact bounds.
+Lemma 4.4 (The rate of convergence). Let H0 := [hj,t]1≤t≤T, 0≤j≤K0+1 and D0 :=
+diag(r0, . . . , rK0+1).
+Then, uniformly over all admissible kink configurations,
+1
+8
+ I0
+j +
+I0
+j+1
+
+≤r2
+j ≤I0
+j +I0
+j+1 for j = 0, . . . , K0+1, and 1
+2IK0+2 ⪯(D0)−1H0′H0(D0)−1 ⪯3
+2IK0+2.
+The normalised column by column is then well conditioned, whatever the number
+of kinks and however the sample is divided across regimes. Non-adjacent loadings have
+disjoint support, while adjacent ones overlap on a single regime, and the overlap car-
+ries less than half of the mass of either column.
+This is the first-degree case of the
+stability property of B-splines, whose condition number is bounded independently of
+the knot sequence (de Boor, 1972; Scherer and Shadrin, 1999). In particular, since the
+bounds in Lemma 4.4 imply 2
+3r−2
+j
+≤
+
+(H0′H0)−1
+jj ≤2r−2
+j , the diagonal of the inverse
+satisfies [(H0′H0)−1]jj ≍r−2
+j , which is precisely what gives us the rate of eηj below.
+Further, collect the scales in DK0+1 := diag(r0, . . . , rK0+1) ⊗Ip and let C be the center-
+ing matrix. Evaluating the design at the true kink dates, define the normalised matrix
+bQN := D−1
+K0+1
+1
+N Φη(T 0
+K0)′C Φη(T 0
+K0) D−1
+K0+1 and ΨNT :=
+1
+√
+N Φη(T 0
+K0)′Cε. They are linked
+to the estimator by the exact factorisation Φη(T 0
+K0)′C Φη(T 0
+K0) = N DK0+1 bQNDK0+1.
+Assumption 4.4 (Post-selection: design and rank). We have ∥bQN −Q0∥op = op(1),
+where Q0 is finite and positive definite with 0 < c ≤µmin(Q0) ≤µmax(Q0) ≤C < ∞for
+some constants c and C.
+The lower eigenvalue bound excludes the possibility that the centering or the regres-
+sors asymptotically eliminate a normalised direction of the design, and the upper bound
+prevents any normalised direction from accumulating information at an order larger than
+its scale. By Lemma 4.4, the normalised time basis is uniformly well conditioned, so
+positive definiteness of Q0 is a restriction on the regressors and not a restriction on the
+kink configuration.
+Assumption 4.5 (Post-selection: score and central limit theorem). Let {HNT} be any
+sequence of l ×p(K0 +2) selection matrices with l fixed and lim supN,T→∞∥HNT∥op < ∞.
+18
+
+
+(a) The limit Σ0 := lim Var
+ D−1
+K0+1ΨNT
+
+exists and is finite and positive definite;
+(b) whenever Υ := lim HNTQ−1
+0 Σ0Q−1
+0 H′
+NT exists and is positive definite, we have
+HNTQ−1
+0 D−1
+K0+1ΨNT →d N(0l×1, Υ) .
+Assumption 4.5 is a high-level central limit condition for fixed-dimensional contrasts
+of the normalised score, in the spirit of Qian and Su (2016a). It holds under arbitrary
+within-unit serial correlation and heteroskedasticity with bounded spectrum, and weak
+cross-sectional dependence can be maintained directly. The matrices HNT allow the same
+result to deliver the individual boundary levels, the slopes, and the path values below,
+and Υ is the usual sandwich variance of the corresponding OLS contrast. We stress again
+that Assumptions 4.4 and 4.5 supplement, and do not replace, Assumptions 4.1–4.3.
+Let eη o denote the OLS estimator of η0 from the centered boundary-level regression
+evaluated at the true kink dates, so that eη o = MK0 eψ
+o with eψ
+o the oracle version
+of (3.12). Since C is symmetric and idempotent,
+eη o −η0 =
+
+Φη(T 0
+K0)′CΦη(T 0
+K0)
+−1Φη(T 0
+K0)′Cε,
+(4.14)
+and inserting the factorisation (A.99) together with Φη(T 0
+K0)′Cε =
+√
+NΨNT yields the
+exact identity
+√
+N DK0+1
+ eη o −η0
+= bQ−1
+N D−1
+K0+1ΨNT. Because bQ−1
+N = Q−1
+0
++ op(1) in
+operator norm under Assumption 4.4, combining the identity with Assumption 4.5 and
+Slutsky’s theorem gives the oracle limit.
+Theorem 4.5 (Oracle post-kink asymptotic normality). Suppose that K0 is fixed and
+that Assumptions 4.4 and 4.5 hold. Then, as N, T →∞,
+√
+N HNT DK0+1
+ eη o −η0
+→d N(0l×1, Υ) .
+The feasible estimator uses bT b
+K. Let eη b
+K := M b
+K eψ b
+K be its boundary-level representa-
+tion. On the event {bT b
+K = T 0
+K0} the feasible and oracle regressions share the design, the
+response, and the OLS formula, so eη b
+K = eη o exactly, and Corollary 4.3 shows that the
+probability of this event tends to one. The feasible estimator therefore inherits the oracle
+limit.
+Theorem 4.6 (Feasible post-kink asymptotic normality). Suppose that K0 is fixed and
+that the assumptions of Corollary 4.3 and Assumptions 4.4–4.5 hold. Then, as N, T →
+∞,
+(i)
+√
+N HNT DK0+1
+ eη b
+K −η0
+→d N(0l×1, Υ) ;
+(ii) eηj −η0
+j = Op
+
+N
+ I0
+j + I0
+j+1
+−1/2
+for each for each j = 0, . . . , K0 + 1.
+The selection assumptions enter Theorem 4.6 only through exact recovery. Condi-
+tional on the correct kink set, the limit is the ordinary OLS distribution of the centered
+post-kink regression. The theorem contains the rates of every object of interest. Let
+Pj := e′
+j+1 ⊗Ip select the jth boundary block, so that PjDK0+1 = rjPj.
+Choosing
+HNT = Pj, whose limit variance is the (j + 1)th diagonal p × p block of Q−1
+0 Σ0Q−1
+0
+and
+19
+
+
+hence positive definite, gives a nondegenerate limit for
+√
+N rj(eηj −η0
+j), and Lemma 4.4
+gives us the following rate of convergence
+eηj −η0
+j = Op
+
+N
+ I0
+j + I0
+j+1
+−1/2
+(4.15)
+for j = 0, . . . , K0 + 1. This says that a boundary level is estimated at the rate of the
+combined length of the two regimes that inform it.
+Consider next the within-regime slopes. By (4.6), the estimation error of a slope is the
+successive difference of two boundary-level errors divided by the regime length, and this
+identity already contains the rate. For the limiting distribution, define the slope scale
+sj := I0
+j
+ r−2
+j−1 + r−2
+j
+−1/2
+(4.16)
+and the contrast Hκ
+j,NT := sj(I0
+j )−1 r−1
+j Pj −r−1
+j−1Pj−1
+
+, which produces
+√
+N sj(eκj −κ0
+j)
+exactly when applied to the left side of Theorem 4.6 and satisfies Hκ
+j,NTHκ′
+j,NT = Ip
+because the two selectors act on disjoint blocks. Let Υκ
+j := lim Hκ
+j,NTQ−1
+0 Σ0Q−1
+0 Hκ′
+j,NT,
+whenever the limit exists.
+Corollary 4.7 (Distribution and convergence rates of the slopes). Under the assumptions
+of Theorem 4.6, for each j = 1, . . . , K0+1, suppose that Υκ
+j exists and is positive definite.
+Then, as N, T →∞,
+(i)
+√
+N sj
+ eκj −κ0
+j
+
+→d N
+ 0p×1, Υκ
+j
+
+;
+(ii) eκj −κ0
+j = Op
+h
+N
+ I0
+j
+2  I0
+j−1 + I0
+j
+
+∧
+ I0
+j + I0
+j+1
+	i−1/2
+.
+The order of s2
+j follows from Lemma 4.4 because s2
+j/(I0
+j )2 is the harmonic mean of
+r2
+j−1 and r2
+j, which lies within a factor of two of their minimum.9 The rate has a simple
+reading. By (4.6), a slope is the difference of the two boundary levels enclosing its regime,
+divided by the regime length I0
+j , so its precision is (I0
+j )−1 times the precision of the worse
+of its two endpoints. The first boundary level has no regime to its left, so it is identified
+from regime 1 alone at rate (NI0
+1)−1/2, and dividing by I0
+1 gives [N(I0
+1)3]−1/2 for the first
+slope and the same argument applied at the right end gives [N(I0
+K0+1)3]−1/2 for the last.
+These are exactly the rates of a trend regression run on the regime alone. An interior
+slope inherits the precision of its two endpoints. Each boundary level enclosing regime j
+converges at the rate [N(I0
+j + I0
+j+1)]−1/2 of its own pair of adjacent regimes, the slope is
+their difference divided by I0
+j , and so it converges at the worse of the two endpoint rates
+divided by I0
+j , which is Corollary 4.7.
+Remark 4.3 (Equivalent representations of the slope rates). Since κ0
+j = (η0
+j −η0
+j−1)/I0
+j ,
+and since r2
+j−1 ≍I0
+j−1 + I0
+j and r2
+j ≍I0
+j + I0
+j+1, the exact slope scale satisfies s2
+j =
+(I0
+j )2(r−2
+j−1 + r−2
+j )−1 ≍(I0
+j )2 (I0
+j−1+I0
+j )(I0
+j +I0
+j+1)
+I0
+j−1+2I0
+j +I0
+j+1
+. Moreover, (I0
+j−1 + I0
+j ) ∧(I0
+j + I0
+j+1) = I0
+j +
+9To see this, let H(a, b) := 2ab/(a+b) denote the harmonic mean of two positive scalars a and b. With
+a = r2
+j−1 and b = r2
+j, the definition of sj in (4.16) gives s2
+j/(I0
+j )2 = (r−2
+j−1 +r−2
+j )−1 = r2
+j−1r2
+j/(r2
+j−1 +r2
+j) =
+1
+2H(r2
+j−1, r2
+j). The inequality 1
+2(a∧b) ≤ab/(a+b) ≤a∧b bounds this quantity between half the minimum
+and the minimum itself, so s2
+j/(I0
+j )2 and r2
+j−1 ∧r2
+j differ by at most a factor of two.
+20
+
+
+(I0
+j−1 ∧I0
+j+1), so an interior slope has rate Op([N(I0
+j )2{I0
+j + (I0
+j−1 ∧I0
+j+1)}]−1/2).
+At
+the endpoints, the conventions I0
+0 = I0
+K0+2 = 0 imply (I0
+0 + I0
+1) ∧(I0
+1 + I0
+2) = I0
+1 and
+(I0
+K0 + I0
+K0+1) ∧(I0
+K0+1 + I0
+K0+2) = I0
+K0+1, yielding the usual rates Op([N(I0
+1)3]−1/2) and
+Op([N(I0
+K0+1)3]−1/2) for the first and last slopes, respectively.
+Remark 4.4 (Balanced regimes). If I0
+ℓ≍T for all ℓ, then r2
+j ≍T and s2
+j ≍T 3 for every
+j, and the slope rate reduces to (NT 3)−1/2, that is T −3/2 in the time dimension. The
+rate in Corollary 4.7 makes precise which departures from balance are costly: a short first
+or last regime is estimated at the cube of its own length, while a short interior regime
+borrows strength from its neighbours through the shared boundary levels.
+Remark 4.5 (Connection to classical trend regression). The rate in Corollary 4.7 has a
+natural connection to OLS estimation of a slope in a deterministic trend regression. In
+the special case K0 = 0, there is a single regime with I0
+1 = T, so s2
+1 ≍T 3 and the rate
+reduces to Op((NT 3)−1/2). This is the panel analog of the classical T −3/2 rate for OLS
+in yt = α + βt + εt, where Var(ˆβ) ∝
+ PT
+t=1(t −t)2−1 ≍T −3 with t := (T + 1)/2; see
+Hamilton (1994, Ch. 16).
+We finally consider the coefficient path. Fix a regime index ℓand a date t ∈K0
+ℓ.
+By (4.8), the path error is the same convex combination of the two adjacent boundary-
+level errors, and the natural scale is wt :=
+
+(1 −uℓ,t)2r−2
+ℓ−1 + u2
+ℓ,tr−2
+ℓ
+−1/2, with contrast
+Hθ
+t,NT := wt
+
+(1 −uℓ,t)r−1
+ℓ−1Pℓ−1 + uℓ,tr−1
+ℓPℓ
+
+, again satisfying Hθ
+t,NTHθ′
+t,NT = Ip.
+Let
+Υθ
+t := lim Hθ
+t,NTQ−1
+0 Σ0Q−1
+0 Hθ′
+t,NT, whenever the limit exists.
+Corollary 4.8 (Pointwise distribution of the coefficient path). Suppose that the assump-
+tions of Theorem 4.6 hold and fix a regime index ℓ∈{1, . . . , K0+1}. Then, as N, T →∞,
+(i) for any deterministic sequence of dates t ∈K0
+ℓsuch that Υθ
+t exists and is positive
+definite,
+√
+N wt
+ eθt −θ0
+t
+
+→d N
+ 0p×1, Υθ
+t
+
+;
+(ii) uniformly over t ∈K0
+ℓ, eθt −θ0
+t = Op
+
+N
+ I0
+ℓ−1 + I0
+ℓ
+
+∧
+ I0
+ℓ+ I0
+ℓ+1
+	−1/2
+.
+The second claim follows from the convex-combination representation eθt −θ0
+t = (1 −
+uℓ,t)(eηℓ−1 −η0
+ℓ−1) + uℓ,t(eηℓ−η0
+ℓ), which implies, uniformly over t ∈K0
+ℓ, ∥eθt −θ0
+t∥≤
+max{∥eηℓ−1 −η0
+ℓ−1∥, ∥eηℓ−η0
+ℓ∥}. Moreover, (1 −uℓ,t)2 + u2
+ℓ,t ≤1 implies w2
+t ≥r2
+ℓ−1 ∧r2
+ℓ,
+showing that the pointwise rate is never slower than the stated uniform rate. The weight
+wt traces how precision moves along the path. At the kink dates the rate is that of
+the corresponding boundary level, and in between the two adjacent loadings share the
+load. Precision at a date is therefore a local property, governed by the lengths of the
+regimes adjacent to the nearby boundaries, and not by the amount of sample preceding
+or following the date.
+Remark 4.6 (Relation to spline regression asymptotics). The local character of the rates
+is familiar from least squares spline regression, where the pointwise variance of the fit is
+governed by the sample size times the local knot spacing, so that precision at a point
+depends on the mesh near that point alone (Agarwal and Studden, 1980; Zhou et al.,
+1998; Huang, 2003).
+21
+
+
+Remark 4.7 (Initial level). The initial level is the case t = 1, ℓ= 1, and u1,1 = 0
+of Corollary 4.8, in which Hθ
+1,NT = P0 and w1 = r0 with r2
+0 ≍I0
+1. Hence eθ1 −θ0
+1 =
+Op((NI0
+1)−1/2), which reduces to the familiar (NT)−1/2 rate under balanced regimes. The
+initial level is identified from the first regime alone, whose observations are the only ones
+in which its loading is active.
+Remark 4.8 (Fixed T). The results above extend to the fixed-T case; see Kaddoura
+and Westerlund (2023) for a related discussion.
+When T ≥3 is fixed as N →∞,
+the normalisation DK0+1 and the transformation MK0 reduce to constant matrices, the
+selection matrices may be taken fixed, and Assumption 4.3 simplifies to
+√
+Nϑ1J−ζ1
+min →p
+c1 ∈[0, ∞),
+√
+N Jmin →∞, and N (ζ1+1)/2ϑ1 →p ∞. All theorems continue to hold, with
+every post-kink parameter converging at the usual N −1/2 rate.
+Theorem 4.6 implies that inference on η0 requires consistent estimation of Avar(eη b
+K) :=
+N −1D−1
+K0+1Q−1
+0 Σ0Q−1
+0 D−1
+K0+1, and covariance matrices and Wald contrasts transform by
+the same fixed nonsingular map MK0, so the estimator may be computed directly in
+the original ψ coordinates of Section 3.2. Let yi := [yi,1, . . . , yi,T]′ and let bui := yi −
+Φi
+ bT b
+K
+eψ b
+K denote the post-kink residual vector of unit i, so that CT bui collects the fitted
+residuals of (3.11). A natural cluster-robust variance estimator is bΩ:=
+1
+N bA−1 bG bA−1,
+where bA :=
+1
+N Φ
+ bT b
+K
+′CΦ
+ bT b
+K
+
+and bG :=
+1
+N
+PN
+i=1 ˆgiˆg′
+i with ˆgi := Φi
+ bT b
+K
+′CT bui. For a
+linear hypothesis H0 : Rψ0
+K0 = r, with R of full row rank, the Wald statistic is W :=
+ Reψ b
+K−r
+′ RbΩR′−1 Reψ b
+K−r
+
+. For the path, since eθt = Lt(bT b
+K)eψ b
+K by (3.13), an asymp-
+totic pointwise 95% confidence interval for the mth component of θ0
+t is eθm,t±1.96
+bΩθ,t
+1/2
+mm,
+where bΩθ,t := Lt(bT b
+K)bΩLt(bT b
+K)′.10
+4.4
+Component-wise kinks
+The baseline estimator imposes a common set of kink dates on the entire coefficient vector.
+This is appropriate when the relationship shifts jointly across regressors, but restrictive
+when only some coefficients change slope at a given date.
+Following the coefficient-
+by-coefficient logic of Kaddoura (2025), we now let each coefficient carry its own kink
+structure. The analysis mirrors the baseline case. Selection first recovers the coordinate-
+specific kink sets, and post-selection estimation then runs the within-transformed re-
+gression on the selected structure, analysed one coordinate at a time in boundary-level
+coordinates.
+For each j = 1, . . . , p, let coefficient j have Kj kinks at dates Tj,Kj := {Tj,1, . . . , Tj,Kj},
+where 1 =: Tj,0 < Tj,1 < · · · < Tj,Kj < T < Tj,Kj+1 := T + 1, with regimes Kj,ℓ:=
+{Tj,ℓ−1, . . . , Tj,ℓ−1} for ℓ= 1, . . . , Kj + 1. Within regime ℓthe coefficient evolves as
+θj,t = θj,Tj,ℓ−1 + (t −Tj,ℓ−1)κj,ℓ
+(4.17)
+10On the recovery event of Corollary 4.3, bΩcoincides with the oracle cluster-robust estimator at
+the true design, so consistency follows by the usual argument under cross-sectional independence of
+{(xi, εi)} together with standard moment and cluster-leverage conditions, and transfers to the feasible
+estimator because that event has probability tending to one. Under weak cross-sectional dependence a
+cross-sectionally robust estimator would be needed.
+22
+
+
+for t ∈Kj,ℓ, where κj,ℓ∈R is the within-regime slope, and continuity at the coordinate-
+specific kink dates is imposed by θj,Tj,ℓ= θj,Tj,ℓ−1 + (Tj,ℓ−Tj,ℓ−1)κj,ℓfor ℓ= 1, . . . , Kj.
+Equivalently, the scalar second difference ∆2θj,t := θj,t+1 −2θj,t +θj,t−1 is nonzero exactly
+when coefficient j changes slope at date t. To ease the exposition, let a0 and ba denote
+the true value and estimator, respectively, of any quantity a.
+In particular, for each
+j = 1, . . . , p, let T 0
+j,K0
+j = {T 0
+j,1, . . . , T 0
+j,K0
+j } and bTj, b
+Kj = { bTj,1, . . . , bTj, b
+Kj} denote the true and
+estimated coordinate-specific kink sets, with T 0
+j,0 = bTj,0 := 1 and T 0
+j,K0
+j +1 = bTj, b
+Kj+1 :=
+T + 1.
+The preliminary estimator of (3.1) yields the adaptive weights ˙ωcw
+j,t := |∆2 ˙θj,t|−ζ2 for
+j = 1, . . . , p and t = 2, . . . , T −1, where ζ2 > 0, and the component-wise estimator
+minimises
+Lcw
+ϑ2 (ΘT) :=
+1
+NT
+N
+X
+i=1
+T
+X
+t=2
+ ˇyi,t −x′
+i,tθt + x′
+i,1θ1
+2 + ϑ2
+p
+X
+j=1
+T−1
+X
+t=2
+˙ωcw
+j,t
+∆2θj,t
+,
+(4.18)
+where ϑ2 > 0 is a tuning parameter. In contrast to the group-ℓ2 penalty of (3.2), the
+penalty acts on every scalar second difference separately, so coefficient j may kink at a
+date at which the remaining coefficients stay locally linear. The relevant count of active
+constraints is no longer K0 but the total number of scalar kinks, M0 := Pp
+j=1 K0
+j , and,
+when M 0 ≥1, the relevant signal is Jcw
+min := minj,ℓ|κ0
+j,ℓ+1 −κ0
+j,ℓ|, the minimum taken over
+j = 1, . . . , p and ℓ= 1, . . . , K0
+j .
+Proposition 4.9 (Component-wise recovery of the kink structure). Suppose that As-
+sumptions 4.1, 4.2 and 4.3 hold, the latter with Jmin, ϑ1, ζ1, and K0 replaced by Jcw
+min, ϑ2,
+ζ2, and M 0, respectively, and with part (a) replaced by ϑ2 →p 0 when M 0 = 0. Then, as
+N, T →∞,
+(i) P
+n∆2bθcw
+j,t
+ = 0 ∀t ∈T 0c
+j,K0
+j , ∀j = 1, . . . , p
+o
+→1;
+(ii) P
+n
+bKj = K0
+j ∀j = 1, . . . , p
+o
+→1;
+(iii) P
+n
+bTj,ℓ= T 0
+j,ℓ, ℓ= 1, . . . , K0
+j , ∀j
+ bKj = K0
+j ∀j
+o
+→1.
+Proposition 4.9 is the component-wise analog of Theorem 4.2 and Corollary 4.3. Se-
+lection operates separately for each coefficient, so the estimator recovers not only whether
+a kink is present, but also which coefficient kinks and at which date.
+Post-selection estimation again runs on the within transform and is analysed in
+boundary-level coordinates, one coordinate at a time. For coordinate j, the true kink
+dates induce regimes of lengths I0
+j,ℓ:= T 0
+j,ℓ−T 0
+j,ℓ−1, with the conventions I0
+j,0 := 0,
+I0
+j,K0
+j +2 := 0, and K0
+j,0 = K0
+j,K0
+j +2 := ∅, and boundary levels
+η0
+j,m := θ0
+j,1 +
+m
+X
+ℓ=1
+I0
+j,ℓκ0
+j,ℓ
+(4.19)
+23
+
+
+for m = 0, . . . , K0
+j + 1, so that κ0
+j,ℓ= (η0
+j,ℓ−η0
+j,ℓ−1)/I0
+j,ℓ. With uj,ℓ,t := (t −T 0
+j,ℓ−1)/I0
+j,ℓthe
+fraction of regime ℓof coordinate j elapsed by date t, the loading of date t on η0
+j,m is
+hj,m,t :=
+
+
+
+
+
+
+
+uj,m,t,
+t ∈K0
+j,m,
+1 −uj,m+1,t,
+t ∈K0
+j,m+1,
+0,
+otherwise,
+(4.20)
+the per-coordinate analog of (4.9), and the interpolation identity (4.8) holds coordinate
+by coordinate, θ0
+j,t = (1 −uj,ℓ,t)η0
+j,ℓ−1 + uj,ℓ,tη0
+j,ℓfor t ∈K0
+j,ℓ. Each coefficient is therefore
+a free-knot linear spline on its own knot sequence, and the post-kink model is a varying-
+coefficient regression in which the p coordinates carry separate first-degree B-spline bases.
+Setting r2
+j,m := PT
+t=1 h2
+j,m,t, Lemmas A.2 and 4.4 apply to each coordinate with the same
+absolute constants, so that r2
+j,m ≍I0
+j,m + I0
+j,m+1.
+Substituting the interpolation identity into the DGP (2.1),
+x′
+i,tθ0
+t =
+p
+X
+j=1
+K0
+j +1
+X
+m=0
+hj,m,t xi,t,j η0
+j,m,
+(4.21)
+which is linear in the boundary levels with known coefficients once the kink dates are
+given. To write (4.21) as a regression, stack the boundary levels coordinate by coordinate,
+the K0
+1 + 2 boundary levels of coordinate 1 first, then those of coordinate 2, and so on,
+η0,cw := [η0
+1,0, . . . , η0
+1,K0
+1+1, . . . , η0
+p,0, . . . , η0
+p,K0p+1]′ ∈Rq0×1, where q0 := Pp
+j=1(K0
+j + 2) is
+fixed since every K0
+j is fixed, and define the conformable regressor
+ϕη,cw
+i,t
+:=
+
+h1,0,t xi,t,1, . . . , h1,K0
+1+1,t xi,t,1, . . . , hp,0,t xi,t,p, . . . , hp,K0p+1,t xi,t,p
+′ ∈Rq0×1, (4.22)
+so that (4.21) reads x′
+i,tθ0
+t = ϕη,cw′
+i,t
+η0,cw and the DGP becomes yi,t = µi+ϕη,cw′
+i,t
+η0,cw+εi,t.
+Let Φη,cw ∈RNT×q0 stack the rows ϕη,cw′
+i,t
+and ε ∈RNT×1 the errors εi,t conformably with
+y in (3.8).
+Collecting the rates in Dcw := diag
+ r1,0, . . . , r1,K0
+1+1, . . . , rp,0, . . . , rp,K0p+1
+
+∈Rq0×q0,
+which is nonsingular because every rj,m is positive by Lemma A.2 applied per coordinate,
+the last kink date of every coordinate lying strictly before T. Further, define bQcw
+N :=
+ Dcw−1 1
+N Φη,cw′C Φη,cw  Dcw−1 and Ψcw
+NT :=
+1
+√
+N Φη,cw′C ε, with C = IN ⊗CT the
+centering matrix.
+The structure of these objects is read off from the columns of the design. The column
+of Φη,cw belonging to the boundary level η0
+j,m has (i, t) entry χi,t;j,m := hj,m,t xi,t,j, the jth
+regressor switched on with weight hj,m,t over the two regimes of coordinate j adjacent to
+boundary m, and premultiplication by C demeans each column unit by unit, ¨χi,t;j,m :=
+χi,t;j,m−1
+T
+PT
+s=1 χi,s;j,m. Hence the
+ (j, m), (j′, m′)
+
+entry of NDcw bQcw
+N Dcw = Φη,cw′C Φη,cw
+24
+
+
+is, using C′C = C,
+h
+NDcw bQcw
+N Dcwi
+(j,m),(j′,m′) =
+N
+X
+i=1
+T
+X
+t=1
+¨χi,t;j,m ¨χi,t;j′,m′
+=
+N
+X
+i=1
+T
+X
+t=1
+hj,m,thj′,m′,t xi,t,jxi,t,j′
+−1
+T
+N
+X
+i=1
+ T
+X
+s=1
+χi,s;j,m
+! T
+X
+r=1
+χi,r;j′,m′
+!
+,
+(4.23)
+the second equality by expanding the demeaned products.
+The first term is the one
+that carries the structure, since it is nonzero only at dates where both hat functions are
+active. Within a coordinate (j′ = j), the hat functions are built on the same kink set,
+hj,m,t is supported on K0
+j,m ∪K0
+j,m+1 and vanishes at t = T 0
+j,m−1 and t = T 0
+j,m+1, so for
+|m−m′| ≥2 the supports of hj,m,· and hj,m′,· are disjoint and PN
+i=1
+PT
+t=1 hj,m,thj,m′,t x2
+i,t,j =
+0, for |m −m′| ≥2. The leading term of each diagonal block is therefore tridiagonal in
+m, the deterministic hat overlaps of Lemma 4.4 weighted by x2
+i,t,j. Across coordinates
+(j′̸ = j), the hat functions are built on different kink sets, so no zero pattern is available,
+and the leading term is PN
+i=1
+P
+t∈Sj,m;j′,m′ hj,m,thj′,m′,t xi,t,jxi,t,j′, where Sj,m;j′,m′ :=
+
+t :
+hj,m,thj′,m′,t > 0
+	
+a hat-weighted sample cross moment of xi,t,j and xi,t,j′ over the window
+on which both hats are active. In both cases the demeaning term in (4.23) is a within-
+unit mean correction that does not respect the banding, and its control is part of the
+rank condition below. In sum, bQcw
+N couples boundary levels of the same coordinate only
+when they are adjacent, and boundary levels of different coordinates only through the
+comovement of their regressors on overlapping regimes. The post-kink estimator eηcw is
+the OLS estimator of η0,cw from the centered regression evaluated at the estimated kink
+sets,
+eηcw :=
+
+Φη,cw′C Φη,cw−1Φη,cw′C y,
+(4.24)
+with Φη,cw built from bTj, b
+Kj, j = 1, . . . , p, the inverse existing w.p.a.1 under Assump-
+tion 4.6(a). On the recovery event of Proposition 4.9 it coincides with the oracle estimator
+evaluated at the true coordinate-specific dates.
+Assumption 4.6 (Component-wise post-selection design and central limit theorem).
+Every K0
+j , j = 1, . . . , p, is fixed, and q0 = Pp
+j=1(K0
+j + 2).
+(a) We have ∥bQcw
+N −Qcw
+0 ∥op = op(1), where Qcw
+0
+is finite and positive definite with
+0 < c ≤µmin(Qcw
+0 ) ≤µmax(Qcw
+0 ) ≤C < ∞;
+(b) the limit Σcw
+0
+:= lim Var((Dcw)−1Ψcw
+NT) exists and is finite and positive definite,
+and for any deterministic sequence of l × q0 matrices {Hcw
+NT} with l fixed and
+lim supN,T→∞∥Hcw
+NT∥op < ∞, whenever Υcw := lim Hcw
+NT(Qcw
+0 )−1Σcw
+0 (Qcw
+0 )−1Hcw′
+NT
+exists and is positive definite, we have Hcw
+NT(Qcw
+0 )−1(Dcw)−1Ψcw
+NT →d N(0l×1, Υcw).
+Assumption 4.6 is the component-wise analog of Assumptions 4.4 and 4.5, stated on
+the true design so that every object has the fixed dimension q0 and the scaling matrix is
+25
+
+
+deterministic. The division of labour is the same as in the baseline case, with one addition.
+Within a coordinate, Lemma 4.4 controls the time basis, so the lower eigenvalue bound
+in part (a) is not a hidden restriction on any coordinate’s kink configuration. Across
+coordinates, however, the loadings of different coefficients may overlap arbitrarily in time,
+and their conditioning is governed by the regressors, so the positive definiteness of Qcw
+0
+is where the cross-coordinate regressor design enters.
+Proposition 4.10 (Asymptotic normality of the component-wise post-kink estimator).
+Suppose that the assumptions of Proposition 4.9 and Assumption 4.6 hold, and define
+sj,ℓ:= I0
+j,ℓ
+ r−2
+j,ℓ−1 + r−2
+j,ℓ
+−1/2 for j = 1, . . . , p and ℓ= 1, . . . , K0
+j + 1. Then, as N, T →∞,
+(i) for any deterministic sequence {Hcw
+NT} as in Assumption 4.6(b),
+√
+N Hcw
+NT Dcw eηcw−
+η0,cw
+→d N
+ 0l×1, Υcw
+;
+(ii) eκcw
+j,ℓ−κ0
+j,ℓ= Op
+
+Ns2
+j,ℓ
+−1/2
+= Op
+h
+N
+ I0
+j,ℓ
+2
+(I0
+j,ℓ−1 + I0
+j,ℓ) ∧(I0
+j,ℓ+ I0
+j,ℓ+1)
+	i−1/2
+for j = 1, . . . , p and ℓ= 1, . . . , K0
+j + 1;
+(iii) eθcw
+j,t −θ0
+j,t = Op
+h
+N
+
+(I0
+j,ℓ−1 + I0
+j,ℓ) ∧(I0
+j,ℓ+ I0
+j,ℓ+1)
+	i−1/2
+uniformly over t ∈K0
+j,ℓ,
+for j = 1, . . . , p and ℓ= 1, . . . , K0
+j +1, and in particular eθcw
+j,1−θ0
+j,1 = Op
+ (NI0
+j,1)−1/2
+.
+The component-wise rates therefore inherit the adjacent-regime structure of the base-
+line model. Each coordinate-specific slope is the contrast of the two boundary levels
+enclosing its regime, and each boundary level is informed by the two regimes of that
+coordinate adjacent to it, so the precision of coefficient j is governed entirely by its own
+regime configuration, independently of where the remaining coefficients kink.
+5
+Monte Carlo simulations
+5.1
+Design
+We study the finite sample behaviour of the estimator in a restricted version of the DGP
+in (2.1). The regressors are generated as
+xi,t = 0.2 (1p×1 · ξi) + zi,t,
+where ξi ∼N(0, 1) and zi,t ∼N(0p×1, Ip) are independent across i and t, so that 0.2 ξi
+induces a common component in the regressors within a unit. Following Bai and Ng
+(2002), the error carries serial dependence, cross-sectional dependence, and heteroskedas-
+ticity through
+εi,t = ϖ1εi,t−1 + ςi,t + ϖ2
+R
+X
+r=1
+ ςi−r,t + ςi+r,t
+
+,
+with εi,0 = 0 and ςi,t ∼N(0, 1), where ϖ1 governs serial dependence, ϖ2 cross-sectional
+dependence, and R its range, with baseline (ϖ1, ϖ2, R) = (0.2, 0.1, 5). The fixed effects
+26
+
+
+are µi ∼N(0, 1), independent of all else. The initial level is θ0
+1 = [1, −1]′ when p = 2
+and θ0
+1 = [1, −1, 1]′ when p = 3, and the path is built from the within-regime slopes
+through (2.4). The sample sizes cover all nine combinations of N ∈{50, 100, 200} and
+T ∈{20, 40, 80}, and all results are based on 1000 replications.
+The eight designs fall into three groups. The first group holds the error dependence
+at its baseline and varies the kink configuration, so that the number of kinks and the way
+identification is spread across regimes are the only things that change. The second group
+perturbs that configuration in the two directions the theory identifies as costly, namely
+unbalanced regime lengths and stronger error dependence. The third group breaks the
+common-kink restriction altogether and lets each coordinate carry its own kink structure.
+DGPs 1–3 and 5–7 have p = 2 and use the group estimator of Section 3.1; DGP 4 has
+p = 2 and DGP 8 has p = 3, and both use the component-wise estimator of Section 4.4.
+DGP 1 (K0 = 0). A single regime with κ0
+1 = [0, 0]′, so the path is flat. The estimator
+should return bK = 0, and the design measures over-selection when there is nothing to
+find.
+DGP 2 (K0 = 1). A kink at T 0
+1 = ⌊T/2⌋with κ0
+1 = [0.3, −0.2]′ and κ0
+2 = [−0.2, 0.3]′.
+Each coordinate rises and then reverses, so the kink is a genuine change of direction.
+Both regimes are of length I0
+ℓ≍T/2, so both slopes are endpoint slopes in the sense of
+Corollary 4.7.
+DGP 3 (K0 = 2). Kinks at ⌊T/3⌋and ⌊2T/3⌋with slopes [0, 0]′, [0.5, −0.4]′, and [0, 0]′.
+The path is flat in the outer regimes and linear in the middle one, so all identification
+of the two kinks comes from the middle regime. This is the most demanding selection
+design among those with balanced regimes.
+DGP 4 (coordinate-specific kinks). Coordinate one kinks once at ⌊T/3⌋with regime
+slopes (0.4, −0.3) and coordinate two kinks once at ⌊2T/3⌋with regime slopes (−0.3, 0.4),
+so that K0
+1 = K0
+2 = 1 but the kink dates differ. No common kink set describes the path,
+and the component-wise estimator should recover the two coordinate-specific kink sets.
+DGP 5 (uneven regimes, K0 = 2).
+Kinks at ⌊T/5⌋and ⌊4T/5⌋with slopes [0, 0]′,
+[0.5, −0.4]′, and [0, 0]′, so the middle regime is long and the two outer regimes short. The
+design isolates the role of the regime configuration in Corollary 4.7: κ0
+2 is an interior slope
+flanked by a long own regime, while κ0
+1 and κ0
+3 are endpoint slopes identified from a short
+own regime alone.
+DGP 6 (DGP 2 under stronger dependence). The kink configuration of DGP 2,
+with the error dependence raised to (ϖ1, ϖ2) = (0.5, 0.2).
+The design measures the
+sensitivity of selection and estimation to serial and cross-sectional dependence in the
+errors when identification is otherwise strong.
+DGP 7 (DGP 3 under stronger dependence). The kink configuration of DGP 3,
+the most demanding selection design, under the same stronger dependence (ϖ1, ϖ2) =
+(0.5, 0.2). This is the joint stress of weak identification and strong error dependence.
+27
+
+
+DGP 8 (heterogeneous kink counts, p = 3).
+Three coordinates with different
+numbers of kinks: coordinate one is flat (K0
+1 = 0), coordinate two kinks once at ⌊T/2⌋
+with slopes (0.4, −0.3), and coordinate three kinks twice at ⌊T/3⌋and ⌊2T/3⌋with slopes
+(0, 0.5, 0). No common kink set describes the path, and the component-wise estimator
+must recover a different number of kinks in each coordinate, including none in the first.
+5.2
+Implementation
+The tuning parameter ϑ1 is chosen by minimising
+IC(ϑ1) := log
+(
+1
+NT
+N
+X
+i=1
+T
+X
+t=1
+
+¨yi,t −¨ϕi,t
+ bT b
+Kϑ1
+′ eψ b
+Kϑ1
+2
+)
++ ϱN,T p
+  bKϑ1 + 1
+
+,
+(5.1)
+where ϱN,T := log(NT)/NT is a BIC-type rate in the spirit of Qian and Su (2016a). The
+residuals are within transformed and post-kinks. The convex objective (3.2) is solved
+along the grid ϑ1 = c (NT)−1/2 with c on a logarithmic grid. The kink set is built by
+stepwise selection on the criterion, adding the candidate whose inclusion lowers it most
+and dropping any date whose removal lowers it further, and each selected date is then
+moved within a window of three periods to the position minimising the post-kink sum of
+squared residuals, with a final backward pass under the criterion. The adaptive weights
+use the perturbed form ˙ωt = (∥∆˙θt+1 −∆˙θt∥+ δt)−ζ1 with δt = N −1/2 and ζ1 = 2.
+DGPs 4 and 8 use the separable analogue (4.18) with ζ2 = 2. The candidate pairs are
+the active scalar second differences accumulated along the ϑ2 grid, and the coordinate-
+specific kink sets are built by the same stepwise procedure on (5.1), with p( bK+1) replaced
+by Pp
+j=1( bKj + 1), adding or dropping the pair, in whichever coordinate, that improves
+the criterion most, followed by the same local refinement and final backward pass applied
+to the selected pairs.
+5.3
+Results
+Selection is measured by three statistics, each averaged over the replications. Correct
+selection is the frequency, in percent, with which the estimated kink dates coincide exactly
+with the true ones, which for DGP 1 is the frequency of bK = 0. The kink-count bias
+E[ bK −K0] separates missed kinks from spurious ones. Misclassification is the percentage
+of dates assigned to the wrong regime, the regime label of date t implied by a kink
+set T being rt(T ) := P
+Tk∈T 1{Tk ≤t}. Estimation is measured by the bias and root
+mean squared error of the within-regime slopes, regime by regime and pooled across
+coordinates, conditional on exact recovery of the kink set, and of the coefficient path,
+averaged over dates and coordinates, unconditional. Table 1 reports selection for the
+common-kink designs, Tables 2 and 3 the component-wise results, and Tables 4, 5, 6
+and 7 the estimation results.
+[Tables 1–7 about here]
+Estimation improves in both dimensions and at the predicted rates. Every RMSE
+column falls monotonically in N and in T. Moreover, selection improves in N. In DGP 1
+28
+
+
+there are no kinks and the estimator finds none, with correct selection never below 99.3
+percent. DGP 2, with one well-separated kink, runs from 97.8 to 99.8 percent. DGP 3
+is harder, since the outer regimes are flat and both kinks are identified from the middle
+regime alone, and there correct selection rises from 80.0 percent at N = 50 to 98.7
+percent at N = 200 when T = 20, and from 73.0 to 96.2 percent in DGP 7 when T = 80.
+Comparing DGP 6 with DGP 2 and DGP 7 with DGP 3 shows that error dependence
+costs a few percentage points.
+The span matters less. Correct selection is roughly flat in T, moving from 80.0 to 83.9
+to 82.0 percent in DGP 3 at N = 50 and from 70.9 to 79.8 to 73.0 percent in DGP 7.
+What rises with T is over-selection: in DGP 7 at N = 50 the kink-count bias runs from
+0.05 to 0.28 and misclassification from 3.8 to 12.5 percent, so the errors are spurious
+kinks rather than missed ones. With Jmin fixed, a longer span widens the
+p
+T/N band
+of Theorem 4.1(c) within which noise survives the shrinkage, while also lengthening the
+regimes from which the true slope changes are estimated; the two roughly offset in the
+exact-recovery rate. The effect is confined to N = 50, the kink-count bias being flat in
+T at N = 100 and N = 200 in every design. Precision depends on the configuration, not
+only the sample size. DGP 5 has a long middle regime and short outer ones, so κ0
+2 is
+an interior slope with two well-informed boundary levels while κ0
+1 and κ0
+3 are endpoint
+slopes converging at the cube of their own short regime. In all nine cells the interior slope
+is estimated more precisely than the endpoint slopes. Against DGP 3, which differs only
+in where the kinks sit, the middle slope improves from 0.019 to 0.010 at (N, T) = (50, 20)
+while the first deteriorates from 0.030 to 0.051.
+The component-wise estimator behaves the same way coordinate by coordinate. In
+DGP 4 both coordinates are recovered with comparable accuracy, from about 90 percent
+at N = 50 to about 97 percent at N = 200. In DGP 8 the three coordinates carry 0, 1
+and 2 kinks and each performs according to its own configuration. The globally linear
+first coordinate is correctly identified as such in 95.0 to 98.3 percent of replications despite
+its neighbours kinking, the second behaves like DGP 2 and reaches 97.7 percent, and the
+third has the configuration of DGP 3 and runs from 61.2 to 93.4 percent. This is what
+Proposition 4.10 asserts. The cross-section is therefore the dimension that buys correct
+dating, and a researcher with a short panel and a long span should expect over-selection
+rather than missed kinks. That error is mild for the fitted path. Even in DGP 7 the
+path RMSE falls with T at every N, from 0.100 to 0.051 at N = 50. This implies that a
+spurious kink adds a basis function to a design that already spans the truth, so the fitted
+values are barely affected.
+6
+Dating the Debt–Growth Relationship
+The debt–growth literature asks whether the association changes once public debt crosses
+a particular level. Reinhart and Rogoff (2010) report markedly lower growth above 90
+percent of GDP. Herndon et al. (2014) replicate that exercise and show the finding turns
+on data construction and weighting. The work that followed finds the estimated non-
+linearity fragile. It weakens once endogeneity and cross-country heterogeneity are taken
+29
+
+
+seriously, and it does not survive as a universal cutoff (Panizza and Presbitero, 2014;
+Pescatori et al., 2014; Eberhardt and Presbitero, 2015; Chudik et al., 2017). Collecting
+816 estimates from 47 studies, Heimberger (2023) cannot reject a zero average effect once
+publication selection is accounted for, and finds threshold estimates to be sensitive to
+data and specification choices.
+We ask when the association changed rather than at what level of debt it differs.
+The two questions are distinct. A threshold model lets the coefficient depend on where
+an economy sits in the debt distribution, and an economy crosses back and forth as its
+debt ratio moves. Our model lets the coefficient bend at calendar dates common to all
+economies, and asks how fast it was moving on either side of each bend. The sample
+covers the global financial crisis and the pandemic, two occasions on which debt and
+output moved sharply for very different reasons, and the estimator is built to separate a
+movement that reverses from one that does not. The exercise is descriptive throughout.
+What it delivers is dates, annual rates of change, and a distinction between a temporary
+excursion and a permanent reorientation, not a causal effect of debt on growth.
+6.1
+A debt-only benchmark
+Let gi,t denote annual real GDP growth in percentage points and di,t general government
+gross debt as a percentage of GDP. The benchmark specification is
+gi,t = µi + θtdi,t + εi,t,
+(6.1)
+θt = θ1 + κ1(t −1) +
+K
+X
+m=1
+γm(t −Tm)+,
+γm := κm+1 −κm,
+(6.2)
+where (a)+ := max{a, 0}. Within regime ℓthe slope κℓis the annual change in the debt
+coefficient and Tℓis a date at which that rate changes. Thus θt = −0.03 means that a ten
+point higher debt ratio is associated with 0.3 percentage points lower contemporaneous
+growth, and κℓ= 0.004 means that this association becomes 0.04 percentage points less
+negative each year for the same ten point difference in debt.
+The data are the April 2025 vintage of the IMF World Economic Outlook database
+(International Monetary Fund, 2025), from which we take NGDP_RPCH for real GDP growth
+and GGXWDG_NGDP for general government gross debt. The sample runs from 2000 to 2024.
+We drop observations missing either series or with debt outside (0, 400) percent of GDP
+and retain economies observed in every year, which leaves a balanced panel of N = 158
+economies over T = 25 years. Growth is winsorised at the second and ninety-eighth
+percentiles, affecting four percent of the observations. The final years should be read as
+a vintage result, since the WEO carries IMF staff estimates where complete historical
+information is unavailable and the April 2025 reference forecast was built on information
+available as of 4 April 2025.
+We set ζ1 = 2 and solve the penalised problem along a logarithmic grid in ϑ1. The
+tuning parameter minimises the post-kink information criterion, whose penalty ϱN,T =
+0.05 log(NT)/
+√
+NT is of the BIC type used by Qian and Su (2016a). Each selected date
+is then moved within a three-year window to the date minimising the post-kink residual
+sum of squares, and standard errors are clustered by economy.
+Figure 2 reports the
+30
+
+
+selection path. The criterion is minimised at bϑ1 = 0.17 and returns bK = 6, with kinks at
+2007, 2009, 2010, 2019, 2020 and 2021.
+0
+3
+6
+9
+12
+15
+18
+Kinks retained, ̂K(ϑ)
+10−3
+10−2
+10−1
+100
+Tuning parameter ϑ
+2.38
+2.40
+2.42
+2.44
+2.46
+Information criterion
+IC(ϑ)̂
+ϑ̂
+K = 6
+Figure 2: Selection of the tuning parameter in the debt-only benchmark. The solid line is the post-kink
+information criterion along the penalised path, on the left axis. The step function is the number of kinks
+retained, on the right axis. The dashed vertical line marks bϑ1.
+Figure 3 reports the estimated path, the within-regime slopes and the cross-country
+debt ratio. The coefficient begins at −0.025 and climbs at 0.0036 per year until it reaches
+zero in 2007. It then falls to −0.083 by 2009 and returns to −0.036 in 2010, after which it
+is flat for nine years, the 2010 to 2019 slope being 0.0002 with a standard error of 0.0007.
+The pandemic produces the same fall and rebound in compressed form. The coefficient
+drops to −0.095 in 2020, returns to zero in 2021, and then declines at −0.0113 per year
+to −0.034 in 2024. Pooled OLS and the within estimator give −0.020 and −0.030, values
+that run through the middle of the path and conceal both movements.
+Two clusters of dates therefore carry the crisis and the pandemic, and the estimator
+distinguishes them by what happens after the rebound rather than by the size of the fall.
+Both reach a similar trough. Only the pandemic movement closes, with the coefficient
+back at zero within a year, whereas after 2010 the coefficient settles near −0.035 and stays
+there for the rest of the decade. A model that assigns a level to each regime can date the
+two movements but cannot make this distinction, because it has no within-regime rate
+to compare.
+That flat decade is itself the more surprising feature. It runs from 2010 to 2019, years
+over which the cross-country mean debt ratio rises from 45 to 59 percent of GDP, and the
+coefficient does not become more negative anywhere along the way. This is not a test of a
+threshold, since the model dates common changes in calendar time rather than crossings
+by individual economies. It does show that a large and sustained rise in average indebt-
+edness need not be accompanied by a progressively more negative association, which sits
+closer to the literature emphasising debt trajectories and heterogeneous environments
+than to a stable universal cutoff (Pescatori et al., 2014; Eberhardt and Presbitero, 2015;
+Chudik et al., 2017). Over much of the same period the decline in safe interest rates
+documented by Blanchard (2019) also made the economic meaning of any given debt
+31
+
+
+−0.12
+−0.10
+−0.08
+−0.06
+−0.04
+−0.02
+0.00
+0.02̃
+θ1, t
+95\% CI
+Post-kink ̃θ1, t
+Pooled OLS (-0.020)
+Within FE (-0.030)
+−0.10
+−0.05
+0.00
+0.05
+0.10
+0.15̃
+κ1, ℓ
+***
++0.0036
+***
+-0.0413
+***
++0.0467
++0.0002
+***
+-0.0610
+***
++0.0950
+***
+-0.0113
+2000
+2004
+2008
+2012
+2016
+2020
+2024
+Year
+40
+50
+60
+70
+Debt/GDP (\%)
+Mean
+Median
+Figure 3: The debt–growth association, 2000–2024. Upper panel: the post-kink debt coefficient with its
+pointwise 95 percent economy-clustered confidence band and the pooled and within benchmarks. Middle
+panel: the within-regime slopes with confidence intervals and printed estimates, starred at the one, five
+and ten percent levels. Lower panel: the cross-country mean and median debt ratio. Shaded regions are
+the estimated regimes.
+32
+
+
+ratio more dependent on the surrounding environment.
+6.2
+Coefficient-specific kinks
+A regression carrying one time-varying coefficient must assign to it whatever common
+movement in the data happens to correlate with its regressor. The dates in Figure 3
+are therefore dates at which something in the growth process turned, and debt is only
+the variable through which the turn is measured.
+The component-wise estimator of
+Section 4.4 lets each coefficient carry its own kink dates, so the question of which variable
+turned when becomes an estimable one.
+We add total investment, population growth and inflation. Let xi,t = [di,t, qi,t, ni,t, πi,t]′,
+where qi,t is total investment as a share of GDP, ni,t is population growth and πi,t is av-
+erage consumer price inflation, and estimate
+gi,t = µi +
+4
+X
+j=1
+θj,txi,t,j + εi,t,
+(6.3)
+θj,t = θj,1 + κj,1(t −1) +
+Kj
+X
+m=1
+γj,m(t −Tj,m)+,
+γj,m := κj,m+1 −κj,m,
+(6.4)
+so that coefficient j has its own number of kinks Kj, its own dates and its own regime
+slopes. Estimation is by the component-wise objective (4.18) with ζ2 = 2, everything else
+as above. Requiring investment and inflation in every year leaves N = 136 economies, and
+regressors are standardised before the penalty is applied. Figure 4 reports the selection,
+which retains fourteen kinks: five in debt, at 2006, 2008, 2019, 2020 and 2021, six in
+investment, at 2007, 2009, 2010, 2019, 2020 and 2021, two in inflation, at 2008 and 2015,
+and one in population growth, at 2009.
+0
+3
+6
+9
+12
+15
+18
+Kinks retained, ̂Kj(ϑ)
+10−3
+10−2
+10−1
+100
+Tuning parameter ϑ
+2.15
+2.20
+2.25
+2.30
+2.35
+2.40
+2.45
+Information criterion
+IC(ϑ)̂
+ϑ̂
+K1 = 5  (debt)̂
+K2 = 6  (inv)̂
+K3 = 1  (popg)̂
+K4 = 2  (infl)
+Figure 4: Selection of the tuning parameter in the four-regressor model. Axes as in Figure 2, with one
+step function per coefficient.
+Investment’s six dates are exactly the six the scalar model assigned to debt. The
+sharp reversal of 2007 to 2010, and the pandemic movement that follows it, belong to
+33
+
+
+the investment coefficient once investment is allowed its own clock, and the debt-only
+regression was measuring them through the one regressor it had. Debt keeps neither of
+the two crisis dates. It bends in 2006 instead, two years before the crisis, and its 2008
+kink opens a recovery rather than a fall.
+Figure 5 gives the four paths and their slopes. Read row by row, they say that the
+crisis moved three of the four coefficients and that only one of the three came back. Debt
+is flat at about −0.019 through the boom, deteriorates from 2006 at −0.008 per year,
+and then recovers for eleven years at +0.004 per year to a 2019 value at which θ1,2019 = 0
+cannot be rejected (W = 0.43, chi-squared with one degree of freedom throughout).
+The rate after 2008 differs from the rate before 2006 (W = 6.01) and the 2006 level is
+not recovered (W = 10.81), so the crisis put the coefficient on a new path rather than
+displacing it temporarily. Around the pandemic the two rates again differ (W = 10.44)
+while the level is restored (W = 1.34, not rejected). The 2006 turn precedes the crisis,
+which is where the informative variation sits in the account of Schularick and Taylor
+(2012), though their leading indicator is private credit growth rather than the public
+debt ratio used here.
+Investment shows the same asymmetry more sharply. It is flat until 2007, falls at
+−0.089 per year to 2009 and rebounds at +0.141 into 2010, but the round trip does
+not close on either margin (W = 6.86 on the rates and W = 7.13 on the level). What
+follows is a new regime declining at −0.008 per year for nine years, the reduced form
+signature of the persistent output losses documented by Cerra and Saxena (2008) and of
+the weak capital formation that Summers (2015) places at the centre of the post-crisis
+decade. Its pandemic movement, by contrast, closes on both margins (W = 0.75 and
+W = 0.00), which is what separates a year of suspended investment from a decade of
+foregone investment.
+Inflation supplies the clearest reversal. The coefficient rises at +0.016 per year to
+2008, so that before the crisis an economy with above average inflation was typically an
+economy running hot, and then falls at −0.043 for seven years to −0.213. A single kink
+covers those seven years, which is the substantive point, since a sustained reorientation
+and a sequence of annual shocks look nothing alike in this parameterisation. Its duration
+is compositional. Advanced economies moved to the effective lower bound with persis-
+tent disinflation and weak growth, over a period in which Ball and Mazumder (2011) and
+Coibion and Gorodnichenko (2015) find the inflation and activity relation much looser
+than standard specifications imply, while emerging and developing economies were com-
+pleting a long disinflation of their own in which exchange rate movements pass through
+more strongly where policy frameworks are weaker (Ha et al., 2019). Economies crossed
+between the two configurations a few at a time, which is what produces a slope rather
+than a jump. The 2015 kink falls inside the oil price collapse that began in June 2014
+and that Baumeister and Kilian (2016) trace largely to demand and to market specific
+developments predating it. After 2015 the coefficient rises at a rate indistinguishable from
+its pre-2008 rate (W = 0.00) and returns to its initial level (W = 0.41). The inflation of
+2021 and 2022 falls inside that final regime and generates no kink of its own.
+Population growth carries one weak kink, at 2009. Neither of its two slopes is sig-
+nificant at the five percent level, the change in rate is significant only at ten percent
+34
+
+
+2000
+2006
+2012
+2018
+2024
+Year
+−0.06
+−0.04
+−0.02
+0.00
+0.02
+0.04
+0.06̃
+θ1, t
+95\% CĨ
+θt
+Pooled (-0.017)
+Within (-0.023)
+2000
+2006
+2012
+2018
+2024
+Year
+−0.10
+−0.05
+0.00
+0.05
+0.10̃
+κ1, ℓ
+-0.000
+-0.008**
++0.004***
+-0.049***
++0.065***
+-0.007**
+2000
+2006
+2012
+2018
+2024
+Year
+−0.1
+0.0
+0.1
+0.2
+0.3̃
+θ2, t
+95\% CĨ
+θt
+Pooled (+0.084)
+Within (+0.103)
+2000
+2006
+2012
+2018
+2024
+Year
+−0.3
+−0.2
+−0.1
+0.0
+0.1
+0.2
+0.3̃
+κ2, ℓ
++0.002
+-0.089***
++0.141***
+-0.007***
+-0.113***
++0.163***
+-0.016*
+2000
+2006
+2012
+2018
+2024
+Year
+−0.6
+−0.4
+−0.2
+0.0
+0.2
+0.4
+0.6
+0.8̃
+θ3, t
+95\% CĨ
+θt
+Pooled (+0.275)
+Within (+0.247)
+2000
+2006
+2012
+2018
+2024
+Year
+−0.05
+0.00
+0.05
+0.10̃
+κ3, ℓ
++0.050*
+-0.015
+2000
+2006
+2012
+2018
+2024
+Year
+−0.3
+−0.2
+−0.1
+0.0
+0.1
+0.2̃
+θ4, t
+95\% CĨ
+θt
+Pooled (+0.046)
+Within (+0.013)
+2000
+2006
+2012
+2018
+2024
+Year
+−0.08
+−0.06
+−0.04
+−0.02
+0.00
+0.02
+0.04̃
+κ4, ℓ
++0.016**
+-0.043***
++0.016***
+Figure 5: Component-wise estimates, 2000–2024. Rows are gross government debt, total investment,
+population growth and inflation. Left column: the coefficient path with its pointwise 95 percent country-
+clustered band and the pooled and within benchmarks. Right column: the within-regime slopes with
+confidence intervals and printed values, starred at the one, five and ten percent levels. Shaded regions
+are the estimated regimes.
+35
+
+
+(W = 3.56), and the initial level is restored by 2024 (W = 0.77). It is the one coefficient
+here that neither the crisis nor the pandemic moves.
+2000
+2004
+2008
+2012
+2016
+2020
+2024
+−0.125
+−0.100
+−0.075
+−0.050
+−0.025
+0.000̃
+θ1, t
+Full sample (N = 158)
+Multivariate sample (N = 136)
+2000
+2004
+2008
+2012
+2016
+2020
+2024
+−0.125
+−0.100
+−0.075
+−0.050
+−0.025
+0.000
+0.025̃
+θ1, t
+Debt only
+Coefficient-specific
+Common kinks
+2000
+2004
+2008
+2012
+2016
+2020
+2024
+Year
+Common kinks
+Coefficient-specific
+Debt only
+Debt only, full
+Figure 6: The debt coefficient across specifications. Upper panel: the scalar specification on the full
+sample and on the economies with full covariate coverage. Middle panel: the scalar, coefficient-specific
+and common-kink estimates on the common sample. Lower panel: the kink dates each selects. Shaded
+regions are pointwise 95 percent country-clustered bands.
+Figure 6 puts the four specifications on one axis and separates what conditioning
+does from what the sample does. The sample restriction is immaterial, since the scalar
+model estimated on the 136 economies with full covariate coverage selects the same six
+dates as on the full sample. Conditioning changes both the timing, as described above,
+and the amplitude, halving the 2020 trough from −0.103 to −0.045. The common-kink
+penalty, which forces one date set on the whole coefficient vector, is the more instructive
+comparison, since it is the restriction our extension removes.
+It selects seven dates.
+Six of them are investment’s and the seventh is inflation’s 2015, while debt’s own 2006
+and 2008 are lost. The restriction overwrites the timing of precisely the coefficient of
+interest, because among the four its signal is the weakest. Figure 7 shows what that costs
+elsewhere. Population growth is given six kinks it does not need, and inflation keeps the
+date that ends its decline but loses the 2008 date that begins it, which is the one that
+organises the whole path.
+36
+
+
+What survives every specification is the shape and the conclusion drawn from it.
+The debt coefficient is kinked, it bends around both global movements, and no constant
+coefficient describes it. Two caveats bound the reading. The specification carries no year
+effects, so a common macroeconomic movement loads onto whichever coefficient covaries
+with it, and Blanchard and Leigh (2013) show how tightly output, fiscal policy and
+forecast errors were bound together in exactly the years in which these coefficients move
+most. And the estimates remain associations. What the exercise establishes is when each
+association changed, how fast, and which of the changes reversed.
+−0.06
+−0.04
+−0.02
+0.00
+0.02
+0.04̃
+θ1, t
+−0.1
+0.0
+0.1
+0.2̃
+θ2, t
+2000
+2004
+2008
+2012
+2016
+2020
+2024
+Year
+−0.5
+0.0
+0.5
+1.0
+1.5̃
+θ3, t
+2000
+2004
+2008
+2012
+2016
+2020
+2024
+Year
+−0.3
+−0.2
+−0.1
+0.0
+0.1
+0.2̃
+θ4, t
+Component-wise penalty
+Common-kink penalty
+Pointwise 95\% CI
+Coefficient-specific kink
+Common kink
+Figure 7: Component-wise against common-kink estimates in the same four-regressor model. Panels
+are, in reading order, debt, investment, population growth and inflation. Solid paths use coefficient-
+specific kink sets, dashed paths the common dates.
+7
+Conclusion
+This paper studies panel data models in which the coefficients follow continuous piecewise-
+linear paths with an unknown number of kinks occurring at unknown dates. We estimate
+the kink dates using an adaptive group fused lasso applied to the second differences of
+the coefficient paths, show that the true dates are recovered exactly with probability
+approaching one, and establish the asymptotic normality of the post-kink within estima-
+tor. Continuity links adjacent regimes, so each parameter is informed by the regimes on
+either side of a kink and has its own convergence rate, without requiring balanced regime
+lengths. A component-wise extension also allows kink dates to differ across regressors.
+37
+
+
+The usefulness of the design and the resulting estimator is demonstrated through an ap-
+plication in macro-finance, specifically by examining whether the relationship between
+debt and growth changes over calendar time.
+38
+
+
+Declaration of generative AI and AI-assisted technolo-
+gies in the manuscript preparation process
+During the preparation of this work the authors used Claude and ChatGPT in order to
+improve the language and presentation of the manuscript, to support the verification of
+mathematical arguments, and to accelerate the development of simulation code. After
+using this tool/service, the authors reviewed and edited the content as needed and take
+full responsibility for the content of the published article.
+39
+
+
+Table 1: Selection performance, common-kink designs.
+DGP 1
+DGP 2
+DGP 3
+N
+T
+Corr.
+bK−K0
+Miscl.
+Corr.
+bK−K0
+Miscl.
+Corr.
+bK−K0
+Miscl.
+50
+20
+99.3
+0.01
+0.4
+97.8
+0.01
+0.9
+80.0
+0.07
+4.3
+50
+40
+99.4
+0.01
+0.3
+99.0
+0.01
+0.5
+83.9
+0.15
+9.0
+50
+80
+99.3
+0.01
+0.6
+98.8
+0.01
+0.5
+82.0
+0.18
+8.1
+100
+20
+99.4
+0.01
+0.3
+99.5
+0.00
+0.3
+93.9
+0.05
+3.0
+100
+40
+99.9
+0.00
+0.0
+99.5
+0.01
+0.2
+94.5
+0.06
+3.4
+100
+80
+99.8
+0.00
+0.1
+99.1
+0.01
+0.6
+95.6
+0.04
+1.7
+200
+20
+99.8
+0.00
+0.2
+99.8
+0.00
+0.1
+98.7
+0.01
+0.7
+200
+40
+99.5
+0.01
+0.2
+99.9
+0.00
+0.1
+97.9
+0.02
+1.2
+200
+80
+99.9
+0.00
+0.1
+99.8
+0.00
+0.1
+98.3
+0.02
+0.6
+DGP 5
+DGP 6
+DGP 7
+N
+T
+Corr.
+bK−K0
+Miscl.
+Corr.
+bK−K0
+Miscl.
+Corr.
+bK−K0
+Miscl.
+50
+20
+81.1
+0.03
+1.8
+94.2
+0.02
+1.0
+70.9
+0.05
+3.8
+50
+40
+87.1
+0.11
+3.5
+97.5
+0.02
+0.9
+79.8
+0.14
+8.7
+50
+80
+89.4
+0.11
+6.0
+98.3
+0.02
+0.8
+73.0
+0.28
+12.5
+100
+20
+94.0
+0.04
+1.3
+99.0
+0.01
+0.4
+88.2
+0.07
+3.6
+100
+40
+93.8
+0.06
+1.9
+99.1
+0.01
+0.4
+85.0
+0.15
+9.3
+100
+80
+95.7
+0.04
+3.0
+98.9
+0.01
+0.5
+88.0
+0.12
+5.5
+200
+20
+97.5
+0.03
+0.9
+99.3
+0.01
+0.3
+96.3
+0.03
+1.9
+200
+40
+99.2
+0.01
+0.2
+99.6
+0.00
+0.2
+94.2
+0.06
+3.7
+200
+80
+99.0
+0.01
+0.7
+99.7
+0.00
+0.2
+96.2
+0.04
+1.5
+Notes: 1000 replications. Corr. is the frequency, in percent, of exact recovery of the true kink
+dates. bK −K0 is the average kink-count bias. Miscl. is the average percentage of dates assigned
+to the wrong regime, so that a kink located one date off misclassifies 1/T of the sample while
+a spurious interior kink misclassifies the share of dates beyond it. DGP 5 has uneven regime
+lengths; DGPs 6 and 7 repeat DGPs 2 and 3 under (ϖ1, ϖ2) = (0.5, 0.2).
+40
+
+
+Table 2: Selection performance of DGP 4 using component-wise estimator.
+Coordinate 1
+Coordinate 2
+N
+T
+Corr.
+bK1−K0
+1
+Miscl.
+Corr.
+bK2−K0
+2
+Miscl.
+50
+20
+91.5
+0.07
+4.5
+90.0
+0.10
+4.6
+50
+40
+92.3
+0.08
+4.9
+90.7
+0.10
+4.0
+50
+80
+91.2
+0.09
+5.4
+90.9
+0.10
+3.4
+100
+20
+93.8
+0.06
+3.8
+94.2
+0.06
+2.7
+100
+40
+93.3
+0.07
+4.0
+93.8
+0.06
+2.6
+100
+80
+96.2
+0.04
+2.2
+95.9
+0.04
+1.8
+200
+20
+97.3
+0.03
+1.3
+96.2
+0.04
+1.6
+200
+40
+97.1
+0.03
+1.8
+97.3
+0.03
+1.2
+200
+80
+98.0
+0.02
+1.1
+97.1
+0.03
+1.2
+Notes: 1000 replications. Statistics are as in Table 1, computed per coordinate.
+41
+
+
+Table 3: Selection performance of DGP 8 using the component-wise estimator.
+Coordinate 1 (K0
+1 = 0)
+Coordinate 2 (K0
+2 = 1)
+Coordinate 3 (K0
+3 = 2)
+N
+T
+Corr.
+bK1−K0
+1
+Miscl.
+Corr.
+bK2−K0
+2
+Miscl.
+Corr.
+bK3−K0
+3
+Miscl.
+50
+20
+95.0
+0.05
+2.7
+90.7
+0.10
+5.2
+61.2
+0.20
+10.6
+50
+40
+95.5
+0.04
+2.4
+92.4
+0.08
+4.3
+64.1
+0.36
+18.9
+50
+80
+96.4
+0.04
+1.8
+90.6
+0.10
+5.0
+69.8
+0.35
+15.4
+100
+20
+97.7
+0.03
+1.4
+93.7
+0.07
+3.6
+79.4
+0.17
+9.1
+100
+40
+97.3
+0.03
+1.2
+95.1
+0.05
+2.4
+81.7
+0.20
+10.3
+100
+80
+96.9
+0.03
+1.6
+94.5
+0.06
+2.7
+83.7
+0.18
+7.5
+200
+20
+97.6
+0.03
+1.1
+97.5
+0.03
+1.1
+91.5
+0.09
+4.6
+200
+40
+98.3
+0.02
+0.7
+97.2
+0.03
+1.5
+93.2
+0.07
+3.7
+200
+80
+98.0
+0.02
+1.0
+97.7
+0.02
+1.0
+93.4
+0.07
+3.3
+Notes: 1000 replications. Statistics are as in Table 1, computed per coordinate. The three
+coordinates carry a different number of kinks, so the design tests whether the estimator recovers
+heterogeneous kink counts, including none in the first coordinate.
+42
+
+
+Table 4: Bias and RMSE of the slope and path estimates, DGPs 1 to 3.
+DGP 1
+DGP 2
+DGP 3
+N
+T
+Path
+κ1
+κ2
+Path
+κ1
+κ2
+κ3
+Path
+Panel A: Bias (×1000)
+50
+20
+−0.89
+−0.11
+0.19
+−0.77
+−0.56
+0.62
+−0.81
+0.11
+50
+40
+−0.22
+0.07
+−0.06
+0.57
+−0.47
+0.13
+0.12
+−0.38
+50
+80
+−0.22
+−0.08
+0.08
+−0.76
+−0.15
+0.00
+0.07
+−0.36
+100
+20
+−0.46
+−0.12
+−0.30
+−0.09
+0.23
+0.36
+−0.34
+−0.07
+100
+40
+0.50
+0.00
+−0.09
+−0.15
+−0.29
+0.06
+0.01
+−0.02
+100
+80
+0.23
+0.01
+−0.04
+−0.03
+−0.03
+0.04
+−0.02
+0.00
+200
+20
+−0.14
+−0.14
+0.01
+0.15
+−0.04
+−0.33
+0.46
+−0.81
+200
+40
+−0.55
+0.07
+−0.07
+−0.44
+−0.02
+−0.02
+0.00
+−0.47
+200
+80
+−0.41
+0.00
+0.00
+0.11
+0.00
+0.02
+0.00
+0.09
+Panel B: RMSE
+50
+20
+0.049
+0.014
+0.012
+0.062
+0.030
+0.019
+0.021
+0.082
+50
+40
+0.035
+0.005
+0.005
+0.042
+0.009
+0.007
+0.007
+0.054
+50
+80
+0.024
+0.002
+0.002
+0.029
+0.003
+0.002
+0.003
+0.038
+100
+20
+0.035
+0.010
+0.009
+0.041
+0.021
+0.013
+0.014
+0.051
+100
+40
+0.024
+0.003
+0.003
+0.029
+0.006
+0.005
+0.005
+0.035
+100
+80
+0.017
+0.001
+0.001
+0.021
+0.002
+0.002
+0.002
+0.025
+200
+20
+0.024
+0.007
+0.006
+0.030
+0.015
+0.009
+0.010
+0.034
+200
+40
+0.017
+0.002
+0.002
+0.021
+0.004
+0.004
+0.004
+0.025
+200
+80
+0.012
+0.001
+0.001
+0.015
+0.002
+0.001
+0.001
+0.017
+Notes: 1000 replications. Bias entries are multiplied by 1000. Slope statistics are per regime,
+pooled across the two coordinates, and conditional on exact recovery of the kink set.
+Path
+statistics are averaged over dates and coordinates and are unconditional. In DGP 1 the fitted
+path under bK = 0 is a single linear regime.
+43
+
+
+Table 5: Bias and RMSE of the slope and path estimates, DGPs 5 to 7.
+DGP 5
+DGP 6
+DGP 7
+N
+T
+κ1
+κ2
+κ3
+Path
+κ1
+κ2
+Path
+κ1
+κ2
+κ3
+Path
+Panel A: Bias (×1000)
+50
+20
+−0.27
+0.15
+−0.73
+0.32
+−0.23
+0.82
+−1.05
+−1.61
+1.01
+−0.17
+1.03
+50
+40
+0.58
+−0.14
+0.63
+1.05
+0.04
+0.04
+0.31
+0.27
+0.00
+0.14
+0.47
+50
+80
+−0.13
+0.07
+−0.28
+−0.34
+0.03
+−0.11
+0.55
+0.04
+−0.05
+−0.01
+−0.19
+100
+20
+0.24
+−0.10
+−0.01
+0.27
+−0.22
+0.60
+0.11
+−1.60
+0.44
+−0.15
+−0.51
+100
+40
+−0.09
+0.00
+−0.15
+0.50
+0.00
+−0.18
+−0.28
+−0.25
+−0.12
+0.10
+0.22
+100
+80
+0.03
+−0.01
+−0.02
+0.25
+−0.02
+−0.02
+0.20
+0.12
+−0.06
+−0.01
+0.13
+200
+20
+0.48
+0.13
+−0.43
+0.22
+0.35
+−0.12
+−0.09
+−0.28
+−0.22
+0.49
+0.67
+200
+40
+−0.08
+0.01
+−0.11
+−0.17
+0.03
+−0.08
+−0.60
+0.19
+−0.04
+0.02
+0.07
+200
+80
+0.08
+−0.02
+0.07
+−0.12
+0.02
+−0.01
+−0.42
+−0.02
+0.05
+−0.04
+0.21
+Panel B: RMSE
+50
+20
+0.051
+0.010
+0.037
+0.080
+0.017
+0.016
+0.079
+0.036
+0.022
+0.024
+0.100
+50
+40
+0.016
+0.004
+0.014
+0.054
+0.006
+0.006
+0.054
+0.011
+0.009
+0.010
+0.070
+50
+80
+0.005
+0.001
+0.005
+0.036
+0.002
+0.002
+0.038
+0.004
+0.003
+0.004
+0.051
+100
+20
+0.036
+0.007
+0.026
+0.051
+0.012
+0.011
+0.051
+0.026
+0.016
+0.018
+0.067
+100
+40
+0.012
+0.003
+0.010
+0.036
+0.004
+0.004
+0.037
+0.008
+0.006
+0.007
+0.047
+100
+80
+0.004
+0.001
+0.004
+0.025
+0.002
+0.001
+0.027
+0.003
+0.002
+0.002
+0.033
+200
+20
+0.026
+0.005
+0.019
+0.035
+0.008
+0.008
+0.037
+0.018
+0.011
+0.013
+0.044
+200
+40
+0.008
+0.002
+0.007
+0.024
+0.003
+0.003
+0.027
+0.006
+0.005
+0.005
+0.032
+200
+80
+0.003
+0.001
+0.003
+0.017
+0.001
+0.001
+0.019
+0.002
+0.002
+0.002
+0.023
+Notes: 1000 replications. Bias entries are multiplied by 1000. Slope statistics are per regime,
+pooled across the two coordinates, and conditional on exact recovery of the kink set.
+Path
+statistics are averaged over dates and coordinates and are unconditional. In DGP 5 the outer
+regimes are short and the middle regime long, so κ2 is informed by two long adjacent regimes
+while κ1 and κ3 are informed by a short own regime. DGPs 6 and 7 repeat DGPs 2 and 3 under
+(ϖ1, ϖ2) = (0.5, 0.2).
+44
+
+
+Table 6: Bias and RMSE of DGP 4 using component-wise estimator.
+Coordinate 1
+Coordinate 2
+N
+T
+Regime 1
+Regime 2
+Path
+Regime 1
+Regime 2
+Path
+Panel A: Bias (×1000)
+50
+20
+−1.21
+0.07
+−0.31
+−0.13
+0.34
+−1.40
+50
+40
+−0.05
+0.12
+−0.62
+0.09
+0.05
+−0.87
+50
+80
+−0.08
+0.05
+0.33
+0.01
+−0.09
+−0.58
+100
+20
+−0.35
+−0.09
+0.74
+0.17
+−0.61
+0.04
+100
+40
+−0.09
+−0.02
+0.69
+−0.05
+−0.13
+0.18
+100
+80
+−0.05
+0.02
+−0.08
+−0.02
+0.09
+−0.13
+200
+20
+−0.32
+0.07
+−0.62
+−0.06
+−0.23
+0.24
+200
+40
+−0.03
+0.02
+−0.64
+−0.09
+0.22
+−0.41
+200
+80
+0.02
+−0.01
+−0.07
+−0.03
+0.02
+0.01
+Panel B: RMSE
+50
+20
+0.027
+0.009
+0.068
+0.010
+0.019
+0.068
+50
+40
+0.008
+0.003
+0.046
+0.003
+0.007
+0.048
+50
+80
+0.003
+0.001
+0.033
+0.001
+0.003
+0.033
+100
+20
+0.020
+0.006
+0.047
+0.007
+0.013
+0.045
+100
+40
+0.006
+0.002
+0.032
+0.002
+0.005
+0.032
+100
+80
+0.002
+0.001
+0.022
+0.001
+0.002
+0.022
+200
+20
+0.014
+0.004
+0.031
+0.005
+0.009
+0.031
+200
+40
+0.004
+0.002
+0.022
+0.002
+0.003
+0.022
+200
+80
+0.001
+0.001
+0.015
+0.001
+0.001
+0.015
+Notes: 1000 replications. Bias entries are multiplied by 1000. Slope statistics are condi-
+tional on exact recovery of that coordinate’s kink set. Path statistics are averaged over
+dates and are unconditional.
+45
+
+
+Table 7: Bias and RMSE of DGP 8 using the component-wise estimator.
+Coordinate 1
+Coordinate 2
+Coordinate 3
+N
+T
+Regime 1
+Path
+Regime 1 Regime 2
+Path
+Regime 1 Regime 2 Regime 3
+Path
+Panel A: Bias (×1000)
+50
+20
+−0.11
+−0.74
+0.25
+0.27
+−0.04
+−0.15
+1.34
+−1.08
+−0.52
+50
+40
+0.08
+0.01
+0.09
+−0.11
+0.81
+−0.18
+0.08
+−0.20
+0.13
+50
+80
+0.00
+0.28
+−0.04
+−0.08
+−0.39
+−0.10
+0.04
+−0.17
+−1.16
+100 20
+0.03
+0.58
+−0.09
+−0.25
+−0.38
+−1.82
+0.94
+−1.30
+−0.83
+100 40
+0.00
+−0.39
+−0.13
+0.06
+0.83
+−0.31
+0.31
+−0.24
+0.32
+100 80
+0.01
+−0.13
+0.04
+−0.05
+−0.25
+−0.15
+0.12
+−0.14
+−0.03
+200 20
+−0.12
+−0.39
+0.41
+0.08
+0.08
+0.02
+0.17
+0.12
+0.68
+200 40
+0.05
+0.10
+−0.05
+0.05
+−0.26
+−0.05
+−0.03
+0.15
+0.23
+200 80
+−0.01
+0.22
+−0.01
+0.01
+0.01
+−0.01
+−0.01
+−0.01
+−0.14
+Panel B: RMSE
+50
+20
+0.006
+0.055
+0.014
+0.012
+0.067
+0.030
+0.017
+0.020
+0.096
+50
+40
+0.002
+0.037
+0.005
+0.004
+0.046
+0.009
+0.007
+0.008
+0.068
+50
+80
+0.001
+0.026
+0.002
+0.002
+0.033
+0.003
+0.002
+0.003
+0.045
+100 20
+0.004
+0.036
+0.010
+0.009
+0.046
+0.021
+0.012
+0.014
+0.062
+100 40
+0.001
+0.025
+0.003
+0.003
+0.032
+0.006
+0.005
+0.005
+0.041
+100 80
+0.001
+0.018
+0.001
+0.001
+0.023
+0.002
+0.002
+0.002
+0.028
+200 20
+0.003
+0.026
+0.007
+0.006
+0.031
+0.016
+0.009
+0.010
+0.038
+200 40
+0.001
+0.018
+0.002
+0.002
+0.022
+0.005
+0.003
+0.004
+0.027
+200 80
+0.000
+0.012
+0.001
+0.001
+0.015
+0.001
+0.001
+0.001
+0.018
+Notes: Based on 1,000 replications. Bias entries are multiplied by 1000. Slope statistics are conditional
+on exact recovery of the corresponding coordinate’s kink set. Path statistics are averaged over dates and
+are unconditional. Coordinate 1 is globally linear and therefore has a single regime slope.
+46
+
+
+References
+G. G. Agarwal and W. J. Studden. Asymptotic integrated mean square error using least
+squares and bias minimizing splines. Annals of Statistics, 8(6):1307–1325, 1980.
+D. W. K. Andrews. Tests for parameter instability and structural change with unknown
+change point. Econometrica, 61(4):821–856, 1993. doi: 10.2307/2951764. Corrigendum,
+71 (2003), 395–397.
+J. Antoch, J. Hanousek, L. Horváth, M. Hušková, and S. Wang. Structural breaks in
+panel data: Large number of panels and short length time series. Econometric Reviews,
+38(7):828–855, 2019. doi: 10.1080/07474938.2018.1454378.
+J. Bai and S. Ng.
+Determining the number of factors in approximate factor models.
+Econometrica, 70(1):191–221, 2002.
+J. Bai and P. Perron.
+Estimating and testing linear models with multiple structural
+changes. Econometrica, 66(1):47–78, 1998. doi: 10.2307/2998540.
+J. Bai and P. Perron. Computation and analysis of multiple structural change models.
+Journal of Applied Econometrics, 18(1):1–22, 2003. doi: 10.1002/jae.659.
+L. Ball and S. Mazumder. Inflation and the great recession. Brookings Papers on Eco-
+nomic Activity, 42(1):337–405, 2011.
+C. Baumeister and L. Kilian. Understanding the decline in the price of oil since june 2014.
+Journal of the Association of Environmental and Resource Economists, 3(1):131–158,
+2016.
+O. Blanchard. Public debt and low interest rates. American Economic Review, 109(4):
+1197–1229, 2019.
+O. J. Blanchard and D. Leigh. Growth forecast errors and fiscal multipliers. American
+Economic Review: Papers and Proceedings, 103(3):117–120, 2013.
+Z. Cai. Trending time-varying coefficient time series models with serially correlated errors.
+Journal of Econometrics, 136(1):163–188, 2007. doi: 10.1016/j.jeconom.2005.08.004.
+D. Card, D. S. Lee, Z. Pei, and A. Weber. Inference on causal effects in a generalized
+regression kink design. Econometrica, 83(6):2453–2483, 2015.
+V. Cerra and S. C. Saxena. Growth dynamics: The myth of economic recovery. American
+Economic Review, 98(1):439–457, 2008.
+J. Chen. Estimating latent group structure in time-varying coefficient panel data models.
+The Econometrics Journal, 22(3):223–240, 2019. doi: 10.1093/ectj/utz008.
+A. Chudik, K. Mohaddes, M. H. Pesaran, and M. Raissi. Is there a debt-threshold effect
+on output growth? The Review of Economics and Statistics, 99(1):135–150, 2017. doi:
+10.1162/REST_a_00593.
+47
+
+
+R. Clarida, J. Galí, and M. Gertler. Monetary policy rules and macroeconomic stability:
+Evidence and some theory. The Quarterly Journal of Economics, 115(1):147–180, 2000.
+doi: 10.1162/003355300554692.
+O. Coibion and Y. Gorodnichenko. Is the Phillips curve alive and well after all? inflation
+expectations and the missing disinflation.
+American Economic Journal: Macroeco-
+nomics, 7(1):197–232, 2015.
+C. de Boor. On calculating with B-splines. Journal of Approximation Theory, 6(1):50–62,
+1972.
+C. de Boor. A Practical Guide to Splines, volume 27 of Applied Mathematical Sciences.
+Springer, New York, revised edition, 2001.
+C. Dong, J. Gao, and B. Peng. Varying-coefficient panel data models with nonstationarity
+and partially observed factor structure. Journal of Business & Economic Statistics, 39
+(3):700–711, 2021. doi: 10.1080/07350015.2020.1721294.
+M. Eberhardt and A. F. Presbitero. Public debt and growth: Heterogeneity and non-
+linearity. Journal of International Economics, 97(1):45–58, 2015. doi: 10.1016/j.jinteco.
+2015.04.005.
+J. Fan and W. Zhang. Statistical estimation in varying coefficient models. The Annals
+of Statistics, 27(5):1491–1518, 1999. doi: 10.1214/aos/1017939139.
+J. Ha, M. A. Kose, and F. Ohnsorge. Inflation in Emerging and Developing Economies:
+Evolution, Drivers, and Policies. World Bank, Washington, DC, 2019.
+J. D. Hamilton. Time Series Analysis. Princeton University Press, 1994.
+B. E. Hansen.
+Regression kink with an unknown threshold.
+Journal of Business &
+Economic Statistics, 35(2):228–240, 2017. doi: 10.1080/07350015.2015.1073595.
+T. Hastie and R. Tibshirani. Varying-coefficient models. Journal of the Royal Statistical
+Society: Series B, 55(4):757–796, 1993.
+P. Heimberger. Do higher public debt levels reduce economic growth? Journal of Eco-
+nomic Surveys, 37(4):1061–1089, 2023.
+T. Herndon, M. Ash, and R. Pollin. Does high public debt consistently stifle economic
+growth? a critique of Reinhart and Rogoff. Cambridge Journal of Economics, 38(2):
+257–279, 2014. doi: 10.1093/cje/bet075.
+J. Hidalgo, J. Lee, and M. H. Seo. Robust inference for threshold regression models.
+Journal of Econometrics, 210(2):291–309, 2019. doi: 10.1016/j.jeconom.2019.01.008.
+R. J. Hodrick and E. C. Prescott. Postwar U.S. business cycles: An empirical investiga-
+tion. Journal of Money, Credit and Banking, 29(1):1–16, 1997. doi: 10.2307/2953682.
+48
+
+
+L. Horváth and M. Hušková. Change-point detection in panel data. Journal of Time
+Series Analysis, 33(4):631–648, 2012. doi: 10.1111/j.1467-9892.2012.00796.x.
+L. Horváth, M. Hušková, G. Rice, and J. Wang. Asymptotic properties of the cusum
+estimator for the time of change in linear panel data models. Econometric Theory, 33
+(2):366–412, 2017. doi: 10.1017/S0266466615000468.
+J. Z. Huang. Local asymptotics for polynomial spline regression. Annals of Statistics, 31
+(5):1600–1635, 2003.
+J. Z. Huang, C. O. Wu, and L. Zhou.
+Varying-coefficient models and basis function
+approximations for the analysis of repeated measurements. Biometrika, 89(1):111–128,
+2002.
+International Monetary Fund.
+World economic outlook database, april 2025 edi-
+tion. Electronic database, 2025. URL https://www.imf.org/en/Publications/WEO/
+weo-database/2025/April.
+Y. Kaddoura. Estimating coefficient-by-coefficient breaks in panel data models. Journal
+of Econometrics, 249:106005, 2025. doi: 10.1016/j.jeconom.2025.106005.
+Y. Kaddoura and J. Westerlund. Estimation of panel data models with random interactive
+effects and multiple structural breaks when T is fixed. Journal of Business & Economic
+Statistics, 41(3):778–790, 2023. doi: 10.1080/07350015.2022.2067546.
+D. Kim. Estimating a common deterministic time trend break in large panels with cross
+sectional dependence. Journal of Econometrics, 164(2):310–330, 2011. doi: 10.1016/j.
+jeconom.2011.06.018.
+S.-J. Kim, K. Koh, S. Boyd, and D. Gorinevsky. ℓ1 trend filtering. SIAM Review, 51(2):
+339–360, 2009. doi: 10.1137/070690274.
+D. Li, J. Chen, and J. Gao. Non-parametric time-varying coefficient panel data models
+with fixed effects. The Econometrics Journal, 14(3):387–408, 2011. doi: 10.1111/j.
+1368-423X.2011.00350.x.
+U. Panizza and A. F. Presbitero. Public debt and economic growth: Is there a causal
+effect? Journal of Macroeconomics, 41:21–41, 2014. doi: 10.1016/j.jmacro.2014.03.009.
+A. Pescatori, D. Sandri, and J. Simon. Debt and growth: Is there a magic threshold?
+IMF Working Paper 14/34, International Monetary Fund, 2014.
+J. Qian and L. Su. Shrinkage estimation of common breaks in panel data models via
+adaptive group fused Lasso.
+Journal of Econometrics, 191(1):86–109, 2016a.
+doi:
+10.1016/j.jeconom.2015.09.004.
+J. Qian and L. Su.
+Shrinkage estimation of regression models with multiple struc-
+tural changes.
+Econometric Theory, 32(6):1376–1433, 2016b.
+doi:
+10.1017/
+S0266466615000237.
+49
+
+
+C. M. Reinhart and K. S. Rogoff. Growth in a time of debt. American Economic Review:
+Papers & Proceedings, 100(2):573–578, 2010. doi: 10.1257/aer.100.2.573.
+K. Scherer and A. Y. Shadrin. New upper bound for the B-spline basis condition number:
+II. A proof of de Boor’s 2k-conjecture. Journal of Approximation Theory, 99(2):217–
+229, 1999.
+M. Schularick and A. M. Taylor. Credit booms gone bust: Monetary policy, leverage
+cycles, and financial crises, 1870–2008. American Economic Review, 102(2):1029–1061,
+2012.
+L. Su and S. Jin. Sieve estimation of panel data models with cross section dependence.
+Journal of Econometrics, 169(1):34–47, 2012. doi: 10.1016/j.jeconom.2012.01.006.
+L. Su, X. Wang, and S. Jin. Sieve estimation of time-varying panel data models with
+latent structures. Journal of Business & Economic Statistics, 37(2):334–349, 2019. doi:
+10.1080/07350015.2017.1340299.
+L. H. Summers. Demand side secular stagnation. American Economic Review: Papers
+and Proceedings, 105(5):60–65, 2015.
+Y. Sun, C. Wan, W. Zhang, and W. Zhong. A multi-kink quantile regression model with
+common structure for panel data analysis. Journal of Econometrics, 239(2):105304,
+2024. doi: 10.1016/j.jeconom.2022.04.012.
+R. J. Tibshirani.
+Adaptive piecewise polynomial estimation via trend filtering.
+The
+Annals of Statistics, 42(1):285–323, 2014. doi: 10.1214/13-AOS1189.
+R. J. Tibshirani and J. Taylor. The solution path of the generalized lasso. The Annals
+of Statistics, 39(3):1335–1371, 2011. doi: 10.1214/11-AOS878.
+D. Trefler.
+The long and short of the Canada–U.S. free trade agreement.
+American
+Economic Review, 94(4):870–895, 2004. doi: 10.1257/0002828042002633.
+M. Yuan and Y. Lin. Model selection and estimation in regression with grouped variables.
+Journal of the Royal Statistical Society: Series B (Statistical Methodology), 68(1):49–
+67, 2006. doi: 10.1111/j.1467-9868.2005.00532.x.
+F. Zhang, R. Xie, and Z. Xiao. Time series quantile regression kink with an unknown
+threshold. Econometric Reviews, 44(9):1275–1320, 2025. doi: 10.1080/07474938.2025.
+2504110.
+Y. Zhang, Q. Zhou, and L. Jiang. Panel kink regression with an unknown threshold.
+Economics Letters, 157:116–121, 2017. doi: 10.1016/j.econlet.2017.05.033.
+W. Zhong, C. Wan, and W. Zhang. Estimation and inference for multi-kink quantile
+regression. Journal of Business & Economic Statistics, 40(3):1123–1139, 2022. doi:
+10.1080/07350015.2021.1901720.
+50
+
+
+S. Zhou, X. Shen, and D. A. Wolfe. Local asymptotics for regression splines and confidence
+regions. Annals of Statistics, 26(5):1760–1782, 1998.
+H. Zou. The adaptive lasso and its oracle properties. Journal of the American Statistical
+Association, 101(476):1418–1429, 2006. doi: 10.1198/016214506000000735.
+A
+Proofs of the main results
+Proof of Theorem 4.1.
+Proof. Define bt =
+√
+N(θt−θ0
+t), ˙bt =
+√
+N( ˙θt−θ0
+t), bbt =
+√
+N(bθt−θ0
+t), b = [b′
+1, . . . , b′
+T]′,
+and
+¯b =
+1
+√
+T
+v
+u
+u
+t(T −1)∥b1∥2 +
+T
+X
+t=2
+∥bt∥2.
+(A.1)
+Note that the scaling by T −1/2 here is necessary to ensure that ¯b = Op(1) if ∥bt∥=
+Op(1) for all t. The proof is in two steps. Step 1 establishes the energy bound and the
+design matrix bounds for the preliminary estimator ˙θt of (3.1), which enters the penalised
+problem through the adaptive weights. Step 2 establishes the bound b¯b = Op(1) for the
+penalised estimator and reads the three parts of the theorem off it.
+We start by recalling that, by construction, for i = 1, . . . , N and t = 2, . . . , T,
+ˇyi,t = x′
+i,tθ0
+t −x′
+i,1θ0
+1 + ˇεi,t.
+(A.2)
+This implies
+ˇyi,t −x′
+i,tθt + x′
+i,1θ1 = ˇεi,t −
+1
+√
+N
+ x′
+i,tbt −x′
+i,1b1
+
+.
+(A.3)
+Write LNT(ΘT) for the unpenalised objective in (3.1), normalised by 1/(NT). We now
+use (A.3) to evaluate N[LNT(ΘT) −LNT(Θ0
+T)]. Expanding the square,
+N
+
+LNT(ΘT) −LNT(Θ0
+T)
+
+= 1
+T
+N
+X
+i=1
+T
+X
+t=2
+
+ˇεi,t −
+1
+√
+N
+
+x′
+i,tbt −x′
+i,1b1
+2
+−1
+T
+N
+X
+i=1
+T
+X
+t=2
+ˇε2
+i,t
+= −
+2
+T
+√
+N
+N
+X
+i=1
+T
+X
+t=2
+ˇεi,t
+ x′
+i,tbt −x′
+i,1b1
+
++
+1
+TN
+N
+X
+i=1
+T
+X
+t=2
+ x′
+i,tbt −x′
+i,1b1
+2
+=: −2L1(b) + L2(b),
+(A.4)
+51
+
+
+with implicit definitions of L1(b) and L2(b). We bound the two terms in turn. The
+same two bounds will be reused later on since the loss part of the penalised objective
+is identical. Consider the term L1(b). Collecting the sum by parameter block, if we
+introduce
+EN =
+
+
+−1
+√
+N
+T
+X
+t=2
+N
+X
+i=1
+ˇεi,txi,1
+1
+√
+N
+N
+X
+i=1
+ˇεi,2xi,2
+...
+1
+√
+N
+N
+X
+i=1
+ˇεi,Txi,T
+
+
+,
+(A.5)
+then L1(b) = T −1b′EN. With D0 = diag(
+√
+T −1, 1, . . . , 1) ⊗Ip, we can write L1(b) =
+T −1(D0b)′(D−1
+0 EN), where
+E
+D−1
+0 EN
+2 =
+1
+(T −1)N
+T
+X
+t=2
+T
+X
+s=2
+N
+X
+i=1
+N
+X
+j=1
+E
+ ˇεi,tx′
+i,1xj,1ˇεj,s
+
++
+T
+X
+t=2
+1
+N
+N
+X
+i=1
+N
+X
+j=1
+E
+ ˇεi,tx′
+i,txj,tˇεj,t
+
+= O(T 2)
+T −1 + (T −1) C
+= O(T),
+(A.6)
+which holds by Assumptions 4.1(b) and 4.1(c), where Assumption 4.1(b) is used in its
+uniform over t form,
+sup
+2≤t≤T
+1
+N
+N
+X
+i=1
+N
+X
+j=1
+E
+ ˇεi,tx′
+i,txj,tˇεj,t
+ ≤C,
+(A.7)
+so that each of the T −1 per date blocks contributes at most C. We convert (A.6) into
+a stochastic order by Markov’s inequality. For any δ > 0, choosing Mδ =
+p
+C′/δ with C′
+the constant in (A.6),
+P
+D−1
+0 EN
+ > Mδ
+√
+T
+
+≤E∥D−1
+0 EN∥2
+M 2
+δ T
+≤C′
+M 2
+δ
+= δ,
+(A.8)
+so that ∥D−1
+0 EN∥= Op(
+√
+T). Hence, by the Cauchy–Schwarz inequality and ∥D0b∥=
+52
+
+
+√
+T ¯b from (A.1),
+|L1(b)| ≤1
+T
+D0b
+D−1
+0 EN
+
+=
+√
+T ¯b
+T
+Op
+ √
+T
+
+= Op(¯b).
+(A.9)
+Moving to the term L2(b). For each t, we have the identity
+x′
+i,1(bt −b1) + (xi,t −xi,1)′bt = x′
+i,1bt −x′
+i,1b1 + x′
+i,tbt −x′
+i,1bt
+= x′
+i,tbt −x′
+i,1b1,
+(A.10)
+so that, setting ut = [(bt −b1)′, b′
+t]′ ∈R2p, each summand of L2(b) is a quadratic form
+in the joint second moment matrix appearing in Assumption 4.2(a). By the rules for
+quadratic forms, x′Ax ≥µmin(A)∥x∥2 (see Abadir and Magnus, 2005, Exercise 7.53),
+and hence, by Assumption 4.2(a),
+1
+N
+N
+X
+i=1
+ x′
+i,tbt −x′
+i,1b1
+2 ≥c
+ ∥bt −b1∥2 + ∥bt∥2
+w.p.1.
+(A.11)
+To extract the marginal norms from (A.11), note that for any u, v ∈Rp,
+∥u −v∥2 + ∥v∥2 =
+
+u′
+v′  1
+−1
+−1
+2
+
+⊗Ip
+ u
+v
+
+,
+(A.12)
+and that the eigenvalues of the Kronecker product C ⊗Ip are the eigenvalues of C,
+each repeated p times. The characteristic polynomial of the displayed 2 × 2 matrix is
+(1 −µ)(2 −µ) −1 = µ2 −3µ + 1 = 0, with roots µ = (3 ±
+√
+5)/2, both strictly positive,
+so that
+∥u −v∥2 + ∥v∥2 ≥α
+ ∥u∥2 + ∥v∥2
+,
+(A.13)
+where α =
+3−
+√
+5
+2
+> 0. Applying (A.13) with u = b1 and v = bt inside (A.11), and
+summing over t = 2, . . . , T,
+L2(b) ≥c α
+T
+T
+X
+t=2
+ ∥b1∥2 + ∥bt∥2
+= c α
+T
+h
+(T −1)∥b1∥2 +
+T
+X
+t=2
+∥bt∥2i
+= c α¯b2 > 0
+w.p.1.
+(A.14)
+Now, from the definition of ˙ΘT as the minimiser of LNT(ΘT), we have N[LNT( ˙ΘT) −
+LNT(Θ0
+T)] ≤0. Evaluating (A.4) at ˙ΘT and combining with (A.9) and (A.14), c α ˙¯b2 ≤
+2|L1( ˙b)| ≤GNT ˙¯b with GNT = Op(1), so that, on the event {˙¯b > 0}, the case ˙¯b = 0 being
+trivial, ˙¯b ≤GNT/(c α) = Op(1), that is,
+(T −1)
+ ˙b1
+2 +
+T
+X
+t=2
+ ˙bt
+2 = Op(T).
+(A.15)
+53
+
+
+The first term in (A.15) gives ∥˙b1∥= Op(1), that is, ˙θ1 −θ0
+1 = Op(N −1/2), where the
+factor T −1 reflects that θ1 accumulates identifying variation from all T −1 differenced
+equations. Moreover, by the same argument that gives part (c) below applied to (A.15),
+max1≤t≤T ∥˙θt −θ0
+t∥= Op(
+p
+T/N). Now, denote
+At = 1
+N
+N
+X
+i=1
+xi,tx′
+i,t,
+Ct = 1
+N
+N
+X
+i=1
+xi,tx′
+i,1,
+ζt = 1
+N
+N
+X
+i=1
+xi,tˇεi,t.
+(A.16)
+First, since xi,t = xi,1 + (xi,t −xi,1), for any v ∈Rp,
+v′Atv = 1
+N
+N
+X
+i=1
+ x′
+i,tv
+2
+=
+
+v′
+v′
+ 
+1
+N
+N
+X
+i=1
+
+xi,1
+xi,t −xi,1
+ 
+xi,1
+xi,t −xi,1
+′! v
+v
+
+,
+(A.17)
+which, by Assumption 4.2(a) and ∥[v′, v′]′∥2 = 2∥v∥2, lies in [2c ∥v∥2, 2c ∥v∥2] w.p.1.
+Hence µmin(At) ≥2c, µmax(At) ≤2c, and ∥A−1
+t ∥≤(2c)−1 w.p.1, uniformly in t. Second,
+writing Gt := 1
+N
+PN
+i=1
+
+xi,1
+xi,t −xi,1
+ 
+xi,1
+xi,t −xi,1
+′
+for the joint moment matrix in Assump-
+tion 4.2(a),
+Ct = 1
+N
+N
+X
+i=1
+xi,1x′
+i,1 + 1
+N
+N
+X
+i=1
+(xi,t −xi,1)x′
+i,1
+= Gt,11 + Gt,21,
+(A.18)
+the upper left and lower left p×p blocks of Gt. The spectral norm of a diagonal block of a
+positive semidefinite matrix is bounded by its largest eigenvalue, and for the off diagonal
+block, the Cauchy–Schwarz inequality in the inner product induced by Gt gives, for any
+unit vectors u, v ∈Rp, |u′Gt,21v| ≤(u′Gt,22u)1/2(v′Gt,11v)1/2 ≤c, so that
+∥Ct∥≤∥Gt,11∥+ ∥Gt,21∥≤2c
+w.p.1, uniformly in t.
+(A.19)
+Third, by (A.7), E∥
+√
+Nζt∥2 ≤C uniformly in t, so that, by Markov’s inequality applied
+date by date, for each fixed t and any δ > 0,
+P
+√
+Nζt
+ >
+p
+C/δ
+
+≤E∥
+√
+Nζt∥2
+C/δ
+≤δ,
+(A.20)
+that is, ζt = Op(N −1/2) for each fixed t. The first order condition of (3.1) with respect to
+θt, t ≥2, is N −1 PN
+i=1 xi,t(ˇyi,t −x′
+i,t ˙θt + x′
+i,1 ˙θ1) = 0p×1, and substituting (A.3) evaluated
+at ˙ΘT,
+At
+  ˙θt −θ0
+t
+
+= ζt + Ct
+  ˙θ1 −θ0
+1
+
+.
+(A.21)
+There is no penalty contribution in (A.21) because the preliminary objective is un-
+penalised.
+Inverting (A.21) and applying the bounds just established together with
+54
+
+
+˙θ1 −θ0
+1 = Op(N −1/2),
+ ˙θt −θ0
+t
+ ≤
+A−1
+t
+
+
+∥ζt∥+ ∥Ct∥
+ ˙θ1 −θ0
+1
+
+
+≤1
+2c
+
+Op
+ N −1/2
++ 2c Op
+ N −1/2
+= Op
+ N −1/2
+(A.22)
+for each fixed t ≥2, which together with the result for t = 1 gives the per date rate of
+the preliminary estimator.
+We now use this to record a bound on the adaptive weights over the true kink set.
+It is convenient to separate the case with no true kinks from the case with at least one.
+If K0 = 0, then T 0
+K0 = ∅, no second difference is active, and the weight bound below is
+vacuous, so we assume K0 ≥1 in what follows. For K0 ≥1, recall
+Jmin :=
+min
+1≤ℓ≤K0
+κ0
+ℓ+1 −κ0
+ℓ
+,
+(A.23)
+and note that, since a kink at T 0
+ℓis the nonzero second difference ∆2θ0
+T 0
+ℓ= κ0
+ℓ+1 −κ0
+ℓ, we
+have mint∈T 0
+K0 ∥∆2θ0
+t∥= Jmin.
+We first establish the uniform preliminary rate over the kink set, which requires uni-
+formity over the at most 3K0 dates entering the second differences there. Let T 0±
+K0 =
+S
+t∈T 0
+K0{t −1, t, t + 1} denote the dilated kink set, of cardinality at most 3K0. By (A.7),
+the union bound and Markov’s inequality, for any M > 0,
+P
+
+max
+s∈T 0±
+K0
+√
+Nζs
+ > M
+√
+K0
+
+≤
+X
+s∈T 0±
+K0
+E∥
+√
+Nζs∥2
+M 2K0
+≤3K0 C
+M 2K0
+= 3C
+M 2,
+(A.24)
+so that maxs∈T 0±
+K0 ∥ζs∥= Op(
+p
+K0/N). Combining this with (A.21), the matrix bounds,
+and ˙θ1 −θ0
+1 = Op(N −1/2), exactly as in (A.22),
+max
+s∈T 0±
+K0 , s≥2
+ ˙θs −θ0
+s
+ = Op
+ p
+K0/N
+
+,
+(A.25)
+and since ∆2( ˙θt −θ0
+t) involves only dates in T 0±
+K0 when t ∈T 0
+K0, with the date 1 covered
+by ∥˙b1∥= Op(1) directly,
+max
+t∈T 0
+K0
+∆2 ˙θt −∆2θ0
+t
+ = Op
+ p
+K0/N
+
+.
+(A.26)
+To make the order in (A.26) explicit, define the bounded sequence
+G′
+NT :=
+maxt∈T 0
+K0 ∥∆2 ˙θt −∆2θ0
+t∥
+p
+K0/N
+,
+(A.27)
+55
+
+
+so that G′
+NT = Op(1) and maxt∈T 0
+K0 ∥∆2 ˙θt −∆2θ0
+t∥= G′
+NT
+p
+K0/N. Define the event
+JNT =
+n
+max
+t∈T 0
+K0
+∆2 ˙θt −∆2θ0
+t
+ ≤Jmin/2
+o
+,
+(A.28)
+the event on which the preliminary second difference is within Jmin/2 of the truth at every
+true kink. By (A.27), its complement is
+P(J c
+NT) = P
+ G′
+NT
+p
+K0/N > Jmin/2
+
+= P
+ G′
+NT > aN
+
+,
+(A.29)
+where aN := 1
+2
+p
+N/K0 Jmin, which diverges by the second clause of Assumption 4.3(a).
+Because G′
+NT = Op(1), for every ϵ > 0 there is Mϵ with supN P(G′
+NT > Mϵ) < ϵ, and as
+aN →∞we have aN > Mϵ for all N large, so that P(G′
+NT > aN) ≤P(G′
+NT > Mϵ) < ϵ
+eventually. As ϵ was arbitrary, P(J c
+NT) →0, that is P(JNT) →1. On JNT, the reverse
+triangle inequality and ∥∆2θ0
+t∥≥Jmin for t ∈T 0
+K0 give
+∆2 ˙θt
+ ≥
+∆2θ0
+t
+ −
+∆2 ˙θt −∆2θ0
+t
+
+≥Jmin −Jmin
+2
+= Jmin
+2 ,
+(A.30)
+and therefore, on JNT,
+max
+t∈T 0
+K0
+˙ωt = max
+t∈T 0
+K0
+∆2 ˙θt
+−ζ1
+≤
+Jmin
+2
+−ζ1
+= 2ζ1J−ζ1
+min .
+(A.31)
+Since P(JNT) →1, this gives maxt∈T 0
+K0 ˙ωt = Op(J−ζ1
+min ). This is the key active set weight
+bound. It keeps the adaptive penalty asymptotically weak at the true kinks, so that in
+Step 2 the penalty cannot shrink the genuine slope changes toward zero.
+From the definition of bΘT as the minimiser of Lϑ1(ΘT), we have N[Lϑ1( bΘT) −
+Lϑ1(Θ0
+T)] ≤0. We will show that N[Lϑ1(ΘT)−Lϑ1(Θ0
+T)] is bounded below by a quadratic
+in ¯b whose leading coefficient is positive, which forces the minimiser to have b¯b = Op(1).
+Using (A.3) and splitting the penalty at the true kink set,
+N
+
+Lϑ1(ΘT) −Lϑ1(Θ0
+T)
+
+= −
+2
+T
+√
+N
+N
+X
+i=1
+T
+X
+t=2
+ˇεi,t
+ x′
+i,tbt −x′
+i,1b1
+
++
+1
+TN
+N
+X
+i=1
+T
+X
+t=2
+ x′
+i,tbt −x′
+i,1b1
+2
++ Nϑ1
+X
+t∈T 0
+K0
+˙ωt
+h∆2θ0
+t +
+1
+√
+N
+∆2bt
+ −
+∆2θ0
+t
+
+i
++ Nϑ1
+X
+t∈T 0c
+K0
+˙ωt
+ 1
+√
+N
+∆2bt
+
+=: −2L1(b) + L2(b) + L3(b) + L4(b),
+(A.32)
+56
+
+
+where T 0c
+K0 = {2, . . . , T −1} \ T 0
+K0 and implicit definitions of L3(b) and L4(b). Note the
+split of the penalty into its kink and non-kink parts. This split is necessary as the order
+of ˙ωt depends on whether or not t is a true kink date. The terms L1(b) and L2(b) are
+identical to those in (A.4), and therefore satisfy (A.9) and (A.14). Since ˙ωt ≥0, we have
+L4(b) ≥0 term by term. It remains to bound L3(b).
+If K0 = 0, then T 0
+K0 = ∅and L3(b) = 0, so take K0 ≥1.
+By the triangle in-
+equality, ∥∆2θ0
+t + N −1/2∆2bt∥−∥∆2θ0
+t∥≥−N −1/2∥∆2bt∥, so that, by Pn
+i=1 aibi ≤
+(maxi=1,...,n ai) Pn
+i=1 bi whenever ai ≥0 and bi ≥0,
+L3(b) ≥−
+√
+Nϑ1
+
+max
+t∈T 0
+K0
+˙ωt
+ X
+t∈T 0
+K0
+∆2bt
+.
+(A.33)
+For the sum, by the triangle inequality and the Cauchy–Schwarz inequality applied to
+the three term sum with coefficients (1, 2, 1),
+∆2bt
+ ≤∥bt+1∥+ 2∥bt∥+ ∥bt−1∥
+≤
+√
+12 + 22 + 12  ∥bt+1∥2 + ∥bt∥2 + ∥bt−1∥21/2,
+(A.34)
+so that, squaring and summing over the kink set, and noting that each index s ∈
+{1, . . . , T} belongs to at most three of the windows {t −1, t, t + 1} with t ∈T 0
+K0,
+X
+t∈T 0
+K0
+∆2bt
+2 ≤6
+X
+t∈T 0
+K0
+ ∥bt+1∥2 + ∥bt∥2 + ∥bt−1∥2
+≤18 ∥b∥2.
+(A.35)
+Hence, by the Cauchy–Schwarz inequality over the K0 kink dates and ∥b∥≤∥D0b∥=
+√
+T ¯b, since every diagonal entry of D0 is at least one,
+X
+t∈T 0
+K0
+∆2bt
+ ≤
+√
+K0
+ X
+t∈T 0
+K0
+∆2bt
+21/2
+≤
+√
+18K0T ¯b.
+(A.36)
+Inserting (A.31) and (A.36) into (A.33), it follows that, by the first clause of Assump-
+tion 4.3(a),
+L3(b) ≥−
+√
+Nϑ1 2ζ1J−ζ1
+min
+√
+18K0T ¯b
+ 1 + op(1)
+
+= −Op
+√
+NTK0 ϑ1J−ζ1
+min
+
+¯b
+= −Op(1)¯b.
+(A.37)
+By putting everything together, and using the fact that L4(b) ≥0, we obtain
+N
+
+Lϑ1(ΘT) −Lϑ1(Θ0
+T)
+
+= −2L1(b) + L2(b) + L3(b) + L4(b)
+≥c α¯b2 −HNT ¯b,
+(A.38)
+where HNT = Op(1) collects the Op(¯b) contributions of 2|L1(b)| and |L3(b)|. The right-
+hand side of (A.38) is a quadratic in ¯b whose leading coefficient c α > 0 is deterministic,
+57
+
+
+so it is strictly positive once ¯b > HNT/(c α). Fix ϵ > 0 and choose M such that P(HNT >
+c α M) < ϵ for all N, which is possible since HNT = Op(1). On the event {HNT ≤c α M},
+the right-hand side of (A.38) is strictly positive whenever ¯b > M, so no ΘT with ¯b > M
+can satisfy N[Lϑ1(ΘT) −Lϑ1(Θ0
+T)] ≤0. Since bΘT minimises Lϑ1 it does satisfy that
+inequality, when P(b¯b > M) ≤P(HNT > c α M) < ϵ. As ϵ was arbitrary, b¯b = Op(1), that
+is,
+(T −1)
+bb1
+2 +
+T
+X
+t=2
+bbt
+2 = Op(T).
+(A.39)
+The three parts of the theorem now follow from (A.39). The first term gives ∥bb1∥= Op(1),
+that is, bθ1 −θ0
+1 = Op(N −1/2), which is part (a), where the factor T −1 records that θ1
+accumulates identifying variation from all T −1 differenced equations. Dividing (A.39)
+by NT,
+1
+T
+T
+X
+t=1
+bθt −θ0
+t
+2 =
+1
+NT
+T
+X
+t=1
+bbt
+2
+≤Op(T)
+NT
+= Op(N −1),
+(A.40)
+which is part (b). Finally, since every diagonal entry of D0 is at least one, max1≤t≤T ∥bbt∥≤
+∥D0bb∥=
+√
+T b¯b = Op(
+√
+T), so that
+max
+1≤t≤T
+bθt −θ0
+t
+ =
+1
+√
+N
+max
+1≤t≤T
+bbt
+
+= Op
+ p
+T/N
+
+,
+(A.41)
+which is part (c). The required results are implied by this.
+Proof of Theorem 4.2.
+Proof. We work with the second differences directly. Define γ = θ2 −θ1 and νs = ∆2θs
+for s = 2, . . . , T −1. Since θt = θ1 + Pt
+r=2 ∆θr and telescoping ∆θr −∆θr−1 = νr−1
+gives ∆θr = γ + Pr−1
+s=2 νs for r ≥2, we have
+θt = θ1 +
+t
+X
+r=2
+
+γ +
+r−1
+X
+s=2
+νs
+
+= θ1 + (t −1)γ +
+t−1
+X
+s=2
+(t −s)νs
+(A.42)
+for t = 1, . . . , T, where the inner double sum counts each νs exactly t −s times. The pa-
+rameter count is p+p+(T −2)p = Tp and the map is triangular, so (θ1, γ, ν2, . . . , νT−1) 7→
+ΘT is a linear bijection of RTp. The objective Lϑ1 is convex, being the sum of a convex
+58
+
+
+quadratic and a nonnegative combination of norms, and convexity is preserved under the
+linear reparametrisation (A.42), in which the penalty ϑ1
+PT−1
+s=2 ˙ωs∥νs∥is separable across
+the νs. For a convex objective the inclusion of 0 in the subdifferential characterises a
+global minimiser, so it suffices to read the first order condition with respect to each νs
+at bΘT.
+Write
+bei,t := ˇyi,t −x′
+i,tbθt + x′
+i,1bθ1
+(A.43)
+for the fitted residuals. From (A.42) the loss depends on νs only through the levels θt
+with t > s, with ∂θt/∂ν′
+s = (t −s)Ip for t > s and 0p×p otherwise, while ∂Lloss
+ϑ1 /∂θt =
+−2
+NT
+PN
+i=1 xi,tbei,t. The chain rule therefore gives, for the loss part,
+∂Lloss
+ϑ1
+∂νs
+=
+T
+X
+t=s+1
+(t −s) ∂Lloss
+ϑ1
+∂θt
+= −2
+NT
+T
+X
+t=s+1
+(t −s)
+N
+X
+i=1
+xi,tbei,t,
+(A.44)
+and adding the subdifferential of the penalty, the first order condition with respect to νs
+reads
+ϑ1 ˙ωs bgs =
+2
+NT
+T
+X
+t=s+1
+(t −s)
+N
+X
+i=1
+xi,t bei,t,
+(A.45)
+where bgs = bνs/∥bνs∥if bνs̸ = 0p×1, by the subdifferential of the norm at a nonzero point,
+and ∥bgs∥≤1 otherwise. In particular, if bνs̸ = 0p×1 for some s, then taking norms on
+both sides of (A.45) and using ∥bgs∥= 1,
+ϑ1 ˙ωs =
+2
+NT
+
+T
+X
+t=s+1
+(t −s)
+N
+X
+i=1
+xi,t bei,t
+
+= 2
+T
+
+T
+X
+t=s+1
+(t −s) Et
+,
+(A.46)
+where Et :=
+1
+N
+PN
+i=1 xi,t bei,t. We will show that, w.p.a.1, the left side of (A.46) exceeds
+the right side simultaneously at every s ∈T 0c
+K0, so that (A.46) cannot hold at any non-
+kink date and therefore bνs = 0p×1 at every one of them. If ∥∆2 ˙θs∥= 0 for some s, then
+˙ωs = +∞and any candidate with νs̸ = 0p×1 has infinite objective value, so the minimiser
+sets bνs = 0p×1 at such dates and we may assume ˙ωs < ∞throughout.
+We first bound the left side of (A.46) from below, uniformly over s ∈T 0c
+K0. This
+requires the uniform rate of the preliminary estimator over the whole path, which we
+record explicitly. The preliminary energy bound (A.15) states (T−1)∥˙b1∥2+PT
+t=2 ∥˙bt∥2 =
+Op(T) with ˙bt =
+√
+N( ˙θt −θ0
+t), and since every term is nonnegative and the factor T −1
+is at least one,
+max
+1≤t≤T ∥˙bt∥2 ≤(T −1)∥˙b1∥2 +
+T
+X
+t=2
+∥˙bt∥2
+= Op(T),
+(A.47)
+59
+
+
+so that max1≤t≤T ∥˙θt −θ0
+t∥= N −1/2 max1≤t≤T ∥˙bt∥= Op(
+p
+T/N). To make this order
+explicit, define the bounded sequence
+eGNT :=
+p
+N/T max
+1≤t≤T
+ ˙θt −θ0
+t
+,
+(A.48)
+where eGNT = Op(1) so that max1≤t≤T ∥˙θt −θ0
+t∥= eGNT
+p
+T/N. For s ∈T 0c
+K0 we have
+∆2θ0
+s = 0p×1, so that, by the triangle inequality and (A.48),
+∆2 ˙θs
+ =
+∆2  ˙θs −θ0
+s
+
+≤∥˙θs+1 −θ0
+s+1∥+ 2∥˙θs −θ0
+s∥+ ∥˙θs−1 −θ0
+s−1∥
+≤4eGNT
+p
+T/N,
+(A.49)
+where (A.49) holds for all s ∈T 0c
+K0 simultaneously since the right side does not depend on
+s. This uniformity is why the preliminary uniform rate
+p
+T/N, rather than the pointwise
+rate N −1/2, is the rate that enters here. Hence
+min
+s∈T 0c
+K0
+˙ωs = min
+s∈T 0c
+K0
+∆2 ˙θs
+−ζ1
+≥
+ 4eGNT
+−ζ1N
+T
+ζ1/2
+.
+(A.50)
+We now bound the right side of (A.46) from above, uniformly over s. By the construction
+of ˇyi,t we have ˇyi,t = x′
+i,tθ0
+t −x′
+i,1θ0
+1 + ˇεi,t, so that with but := bθt −θ0
+t,
+bei,t = ˇεi,t −x′
+i,tbut + x′
+i,1bu1,
+(A.51)
+and therefore, averaging over i and using the notation of (A.16),
+Et = 1
+N
+N
+X
+i=1
+xi,tbei,t
+= ζt −Atbut + Ctbu1.
+(A.52)
+From the proof of Theorem 4.1 we have ∥At∥≤2c and ∥Ct∥≤2c w.p.1 uniformly in t,
+so that, by the elementary inequality (a + b + c)2 ≤3(a2 + b2 + c2),
+T
+X
+t=2
+∥Et∥2 ≤3
+T
+X
+t=2
+∥ζt∥2 + 12 c 2
+T
+X
+t=2
+∥but∥2
++ 12 c 2 (T −1) ∥bu1∥2
+w.p.1.
+(A.53)
+We bound the three terms in (A.53).
+First, by Assumption 4.1(b), E∥
+√
+Nζt∥2 ≤C
+uniformly in t, so that E PT
+t=2 ∥ζt∥2 ≤(T −1)C/N, and Markov’s inequality gives
+PT
+t=2 ∥ζt∥2 = Op(T/N). Second, PT
+t=2 ∥but∥2 = Op(T/N) by Theorem 4.1(b). Third,
+(T −1)∥bu1∥2 = Op(T/N) by Theorem 4.1(a). Substituting into (A.53) and defining the
+bounded sequence
+BNT :=
+N
+T
+T
+X
+t=2
+∥Et∥21/2
+,
+(A.54)
+60
+
+
+where BNT = Op(1) so that we have PT
+t=2 ∥Et∥2 = B2
+NT T/N. Next, for any s,
+T
+X
+t=s+1
+(t −s)2 =
+T−s
+X
+h=1
+h2
+≤
+T
+X
+h=1
+h2
+= T(T + 1)(2T + 1)
+6
+≤T 3,
+(A.55)
+using (T + 1)(2T + 1) = 2T 2 + 3T + 1 ≤6T 2 for T ≥1. Hence, by the Cauchy–Schwarz
+inequality, (A.54) and (A.55),
+
+T
+X
+t=s+1
+(t −s) Et
+ ≤
+
+T
+X
+t=s+1
+(t −s)21/2 T
+X
+t=2
+∥Et∥21/2
+≤T 3/2 BNT
+r
+T
+N
+= BNT
+T 2
+√
+N
+,
+(A.56)
+simultaneously over all s, since the right side does not depend on s.
+We now argue by contradiction. Suppose that bνs̸ = 0p×1 for some s ∈T 0c
+K0 with
+probability not tending to zero. On this event (A.46) holds at that s, and combining the
+floor (A.50) with the ceiling (A.56),
+ϑ1
+ 4eGNT
+−ζ1N
+T
+ζ1/2
+≤ϑ1 ˙ωs
+= 2
+T
+
+T
+X
+t=s+1
+(t −s) Et
+
+≤2 BNT T
+√
+N
+,
+(A.57)
+where the bound is uniform in s and so holds on the whole event. Multiplying both sides
+of (A.57) by (4eGNT)ζ1√
+N/T and collecting powers of N and T,
+N (ζ1+1)/2 ϑ1
+T 1+ζ1/2
+≤2
+ 4eGNT
+ζ1 BNT
+=: FNT,
+(A.58)
+where FNT = Op(1) as a product of powers of the Op(1) sequences eGNT and BNT.But
+Assumption 4.3(b) states that N(ζ1+1)/2ϑ1/T 1+ζ1/2 →p ∞, and a sequence that diverges
+in probability cannot lie below an Op(1) sequence on an event of probability bounded
+away from zero. This is the required contradiction. Hence bνs = 0p×1 for all s ∈T 0c
+K0
+w.p.a.1, and since ∆2bθs = bνs by definition, the proof is complete.
+61
+
+
+Proof of Corollary 4.3
+Proof. We first show that Assumption 4.3 implies
+p
+N/T Jmin →∞. By the first clause
+of part (a), w.p.a.1 ϑ1 ≤(c1 + 1)Jζ1
+min(NTK0)−1/2. Substituting this bound into the ratio
+from part (b) yields, w.p.a.1,
+N (ζ1+1)/2ϑ1
+T 1+ζ1/2
+≤(c1 + 1)
+N (ζ1+1)/2Jζ1
+min
+T 1+ζ1/2√
+NTK0
+= (c1 + 1)
+Jζ1
+minN ζ1/2
+T (3+ζ1)/2√
+K0
+≤(c1 + 1)
+ r
+N
+T Jmin
+!ζ1
+,
+(A.59)
+where the final inequality follows from T 3/2√
+K0 ≥1. Since the left-hand side diverges in
+probability by part (b), the deterministic right-hand side must diverge as well, and hence
+p
+N/T Jmin →∞.
+Next, let SNT denote the event of Theorem 4.2, on which ∥∆2bθt∥= 0 for all t ∈T 0c
+K0,
+so that bT b
+K ⊆T 0
+K0 on SNT, and P(SNT) →1.
+It remains to show that every true kink date survives. Fix t ∈T 0
+K0. Since ∆2bθt −
+∆2θ0
+t = (bθt+1−θ0
+t+1)−2(bθt−θ0
+t)+(bθt−1−θ0
+t−1), the triangle inequality and ∥∆2θ0
+t∥≥Jmin
+at a true kink give ∥∆2bθt∥≥Jmin −4 max1≤s≤T ∥bθs −θ0
+s∥, the constant 4 being the
+absolute sum of the coefficients (1, −2, 1). By Theorem 4.1(c), the sequence MNT :=
+p
+N/T max1≤s≤T ∥bθs −θ0
+s∥satisfies MNT = Op(1).
+Since the lower bound above is
+free of t, mint∈T 0
+K0 ∥∆2bθt∥≥Jmin −4MNT
+p
+T/N =
+p
+T/N
+ aNT −4MNT
+
+,
+aNT :=
+p
+N/T Jmin, so that P
+
+mint∈T 0
+K0 ∥∆2bθt∥= 0
+
+≤P
+ MNT ≥aNT/4
+
+. Fix ϵ > 0. Since
+MNT = Op(1), there exists Mϵ < ∞such that supN,T P(MNT > Mϵ) < ϵ, and since
+aNT →∞by the first part, aNT/4 > Mϵ for all N, T large enough, whence P
+ MNT ≥
+aNT/4
+
+≤P
+ MNT > Mϵ
+
+< ϵ eventually. As ϵ was arbitrary, P(mint∈T 0
+K0 ∥∆2bθt∥> 0) →
+1, and every true kink date is estimated as a kink w.p.a.1.
+Combining the two parts, w.p.a.1 the estimated kink set contains no date outside T 0
+K0
+and every date inside it, so P(bT b
+K = T 0
+K0) →1. Both claims of the corollary follow.
+Proofs of the post-selection results
+Throughout, C denotes a finite positive constant whose value may change between occur-
+rences, and we retain the conventions I0
+0 = 0, I0
+K0+2 = 0 and K0
+0 = K0
+K0+2 := ∅. Because
+the true kink dates T 0
+K0 are nonrandom, so is every quantity constructed from them
+alone, and in particular I0
+ℓ, uℓ,t, hj,t, rj, sj, wt, MK0 and DK0+1. We write Φ := Φ(T 0
+K0),
+Φη := Φη(T 0
+K0), M := MK0 and D := DK0+1 whenever no confusion arises, and we let y
+stack the observations conformably with (3.8). Recall that
+r2
+j :=
+T
+X
+t=1
+h2
+j,t,
+j = 0, . . . , K0 + 1,
+(A.60)
+62
+
+
+so that D = diag(r0, . . . , rK0+1) ⊗Ip, and that
+ΨNT :=
+1
+√
+N
+Φη′Cε.
+(A.61)
+The basis norms in (A.60) are sums of squares of the loadings (4.9), which are linear
+in the elapsed fraction of a regime. All the constants below therefore descend from three
+elementary sums, which we record first. For an integer L ≥1, let
+A(L) :=
+L−1
+X
+q=0
+ q
+L
+2
+,
+B(L) :=
+L−1
+X
+q=0
+
+1 −q
+L
+2
+,
+F(L) :=
+L−1
+X
+q=0
+
+1 −q
+L
+ q
+L
+
+,
+(A.62)
+with A(0) := B(0) := F(0) := 0. Here A(L) and B(L) are the squared norms of an
+increasing and of a decreasing loading over a regime of length L, while F(L) is the inner
+product of the two, which is the only source of dependence between adjacent boundary
+levels.
+Lemma A.1 (Closed forms and bounds for the elementary sums). For every integer
+L ≥1,
+A(L) = (L −1)(2L −1)
+6L
+= L
+3 −1
+2 + 1
+6L,
+B(L) = (L + 1)(2L + 1)
+6L
+= L
+3 + 1
+2 + 1
+6L,
+(A.63)
+and F(L) = (L2 −1)/(6L). Moreover,
+L
+3 ≤B(L) ≤L,
+A(L) ≤L
+3 ,
+F(L)2 ≤1
+4A(L)B(L)
+(A.64)
+for every integer L ≥1, while A(L) ≥L/8 for every integer L ≥2 and A(1) = 0.
+Proof. Since PL−1
+q=0 q2 = (L −1)L(2L −1)/6, we have
+A(L) = 1
+L2
+L−1
+X
+q=0
+q2
+= (L −1)L(2L −1)
+6L2
+= (L −1)(2L −1)
+6L
+= 2L2 −3L + 1
+6L
+= L
+3 −1
+2 + 1
+6L.
+(A.65)
+Substituting m = L −q in the definition of B(L), so that m runs over 1, . . . , L as q runs
+63
+
+
+over 0, . . . , L −1, and using PL
+m=1 m2 = L(L + 1)(2L + 1)/6,
+B(L) =
+L
+X
+m=1
+m
+L
+2
+= L(L + 1)(2L + 1)
+6L2
+= (L + 1)(2L + 1)
+6L
+= 2L2 + 3L + 1
+6L
+= L
+3 + 1
+2 + 1
+6L.
+(A.66)
+For the third sum, expanding the product and using PL−1
+q=0 q = (L −1)L/2,
+F(L) = 1
+L
+L−1
+X
+q=0
+q −1
+L2
+L−1
+X
+q=0
+q2
+= L −1
+2
+−(L −1)(2L −1)
+6L
+= (L −1) 3L −(2L −1)
+6L
+= (L −1)(L + 1)
+6L
+= L2 −1
+6L
+.
+(A.67)
+Consider (A.64). The bound B(L) > L/3 is immediate from (A.63), since 1/2 +
+1/(6L) > 0. The bound B(L) ≤L is equivalent to 1/2 + 1/(6L) ≤2L/3, whose left side
+is nonincreasing and whose right side is increasing in L, and at L = 1 both sides equal
+2/3; hence it holds for every L ≥1. Likewise A(L) ≤L/3 is equivalent to 1/(6L) ≤1/2,
+which holds for every L ≥1. For the third bound, A(1) = F(1) = 0 renders it trivial at
+L = 1, while for L ≥2 the closed forms give
+F(L)2
+A(L)B(L) =
+(L −1)2(L + 1)2/(6L)2
+
+(L −1)(2L −1)/(6L)
+
+(L + 1)(2L + 1)/(6L)
+
+=
+(L −1)(L + 1)
+(2L −1)(2L + 1)
+= L2 −1
+4L2 −1
+< 1
+4,
+(A.68)
+the last inequality because 4(L2 −1) = 4L2 −4 < 4L2 −1. Finally, writing g(L) :=
+A(L)−L/8 = 5L/24−1/2+1/(6L) by (A.63), we have g(2) = 5/12−1/2+1/12 = 0 and
+g′(L) = 5/24 −1/(6L2) > 0 for every L ≥1, since then 1/(6L2) ≤1/6 < 5/24. Hence
+g(L) ≥0 for every L ≥2, and A(1) = 0 follows from the closed form.
+64
+
+
+The loading on boundary level j is supported on the two regimes adjacent to it, so
+its squared norm decomposes into one increasing and one decreasing contribution, and
+Lemma A.1 places it between absolute multiples of the combined length of those two
+regimes. The following lemma records this, and is used at every point below at which a
+scale is converted into a rate.
+Lemma A.2 (Closed form and order of the basis norms). For every j = 0, . . . , K0 + 1,
+r2
+j = A(I0
+j ) + B(I0
+j+1),
+(A.69)
+and, uniformly over K0 and over every admissible configuration T 0
+K0,
+1
+8
+ I0
+j + I0
+j+1
+
+≤r2
+j ≤I0
+j + I0
+j+1.
+(A.70)
+In particular r2
+j ≥1/8 > 0 for every j, so D is nonsingular. Moreover, for every j =
+1, . . . , K0 + 1,
+1
+8
+h I0
+j−1 + I0
+j
+
+∧
+ I0
+j + I0
+j+1
+i
+≤r2
+j−1 ∧r2
+j ≤
+ I0
+j−1 + I0
+j
+
+∧
+ I0
+j + I0
+j+1
+
+.
+(A.71)
+Proof. Fix j ∈{0, . . . , K0 + 1}. By (4.9), hj,t = 0 unless t ∈K0
+j ∪K0
+j+1, and these two
+sets are disjoint, so (A.60) gives
+r2
+j =
+T
+X
+t=1
+h2
+j,t
+=
+X
+t∈K0
+j
+h2
+j,t +
+X
+t∈K0
+j+1
+h2
+j,t.
+(A.72)
+Since K0
+j = {T 0
+j−1, . . . , T 0
+j −1}, the change of index q = t−T 0
+j−1 maps K0
+j onto {0, 1, . . . , I0
+j −
+1}, and on K0
+j we have hj,t = uj,t = q/I0
+j by (4.9), whence
+X
+t∈K0
+j
+h2
+j,t =
+I0
+j −1
+X
+q=0
+ q
+I0
+j
+2
+= A(I0
+j )
+(A.73)
+by (A.62). Similarly q = t −T 0
+j maps K0
+j+1 onto {0, 1, . . . , I0
+j+1 −1}, and there hj,t =
+1 −uj+1,t = 1 −q/I0
+j+1, so
+X
+t∈K0
+j+1
+h2
+j,t =
+I0
+j+1−1
+X
+q=0
+
+1 −
+q
+I0
+j+1
+2
+= B(I0
+j+1).
+(A.74)
+Both identities remain valid at the endpoints under our conventions, since K0
+0 = ∅with
+A(0) = 0 and K0
+K0+2 = ∅with B(0) = 0. Substituting (A.73) and (A.74) into (A.72)
+gives (A.69).
+65
+
+
+We establish (A.70) for the three ranges of j separately. For j = 0, (A.69) and A(0) =
+0 give r2
+0 = B(I0
+1), while I0
+0 + I0
+1 = I0
+1; Lemma A.1 then yields I0
+1/8 ≤I0
+1/3 ≤B(I0
+1) ≤I0
+1,
+as required. For 1 ≤j ≤K0 we have I0
+j ≥1 and I0
+j+1 ≥1, so the closed forms in (A.63)
+apply to both terms of (A.69) and the constants ∓1/2 cancel:
+r2
+j −I0
+j + I0
+j+1
+8
+=
+hI0
+j
+3 −1
+2 + 1
+6I0
+j
+i
++
+hI0
+j+1
+3
++ 1
+2 +
+1
+6I0
+j+1
+i
+−I0
+j
+8 −I0
+j+1
+8
+= 5I0
+j
+24 + 5I0
+j+1
+24
++ 1
+6I0
+j
++
+1
+6I0
+j+1
+> 0,
+(A.75)
+which gives the lower bound, while the upper bound follows from Lemma A.1 because
+r2
+j ≤I0
+j /3+I0
+j+1 ≤I0
+j +I0
+j+1. For j = K0+1, (A.69) and B(0) = 0 give r2
+K0+1 = A(I0
+K0+1),
+while I0
+K0+1 + I0
+K0+2 = I0
+K0+1. Because T 0
+K0 < T and T 0
+K0+1 = T + 1, we have I0
+K0+1 =
+T + 1 −T 0
+K0 ≥2, so Lemma A.1 yields
+I0
+K0+1
+8
+≤A(I0
+K0+1)
+≤I0
+K0+1
+3
+≤I0
+K0+1.
+(A.76)
+The restriction I0
+K0+1 ≥2 is needed here and nowhere else: A(1) = 0, so the lower bound
+would fail for a final regime of unit length. Since I0
+j +I0
+j+1 ≥1 for every j, (A.70) implies
+r2
+j ≥1/8 > 0, so D is nonsingular.
+Finally, (A.71) follows on applying (A.70) at j−1 and at j and using that the minimum
+of two quantities is monotone in each of them.
+We may now prove Lemma 4.4. The argument establishes an exact expansion of the
+normalised quadratic form: the normalisation by rj reproduces the squared norm of the
+coefficient vector exactly, and the only discrepancy is the overlap of adjacent loadings on
+their common regime, which Lemma A.1 bounds.
+Proof of Lemma 4.4. The lemma asserts an ordering between symmetric matrices, and
+we first reduce it to a scalar statement. Write
+M := (D0)−1H0′H0(D0)−1,
+(A.77)
+which is well defined because rj > 0 for every j by Lemma A.2, so D0 is nonsingular. By
+the definition of the ordering ⪯, the claim 1
+2IK0+2 ⪯M ⪯3
+2IK0+2 holds if and only if
+1
+2∥c∥2 ≤c′Mc ≤3
+2∥c∥2
+for every c ∈RK0+2,
+(A.78)
+and, since c′Mc =
+H0(D0)−1c
+2, it suffices to bound the squared length of H0(D0)−1c
+between 1
+2 and 3
+2 times the squared length of c. This is what we do.
+66
+
+
+Fix an arbitrary c = [c0, . . . , cK0+1]′ ∈RK0+2, which plays the role of a candidate
+vector of boundary levels, and set
+γj := cj
+rj
+,
+j = 0, . . . , K0 + 1,
+(A.79)
+for its entries after normalisation by the basis scales. Put v := H0(D0)−1c, so that
+vt =
+K0+1
+X
+j=0
+hj,t γj,
+t = 1, . . . , T.
+(A.80)
+By (4.8), vt is the value at date t of the piecewise linear path whose boundary levels are
+γ0, . . . , γK0+1, so ∥v∥2 is the energy of that path over the sample and ∥c∥2 is the squared
+length of the coefficients that generate it. The lemma states that the two are equivalent
+up to the factors 1
+2 and 3
+2, uniformly in the configuration.
+The regimes K0
+1, . . . , K0
+K0+1 partition {1, . . . , T}, so
+∥v∥2 =
+T
+X
+t=1
+v2
+t
+=
+K0+1
+X
+ℓ=1
+X
+t∈K0
+ℓ
+v2
+t .
+(A.81)
+Fix a regime ℓand a date t ∈K0
+ℓ. By (4.9), hj,t̸ = 0 requires t ∈K0
+j ∪K0
+j+1, which for
+t ∈K0
+ℓforces j = ℓor j = ℓ−1. Exactly two terms therefore survive in (A.80), and
+abbreviating
+aℓ:= γℓ−1,
+bℓ:= γℓ,
+(A.82)
+we obtain vt = hℓ−1,taℓ+hℓ,tbℓ. Note for later that bℓ= aℓ+1, so each normalised coefficient
+appears twice, once as the right endpoint of its own regime and once as the left endpoint
+of the next.
+On K0
+ℓthe change of index q = t −T 0
+ℓ−1 runs over {0, . . . , I0
+ℓ−1} and gives hℓ−1,t =
+1 −q/I0
+ℓand hℓ,t = q/I0
+ℓby (4.9), so by the definitions in (A.62),
+X
+t∈K0
+ℓ
+h2
+ℓ−1,t = B(I0
+ℓ),
+X
+t∈K0
+ℓ
+h2
+ℓ,t = A(I0
+ℓ),
+X
+t∈K0
+ℓ
+hℓ−1,thℓ,t = F(I0
+ℓ).
+(A.83)
+Expanding the square of vt and summing over t ∈K0
+ℓtherefore yields
+X
+t∈K0
+ℓ
+v2
+t = a2
+ℓB(I0
+ℓ) + 2aℓbℓF(I0
+ℓ) + b2
+ℓA(I0
+ℓ),
+(A.84)
+and substituting (A.84) into (A.81),
+∥v∥2 =
+K0+1
+X
+ℓ=1
+h
+a2
+ℓB(I0
+ℓ) + 2aℓbℓF(I0
+ℓ) + b2
+ℓA(I0
+ℓ)
+i
+.
+(A.85)
+67
+
+
+The normalisation is chosen so that ∥c∥2 admits a decomposition indexed by the same
+regimes. By (A.79) and the closed form r2
+j = A(I0
+j ) + B(I0
+j+1) of (A.69),
+∥c∥2 =
+K0+1
+X
+j=0
+c2
+j
+=
+K0+1
+X
+j=0
+γ2
+j r2
+j
+=
+K0+1
+X
+j=0
+γ2
+j A(I0
+j ) +
+K0+1
+X
+j=0
+γ2
+j B(I0
+j+1).
+(A.86)
+The two sums are reindexed by regime. In the first, the term j = 0 vanishes because
+I0
+0 = 0 and A(0) = 0, so setting ℓ= j leaves PK0+1
+ℓ=1
+γ2
+ℓA(I0
+ℓ), which is PK0+1
+ℓ=1
+b2
+ℓA(I0
+ℓ)
+by (A.82). In the second, the term j = K0 +1 vanishes because I0
+K0+2 = 0 and B(0) = 0,
+so setting ℓ= j + 1 leaves PK0+1
+ℓ=1
+γ2
+ℓ−1B(I0
+ℓ), which is PK0+1
+ℓ=1
+a2
+ℓB(I0
+ℓ). This is where the
+identity bℓ= aℓ+1 is used. Hence
+∥c∥2 =
+K0+1
+X
+ℓ=1
+h
+a2
+ℓB(I0
+ℓ) + b2
+ℓA(I0
+ℓ)
+i
+.
+(A.87)
+Comparing (A.85) with (A.87), the squared and the mixed terms separate and sub-
+traction gives
+∥v∥2 −∥c∥2 = 2
+K0+1
+X
+ℓ=1
+aℓbℓF(I0
+ℓ).
+(A.88)
+The normalisation by rj therefore reproduces ∥c∥2 exactly, and the entire discrepancy
+between the path energy and the coefficient length is carried by the inner products F(I0
+ℓ)
+of the two hat functions that overlap on regime ℓ. Bounding the right side of (A.88) by
+half of ∥c∥2 will therefore deliver (A.78).
+Fix ℓand abbreviate L := I0
+ℓ.
+If L = 1 then F(1) = 0 by Lemma A.1 and the
+corresponding term in (A.88) vanishes, so the bound below holds trivially and we may
+assume L ≥2. Then A(L) > 0, again by Lemma A.1, so λ :=
+p
+B(L)/A(L) is well defined
+and strictly positive. The weighted arithmetic-geometric mean inequality 2|aℓbℓ| ≤λa2
+ℓ+
+λ−1b2
+ℓ(a special case of Young’s Inequality) gives
+2
+aℓbℓ
+F(L) ≤F(L)
+s
+B(L)
+A(L) a2
+ℓ+ F(L)
+s
+A(L)
+B(L) b2
+ℓ
+=
+F(L)
+p
+A(L)B(L)
+h
+B(L)a2
+ℓ+ A(L)b2
+ℓ
+i
+≤1
+2
+h
+B(L)a2
+ℓ+ A(L)b2
+ℓ
+i
+,
+(A.89)
+the last inequality by the third bound in (A.64), which states F(L)2 ≤1
+4A(L)B(L) and
+hence F(L)/
+p
+A(L)B(L) ≤1
+2. The choice of λ is what makes the two weights combine
+68
+
+
+into the single factor F(L)/
+p
+A(L)B(L), and it is exactly this factor that Lemma A.1
+controls. Summing (A.89) over ℓ= 1, . . . , K0 + 1 and applying the triangle inequality
+to (A.88),
+ ∥v∥2 −∥c∥2 ≤2
+K0+1
+X
+ℓ=1
+aℓbℓ
+F(I0
+ℓ)
+≤1
+2
+K0+1
+X
+ℓ=1
+h
+B(I0
+ℓ)a2
+ℓ+ A(I0
+ℓ)b2
+ℓ
+i
+= 1
+2∥c∥2,
+(A.90)
+the final equality by (A.87).
+Inequality (A.90) states that ∥v∥2 differs from ∥c∥2 by at most 1
+2∥c∥2, that is
+1
+2∥c∥2 ≤∥v∥2
+=
+H0(D0)−1c
+2
+= c′Mc
+≤3
+2∥c∥2,
+(A.91)
+which is (A.78). Since c was arbitrary, the left inequality in (A.91) says c′ M−1
+2IK0+2
+
+c ≥
+0 for every c, so M −1
+2IK0+2 is positive semidefinite, and the right inequality says
+c′  3
+2IK0+2−M
+
+c ≥0 for every c, so 3
+2IK0+2−M is positive semidefinite. By the definition
+of ⪯these two statements are
+1
+2IK0+2 ⪯(D0)−1H0′H0(D0)−1 ⪯3
+2IK0+2,
+(A.92)
+equivalently every eigenvalue of the normalised basis Gram lies in [1
+2, 3
+2], which is the
+second assertion of the lemma. The first assertion is (A.70) of Lemma A.2. The constants
+1
+2 and 3
+2 descend only from the bound F(L)/
+p
+A(L)B(L) ≤1
+2 of Lemma A.1, which holds
+for every integer L ≥1 and involves neither K0 nor the regime lengths, so (A.92) holds
+uniformly over K0 and over every admissible configuration T 0
+K0.
+The remaining proofs rest on three facts, which we record here rather than inside the
+proofs that use them. The first is the algebra of the block selectors. For j = 0, . . . , K0+1,
+let Pj := e′
+j+1⊗Ip, where ej+1 is the (j+1)th column of IK0+2, so that Pj extracts the jth
+boundary block from any conformable stacked vector. Since D = diag(r0, . . . , rK0+1)⊗Ip,
+the mixed product rule for Kronecker products gives
+Pjη = ηj,
+PjD = rjPj,
+PjP′
+k =
+ e′
+j+1ek+1
+
+⊗Ip = δjkIp
+(A.93)
+for all j, k ∈{0, . . . , K0 + 1}, where δjk is the Kronecker delta.
+Moreover, if S is a
+symmetric positive definite p(K0+2)×p(K0+2) matrix and H is an l×p(K0+2) matrix
+with HH′ = Il, then, putting u := H′v for any v ∈Rl, so that ∥u∥2 = v′HH′v = ∥v∥2,
+69
+
+
+the variational characterisation of the extreme eigenvalues of a symmetric matrix gives
+µmin(S)∥v∥2 ≤u′Su = v′HSH′v ≤µmax(S)∥v∥2, that is,
+µmin(S)Il ⪯HSH′ ⪯µmax(S)Il.
+(A.94)
+Two consequences of (A.93) and (A.94) are used repeatedly. First, HH′ = Il implies
+∥H∥op = µmax(HH′)1/2 = 1, so the boundedness requirement of Assumption 4.5 is met
+automatically by every contrast constructed below.
+Second, taking S = Q−1
+0 Σ0Q−1
+0 ,
+which is symmetric and positive definite because Q0 and Σ0 are, any limit of HNTSH′
+NT
+along a sequence with HNTH′
+NT = Il inherits the bounds (A.94) and is therefore positive
+definite. In Corollaries 4.7 and 4.8 only the existence of the limiting variance need be
+supposed; its nonsingularity is automatic.
+The second fact converts Assumption 4.4, which concerns bQN, into the statement
+about bQ−1
+N that the least squares algebra actually uses. Both bQN and Q0 are symmetric,
+so Weyl’s inequality gives |µmin(bQN)−µmin(Q0)| ≤∥bQN −Q0∥op. Since µmin(Q0) ≥c > 0
+and ∥bQN −Q0∥op = op(1) by Assumption 4.4, the event ANT := {µmin(bQN) ≥c/2}
+satisfies
+P
+ ANT
+
+≥P
+bQN −Q0
+
+op ≤c
+2
+
+→1.
+(A.95)
+On ANT the matrix bQN is nonsingular with ∥bQ−1
+N ∥op = µmin(bQN)−1 ≤2/c, and the
+resolvent identity bQ−1
+N −Q−1
+0
+= bQ−1
+N (Q0 −bQN)Q−1
+0
+together with submultiplicativity of
+the operator norm and ∥Q−1
+0 ∥op = µmin(Q0)−1 ≤1/c gives ∥bQ−1
+N −Q−1
+0 ∥op ≤(2/c)·op(1)·
+(1/c) = op(1). As P(ANT) →1 by (A.95), we conclude that bQN is nonsingular w.p.a.1
+and that
+bQ−1
+N
+
+op = Op(1),
+bQ−1
+N −Q−1
+0
+
+op = op(1).
+(A.96)
+The third fact controls ΨNT of (A.61), which enters the remainder term of every
+limit below. Write ΨNT = N −1/2 PN
+i=1 Φη′
+i CTεi, where Φη
+i is the T × p(K0 + 2) block
+of Φη belonging to unit i and εi := [εi,1, . . . , εi,T]′.
+The jth p × 1 block of Φη′
+i CTεi
+is PT
+t=1 hj,txi,t(εi,t −εi), where εi := T −1 PT
+s=1 εi,s.
+By Assumption 4.1(a) we have
+E(εi,sxi,t) = 0p×1 for all s and t, whence
+E
+ xi,tεi
+
+= 1
+T
+T
+X
+s=1
+E
+ xi,tεi,s
+
+= 0p×1,
+(A.97)
+so each block has mean zero, and, as hj,t and D are nonrandom, E(D−1ΨNT) = 0p(K0+2)×1.
+Mean zero gives E∥D−1ΨNT∥2 = tr Var(D−1ΨNT), which converges to tr Σ0 < ∞by
+Assumption 4.5(a) and, being convergent, is bounded by some C < ∞for all N and T.
+Markov’s inequality then gives, for every M > 0, P(∥D−1ΨNT∥> M) ≤C/M 2 uniformly
+in N and T, that is,
+D−1ΨNT
+ = Op(1).
+(A.98)
+We now prove Theorem 4.5.
+70
+
+
+Proof of Theorem 4.5. We have bQN = D−1N −1Φη′CΦηD−1, and D is nonsingular by
+Lemma A.2, so multiplying on either side by D and by N gives the factorisation
+Φη′CΦη = N DbQND.
+(A.99)
+By (A.96), bQN is nonsingular w.p.a.1, and on that event Φη′CΦη is nonsingular as a
+product of nonsingular matrices, with
+
+Φη′CΦη−1 = 1
+N D−1 bQ−1
+N D−1.
+(A.100)
+All statements below are understood to hold on this event, whose probability tends to
+one.
+We first show that the oracle estimator of the boundary levels is the least squares
+estimator of the centered boundary-level regression.
+By definition eη o = Meψ
+o with
+eψ
+o = [Φ′CΦ]−1Φ′Cy, and by the row-by-row identity (4.13) we have Φ = ΦηM, whence
+Φ′CΦ = M′Φη′CΦηM,
+Φ′Cy = M′Φη′Cy.
+(A.101)
+The matrix M is nonsingular by (4.7), so the first identity in (A.101) inverts to [Φ′CΦ]−1 =
+M−1[Φη′CΦη]−1M−1′, and therefore
+eψ
+o = M−1
+Φη′CΦη−1M−1′M′Φη′Cy
+= M−1
+Φη′CΦη−1Φη′Cy.
+(A.102)
+Multiplying by M gives
+eη o =
+
+Φη′CΦη−1Φη′Cy.
+(A.103)
+We next derive the estimation error. Stacking (2.1) in the representation yi,t = µi +
+ϕη′
+i,tη0 +εi,t gives y = µ+Φηη0 +ε, where µ stacks µiιT over i. Since C = IN ⊗CT with
+CT = IT −T −1ιTι′
+T, we have
+CTιT = ιT −1
+T ιT
+ ι′
+TιT
+
+= ιT −ιT
+= 0T×1,
+(A.104)
+and hence Cµ = 0. Therefore Cy = CΦηη0 + Cε, and substituting into (A.103),
+eη o =
+
+Φη′CΦη−1Φη′CΦηη0 +
+
+Φη′CΦη−1Φη′Cε
+= η0 +
+
+Φη′CΦη−1Φη′Cε,
+(A.105)
+which is (4.14). Inserting (A.100) together with Φη′Cε =
+√
+NΨNT from (A.61),
+eη o −η0 = 1
+N D−1 bQ−1
+N D−1 ·
+√
+NΨNT
+=
+1
+√
+N
+D−1 bQ−1
+N D−1ΨNT,
+(A.106)
+71
+
+
+and multiplying on the left by
+√
+N D gives
+√
+N D
+ eη o −η0
+= bQ−1
+N D−1ΨNT,
+(A.107)
+which holds identically in finite samples. The normalisation is therefore not imposed; it
+is what the least squares algebra returns once (A.99) is substituted.
+Let {HNT} satisfy the conditions of Assumption 4.5, and suppose Υ exists and is posi-
+tive definite. Multiplying (A.107) by HNT and adding and subtracting HNTQ−1
+0 D−1ΨNT,
+√
+N HNTD
+ eη o −η0
+= HNTQ−1
+0 D−1ΨNT
+|
+{z
+}
+=: ZNT
++ HNT
+ bQ−1
+N −Q−1
+0
+
+D−1ΨNT
+|
+{z
+}
+=: RNT
+.
+(A.108)
+Assumption 4.5(b) gives ZNT →d N(0l×1, Υ), while submultiplicativity of the operator
+norm gives
+∥RNT∥≤∥HNT∥op
+bQ−1
+N −Q−1
+0
+
+op
+D−1ΨNT
+
+= O(1) · op(1) · Op(1)
+= op(1),
+(A.109)
+by Assumption 4.5, (A.96) and (A.98) respectively. Slutsky’s theorem applied to (A.108)
+completes the proof.
+Theorem 4.6 follows by transferring the oracle limit across the recovery event of Corol-
+lary 4.3.
+Proof of Theorem 4.6. Define ENT := {bT b
+K = T 0
+K0}. Since ENT = { bK = K0} ∩{ bT1 =
+T 0
+1 , . . . , bTK0 = T 0
+K0}, Corollary 4.3 gives
+P
+ ENT
+
+= P
+
+bT1 = T 0
+1 , . . . , bTK0 = T 0
+K0
+ bK = K0
+P
+  bK = K0
+→1
+(A.110)
+as the product of two factors each tending to one. On ENT the estimated and true kink
+sets coincide, hence so do the estimated and true regime lengths, so Φ(bT b
+K) = Φ and
+M b
+K = M.
+The post-kink estimator (3.12) is a fixed function of the design and the
+response, so eψ b
+K = eψ
+o on ENT, and therefore
+eη b
+K = M b
+K eψ b
+K
+= Meψ
+o
+= eη o
+on ENT.
+(A.111)
+Put ZNT :=
+√
+N HNTD(eη b
+K −η0) and Z o
+NT :=
+√
+N HNTD(eη o −η0). By (A.111) we have
+{ZNT̸ = Z o
+NT} ⊆Ec
+NT, so for every δ > 0,
+P
+ ∥ZNT −Z o
+NT∥> δ
+
+≤P
+ Ec
+NT
+
+→0
+(A.112)
+by (A.110), that is, ZNT −Z o
+NT = op(1). Since Z o
+NT →d N(0l×1, Υ) by Theorem 4.5,
+Slutsky’s theorem gives ZNT →d N(0l×1, Υ).
+72
+
+
+Every rate in Section 4.3 is obtained from Theorem 4.6 by an appropriate choice of
+HNT, and we begin with the boundary levels themselves, for which (4.15) is claimed.
+Proof of (4.15). Fix j ∈{0, . . . , K0 + 1} and take HNT = Pj, which is nonrandom and
+satisfies PjP′
+j = Ip by (A.93), hence ∥Pj∥op = 1. As Pj, Q0 and Σ0 do not depend on N
+or T, the limit
+Υη
+j := lim PjQ−1
+0 Σ0Q−1
+0 P′
+j
+= PjQ−1
+0 Σ0Q−1
+0 P′
+j
+(A.113)
+exists trivially and equals the (j + 1)th diagonal p × p block of Q−1
+0 Σ0Q−1
+0 , which is
+positive definite by (A.94). Theorem 4.6 therefore applies and, using PjD = rjPj and
+Pjη = ηj from (A.93),
+√
+N PjD
+ eη b
+K −η0
+=
+√
+N rjPj
+ eη b
+K −η0
+=
+√
+N rj
+ eηj −η0
+j
+
+→d N
+ 0p×1, Υη
+j
+
+.
+(A.114)
+A sequence converging in distribution is bounded in probability, so
+√
+N rj(eηj −η0
+j) =
+Op(1) and hence eηj−η0
+j = Op([Nr2
+j]−1/2). By (A.70) we have 1
+8(I0
+j +I0
+j+1) ≤r2
+j ≤I0
+j +I0
+j+1,
+so [Nr2
+j]−1/2 and [N(I0
+j + I0
+j+1)]−1/2 differ by a factor lying in [1, 2
+√
+2], and (4.15) follows.
+Since Υη
+j is positive definite the limit in (A.114) is nondegenerate, so the rate is exact: no
+normalisation of larger order leaves the limit bounded, and none of smaller order leaves
+it nondegenerate.
+The slopes are scaled contrasts of adjacent boundary levels by (4.6), and Corollary 4.7
+follows from Theorem 4.6 once the corresponding contrast is shown to be orthonormal.
+Proof of Corollary 4.7. Fix j ∈{1, . . . , K0+1}. By (4.16), sj = I0
+j (r−2
+j−1+r−2
+j )−1/2, which
+is well defined and strictly positive because rj−1, rj > 0 by Lemma A.2, and recall
+Hκ
+j,NT := sj
+I0
+j
+ r−1
+j Pj −r−1
+j−1Pj−1
+
+.
+(A.115)
+Since PjD = rjPj and Pj−1D = rj−1Pj−1 by (A.93), the two scale factors cancel and
+Hκ
+j,NTD = sj
+I0
+j
+ r−1
+j rjPj −r−1
+j−1rj−1Pj−1
+
+= sj
+I0
+j
+ Pj −Pj−1
+
+.
+(A.116)
+Applying (A.116) to eη b
+K −η0 and using Pjη = ηj,
+Hκ
+j,NTD
+ eη b
+K −η0
+= sj
+I0
+j
+h eηj −η0
+j
+
+−
+ eηj−1 −η0
+j−1
+i
+= sj
+heηj −eηj−1
+I0
+j
+−η0
+j −η0
+j−1
+I0
+j
+i
+.
+(A.117)
+73
+
+
+The second term in brackets of (A.117) is κ0
+j by (4.6). For the first, the identity eη b
+K =
+M b
+K eψ b
+K holds in finite samples by construction, so eψ b
+K = M−1
+b
+K eη b
+K, and on ENT the block
+row of M−1
+b
+K in (4.7) corresponding to κj carries −(I0
+j )−1Ip in block column j −1 and
+(I0
+j )−1Ip in block column j, whence eκj = (eηj −eηj−1)/I0
+j . Therefore
+Hκ
+j,NTD
+ eη b
+K −η0
+= sj
+ eκj −κ0
+j
+
+on ENT.
+(A.118)
+Moreover, using PjP′
+k = δjkIp from (A.93), the two cross terms vanish and
+Hκ
+j,NTHκ′
+j,NT =
+s2
+j
+(I0
+j )2
+ r−1
+j Pj −r−1
+j−1Pj−1
+ r−1
+j P′
+j −r−1
+j−1P′
+j−1
+
+=
+s2
+j
+(I0
+j )2
+h
+r−2
+j PjP′
+j −r−1
+j r−1
+j−1PjP′
+j−1 −r−1
+j−1r−1
+j Pj−1P′
+j + r−2
+j−1Pj−1P′
+j−1
+i
+=
+s2
+j
+(I0
+j )2
+ r−2
+j−1 + r−2
+j
+
+Ip
+= Ip,
+(A.119)
+the last equality by (4.16), which gives s2
+j/(I0
+j )2 = (r−2
+j−1 + r−2
+j )−1. Hence ∥Hκ
+j,NT∥op = 1,
+so Assumption 4.5 applies to this sequence, and by the discussion following (A.94) the
+limit Υκ
+j is positive definite whenever it exists. Theorem 4.6 with HNT = Hκ
+j,NT now
+gives
+√
+N Hκ
+j,NTD
+ eη b
+K −η0
+→d N
+ 0p×1, Υκ
+j
+
+,
+(A.120)
+and by (A.118) the left side equals
+√
+N sj(eκj −κ0
+j) on ENT, whose complement has
+probability tending to zero by (A.110). The two therefore differ by op(1), and Slutsky’s
+theorem gives
+√
+N sj
+ eκj −κ0
+j
+
+→d N
+ 0p×1, Υκ
+j
+
+.
+(A.121)
+It remains to establish the order of s2
+j. For any u, v > 0,
+1
+2
+ u ∧v
+
+≤
+1
+u−1 + v−1
+=
+uv
+u + v
+≤u ∧v,
+(A.122)
+since, taking u ≤v without loss of generality, the upper bound follows from uv/(u+v) ≤
+uv/v = u and the lower bound from uv/(u+v) ≥uv/(2v) = u/2. Applying (A.122) with
+u = r2
+j−1 and v = r2
+j,
+1
+2
+ r2
+j−1 ∧r2
+j
+
+≤
+s2
+j
+(I0
+j )2 =
+1
+r−2
+j−1 + r−2
+j
+≤r2
+j−1 ∧r2
+j,
+(A.123)
+and combining (A.123) with (A.71),
+1
+16 (I0
+j )2h I0
+j−1 + I0
+j
+
+∧
+ I0
+j + I0
+j+1
+i
+≤s2
+j ≤(I0
+j )2h I0
+j−1 + I0
+j
+
+∧
+ I0
+j + I0
+j+1
+i
+.
+(A.124)
+74
+
+
+Hence s2
+j ≍(I0
+j )2[(I0
+j−1+I0
+j )∧(I0
+j +I0
+j+1)] with the absolute constants 1/16 and 1, uniformly
+over every admissible configuration. As (A.121) gives
+√
+N sj(eκj −κ0
+j) = Op(1), we obtain
+eκj −κ0
+j = Op
+ [Ns2
+j]−1/2
+= Op
+h
+N(I0
+j )2
+(I0
+j−1 + I0
+j ) ∧(I0
+j + I0
+j+1)
+	i−1/2
+.
+(A.125)
+The limit in (A.121) being nondegenerate, the rate is exact and not merely an upper
+bound.
+The coefficient path is a convex combination of two adjacent boundary levels by (4.8),
+and Corollary 4.8 follows by the same route. The rate claimed there holds uniformly
+over the dates of the regime, however, and does not follow from the pointwise limit; we
+therefore return to the underlying identity for that part of the argument.
+Proof of Corollary 4.8. Fix ℓ∈{1, . . . , K0 + 1} and t ∈K0
+ℓ, and abbreviate u := uℓ,t ∈
+[0, 1). Identity (4.8) was obtained by substituting θ0
+T 0
+ℓ−1 = η0
+ℓ−1 and (4.6) into (2.2), both
+of which are identities in the parameters rather than statements about their true values.
+The linear map Lt(T 0
+K0) of (3.13) therefore satisfies Lt(T 0
+K0) = (1−u)Pℓ−1M+uPℓM, so
+applying both sides to eψ b
+K on ENT and using eη b
+K = Meψ b
+K gives eθt = (1 −u)eηℓ−1 + ueηℓ.
+Subtracting (4.8),
+eθt −θ0
+t = (1 −u)
+ eηℓ−1 −η0
+ℓ−1
+
++ u
+ eηℓ−η0
+ℓ
+
+.
+(A.126)
+With wt = [(1 −u)2r−2
+ℓ−1 + u2r−2
+ℓ]−1/2 and Hθ
+t,NT := wt[(1 −u)r−1
+ℓ−1Pℓ−1 + u r−1
+ℓPℓ], (A.93)
+gives, exactly as in (A.116),
+Hθ
+t,NTD
+ eη b
+K −η0
+= wt
+h
+(1 −u)
+ eηℓ−1 −η0
+ℓ−1
+
++ u
+ eηℓ−η0
+ℓ
+i
+= wt
+ eθt −θ0
+t
+
+(A.127)
+on ENT, by (A.126). The cross terms again vanish by Pℓ−1P′
+ℓ= 0, so
+Hθ
+t,NTHθ′
+t,NT = w2
+t
+
+(1 −u)2r−2
+ℓ−1 + u2r−2
+ℓ
+
+Ip
+= Ip,
+(A.128)
+hence ∥Hθ
+t,NT∥op = 1, so Assumption 4.5 applies and Υθ
+t is positive definite whenever
+it exists. Theorem 4.6 and Slutsky’s theorem, applied exactly as in the proof of Corol-
+lary 4.7, give
+√
+N wt
+ eθt −θ0
+t
+
+→d N
+ 0p×1, Υθ
+t
+
+.
+(A.129)
+For the rate we return to (A.126). Since u ∈[0, 1), both weights are nonnegative and
+sum to one, so the triangle inequality gives, for every t ∈K0
+ℓ,
+eθt −θ0
+t
+ ≤(1 −u)
+eηℓ−1 −η0
+ℓ−1
+ + u
+eηℓ−η0
+ℓ
+
+≤
+
+(1 −u) + u
+
+max
+neηℓ−1 −η0
+ℓ−1
+,
+eηℓ−η0
+ℓ
+
+o
+= max
+neηℓ−1 −η0
+ℓ−1
+,
+eηℓ−η0
+ℓ
+
+o
+.
+(A.130)
+75
+
+
+The right side of (A.130) does not depend on t, so the same bound holds for maxt∈K0
+ℓ∥eθt−
+θ0
+t∥.
+By (4.15) applied at ℓ−1 and at ℓ, the two norms are Op([Nr2
+ℓ−1]−1/2) and
+Op([Nr2
+ℓ]−1/2) respectively, and the maximum of two terms that are Op(aN) and Op(bN)
+is Op(aN ∨bN). Hence
+max
+t∈K0
+ℓ
+eθt −θ0
+t
+ = Op
+
+N
+ r2
+ℓ−1 ∧r2
+ℓ
+−1/2
+= Op
+h
+N
+
+(I0
+ℓ−1 + I0
+ℓ) ∧(I0
+ℓ+ I0
+ℓ+1)
+	i−1/2
+,
+(A.131)
+the last equality by (A.71), which is the second claim of Corollary 4.8.
+Finally, the two statements are consistent, in that the normalisation wt is of the order
+claimed. Since u ∈[0, 1) we have (1 −u)2 + u2 ≤1, the maximum over [0, 1] being
+attained at the endpoints, so
+(1 −u)2r−2
+ℓ−1 + u2r−2
+ℓ
+≤
+
+(1 −u)2 + u2
+max
+
+r−2
+ℓ−1, r−2
+ℓ
+	
+≤
+1
+r2
+ℓ−1 ∧r2
+ℓ
+,
+(A.132)
+whence w2
+t ≥r2
+ℓ−1 ∧r2
+ℓ, which by (A.71) is of the order of (I0
+ℓ−1 + I0
+ℓ) ∧(I0
+ℓ+ I0
+ℓ+1).
+Proof of Theorem 4.9
+Lemma A.3 (Consistency of the component-wise penalised estimator). Suppose that
+Assumptions 4.1 and 4.2(a) hold, and that Assumption 4.3(a) holds with Jmin, ϑ1, ζ1,
+and K0 replaced by Jcw
+min, ϑ2, ζ2, and M 0, respectively, and with part (a) replaced by
+ϑ2 →p 0 when M 0 = 0. Let bθcw
+t
+:= [bθcw
+1,t, . . . , bθcw
+p,t]′ collect the minimiser of (4.18). Then,
+as N, T →∞,
+(a) bθcw
+1 −θ0
+1 = Op
+ N −1/2
+;
+(b) 1
+T
+T
+X
+t=1
+bθcw
+t
+−θ0
+t
+2 = Op
+ N −1
+;
+(c) max
+1≤t≤T
+bθcw
+t
+−θ0
+t
+ = Op
+p
+T/N
+
+.
+Proof of Lemma A.3. Throughout, bt =
+√
+N(θt −θ0
+t) with scalar components bj,t, b =
+[b′
+1, . . . , b′
+T]′, and ¯b is as in (A.1). Define the active pair set S0 :=
+
+(j, t) : 1 ≤j ≤
+p, t ∈T 0
+j,K0
+j
+	
+with |S0| = Pp
+j=1 K0
+j = M 0, so that, by the component-wise analog of
+Proposition 2.1, ∆2θ0
+j,t̸ = 0 if and only if (j, t) ∈S0, with ∆2θ0
+j,T 0
+j,ℓ= κ0
+j,ℓ+1 −κ0
+j,ℓand
+hence
+min
+(j,t)∈S0
+∆2θ0
+j,t
+ = Jcw
+min.
+(A.133)
+If M 0 = 0 the penalty in (4.18) vanishes at the truth, the term Lcw
+3 (b) below is identically
+zero, and the argument goes through with the obvious simplifications, so we take M0 ≥1.
+76
+
+
+The proof is in four steps. Step 1 collects the properties of the preliminary estimator.
+Step 2 bounds the adaptive weights over the active pairs. Step 3 decomposes the objective
+and bounds each term. Step 4 completes the quadratic argument.
+Step 1: the preliminary estimator. The preliminary estimator ˙θt of (3.1) is the same un-
+penalised regression as in the baseline model, so Step 1 of the proof of Theorem 4.1, which
+nowhere involves the penalty, applies verbatim. In particular the energy bound (A.15)
+holds, giving ˙θ1 −θ0
+1 = Op(N −1/2), the first order condition (A.21) holds with the de-
+sign bounds µmin(At) ≥2c, ∥A−1
+t ∥≤(2c)−1, and ∥Ct∥≤2c w.p.1 uniformly in t, and
+E∥
+√
+Nζt∥2 ≤C uniformly in t by (A.7).
+Step 2: the weight bound over the active pairs. Let D0 := S
+(j,t)∈S0{t −1, t, t + 1}, with
+|D0| ≤3M 0 be the set of dates entering a second difference at some active pair. By the
+union bound and Markov’s inequality, for any M > 0,
+P
+
+max
+s∈D0
+√
+Nζs
+ > M
+√
+M 0
+
+≤
+X
+s∈D0
+E∥
+√
+Nζs∥2
+M 2M 0
+≤3M 0C
+M 2M 0
+= 3C
+M 2,
+(A.134)
+so that maxs∈D0 ∥ζs∥= Op(
+p
+M 0/N). Combining this with the first order condition (A.21),
+the design bounds of Step 1, and ˙θ1 −θ0
+1 = Op(N −1/2),
+max
+s∈D0, s≥2
+ ˙θs −θ0
+s
+ ≤1
+2c
+
+max
+s∈D0 ∥ζs∥+ 2c
+ ˙θ1 −θ0
+1
+
+
+= Op
+ p
+M 0/N
+
+,
+(A.135)
+where M 0 ≥1 absorbs the Op(N −1/2) contribution, and the date s = 1, which enters only
+when some coordinate kinks at t = 2, is covered directly by ˙θ1 −θ0
+1 = Op(N −1/2). Since
+a scalar component is bounded by the Euclidean norm of its vector, for every (j, t) ∈S0,
+∆2 ˙θj,t −∆2θ0
+j,t
+ ≤
+∆2  ˙θt −θ0
+t
+
+≤4
+max
+s∈D0∪{1}
+ ˙θs −θ0
+s
+,
+(A.136)
+the constant 4 being the absolute sum of the coefficients (1, −2, 1), so that we have
+max(j,t)∈S0 |∆2 ˙θj,t −∆2θ0
+j,t| = Op(
+p
+M 0/N). Define
+J cw
+NT :=
+n
+max
+(j,t)∈S0
+∆2 ˙θj,t −∆2θ0
+j,t
+ ≤Jcw
+min/2
+o
+.
+(A.137)
+Writing the maximum as Gcw
+NT
+p
+M 0/N with Gcw
+NT = Op(1), the complement of J cw
+NT
+is the event {Gcw
+NT > 1
+2
+p
+N/M 0 Jcw
+min}, and the threshold diverges by the second clause
+of the modified Assumption 4.3(a). An Op(1) sequence exceeds a divergent threshold
+with vanishing probability, so P(J cw
+NT) →1.
+On J cw
+NT, the reverse triangle inequality
+and (A.133) give, for every (j, t) ∈S0, |∆2 ˙θj,t| ≥Jcw
+min/2, and therefore
+max
+(j,t)∈S0 ˙ωcw
+j,t = max
+(j,t)∈S0
+∆2 ˙θj,t
+−ζ2
+≤2ζ2  Jcw
+min
+−ζ2.
+(A.138)
+77
+
+
+Step 3: decomposition and bounds. Using (A.3) and splitting the penalty at S0,
+N
+
+Lcw
+ϑ2 (ΘT) −Lcw
+ϑ2 (Θ0
+T)
+
+= −2L1(b) + L2(b) + Lcw
+3 (b) + Lcw
+4 (b),
+(A.139)
+where L1(b) and L2(b) are exactly as in (A.4), since the loss in (4.18) is identical to that
+in (3.2), and
+Lcw
+3 (b) := Nϑ2
+X
+(j,t)∈S0
+˙ωcw
+j,t
+h∆2θ0
+j,t +
+1
+√
+N
+∆2bj,t
+ −
+∆2θ0
+j,t
+
+i
+,
+Lcw
+4 (b) := Nϑ2
+X
+(j,t)/∈S0
+˙ωcw
+j,t
+1
+√
+N
+∆2bj,t
+ ≥0,
+(A.140)
+the second display using ∆2θ0
+j,t = 0 off the active set. The bounds (A.9) and (A.14)
+therefore apply unchanged, |L1(b)| = Op(¯b) and L2(b) ≥c α¯b2 w.p.1 with α = (3−
+√
+5)/2.
+For Lcw
+3 (b), the triangle inequality gives |∆2θ0
+j,t+N −1/2∆2bj,t|−|∆2θ0
+j,t| ≥−N −1/2|∆2bj,t|,
+so that, by (A.138),
+Lcw
+3 (b) ≥−
+√
+Nϑ2 2ζ2 Jcw
+min
+−ζ2
+X
+(j,t)∈S0
+∆2bj,t
+
+(A.141)
+on J cw
+NT. For the sum, the scalar analog of the window bound gives |∆2bj,t| ≤|bj,t+1| +
+2|bj,t| + |bj,t−1| and hence, by the Cauchy–Schwarz inequality with coefficients (1, 2, 1),
+|∆2bj,t|2 ≤6(b2
+j,t+1 + b2
+j,t + b2
+j,t−1). For each fixed j the dates T 0
+j,K0
+j are distinct, so each
+index s belongs to at most three windows {t −1, t, t + 1} with t ∈T 0
+j,K0
+j , and summing
+first over t ∈T 0
+j,K0
+j and then over j,
+X
+(j,t)∈S0
+∆2bj,t
+2 ≤18
+p
+X
+j=1
+T
+X
+s=1
+b2
+j,s
+= 18 ∥b∥2.
+(A.142)
+By the Cauchy–Schwarz inequality over the M0 active pairs and ∥b∥≤∥D0b∥=
+√
+T ¯b,
+X
+(j,t)∈S0
+∆2bj,t
+ ≤
+√
+M 0
+ X
+(j,t)∈S0
+∆2bj,t
+21/2
+≤
+√
+18M 0T ¯b.
+(A.143)
+Inserting (A.143) into (A.141) and applying the first clause of the modified Assump-
+tion 4.3(a), by which
+√
+NTM 0 ϑ2(Jcw
+min)−ζ2 = Op(1),
+Lcw
+3 (b) ≥−Op
+√
+NTM 0 ϑ2
+ Jcw
+min
+−ζ2
+¯b
+= −Op(1)¯b.
+(A.144)
+Step 4: the quadratic argument.
+Combining (A.139) with the bounds of Step 3 and
+Lcw
+4 (b) ≥0,
+N
+
+Lcw
+ϑ2 (ΘT) −Lcw
+ϑ2 (Θ0
+T)
+
+≥c α¯b2 −Hcw
+NT ¯b,
+(A.145)
+78
+
+
+where Hcw
+NT = Op(1) collects the contributions of 2|L1(b)| and |Lcw
+3 (b)|. The minimiser
+satisfies N[Lcw
+ϑ2 ( bΘcw
+T ) −Lcw
+ϑ2 (Θ0
+T)] ≤0, and the right side of (A.145) is strictly positive
+once ¯b > Hcw
+NT/(c α), so the argument closing the proof of Theorem 4.1 applies word for
+word and yields b¯bcw = Op(1), that is,
+(T −1)
+bbcw
+1
+2 +
+T
+X
+t=2
+bbcw
+t
+2 = Op(T).
+(A.146)
+Parts (a), (b), and (c) are read off (A.146) exactly as in the proof of Theorem 4.1, the first
+term giving part (a), division by NT giving part (b), and maxt ∥bbcw
+t ∥≤
+√
+T b¯bcw = Op(
+√
+T)
+giving part (c).
+Proof. The proof is in four steps. Step 1 establishes part (i), that every inactive scalar
+second difference is set exactly to zero w.p.a.1. Step 2 records the component-wise de-
+tection condition. Step 3 shows that every active scalar second difference survives. Step
+4 combines the steps into parts (ii) and (iii). If M0 = 0 there are no active pairs, Steps
+2 and 3 are vacuous, and the result reduces to Step 1, so we take M0 ≥1 where the
+distinction matters.
+Step 1: no spurious kinks.
+Reparametrise coordinate by coordinate. For each j, set
+γj := θj,2 −θj,1 and νj,s := ∆2θj,s for s = 2, . . . , T −1, so that, by the scalar version of
+the telescoping argument behind (A.42),
+θj,t = θj,1 + (t −1)γj +
+t−1
+X
+s=2
+(t −s) νj,s,
+(A.147)
+for t = 1, . . . , T, where each νj,s being counted exactly t−s times. Stacking over j, the map
+(θ1, γ, {νs}) 7→ΘT is the same linear bijection of RTp as in the proof of Theorem 4.2, now
+read one coordinate at a time. The objective (4.18) is convex, being the sum of a convex
+quadratic and a nonnegative combination of absolute values, convexity is preserved under
+the linear reparametrisation (A.147), and the penalty ϑ2
+P
+s
+P
+j ˙ωcw
+j,s|νj,s| is separable
+across the pairs (j, s). The inclusion of zero in the subdifferential therefore characterises
+the global minimiser, and it suffices to read the first order condition with respect to each
+scalar νj,s.
+Write bei,t := ˇyi,t −x′
+i,tbθcw
+t
++ x′
+i,1bθcw
+1
+for the fitted residuals. From (A.147), the loss
+depends on νj,s only through the scalars θj,t with t > s, with ∂θj,t/∂νj,s = (t−s) for t > s
+and zero otherwise, while ∂Lcw,loss
+ϑ2
+/∂θj,t = −2
+NT
+PN
+i=1 xi,t,j bei,t for t ≥2. The chain rule
+and the subdifferential of the absolute value therefore give, for each pair (j, s),
+ϑ2 ˙ωcw
+j,s bgj,s =
+2
+NT
+T
+X
+t=s+1
+(t −s)
+N
+X
+i=1
+xi,t,j bei,t,
+(A.148)
+where bgj,s = sgn(bνj,s) if bνj,s̸ = 0 and |bgj,s| ≤1 otherwise. If |∆2 ˙θj,s| = 0 for some pair,
+then ˙ωcw
+j,s = +∞, any candidate with νj,s̸ = 0 has infinite objective value, the minimiser
+sets bνj,s = 0 there, and we may take ˙ωcw
+j,s < ∞throughout. If bνj,s̸ = 0, taking absolute
+79
+
+
+values in (A.148) and using |bgj,s| = 1,
+ϑ2 ˙ωcw
+j,s = 2
+T
+
+T
+X
+t=s+1
+(t −s) Ej,t
+,
+(A.149)
+where Ej,t :=
+1
+N
+PN
+i=1 xi,t,j bei,t and Ej,t is the jth component of the vector Et of the proof
+of Theorem 4.2, now formed from the component-wise fit.
+The floor. Fix an inactive pair, (j, s) /∈S0 with s ∈{2, . . . , T −1}, so that ∆2θ0
+j,s = 0,
+while other coordinates may well kink at s. Since a scalar component is bounded by the
+norm of its vector, and using (A.48) for the uniform preliminary rate,
+∆2 ˙θj,s
+ =
+∆2 ˙θj,s −∆2θ0
+j,s
+
+≤
+∆2  ˙θs −θ0
+s
+
+≤4eGNT
+p
+T/N,
+(A.150)
+uniformly over all inactive pairs since the right side depends on neither j nor s. Hence
+min
+(j,s)/∈S0 ˙ωcw
+j,s ≥
+ 4eGNT
+−ζ2N
+T
+ζ2/2
+.
+(A.151)
+The ceiling.
+With but := bθcw
+t
+−θ0
+t, the residual decomposition (A.52) holds for the
+component-wise fit, Et = ζt −Atbut + Ctbu1, and the elementary bound (A.53) applies
+with the design bounds of Step 1 of the proof of Theorem 4.1. The three terms are
+Op(T/N) by, respectively, Assumption 4.1(b) with Markov’s inequality, Lemma A.3(b),
+and Lemma A.3(a). Defining
+Bcw
+NT :=
+N
+T
+T
+X
+t=2
+Et
+21/2
+,
+(A.152)
+where Bcw
+NT = Op(1), so we have PT
+t=2 E2
+j,t ≤PT
+t=2 ∥Et∥2 = (Bcw
+NT)2 T/N for every j. By
+the Cauchy–Schwarz inequality and the ramp bound (A.55),
+
+T
+X
+t=s+1
+(t −s) Ej,t
+ ≤
+
+T
+X
+t=s+1
+(t −s)21/2 T
+X
+t=2
+E2
+j,t
+1/2
+≤T 3/2 Bcw
+NT
+r
+T
+N
+= Bcw
+NT
+T 2
+√
+N
+,
+(A.153)
+simultaneously over all pairs (j, s), since the right side depends on neither.
+The contradiction. Suppose bνj,s̸ = 0 at some inactive pair with probability not tending
+to zero. On this event (A.149) holds at that pair, and combining the floor (A.151) with
+the ceiling (A.153),
+ϑ2
+ 4eGNT
+−ζ2N
+T
+ζ2/2
+≤2 Bcw
+NT T
+√
+N
+.
+(A.154)
+80
+
+
+Multiplying both sides of (A.154) by (4eGNT)ζ2√
+N/T and collecting powers of N and T,
+N (ζ2+1)/2 ϑ2
+T 1+ζ2/2
+≤2
+ 4eGNT
+ζ2Bcw
+NT
+= Op(1),
+(A.155)
+which contradicts the modified Assumption 4.3(b), by which the left side diverges in
+probability. Since the floor and the ceiling are uniform over the inactive pairs, the con-
+tradiction excludes all of them simultaneously, so bνj,s = 0 for every (j, s) /∈S0 w.p.a.1,
+and since ∆2bθcw
+j,s = bνj,s by definition, part (i) follows.
+Step 2: the detection condition.
+By the first clause of the modified Assumption 4.3(a),
+w.p.a.1 ϑ2 ≤(c1 + 1)(Jcw
+min)ζ2(NTM 0)−1/2. Inserting this cap into the modified Assump-
+tion 4.3(b), a tuning parameter can exist only if (Jcw
+min)ζ2N ζ2/2T −(3+ζ2)/2(M 0)−1/2 →∞,
+and multiplying by T 3/2√
+M 0 ≥1 gives (
+p
+N/T Jcw
+min)ζ2 →∞, hence
+p
+N/T Jcw
+min →∞.
+(A.156)
+Step 3: every true kink is detected.
+Fix (j, t) ∈S0. By the scalar-versus-vector bound
+and the triangle inequality,
+∆2bθcw
+j,t
+ ≥
+∆2θ0
+j,t
+ −
+∆2 bθcw
+j,t −θ0
+j,t
+
+≥Jcw
+min −4 max
+1≤s≤T
+bθcw
+s −θ0
+s
+,
+(A.157)
+using (A.133) in the second inequality. By Lemma A.3(c) the maximum in (A.157) is
+Op(
+p
+T/N), so that, uniformly over (j, t) ∈S0,
+min
+(j,t)∈S0
+∆2bθcw
+j,t
+ ≥Jcw
+min
+
+1 −Op
+ (Jcw
+min)−1p
+T/N
+
+,
+(A.158)
+and the Op term is op(1) by (A.156). Hence every active pair has a strictly positive
+estimated second difference w.p.a.1.
+Step 4: combination.
+By Steps 1 and 3, w.p.a.1 the estimated scalar kink set {(j, t) :
+|∆2bθcw
+j,t | > 0} contains no pair outside S0 and every pair inside it, and therefore equals
+S0. Reading this coordinate by coordinate, bTj, b
+Kj = T 0
+j,K0
+j for every j = 1, . . . , p jointly
+w.p.a.1, which gives bKj = K0
+j for all j, part (ii), and, on that event, exact coincidence of
+all estimated dates with the true ones, part (iii).
+Proof of Proposition 4.10
+Proof. The proof is in five steps. Step 1 collects the per-coordinate basis facts. Step 2
+reduces to the true design. Step 3 derives the exact scaling identity. Step 4 establishes
+part (i). Step 5 extracts parts (ii) and (iii).
+81
+
+
+Fix j ∈{1, . . . , p} and m ∈{0, . . . , K0
+j + 1}. The loading hj,m,t of (4.20) vanishes off
+K0
+j,m ∪K0
+j,m+1, and these two sets are disjoint, so
+r2
+j,m =
+X
+t∈K0
+j,m
+u2
+j,m,t +
+X
+t∈K0
+j,m+1
+ 1 −uj,m+1,t
+2
+= A
+ I0
+j,m
+
++ B
+ I0
+j,m+1
+
+,
+(A.159)
+the second equality because the change of index q = t−T 0
+j,m−1 maps K0
+j,m onto {0, . . . , I0
+j,m−
+1} with uj,m,t = q/I0
+j,m, and q = t −T 0
+j,m maps K0
+j,m+1 onto {0, . . . , I0
+j,m+1 −1} with
+1−uj,m+1,t = 1−q/I0
+j,m+1, so the two sums are those of (A.62), and both identities remain
+valid at the endpoints under the conventions K0
+j,0 = K0
+j,K0
+j +2 = ∅with A(0) = B(0) = 0.
+The argument establishing (A.70) in the proof of Lemma A.2 depends on the knot se-
+quence only through (A.159) and applies verbatim with I0
+j,m in place of I0
+m, the endpoint
+case using I0
+j,K0
+j +1 = T + 1 −T 0
+j,K0
+j ≥2, which holds because T 0
+j,K0
+j < T. Hence, uniformly
+over every admissible configuration,
+1
+8
+ I0
+j,m + I0
+j,m+1
+
+≤r2
+j,m ≤I0
+j,m + I0
+j,m+1,
+(A.160)
+so that r2
+j,m ≥1/8 > 0 for every pair (j, m) and Dcw is nonsingular. Next, let Pj,m denote
+the 1 × q0 unit row whose nonzero entry sits in the position that η0
+j,m occupies in the
+stacked vector η0,cw of Section 4.4. Since Dcw is diagonal with rj,m in that same position,
+Pj,mη0,cw = η0
+j,m,
+Pj,mDcw = rj,mPj,m,
+Pj,mP′
+j′,m′ = δ(j,m)(j′,m′),
+(A.161)
+where δ(j,m)(j′,m′) equals one if (j, m) = (j′, m′) and zero otherwise.
+Further, recall
+from (4.19) and the interpolation identity of Section 4.4 that
+κ0
+j,ℓ= η0
+j,ℓ−η0
+j,ℓ−1
+I0
+j,ℓ
+,
+θ0
+j,t = (1 −uj,ℓ,t)η0
+j,ℓ−1 + uj,ℓ,tη0
+j,ℓ
+(A.162)
+for t ∈K0
+j,ℓand ℓ= 1, . . . , K0
+j + 1, and that eκcw
+j,ℓand eθcw
+j,t are defined by the same two
+maps applied to eηcw at the estimated kink sets. Finally, recall from Section 4.4 that
+bQcw
+N :=
+ Dcw−1 1
+N Φη,cw′C Φη,cw  Dcw−1,
+Ψcw
+NT :=
+1
+√
+N
+Φη,cw′C ε,
+(A.163)
+with C = IN ⊗CT the centering matrix.
+Moving on, define Acw
+NT :=
+bTj, b
+Kj = T 0
+j,K0
+j ∀j = 1, . . . , p
+	
+. By Proposition 4.9(ii) and
+(iii),
+P
+ Acw
+NT
+
+= P
+
+bTj,ℓ= T 0
+j,ℓ, ℓ= 1, . . . , K0
+j , ∀j
+ bKj = K0
+j ∀j
+
+P
+  bKj = K0
+j ∀j
+
+→1
+(A.164)
+as the product of two factors each tending to one.
+On Acw
+NT the estimated kink sets
+coincide with the true ones, hence so do the estimated regime lengths and loadings, so
+the design built from the estimated sets equals Φη,cw, the estimator (4.24) equals its oracle
+82
+
+
+version evaluated at the true coordinate-specific dates, and the maps defining eκcw
+j,ℓand
+eθcw
+j,t coincide with (A.162). Exactly as in the proof of Theorem 4.6, the feasible and oracle
+quantities differ on an event whose probability vanishes by (A.164), so every limit and
+every stochastic order established below for the oracle quantities transfers to the feasible
+ones by Slutsky’s theorem, and we work on Acw
+NT for the remainder of the proof.
+Now, by (A.163) and the nonsingularity of Dcw,
+Φη,cw′CΦη,cw = N Dcw bQcw
+N Dcw.
+(A.165)
+Both bQcw
+N and Qcw
+0
+are symmetric, so Weyl’s inequality and Assumption 4.6(a) give
+µmin
+ bQcw
+N
+
+−µmin
+ Qcw
+0
+ ≤
+bQcw
+N −Qcw
+0
+
+op
+= op(1),
+(A.166)
+so the event {µmin(bQcw
+N ) ≥c/2} has probability tending to one. On this event bQcw
+N is
+nonsingular with ∥(bQcw
+N )−1∥op = µmin(bQcw
+N )−1 ≤2/c, and the resolvent identity (bQcw
+N )−1−
+(Qcw
+0 )−1 = (bQcw
+N )−1(Qcw
+0 −bQcw
+N )(Qcw
+0 )−1 together with submultiplicativity of the operator
+norm and ∥(Qcw
+0 )−1∥op = µmin(Qcw
+0 )−1 ≤1/c gives
+ bQcw
+N
+−1 −
+ Qcw
+0
+−1
+op ≤2
+c · op(1) · 1
+c
+= op(1),
+(A.167)
+and in particular ∥(bQcw
+N )−1∥op = Op(1). On the same event, Φη,cw′CΦη,cw is nonsingular
+by (A.165) as a product of nonsingular matrices, with
+
+Φη,cw′CΦη,cw−1 = 1
+N
+ Dcw−1 bQcw
+N
+−1 Dcw−1.
+(A.168)
+By (4.21), the DGP (2.1) stacks as y = (IN ⊗ιT)µ + Φη,cwη0,cw + ε, where µ :=
+[µ1, . . . , µN]′, and C(IN ⊗ιT) = 0, so premultiplying by C annihilates the fixed effects,
+Cy = CΦη,cwη0,cw + Cε.
+(A.169)
+Substituting into (4.24) and using symmetry and idempotency of C,
+eηcw =
+
+Φη,cw′CΦη,cw−1Φη,cw′CΦη,cwη0,cw +
+
+Φη,cw′CΦη,cw−1Φη,cw′Cε
+= η0,cw +
+
+Φη,cw′CΦη,cw−1Φη,cw′Cε.
+(A.170)
+Inserting (A.168) together with Φη,cw′Cε =
+√
+NΨcw
+NT from (A.163),
+eηcw −η0,cw = 1
+N
+ Dcw−1 bQcw
+N
+−1 Dcw−1 ·
+√
+NΨcw
+NT
+=
+1
+√
+N
+ Dcw−1 bQcw
+N
+−1 Dcw−1Ψcw
+NT,
+(A.171)
+and multiplying on the left by
+√
+N Dcw gives the exact identity
+√
+N Dcw eηcw −η0,cw
+=
+ bQcw
+N
+−1 Dcw−1Ψcw
+NT.
+(A.172)
+83
+
+
+Further, we first control the normalised score. Every entry of Φη,cw is hj,m,txi,t,j with
+deterministic hj,m,t, and C is deterministic, so each entry of E(Φη,cw′Cε) is a finite linear
+combination of terms E(xi,s,jεi,t) = 0 by Assumption 4.1(a), whence E[(Dcw)−1Ψcw
+NT] =
+0q0×1. Mean zero gives
+E
+ Dcw−1Ψcw
+NT
+2 = tr Var
+ Dcw−1Ψcw
+NT
+
+→tr Σcw
+0
+< ∞
+(A.173)
+by Assumption 4.6(b), and, being convergent, the second moment is bounded by some
+C < ∞for all N and T. Markov’s inequality then gives, for every M > 0,
+P
+ Dcw−1Ψcw
+NT
+ > M
+
+≤E
+ Dcw−1Ψcw
+NT
+2
+M 2
+≤C
+M 2
+(A.174)
+uniformly in N and T, that is,
+ Dcw−1Ψcw
+NT
+ = Op(1).
+(A.175)
+Now let {Hcw
+NT} be as in Assumption 4.6(b), with Υcw existing and positive definite.
+Multiplying (A.172) by Hcw
+NT and adding and subtracting Hcw
+NT(Qcw
+0 )−1(Dcw)−1Ψcw
+NT,
+√
+N Hcw
+NTDcw eηcw −η0,cw
+= Hcw
+NT
+ Qcw
+0
+−1 Dcw−1Ψcw
+NT
++ Hcw
+NT
+h bQcw
+N
+−1 −
+ Qcw
+0
+−1i Dcw−1Ψcw
+NT.
+(A.176)
+The first term converges in distribution to N(0l×1, Υcw) by Assumption 4.6(b), while the
+norm of the second is bounded by
+Hcw
+NT
+
+op
+ bQcw
+N
+−1 −
+ Qcw
+0
+−1
+op
+ Dcw−1Ψcw
+NT
+ = O(1) · op(1) · Op(1)
+= op(1),
+(A.177)
+by (A.167) and (A.175). Slutsky’s theorem applied to (A.176), together with this and
+the above, gives part (i).
+An immediate consequence is the rate of each boundary level. Fix (j, m) and apply
+Pj,m to (A.172). Using (A.161), (A.167) and (A.175),
+√
+N rj,m
+ eηcw
+j,m −η0
+j,m
+
+= Pj,m
+ bQcw
+N
+−1 Dcw−1Ψcw
+NT
+= Op(1),
+(A.178)
+so that, by (A.160),
+eηcw
+j,m −η0
+j,m = Op
+ 
+Nr2
+j,m
+−1/2
+= Op
+
+N
+ I0
+j,m + I0
+j,m+1
+−1/2
+.
+(A.179)
+84
+
+
+Fix j and ℓ∈{1, . . . , K0
+j +1}. By (A.160), rj,ℓ−1, rj,ℓ> 0, so sj,ℓ= I0
+j,ℓ(r−2
+j,ℓ−1+r−2
+j,ℓ)−1/2
+is well defined and strictly positive. By (A.162) and the above, we have
+eκcw
+j,ℓ−κ0
+j,ℓ= eηcw
+j,ℓ−eηcw
+j,ℓ−1
+I0
+j,ℓ
+−η0
+j,ℓ−η0
+j,ℓ−1
+I0
+j,ℓ
+=
+ eηcw
+j,ℓ−η0
+j,ℓ
+
+−
+ eηcw
+j,ℓ−1 −η0
+j,ℓ−1
+
+I0
+j,ℓ
+(A.180)
+on Acw
+NT, so that, by the triangle inequality and (A.178) at ℓ−1 and ℓ,
+eκcw
+j,ℓ−κ0
+j,ℓ
+ ≤
+eηcw
+j,ℓ−η0
+j,ℓ
+ +
+eηcw
+j,ℓ−1 −η0
+j,ℓ−1
+
+I0
+j,ℓ
+= Op
+ [Nr2
+j,ℓ]−1/2
++ Op
+ [Nr2
+j,ℓ−1]−1/2
+I0
+j,ℓ
+= Op
+
+N
+ I0
+j,ℓ
+2 r2
+j,ℓ−1 ∧r2
+j,ℓ
+−1/2
+,
+(A.181)
+the last equality because [Nr2
+j,ℓ]−1/2 + [Nr2
+j,ℓ−1]−1/2 ≤2[N(r2
+j,ℓ−1 ∧r2
+j,ℓ)]−1/2.
+Apply-
+ing (A.160) at ℓ−1 and ℓ, together with the monotonicity of the minimum in each
+argument,
+eκcw
+j,ℓ−κ0
+j,ℓ= Op
+h
+N
+ I0
+j,ℓ
+2 I0
+j,ℓ−1 + I0
+j,ℓ
+
+∧
+ I0
+j,ℓ+ I0
+j,ℓ+1
+	i−1/2
+,
+(A.182)
+which is part (ii).
+For part (iii), fix j and ℓ, let t ∈K0
+j,ℓ, and abbreviate u := uj,ℓ,t ∈[0, 1). By (A.162)
+and Step 2,
+eθcw
+j,t −θ0
+j,t = (1 −u)
+ eηcw
+j,ℓ−1 −η0
+j,ℓ−1
+
++ u
+ eηcw
+j,ℓ−η0
+j,ℓ
+
+(A.183)
+on Acw
+NT. Since u ∈[0, 1), both weights are nonnegative and sum to one, so the triangle
+inequality gives, for every t ∈K0
+j,ℓ,
+eθcw
+j,t −θ0
+j,t
+ ≤(1 −u)
+eηcw
+j,ℓ−1 −η0
+j,ℓ−1
+ + u
+eηcw
+j,ℓ−η0
+j,ℓ
+
+≤max
+neηcw
+j,ℓ−1 −η0
+j,ℓ−1
+,
+eηcw
+j,ℓ−η0
+j,ℓ
+
+o
+.
+(A.184)
+The right side of (A.184) does not depend on t, so the same bound holds for maxt∈K0
+j,ℓ|eθcw
+j,t −
+θ0
+j,t|. By (A.179) applied at ℓ−1 and ℓ, and the maximum of two terms that are Op(aN)
+and Op(bN) being Op(aN ∨bN),
+max
+t∈K0
+j,ℓ
+eθcw
+j,t −θ0
+j,t
+ = Op
+
+N
+ r2
+j,ℓ−1 ∧r2
+j,ℓ
+−1/2
+= Op
+h
+N
+ I0
+j,ℓ−1 + I0
+j,ℓ
+
+∧
+ I0
+j,ℓ+ I0
+j,ℓ+1
+	i−1/2
+,
+(A.185)
+the last equality by (A.160) applied at ℓ−1 and ℓ, which is the uniform claim of part (iii).
+The initial level is the case t = 1, ℓ= 1, uj,1,1 = 0 of (A.183), in which eθcw
+j,1−θ0
+j,1 = eηcw
+j,0−η0
+j,0,
+and (A.179) at m = 0 with I0
+j,0 = 0 gives eθcw
+j,1 −θ0
+j,1 = Op
+ (NI0
+j,1)−1/2
+. This completes
+the proof.
+85

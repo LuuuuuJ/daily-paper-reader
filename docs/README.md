@@ -6,58 +6,61 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-14
-- 运行时间：2026-08-14 20:51:19 UTC
+- 最新运行日期：2026-08-15
+- 运行时间：2026-08-15 20:28:23 UTC
 - 运行状态：成功
-- 本次总论文数：12
-- 精读区：1
+- 本次总论文数：13
+- 精读区：2
 - 速读区：11
 
 ### 今日简报（AI）
-今日深度复盘家庭资产配置理论并速览因果推断前沿，共完成 12 篇高质量文献研读。
-核心聚焦集体模型在家庭投资应用中的潜在陷阱，同时关注交错 DiD 与面板数据推断的稳健性优化。
-建议重点研读 9.5 分的家庭决策论文以规避建模误区，并同步更新对复杂因果推断工具的认知。
-- 详情：[/202608/14/README](/202608/14/README)
+今日深度研读面板数据因果推断与家庭资产配置理论，共追踪13篇经济与数据科学前沿进展。
+核心结论揭示了集体模型在家庭投资决策中的应用误区，并提供了更具稳健性的面板数据偏差修正方案。
+建议普通读者重点攻克两篇8.5分的高质量理论论文，同时关注表格大模型在经济预测中的新兴应用。
+- 详情：[/202608/15/README](/202608/15/README)
 
 ### 精读区论文标签
-1. [Theory of Household Portfolio Choice: Pitfalls in Applications of the Collective Model](/202608/14/2608.12411v1-theory-of-household-portfolio-choice-pitfalls-in-applications-of-the-collective-model)  
-   标签：评分：9.5/10、query:profile-1
-   evidence：分析了家庭集体投资组合选择、配偶风险偏好和家庭内部博弈。
+1. [Bias-robust causal inference for panel data](/202608/15/2608.09837v1-bias-robust-causal-inference-for-panel-data)  
+   标签：评分：8.5/10、query:profile-1
+   evidence：面板数据的偏误稳健因果推断及处理组平均效应
+2. [Theory of Household Portfolio Choice: Pitfalls in Applications of the Collective Model](/202608/15/2608.12411v1-theory-of-household-portfolio-choice-pitfalls-in-applications-of-the-collective-model)  
+   标签：评分：8.5/10、query:profile-1
+   evidence：家庭投资组合选择的集体模型及配偶风险偏好
 
 ### 速读区论文标签
-1. [Partial Homogeneity in Staggered Difference-in-Differences](/202608/14/2608.08047v1-partial-homogeneity-in-staggered-difference-in-differences)  
-   标签：评分：7.5/10、query:q9
-   evidence：交错双重差分法与处理效应异质性
-2. [Bias-robust causal inference for panel data](/202608/14/2608.09837v1-bias-robust-causal-inference-for-panel-data)  
+1. [Tabular Foundation Models and the Unity of Economic Behaviour](/202608/15/2608.06842v1-tabular-foundation-models-and-the-unity-of-economic-behaviour)  
    标签：评分：7.5/10、query:profile-1
-   evidence：针对面板数据和处理效应的偏误稳健因果推断
-3. [Mastering Stochastic OLG Models in Continuous Time](/202608/14/2608.11134v1-mastering-stochastic-olg-models-in-continuous-time)  
-   标签：评分：7.5/10、query:q6
-   evidence：具有特质财富和年龄状态的随机重叠世代模型
-4. [Local conformal prediction for individual causal effects](/202608/14/2608.09612v1-local-conformal-prediction-for-individual-causal-effects)  
-   标签：评分：7.0/10、query:q7
-   evidence：使用符合预测的个体化因果预测框架，用于处理异质性处理效应
-5. [COMPACT: Spectral Adjustment Scores from a Complete and Irreducible Causal Criterion](/202608/14/2608.10305v1-compact-spectral-adjustment-scores-from-a-complete-and-irreducible-causal-criterion)  
+   evidence：风险与经济行为的统一行为模型
+2. [Partial Homogeneity in Staggered Difference-in-Differences](/202608/15/2608.08047v1-partial-homogeneity-in-staggered-difference-in-differences)  
+   标签：评分：7.5/10、query:q9
+   evidence：交错双重差分设计与处理效应异质性
+3. [Early Pregnancy Treatment Decisions: Designing Perinatal Pharmacoepidemiology Studies using Real-World Data](/202608/15/2608.11108v1-early-pregnancy-treatment-decisions-designing-perinatal-pharmacoepidemiology-studies-using-real-world-data)  
+   标签：评分：7.5/10、query:profile-1
+   evidence：针对怀孕期间处理效应的目标试验模拟
+4. [COMPACT: Spectral Adjustment Scores from a Complete and Irreducible Causal Criterion](/202608/15/2608.10305v1-compact-spectral-adjustment-scores-from-a-complete-and-irreducible-causal-criterion)  
    标签：评分：7.0/10、query:profile-1
-   evidence：观察数据中的因果调整集和倾向得分
-6. [Stationary Errors and Quantile Regression in Short Panels](/202608/14/2608.08750v1-stationary-errors-and-quantile-regression-in-short-panels)  
-   标签：评分：6.5/10、query:q9
-   evidence：短面板数据分析和个体效应处理的方法论桥梁
-7. [Clustering Informed Inverse Probability Weighting Strategies for Causal Effect Estimation in Observational Studies](/202608/14/2608.09839v1-clustering-informed-inverse-probability-weighting-strategies-for-causal-effect-estimation-in-observational-studies)  
+   evidence：观察数据中调整集的因果准则
+5. [Estimating and Testing Kinks in Panel Data Models](/202608/15/2608.07162v1-estimating-and-testing-kinks-in-panel-data-models)  
    标签：评分：6.5/10、query:profile-1
-   evidence：使用逆概率加权进行观察性研究中的因果效应估计
-8. [Causal Mediation Analysis for Network Data with Graph Neural Network](/202608/14/2608.13274v1-causal-mediation-analysis-for-network-data-with-graph-neural-network)  
+   evidence：用于时变系数路径和转折日期的面板数据模型
+6. [Causal State-Space Model for Causal Inference: Estimating Longitudinal Individual Treatment Effects](/202608/15/2608.08288v1-causal-state-space-model-for-causal-inference-estimating-longitudinal-individual-treatment-effects)  
    标签：评分：6.5/10、query:profile-1
-   evidence：用于识别直接和间接效应的因果中介分析
-9. [Deep Generalised Mixed Models: a Novel Neural Network Structure for Analysing Hierarchical Data](/202608/14/2608.05930v2-deep-generalised-mixed-models-a-novel-neural-network-structure-for-analysing-hierarchical-data)  
-   标签：评分：6.0/10、query:profile-1
-   evidence：用于处理具有选择偏差的纵向层级数据的深度广义混合模型
-10. [Conditional Diffusion for Nonparametric Instrumental Variable Quantile Regression](/202608/14/2608.08204v1-conditional-diffusion-for-nonparametric-instrumental-variable-quantile-regression)  
-   标签：评分：6.0/10、query:profile-1
-   evidence：用于因果分析的非参数工具变量分位数回归
-11. [Estimating the Average Treatment Effect under Limited Overlap via Polynomial Approximation and Extrapolation](/202608/14/2608.09329v1-estimating-the-average-treatment-effect-under-limited-overlap-via-polynomial-approximation-and-extrapolation)  
-   标签：评分：6.0/10、query:q7
-   evidence：估计观察性研究中的平均处理效应
+   evidence：纵向个体治疗效应与因果推断
+7. [Causal State-Space Model for Causal Inference: Estimating Longitudinal Individual Treatment Effects](/202608/15/2608.08288v2-causal-state-space-model-for-causal-inference-estimating-longitudinal-individual-treatment-effects)  
+   标签：评分：6.5/10、query:profile-1
+   evidence：估计因果推断的纵向个体治疗效果
+8. [Asymptotics for Treatment Choice with Partial Identification](/202608/15/2608.09027v1-asymptotics-for-treatment-choice-with-partial-identification)  
+   标签：评分：6.5/10、query:profile-1
+   evidence：部分识别和因果估计下的处理选择
+9. [Clustering Informed Inverse Probability Weighting Strategies for Causal Effect Estimation in Observational Studies](/202608/15/2608.09839v1-clustering-informed-inverse-probability-weighting-strategies-for-causal-effect-estimation-in-observational-studies)  
+   标签：评分：6.5/10、query:profile-1
+   evidence：观察性研究中使用逆概率加权的因果效应估计
+10. [Inverse Confounding Analysis: An Exact Method for Quantifying the Significance of Confounding](/202608/15/2608.11991v1-inverse-confounding-analysis-an-exact-method-for-quantifying-the-significance-of-confounding)  
+   标签：评分：6.5/10、query:q7
+   evidence：量化观测数据因果推断中混杂因素的方法
+11. [General Probabilities of Causation with Causal Knowledge](/202608/15/2608.12657v1-general-probabilities-of-causation-with-causal-knowledge)  
+   标签：评分：6.5/10、query:q7
+   evidence：因果概率与因果知识边界
 
 
 <div class="dpr-home-promo-card">

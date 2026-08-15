@@ -1,0 +1,4714 @@
+Local Asymptotics for Treatment Choice
+with Partial Identification∗
+José Luis Montiel Olea†
+Chen Qiu‡
+Jörg Stoye§
+August 2026
+Abstract
+We provide a new asymptotic framework to derive approximately optimal treatment assign-
+ments when sampling noise from data is compounded by fundamental uncertainty due to partial
+identification. We recenter the reduced-form parameter around its least-favorable configura-
+tion and consider drifting parameter sequences that yield both diminishing levels of sampling
+uncertainty and of partial identification. We characterize the limiting decision problem as a
+normal location shift model with a suitable limiting identified set. We apply our results to
+treatment choice problems with contaminated outcomes, to robust welfare analyses with par-
+tially identified consumer surplus, and to the problem of aggregating experimental estimates
+for policy adoption.
+Keywords: statistical decision theory, treatment assignment, minimax regret, limit experiment,
+partial identification.
+∗We thank Jack Porter for encouragement at an early stage of this project and Karun Adusumilli, Tim Arm-
+strong, Xinyue Bei, Tim Christensen, Kei Hirano, Toru Kitagawa, Brendan Kline, Han Xu, and Kohei Yata as well
+as audiences at Bonn, TAMU, UT Austin, as well as participants at EcoSta 2026 and the Iowa Econometrics Con-
+ference for feedback. William Pan, Elliott Serna and Sara Yoo provided excellent research assistance. We gratefully
+acknowledge financial support from the NSF under grant SES-2315600.
+†Email: jlo67@cornell.edu
+‡Email: cq62@cornell.edu
+§Email: stoye@cornell.edu
+1
+arXiv:2608.09027v1  [econ.EM]  10 Aug 2026
+
+
+1
+Introduction
+A policy maker must decide between implementing a new policy or preserving the status quo. Her
+data provide information about the potential benefits of these two options. Unfortunately, these
+data only partially identify payoff-relevant parameters and may therefore not reveal, even in large
+samples, the correct course of action. The question of how to best use the available data in such
+treatment choice problems with partial identification has received recent attention in the literature;
+see, for example, Ishihara and Kitagawa (2021), Yata (2025), Christensen, Moon, and Schorfheide
+(2026), and Kido (2023). Several interesting problems that arise in empirical research can be recast
+using this framework; see Montiel Olea et al. (2026).
+In this paper, we use Le Cam’s limits of experiments framework (Le Cam and Yang, 2000;
+Le Cam, 2012) to propose a simple local asymptotic approximation for a general class of treatment
+choice problems with partial identification. In the problems that we study, the decision maker
+observes a random sample of size n of a vector-valued outcome variable Yi.
+There is a point-
+identified parameter γ ∈Rdm that flexibly determines the distribution of the data. There is also
+a payoff-relevant parameter, U∗∈R, that is partially identified. As in Christensen et al. (2026),
+we assume that the decision maker can use γ to deduce restrictions on U∗. The loss function for
+the decision problem is given by the usual regret loss L(a, U∗, γ) := U ∗(1{U ∗≥0} −a), where we
+interpret the action a ∈[0, 1] as the fraction of the population exposed to the new policy.
+We show that the treatment choice problems that we have just described above can be conve-
+niently approximated by a simpler problem. In the limiting decision problem, the decision maker
+observes a dm-valued multivariate normal vector ∆with unknown mean, h, but known variance.
+There is a payoff-relevant parameter µ∗∈R that, for each h, is known to belong to a nonempty
+interval I∞(h) := [I∞(h), I∞(h)]. We refer to I∞(h) as the limiting (local) identified set. The end-
+points of the interval are possibly nonlinear transformations of h. The limiting loss function takes
+the form L∞(a, µ∗, h) := µ∗(1{µ∗≥0} −a).
+Our Theorem 1 then shows that if we find a minimax rule for the limiting decision problem,
+we can construct a sequence of decision rules in the original problem that are locally asymptotically
+minimax regret optimal (in a sense we make precise). We then provide specific solutions to the
+limiting problem when the endpoints of I∞(h) are affine (Theorems 2 and 3), which occurs when
+the bounds of the original identified set for U∗are differentiable. Since in many partially identified
+models the bounds of the original identified set are only directionally differentiable, we also consider
+the limiting problem without imposing the affinity of the bounds of the set I∞(h). In this case,
+we show that when the parameter space for the original problem is i) convex and centrosymmetric
+(in a sense we make precise) and ii) the original bounds for the identified set are directionally
+2
+
+
+differentiable, we can also solve the limiting problem (Theorems 4 and 5).1
+We use two key ideas to justify our asymptotic approximations. The first key idea is to consider
+drifting parameter sequences over which the identified set for the payoff-relevant parameter shrinks
+to a point (at a root-n rate) as the sample size grows large.
+We argue that local asymptotic
+approximations based on sequences that lead to near point-identification ensure a nontrivial trade-
+off between identification and estimation in the limit as the sample size grows large. The idea
+of shrinking the identified set as the sample size grows large is based on the seminal work of
+Armstrong and Kolesár (2021), who use this device to conduct sensitivity analysis in point and
+partially-identified models defined by moment conditions which are only required to hold in an
+approximate sense. Drifting parameter sequences that lead to near point-identification are also
+discussed in Song (2014) and Stoye (2009).
+The second key idea is that we make an explicit recommendation about which reduced-form
+parameter value to localize about. In point-identified treatment choice problems, one often localizes
+at a point such that the payoff-relevant parameter equals zero (Hirano and Porter, 2009, 2020).
+This choice is usually motivated as being the hardest (or least-favorable) for the decision maker.
+In partially-identified treatment choice problems, choosing where to localize is a more delicate
+matter. Indeed, any reduced-form parameter value at which the identified set for the payoff-relevant
+parameter contains zero makes the treatment choice problem hard, but different values of the
+reduced-form parameter imply different degrees of partial identification.
+We argue that in our
+partially-identified treatment choice problem, there also exists a natural notion of a least-favorable
+or hardest case, which we formalize and advocate to localize around.
+We apply our results to three concrete problems. First, we consider treatment choice problems
+with binary outcomes that may be contaminated or corrupted (Horowitz and Manski, 1995). Second,
+we present a stylized example in robust welfare analyses (Kang and Vasserman, 2025). Third, we
+revisit an example in the evidence aggregation framework in Ishihara and Kitagawa (2021).
+Related Literature. Manski (2000, 2004) and Dehejia (2005) advocated using a decision-
+theoretic framework to study treatment choice problems. Manski (2000, 2005, 2007) and Stoye
+(2007) provide optimal treatment rules assuming the true distribution of the data is known. Stoye
+(2012a,b), Yata (2025), Ishihara and Kitagawa (2021) and Montiel Olea et al. (2026) focus on finite-
+sample minimax regret optimal rules; Aradillas Fernández et al. (2026) on multiple prior minimax
+regret rules; and Kitagawa et al. (2023) on mean-squared regret optimal rules.
+In important recent work, Christensen et al. (2020, 2026) pioneered a local asymptotic approach
+1In contrast, it is well known that directional differentiability causes irregularity for inference problems (Hirano
+and Porter, 2012).
+3
+
+
+for discrete choice problems when payoffs depend on a partially-identified parameter (binary treat-
+ment choice problems with partial identification being a special case). Their main innovation is to
+profile out the partially-identified parameter in the loss function and recenter a decision rule’s risk
+around that of an oracle who knows a reduced-form parameter that restricts the payoffs for the
+different choices. While they focus on a Bayes criterion based on profiled loss, Xu (2026) extends
+their methodology to a minimax criterion and also allows for randomized decisions. Our paper
+shares a similar motivation to these two papers and continues the research agenda of Christensen
+et al. (2026). An important difference is that we do not consider a loss function that profiles out the
+partially-identified parameter. Our asymptotic analysis with a shrinking identified set enables us to
+respect the problem’s original loss function and retain a more traditional minimax regret perspective
+on the finite-sample problem. However, to achieve this, we must be specific about where to localize
+the reduced-form parameter, whereas Christensen et al. (2026) and Xu (2026) can be very flexible
+in this choice. Another difference from Xu (2026) is that we find that approximately minimax regret
+optimal decisions even when the bounds of the identified set are only directionally differentiable.
+Thus, we view our work as a natural complement to the work of Christensen et al. (2020, 2026); Xu
+(2026). Song (2014) studied local asymptotic minimax decisions for interval-identified parameters
+by profiling out the mean-squared error risk function; see also Kido (2023) for analogous treat-
+ments in treatment choice problems. We think all of these papers (and ours) contribute to creating
+a bridge to existing results concerning limit experiments in point-identified settings (Hirano and
+Porter, 2009, 2020).
+Drifting parameter sequences of parameter values analogous to the near point-identification
+asymptotics used in this paper have a long history in econometrics: for example, the local-to-zero
+asymptotics in the linear instrumental variables model of Staiger and Stock (1997), local-to-unit-
+root asymptotics in the study of nearly integrated autoregressive processes in Phillips (1988) and
+Dou and Müller (2021), local-to-identification-failure analysis for Generalized Method of Moments
+models in Andrews and Mikusheva (2022). Local asymptotics are also used in the work of Hirano
+and Wright (2017) to compare the performance of different forecasting procedures under model
+uncertainty. See also Powell (2017) for further examples.
+An important motivation for our paper is the work of Stoye (2012a), Ishihara and Kitagawa
+(2021), Yata (2025), and Montiel Olea et al. (2026). All of these papers consider treatment choice
+problems with partial identification where a point-identified (reduced-form) parameter and a payoff-
+relevant but partially-identified parameter. Crucially, the analysis of minimax-regret optimal deci-
+sion rules is conducted under the assumption that the statistical information for the point-identified
+parameter is revealed only through the mean of a Gaussian location shift model. Yata (2025) makes
+4
+
+
+significant progress characterizing exact finite-sample minimax-regret optimal treatment assignment
+rules by assuming that the parameter space is convex and centrosymmetric. As noted by Hirano
+(2026), “Given the shifted normal form for the reduced-form model, it is tempting to think of this
+statistical setup as corresponding to the limit experiment in the locally asymptotically normal case,
+so that these results can be interpreted as simultaneously providing asymptotic optimality results
+when the reduced-form model is regular and parametric. However, making this connection is some-
+what complicated.” Our approach justifies the aforementioned Gaussian construction as a bona fide
+limit experiment (subject to a suitable adjustment of the limit identified set). While our results
+assume that the statistical model is parametric (in the sense of being indexed by a finite-dimensional
+parameter), the results in Armstrong and Kolesár (2021, Appendix C and part of Section 4) can
+be used to provide local asymptotic justifications for treatment choice problems in semiparamet-
+ric models where the identified set for the payoff-relevant parameter is characterized via moment
+conditions. Beyond the use of a parametric statistical model, we note that a key difference is that
+our asymptotic analysis simplifies the geometry of the identified set considerably in the limit. As
+a result, we are able to provide solutions to the limiting problem even beyond a centrosymmetric
+parameter space.
+Finally, our main results are most helpful to a researcher who believes that identification and
+estimation-induced uncertainty are roughly equally important for their finite-sample problem. If
+the dataset at hand is so large that they believe the lack of identification is the sole issue, one is
+free to set a slower drifting rate for the identification-induced uncertainty. In this case, we simply
+recommend the plug-in or “as-if” (Manski, 2021) approach that just solves population-level problems
+after plugging in consistent estimators for identifiable quantities. Alternatively, if a researcher thinks
+that the model-induced uncertainty vanishes faster than estimation-induced uncertainty (because
+data is so scarce and the degree of partial identification is tiny in the model), our results equally
+apply by simply setting the bounds of the identified set in the limit experiment as approaching zero.
+Outline. The rest of the paper is organized as follows. In Section 2, we explain the key idea
+of our paper via a simple and stylized example. Section 3 introduces our limit treatment choice
+problem in a general setup and formal notion of asymptotic minimax regret optimality. Section 4
+presents our results on solving the limit problem and constructing asymptotically optimal rules. We
+apply our results to three applications in Section 5. Section 6 concludes. All proofs and additional
+technical results are reserved in the Appendix and Online Appendix.
+5
+
+
+2
+Illustrative Example
+In this section, we illustrate the key idea of the paper via a stylized example that also demonstrates
+some general difficulties of asymptotics with partially identified payoff-relevant parameters. Suppose
+a decision maker (DM) must decide what fraction a ∈[0, 1] of a target population to assign to a
+new policy. Denote by µ∗∈R the true treatment effect on the target population. Applying action
+a yields welfare µ∗a (status quo welfare is assumed to be known and normalized to zero). Thus, the
+infeasible optimal rule is 1 {µ∗≥0}. DM observes one realization of Y ∼N(µ, σ2), where σ > 0 is
+known and µ is an identified treatment effect; it is related to µ∗by
+µ∗∈I(µ) := [µ −k, µ + k]
+for some known k > 0.
+Here, the parameter space is
+Θ := {(µ, µ∗) | µ ∈R, µ∗∈[µ −k, µ + k]}.
+(1)
+A statistical decision rule d maps Y to the unit interval, and the goal is to find a decision that
+minimizes worst-case expected regret defined as
+sup
+µ∗∈I(µ),µ∈R
+µ∗1{µ∗≥0} −µ∗Eµd(Y ).
+(2)
+This minimax regret (MMR) problem is tractable due to (i) normal likelihood of Y and (ii) convexity
+and centrosymmetry of Θ (Stoye, 2012a; Yata, 2025). The qualitative and quantitative features of
+the optimal decision depend on the tradeoff between σ (indicating estimation uncertainty) and k
+(indicating severity of partial identification): if k ≤σ
+p
+π/2, then 1{Y ≥0} is MMR optimal,
+uniquely so if the inequality is strict; if k > σ
+p
+π/2, then infinitely many MMR optimal rules exist,
+one of which is Φ
+
+Y/
+p
+2k2/π −σ2
+
+and all of which in a large regularity class involve randomized
+treatment assignment.
+These findings are instructive, but in practice, data are rarely exactly normal. As noted in
+Hirano (2026), rigorously formalizing the idea that the above Gaussian construction represents a
+limit experiment result is challenging.
+6
+
+
+µ
+µ∗
+µ0
+k
+−k
+µ0 + h1
+√n
+as n →∞
+µ
+µ∗
+k
+−k
+µ0
+Θn
+Figure 1: Two different asymptotics in the stylized example. Left: we localize at any µ0. As a result,
+I (µ0 + h/√n) →I(µ0) as n →∞. Right: we localize at µ0 = 0 and consider a local parameter
+space Θn implying a shrinking identified set.
+2.1
+The Challenge
+Suppose now the DM observes a random sample {Yi}n
+i=1, where Yi ∼N(µ, σ2) with both µ and σ
+unknown. The parameter space becomes
+Θ = {(µ, σ2, µ∗) | µ ∈R, σ2 > 0, µ∗∈I(µ)}.
+As n becomes large, the location of µ and σ2 becomes easier to learn but that of µ∗may still remain
+ambiguous. Suppose that, in the spirit of Hirano and Porter (2009, 2020) and work that they build
+on, we recenter the reduced-form parameter around some µ = µ0 and σ2 = σ2
+0:2
+µ = µ0 + h1
+√n,
+σ2 = σ2
+0 + h2
+√n,
+where h = (h1, h2)⊤∈R2. Then, the identified set for µ∗is I (µ0 + h1/√n). As n →∞, the location
+h will be signaled by an asymptotically sufficient statistic ∆∼N(h, I−1
+0 ) with Fisher Information
+I0, while it is clear that (see also the left panel of Figure 1)
+µ0 + h1
+√n →µ0,
+I
+
+µ0 + h1
+√n
+
+→I (µ0) .
+2The typical notion of localization, including that in Hirano and Porter (2009, 2020), focuses on point-identified
+problems and does not apply to partially identified problems.
+7
+
+
+In other words, in the limit, the DM would observe ∆∼N(h, I−1
+0 ) and know µ∗∈[µ0 −k, µ0 + k].
+In this limit, a rule d∞maps ∆to [0, 1] and the MMR problem becomes
+min
+d∞
+sup
+µ∗∈[µ0−k,µ0+k],h∈R2 µ∗[1 {µ∗≥0} −Ed∞(∆)] .
+(3)
+The signal ∆has become pure noise, revealing no information regarding µ0 or µ∗. It follows that
+(3) is solved by the no-data rule (Manski, 2007)
+µ0 + k
+2k
+1
+0
+:=
+
+
+
+
+
+
+
+
+
+0,
+µ0 < −k
+µ0+k
+2k ,
+−k ≤µ0 ≤k
+1,
+µ0 > k
+.
+This finding reflects partial identification overwhelming sampling noise in the limit. Indeed, under
+these asymptotics, sampling uncertainty vanishes at the standard 1/√n rate whereas the degree
+of partial identification is constant even in the limit. As a result, there is no meaningful trade-
+off between estimation uncertainty and the severity of partial identification, as opposed to what
+we saw earlier in the “finite-sample” version of the problem. Moreover, these asymptotics cannot
+(sufficiently) inform the selection of good rules because too many rules will be asymptotically MMR
+optimal in the sense of worst-case regret converging to the same limit. For example, this applies to
+[(ˆµ + k)/(2k)]1
+0 for any consistent estimator ˆµ of µ.
+2.2
+Introducing Local Asymptotics
+Our asymptotic approach embodies two major innovations; see also the right panel of Figure 1 for
+a visualization. First, we are more explicit about which parameter values to localize about. In
+point-identified settings, one often picks a point at which the payoff-relevant parameter equals zero,
+representing a hardest case where it is difficult to determine the best treatment even with large
+sample sizes (Hirano and Porter, 2009, p.1687). In our example, that would correspond to µ∗= 0.
+However, as µ∗is partially identified, any point of (µ, σ2) such that I(µ) contains 0 is consistent
+with µ∗= 0, and it is not immediately clear which point in the space of (µ, σ2) we should pick. We
+argue that, even in the partially identified setting, there is an analogous notion of the hardest case
+that motivates our choice of localization for the reduced-form parameter. In this stylized example,
+that corresponds to µ = 0 (and the point of localization for σ2 can be arbitrary). Intuitively, if the
+sample size is sufficiently large to inform the location of µ, then µ = 0 is the most challenging case
+as it involves the greatest ambiguity regarding µ∗. See Section 3.2 for the definition of our “most
+8
+
+
+difficult case” in a general setting.
+Second, to ensure a nontrivial trade-off between the severity of partial identification and estima-
+tion difficulty, we let the former vanish at an appropriate rate (Armstrong and Kolesár, 2021). That
+is, we look at drifting sequences that imply “near point identification.” Specifically, we consider a
+local parameter space with a shrinking identified set:
+Θn :=
+
+(µ, σ2, µ∗) | µ = 0 + h1
+√n, σ2 = σ2
+0 + h2
+√n, µ∗∈In
+ h1
+√n
+
+,
+where In
+
+h1
+√n
+
+=
+h
+h1
+√n −kn, h1
+√n + kn
+i
+for some kn such that √nkn = C > 0. Now, consider the
+scaled risk function of a decision rule d based on data {Yi}n
+i=1, which can be written as
+√nµ∗ 1 {µ∗≥0} −E(µ,σ2)[d((Yi)n
+i=1)]
+
+.
+It follows that
+√nµ∗∈√nIn
+ h1
+√n
+
+= √n
+ h1
+√n −kn, h1
+√n + kn
+
+= [h1 −C, h1 + C] .
+Furthermore, standard asymptotic arguments (e.g., Proposition 3.1 in Hirano and Porter 2009)
+yield that for any converging rule d, there is a limiting rule d∞such that
+E(µ,σ2)[d((Yi)n
+i=1)] →Eh[d∞(∆)],
+where ∆∼N(h, I−1
+0 ).
+Thus, we have a stable limit game in which the researcher observes
+∆∼N(h, I−1
+0 ), and the partially identified welfare contrast µ∗
+∞lies in a limit identified set
+[h1 −C, h1 + C]. The limit MMR problem becomes
+min
+d∞:R2→[0,1]
+sup
+µ∗∞∈[h1−C,h1+C],h∈R2 µ∗
+∞[1 {µ∗
+∞≥0} −Eh[d∞(∆)]] ,
+(4)
+recovering the stylized example; compare (1)-(2). Letting w = (1, 0)⊤and Σ0 = (w)⊤I−1
+0 w, we can
+apply existing results and find the solution of (4) as follows: If C ≤
+p
+Σ0π/2, then 1{w⊤∆≥0}
+is MMR optimal; if C >
+p
+Σ0π/2, one optimal rule is Φ
+
+w⊤∆(2C2/π −Σ0)−1/2
+. With this limit
+optimal rule, we may further find a matching feasible rule via the natural “plug-in” principle, i.e.,
+replacing (i) w⊤∆with √nˆµ, where ˆµ is a best regular estimator of µ (e.g., the MLE) and (ii) Σ0
+with a consistent estimator ˆΣ. This is exactly what a researcher would use in practice based on the
+“finite-sample” results above if we view ˆµ as Y in (2) and calibrate C with √nk.
+9
+
+
+Next, we formalize the above discussions in a general framework. We show that our idea of
+applying “near point identification” at a suitably defined hardest case allows one to find asymptoti-
+cally MMR optimal rules (in a sense we also precisely define) for a large class of treatment decision
+problems with partially identified parameters, even beyond convexity and centrosymmetry.
+3
+The Limiting Decision Problem
+3.1
+Setup
+Suppose a DM’s payoff when taking action a ∈[0, 1] is aW1 + (1 −a)W0 for some scalars W1
+and W0. Denote by U ∗:= W1 −W0 ∈R the welfare contrast between actions a = 1 and a = 0.
+If U ∗were known, the optimal action would be 1 {U∗≥0}. The DM observes a random sample
+Y n := {Yi}n
+i=1 ∈Yn of size n, where Yi ∈Y ⊆RdY , to learn about U ∗. We assume that Yi
+follows a parametric model with a distribution Pγ indexed by γ ∈M ⊆Rdm. We require γ to be
+point-identified in the usual sense, i.e., if γ, γ′ ∈M are such that γ̸ = γ′, we have Pγ̸ = Pγ′. We
+therefore treat the values of γ ∈M as the point-identified reduced-form parameter.
+As in Christensen et al. (2026), our primary focus is when U∗—the payoff-relevant parameter—is
+only partially identified, but the DM can use γ to deduce restrictions on U∗. That is, if γ were
+known, the most the DM could infer is that U∗∈I(γ) ⊆R, where I(· ) is a set-valued mapping
+from M to R that may contain both positive and negative values. We refer to I(γ) as the identified
+set of U ∗given γ ∈M.
+Assumption 1. The identified set I(γ) depends on γ only via a known function µ(·) : Rdm →Rdµ,
+with dµ ≤dm.
+We may think of µ(·) as a decision-relevant reduced-form parameter and view the rest of γ
+as some nuisance parameter not directly relevant for the identification of U∗.
+For instance, in
+the example of Section 2.1, γ refers to the mean and variance of a normal distribution, while the
+identified set of U ∗only depends on the mean.
+Under Assumption 1, we can write I(γ) := I(µ(γ)), where
+I(t) := {u ∈R | u ∈I(γ), µ(γ) = t, γ ∈M}
+is the identified set of U ∗given a fixed value of µ(· ). Let
+Mµ :=
+
+t ∈Rdµ | µ(γ) = t, γ ∈M
+	
+10
+
+
+collect all the values that the function µ(· ) can take as γ ranges over M. For any t ∈Mµ, let
+I(t) := sup I(t);
+I(t) := inf I(t)
+be the upper and lower bounds of I(t) ⊆R. Abusing notation, sometimes we write I(µ), and
+pretend that µ denotes a particular value of the function µ(· ), instead of the whole function. In the
+problems that we are interested in, we assume there must be at least one point t∗∈Mµ for which
+0 ∈I(t∗) and I(t∗) < 0 < I(t∗). This means that at values of the decision-relevant reduced-form
+parameter that equal t∗, the welfare contrast could be strictly positive or strictly negative.
+After observing data Y n, the decision maker chooses a statistical decision rule dn : Yn →[0, 1],
+interpreted as the probability of treatment assignment or the fraction of the target population to
+be treated. To organize notation, it will be convenient to define θ :=
+ γ⊤, U ∗⊤and
+Θ :=
+n a⊤, b
+⊤∈Rdm+1 | a ∈M, b ∈I(a)
+o
+.
+Note that the set Θ collects the values that γ and U∗can take jointly. We endow Θ with the standard
+subspace topology of Rdm+1.
+Throughout the rest of the paper we require that its topological
+interior, denoted as int(Θ), is nonempty.
+In order to connect with previous work in the literature—in particular, with the work of Yata
+(2025)—for each θ ∈Θ, denote by m(θ) the mapping that selects the first dm elements of θ (i.e., the
+point-identified γ), and by U(θ) the mapping that selects the last element of θ (i.e., the partially
+identified payoff-relevant parameter U∗).
+By construction, both m(· ) and U(· ) are linear.
+By
+definition, m(·) is clearly not injective: m(θ) = m(θ′) does not imply θ = θ′.3
+We evaluate the performance of a decision rule dn via expected regret:
+R(dn, θ) = U(θ)
+ 1 {U(θ) ≥0} −Em(θ) [dn (Y n)]
+
+,
+where Em(θ) [· ] denotes expectation with respect to Y n, whose distribution only depends on m(θ).
+We omit the subscript whenever there is no risk of confusion. Note that we also omit the explicit
+dependence of the risk on the sample size, for the sake of notational simplicity. A rule is finite-sample
+3Even though the framework considered by Yata (2025) appears to be significantly more general than ours
+(because he allows for the possibility of an underlying infinite-dimensional parameter θ), we argue that the treatment
+choice problems that he considers can be recast using our framework. To see this, given some underlying ˜θ ∈˜Θ
+that may be infinitely dimensional, let ˜m(· ) : ˜Θ →Rd ˜
+m map θ to a finite-dimensional reduced-form parameter
+and ˜U(· ) : ˜Θ →R map θ to a partially identified payoff-relevant parameter.
+Since the risk function depends
+on θ only via ˜m(· ) and ˜U(· ), one can always reparametrize so that θ := ( ˜m(˜θ)⊤, ˜U(˜θ))⊤∈Θ ⊆R1+d ˜
+m, where
+Θ := {( ˜m(˜θ)⊤, ˜U(˜θ)) ∈R1+d ˜
+m | ˜θ ∈˜Θ} is a set in R1+d ˜
+m.
+11
+
+
+MMR optimal if it solves
+min
+dn sup
+θ∈Θ
+R(dn, θ).
+(5)
+Local Asymptotics. To provide a simpler, large-sample representation of the finite-sample
+MMR problem (5), we fix a parameter θ0 := (γ⊤
+0 , 0)⊤∈int(Θ), such that γ0 ∈int(M), 0 ∈I(γ0)
+and int(I(γ0))̸ = ∅. Then, we consider a sequence of parameter values of the form:
+θn = θ0 + θh
+√n,
+(6)
+where θh := (h⊤, µ∗)⊤∈Rdm+1. Since m(·) and U(·) are linear, we also have
+m(θn) = γ0 + h
+√n,
+U(θn) = µ∗
+√n.
+(7)
+In words, we recentered the reduced-form parameter at γ0 and the payoff-relevant but partially
+identified parameter at 0.
+3.2
+Choice of Localization for the Point-Identified Parameter
+In point-identified settings, a standard choice for the localization parameter γ0 is any point such
+that the corresponding payoff-relevant parameter equals zero, which corresponds to a hardest case
+where it is difficult to determine the best treatment even with large sample sizes (Hirano and Porter,
+2009, p.1687). In our setup, the payoff-relevant parameter U(θ) is partially identified. This means
+that the choice of γ0 is more delicate, as any values of γ0 such that 0 ∈I(µ(γ0)) would be consistent
+with a situation in which U(θ) = 0, and hence it might be difficult to determine the best treatment
+even in large samples.
+Let µ0 := µ(γ0). We propose a notion of hardest case that considers the population level MMR
+problem
+min
+a∈[0,1] sup
+u∈I(µ0)
+u (1 {u ≥0} −a)
+(8)
+corresponding to oracle knowledge of the decision-relevant reduced-form parameter.
+Denote by
+R(µ0) the value of (8). Note I(µ0) = I(µ0) corresponds to a point-identified problem, for which
+R(µ0) = 0. Otherwise, a MMR optimal action for (8) is (Manski, 2007)
+
+I(µ0)
+I(µ0) −I(µ0)
+1
+0
+,
+(9)
+12
+
+
+µ
+µ∗
+µ0
+k
+−k
+Figure 2: A global least favorable point in the example of Section 2.1. On µ-axis, every point to
+the left of the orange dot and to the right of the blue dot leads to R(µ) = 0. Between these two
+points, R(µ) is strictly positive and maximized at the red dot with a value of k/2.
+achieving a value of
+R(µ0) = max
+ −I(µ0)I(µ0)
+I(µ0) −I(µ0), 0
+
+.
+We already assumed the existence of a decision-relevant reduced-form parameter, µ0, such that
+0 ∈I(µ0) and I(µ0) > 0 > I(µ0). We strengthen this requirement by assuming that there is a point
+µ0 in the interior of Mµ that satisfies this property, and that yields the highest possible value for
+the population level MMR problem.
+Assumption 2. There exists θ0 ∈int(Θ) such that m(θ0) = γ0 ∈int(M), µ0 = µ(γ0) ∈int (Mµ),
+where I(µ0) > 0 > I(µ0), and R(µ0) ≥R(µ′) for all µ′ ∈Mµ.
+The value of the problem (8) is maximized and strictly positive at µ0 satisfying Assumption
+2, which we interpret as µ0 being most difficult from the DM’s perspective. We refer to such µ0
+as a global least favorable (decision-relevant reduced-form) point. This means that m(θn) in (7) is
+centered at any γ0 ∈int(M) such that µ(γ0) = µ0. See Figure 2 for an illustrative example of a
+global least favorable point.
+We note that different values of the reduced-form parameter γ0 can be associated with the
+same decision-relevant reduced-form parameter µ0. This is allowed in our theory, as long as we
+have efficient estimators for γ0 (as well as consistent estimators of the asymptotic variance). See
+analogous treatments in Hirano and Porter (2009) with asymmetric welfare regret and Kitagawa
+et al. (2026) with nonlinear regret.
+13
+
+
+3.3
+Choice of Local Identified Set
+Let γ0 and µ0 be defined as in Assumption 2. We impose the following smoothness and regularity
+condition.
+Assumption 3.
+(i) µ(· ) is (fully) differentiable in a local neighborhood of γ0.
+(ii) In a local neighborhood of µ0, I(· ) and I(· ) are attained and (Hadamard) directionally differ-
+entiable for all directions v ∈Rdµ, and I(·) is connected.
+Under Assumption 3, let
+G0 := µ(1)(γ0)
+| {z }
+Rdµ×Rdm
+be the gradient of µ(· ) at γ0. Denote by I
+(1)(µ; v) the directional derivative of I(· ) at µ with respect
+to vector v ∈Rdµ, i.e.,
+I
+(1)(µ; v) :=
+lim
+λ↓0,v′→v
+I(µ + λv′) −I(µ)
+λ
+.
+If I(· ) is (fully) differentiable at µ, we have
+I
+(1)(µ; v) =
+
+I
+(1)(µ)
+⊤
+v,
+where I
+(1)(µ) is the gradient of I(· ) at µ. The directional derivative and gradient of I(· ) at µ,
+written as I(1)(µ; v) and I(1)(µ) respectively, are defined analogously.
+For each h ∈Rdm, the point-identified parameter follows a sequence m(θn) = γ0 +
+h
+√n. As
+n →∞, the identified set of U(θn) will be
+I
+
+µ
+
+γ0 + h
+√n
+
+≈
+"
+I(µ0) + I(1)(µ0; G0h)
+√n
+, I(µ0) + I
+(1)(µ0; G0h)
+√n
+#
+→
+
+I(µ0), I(µ0)
+
+, as n →∞.
+(10)
+The limit identified set (10) reveals two important observations. First, in the limit U(θn) converges
+to zero (implying point identification); however, in the limit, (10) is a set, which implies partial
+identification. We think this suggests an inconsistency in the analysis which ought to be reconciled.
+Second, (10) does not depend on the local parameter h—in this limit, the data became pure noise
+and the issue of partial identification overwhelms sampling uncertainty.
+Given these two observations and also motivated by the local behavior of I(µ(γ0 +
+h
+√n)) with
+large n, we will construct a particular sequence of local, shrinking identified set in the form of
+14
+
+
+(11)-(12) below, leading to a scaled limit identified set (13). We stress that our construction is not
+the only way in which one could approximate the decision problem of interest. As we explain in
+Appendix B, there are other reasonable ways of constructing a shrinking identified set that may
+lead to a different geometry of the limit identified set.4
+Take I(µ0), I(µ0), I(1)(µ0; ·) and I
+(1)(µ0; ·) as given from the original identified set, we construct
+a new, local identified set as follows:
+U(θn) ∈
+"
+In(µ0) + I(1)(µ0; G0h)
+√n
+, In(µ0) + I
+(1)(µ0; G0h)
+√n
+#
+,
+(11)
+where In(µ0) →0 and In(µ0) →0 as n →∞and
+In(µ0)
+In(µ0) = I(µ0)
+I(µ0),
+√nIn(µ0) = C,
+√nIn(µ0) = C,
+(12)
+for some C < 0, C > 0. In particular, the relative magnitude of In(µ0) versus In(µ0) respects what
+we observe in the original identified set. It follows that
+µ∗= √nU(θn) ∈
+h√nIn(µ0) + I(1)(µ0; G0h), √nIn(µ0) + I
+(1)(µ0; G0h)
+i
+=
+h
+C + I(1)(µ0; G0h), C + I
+(1)(µ0; G0h)
+i
+.
+Therefore, we define the identified set for µ∗in (7) as
+I∞(h) := [I∞(h), I∞(h)],
+(13)
+where I∞(h) := C + I(1)(µ0; G0h) and I∞(h) := C + I
+(1)(µ0; G0h). We refer to (13) as a limiting
+(local) identified set, since in the limit it only reflects the local information of the original identified
+set I(·) around µ0. This means that our limiting identified set enjoys a simpler geometry than the
+original identified set and allows for slightly more tractability. As (13) should be nonempty, we
+define
+Mh := {h ∈Rdm | I∞(h) ≥I∞(h)}.
+(14)
+It is important to stress that, by working with such “near-point-identification” asymptotics,
+we do not mean that the identified set is literally shrinking as sample size increases. As noted
+4For example, if the identified set can be defined via a number of moment conditions, the analysis in Armstrong
+and Kolesár (2021) would yield a limiting identified set different from (13), although the two approaches may coincide
+in simple cases, e.g., the stylized example in Section 2.
+15
+
+
+in Armstrong and Kolesár (2021), the usefulness of any asymptotic device “should be judged by
+whether it yields accurate approximations to the finite-sample behavior”. In this regard, we think
+our approach offers a unifying framework for researchers to judge a suitable course of action in
+treatment choice problems with partial identification.
+(i) Our approach is most helpful if, given finite data and the decision problem at hand, the
+researcher believes that both sampling uncertainty and the severity of partial identification
+are important considerations. In practice, they simply apply our theory below by replacing
+C with √nI(µ0) and analogously replacing C with √nI(µ0).
+(ii) If the data are so abundant that the researcher believes sampling uncertainty is rather tiny
+compared to the degree of partial identification, then they are free to set C = −C = ∞. In this
+case, we would simply recommend to apply (9) with consistent estimators of the corresponding
+reduced-form parameters.
+(iii) Finally, if the data is so scarce that the researcher believes the problem of lack of identification
+is not as important at all, they may simply apply our approach and evaluate the optimal rule
+by letting C ↓0 and C ↑0.
+3.4
+Local Asymptotic Optimality
+To complete characterizing the limit game, we impose a standard differentiability in quadratic mean
+(DQM) condition for the statistical model Pm(θ).
+Assumption 4. For an open set Γ ⊆M that contains γ0, the model
+
+Pm(θ) : m(θ) ∈Γ
+	
+satisfies
+the DQM assumption when m(θ) = γ0, i.e., there exists a function s : Y →Rdm such that
+Z 
+dP 1/2
+γ0+h(y) −dP 1/2
+γ0 (y) −1
+2h⊤s(y)dP 1/2
+γ0 (y)
+2
+= o
+ ∥h∥2
+, as h →0.
+Moreover, the Fisher information I0 = Eγ0 [ss′] is nonsingular.
+Lemma 1. Suppose Assumptions 1-4 hold. For a sequence of rules dn, if Eγ0+ h
+√n[dn(Y n)] converges
+as n →∞for every h, then there exists some d∞: Rdm →[0, 1] such that for every h,
+Eγ0+ h
+√n[dn(Y n)] →E[d∞(∆)]
+(15)
+as n →∞, where ∆∼N(h, I−1
+0 ) follows a Gaussian distribution with mean h and a covariance
+matrix I−1
+0 .
+16
+
+
+Lemma 1 simply restates Proposition 3.1 of Hirano and Porter (2009) in the context of our
+statistical model Pm(θ) and point of localization γ0. Let
+Θn := {θ ∈Θ | θ = θ0 + θh/√n,
+where θh = (h⊤, µ∗)⊤satisfies h ∈Mh, µ∗∈I∞(h)}.
+(16)
+Together with our choice of γ0, Mh and I∞(h), observe that for each θn ∈Θn, we have m(θn) =
+γ0 +
+h
+√n and U(θn) =
+µ∗
+√n, where h ∈Mh and µ∗∈I∞(h). Therefore, for any dn that converges in
+the sense of Lemma 1, we have
+√nR(dn, θn) = √n µ∗
+√n
+
+1
+ µ∗
+√n ≥0
+
+−Eγ0+ h
+√n[dn(Y n)]
+
+→µ∗(1 {µ∗≥0} −E[d∞(∆)]) , as n →∞.
+Then, the limit decision problem becomes the following: The researcher observes ∆∼N(h, I−1
+0 )
+and needs to come up with a rule d∞: Rdm →[0, 1] that maps ∆to the unit interval. The limit
+payoff-relevant parameter is µ∗∈R, partially identified with an identified set I∞(h). In this limit
+game, a decision rule is MMR optimal if it achieves the value
+R∗:= min
+d∞
+sup
+h∈Mh,µ∗∈I∞(h)
+µ∗(1 {µ∗≥0} −E[d∞(∆)]) .
+(17)
+We are now ready to define our notion of local asymptotic MMR optimality. For Θn that has the
+local parametrization (16), let
+Θn(J) :=
+
+θn ∈Θn | θn = θ0 + θh/√n, θh = (h⊤, µ∗)⊤, h ∈J, µ∗∈I∞(h)
+	
+,
+(18)
+where J is a finite subset of Mh. A rule dn is locally asymptotically MMR optimal if5
+sup
+J
+lim inf
+n→∞
+sup
+θn∈Θn(J)
+√nR(dn, θn) = R∗.
+(19)
+Theorem 1. Suppose Assumptions 1-4 hold and let d∗
+∞be a solution of (17). If a sequence of
+statistical decision rules dn : Yn →[0, 1] matches d∗
+∞in the sense of (15), dn is locally asymptotically
+MMR optimal.
+Theorem 1 is our first main result. It justifies a Gaussian experiment with a suitable local
+5Let D be the set of all sequences of rules that converge in the sense of Lemma 1.
+Our definition im-
+plies that dn is asymptotically MMR optimal in D, i.e., the RHS of (19) may be equivalently replaced with
+infd′
+n∈D supJ lim infn→∞supθn∈Θn(J)
+√nR(d′
+n, θn).
+17
+
+
+limit identified set as a limit experiment for a large class of treatment choice problems with partial
+identification. By finding a solution d∗
+∞of the simpler Gaussian limit game (17), one can discover
+an asymptotically optimal rule for the finite-sample problem (5). Specifically, Theorem 1 shows
+that any finite-sample rule dn such that Eγ0+h/√n[dn(Y n)] →E[d∗
+∞(∆)] for every h as n →∞is
+asymptotically MMR optimal in the sense of (19). In practice, once d∗
+∞is found, dn can often be
+constructed by plugging in a best regular estimator for γ0 as well as consistent estimators of other
+nuisance parameters in d∗
+∞.
+4
+Solving the Limit Problem
+The illustrative example in Section 2 corresponds to fully differentiable bounds and centrosymmetric
+parameter space.
+In general, however, the limit identified set in our characterization need not
+be centrosymmetric and may also display directionally differentiable bounds.
+In the next two
+results, we discover d∗
+∞for two non-nested cases, namely by either relaxing centrosymmetry or full
+differentiability. These findings are also of interest as stand-alone results in the spirit of Yata (2025)
+or Stoye (2012a).
+4.1
+Fully Differentiable Bounds
+When I(·) and I(·) are fully differentiable at µ0, the identified set (13) simplifies to
+I∞(h) =
+
+C +
+
+I(1)(µ0)
+⊤
+G0h, C +
+
+I
+(1)(µ0)
+⊤
+G0h
+
+.
+In this case, the Gaussian limit game (17) can be solved by considering an even simpler, one-
+dimensional limit game. Let κ0 := (I(µ0))2/(I(µ0))2 > 0. Lemma 2 in Appendix A establishes
+that
+I(1)(µ0) = I
+(1)(µ0)· κ0,
+(20)
+i.e., the gradients of the lower and upper bounds of the original identified set at µ0 must share the
+same direction.6 It follows that I∞(h) depends on h only via υ :=
+
+I
+(1)(µ0)
+⊤
+G0h ∈R. Therefore,
+consider the following one-dimensional game: a researcher observes a scalar-valued signal
+ˆυ :=
+
+I
+(1)(µ0)
+⊤
+G0∆∼N
+ υ, σ2
+,
+6Intuitively, since µ0 is a global least favorable point in the sense of Assumption 2, moving away from it cannot
+increase the value of R(·). In the case of full differentiability, that pins down a first-order condition implying (20).
+18
+
+
+where σ2 :=
+
+I
+(1)(µ0)
+⊤
+G0I−1
+0 G⊤
+0 I
+(1)(µ0) is known and strictly positive; a limit welfare contrast is
+υ∗∈R, partially identified with an identified set
+I(υ) =
+
+C + κ0υ, C + υ
+
+,
+for values of υ such that (κ0 −1) υ ≤C −C. In this simple, one-dimensional game, a rule d : R →
+[0, 1] is MMR optimal if it solves
+min
+d
+sup
+υ∈R,(κ0−1)υ≤C−C,υ∗∈I(υ)
+υ∗(1 {υ∗≥0} −E[d(ˆυ)])
+(21)
+The shape of the parameter space in game (21) depends on the value of κ0 and can be one of
+the three cases illustrated in Figure 3. The case of κ0 = 1 nests a convex and centrosymmetric
+parameter space with fully differentiable bounds analyzed in the existing literature. Otherwise, the
+parameter space is still convex but not centrosymmetric in general. We characterize analytically
+the solution of (21), which we show is in fact a MMR solution of the limit game (17).
+v
+v∗
+v
+v∗
+v
+v∗
+Figure 3: Parameter space in limit game (21) (from left to right: κ0 < 1, κ0 = 1 and κ0 > 1)
+Let ϕ(· ) and Φ(· ) be the standard normal pdf and cdf and Φ−1(· ) the inverse of Φ(· ). Define
+σ := −C
+C
+ C −C
+
+ϕ
+
+Φ−1
+
+C
+C −C
+
+,
+t∗:= −Φ−1
+
+C
+C −C
+
+σ.
+Also, for each t, υ ∈R, and each σ > 0, write
+R2(t, υ; σ) := (υ + C)Φ
+t −υ
+σ
+
+,
+R1(t, υ; σ) := −(κ0υ + C)Φ
+υ −t
+σ
+
+.
+19
+
+
+Theorem 2. Suppose Assumptions 1-4 hold, I(·) and I(·) are fully differentiable at µ0, G0I−1
+0 G⊤
+0
+is positive definite and σ2 > 0. The following results hold true for the limit game (17).
+(i) If σ < σ, d∞,RT = Φ
+
+ˆυ−t∗
+√
+σ2−σ2
+
+is MMR optimal.
+(ii) If σ ≥σ, then 1 {ˆυ ≥t0} is MMR optimal, where t0 is the unique t ∈R such that
+max
+{υ∈R:(κ0−1)υ≤C−C,υ+C≥0}
+R2(t, υ; σ) =
+max
+{υ∈R:(κ0−1)υ≤C−C,κ0υ+C≤0}
+R1(t, υ; σ).
+(22)
+Theorem 2 demonstrates two interesting features of the multivariate-signal game (17) with fully
+differentiable bounds at µ0. First, there exists a MMR optimal rule that depends on data ∆only via
+an efficient linear combination ˆυ. Along this direction, the limit MMR problem becomes effectively
+one-dimensional. Second, the key insights of the MMR optimal rule for the symmetric case (Stoye,
+2012a; Yata, 2025; Montiel Olea et al., 2026) extend to a non-centrosymmetric parameter space.
+In particular, σ depends only on C and C and can be interpreted as a measure of the severity of
+the identification problem, while σ signals the effective estimation difficulty. If estimation difficulty
+dominates the severity of partial identification (case (ii)), an MMR optimal rule is a threshold rule,
+although the threshold is no longer zero in general and must be found via a (simple one-dimensional)
+fixed point program (22).7 If, however, the severity of partial identification dominates estimation
+difficulty (case (i)), the MMR optimal rule randomizes, in which case we find one randomized rule
+d∞,RT. We are confident that, in case (i), there are infinitely many MMR optimal rules, although
+pinning down a piecewise linear rule in the spirit of Montiel Olea et al. (2026) appears to be
+extremely algebraically involved. Theorem 2 informs the following asymptotic results.
+Theorem 3. Suppose the conditions of Theorem 2 hold. Moreover, let ˆγ be a best regular estimator
+of γ0 such that
+√n(ˆγ −γ0 −h
+√n)
+h⇝N(0, I−1
+0 ), for all h ∈Rdm.
+Let ˆσ be a consistent estimator of σ when h = 0, ˆt be the unique t ∈R such that (22) holds with σ
+replaced by ˆσ. Then, the following feasible rule is locally asymptotically MMR optimal:
+dF := 1 {ˆσ ≥σ} · dF,ˆt + 1 {ˆσ < σ} · dF,RT,
+7The idea of the fixed point program is analogous to that in Tetenov (2012), who focuses on MMR optimal rules
+in point-identified situations with asymmetric welfare regret. In this regard, we uncover an interesting connection
+between a point-identified problem with asymmetric regret and a partially identified problem with symmetric regret
+but non-centrosymmetric parameter space.
+20
+
+
+where
+dF,ˆt := 1
+√n
+
+I
+(1)(µ0)
+⊤
+(µ(ˆγ) −µ0) ≥ˆt
+
+,
+dF,RT := Φ
+
+
+
+√n
+
+I
+(1)(µ0)
+⊤
+(µ(ˆγ) −µ0) −t∗
+√
+σ2 −ˆσ2
+
+
+.
+In our partially identified setting, the shape of the limit optimal rule found in Theorem 2 depends
+on the value of σ, which is unknown and must be estimated. As a result, establishing asymptotic
+optimality of dF is more challenging than in Hirano and Porter (2009). We show the discontinuities
+caused by the regime change do not affect the asymptotic validity of dF. In particular, irrespective
+of the true value of σ, dF is always matched with the right limiting optimal rule found in Theorem
+2.
+The form of our feasible rule explicitly depends on the location of µ0. Our asymptotic theory
+applies to any least favorable point that satisfies Assumption 2 and does not require uniqueness of
+µ0. However, if there are multiple least favorable points, they may lead to different decision rules.
+When this happens, we think researchers should have the freedom to judge judiciously which point
+of localization is more pertinent to their analyses. Otherwise, we recommend to report the one
+associated with a higher calculated value of R∗defined in (17).
+4.2
+Directionally Differentiable Bounds
+Many partially identified models feature only directionally differentiable bounds. When I(·) and I(·)
+are only directionally differentiable at µ0, the geometry of our limit game becomes more complicated.
+To gain tractability, let
+ΘM :=
+n µ(m(θ))⊤, U(θ)
+⊤∈Rdµ+1 | θ ∈Θ
+o
+be the set of values the decision-relevant parameter µ(m(θ)) and the payoff-relevant parameter U(θ)
+can take for the original problem (5). We maintain the following:
+Assumption 5.
+(i) ΘM is convex and centrosymmetric.
+(ii) There exists some µ ∈Mµ such that I(µ) > I(0).
+With the additional Assumption 5(i), I(·) is concave.8 Moreover, Lemma E.1 shows that 0 ∈Rdµ
+is a global least favorable point, at which we recenter our reduced-form parameter. As h only affects
+8For example, one may apply Yata (2025, Lemma B.4) or Montiel Olea et al. (2026, Lemma C.2) to ΘM.
+21
+
+
+the limit identified set via G0h, we may still simplify the problem by redefining a limit decision-
+relevant reduced-form parameter µ := G0h9 and searching among rules that depend on ∆only
+via
+G0∆∼N(µ, Σ0),
+where Σ0 := G0I−1
+0 G⊤
+0 is assumed to be positive definite. The identified set for the limit payoff-
+relevant parameter then simplifies to
+I∞(µ) = [I∞(µ), I∞(µ)],
+(23)
+where I∞(µ) = C + I(1)(0; µ), I∞(µ) = C + I
+(1)(0; µ), and µ can take values in the set
+Mµ,∞:= {µ ∈Rdµ | I∞(µ) ≥I∞(µ)}.
+Thus, one may consider finding a rule d : Rdµ →[0, 1] that solves the following problem
+min
+d
+sup
+µ∗∈[I∞(µ),I∞(µ)],µ∈Mµ,∞
+µ∗[1 {µ∗≥0} −E[d(G0∆)]] .
+(24)
+Note the parameter space of (µ, µ∗) in (24) is still convex and centrosymmetric, but data G0∆
+becomes Gaussian.
+This characterization endorses the finite-sample results considered by Yata
+(2025) as in fact a bona fide limiting decision problem, with a suitable adjustment of the original
+identified set to its localized version. Therefore, the main results in Yata (2025) apply to (24);
+in particular, an optimal MMR rule utilizes an efficient linear combination of G0∆and can be
+found by applying Yata (2025, Theorem 1). Moreover, when C is sufficiently large, the results in
+Montiel Olea et al. (2026) imply there are infinitely many MMR optimal rules. Next, we contribute
+to the literature by showing that the efficient linear combination can be alternatively found by
+solving either a simple quadratic program (25) or a nonlinear optimization program (27) below.
+Denote by ∂I(0) the superdifferential of I(· ) at 0. By Rockafellar (1970, p.217-218, Section 23),
+we have
+I
+(1)(0; µ) = min
+p∈∂I(0) p⊤µ,
+∀µ ∈Rdµ,
+where ∂I(0) is nonempty, compact, and convex and I
+(1)(0; · ) is a finite positively homogeneous
+concave function (i.e., I
+(1)(0; αµ) = αI
+(1)(0; µ) for all α > 0). Moreover, Assumption 5(ii) implies
+9We slightly abuse notation here because µ is not the same as µ ∈Mµ in the original parameter space.
+22
+
+
+that 0 /∈∂I(0). Therefore, denote by p := p(Σ0) the unique solution of
+min
+p∈∂I(0)
+
+p⊤Σ0p
+	1/2 ,
+(25)
+and write
+t :=
+2C
+I(1)(0; Σ0p) −I
+(1)(0; Σ0p)
+∈(0, ∞],
+with the understanding that t = ∞if I(1)(0; Σ0p) −I
+(1)(0; Σ0p) = 0.
+Theorem 4. Suppose Assumptions 1-5 hold and Σ0 is positive definite. Consider the limit game
+(17) with µ0 = 0. The following statements hold true.
+(i) If
+  π
+2p⊤Σ0p
+1/2 < C,
+d∞,RT := Φ
+
+
+p⊤G0∆
+q
+2
+πC
+2 −p⊤Σ0p
+
+
+is MMR optimal.
+(ii) If
+  π
+2p⊤Σ0p
+1/2 ≥C, and
+x := x(Σ0) := arg max
+x∈[0,∞)(C + x)Φ
+ 
+−
+x
+ p⊤Σ0p
+1/2
+!
+≤tI
+(1)(0; Σ0p),
+(26)
+d∞,p := 1
+
+p⊤G0∆≥0
+	
+is MMR optimal.
+(iii) Otherwise, d∞,µo := 1
+n
+(µo)⊤Σ−1
+0 G0∆≥0
+o
+is MMR optimal, where µo := µo(Σ0) uniquely
+solves
+max
+{µ∈Mµ,∞:I(1)(0;µ)≥0}
+r(µ; Σ0),
+(27)
+and r(µ; Σ0) :=
+
+C + I
+(1)(0; µ)
+
+Φ
+
+−
+p
+µ⊤Σ−1
+0 µ
+
+.
+The intuition behind Theorem 4 is as follows.
+Focus on the limit game among rules that
+depend on ∆only via G0∆. Consistent with the existing results in the literature, a least favorable
+prior randomizes evenly between two symmetric points around 0, i.e., between (−µ, I∞(−µ)) and
+(µ, I∞(µ)) where I∞(µ) > 0.
+In “benign cases” where Σ0 is not too large (statements (i) and
+(ii) above), the direction of µ is found via (25), which determines an efficient direction along
+23
+
+
+Σ0p. Along this direction, the game again essentially becomes one-dimensional. In cases where
+  π
+2p⊤Σ0p
+1/2 ≤C, one has µ = 0, and a limit MMR optimal rule randomizes whenever the inequality
+is strict. In fact, applying Montiel Olea et al. (2026, Theorem 1) to case (i), we can conclude that
+infinitely many MMR optimal rules exist, among them the piecewise linear rule
+d∗
+linear :=
+p⊤G0∆+ ρ∗
+2ρ∗
+1
+0
+,
+where ρ∗is the unique strictly positive solution of
+ ρ∗
+2C
+
+−1
+2 + Φ
+ 
+−
+ρ∗
+ p⊤Σ0p
+1/2
+!
+= 0.
+In case (ii), µ has a strictly positive length (i.e., µ = tΣ0p for some t > 0) whenever the inequality
+is strict, and d∞,p is the (a.e.) unique Bayes response. A caveat is that the described equilibrium
+can only be sustained if the length of µ is not too large, as µ must also be in Mµ,∞, which may be
+bounded in direction Σ0p. Condition (26) gives this boundary condition. If it is violated, we must
+search for a possibly alternative optimal direction via the nonlinear program (27). In all cases, we
+also provide a suitable two-point symmetric prior in the space of (h, µ∗) that supports our decision
+rules, confirming that, although they depend only on G0∆, they are MMR optimal for problem
+(17). With Theorem 4, we next provide a feasible plug-in rule that will be asymptotically MMR
+optimal.
+Theorem 5. Suppose the conditions of Theorem 4 hold. Moreover, let ˆγ be a best regular estimator
+of γ0 such that
+√n(ˆγ −γ0 −h
+√n)
+h⇝N(0, I−1
+0 ), for all h ∈Rdm.
+Let ˆΣ be a positive definite and consistent estimator of Σ0 when h = 0, ˆp := p(ˆΣ), ˆx := x(ˆΣ) and
+let ˆµo solve (27) with Σ0 replaced by ˆΣ. The following feasible rule is locally asymptotically MMR
+optimal:
+dF := 1
+π
+2 ˆp⊤ˆΣˆp
+1/2
+< C
+
+dF,RT
++ 1
+(π
+2 ˆp⊤ˆΣˆp
+1/2
+≥C, ˆx ≤
+2CI
+(1)(0; ˆΣˆp)
+I(1)(0; ˆΣˆp) −I
+(1)(0; ˆΣˆp)
+)
+dF,ˆp
++ 1
+(π
+2 ˆp⊤ˆΣˆp
+1/2
+≥C, ˆx >
+2CI
+(1)(0; ˆΣˆp)
+I(1)(0; ˆΣˆp) −I
+(1)(0; ˆΣˆp)
+)
+dF,ˆµo,
+24
+
+
+where
+dF,RT := Φ
+
+
+√nˆp⊤µ(ˆγ)
+q
+2
+πC
+2 −ˆp⊤ˆΣˆp
+
+, dF,ˆp := 1
+
+ˆp⊤µ(ˆγ) ≥0
+	
+, dF,ˆµo := 1
+n
+(ˆµo)⊤ˆΣ−1µ(ˆγ) ≥0
+o
+.
+5
+Applications
+5.1
+Contaminated and Corrupted Data
+This example corresponds to a parameter space that can be recast as convex and centrosymmetric
+with fully differentiable bounds; see Qiu and Stoye (2026) for a related example in regression
+discontinuity design. Suppose a DM must choose between two treatments based on RCT data,
+but some outcomes are contaminated. For each unit i, let Di ∈{0, 1} be its treatment status,
+where Di = 1 denotes treatment and Di = 0 denotes control. The realized outcome for each unit is
+Yi = DiYi(1) + (1 −Di)Yi(0), where Yi(1), Yi(0) ∈{0, 1} are binary potential outcomes (success/no
+success) under treatment and control, respectively. The DM also observes Si ∈{0, 1}, where Si = 1
+means the realized outcome Yi is contaminated or missing and therefore cannot be used for decision
+making. The payoff-relevant parameter is the average treatment effect µ∗= E[Y (1)] −E[Y (0)].
+Horowitz and Manski (1995) derive the sharp identified set of µ∗:
+[(1 −p1)γ1 −(1 −p0)γ0 −p0, (1 −p1)γ1 −(1 −p0)γ0 + p1],
+(28)
+where γ1 = E[Yi | Di = 1, Si = 0], γ0 = E[Yi | Di = 0, Si = 0], p1 = E[Si = 1 | Di = 1], and
+p0 = E[Si = 1 | Di = 0]. Suppose the contamination rates p1, p0 ∈(0, 1) are known, e.g., from RCT
+experts or through validations from past experiments. This fits our framework with a convex and
+centrosymmetric parameter space by writing θ = (µ∗, γ1, γ0), m(θ) = (γ1, γ0), and U(θ) = µ∗. The
+identified set depends on γ1 and γ0 only via µ := (1 −p1)γ1 −(1 −p0)γ0 −(p0 −p1)/2, so that we
+can rewrite the identified set more compactly as I(µ) = [I(µ), I(µ)], where
+I(µ) = µ −k, I(µ) = µ + k
+(29)
+and k = (p1 + p0)/2 ∈(0, 1). The global least favorable point has µ0 = 0, I
+(1)(µ0) = 1, and κ0 = 1.
+Theorem 3 directly applies.
+If p1 and p0 are also unknown, they become part of m(θ). In this case, k in (29) is unknown
+as well. The global least favorable point occurs on the boundary violating Assumption 2, namely
+at p1 = p0 = 1, i.e., no realized outcome is observed and the identified set becomes completely
+25
+
+
+uninformative (also resembling an issue faced in Song (2014)). Our result does not apply to this
+irregular case. In Appendix C, we slightly modify our asymptotic framework to accommodate this
+situation so that one may use estimated versions of p1 and p0 to construct optimal rules. See also
+Xu (2026) for an alternative treatment.
+5.2
+Robust Welfare Analyses
+This example is inspired by Kang and Vasserman (2025) and corresponds to a scenario with fully
+differentiable bounds but non-centrosymmetric parameter space.
+A policy maker contemplates
+levying an ad valorem tax τ on a good and using the tax revenue to generate some known social
+surplus G. Suppose the demand curve does not shift before and after the tax levy. The status-quo
+price and quantity, denoted as p0 and q0, are known. The new price after the levy, p1 = p0(1+τ), is
+also known. The policy maker observes some individual-level experimental data that point-identify
+the new quantity q1 := q1(γ), which itself can be a smooth transformation of some finite-dimensional
+parameter γ from structural or reduced-form modeling. Even if q1 is perfectly observed, we still
+do not know the true knowledge of the demand curve between p1 and p0. As a result, the loss
+in consumer surplus ∆CS is only partially identified. In this example, U(θ) = G −∆CS, while
+m(θ) = γ.
+q1
+G −∆CS
+Figure 4: Identified set of the net social surplus in a stylized example from Kang and Vasserman
+(2025). The area between the dotted red lines is where the decision problem is nontrivial and where
+the global least favorable point is located.
+26
+
+
+Assuming the gradient of the demand curve at any price between p1 and p0 is bounded between
+ q1 −q0
+p1 −p0
+1
+1 −r, q1 −q0
+p1 −p0
+(1 −r)
+
+for some given r ∈(0, 1), Kang and Vasserman (2025) find the sharp identified set of G −∆CS as
+I(q1) := [I(q1), I(q1)], where
+I(q1) = G −(p1 −p0)(1 −r)q0
+2 −r
+−p1 −p0
+2 −r q1,
+I(q1) = G −(p1 −p0)q0
+2 −r
+−(p1 −p0) (1 −r)
+2 −r
+q1,
+which depend on γ only through q1 and are affine in q1. See Figure 4 for an illustration. The
+problem is only interesting when G is in the relevant range so that there exists some q1 such
+that I(q1) > 0 > I(q1).
+In that case, the global least favorable location q0
+1 has a closed-form
+solution.
+Once q0
+1 is found, we can set C = √nI(q0
+1) and C = √nI(q0
+1).
+Furthermore, note
+I
+(1)(q0
+1) = −(p1 −p0) /(2 −r) and κ0 = 1 −r < 1, implying the limit identified set corresponds
+to a case in the left panel of Figure 3. Then, Theorem 3 can be applied with an asymptotically
+efficient estimator for q1 (e.g., by applying the transformation q1(ˆγ) where ˆγ is the MLE for γ) and
+a consistent estimator of its asymptotic variance.
+5.3
+Evidence Aggregation
+We revisit an evidence aggregation example in Ishihara and Kitagawa (2021). Suppose a DM is
+interested in implementing a new policy in a target country and observes a random sample {Yi, Si}n
+i=1
+collected from (for simplicity) two nearby countries, where Yi denotes the outcome of interest when
+the policy is applied to unit i and Si is a binary indicator for the country of origin of each unit
+(Si = 0 means unit i is from country 1 and Si = 1 means unit i is from country 2). The DM
+specifies a parametric model Pϑ for {Yi, Si}. The policy effects of the two nearby countries, denoted
+as µ1 := µ1(ϑ) and µ2 := µ2(ϑ) respectively, are modeled as known smooth functionals of ϑ. The
+status quo policy effect is known and normalized to zero. The DM is willing to extrapolate the
+policy effect in the target country based on those from nearby countries:
+{µ0 ∈R : |µ0 −µj| ≤Cj, j = 1, 2}
+for some Cj > 0, j = 1, 2. In this example, we have θ = (µ0, ϑ) ∈R1+dϑ, U(θ) = µ0, m(θ) = ϑ ∈Rdϑ,
+and the identified set of µ0 depends on m(θ) only via µ1 and µ2. Furthermore, the identified set for
+27
+
+
+µ0 can be written as intersection bounds:
+I(µ1, µ2) =
+
+I(µ1, µ2), I(µ1, µ2)
+
+,
+(30)
+where I(µ1, µ2) = max {µ1 −C1, µ2 −C2} and I(µ1, µ2) = min {µ1 + C1, µ2 + C2}. The space of
+(µ0, µ1, µ2) is convex and centrosymmetric, so µ1 = µ2 = 0 is a global least favorable point.
+Suppose there is one unique nearest neighbor, e.g., 0 < C1 < C2. Then, note at (0, 0), I(µ1, µ2)
+is fully differentiable with I
+(1)(0, 0) = (1, 0). As a result, our Theorems 2 and 3 apply. In particular,
+the limit identified set in the sense of (23) would be
+¯I∞(µ1, µ2) = µ1 + C,
+I∞(µ1, µ2) = µ1 −C,
+(31)
+where C = √nI(0, 0) = √nC1. Note how the geometry of (31) differs from the original identified
+set (30), precisely due to the way we constructed our shrinking identified set in (11)-(12) that only
+incorporates the local information of I(· ) around (0, 0).10
+Let ˆϑ be the MLE for ϑ and define
+ˆµ := (ˆµ1, ˆµ2) := (µ1(ˆϑ), µ2(ˆϑ)). Suppose
+Σ0 :=
+ 
+σ2
+1
+ρσ1σ2
+ρσ1σ2
+σ2
+2
+!
+is positive definite with σ1, σ2 > 0 and ρ ∈(−1, 1). Let
+ˆΣ :=
+ 
+ˆσ2
+1
+ˆρˆσ1ˆσ2
+ˆρˆσ1ˆσ2
+ˆσ2
+2
+!
+be a positive definite and consistent estimator of Σ0. Theorems 2 and 3 imply that the asymptoti-
+cally optimal decision rule would be either 1 {ˆµ1 ≥0} or its randomized version depending on the
+magnitude of 2C
+2
+1/π versus ˆσ2
+1.
+Now, consider the case when C1 = C2 = C > 0. Then, at (0, 0), I(µ1, µ2) is only directionally
+differentiable and our Theorems 4 and 5 apply. We set C = −C = √nC, and can calculate that
+∂I(0, 0) =
+n
+(e, 1 −e)⊤∈R2 | e ∈[0, 1]
+o
+.
+For each v = (v1, v2) with unit length, we have I
+(1)((0, 0); v) = min {v1, v2}, which is nonnegative
+10This is not the only reasonable way to approximate the decision problem.
+In Appendix B, we discuss an
+alternative approach to construct the shrinking identified set, which allows incorporating more features of the original
+identified set.
+28
+
+
+µ1
+µ2
+2C
+−2C
+2C
+−2C
+Σ0p
+∥Σ0p∥
+µ0
+µ2
+µ1
+Figure 5: Left: Illustration of Mµ,∞in the evidence aggregation example when C1 = C2 = C. The
+highlighted area represents {µ ∈Mµ,∞: I
+(1)(0; µ) ≥0}. Nature’s equilibrium choice of (µ1, µ2) in
+the limit game is along the red line whenever ρ ≤min{σ1/σ2, σ2/σ1}. Right: A 3D illustration of
+the parameter space in the same example.
+for all v in the first quadrant (i.e., both v1 and v2 are nonnegative). Analogously, I(1)((0, 0); v) =
+max {v1, v2}. Thus, in this example, the identified set in the limit game becomes
+¯I∞(µ) = min {µ1, µ2} + C,
+I∞(µ) = max {µ1, µ2} −C.
+Moreover, along each direction v in the first quadrant, the maximum possible length that µ can
+take is
+t(v) =
+2C
+max {v1, v2} −min {v1, v2} =
+
+
+
+
+
+
+
+
+
+2C
+v1−v2,
+v1 > v2,
+∞,
+v1 = v2,
+2C
+v2−v1,
+v1 < v2.
+See also Figure 5 for an illustration of Mµ,∞and
+n
+µ ∈Mµ,∞: I
+(1)(0; µ) ≥0
+o
+in this example. Given
+the simple structure of ∂I(0, 0), the unique solution of the empirical analog of (25) is ˆp = (ˆe, 1 −ˆe)⊤,
+where
+ˆe =
+
+ˆσ2
+2 −ˆρˆσ1ˆσ2
+ˆσ2
+1 + ˆσ2
+2 −2ˆρˆσ1ˆσ2
+1
+0
+.
+29
+
+
+Moreover,
+I(1)(0; ˆΣˆp) −I
+(1)(0; ˆΣˆp) = max
+n
+ˆΣˆp
+o
+−min
+n
+ˆΣˆp
+o
+=
+
+
+
+
+
+
+
+
+
+0,
+ˆρ ≤min {ˆσ1/ˆσ2, ˆσ2/ˆσ1} ,
+ˆρˆσ1ˆσ2 −ˆσ2
+2,
+ˆρ > ˆσ2/ˆσ1,
+ˆρˆσ1ˆσ2 −ˆσ2
+1,
+ˆρ > ˆσ1/ˆσ2.
+Theorem 5 can be directly applied. In particular, if ˆρ ≤min
+
+ˆσ1
+
+ˆσ2, ˆσ2
+
+ˆσ1
+	
+, ˆe ∈[0, 1] and in-
+formation from both countries will always be used if the inequality is strict. The asymptotically
+optimal decision is either a randomized one based on ˆp⊤ˆµ or a threshold rule 1{ˆp⊤ˆµ ≥0}, de-
+pending on the magnitude of (π/2)ˆp⊤ˆΣˆp versus C
+2. This characterization agrees with those in
+Ishihara and Kitagawa (2021, Section 3.2) and Yata (2025, Example 1) that focused on ρ = 0.11
+The cases for ˆρ > ˆσ2/ˆσ1 or ˆρ > ˆσ1/ˆσ2 are more involved. For example, suppose ˆρ > ˆσ2/ˆσ1. Then,
+ˆp = (0, 1)⊤.
+If (π/2)1/2 ˆσ2 < C, an asymptotic optimal rule is a randomized one based on ˆµ2
+only. Let ˆx solve maxx∈[0,∞)(C + x)Φ (−x/ˆσ2). If (π/2)1/2 ˆσ2 ≥C and ˆx ≤(2Cˆσ2)/(ˆρˆσ1 −ˆσ2),
+our optimal decision is simply 1 {ˆµ2 ≥0}. Otherwise, case (iii) of Theorem 4 would apply. The
+optimal weight of aggregating information from the two countries must be computed by finding
+ˆµo = arg max{µ∈Mµ,∞:min{µ1,µ2}≥0} r(µ; ˆΣ), and the optimal decision 1
+
+(ˆµo)⊤ˆΣ−1ˆµ ≥0
+	
+may use
+information from both countries again.
+6
+Conclusion
+In this paper, we propose a new asymptotic framework to study treatment assignment problems
+with partially identified parameters. Our proposal has two novel features: (i) we consider a sequence
+of drifting parameters such that the extent of partial identification vanishes at the same rate as
+sampling uncertainty; (ii) we localize the reduced-form parameter at what we call a global least
+favorable point, which we argue is a natural counterpart of the hardest case considered by Hirano
+and Porter (2009) for point-identified settings.
+Our approach characterizes the limit treatment
+choice problem in a Gaussian location shift model with a limit local identified set; to show this,
+we not only establish a rigorous link between finite-sample and limit problems but also generalize
+earlier analyses of the latter. Similarly, we show how to handle a large class of non-centrosymmetric
+models. Finally, our approach is computationally inexpensive, providing a simple recipe for applied
+researchers to find approximately optimal rules for a wide range of problems with partially identified
+11Ishihara and Kitagawa (2021) characterize the efficient weight numerically for a class of non-randomized threshold
+rules. Yata (2025) characterizes the optimal decision with techniques analogous to Armstrong and Kolesár (2018).
+To be clear, their general results also apply to ρ̸ = 0.
+30
+
+
+parameters.
+Several extensions and open questions remain. First, it may be possible to solve the limit game
+with directional differentiability of the bounds even with centrosymmetry dropped (e.g., by utilizing
+Lemma 2(i)), although we suspect that this will involve more technicalities; we leave it for future
+research. Second, we also do not consider reduced-form parameters that are semiparametric in
+nature. It remains to be investigated to what extent our results for parametric models are relevant
+for their semiparametric counterparts. Third, it may also be interesting to investigate whether one
+can combine our approach with recent ones by Ben-Tal et al. (2013), Eisenhauer et al. (2021), or
+Andrews and Chen (2025), who take the confidence sets for identified quantities as constraining the
+state space and solve the decision problem subject to those restrictions.
+A
+Proofs of Main Results
+Lemma 2. Let Assumptions 1 and 2 hold. Then the following statements are true:
+(i) If I(· ) and I(· ) are directionally differentiable at µ0 for all v ∈Rdµ, then
+I(1)(µ0; v) ≥I
+(1)(µ0; v)· κ0, ∀v ∈Rdµ.
+(ii) If I(· ) and I(· ) are differentiable at µ0, we have I(1)(µ0) = I
+(1)(µ0)· κ0.
+Proof. Under Assumption 2, the value of R(·) is strictly positive at µ0, which also cannot be
+increased by deviating from µ0. As I(· ) and I(· ) are directionally differentiable, so is R(· ). Then,
+we must have
+R
+(1)(µ0; v) ≤0, ∀v ∈Rdµ,
+which after algebra, must imply (note I(µ0) > 0 > I(µ0) and I(µ0) −I(µ0) > 0)
+I
+(1)(µ0; v) (I(µ0))2 ≤I(1)(µ0; v)
+ I(µ0)
+2 .
+If I(· ) and I(· ) are differentiable, so is R(· ). It follows then R
+(1)(µ0) = 0, implying
+I
+(1)(µ0) (I(µ0))2 = I(1)(µ0)
+ I(µ0)
+2 .
+31
+
+
+A.1
+Proof of Theorem 1
+Let dF be a sequence of rules (we omit the index n for notational simplicity) that matches with d∗
+∞
+in the sense of (15).
+Step 1: We show supJ lim infn→∞supθn∈Θn(J)
+√nR(dF, θn) ≥R∗. For each θn = θ0 +θh/√n, we
+have m(θn) = γ0 + h/√n and U(θn) = µ∗/√n, where h ∈Mh and µ∗∈I∞(h). Thus, we can write
+√nR(dF, θn) = √n µ∗
+√n
+
+1
+ µ∗
+√n ≥0
+
+−Eγ0+ h
+√n[dF]
+
+= µ∗
+1 {µ∗≥0} −Eγ0+ h
+√n[dF]
+
+:= R
+
+dF, γ0 + h
+√n, µ∗
+
+.
+Note for each finite subset J of Mh and all n sufficiently large, we have
+ (γ0 + h/√n)⊤, µ∗/√n
+
+∈Θ
+for all h ∈J and µ∗∈I∞(h). Thus, for all n sufficiently large,
+sup
+θn∈Θn(J)
+√nR(dF, θn) =
+sup
+h∈J,µ∗∈I∞(h)
+R
+
+dF, γ0 + h
+√n, µ∗
+
+.
+For d∗
+∞in the limit game, write
+R∞(d∗
+∞, h, µ∗) := µ∗(1 {µ∗≥0} −E[d∗
+∞]) .
+Since dF is matched with d∗
+∞in the sense of (15), we have that, as n →∞, for each h ∈Mh and
+each µ∗∈I∞(h),
+R
+
+dF, γ0 + h
+√n, µ∗
+
+→R∞(d∗
+∞, h, µ∗).
+Conclude that, for each finite subset J of Mh, we have
+lim inf
+n→∞
+sup
+θn∈Θn(J)
+√nR(dF, θn) = lim inf
+n→∞
+sup
+h∈J,µ∗∈I∞(h)
+R
+
+dF, γ0 + h
+√n, µ∗
+
+≥
+sup
+h∈J,µ∗∈I∞(h)
+lim inf
+n→∞R
+
+dF, γ0 + h
+√n, µ∗
+
+=
+sup
+h∈J,µ∗∈I∞(h)
+lim
+n→∞R
+
+dF, γ0 + h
+√n, µ∗
+
+=
+sup
+h∈J,µ∗∈I∞(h)
+R∞(d∗
+∞, h, µ∗).
+32
+
+
+Therefore,
+sup
+J
+lim inf
+n→∞
+sup
+θn∈Θn(J)
+√nR(dF, θn) ≥sup
+J
+sup
+h∈J,µ∗∈I∞(h)
+R∞(d∗
+∞, h, µ∗) =
+sup
+h∈Mh,µ∗∈I∞(h)
+R∞(d∗
+∞, h, µ∗) = R∗,
+where the last equality follows as d∗
+∞is a solution of (17).
+Step 2: We show supJ lim infn→∞supθn∈Θn(J)
+√nR(dF, θn) ≤R∗.
+Fix a θn ∈Θn(J).
+We
+have m(θn) = γ0 +
+h
+√n and U(θn) =
+µ∗
+√n, where h ∈J and µ∗∈I∞(h). Then, √nR(dF, θn) =
+µ∗
+1 {µ∗≥0} −Eγ0+ h
+√n[dF]
+
+and R∞(d∗
+∞, h, µ∗) = µ∗(1 {µ∗≥0} −E[d∗
+∞]). Therefore,
+√nR(dF, θn) −R∞(d∗
+∞, h, µ∗)
+
+= |µ∗|
+Eγ0+ h
+√n[dF] −E[d∗
+∞]
+
+≤max
+I∞(h)
+ , |I∞(h)|
+	 Eγ0+ h
+√n[dF] −E[d∗
+∞]
+ .
+Note dF is matched with d∗
+∞in the sense of (15). Thus, for each h ∈J and each ε > 0, there exists
+some Nh such that, for all n > Nh,
+√nR(dF, θn) −R∞(d∗
+∞, h, µ∗)
+ < ε
+for all µ∗∈I∞(h), implying that for each h ∈J and all µ∗∈I∞(h):
+√nR(dF, θn) ≤R∞(d∗
+∞, h, µ∗) + ε
+(32)
+for n > Nh. Since J is finite, we can pick N = maxh∈J {Nh} so that, when n > N, (32) holds for
+all h ∈J and µ∗∈I∞(h). That implies for n > N, we have
+sup
+θn∈Θn(J)
+√nR(dF, θn) ≤
+sup
+h∈J,µ∗∈I∞(h)
+R∞(d∗
+∞, h, µ∗) + ε,
+which in turn, means
+lim inf
+n→∞
+sup
+θn∈Θn(J)
+√nR(dF, θn) ≤
+sup
+h∈J,µ∗∈I∞(h)
+R∞(d∗
+∞, h, µ∗) + ε.
+As ε > 0 is arbitrary, conclude that
+lim inf
+n→∞
+sup
+θn∈Θn(J)
+√nR(dF, θn) ≤
+sup
+h∈J,µ∗∈I∞(h)
+R∞(d∗
+∞, h, µ∗),
+33
+
+
+and
+sup
+J
+lim inf
+n→∞
+sup
+θn∈Θn(J)
+√nR(dF, θn) ≤sup
+J
+sup
+h∈J,µ∗∈I∞(h)
+R∞(d∗
+∞, h, µ∗) =
+sup
+h∈Mh,µ∗∈I∞(h)
+R∞(d∗
+∞, h, µ∗) = R∗.
+A.2
+Proof of Theorem 2
+We focus on the case κ0 < 1, in which case note C > −C > 0. The proof for case κ0 ≥1 is
+analogous. Denote by R∗
+υ the value of the limit game among rules that depend on ∆only via
+ˆυ =
+
+I
+(1)(µ0)
+⊤
+G0∆∼N (υ, σ2), i.e., the value of (21).
+Proof of Statement (i)
+Step 1: Note when σ < σ, d∞,RT is well defined, and E[d∞,RT(ˆυ)] = Φ
+  υ−t∗
+σ
+
+. Therefore, the
+worst-case expected regret of d∞,RT in game (21) writes
+R∗
+RT :=
+sup
+υ∈R,(κ0−1)υ≤C−C,υ∗∈I(υ)
+υ∗(1 {υ∗≥0} −E[dRT(ˆυ)])
+= max
+
+
+
+sup
+υ∈[−C,∞)
+R2(t∗, υ; σ),
+sup
+υ∈
+h
+C−C
+κ0−1 ,−C
+κ0
+i R1(t∗, υ; σ)
+
+
+,
+where the second equality uses max
+n
+C−C
+κ0−1, −C
+o
+= −C when κ0 < 1 (note κ0 = C2/C
+2).
+By
+construction,
+∂R2(t∗, υ; σ)
+∂υ
+|υ=0= 0, ∂R1(t∗, υ; σ)
+∂υ
+|υ=0= 0.
+Furthermore, Lemma D.1 implies that R2(t∗, · ; σ) is first increasing then decreasing. Therefore,
+sup
+υ∈[−C,∞)
+R2(t∗, υ; σ) = R2(t∗, 0; σ) = CΦ
+t∗
+σ
+
+= −CC
+C −C .
+Analogously, we have
+sup
+υ∈
+h
+C−C
+κ0−1,−C
+κ0
+i R1(t∗, υ; σ) = R1(t∗, 0; σ) = −CC
+C −C .
+Conclude that R∗
+RT = −CC
+C−C, and R∗≤R∗
+υ ≤R∗
+RT = −CC
+C−C.
+34
+
+
+Step 2: We show R∗≥−CC
+C−C whenever σ < σ. This is because
+R∗≥R∗
+0 := min
+d(∆)
+sup
+h=0,µ∗∈[C,C]
+µ∗[1 {µ∗≥0} −E[d(∆)]] .
+To find the value of R∗
+0, let xd := E[d(∆)] where ∆∼N(0, I−1
+0 ). Then,
+sup
+h=0,µ∗∈[C,C]
+µ∗[1 {µ∗≥0} −E[d(∆)]] = max
+
+C (1 −xd) , −Cxd
+	
+.
+Thus, R∗
+0 is achieved at any rule such that C (1 −xd) = −Cxd, i.e., xd =
+C
+C−C, implying R∗
+0 = −CC
+C−C.
+Step 3: Conclude that, based on Steps 1 and 2 above, we have R∗= −CC
+C−C, and that d∞,RT achieves
+the value of R∗and is MMR optimal for the limiting game (17).
+Proof of Statement (ii)
+Step 1: Consider the following class of threshold rules: dt(ˆυ) := 1 {ˆυ ≥t}, t ∈R. Analogous to
+proof of statement (i), in case of κ0 < 1, the worst case expected regret of dt(ˆυ) writes
+max
+(
+max
+{υ∈R:(κ0−1)υ≤C−C,υ+C≥0}
+R2(t, υ; σ),
+max
+{υ∈R:(κ0−1)υ≤C−C,κ0υ+C≤0}
+R1(t, υ; σ)
+)
+= max
+
+
+
+max
+υ∈[−C,∞)
+R2(t, υ; σ),
+max
+υ∈
+h
+C−C
+κ0−1 ,−C
+κ0
+i R1(t, υ; σ)
+
+
+.
+Lemma D.1 shows that
+υ2(t; σ) := arg
+max
+υ∈[−C,∞)
+R2(t, υ; σ)
+and
+υ1(t; σ) := arg
+max
+υ∈
+h
+C−C
+κ0−1,−C
+κ0
+i R1(t, υ; σ)
+are single-valued continuous functions in both t and σ, and there exists some unique t ∈R such
+that R2(t, υ2(t; σ); σ) = R1(t, υ1(t; σ); σ), which also implicitly defines a single-valued continuous
+function t0(σ) : R+ →R.
+Step 2: Consider the case when σ = σ. Algebra shows t0(σ) = t∗, υ2(t0(σ); σ) = υ1(t0(σ); σ) = 0.
+Then, completely analogous to proof of statement (i), we can establish that 1 {ˆυ ≥t∗} is MMR
+35
+
+
+optimal.
+Step 3: For the case when σ > σ, Lemma D.2 establishes that υ2(t0(σ); σ) > υ1(t0(σ); σ). To
+simplify notation, let β := G⊤
+0 I
+(1)(µ0). Then, for some p ∈(0, 1), consider a prior π(p) in the space
+of (h, µ∗) that randomizes between
+
+I−1
+0 β υ2(t0(σ); σ)
+σ2
+, β⊤I−1
+0 β υ2(t0(σ); σ)
+σ2
++ C
+
+, w/ prob p;
+
+I−1
+0 β υ1(t0(σ); σ)
+σ2
+, κ0β⊤I−1
+0 β υ1(t0(σ); σ)
+σ2
++ C
+
+, w/ prob 1 −p.
+Note β⊤I−1
+0 β = σ2, υ2(t0(σ); σ) + C > 0 and κ0υ1(t0(σ); σ) + C < 0. It follows that, after algebra,
+the corresponding Bayes optimal rule is 1
+
+β⊤∆≥t(p)
+	
+, where note β⊤∆= ˆυ, and
+t(p) :=
+σ2
+υ2(t0(σ); σ) −υ1(t0(σ); σ) log
+ 
+−(1 −p) (κ0υ1(t0(σ); σ) + C)
+p
+ υ2(t0(σ); σ) + C
+
+!
++ υ2(t0(σ); σ) + υ1(t0(σ); σ)
+2
+.
+As p ranges in (0, 1),
+(1−p)
+p
+∈(0, ∞). Thus, there exists some p0 ∈(0, 1) such that t(p0) = t0,
+implying that 1 {ˆυ ≥t0} is Bayes optimal with respect to prior π(p0).
+Step 4: We have shown that 1 {ˆυ ≥t0} is Bayes optimal with respect to prior π(p0) with a Bayes
+value
+r(p0) = R2(t0, υ2(t0(σ); σ); σ) = R1(t0, υ1(t0(σ); σ); σ).
+Furthermore, Step 1 implies that the worst case expected regret of 1 {ˆυ ≥t0} equals r(p0). Thus,
+we have established an equilibrium; 1 {ˆυ ≥t0} is MMR optimal and π(p0) is least favorable.
+A.3
+Proof of Theorem 3
+Lemma D.3 shows that dF is matched with d∞,RT in the sense of (15) if σ < σ and matched with
+1 {ˆυ ≥t0} if σ > σ. Lemma D.4 shows that dF is still matched with 1 {ˆυ ≥t0} even when σ = σ.
+Then, the conclusion follows directly from invoking Theorem 1.
+A.4
+Proof of Theorem 4
+Under Assumptions 1, 2, 3 and 5, recall the following properties: (i) Mµ is convex and centrosym-
+metric; (ii) I(µ) = −I(−µ) for all µ ∈Mµ, and in particular, C = −C; (iii) I(· ) is concave, and I(· )
+is convex; (iv) I
+(1)(0; · ) is concave and positively homogeneous; (v) I
+(1)(0; v) = −I(1)(0; −v) for any
+36
+
+
+v ∈Rdµ; (vi) I
+(1)(0; v) ≤−I
+(1)(0; −v) = I(1)(0; v) for any v ∈Rdµ. Moreover, Lemma E.1 implies
+that µ0 = 0 is indeed a global least favorable point. To simplify notation, let ∆:= G0∆∼N(µ, Σ0).
+Denote by R∗the value of (24), i.e., the value of (17) among rules that depend on ∆only via ∆.
+Clearly, R∗≤R∗.
+Proof of Statement (i)
+Step 1: We show R∗≤C
+2 in case (i). Note p ∈∂I(0), so we have
+I
+(1)(0; µ) ≤p⊤µ, for all µ.
+As I
+(1)(0; v) = −I(1)(0; −v) for any v ∈Rdµ, we also have
+I(1)(0; µ) ≥p⊤µ, for all µ.
+Conclude that R∗is upper bounded by the value of of the following “one dimensional linear embed-
+ding MMR game”:
+min
+d
+sup
+µ∈Rdµ,µ∗∈[C+p⊤µ,C+p⊤µ]
+µ∗
+1 {µ∗≥0} −E[d(p⊤∆)]
+
+,
+(33)
+where d is a decision rule based on p⊤∆∼N
+ p⊤µ, p⊤Σ0p
+
+only. The solution and value of (33) are
+completely known. When
+ π
+2p⊤Σ0p
+	1/2 < C, d∞,RT solves (33) and achieves a value of C
+2 . Thus,
+R∗≤C
+2 .
+Step 2: We show R∗≥C
+2 in case (i). This is because
+R∗≥min
+d(∆)
+sup
+h=0,µ∗∈[C,C]
+µ∗[1 {µ∗≥0} −E[d(∆)]] = C
+2 .
+Step 3: Conclude that R∗= C
+2 . Moreover, as d∞,RT achieves a value of C
+2 in the upper bound
+linear embedding game, and the worst case regret of d∞,RT in the original game (17) cannot be
+larger than that of the upper bound linear embedding game, we conclude that d∞,RT must achieve
+the value of C
+2 and is MMR optimal for (17).
+37
+
+
+Proof of Statement (ii)
+Step 1: The existence and uniqueness of x is provided in Lemma E.3. Analogous to Step 1 for the
+proof of statement (i), when
+ π
+2p⊤Σ0p
+	1/2 ≥C, we have
+R∗≤R∗≤(C + x)Φ
+ 
+−
+x
+ p⊤Σ0p
+1/2
+!
+,
+(34)
+where the RHS of (34) is the value of the linear embedding game (33) and x > 0 if
+ π
+2p⊤Σ0p
+	1/2 > C.
+Step 2: Let h := I−1
+0 G⊤
+0 p, and consider h taking values along the direction of h, i.e., h = th for
+some t ∈R. We show that t takes values in an interval
+
+−t, t
+
+, where
+t =
+2C
+I(1)(0; Σ0p) −I
+(1)(0; Σ0p)
+> 0,
+with the understanding that the interval becomes (−∞, ∞) if and only if I(1)(0; Σ0p) = I
+(1)(0; Σ0p).
+To see this, note when h = th, the lower and upper bounds of the identified set for µ∗writes (note
+G0h = Σ0p)
+I∞(th) =C + I(1)(0; tG0h) =
+
+
+
+C + tI(1)(0; Σ0p),
+t ≥0,
+C −tI(1)(0; −Σ0p),
+t < 0,
+and
+I∞(th) = C + I
+(1)(0; tG0h) =
+
+
+
+C + tI
+(1)(0; Σ0p)
+t ≥0,
+C −tI
+(1)(0; −Σ0p)
+t < 0.
+A nonnegative t is feasible whenever I∞(th) ≤I∞(th), i.e.,
+C + tI(1)(0; Σ0p) ≤C + tI
+(1)(0; Σ0p),
+where recall C = −C and I
+(1)(0; Σ0p) ≤I(1)(0; Σ0p). Also, Lemma E.2 shows that I
+(1)(0; Σ0p) > 0.
+Therefore, we find the upper bound of the values that t can take is t after simple algebra. Then,
+the lower bound of the values that t can take must be −t due to centrosymmetry.
+Step 3: We show R∗≥(C + x)Φ
+
+−
+x
+(p⊤Σ0p)
+1/2
+
+. Consider two cases. If x = 0, invoking Step 2 of
+38
+
+
+proof for statement (i) immediately yields the conclusion. If 0 < x ≤¯tI
+(1)(0; Σ0p), we pick
+t∗:=
+x
+I
+(1)(0; Σ0p)
+∈(0, ¯t] .
+Consider a prior π in the space of (h, µ∗) that randomizes evenly between
+n
+t∗h, C + t∗I
+(1)(0; G0h)
+
+,
+
+−t∗h, C + I(1)(0; −t∗G0h)
+o
+,
+where note
+C + t∗I
+(1)(0; G0h) = C + t∗I
+(1)(0; Σ0p) > 0,
+C + I(1)(0; −t∗G0h)) = −
+
+C + t∗I
+(1)(0; G0h)
+
+< 0.
+The Bayes optimal rule with respect to π is
+1
+n
+t∗h
+⊤I0∆≥0
+o
+= 1
+
+p⊤G0∆≥0
+	
+,
+with a corresponding Bayes value
+r∗:=
+
+C + t∗I
+(1)(0; G0h)
+
+Φ
+
+−t∗
+h
+⊤I0h
+1/2
+=
+
+C + t∗I
+(1)(0; Σ0p)
+
+Φ
+
+−t∗ p⊤Σ0p
+1/2
+=
+
+C + t∗I
+(1)(0; Σ0p)
+
+Φ
+ 
+−t∗I
+(1)(0; Σ0p)
+ p⊤Σ0p
+1/2
+!
+=
+ C + x
+
+Φ
+ 
+−
+x
+ p⊤Σ0p
+1/2
+!
+,
+where the second equality follows from plugging in h = I−1
+0 G⊤
+0 p, the third equality follows from
+Lemma E.2, and the final equality follows from t∗I
+(1)(0; Σ0p) = x by construction. The conclusion
+of this step follows because R∗≥r∗.
+Step 4: Based on Steps 1-3 above, we conclude that: R∗=
+ C + x
+
+Φ
+
+−
+x
+(p⊤Σ0p)
+1/2
+
+≥C/2, with
+equality if and only if x = 0, and 1
+
+p⊤G0∆≥0
+	
+is indeed MMR optimal for the limit game (17).
+39
+
+
+Proof of Statement (iii)
+Proof. First, the existence and uniqueness of µo is established in Lemma E.3. Then, Lemma E.4
+shows that in case (iii), a solution of (24), i.e., a MMR optimal rule that depends on ∆only via ∆is
+1
+n
+(µo)⊤Σ−1
+0 ∆≥0
+o
+, where µo solves (27). Next, given µo, let ho := I−1
+0 G⊤
+0 Σ−1
+0 µo. By construction,
+G0ho = µo. In the space of (h, µ∗), consider a prior that randomizes evenly between
+n
+ho, C + I
+(1)(0; G0ho)
+
+,
+
+−ho, C + I(1)(0; −G0ho)
+o
+,
+for which the Bayes optimal rule is 1
+n
+(ho)⊤I0∆≥0
+o
+= 1
+
+(µo)⊤Σ−1
+0 ∆≥0
+	
+, with the corre-
+sponding Bayes value
+
+C + I
+(1)(0; G0ho)
+
+Φ
+
+−
+q
+(ho)⊤I0ho
+
+, which equals r(µo; Σ0) after simple
+algebra. Conclude that R∗= r(µo; Σ0), and 1
+n
+(µo)⊤Σ−1
+0 ∆≥0
+o
+achieves R∗.
+A.5
+Proof of Theorem 5
+Lemma E.9 shows that dF is matched with the right limiting optimal rule under conditions of
+Theorem 5. The conclusion follows directly by invoking Theorem 1.
+B
+Other Forms of Shrinking Identified Set
+In our main text, we constructed a particular sequence of shrinking identified set in the form of
+(11) and (12), leading to a limiting identified set (13) that only incorporates the local geometry of
+the original identified set I(·) around µ0. There are other reasonable ways to construct a shrinking
+identified set that may lead to a different geometry in the limit, which may retain more global
+features of the original identified set. We provide an alternative (arguably more general) approach
+to constructing the shrinking identified set below and illustrate the differences by revisiting the
+example in Section 5.3.12
+Following the setup in Section 3, consider the point-identified parameter following a sequence
+m(θn) = γ0 +
+h
+√n for h ∈Rdm. As n →∞, the identified set of U(θn) will also be approximately
+I
+
+µ
+
+γ0 + h
+√n
+
+≈
+
+I
+
+µ0 + G0h
+√n
+
+, I
+
+µ0 + G0h
+√n
+
+.
+(35)
+Note our (11) just applies first-order approximation to the bounds on the RHS of (36). Instead
+12We thank Tim Armstrong for comments that motivated this section.
+40
+
+
+of applying (11)-(12), consider a general drifting identified set In(·) = [In(·), In(·)] indexed by
+sample size n, such that for all local deviations t/√n from µ0, we have In (µ0 + t/√n) →0,
+In (µ0 + t/√n) →0, and
+√nIn
+ µ0 + t/√n
+
+= I∞(µ0 + t), √nIn
+ µ0 + t/√n
+
+= I∞(µ0 + t),
+(36)
+where both I∞(µ0 +t) and I∞(µ0 +t) are finite numbers. Then, we construct the drifting identified
+set as
+U(θn) ∈
+
+In
+ µ0 + G0h/√n
+
+, In
+ µ0 + G0h/√n
+
+,
+(37)
+implying
+√nU(θn) ∈
+√nIn
+ µ0 + G0h/√n
+
+, √nIn
+ µ0 + G0h/√n
+
+=
+
+I∞(µ0 + G0h) , I∞(µ0 + G0h)
+
+.
+It follows that we can still characterize the limit decision problem as (17), except that the limit
+identified set is re-defined as
+I∞(h) :=
+
+I∞(µ0 + G0h) , I∞(µ0 + G0h)
+
+,
+(38)
+and Mh is re-defined analogously as long as (38) is not empty. Depending on how In(·) is constructed,
+(38) may retain some global features of the original identified set. However, the limiting decision
+problem also becomes more difficult to solve due to the more complicated geometry of the limit
+identified set in general.
+One case that allows tractability is when we impose Assumption 5. Then, note µ0 = 0 and the
+limit identified set simplifies to
+I∞(h) :=
+
+I∞(G0h) , I∞(G0h)
+
+.
+(39)
+The limit parameter space can still be convex and centrosymmetric, but with a limit identified set
+more general than that considered in our form (13). As a result, our theorems in Section 4 do not
+apply. However, one can still apply results in Yata (2025) to solve the limit problem, based on
+which an asymptotically optimal decision rule can be constructed.
+To give a concrete example, consider the evidence aggregation application in Section 5.3 with
+0 < C1 < C2, and µ0 = (0, 0). Note the original identified set follows (30). We can alternatively
+41
+
+
+consider the following drifting identified set:
+In(µ) = max {µ1 −C1,n, µ2 −C2,n} , In(µ) = min {µ1 + C1,n, µ2 + C2,n} ,
+(40)
+where C1,n →0 and C2,n →0 as n →∞, √nC1,n = C1,∞and √nC2,n = C2,∞for 0 < C1,∞<
+C2,∞< ∞. Applying (36)-(37) to (40), we have that, for all t = (t1, t2),
+In(t/√n) = max
+
+t1/√n −C1,n, t2/√n −C2,n
+	
+, In(t/√n) = min
+
+t1/√n + C1,n, t1/√n + C2,n
+	
+,
+yielding the following limit identified set (cf. (31)):
+I∞(µ) = max {µ1 −C1,∞, µ2 −C2,∞} , I∞(µ) = min{µ1 + C1,∞, µ2 + C2,∞}.
+(41)
+Note how the geometry of (41) is more analogous to that of the original identified set. The associated
+decision problem can be solved by applying results in Yata (2025). Moreover, note the limit identified
+set (31) corresponds to a case of (40) when C1,n →0, C2,n →0 (or C2,n is fixed) as n →∞, but
+with √nC1,n = C1,∞< ∞and √nC2,n →∞.
+References
+Andrews, I. and J. Chen (2025): “Certified decisions,” arXiv preprint arXiv:2502.17830.
+Andrews, I. and A. Mikusheva (2022): “Optimal Decision Rules for Weak GMM,” Economet-
+rica, 90, 715–748.
+Aradillas Fernández, A., J. L. Montiel Olea, C. Qiu, J. Stoye, and S. Tinda (2026):
+“Robust Bayes Treatment Choice with Partial Identification,” Econometric Theory, forthcoming.
+Armstrong, T. B. and M. Kolesár (2018): “Optimal inference in a class of regression models,”
+Econometrica, 86, 655–683.
+——— (2021): “Sensitivity analysis using approximate moment condition models,” Quantitative
+Economics, 12, 77–108.
+Ben-Tal, A., D. den Hertog, A. D. Waegenaere, B. Melenberg, and G. Rennen (2013):
+“Robust Solutions of Optimization Problems Affected by Uncertain Probabilities,” Management
+Science, 59, 341–357.
+Christensen, T., H. R. Moon, and F. Schorfheide (2020): “Robust forecasting,” arXiv
+preprint arXiv:2011.03153.
+——— (2026): “Optimal Discrete Decisions when Payoffs are Partially Identified,” Review of Eco-
+42
+
+
+nomic Studies, forthcoming.
+Dehejia, R. (2005): “Program evaluation as a decision problem,” Journal of Econometrics, 125,
+141–173.
+Dou, L. and U. K. Müller (2021): “Generalized Local-to-Unity Models,” Econometrica, 89,
+1825–1854.
+Eisenhauer, P., J. Gabler, L. Janys, and C. Walsh (2021): “Structural Models for Policy-
+making: Coping with Parametric Uncertainty,” arXiv preprint arXiv:2103.01115.
+Hirano, K. (2026): “Wald’s Statistical Decision Theory for Policy Analysis and Adaptive Ex-
+periments,” in Advances in Economics and Econometrics: Thirteenth World Congress, ed. by
+R. Griffith, Y. Gorodnichenko, M. Kandori, and F. Molinari, Cambridge University Press, forth-
+coming.
+Hirano, K. and J. R. Porter (2009): “Asymptotics for statistical treatment rules,” Economet-
+rica, 77, 1683–1701.
+——— (2012): “Impossibility results for nondifferentiable functionals,” Econometrica, 80, 1769–
+1790.
+——— (2020): “Asymptotic analysis of statistical decision rules in econometrics,” in Handbook of
+Econometrics, Volume 7A, ed. by S. N. Durlauf, L. P. Hansen, J. J. Heckman, and R. L. Matzkin,
+Elsevier, vol. 7 of Handbook of Econometrics, 283–354.
+Hirano, K. and J. H. Wright (2017): “Forecasting with model uncertainty: Representations
+and risk reduction,” Econometrica, 85, 617–643.
+Horowitz, J. L. and C. F. Manski (1995): “Identification and robustness with contaminated
+and corrupted data,” Econometrica, 281–302.
+Ishihara, T. and T. Kitagawa (2021): “Evidence Aggregation for Treatment Choice,” arXiv
+preprint arXiv::2108.06473.
+Kang, Z. Y. and S. Vasserman (2025): “Robustness measures for welfare analysis,” American
+Economic Review, 115, 2449–2487.
+Kido, D. (2023): “Locally Asymptotically Minimax Statistical Treatment Rules Under Partial
+Identification,” arXiv preprint arXiv:2103.01115.
+Kitagawa, T., S. Lee, and C. Qiu (2023): “Treatment choice, mean square regret and partial
+identification,” The Japanese Economic Review, 74, 573–602.
+——— (2026): “Treatment choice with nonlinear regret,” Biometrika, 113, asag008.
+Le Cam, L. (2012): Asymptotic methods in statistical decision theory, Springer Science & Business
+Media.
+Le Cam, L. and G. L. Yang (2000): Asymptotics in statistics: some basic concepts, Springer
+43
+
+
+Science & Business Media.
+Manski, C. F. (2000): “Identification problems and decisions under ambiguity: empirical analysis
+of treatment response and normative analysis of treatment choice,” Journal of Econometrics, 95,
+415–442.
+——— (2004): “Statistical treatment rules for heterogeneous populations,” Econometrica, 72, 1221–
+1246.
+——— (2005): Social choice with partial knowledge of treatment response, Princeton University
+Press.
+——— (2007): Identification for prediction and decision, Harvard University Press.
+——— (2021): “Econometrics for decision making: Building foundations sketched by Haavelmo and
+Wald,” Econometrica, 89, 2827–2853.
+Montiel Olea, J. L., C. Qiu, and J. Stoye (2026): “Decision Theory for Treatment Choice
+Problems with Partial Identification,” Review of Economic Studies, forthcoming.
+Phillips, P. C. B. (1988): “Regression Theory for Near-Integrated Time Series,” Econometrica,
+56, 1021–1043.
+Powell, J. L. (2017): “Identification and asymptotic approximations: three examples of progress
+in econometric theory,” Journal of Economic Perspectives, 31, 107–124.
+Qiu, C. and J. Stoye (2026): “Statistical Decisions and Partial Identification: With Application
+to Boundary Discontinuity Design,” in Advances in Economics and Econometrics: Thirteenth
+World Congress, ed. by R. Griffith, Y. Gorodnichenko, M. Kandori, and F. Molinari, Cambridge
+University Press, forthcoming.
+Rockafellar, R. T. (1970): Convex analysis, Princeton University Press.
+Simons, S. (1995): “Minimax theorems and their proofs,” in Minimax and applications, Springer,
+1–23.
+Song, K. (2014): “Point decisions for interval–identified parameters,” Econometric Theory, 30,
+334–356.
+Staiger, D. and J. H. Stock (1997): “Instrumental Variables Regression with Weak Instru-
+ments,” Econometrica, 65, 557–586.
+Stoye, J. (2007): “Minimax Regret Treatment Choice With Incomplete Data and Many Treat-
+ments,” Econometric Theory, 23, 190–199.
+——— (2009): “More on Confidence Intervals for Partially Identified Parameters,” Econometrica,
+77, 1299–1315.
+——— (2012a): “Minimax regret treatment choice with covariates or with limited validity of ex-
+periments,” Journal of Econometrics, 166, 138–156.
+44
+
+
+——— (2012b): “New perspectives on statistical decisions under ambiguity,” Annu. Rev. Econ., 4,
+257–282.
+Tetenov, A. (2012): “Statistical treatment choice based on asymmetric minimax regret criteria,”
+Journal of Econometrics, 166, 157–165.
+Xu, H. (2026): “Asymptotic analysis of point decisions with general loss functions,” Available at
+SSRN 6512558.
+Yata,
+K. (2025):
+“Optimal Decision Rules Under Partial Identification,”
+arXiv preprint
+arXiv:2111.04926v4.
+45
+
+
+Online Appendix
+C
+Remedial Asymptotics When Assumption 2 is Violated
+Consider the application in Section 5.1 with an unknown rate of contamination in the population.
+Then, the reduced-form parameter becomes Γ := (γ1, γ0, p1, p0), so that m(θ) = Γ and U(θ) = µ∗.
+The identified set in (29) is still valid; it depends on Γ only via µ(Γ) = (1 −p1)γ1 −(1 −p0)γ0 −
+(p0 −p1)/2 and k(Γ) = (p1 + p0)/2. A global least favorable point would correspond to any Γ such
+that k(Γ) = 1, i.e., p1 = p0 = 1 lies on the boundary of the parameter space and is irregular. Then,
+(29) becomes [−1, 1], completely uninformative.
+The root cause of such irregularity is Nature’s freedom to pick k(Γ) so that the length of the
+identified set can be as large as possible. Our proposal is to slightly change the action space of
+Nature to somewhat restore regularity. We propose to localize at any Γ0 such that µ(Γ0) = 0 and
+k(Γ0) = k0 for some k0 ∈(0, 1). This can be interpreted as a “second-best” least favorable point:
+if k(Γ0) is fixed, then setting µ(Γ0) = 0 is indeed the most challenging case for the population
+game of (8). Next, we still consider a local parameter sequence for the reduced-form such that
+m(θn) = Γ0 +
+h
+√n. For the payoff-relevant parameter, we construct a local parameter sequence
+U(θn) = µ∗
+√n, where
+µ∗∈[G0h −k0, G0h + k0],
+(42)
+and G0 is still defined as the gradient of µ(Γ) at the point of localization Γ0. The limiting identified
+set (42) can be motivated as restricting the action space of Nature: Suppose, once the point of
+localization is picked (so k0 is fixed), Nature can only pick values of U(θ) in a drifting identified set
+
+µ
+
+Γ0 + h
+√n
+
+−k0
+√n, µ
+
+Γ0 + h
+√n
+
++ k0
+√n
+
+.
+Then, the identified set for √nU(θ) in the limit would match (42). In the above construction,
+the catch is that k0 is completely fixed, implying for each sample size, Nature cannot arbitrarily
+enlarge the length of the identified set. With such modification, we can see that the limiting game
+becomes a standard one: the DM observes a Gaussian signal ∆∼N(h, I−1
+0 ) and the identified set
+for the limiting partially identified parameter is (42). Applying Theorem 2, the MMR optimal rule
+in the limit game is 1{G0∆≥0} if σ := (G0I−1
+0 G⊤
+0 )1/2 ≥
+p
+2/πk0 and to take fractional decision
+Φ
+ G0∆/( 2
+πk2
+0 −σ2)1/2
+otherwise. To find a feasible matching rule, note in this case, even if k0 is
+unknown, we can replace it with a consistent estimator, e.g., k(ˆΓ), analogous to the treatment of
+46
+
+
+an unknown σ in general. The asymptotic validity of such feasible rules can still be established by
+appropriately modifying the proofs of Theorem 3. It remains to see how general this approach can
+be to deal with scenarios when Assumption 2 fails, which we leave for future research.
+D
+Additional Results: Full Differentiability
+Lemma D.1. Suppose κ0 < 1. Under conditions of Theorem 2,
+υ2(t; σ) := arg
+max
+υ∈[−C,∞)
+R2(t, υ; σ)
+and
+υ1(t; σ) := arg
+max
+υ∈
+h
+C−C
+κ0−1,−C
+κ0
+i R1(t, υ; σ).
+are single-valued continuous functions in both t and σ. Furthermore, for each σ > 0, there exists
+some unique t ∈R such that
+R2(t, υ2(t; σ); σ) = R1(t, υ1(t; σ); σ),
+(43)
+which implicitly defines a single-valued continuous function t0(σ) : R+ →R from the values of σ to
+a unique t ∈R.
+Proof. Observe the following:
+1) For each t ∈R and σ > 0, R2(t, υ; σ) is increasing then decreasing, and first concave then
+convex as υ ranges from −C to +∞;
+2) Analogously, for each t ∈R and σ > 0, as υ ranges from −∞to −C
+κ0, R1(t, υ; σ) is increasing
+then decreasing, and first convex then concave.
+As a result, maxυ∈[−C,∞) R2(t, υ; σ) is uniquely characterized by the FOC
+ϕ
+  υ−t
+σ
+
+1 −Φ
+  υ−t
+σ
+ =
+σ
+(υ + C),
+which implicitly defines a single-valued function
+υ2(t; σ) := arg
+max
+υ∈[−C,∞)
+R2(t, υ; σ).
+47
+
+
+Implicit function theorem implies that υ2(t; σ) is differentiable (and thus continuous) in both t and
+σ. Analogously,
+max
+υ∈
+h
+C−C
+κ0−1 ,−C
+κ0
+i R1(t, υ; σ)
+is uniquely characterized by either FOC
+ϕ
+  t−υ
+σ
+
+1 −Φ
+  t−υ
+σ
+ = −
+κ0σ
+κ0υ + C ,
+or is at the boundary point C−C
+κ0−1, which also defines a single-valued function:
+υ1(t; σ) := arg
+max
+υ∈
+h
+C−C
+κ0−1,−C
+κ0
+i R1(t, υ; σ).
+By Berge’s theorem of maximization, υ1(t; σ) is continuous in both t and σ as well. Therefore,
+conclude that (cf., Lemma 1 of Tetenov (2012)) for each σ > 0:
+1) R2(t, υ2(t; σ); σ) is continuous and strictly increasing in t, R2(t, υ2(t; σ); σ) →0 as t →−∞,
+and R2(t, υ2(t; σ); σ) →+∞as t →+∞;
+2) R1(t, υ1(t; σ); σ) is continuous and decreasing in t, R1(t, υ1(t; σ); σ) approaches some finite
+positive constant as t →−∞, and R1(t, υ1(t; σ); σ) →0 as t →+∞.
+Conclude that there exists some unique t ∈R such that
+R2(t, υ2(t; σ); σ) = R1(t, υ1(t; σ); σ),
+which implicitly defines a single-valued continuous function t0(σ) : R+ →R from the values of σ to
+a unique t ∈R.
+Lemma D.2. Under conditions of Lemma D.1, suppose σ > σ. Then, υ2(t0(σ); σ) > υ1(t0(σ); σ).
+Proof. Let f(σ) := υ2(t0(σ); σ) −υ1(t0(σ); σ). Note f(σ) is a continuous function because Lemma
+D.1 established that both υ2(· ; · ) and υ1(· ; · ) are continuous, and that t0(· ) is also continuous.
+Step 1: Consider σ = σ, in which case f(σ) = 0, as we can verify that t0(σ) = t∗, υ2(t0(σ); σ) =
+υ1(t0(σ); σ) = 0.
+Step 2: Consider σ sufficiently large, in which case we have υ2(t0(σ); σ) > υ1(t0(σ); σ). To see this,
+48
+
+
+note for σ sufficiently large,
+∂R2(0, υ; σ)
+∂υ
+|υ=0= Φ (0) −C
+σ ϕ (0) > 0, ∂R1(0, υ; σ)
+∂υ
+|υ=0= −
+
+κ0Φ (0) + C
+σ ϕ (0)
+
+< 0,
+implying υ2(0; σ) > 0 and υ1(0; σ) < 0 if σ is sufficiently large. Furthermore, note for each υ > 0:
+R2(0, υ; σ) = (υ + C)Φ
+−υ
+σ
+
+, R1(0, −υ; σ) = (κ0υ −C)Φ
+−υ
+σ
+
+.
+As κ0 < 1 and C > −C, conclude that R2(0, υ; σ) > R1(0, −υ; σ). This implies that, whenever σ is
+sufficiently large,
+R2(0, υ2(0; σ); σ) ≥R2(0, −υ1(0; σ); σ) > R1(0, υ1(0; σ); σ),
+which, in turn, means t0(σ) < 0 for σ sufficiently large. Now, note (using t0(σ) < 0 and −κ0C +C <
+0)
+∂R1(t0(σ), υ; σ)
+∂υ
+|υ=−C
+= −κ0Φ
+−C −t0(σ)
+σ
+
+−(−κ0C + C)
+σ
+ϕ
+−C −t0(σ)
+σ
+
+< −κ0Φ
+−C
+σ
+
++ (κ0C −C)
+σ
+ϕ (0) .
+Conclude that for σ sufficiently large, we also have ∂R1(t0(σ),υ;σ)
+∂υ
+|υ=−C< 0. Therefore, for σ suf-
+ficiently large, we have υ1(t0(σ); σ) < −C ≤υ2(t0(σ); σ), implying f(σ) > 0 for σ sufficiently
+large.
+Step 3: Suppose, on the contrary, it were the case that f(σ) ≤0 for some σ > ¯σ. Since f(σ) is
+continuous, there must exist some eσ > σ such that
+υ1(t0(eσ); eσ) = υ2(t0(eσ); eσ).
+In this case, let ˜x := υ2(t0(eσ); eσ) = υ1(t0(eσ); eσ). Then, analogous to Steps 3-4 in the proof of
+Theorem 2(ii), we can establish an equilibrium for the game (21) in which a least favorable prior
+49
+
+
+randomizes between
+ ˜x, ˜x + C
+
+and (˜x, κ0˜x + C), with the corresponding value of the game equal
+−
+ ˜x + C
+
+(κ0˜x + C)
+(1 −κ0)˜x + C −C .
+Since randomizing between
+ ˜x, ˜x + C
+
+and (˜x, κ0˜x + C) is least favorable, it must be the case that
+−
+ ˜x + C
+
+(κ0˜x + C)
+(1 −κ0)˜x + C −C ≥−
+ x + C
+
+(κ0x + C)
+(1 −κ0)x + C −C
+for all x in a neighborhood of ˜x, which implies a FOC that pins down ˜x = 0, i.e., υ2(t0(eσ); eσ) =
+υ1(t0(eσ); eσ) = 0. This means that (t0(eσ), eσ) would need to satisfy the following three conditions for
+the equilibrium:
+a) Eˆυ∼N(0,eσ2) [1 {ˆυ ≥t0(eσ)}] = Φ
+
+−t0(eσ)
+eσ
+
+=
+C
+C−C,
+b)
+∂
+∂υR2(t0(eσ), υ; eσ) |υ=0= Φ
+
+t0(eσ)
+eσ
+
+−C
+eσ ϕ
+
+t0(eσ)
+eσ
+
+= 0,
+c)
+∂
+∂υR1(t0(eσ), υ; eσ) |υ=0= −
+
+κ0Φ
+
+−t0(eσ)
+eσ
+
++ C
+eσ ϕ
+
+−t0(eσ)
+eσ
+
+= 0,
+which, after some algebra, implies
+eσ = −C
+ C −C
+
+C
+ϕ
+
+Φ−1
+
+C
+C −C
+
+= σ.
+But this contradicts the assumption that eσ > σ.
+Lemma D.3. Suppose the conditions of Theorem 3 hold. If σ < σ, dF is matched with d∞,RT in
+the sense of (15); If σ > σ, dF is matched with 1 {ˆυ ≥t0}.
+Proof. Let P n
+h be the probability measure when γ = γ0 +
+h
+√n. Denote by
+P n
+h
+→convergence in proba-
+bility under P n
+h .
+Step 1: Preparation. Under stated assumptions, note the following results hold:
+1) Le Cam’s first lemma implies that ˆσ
+P n
+h
+→σ for all h.
+2) Since Lemma D.1 establishes that t0(· ) is a continuous function, conclude that
+ˆt = t0(ˆσ)
+P n
+h
+→t0(σ) = t0
+for all h as well.
+50
+
+
+3) Note γ0 is such that µ(γ0) = µ0. Then, Le Cam’s third lemma implies
+√n(µ(ˆγ) −µ0)
+h⇝N(G0h, G0I−1
+0 G⊤
+0 ).
+4) It follows by continuous mapping theorem that
+√n
+
+I
+(1)(µ0)
+⊤
+(µ(ˆγ) −µ0)
+h⇝N
+
+I
+(1)(µ0)
+⊤
+G0h, σ2
+
+,
+1
+√n
+
+I
+(1)(µ0)
+⊤
+(µ(ˆγ) −µ0) ≥ˆt
+
+h⇝1
+
+N
+
+I
+(1)(µ0)
+⊤
+G0h, σ2
+
+≥t0
+
+,
+and if σ < σ,
+√n
+
+I
+(1)(µ0)
+⊤
+(µ(ˆγ) −µ0) −t∗
+√
+σ2 −ˆσ2
+h⇝N
+
+
+
+
+I
+(1)(µ0)
+⊤
+G0h −t∗
+√
+σ2 −σ2
+,
+σ2
+σ2 −σ2
+
+
+.
+Step 2: We show that if σ > σ, dF is matched with 1 {ˆυ ≥t0}. By Slutsky’s theorem, we have
+1 {ˆσ ≥σ}
+P n
+h
+→1 and that 1 {ˆσ < σ}
+P n
+h
+→0 as n →∞. Step 1 already establishes
+dF,ˆt
+h⇝1
+
+N
+
+I
+(1)(µ0)
+⊤
+G0h, σ2
+
+≥t0
+
+.
+As dF,RT ≤1, conclude that in case of σ > σ, we have
+dF = 1 {ˆσ ≥σ} · dF,ˆt + 1 {ˆσ < σ} · dF,RT
+h⇝1
+
+N
+
+I
+(1)(µ0)
+⊤
+G0h, σ2
+
+≥t0
+
+.
+Furthermore, note dF is uniformly integrable. Thus, we have
+E [dF] →E
+
+1
+
+N
+
+I
+(1)(µ0)
+⊤
+G0h, σ2
+
+≥t0
+
+for each h as n →∞. Therefore, if σ > σ, dF is matched with rule
+1
+
+N
+
+I
+(1)(µ0)
+⊤
+G0h, σ2
+
+≥t0
+
+(44)
+in the sense of Lemma 1. Note ˆυ ∼N
+
+I
+(1)(µ0)
+⊤
+G0h, σ2
+
+, implying that 1 {ˆυ ≥t0} shares the
+51
+
+
+same distribution as (44). Conclude that dF is matched with rule 1 {ˆυ ≥t0} if σ > σ. The proof
+for σ < σ is completely analogous.
+Lemma D.4. Suppose the conditions of Theorem 3 hold. If σ = σ, dF is matched with 1 {ˆυ ≥t0}
+in the sense of (15).
+Proof. When σ = σ, we need to show that, for all h, we have E[dF] →E [1 {ˆυ ≥t0}] as n →∞,
+where ˆυ ∼N
+
+I
+(1)(µ0)
+⊤
+G0h, σ2
+
+. As dF = 1 {ˆσ ≥σ} · dF,ˆt + 1 {ˆσ < σ} · dF,RT is uniformly
+integrable, it suffices to show that, for every h,
+dF
+h⇝X0 := 1
+
+N
+
+I
+(1)(µ0)
+⊤
+G0h, σ2
+
+≥t0
+
+.
+Step 1: The distribution function of X0 is
+X0 =
+
+
+
+
+
+
+
+
+
+
+
+0,
+w/ prob. Φ
+ 
+t0−
+
+I(1)(µ0)
+⊤
+G0h
+σ
+!
+,
+1,
+w/ prob. Φ
+ 
+I(1)(µ0)
+⊤
+G0h−t0
+σ
+!
+.
+Thus, by definition of convergence in distribution, it suffices to show that, for each h, we have, as
+n →∞,
+Pr {dF ≤x} →Φ
+
+
+
+t0 −
+
+I
+(1)(µ0)
+⊤
+G0h
+σ
+
+
+
+for every x ∈(0, 1). Note the desired convergence trivially holds when x < 0 and x > 1.
+Step 2: Pick any x ∈(0, 1), we can write
+Pr {dF ≤x} =E [1 {dF ≤x}]
+=E [1 {dF ≤x} 1 {ˆσ ≥σ}] + E [1 {dF ≤x} 1 {ˆσ < σ}]
+=E
+
+1
+
+dF,ˆt ≤x
+	
+1 {ˆσ ≥σ}
+
++ E [1 {dF,RT ≤x} 1 {ˆσ < σ}]
+=An(h) + Bn(h),
+52
+
+
+where
+An(h) :=E
+
+1
+
+dF,ˆt ≤x
+	
+,
+Bn(h) :=E [1 {dF,RT ≤x} 1 {ˆσ < σ}] −E
+
+1
+
+dF,ˆt ≤x
+	
+1 {ˆσ < σ}
+
+Note,
+An(h) = Pr
+
+dF,ˆt ≤x
+	
+= Pr
+
+dF,ˆt = 0
+	
+= Pr
+√n
+
+I
+(1)(µ0)
+⊤
+(µ(ˆγ) −µ0) < ˆt
+
+→Φ
+
+
+
+t0 −
+
+I
+(1)(µ0)
+⊤
+G0h
+σ
+
+
+,
+as n →∞for all h, since Step 1 of the proof for Lemma D.3 established that
+1
+√n
+
+I
+(1)(µ0)
+⊤
+(µ(ˆγ) −µ0) ≥ˆt
+
+h⇝X0.
+Step 3: Therefore, it suffices to show that, for each h, Bn(h) →0 as n →∞. To this end, write
+gn,1(ˆγ, ˆσ) := √n
+
+I
+(1)(µ0)
+⊤
+(µ(ˆγ) −µ0) −t∗−Φ−1 (x) 1{ˆσ < σ}
+p
+σ2 −ˆσ2,
+gn,2(ˆγ, ˆt) := √n
+
+I
+(1)(µ0)
+⊤
+(µ(ˆγ) −µ0) −ˆt,
+G := N
+
+I
+(1)(µ0)
+⊤
+G0h, σ2
+
+−t0.
+Note Φ−1 (x) 1{ˆσ < σ}
+√
+σ2 −ˆσ2 P n
+h
+→0, ˆt
+P n
+h
+→t0 and t∗= t0 when σ = σ. It follows by continuous
+mapping theorem that gn,1(ˆγ, ˆσ)
+h⇝G, gn,2(ˆγ, ˆt)
+h⇝G, and gn,1(ˆγ, ˆσ) −gn,2(ˆγ, ˆt)
+P n
+h
+→0. Therefore,
+|Bn(h)| =|E [1 {dF,RT ≤x} 1 {ˆσ < σ}] −E
+
+1
+
+dF,ˆt ≤x
+	
+1 {ˆσ < σ}
+
+|
+=|E [1 {gn,1(ˆγ, ˆσ) ≤0} 1 {ˆσ < σ}] −E
+
+1
+
+gn,2(ˆγ, ˆt) < 0
+	
+1 {ˆσ < σ}
+
+|
+≤E
+1 {gn,1(ˆγ, ˆσ) ≤0} −1
+
+gn,2(ˆγ, ˆt) < 0
+	
+=Pr
+
+1 {gn,1(ˆγ, ˆσ) ≤0}̸ = 1
+
+gn,2(ˆγ, ˆt) < 0
+		
+.
+Thus, it suffices to show that, as n →∞,
+Pr
+
+1 {gn,1(ˆγ, ˆσ) ≤0}̸ = 1
+
+gn,2(ˆγ, ˆt) < 0
+		
+→0.
+53
+
+
+To this end, pick any ε > 0. Note
+Pr
+
+1 {gn,1(ˆγ, ˆσ) ≤0}̸ = 1
+
+gn,2(ˆγ, ˆt) < 0
+		
+≤Bn,1(h, ε) + Bn,2(h, ε),
+where
+Bn,1(h, ε) := Pr
+gn,1(ˆγ, ˆσ) −gn,2(ˆγ, ˆt)
+ > ε
+	
+,
+Bn,2(h, ε) := Pr {|gn,1(ˆγ, ˆσ)| ≤ε} .
+Note Bn,1(h, ε) →0, and due to Portmanteau’s lemma, Bn,2(h, ε) →Pr {|G| ≤ε}. Then, Bn(h) →
+0 follows by letting ε ↓0 and noting Pr {G = 0} = 0.
+E
+Additional Results: Directional Differentiability
+Lemma E.1. Suppose Assumptions 1-5 hold. Then, µ0 = 0 is a global least favorable point.
+Proof. Note Assumptions 2 and 5 imply that 0 ∈int(Mµ) is such that I(0) > 0 > I(0) and
+R(0) = I(0)
+2 . We show that R(0) ≥R(µ) for all µ ∈Mµ such that µ̸ = 0. To see this, note it
+suffices to check all µ ∈Mµ such that I(µ) > 0 > I(µ), for which
+R(µ) = 1
+2
+2
+
+1
+[−I(µ)] +
+1
+¯I(µ)
+ ≤1
+2
+ ¯I(µ) + [−I(µ)]
+2
+
+≤1
+2
+
+I
+µ −µ
+2
+
+= I(0)
+2 ,
+where the first inequality follows from the fact that the harmonic mean is always no larger than
+the arithmetic mean for positive numbers, and the second inequality follows from concavity of I(· )
+and −I(µ) = I(−µ).
+Lemma E.2. Suppose the conditions of Theorem 4 hold. Consider the following problem:
+max
+v∈Rdµ:v⊤v=1 I
+(1)(0; v)
+ v⊤Σ−1
+0 v
+−1/2 .
+(45)
+A solution of (45) is v =
+Σ0p
+∥Σ0p∥, where p is the unique solution of minp∈∂I(0)
+
+p⊤Σ0p
+	1/2. Moreover,
+I
+(1)(0; v)
+ v⊤Σ−1
+0 v
+−1/2 =
+
+p⊤Σ0p
+	1/2 > 0.
+Proof. Let f(v) := I
+(1)(0; v)
+ v⊤Σ−1
+0 v
+−1/2, which is continuous in
+
+v ∈Rdµ : v⊤v = 1
+	
+. Thus,
+V∗:= maxv∈Rdµ:v⊤v=1 f(v) is finite. Moreover, note v⊤Σ−1
+0 v > 0 for all v⊤v = 1, among which
+there exists some v such that I
+(1)(0; v) > 0 due to Assumption 5(ii). Thus, V∗> 0 is attained at
+54
+
+
+some v⊤v = 1 such that I
+(1)(0; v) > 0. Furthermore, as f(αµ) = f(µ) for all α > 0 and all µ̸ = 0,
+V∗depends only on the direction of v and not on its length. Therefore, V∗= maxv⊤Σ−1
+0 v=1 I
+(1)(0; v).
+First, we show that
+max
+v⊤Σ−1
+0 v=1 I
+(1)(0; v) =
+max
+v⊤Σ−1
+0 v≤1 I
+(1)(0; v).
+(46)
+Clearly, maxv⊤Σ−1
+0 v≤1 I
+(1)(0; v) ≥maxv⊤Σ−1
+0 v=1 I
+(1)(0; v) > 0. Suppose, on the contrary, the first
+inequality is strict. Then, there exists some ev such that (ev)⊤Σ−1
+0 ev < 1 and
+I
+(1)(0; ev) >
+max
+v⊤Σ−1
+0 v=1 I
+(1)(0; v) > 0.
+(47)
+It follows that ev̸ = 0 and (ev)⊤Σ−1
+0 ev > 0.
+Then, let eα =
+
+1/ (ev)⊤Σ−1
+0 ev
+1/2
+> 1.
+We have
+(eαev)⊤Σ−1
+0 (eαev) = 1, and
+I
+(1)(0; eαev) = eαI
+(1)(0; ev) > I
+(1)(0; ev),
+which contradicts (47). Conclude that the equality must hold.
+Then, note the RHS of (46) can be recast as a max-min problem
+max
+v∈Rdµ:v⊤Σ−1
+0 v≤1 min
+p∈∂I(0) p⊤v,
+(48)
+where both
+
+v ∈Rdµ : v⊤Σ−1
+0 v ≤1
+	
+and ∂I(0) are convex and compact. Moreover, p⊤v is contin-
+uous and affine in both p and v. It follows by Sion’s minimax theorem (Simons, 1995, Theorem 3)
+that
+max
+v∈Rdµ:v⊤Σ−1
+0 v≤1 min
+p∈∂I(0) p⊤v = min
+p∈∂I(0)
+max
+v∈Rdµ:v⊤Σ−1
+0 v≤1 p⊤v.
+(49)
+For each p ∈∂I(0), Cauchy-Schwarz inequality implies
+max
+v∈Rdµ:v⊤Σ−1
+0 v≤1 p⊤v ≤
+max
+v∈Rdµ:v⊤Σ−1
+0 v≤1
+ p⊤Σ0p
+1/2  v⊤Σ−1
+0 v
+1/2 ≤
+ p⊤Σ0p
+1/2 ,
+where p⊤Σ0p > 0 as Σ0 is positive definite and p̸ = 0. As
+Σ0p
+(p⊤Σ0p)
+1/2 achieves
+ p⊤Σ0p
+1/2, conclude
+that
+max
+v∈Rdµ:v⊤Σ−1
+0 v≤1 p⊤v =
+ p⊤Σ0p
+1/2 .
+55
+
+
+It follows that the min-max problem in (49) reduces to
+min
+p∈∂I(0)
+
+p⊤Σ0p
+	1/2 ,
+(50)
+which has a unique solution referred to as p since (50) is equivalent to minp∈∂I(0) p⊤Σ0p, which has
+a strictly convex objective function. Conclude that
+V∗=
+ p⊤Σ0p
+1/2 =
+ p⊤Σ0p
+−1/2 I
+(1)(0; Σ0p),
+and a solution of (45) is
+Σ0p
+∥Σ0p∥.
+Lemma E.3. Under the conditions of Theorem 4, p(Σ0), µo(Σ0) and x(Σ0) are all continuous
+(single-valued) functions of Σ0.
+Proof. Continuity of p(Σ0).
+Note
+ p⊤Σ0p
+1/2 is continuous in both Σ0 and p, and ∂I(0) is
+nonempty and compact. Therefore, p(Σ0), defined as the solution of minp∈∂I(0)
+
+p⊤Σ0p
+	1/2 is upper-
+hemicontinuous, nonempty and compact-valued by Berge’s theorem of maximization. As Lemma
+E.2 established that p(Σ0) is unique, conclude that p(Σ0) is in fact a continuous function.
+Continuity of µo(Σ0). Step 1: We show that there exists some finite t(Σ0) ≥0 such that
+max
+n
+µ∈Mµ,∞:I(1)(0;µ)≥0
+o r(µ; Σ0) =
+max
+n
+µ∈Mµ,∞:I(1)(0;µ)≥0;µ⊤µ≤t2(Σ0)
+o r(µ; Σ0).
+(51)
+For each µ, we can write µ = tv for some v such that v⊤v = 1 is the direction of µ and some t ≥0
+is the length of µ. Therefore,
+r(µ; Σ0) = r(tv; Σ0) =
+
+C + tI
+(1)(0; v)
+
+Φ
+
+−t
+q
+v⊤Σ−1
+0 v
+
+,
+and
+max
+{µ∈Mµ,∞:I(1)(0;µ)≥0}
+r(µ; Σ0) =
+max
+n
+v⊤v=1:I(1)(0;v)≥0
+o
+max
+{t≥0:tv∈Mµ,∞} r(tv; Σ0).
+For each v⊤v = 1 such that I
+(1)(0; v) ≥0, note r(tv; Σ0) is continuous, either decreasing, or
+first increasing and then decreasing in t ≥0. It follows that max{t≥0} r(tv; Σ) is either uniquely
+characterized by a FOC or at t = 0, which also defines a single-valued function t(v; Σ0) continuous
+in both v and Σ0. As the set
+n
+v⊤v = 1 : I
+(1)(0; v) ≥0
+o
+is compact, there exists a finite-valued
+56
+
+
+t(Σ0) such that
+t(Σ0) =
+sup
+n
+v⊤v=1:I(1)(0;v)≥0
+o t(v; Σ0).
+(52)
+Moreover, t(Σ0) is also continuous in Σ0. These imply that the inner maximization problem must
+be achieved at some finitely valued t ≤t(Σ0) for each v⊤v = 1 such that I
+(1)(0; v) ≥0, which, in
+turn, implies that (51) must hold.
+Step 2: Conclusion from Step 1 implies that a solution of (27) can be found by restricting to the
+nonempty and compact set
+C(Σ0) :=
+n
+µ ∈Mµ,∞: I
+(1)(0; µ) ≥0; µ⊤µ ≤t
+2(Σ0)
+o
+,
+(53)
+which verifies the existence of µo.
+Lemma E.7 shows that r(· ; Σ0) is strictly quasiconcave in
+n
+µ ∈Mµ,∞: I
+(1)(0; µ) ≥0
+o
+, which is convex itself. This verifies the uniqueness of µo. It follows
+that µo(Σ0) = arg maxµ∈C(Σ0) r(µ; Σ0).
+Step 3: We show µo(Σ0) is continuous. By Lemma E.6, C(Σ0) is a continuous correspondence.
+Invoking Berge’s theorem of maximization yields that µo(Σ0) is upper-hemicontinuous. As Step 2
+established that µo(Σ0) is single-valued, conclude that µo(Σ0) is in fact a continuous function.
+Continuity of x(Σ0). Note we showed that p = p(Σ0) is continuous in Σ0. Then, the continuity
+of x(Σ0) follows by applying Berge’s theorem of maximization after compactifying [0, ∞) with
+arguments analogous to the proof of continuity of µo(Σ0) above.
+Lemma E.4. In case (iii) of Theorem 4, a solution of (24) is 1
+n
+(µo)⊤Σ−1
+0 ∆≥0
+o
+, where µo solves
+(27).
+Proof. Fix some scalars x and t such that
+x ∈
+
+0, ¯tI
+(1)(0; Σ0p)
+
+,
+t > t(Σ0),
+(54)
+where t(Σ0) is defined in (52). Denote by
+S :=
+n
+µ ∈Mµ,∞| I
+(1)(0; µ) ≥x, µ⊤µ ≤t2o
+.
+Due to centrosymmetry, for each µ ∈S, −µ ∈Mµ,∞. Consider solving the following MMR problem
+in a restricted parameter space when either µ or −µ can take values in S (which we write as
+±µ ∈S):
+min
+d(∆)
+sup
+±µ∈S,µ∗∈I∞(µ)
+µ∗[1 {µ∗≥0} −E[d(∆)]] .
+(55)
+57
+
+
+Below, we take several steps to show that: (1) (55) has a solution 1
+n
+(µ⋆)⊤Σ−1
+0 ∆≥0
+o
+, where
+µ⋆∈S solves a fixed-point program; (2) 1
+n
+(µ⋆)⊤Σ−1
+0 ∆≥0
+o
+is also the MMR solution of (24);
+and (3) µ⋆can be found by solving (27).
+Step 1: For each ˜µ ∈S, consider a prior π˜µ that randomizes evenly between
+n
+˜µ, I
+(1)(0; ˜µ) + C
+
+, (−˜µ, I(1)(0; −˜µ) + C)
+o
+,
+where note I(1)(0; −˜µ) + C = −I
+(1)(0; ˜µ) −C, and these two points belong to the parameter space
+in (55). The Bayes optimal rule with respect to π˜µ is 1
+
+˜µ⊤Σ−1
+0 ∆≥0
+	
+, with a corresponding Bayes
+value r(˜µ; Σ0). Furthermore, the best response of Nature with respect to 1
+
+˜µ⊤Σ−1
+0 ∆≥0
+	
+in the
+restricted parameter space is
+sup
+±µ∈S,µ∗∈I∞(µ),
+µ∗
+"
+1 {µ∗≥0} −Φ
+ 
+˜µ⊤Σ−1
+0 µ
+ ˜µ⊤Σ−1
+0 ˜µ
+1/2
+!#
+= sup
+µ∈S
+
+C + I
+(1)(0; µ)
+
+Φ
+ 
+−
+˜µ⊤Σ−1
+0 µ
+ ˜µ⊤Σ−1
+0 ˜µ
+1/2
+!
+,
+where the second equality uses the centrosymmetry. Write
+g(µ, eµ) :=
+
+C + I
+(1)(0; µ)
+
+Φ
+ 
+−
+˜µ⊤Σ−1
+0 µ
+ ˜µ⊤Σ−1
+0 ˜µ
+1/2
+!
+.
+Consider the correspondence ϕ : S ⇒S defined as
+arg max
+µ∈S g(µ, eµ).
+(56)
+Step 2: We show that ϕ has a fixed point. To see this, note:
+(a) S is convex and compact by construction.
+(b) Since g(· ; · ) is continuous, and S is compact and nonempty, it follows by Berge’s maximum
+theorem that the correspondence ϕ(· ) is upper hemicontinuous with nonempty and compact
+values. It follows then ϕ has a closed graph.
+(c) Note ϕ(· ) is nonempty. Furthermore, quasiconcavity of g(· , eµ) (Lemma E.8) implies that ϕ(· )
+is convex-valued.
+58
+
+
+With claims (a)-(c) above, we verified that all conditions of Kakutani’s fixed point theorem hold.
+Conclude that ϕ : S ⇒S has a fixed point µ⋆, and (55) has a solution 1
+n
+(µ⋆)⊤Σ−1
+0 ∆≥0
+o
+, where
+µ⋆∈S.
+Step 3: Conclusion from Step 2 implies that a solution for (55) is 1
+n
+(µ⋆)⊤Σ−1
+0 ∆≥0
+o
+, which we
+now show is also the MMR solution of (24), i.e.,
+sup
+µ∈Mµ,∞,C+I(1)(0;µ)≥0
+g(µ, µ⋆) = sup
+µ∈S
+g(µ, µ⋆) = g(µ⋆, µ⋆).
+(57)
+Suppose not. Then, there exists some bµ not in S but in {µ ∈Mµ,∞, C + I
+(1)(0; µ) ≥0} such that
+g(bµ; µ⋆) > g(µ⋆; µ⋆). Then, for λ ∈(0, 1), consider
+bµλ := λbµ + (1 −λ)µ⋆∈{µ ∈Mµ,∞, C + I
+(1)(0; µ) ≥0}.
+Algebra shows
+g(bµλ; µ⋆) =
+
+C + I
+(1)(0; bµλ)
+
+Φ
+
+
+−
+(µ⋆)⊤Σ−1
+0 bµλ
+
+(µ⋆)⊤Σ−1
+0 µ⋆
+1/2
+
+
+
+=
+
+C + I
+(1)(0; λbµ + (1 −λ)µ⋆)
+
+Φ
+
+−
+
+(µ⋆)⊤Σ−1
+0 µ⋆1/2
+−λδbµ
+
+,
+where δbµ := (µ⋆)⊤Σ−1
+0 (bµ−µ⋆)
+((µ⋆)⊤Σ−1
+0 µ⋆)
+1/2. Consider two cases:
+1. If bµ is such that δbµ = 0, then notice g(bµλ; µ⋆) is concave in λ (as I
+(1)(0; · ) is concave), implying
+g(bµλ; µ⋆) =
+
+C + I
+(1)(0; λbµ + (1 −λ)µ⋆)
+
+Φ
+
+−
+
+(µ⋆)⊤Σ−1
+0 µ⋆1/2
+≥λg(bµ; µ⋆) + (1 −λ)g(µ⋆; µ⋆)
+> g(µ⋆; µ⋆),
+for all λ ∈(0, 1) since we posited g(bµ; µ⋆) > g(µ⋆; µ⋆). This forms a contradiction. Indeed,
+Lemma E.5 shows that we must have I
+(1)(0; µ⋆) > x and (µ⋆)⊤µ⋆< t2. Therefore, for λ > 0
+sufficiently close to zero, we have bµλ ∈S. As µ⋆maximizes g(· ; µ⋆) in S, we must have that
+g(bµλ; µ⋆) ≤g(µ⋆; µ⋆)
+(58)
+59
+
+
+for λ > 0 sufficiently small.
+2. Suppose that bµ is such that δbµ̸ = 0. Then, analogous to the proof of Lemma E.7, we can show
+that g(bµλ; µ⋆) is strictly quasiconcave in λ. Thus, we have
+g(bµλ; µ⋆) > min {g(µ⋆; µ⋆), g(bµ; µ⋆)} = g(µ⋆; µ⋆)
+for all λ ∈(0, 1). This analogously forms a contradiction with (58).
+Hence, (57) must hold, and we conclude that 1
+n
+(µ⋆)⊤Σ−1
+0 ∆≥0
+o
+is indeed an MMR optimal rule
+for (24) and R∗= r(µ⋆; Σ0).
+Step 4: Note conclusion from Step 3 immediately implies that the prior that randomizes evenly
+between
+n
+µ⋆, I
+(1)(0; µ⋆) + C
+
+,
+
+−µ⋆, I(1)(0; −µ⋆) + C
+o
+is least favorable, which must also solve (27), as we note r(µ; Σ0) is also the Bayes value for any
+two-point symmetric prior that randomizes evenly between
+n
+µ, I
+(1)(0; µ) + C
+
+,
+
+−µ, I(1)(0; −µ) + C
+o
+for any µ ∈Mµ,∞such that I
+(1)(0; µ) ≥0.
+Lemma E.5. Under conditions of Lemma E.4, the fixed point µ⋆of the correspondence defined in
+(56) is such that I
+(1)(0; µ⋆) > x and (µ⋆)⊤µ⋆< t2, where x and t are defined in (54).
+Proof. Step 1: we show I
+(1)(0; µ⋆) > x. The Bayes value for any two-point prior that randomizes
+evenly between
+n
+eµ, I
+(1)(0; eµ) + C
+
+,
+
+−eµ, I(1)(0; −eµ) + C
+o
+,
+where eµ ∈S, is r(eµ; Σ0). Step 2 in the proof of Lemma E.4 implies that
+µ⋆∈arg max
+eµ∈S r(eµ; Σ0).
+(59)
+We show that for any µ such that I
+(1)(0; µ) = x,
+µ /∈arg max
+eµ∈S r(eµ; Σ0).
+To see this, consider
+max r(eµ; Σ0)
+s.t.
+I
+(1)(0; eµ) = x,
+60
+
+
+which can be solved by considering
+min
+q
+˜µ⊤Σ−1
+0 ˜µ
+s.t.
+I
+(1)(0; ˜µ) = x.
+(60)
+As we can write ˜µ = etev, where ev denotes the direction of ˜µ, and et is the length of eµ, solving (60)
+is equivalent to solving
+max
+ev
+I
+(1)(0; ev)
+ ev⊤Σ−1
+0 ev
+−1/2 ,
+(61)
+among all directions ev such that the corresponding length of eµ =
+x
+I(1)(0;ev) does not exceed the largest
+possible length that eµ can take along its direction. By Lemma E.2, a unique solution of (61) among
+all directions is v (proportional to Σ0p). Along this direction, note indeed
+x
+I(1)(0;v) does not exceed
+its largest possible length t∥Σ0p∥by construction. Conclude that
+max
+I(1)(0;˜µ)=x
+r(eµ; Σ0) = r
+ 
+v
+x
+I
+(1)(0; v)
+; Σ0
+!
+=
+ C + x
+
+Φ
+ 
+−
+x
+ p⊤Σ0p
+1/2
+!
+after lengthy algebra. However, note f(·) := (C + ·)Φ(−(·)/(p⊤Σ0p)1/2) is strictly increasing in
+(0, tI
+(1)(0; Σ0p)] under the conditions of this lemma and x < tI
+(1)(0; Σ0p) by construction. Conclude
+that µ⋆cannot be attained at any point such that I
+(1)(0; µ) = x.
+Step 2: we show (µ⋆)⊤µ⋆< t2. Recall the fixed point µ⋆satisfies µ⋆∈arg maxeµ∈S r(eµ; Σ0) (cf.
+(59)), where S ⊆{µ ∈Mµ,∞: I
+(1)(0; µ) ≥0}.
+Meanwhile, proof of Lemma E.3 establishes
+that µo = arg maxn
+µ∈Mµ,∞:I(1)(0;µ)≥0
+o r(µ; Σ0) has a length not exceeding t(Σ0). Suppose, on the
+contrary, (µ⋆)⊤µ⋆= t2, where t > t(Σ0).
+Then, we must have µo /∈S, i.e., µo must be such
+that 0 ≤I
+(1)(0; µo) < x. However, by analogous arguments used in Step 1, we can show that µo
+cannot be attained at any point such that 0 ≤I
+(1)(0; µ) < x under conditions of this lemma, a
+contradiction.
+Lemma E.6. Under conditions of Theorem 4, C(Σ0) defined in (53) is a continuous correspondence.
+Proof. Step 1: we show C(Σ0) is upper hemi-continuous. Note C(Σ0) = C1 ∩C2(Σ0) where C1 :=
+n
+µ ∈Mµ,∞: I
+(1)(0; µ) ≥0
+o
+is closed, and
+C2(Σ0) =
+n
+µ ∈Mµ,∞: µ⊤µ ≤t
+2(Σ0)
+o
+is compact. Therefore, it suffices to show that C2(· ) has a closed graph. To this end, pick any
+sequences {Σn} , {µn} such that Σn is positive definite, and µn ∈Mµ,∞.
+Suppose Σn →Σ0,
+61
+
+
+µn →µ for Σ0 positive definite, and µ ∈Mµ,∞. Moreover, suppose µn ∈C2(Σn) for each n, i.e.,
+µ⊤
+n µn ≤t
+2(Σn). As t
+2(· ) is continuous, we have t
+2(Σn) →t
+2(Σ0). Moreover, µ⊤
+n µn →µ⊤µ. It
+follows then we have µ⊤µ ≤t
+2(Σ0), i.e., µ ∈C2(Σ0). Conclude that C2(· ) has a closed graph.
+Step 2: We show that C(Σ0) is lower hemi-continuous. Let Σn →Σ0. Fix each µ ∈C(Σ0). Consider
+the following two cases.
+(1) Suppose µ⊤µ < t
+2(Σ0). As t(Σn) →t(Σ0), we have µ⊤µ < t
+2(Σn) for n sufficiently large.
+Note I
+(1)(0; µ) ≥0 as well. Therefore, by setting µn = µ for all n, we have µn ∈C(Σn) for n
+sufficiently large and µn →µ by construction.
+(2) Suppose µ⊤µ = t
+2(Σ0). In this case, let an := min
+
+1, t(Σn)
+√
+µ⊤µ
+
+and µn = anµ (if µ = 0, set
+an = 1). As t(Σn) →t(Σ0) and µ⊤µ = t
+2(Σ0), we have an →1 and µn →µ by construction.
+It suffices to show that µn ∈C(Σn). To this end, note µn = anµ + (1 −an)· 0. As 0 ∈Mµ,∞,
+µ ∈Mµ,∞and Mµ,∞is convex, we have µn ∈Mµ,∞. Moreover, I
+(1)(0; µn) = anI
+(1)(0; µ) ≥0,
+and
+µ⊤
+n µn = min
+(
+1, t
+2(Σn)
+µ⊤µ
+)
+µ⊤µ ≤t
+2(Σn).
+Conclude that µn ∈C(Σn) for each n.
+Based on the above two cases, we conclude that C(Σ) is lower hemi-continuous.
+Lemma E.7. Under conditions of Theorem 4, r(· ; Σ0) is strictly quasiconcave in
+n
+µ ∈Mµ,∞: I
+(1)(0; µ) ≥0
+o
+for each positive definite Σ0.
+Proof. Note
+n
+µ ∈Mµ,∞: I
+(1)(0; µ) ≥0
+o
+is convex. Also, for each µ ∈Mµ,∞such that I
+(1)(0; µ) ≥0,
+we have
+log r(µ; Σ0) = log
+
+C + I
+(1)(0; µ)
+
++ log Φ
+
+−
+q
+µ⊤Σ−1
+0 µ
+
+.
+The first component of the above is concave. Below, we show the second component is strictly
+concave.
+And the conclusion of the lemma follows because a strictly monotone transformation
+of a strictly concave function is strictly quasiconcave. To this end, write h(z) = log Φ(z), and
+62
+
+
+g(µ) =
+p
+µ⊤Σ−1
+0 µ. Note h(1)(z) = ϕ(z)
+Φ(z) > 0,
+h(2)(z) = −zϕ(z)Φ(z) −ϕ2(z)
+Φ2(z)
+= −zh(1)(z) −
+ h(1)(z)
+2
+= −h(1)(z)
+ z + h(1)(z)
+
+< 0
+for all z ∈R. Therefore, h(· ) is strictly concave in R. Moreover, note g(µ) is convex in R. Conclude
+that h(−g(µ)) is concave. To show that the function is in fact strictly concave, pick any µ1̸ = µ2
+such that I
+(1)(0; µ1) ≥0 and I
+(1)(0; µ2) ≥0. We consider three cases.
+Case 1: Suppose one of µ1 and µ2 equals 0. Without loss of generality, let µ1 = 0 and µ2̸ = 0. As
+g is convex and h is strictly increasing, we have
+h(−g(αµ1 + (1 −α)µ2)) ≥h(α (−g(µ1)) + (1 −α) (−g(µ2))),
+(62)
+where also note g(µ1)̸ = g(µ2). Since h is also strictly concave, conclude that
+h (α (−g(µ1)) + (1 −α) (−g(µ2))) > αh (−g(µ1)) + (1 −α)h (−g(µ2)) ,
+(63)
+establishing the desired strict inequality.
+Case 2: Suppose µ1̸ = µ2̸ = 0 but there exists some α0 ∈(0, 1) such that α0µ1 + (1 −α0)µ2 = 0.
+Then, µ1 = −λ0µ2 for λ0 := (1 −α0)/α0 ∈(0, ∞). If λ0̸ = 1, then note g(µ1)̸ = g(µ2) still holds,
+implying that arguments via (62) and (63) still go through. If λ0 = 1, we have, for any α ∈(0, 1),
+|1 −2α| < 1. Thus,
+−g(αµ1 + (1 −α)µ2) = −g((1 −2α)µ2) = −|1 −2α| g(µ2) > −g(µ2).
+(64)
+Moreover, since µ1 = −µ2, g(µ1) = g(µ2), implying
+α(−g(µ1)) + (1 −α)(−g(µ2)) = −g(µ2).
+(65)
+(64) and (65) jointly imply −g(αµ1 + (1 −α)µ2) > α(−g(µ1)) + (1 −α)(−g(µ2)). As a result, the
+desired strict inequality still holds due to strict monotonicity of h.
+Case 3: Suppose µ1̸ = µ2̸ = 0 and their convex combination does not pass through 0. Then, it
+suffices to check the second order condition. To this end, note h(1)(z) is the inverse mills ratio, with
+63
+
+
+the property that h(1)(z) + z > 0 for all z ∈R. Algebra shows that, for any µ̸ = 0,
+∂h (−g(µ))
+∂µ
+= −h(1) (−g(µ)) Σ−1
+0 µ
+g(µ) ,
+∂2h (−g(µ))
+∂µ∂µ⊤
+= h(2) (−g(µ)) Σ−1
+0 µµ⊤Σ−1
+0
+g2(µ)
++ h(1) (−g(µ))
+Σ−1
+0 µµ⊤Σ−1
+0
+g3(µ)
+−Σ−1
+0
+g(µ)
+
+= −h(1) (−g(µ)) Σ−1
+0
+g(µ) + Σ−1
+0 µµ⊤Σ−1
+0
+h(2) (−g(µ))
+g2(µ)
++ h(1) (−g(µ))
+g3(µ)
+
+= −h(1) (−g(µ)) Σ−1
+0
+g(µ) + Σ−1
+0 µµ⊤Σ−1
+0
+h(1)(−g(µ))
+g(µ)
+g(µ) −h(1)(−g(µ))
+g(µ)
++
+1
+g2(µ)
+
+.
+As g(µ) > 0, h(1) (−g(µ)) > 0, the definiteness of the above matrix is determined by
+−Σ−1
+0
++ Σ−1
+0 µµ⊤Σ−1
+0
+ 
+−g(µ)
+ h(1)(−g(µ)) −g(µ)
+
++ 1
+g2(µ)
+!
+=A + B,
+where
+A = −
+ h(1)(−g(µ)) −g(µ)
+
+g(µ)
+|
+{z
+}
+<0
+ Σ−1
+0 µµ⊤Σ−1
+0
+
+,
+B =
+Σ−1
+0 µµ⊤Σ−1
+0
+g2(µ)
+−Σ−1
+0
+
+.
+Note Σ−1
+0 µµ⊤Σ−1
+0
+is positive semidefinite, with
+a⊤Σ−1
+0 µµ⊤Σ−1
+0 a = 0
+for some a̸ = 0 only when a⊤Σ−1
+0 µ = 0, i.e., a is orthogonal to Σ−1
+0 µ; Moreover, B is negative
+semidefinite due to Cauchy Schwarz inequality, with a⊤Ba = 0 for some a̸ = 0 only when a is
+proportional to µ.
+Therefore, for any a̸ = 0, at most one of a⊤Aa and a⊤Ba can equal zero.
+Conclude that A + B is in fact negative definite for all µ̸ = 0.
+Lemma E.8. For each eµ ∈S and each positive definite Σ0, g(µ, eµ) is quasiconcave in
+n
+µ ∈Mµ,∞: I
+(1)(0; µ) ≥0
+o
+.
+64
+
+
+Proof. For each eµ ∈S, consider
+log (g(µ, eµ)) = log
+
+C + I
+(1)(0; µ)
+
++ log
+"
+Φ
+ 
+−
+˜µ⊤Σ−1
+0 µ
+ ˜µ⊤Σ−1
+0 ˜µ
+1/2
+!#
+.
+(66)
+Then, the proof is analogous to Lemma E.7 by noting that both components on the RHS of (66)
+are concave.
+Lemma E.9. Under conditions of Theorem 5, the following statements hold true.
+(i) When
+  π
+2p⊤Σ0p
+1/2 < C, dF is matched with d∞,RT in the sense of (15);
+(ii) When
+  π
+2p⊤Σ0p
+1/2 ≥C and x ≤tI
+(1)(0; Σ0p), dF is matched with d∞,p;
+(iii) When
+  π
+2p⊤Σ0p
+1/2 ≥C and x > tI
+(1)(0; Σ0p), dF is matched with d∞,µo.
+Proof. Note the following results hold under stated assumptions.
+1) Le Cam’s first lemma implies that ˆΣ
+P n
+h
+→Σ0 for all h.
+2) Lemma E.3 establishes that p(· ), x(· ) and µo(· ) are all continuous functions. Conclude that
+ˆp = p(ˆΣ)
+P n
+h
+→p(Σ0) = p, ˆx = x(ˆΣ)
+P n
+h
+→x(Σ0) and ˆµo = µo(ˆΣ)
+P n
+h
+→µo(Σ0) = µo for all h.
+3) As I
+(1)(0; · ) and I(1)(0; · ) are continuous and I
+(1)(0; v) ≤I(1)(0; v) for all v, we have
+ˆx −
+2CI
+(1)(0; ˆΣˆp)
+I(1)(0; ˆΣˆp) −I
+(1)(0; ˆΣˆp)
+P n
+h
+→x −
+2CI
+(1)(0; Σ0p)
+I(1)(0; Σ0p) −I
+(1)(0; Σ0p)
+,
+with x −
+2CI(1)(0;Σ0p)
+I(1)(0;Σ0p)−I(1)(0;Σ0p) = −∞in case I(1)(0; Σ0p) −I
+(1)(0; Σ0p) = 0.
+4) Since µ(γ0) = µ0 = 0, Le Cam’s third lemma implies √nµ(ˆγ)
+h⇝N(G0h, Σ0).
+5) With the above results, conclude that, by continuous mapping theorem, we have
+dF,ˆp
+h⇝1
+
+p⊤N(G0h, Σ0) ≥0
+	
+,
+and if
+  π
+2p⊤Σ0p
+1/2 < C,
+dF,RT
+h⇝Φ
+
+p⊤N(G0h, Σ0)
+q
+2
+πC
+2 −p⊤Σ0p
+
+,
+65
+
+
+and if µo̸ = 0,
+dF,ˆµo
+h⇝1
+n
+(µo)⊤Σ−1
+0 N(G0h, Σ0) ≥0
+o
+.
+Case 1: Suppose
+  π
+2p⊤Σ0p
+1/2 < C. Then, note 1
+
+π
+2 ˆp⊤ˆΣˆp
+1/2
+< C
+
+P n
+h
+→1,
+1
+(π
+2 ˆp⊤ˆΣˆp
+1/2
+≥C, x(ˆΣ) ≤
+2CI
+(1)(0; ˆΣˆp)
+I(1)(0; ˆΣˆp) −I
+(1)(0; ˆΣˆp)
+)
+P n
+h
+→0,
+1
+(π
+2 ˆp⊤ˆΣˆp
+1/2
+≥C, x(ˆΣ) >
+2CI
+(1)(0; ˆΣˆp)
+I(1)(0; ˆΣˆp) −I
+(1)(0; ˆΣˆp)
+)
+P n
+h
+→0.
+As dF,ˆp ≤1, dF,ˆµo ≤1, conclude that, by continuous mapping theorem, dF
+h⇝Φ
+
+p⊤N(G0h,Σ0)
+q
+2
+π C2−p⊤Σ0p
+
+as
+n →∞. Then, uniform integrability implies that
+E[dF] →E
+
+Φ
+
+p⊤N(G0h, Σ0)
+q
+2
+πC
+2 −p⊤Σ0p
+
+
+
+.
+As ∆∼N(G0h, Σ0), conclude that dF is matched with d∞,RT in the sense of (15).
+Case 2: Suppose
+  π
+2p⊤Σ0p
+1/2 ≥C and x ≤tI
+(1)(0; Σ0p), which itself contains three separate cases.
+If
+  π
+2p⊤Σ0p
+1/2 > C and x < tI
+(1)(0; Σ0p). Then, note, 1
+
+π
+2 ˆp⊤ˆΣˆp
+1/2
+< C
+
+P n
+h
+→0, and
+1
+(π
+2 ˆp⊤ˆΣˆp
+1/2
+≥C, x(ˆΣ) ≤
+2CI
+(1)(0; ˆΣˆp)
+I(1)(0; ˆΣˆp) −I
+(1)(0; ˆΣˆp)
+)
+P n
+h
+→1,
+1
+(π
+2 ˆp⊤ˆΣˆp
+1/2
+≥C, x(ˆΣ) >
+2CI
+(1)(0; ˆΣˆp)
+I(1)(0; ˆΣˆp) −I
+(1)(0; ˆΣˆp)
+)
+P n
+h
+→0.
+It follows by analogous arguments that dF
+h⇝1
+
+p⊤N(G0h, Σ0) ≥0
+	
+and dF is matched with d∞,p.
+Otherwise, we are in two edge cases:
+  π
+2p⊤Σ0p
+1/2 = C, in which we must have 0 = x < tI
+(1)(0; Σ0p);
+and
+  π
+2p⊤Σ0p
+1/2 > C and x = tI
+(1)(0; Σ0p). The matching of dF and d∞,p in these two edge cases
+are proved in Lemma E.10.
+Case 3:
+  π
+2p⊤Σ0p
+1/2 ≥C and x > tI
+(1)(0; Σ0p). In this case, note it must hold
+  π
+2p⊤Σ0p
+1/2 > C.
+Applying completely analogous arguments yields that dF
+h⇝1
+n
+(µo)⊤Σ−1
+0 N(G0h, Σ0) ≥0
+o
+and dF
+is matched with d∞,µo .
+66
+
+
+Lemma E.10. Under conditions of Theorem 5, the following statements hold true.
+(i) If
+  π
+2p⊤Σ0p
+1/2 = C, dF is matched with d∞,p in the sense of (15);
+(ii) If
+  π
+2p⊤Σ0p
+1/2 > C and x = tI
+(1)(0; Σ0p), dF is matched with d∞,p.
+Proof. Statement (i). Suppose
+  π
+2p⊤Σ0p
+1/2 = C. As dF is uniformly integrable, it suffices to
+show that dF
+h⇝X0,p := 1
+
+p⊤N(G0h, Σ0) ≥0
+	
+. Then, analogous to the proof of Lemma D.4, it
+suffices to show that, for each h, we have, as n →∞,
+Pr {dF ≤z} →Φ
+
+
+−(p)⊤G0h
+
+(p)⊤Σ0p
+1/2
+
+
+
+for each z ∈(0, 1). Now, pick each z ∈(0, 1), algebra shows
+Pr {dF ≤z} = E [1 {dF ≤z}]
+= E [1 {dF,ˆp ≤z}] + S1,n(h) + S2,n(h) + S3,n(h),
+where
+S1,n(h) = E
+
+1
+π
+2 ˆp⊤ˆΣˆp
+1/2
+< C
+
+(1 {dF,RT ≤z} −1 {dF,ˆp ≤z})
+
+S2,n(h) = −E
+"
+1
+π
+2 ˆp⊤ˆΣˆp
+1/2
+≥C
+
+1
+(
+x(ˆΣ) >
+2CI
+(1)(0; ˆΣˆp)
+I(1)(0; ˆΣˆp) −I
+(1)(0; ˆΣˆp)
+)
+1 {dF,ˆp ≤z}
+#
+,
+S3,n(h) = E
+"
+1
+π
+2 ˆp⊤ˆΣˆp
+1/2
+≥C
+
+1
+(
+x(ˆΣ) >
+2CI
+(1)(0; ˆΣˆp)
+I(1)(0; ˆΣˆp) −I
+(1)(0; ˆΣˆp)
+)
+1 {dF,ˆµo ≤z}
+#
+.
+Note E [1 {dF,ˆp ≤z}] = E
+
+1
+
+ˆp⊤µ(ˆγ) < 0
+	
+= Pr
+
+ˆp⊤√nµ(ˆγ) < 0
+	
+. As ˆp⊤√nµ(ˆγ)
+h⇝N
+ p⊤G0h, p⊤Σ0p
+
+,
+we conclude that E [1 {dF,ˆp ≤z}] →Φ
+
+−
+p⊤G0h
+(p⊤Σ0p)
+1/2
+
+as required. Also, note S1,n(h) →0 by using
+completely analogous arguments in Steps 2-3 in the proof of Lemma D.4. Moreover, note when
+  π
+2p⊤Σ0p
+1/2 = C, it must be the case that 0 = x < tI
+(1)(0; Σ0p). Hence,
+1
+(
+x(ˆΣ) >
+2CI
+(1)(0; ˆΣˆp)
+I(1)(0; ˆΣˆp) −I
+(1)(0; ˆΣˆp)
+)
+P n
+h
+→0,
+implying S2,n(h) →0 and S3,n(h) →0 as well.
+67
+
+
+Statement (ii).
+Suppose
+  π
+2p⊤Σ0p
+1/2 > C and x = tI
+(1)(0; Σ0p).
+The proof is completely
+analogous. Pick each z ∈(0, 1). Algebra shows
+E [1 {dF ≤z}] = E
+
+1
+π
+2 ˆp⊤ˆΣˆp
+1/2
+≥C
+
+1 {dF,ˆp ≤z}
+
++ S4,n(h) + S5,n(h),
+where
+S4,n(h) = E
+
+1
+π
+2 ˆp⊤ˆΣˆp
+1/2
+< C
+
+1 {dF,RT ≤z}
+
+,
+S5,n(h) = E
+"
+1
+π
+2 ˆp⊤ˆΣˆp
+1/2
+≥C
+
+1
+(
+x(ˆΣ) >
+2CI
+(1)(0; ˆΣˆp)
+I(1)(0; ˆΣˆp) −I
+(1)(0; ˆΣˆp)
+)
+(1 {dF,ˆµo ≤z} −1 {dF,ˆp ≤z})
+#
+.
+Note 1
+
+π
+2 ˆp⊤ˆΣˆp
+1/2
+≥C
+
+P n
+h
+→1, and by continuous mapping theorem
+1 {dF,ˆp ≤z} = 1
+
+ˆp⊤µ (ˆγ) < 0
+	
+h⇝1
+
+p⊤N(G0h, Σ0) < 0
+	
+.
+As a result,
+1
+π
+2 ˆp⊤ˆΣˆp
+1/2
+≥C
+
+1 {dF,ˆp ≤z}
+h⇝1
+
+p⊤N(G0h, Σ0) < 0
+	
+,
+and we have, as n →∞, due to uniform integrability,
+E
+
+1
+π
+2 ˆp⊤ˆΣˆp
+1/2
+≥C
+
+1 {dF,ˆp ≤z}
+
+→Pr
+
+p⊤N(G0h, Σ0) < 0
+	
+= Φ
+ 
+−
+p⊤G0h
+ p⊤Σ0p
+1/2
+!
+.
+Also, S4,n(h)→0 as n →∞. Therefore, it remains to show S5,n(h)→0. To this end, note in the case
+of
+  π
+2p⊤Σ0p
+1/2 > C and x = tI
+(1)(0; Σ0p), we must have 0 < t < ∞, ˆµo P n
+h
+→µo = tΣ0p, ˆΣ−1 P n
+h
+→Σ−1
+0 ,
+and ˆΣ−1ˆµo P n
+h
+→tp. As a result, let
+Xn :=
+ t
+−1 (ˆµo)⊤ˆΣ−1√nµ (ˆγ) , Yn := ˆp⊤√nµ (ˆγ) , H := N
+
+p⊤G0h, (p)⊤Σ0p
+
+.
+Then, we have Xn
+h⇝H, Yn
+h⇝H, and
+Xn −Yn =
+ t
+−1 (ˆµo)⊤ˆΣ−1 −ˆp⊤ √nµ (ˆγ)
+P n
+h
+→0.
+68
+
+
+Then,
+|S5,n(h)| ≤E [|1 {dF,ˆµo ≤z} −1 {dF,ˆp ≤z}|]
+= E
+h1
+n
+(ˆµo)⊤ˆΣ−1√nµ (ˆγ) < 0
+o
+−1
+
+ˆp⊤√nµ (ˆγ) < 0
+	
+i
+= E
+h1
+n t
+−1 (ˆµo)⊤ˆΣ−1√nµ (ˆγ) < 0
+o
+−1
+
+ˆp⊤√nµ (ˆγ) < 0
+	
+i
+≤Pr {1 {Xn < 0}̸ = 1 {Yn < 0}} ,
+and Pr {1 {Xn < 0}̸ = 1 {Yn < 0}} →0 as n →∞by using a completely analogous argument to
+Step 3 in the proof of Lemma D.4.
+69
