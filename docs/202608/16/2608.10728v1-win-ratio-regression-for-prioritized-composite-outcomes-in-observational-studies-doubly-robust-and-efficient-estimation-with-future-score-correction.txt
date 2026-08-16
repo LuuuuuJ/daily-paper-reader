@@ -1,0 +1,4310 @@
+Title: Win-Ratio Regression for Prioritized Composite Outcomes in Observational Studies: Doubly Robust and Efficient Estimation with Future-Score Correction
+
+URL Source: https://arxiv.org/pdf/2608.10728v1
+
+Published Time: Wed, 12 Aug 2026 00:53:23 GMT
+
+Number of Pages: 47
+
+Markdown Content:
+# Win-Ratio Regression for Prioritized Composite Outcomes in Observational Studies: Doubly Robust and Efficient Estimation with Future-Score Correction 
+
+Zhuochao Huang ∗ Lucy Shao † Yi Guo ‡ Xin M. Tu † Changyong Feng §
+
+Tuo Lin ¶
+
+Abstract 
+
+Prioritized pairwise outcomes are useful when clinical events follow a natural hierarchy, but censoring before pair resolution complicates estimation. We develop a win-ratio regres-sion framework for this setting by defining a complete-data target over follow-up and deriving an estimating equation for the observed data. The central idea is future-score correction (FC): when censoring prevents later pairwise comparisons from being observed, the method replaces the remaining score with its conditional expectation given the observed history. This correction recovers pairwise information beyond that provided by inverse censoring weights alone. Additionally, we incorporate treatment weighting and baseline outcome augmenta-tion to address baseline confounding. Together, these components yield double robustness for treatment assignment and censoring. Inference is obtained from U-statistic theory. Un-der standard regularity conditions, the AIPW-FC estimator is asymptotically normal and efficient when all nuisance functions are correctly specified. Simulations with 30%, 50%, and 65% censoring show that efficiency gains from future-score correction increase with the censoring rate, with relative efficiency reaching 1.50 under 65% censoring and near-nominal coverage for AIPW-FC. An application to OneFlorida electronic health record data illus-trates the method for a composite outcome that prioritizes death over hospitalization. 
+
+# 1 Introduction 
+
+Composite outcomes are common in clinical studies that evaluate treatment benefit across mul-tiple event types. These event outcomes, including death, recurrence, and hospitalization, often differ in clinical importance and motivate analyses leveraging a prespecified clinical hierarchy. Building on the pairwise-comparison approach of Finkelstein and Schoenfeld and the general-ized pairwise-comparison framework of Buyse (Finkelstein and Schoenfeld, 1999; Buyse, 2010), the win-ratio method determines each pair’s win status by comparing component outcomes in 
+
+> ∗
+
+Department of Statistics, University of Florida. Corresponding author: Zhuochao Huang, 
+
+zhuochao.huang@ufl.edu 
+
+> †
+
+Division of Biostatistics and Bioinformatics, Herbert Wertheim School of Public Health and Human Longevity Science, University of California San Diego. 
+
+> ‡
+
+Department of Health Outcomes and Biomedical Informatics, College of Medicine, University of Florida. 
+
+> §
+
+Department of Biostatistics and Computational Biology, University of Rochester Medical Center. 
+
+> ¶
+
+Department of Biostatistics, University of Florida. Corresponding author: Tuo Lin, tuolin@ufl.edu 
+
+1arXiv:2608.10728v1 [stat.ME] 11 Aug 2026 a prespecified hierarchy (Pocock et al., 2012). Subsequent work developed inference for the win ratio (Luo et al., 2015; Bebu and Lachin, 2016), broadened the family of win statistics to include metrics such as net benefit and win odds (Brunner et al., 2021; Dong et al., 2023), and applied them in trial design (Pocock et al., 2024; Barnhart et al., 2025). A win estimand is determined not only by the component hierarchy, but also by the rule for ties and by the time frame over which a pair is compared. When the comparison window is left implicit, the resulting win ratio can depend on censoring and realized follow-up in addition to the underlying outcome process (Oakes, 2016; Mao, 2024; Li et al., 2024). Under right censoring, however, the win, loss, or tie status of a pair may not be observable by the chosen horizon. A lower-priority outcome can be used only after the higher-priority outcome has been observed to be tied; if censoring occurs before that tie status is known, the pair remains unresolved even when a lower-priority outcome would have favored one subject. Existing censoring-adjusted win-statistic methods have made important progress. Inverse-probability-of-censoring weighting can recover restricted win probabilities under independent or covariate-dependent censoring (Dong et al., 2020, 2021; Cui et al., 2025; Cao et al., 2026). Recent methods for missing or partially observed hierarchical outcomes further show that un-resolved comparisons can still contribute information through conditional probabilities or aug-mented weighting (Liu et al., 2026a,b; Li et al., 2026; Fang and Li, 2026). These developments are primarily framed around fixed-horizon win summaries or endpoint-level missingness. In longitudinal follow-up, however, the scientific question may not be limited to who wins at a pre-specified horizon. It may also concern how the pairwise comparison behaves over time: whether the pair is still unresolved, whether one subject is currently favored under the priority rule, and how long that status persists before later outcomes update the comparison. For a target that accumulates these time-specific pairwise statuses over follow-up, censoring removes not just a final outcome but the future portion of the pairwise comparison that would otherwise continue to contribute information. Standard inverse weighting identifies the complete-data score under the usual assumptions, but it does not use the pair history observed before censoring, which can inform that unobserved future portion. Another line of work extends win statistics to regression. Existing work includes proportional win-fractions regression and stratified extensions (Mao and Wang, 2021; Wang and Mao, 2022), as well as win-odds and generalized win-regression models (Song et al., 2023; Wang et al., 2026; Cao et al., 2026). Recent work on noncollapsibility and standardization further clarifies that covariate adjustment can change the interpretation of win-statistic summaries (Dong et al., 2026). These developments provide a natural starting point for win-regression analysis using electronic health record data, though observational data also require adjustment for baseline confounding. We propose a win-ratio regression framework centered on future-score correction. The complete-data target is defined through an integrated residual process for prioritized pairs, so that the contribution of a resolved pair reflects how long that comparison remains resolved. When the time-dependent proportional win-fractions model holds throughout follow-up, this integrated 2equation targets the usual proportional win-regression coefficient (Mao and Wang, 2021); oth-erwise, it defines a duration-weighted projection for the pairwise residual process. The observed-data score replaces the unobserved future portion of the pairwise score after censoring by its conditional expectation given the observed pair histories. To support the observational EHR setting, we additionally incorporate treatment weighting and augmentation, following the logic of augmented inverse probability weighting (Robins et al., 1994; Bang and Robins, 2005). The resulting estimating equation achieves double robustness for both treatment assignment and censoring under the stated conditions. We develop large-sample theory for the resulting ordered-pair U-statistic with estimated nui-sance functions and derive Wald-type inference for the regression coefficients. Simulations quan-tify the information recovered by future-score correction as censoring increases, with relative efficiency reaching 1.50 in the heaviest-censoring scenario. An application to OneFlorida elec-tronic health record data illustrates the method in a breast cancer cohort, comparing adjuvant chemotherapy groups with a prioritized outcome that ranks death before hospitalization. 
+
+# 2 Complete-Data Estimand 
+
+Win statistics are built from pairwise comparisons of a prioritized composite outcome, whose components are ordered from most to least clinically important (Hongyue et al., 2017). At any given time during follow-up, the two subjects are first compared on the most important outcome. If neither subject has a more favorable result, the next outcome in that order is considered. On the first outcome for which one subject has a more favorable result, that subject wins the comparison. If neither subject has a more favorable result on any outcome, the pair remains unresolved. For example, when death is prioritized over hospitalization, a subject who is alive is favored over one who has died. If the death comparison is tied because both subjects are alive, their hospitalization histories are then compared. If one subject has been hospitalized by that time and the other has not, the subject who has not been hospitalized wins the comparison; if both or neither have been hospitalized, the comparison remains tied. As follow-up continues, later events can change which subject is favored. We record these changes on a discrete analysis grid, which may coincide with clinical assessment times or follow a prespecified schedule. At each grid point, the comparison uses the complete outcome histories accrued up to that time, so events between grid points enter the comparison at the next grid point. 
+
+2.1 Observed Data Structure 
+
+Fix an analysis window [0 , τ ] together with the recorded visit times 0 = t0 < t 1 < · · · < t M = τ, ∆tℓ = tℓ − tℓ−1, ℓ = 1 , . . . , M. 
+
+The intervals between visits may vary due to the observational clinical study design. For subject 
+
+i, let Ai ∈ { 0, 1} denote treatment assignment and let Xi ∈ Rp denote the baseline covariate 3vector. Let Li,ℓ denote the most recent longitudinal marker recorded at time tℓ.For treatment level a ∈ { 0, 1}, let 
+
+Tiv (a), v = 1 , . . . , V, Ci(a)denote the potential event times for the V prioritized outcome components and the potential censoring time. The observed event times and censoring times are 
+
+Tiv = Tiv (Ai), v = 1 , . . . , V, Ci = Ci(Ai).
+
+Baseline censoring is absent, Ci > 0 almost surely. We record censoring on the analysis grid: a censoring time assigned to tℓ removes the subject from the risk set at the start of interval ℓ + 1, after the interval-ℓ contribution has been ascertained. At the start of interval ℓ, define the observed subject history 
+
+Hi,ℓ := 
+
+> 
+
+Ai, X i, L i, 0, . . . , L i,ℓ −1,
+
+1{Tiv ≤ tr} : v = 1 , . . . , V, 0 ≤ r ≤ ℓ − 1,
+
+1{Ci ≤ tr} : 0 ≤ r ≤ ℓ − 1 
+
+> 
+
+. (2.1) 
+
+2.2 Complete-Data Score 
+
+Consider an ordered pair ( i, j ) and write ∆Xij = Xi − Xj , ˜Xij = (1 , ∆X⊤ 
+
+> ij
+
+)⊤.
+
+Write the corresponding coefficient vector as β = ( α, γ ⊤)⊤ ∈ Rp+1 , so that β⊤ ˜Xij = α +
+
+γ⊤∆Xij . For ordered treated-versus-control pairs, with the treated subject listed first, the intercept coefficient α summarizes the overall tendency of the treated subject to be favored by the prioritized comparison; γ describes how this tendency varies with baseline covariate differences between the two subjects. At each time t, the hierarchical comparison proceeds through the ordered components: the pair is first compared on the most important component and moves to the next component only if that comparison is tied. Let 
+
+W ◦ 
+
+> ij
+
+(t) ∈ { 0, 1}, R◦ 
+
+> ij
+
+(t) ∈ { 0, 1}, t ∈ [0 , τ ],
+
+denote the complete-data win and determinacy processes for the ordered pair. At time t, R◦ 
+
+> ij
+
+(t)indicates whether the outcome histories accumulated through t identify a winner under the priority rule, and W ◦ 
+
+> ij
+
+(t) indicates whether the identified winner is subject i. When no winner is identified, W ◦ 
+
+> ij
+
+(t) is set to zero, so that W ◦ 
+
+> ij
+
+(t) + W ◦
+
+> ji
+
+(t) = R◦ 
+
+> ij
+
+(t). In intermittent clinical follow-up, these processes are piecewise constant between recorded visits. 
+
+W ◦ 
+
+> ij
+
+(t) = W ◦ 
+
+> ij
+
+(tℓ−1), R◦ 
+
+> ij
+
+(t) = R◦ 
+
+> ij
+
+(tℓ−1), t ∈ [tℓ−1, t ℓ),
+
+4with the terminal value at t = τ defined by right continuity. A superscript ◦ denotes the complete-data version of a quantity, namely the value that would be available in the absence of censoring. At any time t for which the priority rule identifies a winner, the pair contributes a binary comparison: the winner is either subject i or subject j. We model the chance that the winner is subject i by a logistic function of the baseline covariate contrast, expit {β⊤ ˜Xij 
+
+> }
+
+.
+
+The coefficient vector β is constant throughout follow-up, so that baseline covariate differences have a common interpretation across the evolving prioritized comparisons; this is also the pro-portional win-fractions structure underlying (Mao and Wang, 2021; Wang and Mao, 2022). Equivalently, 
+
+P{W ◦ 
+
+> ij
+
+(t) = 1 | R◦ 
+
+> ij
+
+(t) = 1 , X i, X j } = expit {β⊤ ˜Xij 
+
+> }
+
+.
+
+This leads to the complete-data residual process 
+
+M ◦ 
+
+> ij
+
+(t; β) := W ◦ 
+
+> ij
+
+(t) − R◦ 
+
+> ij
+
+(t) expit {β⊤ ˜Xij 
+
+> }
+
+. (2.2) At interval starts, write M ◦ 
+
+> ij
+
+(tℓ−1; β) for the corresponding residual value. Let e0(x) = P(Ai = 1 | Xi = x) denote the propensity score. For an ordered treated-versus-control pair, define the baseline weight 
+
+ω1,0 
+
+> ij
+
+:= Ai(1 − Aj )
+
+e0(Xi){1 − e0(Xj )} . (2.3) The complete-data score for the ordered pair is 
+
+φ◦ 
+
+> ij
+
+(β) := ω1,0 
+
+> ij ˜
+
+Xij  
+
+> ∫τ
+> 0
+
+M ◦ 
+
+> ij
+
+(t; β) dt = ω1,0
+
+> ij M∑
+> ℓ=1
+
+∆tℓ ˜Xij M ◦ 
+
+> ij
+
+(tℓ−1; β). (2.4) Eq. (2.4) integrates the pairwise residual process over follow-up and weights each ordered treated-versus-control pair by the standard inverse-probability weight ω1,0 
+
+> ij
+
+. The complete-data pair process is piecewise constant between recorded visits and the score can be written as a sum over visit intervals, with each residual contribution weighted by the interval length. Earlier resolution therefore receives greater weight, since the pair remains in the resolved state longer. 
+
+Definition 2.1 (Time-Constant Logit Estimand) . Let subscripts 1 and 2 index a generic ordered pair of subjects independently sampled from the target population. The time-constant logit target β0 ∈ Rp+1 satisfies 
+
+E{φ◦
+
+> 12
+
+(β0)} = 0 . (2.5) Thus β0 balances the complete-data residual process for prioritized pairs within a time-constant logit class. The logit contrast is common across the follow-up window, whereas the prioritized win and determinacy processes are accumulated over time. If the proportional win-fractions assumption holds at every time point, the integrated equation has the same solution as in (Mao 5and Wang, 2021; Wang and Mao, 2022); otherwise it can be read as an overall summary of the pairwise win advantage accumulated across the follow-up window. Section A gives conditions under which Eq. (2.5) has a unique root and under which the root coincides with the coefficient obtained from proportional win-fractions regression. 
+
+# 3 Observed-Data Scores 
+
+Definition 2.1 describes the coefficient that would be obtained from complete follow-up of each ordered pair. With right censoring, some future interval contributions to φ◦ 
+
+> ij
+
+(β) are not observed. Under sequentially independent censoring, these contributions can be recovered in expectation from the observed pair history. We use this future-score correction, together with augmented inverse-probability weighting for baseline confounding, to construct an observed-data score with the same population root β0.
+
+3.1 Censoring-Corrected Score 
+
+For an ordered pair ( i, j ) let Yij (tℓ) = Yi(tℓ)Yj (tℓ), with Yi(tℓ) = 1{Ci > t ℓ} under the interval convention in Section 2. Define the subject-level discrete censoring hazard 
+
+λCi (tℓ) = Pr {Ci ∈ (tℓ−1, t ℓ] | Ci > t ℓ−1, H+
+
+> i,ℓ
+
+},
+
+where H+ 
+
+> i,ℓ
+
+is the subject history through interval ℓ, after the interval-ℓ contribution has been ascertained and immediately before censoring at tℓ. Set Gij, 0 = 1 and write the pair-level censoring survival probability through tℓ as 
+
+Gij,ℓ =
+
+> ℓ
+
+∏
+
+> r=1
+
+{1 − λCi (tr)}{ 1 − λCj (tr)},
+
+the probability that both subjects remain uncensored through tℓ. The subject-level hazards induce the pair-level censoring hazard 
+
+λCij,ℓ = 1 − { 1 − λCi (tℓ)}{ 1 − λCj (tℓ)}.
+
+Let ∆N Cij,ℓ = Yij (tℓ−1)1{Yij (tℓ) = 0 }
+
+be the censoring jump for the pair in interval ℓ. The corresponding pairwise censoring martingale increment is 
+
+dM Cij,ℓ (G) = ∆ N Cij,ℓ − Yij (tℓ−1)λCij,ℓ ,
+
+which is zero after the pair has left the uncensored risk set. Write the contribution from interval ℓ as 
+
+S◦
+
+> ij,ℓ
+
+(β) = ∆ tℓ ˜Xij M ◦ 
+
+> ij
+
+(tℓ−1; β),
+
+6where M ◦ 
+
+> ij
+
+is the complete-data residual defined in Section 2, so that 
+
+S◦ 
+
+> ij
+
+(β) = 
+
+> M
+
+∑
+
+> ℓ=1
+
+S◦
+
+> ij,ℓ
+
+(β)is the complete-data contribution of the pair across follow-up. The contribution remaining after interval ℓ is Ψij,ℓ (β) = ∑
+
+> r>ℓ
+
+S◦
+
+> ij,r
+
+(β).
+
+The future-score projection is the predictable projection Φij,ℓ (β) = E{Ψij,ℓ (β) | H +
+
+> ij,ℓ
+
+},
+
+where H+ 
+
+> ij,ℓ
+
+= σ(H+
+
+> i,ℓ
+
+, H+
+
+> j,ℓ
+
+) denotes the pair history after the interval-ℓ outcomes have been ob-served. If censoring is recorded at the end of interval ℓ, the pair still contributes the interval-ℓ
+
+score, but is no longer observed for later intervals. Thus the inverse-weighted interval score 
+
+S◦
+
+> ij,ℓ
+
+(β) uses Gij,ℓ −1, the probability of remaining uncensored through tℓ−1, whereas the cor-rection Φ ij,ℓ (β) uses Gij,ℓ and predicts only the remaining score from intervals r > ℓ . The inverse-censoring-weighted score is 
+
+SIPW  
+
+> ij
+
+(β; G) = 
+
+> M
+
+∑
+
+> ℓ=1
+
+Yij (tℓ−1)
+
+Gij,ℓ −1
+
+S◦
+
+> ij,ℓ
+
+(β).
+
+The censoring-corrected score for the pair is 
+
+SFC  
+
+> ij
+
+(β; G, Φ) = SIPW  
+
+> ij
+
+(β; G) +  
+
+> M−1
+
+∑
+
+> ℓ=1
+
+Yij (tℓ−1)
+
+Gij,ℓ 
+
+Φij,ℓ (β) dM Cij,ℓ (G). (3.1) The first term is standard pairwise IPCW. The second follows from the inverse-censoring tele-scoping identity: when a censoring jump removes a pair from future risk, the predictable pro-jection replaces the remaining complete-data score that would otherwise be lost. 
+
+Theorem 3.1 (Censoring Double Robustness) . Suppose Assumptions B.1–B.5 hold. Then the score in (3.1) satisfies 
+
+E{SFC 12 (β; G0, Φ) } = E{S◦
+
+> 12
+
+(β)}
+
+for every square-integrable predictable function Φ. If Φ = Φ 0, the true future-score projection, then 
+
+E{SFC 12 (β; G, Φ0)} = E{S◦
+
+> 12
+
+(β)}
+
+for every predictable censoring survival G bounded away from zero. Thus the censoring cor-rection is consistent if either the censoring survival is correct or the future-score projection is correct. 
+
+73.2 Treatment-Augmented Score 
+
+Recall that e0(X) = P (A = 1 | X) denotes the treatment propensity. Define the expected complete-data contribution of a treated-versus-control pair with baseline covariates ( x1, x 0) as 
+
+m0(x1, x 0; β) = E{S◦
+
+> 12
+
+(β) | X1 = x1, X 2 = x0, A 1 = 1 , A 2 = 0 }.
+
+The regression m0, which captures how this expected contribution varies with baseline covari-ates, is used to augment inverse-probability treatment weighting in the estimating equation. For a nuisance vector η = ( e, G, Φ, m ), define the kernel for ordered treated-versus-control pairs 
+
+Kij (β; η) = Ai(1 − Aj )
+
+e(Xi){1 − e(Xj )} {SFC  
+
+> ij
+
+(β; G, Φ) − m(Xi, X j ; β)} + m(Xi, X j ; β). (3.2) At the true nuisance functions, 
+
+E{K12 (β; η0)} = E{ω1,012 S◦
+
+> 12
+
+(β)} = E{φ◦
+
+> 12
+
+(β)}.
+
+Thus the observed-data estimating equation shares the root β0 with the complete-data equation in Definition 2.1. 
+
+Theorem 3.2 (Double Robustness) . Suppose Assumptions B.1–B.6 hold and the nuisance func-tions are square-integrable, with Φij,ℓ being H+
+
+> ij,ℓ
+
+-measurable and e, 1 − e, and G bounded away from zero. Then 
+
+E{K12 (β0; η)} = 0 
+
+whenever either e = e0 or m = m0, and either G = G0 or Φ = Φ 0. At η0 = ( e0, G 0, Φ0, m 0),the Gateaux derivative of E{K12 (β0; η)} with respect to each nuisance component is zero. Con-sequently, nuisance estimation contributes only second-order drift: 
+
+E{K12 (β0; η) − K12 (β0; η0)} = O(∥e − e0∥ ∥ m − m0∥ + ∥G − G0∥ ∥ Φ − Φ0∥) .
+
+All norms are L2 norms induced by P0.
+
+3.3 Future-Score Projection 
+
+By definition, the future-score projection Φ ij,ℓ (β) is the conditional mean of the remaining complete-data score Ψ ij,ℓ (β) given the observed pair history H+ 
+
+> ij,ℓ
+
+immediately before censoring. Equivalently, it is the L2-best predictable predictor of the latent future score. This characteri-zation permits estimation of Φ either directly by regression on pair histories or indirectly from subject-level models for future trajectories. We use ̂ Φ to denote an estimator of Φ and add a corresponding superscript when the construction must be distinguished. For subject i, let Ui,ℓ denote the complete future trajectory on {tℓ, . . . , t M }, including future event indicators and longitudinal marker values. Define the conditional distribution of Ui,ℓ given 
+
+H+ 
+
+> i,ℓ
+
+as 
+
+L
+
+> (
+
+Ui,ℓ 
+
+> ∣∣∣
+
+H+
+
+> i,ℓ
+> )
+
+.
+
+8Let Ψ ij,ℓ (β; u1, u 0) denote the remaining score obtained when the future trajectories of subjects i
+
+and j are set to ( u1, u 0). Because subjects are sampled independently, the two future trajectories are conditionally independent given their respective observed histories. Therefore, Φij,ℓ (β) = 
+
+∫
+
+Ψij,ℓ (β; u1, u 0) dL(u1 | H +
+
+> i,ℓ
+
+) dL(u0 | H +
+
+> j,ℓ
+
+). (3.3) To evaluate (3.3), we estimate each conditional future-trajectory distribution using fitted one-step transition models. Let ̂ Qa,r (· | H +
+
+> i,r −1
+
+) denote the fitted one-step transition distribution of the future trajectory at interval r under treatment a conditional on the subject history. Applying these one-step transitions successively yields the fitted conditional distribution of Ui,ℓ 
+
+given H+
+
+> i,ℓ
+
+:̂
+
+L
+
+(
+
+Ui,ℓ 
+
+∣∣∣H+
+
+> i,ℓ
+
+)
+
+=
+
+> M
+
+∏
+
+> r=ℓ+1
+
+̂
+
+QAi,r (· | H +
+
+> i,r −1
+
+).
+
+Starting from H+
+
+> i,ℓ
+
+, the future interval variables are generated sequentially from ̂ QAi,r , with the conditioning history at interval r consisting of H+ 
+
+> i,ℓ
+
+and all variables generated at earlier future intervals. The fitted future-score projection is ̂
+
+Φfit 
+
+> ij,ℓ
+
+(β) = 
+
+∫
+
+Ψij,ℓ (β; u1, u 0) d̂L(u1 | H +
+
+> i,ℓ
+
+) d̂L(u0 | H +
+
+> j,ℓ
+
+). (3.4) When the fitted future-trajectory distributions have finite supports S1,ℓ and S0,ℓ , with proba-bilities ̂ pa,ℓ induced by the forward recursion, this projection is ̂
+
+Φdet 
+
+> ij,ℓ
+
+(β) = ∑
+
+> u1∈S 1,ℓ
+
+∑
+
+> u0∈S 0,ℓ
+
+Ψij,ℓ (β; u1, u 0)̂ p1,ℓ (u1 | H +
+
+> i,ℓ
+
+)̂ p0,ℓ (u0 | H +
+
+> j,ℓ
+
+). (3.5) For continuous or large future state spaces, we can approximate the fitted projection using the Monte Carlo approximation based on B independent draws ( ̂U(b) 
+
+> i,ℓ
+
+,̂ U(b) 
+
+> j,ℓ
+
+), b = 1 , . . . , B , from ̂
+
+L(Ui,ℓ | H +
+
+> i,ℓ
+
+) ⊗̂ L(Uj,ℓ | H +
+
+> j,ℓ
+
+): ̂
+
+ΦBij,ℓ (β) = 1
+
+B
+
+> B
+
+∑
+
+> b=1
+
+Ψij,ℓ 
+
+(
+
+β;̂ U(b) 
+
+> i,ℓ
+
+,̂ U(b)
+
+> j,ℓ
+
+)
+
+. (3.6) 
+
+# 4 U-Statistic Inference 
+
+We estimate β0 by solving the following U-statistic estimating equation (Kowalski and Tu, 2008): ̂
+
+Un(β) = 1
+
+n(n − 1) 
+
+∑
+
+> i̸=j
+
+Kij (β;̂ ηij ),̂ Un(̂ β) = 0 . (4.1) Here ̂ ηij denotes the cross-fitted nuisance estimate used for pair ( i, j ), fitted using subjects outside the folds containing i and j. Hence neither subject contributes to the nuisance fit entering Kij ; see Assumption B.9. Let Oi denote the observed data for subject i over [0 , τ ]. Let P denote a distribution of Oi in the 9nonparametric observed-data model, and let P0 denote the true distribution of Oi. Under P , let 
+
+eP and GP denote its treatment and censoring conditional laws. Recall that the complete-data future-score projection is Φ ij,ℓ (β) = E{Ψij,ℓ (β) | H +
+
+> ij,ℓ
+
+}. For a given observed-data law P , this projection can be recovered by inverse probability weighting: ΦP,ij,ℓ (β) = EP ⊗P
+
+ ∑
+
+> r>ℓ
+
+Yij (tr−1)GP,ij,ℓ −1
+
+GP,ij,r −1
+
+S◦
+
+> ij,r
+
+(β)
+
+∣∣∣∣∣∣ H+
+
+> ij,ℓ
+
+ ,
+
+where sequentially independent censoring ensures Φ P0,ij,ℓ (β) = Φ ij,ℓ (β). Define 
+
+mP (x1, x 0; β) = EP {SFC 12 (β; GP , ΦP ) | X1 = x1, X 2 = x0, A 1 = 1 , A 2 = 0 }.
+
+Set ηP (β) = {eP , G P , ΦP (β), m P (β)} and for any observed-data distribution P define the mo-ment functional at fixed β by 
+
+ψβ (P ) = EP ⊗P [K12 {β; ηP (β)}] . (4.2) Under the identifying conditions and the true nuisance functions, ψβ0 (P0) = 0. At ( P0, β 0), define the symmetrized kernel by ¯K(O1, O 2) = K12 (β0; η0) + K21 (β0; η0)2 .
+
+Define the first Hoeffding projection by 
+
+κ(o) = E{ ¯K(O1, O 2) | O1 = o}.
+
+Because E{ ¯K(O1, O 2)} = 0, this projection is centered. This projection governs how perturba-tions of the observed-data distribution propagate through the estimating equation to the target parameter. 
+
+Proposition 4.1 (Efficient Influence Function) . Suppose Assumptions B.1–B.8 hold. The effi-cient influence function, equivalently the canonical gradient, of the fixed-β0 moment ψβ0 (P ) at 
+
+P0 is 
+
+Deff  
+
+> ψ
+
+(O) = 2 κ(O). (4.3) 
+
+If β(P ) is the locally unique solution of ψβ(P )(P ) = 0 , then its efficient influence function is 
+
+Deff  
+
+> β
+
+(O) = −
+
+{ ∂∂β ⊤ ψβ (P0)
+
+∣∣∣∣β=β0
+
+}−1
+
+Deff  
+
+> ψ
+
+(O) = −2
+
+{ ∂∂β ⊤ ψβ (P0)
+
+∣∣∣∣β=β0
+
+}−1
+
+κ(O). (4.4) For theory to apply to the estimated ̂ β, we next establish that the root of the empirical esti-mating equation converges to the population root β0 under mild conditions. 
+
+Proposition 4.2 (Consistency) . Suppose Assumptions B.1–B.9 hold. Suppose the cross-fitted nuisance estimators are uniformly L2(P0) consistent, and the fitted propensity scores are bounded 
+
+10 away from zero and one with probability tending to one. Let ̂ β satisfy 
+
+∥̂ Un(̂ β)∥ = op(1) .
+
+Then ̂
+
+β p
+
+−→ β0.
+
+We can then establish the following result which characterizes the asymptotic properties of ̂ β.
+
+Theorem 4.3 (Asymptotic Linearity and Normality) . Suppose the conditions of Proposition 4.2 hold. Further assume that 
+
+∥̂Un(̂ β)∥ = op(n−1/2),
+
+and that 
+
+∥̂ e − e0∥ ∥ ̂m − m0∥ = op(n−1/2), ∥̂ G − G0∥ ∥ ̂Φ − Φ0∥ = op(n−1/2).
+
+Then √n(̂ β − β0) = 1
+
+√n
+
+> n
+
+∑
+
+> i=1
+
+Deff  
+
+> β
+
+(Oi) + op(1) ,
+
+and 
+
+√n(̂ β − β0) ⇝ N
+
+0, 4
+
+{ ∂∂β ⊤ ψβ (P0)
+
+∣∣∣∣β=β0
+
+}−1
+
+Var {κ(O)}
+
+{ ∂∂β ⊤ ψβ (P0)
+
+∣∣∣∣β=β0
+
+}−⊤  .
+
+These rate requirements are met, for example, when ̂ e and ̂ G are root-n consistent while ̂ m and ̂
+
+Φ are consistent. The Appendix gives sufficient conditions under which the nuisance estimators used here attain these rates. The empirical Hoeffding projection provides a variance estimator. Define ̂
+
+¯Kij = 12 {Kij (̂ β;̂ ηij ) + Kji (̂β;̂ ηji )},̂
+
+κi = 1
+
+n − 1
+
+∑ 
+
+> j̸=i
+
+̂
+
+¯Kij − 1
+
+n
+
+> n
+
+∑
+
+> r=1
+
+1
+
+n − 1
+
+∑
+
+> s̸=r
+
+̂
+
+¯Krs .
+
+After constructing the cross-fitted nuisance fits, set ̂
+
+Σβ = 4 
+
+{ ∂∂β ⊤̂ Un(β)
+
+∣∣∣∣β=̂ β
+
+}−1 { 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+̂
+
+κî κ⊤
+
+> i
+
+} { ∂∂β ⊤̂ Un(β)
+
+∣∣∣∣β=̂ β
+
+}−⊤ 
+
+.
+
+Corollary 4.4 (Wald Inference) . Suppose the conditions of Theorem 4.3 hold. Then ̂
+
+Σβp
+
+−→ Σeff  
+
+> β
+
+:= E
+
+{
+
+Deff  
+
+> β
+
+(O)Deff  
+
+> β
+
+(O)⊤}
+
+= 4 
+
+{ ∂∂β ⊤ ψβ (P0)
+
+∣∣∣∣β=β0
+
+}−1
+
+Var {κ(O)}
+
+{ ∂∂β ⊤ ψβ (P0)
+
+∣∣∣∣β=β0
+
+}−⊤ 
+
+.
+
+11 Consequently, ̂ Σβ /n consistently estimates the sampling covariance of ̂ β. For component r with 
+
+Σeff  
+
+> β,rr
+
+> 0 and 0 < α < 1, the Wald interval ̂
+
+βr ± z1−α/ 2
+
+> √̂
+
+Σβ,rr /n 
+
+has limiting coverage 1 − α.
+
+The conclusions of Theorem 4.3 and Corollary 4.4 also hold when ̂ Φdet is replaced by the Monte Carlo approximation ̂ ΦB defined in (3.6), provided the resulting Monte Carlo approximation error is op(n−1/2). For Wald inference, the variance estimator uses a separate Monte Carlo approximation; see Lemma B.10 and the proof of Corollary 4.4. 
+
+Corollary 4.5 (Semiparametric Efficiency) . Under the conditions of Proposition 4.1 and The-orem 4.3, the cross-fitted estimator based on the AIPW-FC score is regular and attains the semiparametric efficiency bound Σeff  
+
+> β
+
+. In particular, if ˜β is any regular asymptotically linear estimator of β0 in the same observed-data model, with influence function D˜β , then 
+
+Var( D˜β ) − Σeff  
+
+> β
+
+= Var 
+
+> {
+
+D˜β − Deff 
+
+> β
+> }
+
+⪰ 0.
+
+Equality holds if and only if D˜β = Deff  
+
+> β
+
+almost surely. 
+
+# 5 Simulation Studies 
+
+We conducted simulation studies to evaluate finite-sample bias, efficiency, and interval esti-mation, with particular emphasis on the information recovered by the future-score correc-tion. Each dataset contained 500 independent subjects. We generated a continuous base-line biomarker X ∼ Uniform( −1, 1) and a baseline cardiovascular disease (CVD) indicator 
+
+Zcvd ∼ Bernoulli(0 .30). Treatment assignment followed Pr( A = 1 | X, Z cvd ) = expit( −0.30 + 0 .40 X + 1 .60 Zcvd ).
+
+Follow-up was divided into eight three-month intervals. Throughout the simulation studies and data application, prioritized comparisons used a common two-level rule: death had first priority; among pairs with the same death status, a patient free of prior hospitalization was favored over a patient with prior hospitalization; otherwise the pair remained unresolved until a later visit. This rule follows the hierarchical win/loss construction of the win-ratio statistic (Pocock et al., 2012), evaluated here over repeated visits; it is used in both empirical illustrations. The event hazards were calibrated to yield approximately 5% mortality and 60% hospitalization by 24 months. Censoring depended on baseline covariates and prior hospitalization; the intercept of the discrete censoring hazard was calibrated to produce approximately 30%, 50%, and 65% censoring, while all other features of the data-generating mechanism were held fixed. Thus the three scenarios represent increasing censoring intensity, with more pairwise comparisons at later visits unobserved in the higher-censoring scenarios. The complete data-generating mechanism is described in Appendix C. 12 We compared inverse probability weighting (IPW), IPW with future-score correction (IPW-FC), augmented IPW (AIPW), and the AIPW estimator with future-score correction (AIPW-FC); Section C.1 defines the four estimators used in the simulation tables. All working models were correctly specified for the main simulation results. We additionally examined misspecification scenarios to assess the treatment and censoring robustness mechanisms; those results are re-ported in Section C.3. Treatment, censoring, death, and hospitalization models were fitted with five-fold subject-level cross-fitting. The future-score projection and baseline outcome regression were evaluated by deterministic recursion under fitted transition models on the finite state space for death and hospitalization. For each censoring level, we generated 500 Monte Carlo datasets. We computed the complete-data target independently of censoring by deterministic numerical integration over X, summa-tion over the two values of Zcvd , and numerical solution of the population score equation. We report the true value, bias, empirical standard deviation (ESD), average estimated standard error (ASE), coverage of nominal 95% intervals, and relative efficiency (RE). For IPW-FC, RE is the squared ESD of IPW divided by that of IPW-FC; for AIPW-FC, the reference is AIPW. For all four methods, inference used 200 nonparametric bootstrap samples at the subject level, with every nuisance model and estimating equation refitted in each sample. Bootstrap ASE and coverage are reported for all methods; the model-based standard error and Wald coverage from Corollary 4.4 are reported in addition for AIPW-FC. 13 Table 1:  Simulation results under 30%, 50%, and 65% censoring.  ESD denotes empirical standard deviation, ASE denotes average estimated standard error, and coverage is for nominal 95% intervals. For AIPW-FC, ASE and coverage are shown as model/bootstrap; for the other estimators, bootstrap values are shown. RE compares each estimator with future-score correction with the corresponding estimator without correction. 
+
+> Censoring  Component  Estimator  True  Bias  ESD  ASE  Coverage  RE 30%  Intercept  IPW  0.58  0.01  0.18  0.18  0.95  –AIPW  0.58  0.01  0.18  0.19  0.95  –IPW-FC  0.58  0.02  0.18  0.18  0.95  1.06 AIPW-FC  0.58  0.01  0.18  0.18/0.18  0.96/0.94  1.07 Biomarker  IPW  -0.54  -0.03  0.16  0.16  0.94  –AIPW  -0.54  -0.03  0.17  0.17  0.94  –IPW-FC  -0.54  -0.02  0.16  0.16  0.95  1.09 AIPW-FC  -0.54  -0.02  0.16  0.16/0.16  0.95/0.94  1.10 CVD  IPW  -0.27  -0.01  0.20  0.20  0.94  –AIPW  -0.27  0.00  0.21  0.21  0.94  –IPW-FC  -0.27  -0.01  0.19  0.19  0.94  1.09 AIPW-FC  -0.27  -0.01  0.20  0.20/0.20  0.95/0.94  1.10 50%  Intercept  IPW  0.58  0.00  0.20  0.20  0.93  –AIPW  0.58  0.00  0.21  0.20  0.92  –IPW-FC  0.58  0.01  0.18  0.18  0.93  1.22 AIPW-FC  0.58  0.00  0.19  0.19/0.18  0.95/0.92  1.24 Biomarker  IPW  -0.54  0.00  0.18  0.18  0.94  –AIPW  -0.54  0.00  0.18  0.18  0.92  –IPW-FC  -0.54  0.00  0.16  0.16  0.94  1.22 AIPW-FC  -0.54  0.00  0.16  0.17/0.16  0.94/0.92  1.26 CVD  IPW  -0.27  -0.02  0.23  0.23  0.94  –AIPW  -0.27  -0.02  0.23  0.24  0.93  –IPW-FC  -0.27  -0.01  0.21  0.20  0.95  1.18 AIPW-FC  -0.27  -0.01  0.21  0.21/0.21  0.95/0.93  1.20 65%  Intercept  IPW  0.58  0.03  0.22  0.22  0.93  –AIPW  0.58  0.03  0.23  0.23  0.93  –IPW-FC  0.58  0.02  0.19  0.19  0.95  1.44 AIPW-FC  0.58  0.02  0.19  0.19/0.19  0.95/0.94  1.48 Biomarker  IPW  -0.54  -0.01  0.19  0.19  0.93  –AIPW  -0.54  -0.01  0.20  0.20  0.93  –IPW-FC  -0.54  -0.01  0.17  0.17  0.94  1.34 AIPW-FC  -0.54  -0.01  0.17  0.17/0.17  0.96/0.94  1.38 CVD  IPW  -0.27  -0.02  0.25  0.25  0.95  –AIPW  -0.27  -0.02  0.26  0.27  0.94  –IPW-FC  -0.27  -0.02  0.21  0.21  0.95  1.43 AIPW-FC  -0.27  -0.01  0.21  0.22/0.22  0.95/0.94  1.50
+
+14 Table 1 summarizes performance across the three censoring levels. Future-score correction improved precision for both IPW and AIPW at each censoring level, and the gain increased as censoring became heavier. At 30% censoring, RE ranged from 1.06 to 1.09 for IPW-FC and from 1.07 to 1.10 for AIPW-FC. At 50% censoring, the respective ranges increased to 1.18– 1.22 and 1.20–1.26. Under 65% censoring, RE reached 1.34–1.44 for IPW-FC and 1.38–1.50 for AIPW-FC. In contrast, AIPW had ESD similar to or slightly larger than IPW. Given the modest differences and the finite sample size, this pattern may reflect additional variability from estimating the baseline outcome regression, particularly because the IPW estimator was already nearly unbiased in these scenarios. Biases were small relative to the Monte Carlo standard deviations. For AIPW-FC, the model-based ASE tracked the ESD closely, and model-based coverage remained near the nominal level across the three censoring scenarios. These results agree with the mechanism of the method: heavier censoring leaves more lower-priority comparisons unresolved in the observed data, and the future-score projection recovers part of their otherwise discarded information. 
+
+# 6 Application to OneFlorida Data 
+
+We applied the proposed method to OneFlorida data from patients with breast cancer who had pre-existing cardiovascular disease and were classified as belonging to the high-risk frailty group following Yang et al. (2025). The analysis examined whether adjuvant chemotherapy and baseline frailty were associated with the chance of being favored under the prioritized comparison rule. The date of breast cancer surgery served as the index date. We adopted a standard 90-day landmark design (Anderson et al., 1983): patients who were alive and under observation 90 days after surgery were classified according to whether adjuvant chemotherapy had been initiated during the first 90 days, and prioritized outcomes were evaluated from day 90 onward. This defines treatment status before outcome follow-up begins and compares treated and untreated patients from a common post-surgery time origin. The analytic cohort included 1,262 patients: 231 initiated treatment within the landmark window, and 1,031 formed the control group. During three-year follow-up, 59 patients died, 662 had an inpatient hospitalization, and 723 were censored before the end of the analysis window. The analysis used the same two-level priority rule on a 30-day grid, with death prioritized over hospitalization. Analyses were conducted over 12, 24, and 36 complete intervals, corresponding approximately to one, two, and three years, respectively. The win-regression target included two regressors: an intercept for the treated-versus-control comparison and the standardized frailty index difference. The treatment coefficient summarizes, over follow-up, the log odds that the treated patient is favored under the prioritized comparison rule in a treated-versus-control pair. Under the identification conditions in Section B, this treated-versus-control comparison represents the causal effect of initiating adjuvant chemotherapy within 90 days. Age, pre-index utilization, individual cardiovascular conditions, race and ethnicity, payer, hospitalization his-tory, and baseline or time-updated utilization markers entered the relevant cross-fitted nuisance models for treatment assignment, censoring, future transitions, and outcome-regression aug-mentation. 15 The application used the four estimators IPW, IPW-FC, AIPW, and AIPW-FC. The future-score projection was computed by a deterministic recursion under fitted transition models over the four states defined by death status and hospitalization history. The transition, censor-ing, treatment, and outcome models were fitted by subject-level cross-fitting. Uncertainty was quantified with 200 subject-level nonparametric bootstrap samples, with all nuisance models and estimating equations refitted in each sample. The implementation is described in Section D. Table 2: OneFlorida data analysis at the one-, two-, and three-year horizons. The number of patients censored before each horizon is shown in parentheses. Entries are coefficient estimates with 200 subject-bootstrap standard errors in parentheses. Relative efficiency (RE) is the ratio of the bootstrap variance without future-score correction to that with future-score correction for the treated-versus-control coefficient.                                            
+
+> Horizon (censored) Estimator Treatment Frailty RE 1 year (274) IPW 0.02 (0 .21) −0.41 (0 .12) –IPW-FC −0.01 (0 .19) −0.42 (0 .11) 1.26 AIPW 0.04 (0 .22) −0.40 (0 .13) –AIPW-FC 0.00 (0 .19) −0.41 (0 .11) 1.35 2 years (519) IPW 0.08 (0 .21) −0.44 (0 .11) –IPW-FC 0.08 (0 .18) −0.48 (0 .11) 1.29 AIPW 0.10 (0 .21) −0.44 (0 .13) –AIPW-FC 0.10 (0 .19) −0.47 (0 .12) 1.31 3 years (723) IPW 0.10 (0 .21) −0.45 (0 .12) –IPW-FC 0.12 (0 .17) −0.49 (0 .10) 1.47 AIPW 0.13 (0 .21) −0.44 (0 .13) –AIPW-FC 0.13 (0 .18) −0.48 (0 .12) 1.48
+
+Treatment coefficient estimates were similar across the four estimators, and all bootstrap inter-vals included zero. At the three-year horizon, the AIPW-FC coefficient was 0.13, corresponding to an estimated odds ratio of 1.14 for being favored under the prioritized comparison rule (95% bootstrap confidence interval: 0.84, 1.71), with no clear evidence of a treatment-associated dif-ference. Higher frailty was associated with a lower chance of being favored under the prioritized comparison rule: the AIPW-FC frailty coefficient was −0.48 (95% confidence interval: −0.69, 
+
+−0.22). The main difference among the estimators was precision. For the treatment coefficient, the relative efficiencies of IPW-FC versus IPW were 1.26, 1.29, and 1.47 at one, two, and three years, respectively; the corresponding relative efficiencies for AIPW-FC versus AIPW were 1.35, 1.31, and 1.48. At three years, future-score correction reduced the bootstrap standard error from 0.21 to 0.17 for IPW and from 0.21 to 0.18 for AIPW. The similar point estimates and smaller standard errors indicate that the gain came from recovering future pairwise score contributions after censoring while preserving the target comparison. Additional analyses under reduced specifications of the nuisance models yielded similar conclusions and are reported in Section E. 16 A Properties of the Complete-Data Estimand 
+
+Proposition A.1 (Target Uniqueness) . Let the population score be the map β 7 → E{φ◦
+
+> 12
+
+(β)}.Suppose it is finite and admits dominated differentiation on compact line segments in β. Suppose also that, for every β ∈ Rp+1 and every nonzero ρ ∈ Rp+1 ,
+
+E
+
+[
+
+ω1,012 
+
+∫ τ
+
+> 0
+
+R◦
+
+> 12
+
+(t) expit {β⊤ ˜X12 
+
+} {
+
+1 − expit {β⊤ ˜X12 
+
+}} (ρ⊤ ˜X12 
+
+)2 dt 
+
+]
+
+> 0. (A.1) 
+
+Then the population score map β 7 → E{φ◦
+
+> 12
+
+(β)} is strictly monotone, so Eq. (2.5) has at most one solution in Rp+1 .Proof. Write 
+
+ψ0(β) := E{φ◦
+
+> 12
+
+(β)} .
+
+Differentiating Eq. (2.4) under the expectation yields 
+
+∂∂β ⊤ ψ0(β) = −E
+
+[
+
+ω1,012 
+
+∫ τ
+
+> 0
+
+R◦
+
+> 12
+
+(t) expit {β⊤ ˜X12 
+
+} {
+
+1 − expit {β⊤ ˜X12 
+
+}} ˜X12 ˜X⊤ 
+
+> 12
+
+dt 
+
+]
+
+.
+
+Hence for every nonzero ρ ∈ Rp+1 ,
+
+ρ⊤ ∂∂β ⊤ ψ0(β)ρ = −E
+
+[
+
+ω1,012 
+
+∫ τ
+
+> 0
+
+R◦
+
+> 12
+
+(t) expit {β⊤ ˜X12 
+
+} {
+
+1 − expit {β⊤ ˜X12 
+
+}} (ρ⊤ ˜X12 
+
+)2 dt 
+
+]
+
+< 0.
+
+By Eq. (A.1), the Jacobian of ψ0 is negative definite at every β, and ψ0 is strictly monotone. For β1̸ = β2, set d = β1 − β2. The mean-value theorem applied to t 7 → d⊤ψ0(β2 + td ) yields 
+
+c ∈ (0 , 1) and ¯β = β2 + cd satisfying 
+
+d⊤ {ψ0(β1) − ψ0(β2)} = d⊤ ∂∂β ⊤ ψ0( ¯β)d < 0.
+
+Consequently, ψ0(β1) = ψ0(β2) implies β1 = β2, and Eq. (2.5) has at most one solution. 
+
+Proposition A.2 (Proportional Win-Fraction Target) . Suppose there exists β∗ ∈ Rp+1 such that the complete-data residual integrand in Eq. (2.4) , evaluated at β∗, is integrable over [0 , τ ].Suppose further that, for every t ∈ [0 , τ ],
+
+E
+
+[
+
+ω1,012 ˜X12 
+
+{
+
+W ◦
+
+> 12
+
+(t) − R◦
+
+> 12
+
+(t) expit {(β∗)⊤ ˜X12 
+
+}}] 
+
+= 0 . (A.2) 
+
+Then 
+
+E{φ◦
+
+> 12
+
+(β∗)} = 0 .
+
+If, in addition, Eq. (A.1) holds, then β0 = β∗.Proof. By Eq. (A.2), the integrand in Eq. (2.4) has mean zero at β = β∗ for every t ∈ [0 , τ ]. 17 Integrating that identity over t and applying Fubini’s theorem yields 
+
+E
+
+> [
+
+ω1,012 ˜X12  
+
+> ∫τ
+> 0
+> {
+
+W ◦
+
+> 12
+
+(t) − R◦
+
+> 12
+
+(t) expit {(β∗)⊤ ˜X12 
+
+> }}
+
+dt 
+
+> ]
+
+= 0 .
+
+By Eq. (2.4), this expectation equals E{φ◦
+
+> 12
+
+(β∗)}; hence β∗ solves the population score equation. If Eq. (A.1) also holds, Proposition A.1 implies uniqueness, and therefore β0 = β∗.
+
+# B Large-Sample Theory and Proofs 
+
+B.1 Assumptions 
+
+Assumption B.1 (Consistency and No Interference) . For each subject, the observed outcome process equals the potential outcome process under the realized treatment, and one subject’s outcome process is not affected by other subjects’ treatments. 
+
+Assumption B.2 (Independent Subjects) . Subjects are sampled independently from a common population. 
+
+Assumption B.3 (Sequentially Independent Censoring) . For each subject and interval, con-ditional on H+
+
+> i,ℓ
+
+, the censoring jump at tℓ is independent of the future complete-data outcome path. 
+
+Assumption B.4 (Censoring Positivity) . There exists ϵ > 0 such that every true or working censoring survival for a pair used in the estimating equation is at least ϵ on the support of the observed pair histories. 
+
+Assumption B.5 (Finite Second Moments) . The baseline covariates satisfy E{∥X∥2} < ∞.
+
+Assumption B.6 (Treatment Exchangeability and Positivity) . Conditional on X, treatment assignment is independent of the potential outcome and censoring processes, and there exists 
+
+ϵ > 0 such that 
+
+ϵ ≤ e0(X) ≤ 1 − ϵ almost surely. 
+
+Assumption B.7 (Pathwise Regularity) . The observed-data functional ψβ (P ) is pathwise dif-ferentiable at P0 along regular parametric submodels, uniformly for β in a neighborhood of β0.For each such submodel Pε, the map (ε, η ) 7 −→ EPε⊗Pε {K12 (β; η)},
+
+where K12 is the ordered-pair kernel defined in (3.2), satisfies the chain rule along η = ηPε (β)and permits interchange of differentiation and integration, with square-integrable derivatives. 
+
+Assumption B.8 (Parameter Space and Kernel Regularity) . The estimating equation is solved over a compact, convex parameter set Θ ⊂ Rp+1 , with β0 in its interior. The set Θ represents a sufficiently broad and bounded search region for β. The kernel satisfies E{sup β∈Θ ∥K12 (β; η0)∥2} <
+
+∞, and the maps β 7 → ψβ (P0) and β 7 → E{K12 (β; η0)} are continuously differentiable on a neigh-18 borhood of Θ. The kernel and its β-derivative are locally Lipschitz in the nuisance functions, with square-integrable envelopes, on the nuisance neighborhoods used by the cross-fitted esti-mators. The path β 7 → K12 {β; ηP0 (β)} is Lipschitz on Θ with a square-integrable Lipschitz envelope under P0 ⊗ P0. In addition, 
+
+∂∂β ⊤ ψβ (P0)
+
+∣∣∣∣β=β0
+
+is nonsingular. 
+
+Assumption B.9 (Cross-Fitting and Derivative Convergence) . The subjects are partitioned into F folds, where F ≥ 3 is fixed and each fold has size proportional to n. For each pair of folds ( f, g ), let ̂ η−(f,g ) denote the corresponding nuisance fit, which is based only on subjects outside those folds and is independent of the records in the evaluation folds. Conditional on its training sample, the kernel path β 7 → K12 {β;̂ η−(f,g )(β)} is Lipschitz on Θ with an L2(P0 ⊗ P0)Lipschitz envelope whose norm is uniformly bounded in probability. After construction of the cross-fitted nuisance fits, there exists a fixed neighborhood N ⊂ Θ of β0 such that sup 
+
+> β∈N
+
+∥∥∥∥
+
+∂∂β ⊤̂ Un(β) − ∂∂β ⊤ ψβ (P0)
+
+∥∥∥∥ = op(1) .
+
+B.2 Censoring Double Robustness 
+
+Set Sℓ = S◦
+
+> 12 ,ℓ
+
+(β), Yℓ = Y12 (tℓ), H+ 
+
+> ℓ
+
+= H+12 ,ℓ , and let Ψ ℓ = ∑ 
+
+> r>ℓ
+
+Sr. Under Assumption B.5, Ψ ℓ
+
+is square-integrable, so Φ 0,ℓ = E(Ψ ℓ | H + 
+
+> ℓ
+
+) is well defined. 
+
+Proof of Theorem 3.1. Under the correctly specified censoring model G = G0, sequentially in-dependent censoring renders dM Cℓ (G0) a martingale increment with respect to the pair history. Because Φ ℓ is predictable, the multiplier Yℓ−1G−10,ℓ Φℓ is H+ 
+
+> ℓ
+
+-measurable. Hence, by iterated expectation, 
+
+E
+
+{ Yℓ−1
+
+G0,ℓ 
+
+Φℓ dM Cℓ (G0)
+
+}
+
+= E
+
+[ Yℓ−1
+
+G0,ℓ 
+
+Φℓ E{dM Cℓ (G0) | H + 
+
+> ℓ
+
+}
+
+]
+
+= 0 .
+
+The usual IPCW identity also implies 
+
+E
+
+{ M∑
+
+> ℓ=1
+
+Yℓ−1
+
+G0,ℓ −1
+
+Sℓ
+
+}
+
+= E
+
+{ M∑
+
+> ℓ=1
+
+Sℓ
+
+}
+
+.
+
+Therefore, 
+
+E{SFC 12 (β; G0, Φ) } = E
+
+{ M∑
+
+> ℓ=1
+
+Yℓ−1
+
+G0,ℓ −1
+
+Sℓ
+
+}
+
++ 
+
+> M−1
+
+∑
+
+> ℓ=1
+
+E
+
+{ Yℓ−1
+
+G0,ℓ 
+
+Φℓ dM Cℓ (G0)
+
+}
+
+= E
+
+{ M∑
+
+> ℓ=1
+
+Sℓ
+
+}
+
+= E{S◦
+
+> 12
+
+(β)}.
+
+19 Under a correct predictable projection Φ = Φ 0, let G = ( G0, . . . , G M ) be any sequence of censoring survival probabilities bounded away from zero. For each interval ℓ, let 
+
+λCℓ = 1 − Gℓ
+
+Gℓ−1
+
+be the H+ 
+
+> ℓ
+
+-measurable censoring hazard implied by G. Let ∆ N Cℓ denote the increment of the pair-level censoring counting process over interval ℓ, which equals one if the pair is censored during that interval and zero otherwise. On the at-risk set Yℓ−1 = 1, 
+
+dM Cℓ (G) = ∆ N Cℓ − λCℓ .
+
+Recall that Φ 0,ℓ = E(Ψ ℓ | H + 
+
+> ℓ
+
+). Under sequentially independent censoring, 1 − ∆N Cℓ is inde-pendent of Ψ ℓ − Φ0,ℓ given H+ 
+
+> ℓ
+
+, while 1 − ∆N Cℓ
+
+1 − λCℓ
+
+Ψℓ + ∆N Cℓ − λCℓ
+
+1 − λCℓ
+
+Φ0,ℓ = Φ 0,ℓ + 1 − ∆N Cℓ
+
+1 − λCℓ
+
+(Ψℓ − Φ0,ℓ 
+
+).
+
+Therefore, 
+
+E
+
+[ 1 − ∆N Cℓ
+
+1 − λCℓ
+
+Ψℓ + ∆N Cℓ − λCℓ
+
+1 − λCℓ
+
+Φ0,ℓ 
+
+∣∣∣∣∣ H+
+
+> ℓ
+
+]
+
+= Φ 0,ℓ + E
+
+[ 1 − ∆N Cℓ
+
+1 − λCℓ
+
+(Ψℓ − Φ0,ℓ 
+
+) ∣∣∣∣∣ H+
+
+> ℓ
+
+]
+
+= Φ 0,ℓ + E(1 − ∆N Cℓ | H + 
+
+> ℓ
+
+)1 − λCℓ
+
+E
+
+(
+
+Ψℓ − Φ0,ℓ | H +
+
+> ℓ
+
+)
+
+= Φ 0,ℓ .
+
+Multiplying this identity by Yℓ−1/G ℓ−1 and using the interval updates Yℓ−1(1 − ∆N Cℓ ) = Yℓ and 
+
+Gℓ−1(1 − λCℓ ) = Gℓ yields 
+
+E
+
+[ Yℓ
+
+Gℓ
+
+Ψℓ + Yℓ−1
+
+Gℓ
+
+Φ0,ℓ dM Cℓ (G)
+
+∣∣∣∣H+
+
+> ℓ
+
+]
+
+= Yℓ−1
+
+Gℓ−1
+
+Φ0,ℓ .
+
+Taking expectations of both sides in the preceding display gives 
+
+E
+
+[ Yℓ
+
+Gℓ
+
+Ψℓ + Yℓ−1
+
+Gℓ
+
+Φ0,ℓ dM Cℓ (G)
+
+]
+
+= E
+
+[
+
+E
+
+{ Yℓ
+
+Gℓ
+
+Ψℓ + Yℓ−1
+
+Gℓ
+
+Φ0,ℓ dM Cℓ (G)
+
+∣∣∣∣ H+
+
+> ℓ
+
+}] 
+
+= E
+
+{ Yℓ−1
+
+Gℓ−1
+
+Φ0,ℓ 
+
+}
+
+= E
+
+{ Yℓ−1
+
+Gℓ−1
+
+Ψℓ
+
+}
+
+.
+
+Using Ψ ℓ−1 = Sℓ + Ψ ℓ, we obtain 
+
+E
+
+[ Yℓ−1
+
+Gℓ−1
+
+Ψℓ−1
+
+]
+
+= E
+
+[ Yℓ−1
+
+Gℓ−1
+
+Sℓ + Yℓ
+
+Gℓ
+
+Ψℓ + Yℓ−1
+
+Gℓ
+
+Φ0,ℓ dM Cℓ (G)
+
+]
+
+.
+
+20 Starting from Ψ M −1 = SM and applying this recursion successively for ℓ = M − 1, . . . , 1 yields 
+
+E
+
+[ M∑
+
+> ℓ=1
+
+Yℓ−1
+
+Gℓ−1
+
+Sℓ + 
+
+> M−1
+
+∑
+
+> ℓ=1
+
+Yℓ−1
+
+Gℓ
+
+Φ0,ℓ dM Cℓ (G)
+
+]
+
+= E
+
+{ M∑
+
+> ℓ=1
+
+Sℓ
+
+}
+
+.
+
+Equivalently, 
+
+E{SFC 12 (β; G, Φ0)} = E{S◦
+
+> 12
+
+(β)},
+
+which proves the second assertion. The same double-robustness property holds conditional on ( X1, X 2), since each of the preceding arguments can be carried out conditional on ( X1, X 2). For treated-versus-control pairs, the corrected score has conditional mean m0(X1, X 2; β) given ( X1, X 2) whenever either G = G0 or Φ = Φ 0.
+
+B.3 Double Robustness 
+
+Proof of Theorem 3.2. For x = ( x1, x 0), write 
+
+re(x) = e0(x1){1 − e0(x0)}
+
+e(x1){1 − e(x0)} ,
+
+and 
+
+μG, Φ(x) = E{SFC 12 (β0; G, Φ) | X1 = x1, X 2 = x0, A 1 = 1 , A 2 = 0 }.
+
+Conditioning first on ( X1, X 2) and then on ( A1, A 2) gives the conditional representation 
+
+E{K12 (β0; η) | X1 = x1, X 2 = x0} = re(x){μG, Φ(x) − m(x)} + m(x),
+
+where m(x) = m(x1, x 0; β0). By the censoring double robustness result in Theorem 3.1, μG, Φ(x) = m0(x) whenever either 
+
+G = G0 or Φ = Φ 0. If, in addition, e = e0, then re(x) = 1 and the conditional mean equals 
+
+m0(x). When m = m0, the difference μG, Φ(x) − m(x) vanishes, so the conditional mean again equals m0(x). Integrating over the target covariate distribution yields 
+
+E{K12 (β0; η)} = E{m0(X1, X 2)} = E{ω1,012 S◦
+
+> 12
+
+(β0)} = 0 ,
+
+where the final equality is the complete-data target equation. Neyman orthogonality follows from the conditional representation of E{K12 (β0; η) | X1 =
+
+x1, X 2 = x0}. Consider regular one-dimensional paths that vary one nuisance component at a time and leave the remaining components fixed at their true values. 
+
+E{K12 (β0; e, G, Φ, m ) | X1 = x1, X 2 = x0} = re(x1, x 0){μG, Φ(x1, x 0) − m(x1, x 0)} + m(x1, x 0).
+
+This conditional mean equals m0(x1, x 0) along each coordinate path. If only the propensity score varies, μG0,Φ0 = m0; if only m varies, then re0 = 1 and μG0,Φ0 = m0. If only G or only 21 Φ varies, Theorem 3.1 implies μGt,Φ0 = m0 or μG0,Φt = m0, respectively. Thus the conditional mean is constant in the path parameter for each coordinate direction, 
+
+ddt E{K12 (β0; ηt)}
+
+∣∣∣∣t=0 
+
+= 0 .
+
+Linearity of the Gateaux derivative then extends the conclusion to every regular nuisance di-rection at η0.It remains to establish the second-order drift bound. For general η, the drift decomposes as 
+
+E{K12 (β0; η) − K12 (β0; η0)}
+
+= E[E{K12 (β0; η) − K12 (β0; η0) | X1, X 2}]= E[re(X1, X 2){μG, Φ(X1, X 2) − m(X1, X 2)} + m(X1, X 2) − m0(X1, X 2)] = E[re(X1, X 2){μG, Φ(X1, X 2) − m0(X1, X 2)}]+ E[{re(X1, X 2) − 1}{ m0(X1, X 2) − m(X1, X 2)}] .
+
+As e and e0 are bounded away from zero and one, ∥re −1∥2 = ∥ e0(x1){1−e0(x0)}− e(x1){1−e(x0)} 
+
+> e(x1){1−e(x0)}
+
+∥2 =
+
+O(∥e − e0∥2), so Cauchy–Schwarz bounds the second term by O(∥e − e0∥ ∥ m − m0∥). For the first term, μG, Φ0 = m0 gives 
+
+μG, Φ − m0 = μG, Φ − μG, Φ0 .
+
+The IPCW terms in SFC 12 (β0; G, Φ) and SFC 12 (β0; G, Φ0) are identical, so subtracting the two scores leaves only the difference between their augmentation terms. Therefore, componentwise, 
+
+μG, Φ(X1, X 2) − m0(X1, X 2) = E
+
+[M −1∑
+
+> ℓ=1
+
+Yℓ−1
+
+Gℓ
+
+{Φℓ − Φ0,ℓ }dM Cℓ (G)
+
+∣∣∣∣∣X1, X 2, A 1 = 1 , A 2 = 0 
+
+]
+
+.
+
+Let λℓ and λ0,ℓ denote the working and true hazards for pairwise censoring in interval ℓ. Under the true censoring model, 
+
+E{dM Cℓ (G) | H + 
+
+> ℓ
+
+} = Yℓ−1{λ0,ℓ − λℓ}.
+
+Since Yℓ−1G−1 
+
+> ℓ
+
+{Φℓ − Φ0,ℓ } is H+ 
+
+> ℓ
+
+-measurable, conditioning first on H+ 
+
+> ℓ
+
+gives 
+
+μG, Φ(X1, X 2) − m0(X1, X 2) = E
+
+[M −1∑
+
+> ℓ=1
+
+Yℓ−1
+
+Gℓ
+
+{Φℓ − Φ0,ℓ }E{dM Cℓ (G) | H + 
+
+> ℓ
+
+}
+
+∣∣∣∣∣X1, X 2, A 1 = 1 , A 2 = 0 
+
+]
+
+= E
+
+[M −1∑
+
+> ℓ=1
+
+Y 2
+
+> ℓ−1
+
+Gℓ
+
+{λ0,ℓ − λℓ}{ Φℓ − Φ0,ℓ }
+
+∣∣∣∣∣X1, X 2, A 1 = 1 , A 2 = 0 
+
+]
+
+= E
+
+[M −1∑
+
+> ℓ=1
+
+Yℓ−1
+
+Gℓ
+
+{λ0,ℓ − λℓ}{ Φℓ − Φ0,ℓ }
+
+∣∣∣∣∣X1, X 2, A 1 = 1 , A 2 = 0 
+
+]
+
+.
+
+22 Since 
+
+λℓ = 1 − Gℓ
+
+Gℓ−1
+
+, λ0,ℓ = 1 − G0,ℓ 
+
+G0,ℓ −1
+
+,
+
+we have 
+
+λ0,ℓ − λℓ = Gℓ
+
+Gℓ−1
+
+− G0,ℓ 
+
+G0,ℓ −1
+
+= Gℓ − G0,ℓ 
+
+Gℓ−1
+
++ G0,ℓ {G0,ℓ −1 − Gℓ−1}
+
+Gℓ−1G0,ℓ −1
+
+.
+
+Positivity and the preceding expansion give 
+
+∥∥∥∥
+
+Yℓ−1
+
+Gℓ
+
+{λ0,ℓ − λℓ}
+
+∥∥∥∥2
+
+= O(∥Gℓ − G0,ℓ ∥2 + ∥Gℓ−1 − G0,ℓ −1∥2)= O(∥G − G0∥2) .
+
+Multiplying the preceding identity by re(X1, X 2) and taking expectations gives a sum over intervals in which the factor bounded above is multiplied by Φ ℓ − Φ0,ℓ . Since re is bounded, Cauchy–Schwarz under the joint pair-history law and over the finite visit grid gives 
+
+|E[re(X1, X 2){μG, Φ(X1, X 2) − m0(X1, X 2)}]| = O
+
+(M −1∑
+
+> ℓ=1
+
+∥∥∥∥
+
+Yℓ−1
+
+Gℓ
+
+{λ0,ℓ − λℓ}
+
+∥∥∥∥2
+
+∥Φℓ − Φ0,ℓ ∥2
+
+)
+
+= O(∥G − G0∥2 ∥Φ − Φ0∥2) .
+
+Combining this bound with the bound for the treatment component yields 
+
+E{K12 (β0; η) − K12 (β0; η0)} = O(∥e − e0∥ ∥ m − m0∥ + ∥G − G0∥ ∥ Φ − Φ0∥) ,
+
+as claimed. 
+
+B.4 Efficient Influence Function 
+
+Proof of Proposition 4.1. Fix β = β0. Let {Pε : ε ∈ (−δ, δ )} be an arbitrary regular parametric submodel through P0, with score s(O) ∈ L02(P0), and write ηε = ηPε (β0). Define 
+
+Q(ε, η ) = EPε⊗Pε {K12 (β0; η)}.
+
+By (4.2), ψβ0 (Pε) = Q(ε, η ε). Assumption B.7 permits the pathwise chain rule: 
+
+ddε ψβ0 (Pε)
+
+∣∣∣∣ε=0 
+
+= ∂∂ε Q(ε, η 0)
+
+∣∣∣∣ε=0 
+
++ ∂ηQ(0 , η 0)[ ˙ η], (B.1) where ˙ η is the derivative of ηε at zero. In the first term, η is fixed at η0 and only Pε ⊗ Pε varies; the second term is the derivative along the nuisance path ηε.The second term in (B.1) is zero by the orthogonality calculation underlying Theorem 3.2. Differentiating the product-remainder expansion of the augmented moment at η0 eliminates all first-order nuisance perturbations, and hence 
+
+∂ηQ(0 , η 0)[ ˙ η] = 0 .
+
+23 Since the score of Pε ⊗ Pε is s(O1) + s(O2), the remaining derivative is 
+
+∂∂ε Q(ε, η 0)
+
+∣∣∣∣ε=0 
+
+= E[K12 (β0; η0){s(O1) + s(O2)}]= E[{K12 (β0; η0) + K21 (β0; η0)}s(O1)] = E
+
+[
+
+2E{ ¯K(O1, O 2) | O1}s(O1)
+
+]
+
+.
+
+The second equality follows by exchanging the labels of the two independent subjects in the term containing s(O2). The third equality follows by substituting K12 (β0; η0) + K21 (β0; η0) = 2 ¯K(O1, O 2) and applying iterated expectation conditional on O1. The definition of κ then gives 
+
+ddε ψβ0 (Pε)
+
+∣∣∣∣ε=0 
+
+= E{Deff  
+
+> ψ
+
+(O)s(O)}, Deff  
+
+> ψ
+
+(O) = 2 κ(O).
+
+Jensen’s inequality and the kernel second-moment condition imply that Deff  
+
+> ψ
+
+∈ L02(P0). For the nonparametric observed-data model considered here, the closure of the observed-data tangent space at P0 is L02(P0). Therefore, Deff  
+
+> ψ
+
+is the canonical gradient of the moment. We next derive the canonical gradient of the root functional β(P ). The pathwise chain rule in the β direction yields 
+
+∂∂β ⊤ ψβ (P0)
+
+∣∣∣∣β=β0
+
+= ∂∂β ⊤ EP0⊗P0 {K12 (β; η0)}
+
+∣∣∣∣β=β0
+
++ ∂ηQ(0 , η 0)
+
+[ ∂∂β ⊤ ηP0 (β)
+
+∣∣∣∣β=β0
+
+]
+
+= ∂∂β ⊤ EP0⊗P0 {K12 (β; η0)}
+
+∣∣∣∣β=β0
+
+,
+
+where the last equality follows from the previously established fact that at η0 the first-order nuisance derivative vanishes in every nuisance perturbation direction. Thus the target derivative equals the derivative obtained by holding the true nuisance values fixed at β0. Let βε = β(Pε). Differentiating ψβε (Pε) = 0 at zero and using the nonsingularity of this derivative yields 0 = 
+
+{ ∂∂β ⊤ ψβ (P0)
+
+∣∣∣∣β=β0
+
+}
+
+˙β+E{Deff  
+
+> ψ
+
+(O)s(O)}, ˙β = E
+
+−
+
+{ ∂∂β ⊤ ψβ (P0)
+
+∣∣∣∣β=β0
+
+}−1
+
+Deff  
+
+> ψ
+
+(O)s(O)
+
+ .
+
+Thus 
+
+Deff  
+
+> β
+
+= −
+
+{ ∂∂β ⊤ ψβ (P0)
+
+∣∣∣∣β=β0
+
+}−1
+
+Deff  
+
+> ψ
+
+= −2
+
+{ ∂∂β ⊤ ψβ (P0)
+
+∣∣∣∣β=β0
+
+}−1
+
+κ
+
+is a gradient of the root functional. It belongs to the tangent-space closure because Deff  
+
+> ψ
+
+does, and hence it is the canonical gradient of β(P ). 24 B.5 Consistency 
+
+Proof of Proposition 4.2. At P0,
+
+ψβ (P0) = E{φ◦
+
+> 12
+
+(β)}.
+
+Recall that 
+
+φ◦
+
+> 12
+
+(β) = ω1,012 ˜X12 
+
+∫ τ
+
+> 0
+
+{
+
+W ◦
+
+> 12
+
+(t) − R◦
+
+> 12
+
+(t) expit (β⊤ ˜X12 
+
+)}
+
+dt. 
+
+Write pβ = expit {β⊤ ˜X12 }. Differentiating the complete-data score gives, for every nonzero 
+
+ρ ∈ Rp+1 ,
+
+−ρ⊤ ∂∂β ⊤ ψβ (P0)ρ = E
+
+[
+
+ω1,012 
+
+∫ τ
+
+> 0
+
+R◦
+
+> 12
+
+(t) pβ (1 − pβ )(ρ⊤ ˜X12 
+
+)2 dt 
+
+]
+
+≥ 0,
+
+where the last inequality follows because ω1,012 ≥ 0, R◦
+
+> 12
+
+(t) ≥ 0, pβ (1 −pβ ) > 0, and (ρ⊤ ˜X12 
+
+)2 ≥ 0. At β0, the nonsingularity of ∂∂β ⊤ ψβ (P0)
+
+∣∣∣∣β=β0
+
+under Assumption B.8 makes the right-hand side strictly positive for every nonzero ρ. Note that 
+
+−ρ⊤ ∂∂β ⊤ ψβ (P0)ρ
+
+depends on β only through the strictly positive factor pβ (1 − pβ ). Hence (A.1) holds for every 
+
+β, and Proposition A.1 shows that β0 is the unique zero of β 7 → ψβ (P0) on Θ. For any fixed β ∈ Θ, the evaluation pairs are independent of the nuisance fits used in their kernels. The U-statistic law of large numbers therefore gives ̂
+
+Un(β) = 1
+
+n(n − 1) 
+
+∑
+
+> i̸=j
+
+Kij {β; ηP0 (β)} + op(1) = EP0⊗P0 [K12 {β; ηP0 (β)}] + op(1) = ψβ (P0) + op(1) .
+
+The fitted kernel path β 7 −→ K12 {β;̂ η−(f,g )(β)} also satisfies the Lipschitz condition, so this convergence is uniform on the compact set Θ: sup 
+
+> β∈Θ
+
+∥̂Un(β) − ψβ (P0)∥ = op(1) .
+
+As β0 is the unique zero of β 7 → ψβ (P0) on Θ and the population score is continuous in β, the population score is bounded away from zero outside every neighborhood of β0: for each ε > 0, inf 
+
+> β∈Θ
+> ∥β−β0∥≥ ε
+
+∥ψβ (P0)∥ > 0.
+
+25 The approximate-root condition and the preceding uniform convergence give 
+
+∥ψ̂β (P0)∥ =
+
+∥∥∥{ψ̂β (P0) −̂ Un(̂ β)} +̂ Un(̂ β)
+
+∥∥∥
+
+≤ ∥ ̂Un(̂ β)∥ + sup 
+
+> β∈Θ
+
+∥̂Un(β) − ψβ (P0)∥
+
+= op(1) .
+
+Consequently, ̂
+
+β p
+
+−→ β0.
+
+B.6 Asymptotic Linearity and Normality 
+
+Lemma B.10 (Monte Carlo Approximation Error) . Let ̂ Φfit be the conditional projection under the fitted future distributions, and let ̂ ΦB be defined by (3.6) . Conditional on the observed data and fitted nuisance functions, suppose the Monte Carlo approximation errors entering the average over ordered subject pairs are independent, have conditional mean zero, and have uniformly bounded conditional second moments after multiplication by the score weights. Then, for fixed B ≥ 1,
+
+1
+
+n(n − 1) 
+
+∑
+
+> i̸=j
+
+{
+
+Kij (β0;̂ e, ̂ G, ̂ ΦB ,̂ m) − Kij (β0;̂ e, ̂ G, ̂ Φfit ,̂ m)
+
+}
+
+= Op(n−1) = op(n−1/2).
+
+Proof of Lemma B.10. Define ∆ij,B = Kij (β0;̂ e, ̂ G, ̂ ΦB ,̂ m) − Kij (β0;̂ e, ̂ G, ̂ Φfit ,̂ m),
+
+and let 
+
+EMC  
+
+> n,B
+
+= n−1(n − 1) −1 ∑
+
+> i̸=j
+
+∆ij,B 
+
+denote its average. All expectations in this proof are conditional on the observed data and fitted nuisance functions. For distinct ordered pairs, independence and mean zero imply 
+
+E
+
+(
+
+∆⊤ 
+
+> ij,B
+
+∆kl,B 
+
+)
+
+= 0 , (i, j )̸ = ( k, l ).
+
+Therefore, 
+
+E{∥E MC  
+
+> n,B
+
+∥2} = 1
+
+n2(n − 1) 2
+
+∑
+
+> i̸=j
+
+∑ 
+
+> k̸=l
+
+E
+
+(
+
+∆⊤ 
+
+> ij,B
+
+∆kl,B 
+
+)
+
+= 1
+
+n2(n − 1) 2
+
+∑
+
+> i̸=j
+
+E{∥ ∆ij,B ∥2}≤ 1
+
+n(n − 1) sup 
+
+> i̸=j
+
+E{∥ ∆ij,B ∥2}
+
+= O(n−2).
+
+Markov’s inequality therefore yields EMC  
+
+> n,B
+
+= Op(n−1) = op(n−1/2) for fixed B.26 Lemma B.10 covers the usual implementation in which Monte Carlo draws are generated in-dependently for each ordered subject pair. When these draws are sampled from the fitted future distribution, each pairwise Monte Carlo average is centered at the corresponding fitted projection, and the simulation errors average out across pairs. 
+
+Proof of Theorem 4.3. With the nuisance functions fixed at η0,
+
+Un(β0; η0) = 1
+
+n(n − 1) 
+
+∑
+
+> i̸=j
+
+Kij (β0; η0)is a second-order U-statistic with symmetrized kernel ¯K. Hoeffding’s decomposition and the kernel second-moment condition yield 
+
+Un(β0; η0) = 2
+
+n
+
+> n
+
+∑
+
+> i=1
+
+κ(Oi) + op(n−1/2),
+
+because the degenerate component has variance of order n−2.The oracle statistic and the cross-fitted statistic are compared block by block. Let I1, . . . , I F
+
+denote the subject-level folds, and let ̂ η−(f,g ) denote the nuisance fit based on subjects outside 
+
+If ∪ Ig. Define 
+
+Bf g = {(i, j ) : i ∈ If , j ∈ Ig, i ̸ = j},
+
+and let Tf g be the corresponding training sigma-field. Let ¯Hf g = |B f g |−1 ∑
+
+> (i,j )∈B f g
+
+{
+
+Kij (β0;̂ η−(f,g )) − Kij (β0; η0)
+
+}
+
+.
+
+Conditional on Tf g , ¯Hf g is a U-statistic formed by averaging the pairwise kernel difference over 
+
+Bf g . Define its conditional mean by ∆f g = E( ¯Hf g | T f g ).
+
+Conditional on Tf g ,̂ η−(f,g ) is fixed. Because Tf g is generated by observations from subjects outside If ∪ Ig, conditioning on Tf g does not change the joint distribution of {Oi : i ∈ If ∪ Ig}.Therefore, ∆f g = EP0⊗P0
+
+[
+
+K12 (β0;̂ η−(f,g )) − K12 (β0; η0)
+
+]
+
+.
+
+Applying the product-remainder bound in Theorem 3.2 gives 
+
+∥∆f g ∥ = Op
+
+(
+
+∥̂ e−(f,g ) − e0∥2 ∥̂ m−(f,g ) − m0∥2
+
++ ∥̂ G−(f,g ) − G0∥2 ∥̂ Φ−(f,g ) − Φ0∥2
+
+)
+
+.
+
+Because the product-rate conditions hold uniformly over the fixed number of fold pairs, max  
+
+> f,g
+
+∥∆f g ∥ = op(n−1/2). (B.2) 27 Conditional on Tf g , ¯Hf g − ∆f g is a centered U-statistic. The second-moment bound from the Hoeffding decomposition therefore gives 
+
+E
+
+{
+
+∥ ¯Hf g − ∆f g ∥2 | T f g 
+
+}
+
+= O
+
+( 1
+
+n
+
+∥∥∥K12 (β0;̂ η−(f,g )) − K12 (β0; η0)
+
+∥∥∥22
+
+)
+
+= op(n−1).
+
+Conditional Markov’s inequality and the fixed number of fold pairs then give max  
+
+> f,g
+
+∥ ¯Hf g − ∆f g ∥ = op(n−1/2). (B.3) Combining (B.2) and (B.3) gives max  
+
+> f,g
+
+∥ ¯Hf g ∥ = op(n−1/2).
+
+Averaging these finitely many blocks, 1
+
+n(n − 1) 
+
+∑
+
+> i̸=j
+
+{Kij (β0;̂ η−(fi,f j )) − Kij (β0; η0)} = op(n−1/2),
+
+where fi is the fold of subject i. Hence ̂
+
+Un(β0) = 2
+
+n
+
+> n
+
+∑
+
+> i=1
+
+κ(Oi) + op(n−1/2).
+
+Replacing ̂ Φdet by ̂ ΦB adds only an op(n−1/2) perturbation to the estimating equation. Let 
+
+˜Jn =
+
+∫ 10
+
+∂∂β ⊤̂ Un
+
+{
+
+β0 + t(̂ β − β0)
+
+}
+
+dt. 
+
+Adding and subtracting the population derivative inside the integral gives 
+
+˜Jn − ∂∂β ⊤ ψβ (P0)
+
+∣∣∣∣β=β0
+
+=
+
+∫ 10
+
+[ ∂∂β ⊤̂ Un
+
+{
+
+β0 + t(̂ β − β0)
+
+}
+
+− ∂∂β ⊤ ψβ (P0)
+
+∣∣∣∣β=β0+t(̂ β−β0)
+
+]
+
+dt 
+
++
+
+∫ 10
+
+[ ∂∂β ⊤ ψβ (P0)
+
+∣∣∣∣β=β0+t(̂β−β0)
+
+− ∂∂β ⊤ ψβ (P0)
+
+∣∣∣∣β=β0
+
+]
+
+dt. 
+
+Because ̂ β p
+
+−→ β0, the first integral is op(1) by Assumption B.9, and the second is op(1) by the continuous differentiability in Assumption B.8. Thus 
+
+˜Jn = ∂∂β ⊤ ψβ (P0)
+
+∣∣∣∣β=β0
+
++ op(1) ,
+
+and 
+
+˜J−1 
+
+> n
+
+=
+
+{ ∂∂β ⊤ ψβ (P0)
+
+∣∣∣∣β=β0
+
+}−1
+
++ op(1) .
+
+Taylor’s formula gives ̂
+
+Un(̂ β) −̂ Un(β0) = ˜Jn(̂β − β0).
+
+28 At the approximate root, ̂ Un(̂β) = op(n−1/2). Substituting this then yields 
+
+√n(̂ β − β0) = − ˜J−1
+
+> n
+
+√n̂ Un(β0) + op(1) = −
+
+{ ∂∂β ⊤ ψβ (P0)
+
+∣∣∣∣β=β0
+
+}−1 √n̂ Un(β0) + op(1) .
+
+Combining the preceding display with the Hoeffding expansion and (4.4) gives 
+
+√n(̂ β − β0) = 1
+
+√n
+
+> n
+
+∑
+
+> i=1
+
+Deff  
+
+> β
+
+(Oi) + op(1) .
+
+The central limit theorem for the independent first Hoeffding projections establishes the stated normal limit. The rate requirements in Theorem 4.3 are attainable under standard conditions for the nuisance estimators considered here. For correctly specified fixed-dimensional parametric propensity and censoring models, such as logistic regression, standard parametric theory gives root-n consis-tency for ̂ e and ̂ G. Because the number of folds is fixed and each training sample contains a fixed proportion of the subjects, these rates hold uniformly over the nuisance fits. In our implementations, both ̂ Φdet and ̂ m are evaluated by deterministic recursion under fitted transition models. On the finite state space and fixed visit grid, these quantities are finite sums and products of the fitted transition probabilities. Consistency of the fitted transition probabilities therefore implies 
+
+∥̂ Φdet − Φ0∥ = op(1) , ∥̂m − m0∥ = op(1) by the continuous mapping theorem. An alternative approach is to estimate m0 and Φ 0 directly. For each β, define ΨIPW  
+
+> ij,ℓ
+
+(β; G) = ∑
+
+> r>ℓ
+
+Yij (tr−1)Gij,ℓ −1
+
+Gij,r −1
+
+S◦
+
+> ij,r
+
+(β).
+
+The at-risk indicator retains an interval-r score contribution only when both subjects remain observed through tr−1, and the survival ratio reweights that contribution by the inverse con-ditional probability of remaining uncensored from the pair history at interval ℓ through tr−1.Sequentially independent censoring therefore gives 
+
+E
+
+{
+
+ΨIPW  
+
+> ij,ℓ
+
+(β0; G0) | H +
+
+> ij,ℓ
+
+}
+
+= Φ 0,ij,ℓ (β0).
+
+Let ̂ Φreg  
+
+> ℓ
+
+(β) be the least-squares regression, under squared Euclidean loss, of Ψ IPW  
+
+> ij,ℓ
+
+(β;̂ G) on 
+
+H+ 
+
+> ij,ℓ
+
+over a function class Fℓ.Given ̂ Φreg (β), let ̂ mreg (·, ·; β) be the least-squares regression, also under squared Euclidean loss, 29 of 
+
+SFC 
+
+> ij
+
+(β;̂ G, ̂ Φreg )
+
+on ( Xi, X j ) among treated-versus-control pairs over a function class M. The conditional iden-tification result following Theorem 3.1 gives 
+
+E
+
+{
+
+SFC  
+
+> ij
+
+(β0; G0, Φ0) | Xi, X j , A i = 1 , A j = 0 
+
+}
+
+= m0(Xi, X j ; β0).
+
+The two conditional-mean identities therefore identify Φ 0,ℓ (β0) and m0(·, ·; β0) as the targets of the two regressions. Suppose Fℓ contains Φ 0,ℓ (β0) and M contains m0(·, ·; β0). Suppose the following convergences hold uniformly over the training samples: 
+
+∥∥ΨIPW  
+
+> ℓ
+
+(β0;̂ G) − ΨIPW  
+
+> ℓ
+
+(β0; G0)∥∥2 = op(1) ,
+
+∥∥SFC (β0;̂ G, ̂ Φreg ) − SFC (β0; G0, Φ0)∥∥2 = op(1) .
+
+Suppose further that the squared Euclidean losses used to fit ̂ Φreg  
+
+> ℓ
+
+over Fℓ and ̂ mreg over M
+
+form bounded U-Glivenko–Cantelli classes under the pair-history and treated-versus-control pair distributions, respectively. For each regression, the empirical average of the squared Euclidean loss then converges uniformly to its population counterpart (Arcones and Giné, 1993). Together with the two conditional-mean identities above, this gives 
+
+∥̂Φreg  
+
+> ℓ
+
+(β0) − Φ0,ℓ (β0)∥2 = op(1) , ∥̂mreg (·, ·; β0) − m0(·, ·; β0)∥2 = op(1) .
+
+Because the visit grid is finite, 
+
+∥̂Φreg (β0) − Φ0(β0)∥2 = op(1) .
+
+Together with the root-n rates for ̂ e and ̂ G, these consistency results imply the product-rate requirements in Theorem 4.3, with ̂ Φ = ̂ Φreg and ̂ m =̂ mreg .
+
+Proof of Corollary 4.4. Let ̂
+
+κ∗ 
+
+> i
+
+= 1
+
+n − 1
+
+∑ 
+
+> j̸=i
+
+¯K(Oi, O j ) − 1
+
+n
+
+> n
+
+∑
+
+> r=1
+
+1
+
+n − 1
+
+∑
+
+> s̸=r
+
+¯K(Or, O s)be the centered empirical estimate of the first Hoeffding projection κ(Oi) = E
+
+{ ¯K(Oi, O 2) | Oi
+
+}
+
+.
+
+Let ̂
+
+κfit  
+
+> i
+
+= 1
+
+n − 1
+
+∑ 
+
+> j̸=i
+
+12
+
+{
+
+Kij (̂ β;̂ e, ̂ G, ̂ Φfit ,̂ m) + Kji (̂β;̂ e, ̂ G, ̂ Φfit ,̂ m)
+
+}
+
+− 1
+
+n
+
+> n
+
+∑
+
+> r=1
+
+1
+
+n − 1
+
+∑
+
+> s̸=r
+
+12
+
+{
+
+Krs (̂β;̂ e, ̂ G, ̂ Φfit ,̂ m) + Ksr (̂ β;̂ e, ̂ G, ̂ Φfit ,̂ m)
+
+}
+
+.
+
+Thus, ̂ κfit  
+
+> i
+
+replaces the oracle pair kernel ¯K(Oi, O j ) in ̂ κ∗ 
+
+> i
+
+by its fitted counterpart evaluated at 30 ̂β. The law of large numbers for projections of second-order U-statistics yields 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+̂
+
+κ∗
+
+> i
+
+̂ κ∗⊤ 
+
+> ip
+
+−→ Var {κ(O)}.
+
+For i̸ = j, define 
+
+dij = 12
+
+{
+
+Kij (̂ β;̂ e, ̂ G, ̂ Φfit ,̂ m) + Kji (̂ β;̂ e, ̂ G, ̂ Φfit ,̂ m)
+
+}
+
+− ¯K(Oi, O j ).
+
+Subtracting the two empirical projections gives ̂
+
+κfit  
+
+> i
+
+−̂ κ∗ 
+
+> i
+
+= 1
+
+n − 1
+
+∑ 
+
+> j̸=i
+
+dij − 1
+
+n(n − 1) 
+
+∑ 
+
+> r̸=s
+
+drs .
+
+The second term is the sample mean of the first term over i, since 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+ 1
+
+n − 1
+
+∑ 
+
+> j̸=i
+
+dij 
+
+ = 1
+
+n(n − 1) 
+
+∑ 
+
+> r̸=s
+
+drs .
+
+Consequently, 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+∥∥∥∥∥̂ κfit  
+
+> i
+
+−̂ κ∗
+
+> i
+
+∥∥∥∥∥
+
+> 2
+
+= 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+∥∥∥∥∥
+
+1
+
+n − 1
+
+∑ 
+
+> j̸=i
+
+dij − 1
+
+n(n − 1) 
+
+∑ 
+
+> r̸=s
+
+drs 
+
+∥∥∥∥∥
+
+> 2
+
+= 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+[∥ ∥∥∥∥
+
+1
+
+n − 1
+
+∑ 
+
+> j̸=i
+
+dij 
+
+∥∥∥∥∥
+
+> 2
+
+− 2
+
+ 1
+
+n − 1
+
+∑ 
+
+> j̸=i
+
+dij 
+
+ 
+
+> ⊤
+
+ 1
+
+n(n − 1) 
+
+∑ 
+
+> r̸=s
+
+drs 
+
+ +
+
+∥∥∥∥∥
+
+1
+
+n(n − 1) 
+
+∑ 
+
+> r̸=s
+
+drs 
+
+∥∥∥∥∥
+
+> 2
+
+]
+
+= 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+∥∥∥∥∥
+
+1
+
+n − 1
+
+∑ 
+
+> j̸=i
+
+dij 
+
+∥∥∥∥∥
+
+> 2
+
+−
+
+∥∥∥∥∥
+
+1
+
+n(n − 1) 
+
+∑ 
+
+> r̸=s
+
+drs 
+
+∥∥∥∥∥
+
+> 2
+
+≤ 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+∥∥∥∥∥
+
+1
+
+n − 1
+
+∑ 
+
+> j̸=i
+
+dij 
+
+∥∥∥∥∥
+
+> 2
+
+.
+
+For each i, Jensen’s inequality gives 
+
+∥∥∥∥∥
+
+1
+
+n − 1
+
+∑ 
+
+> j̸=i
+
+dij 
+
+∥∥∥∥∥
+
+> 2
+
+≤ 1
+
+n − 1
+
+∑ 
+
+> j̸=i
+
+∥dij ∥2.
+
+Therefore, 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+∥∥∥∥∥̂ κfit  
+
+> i
+
+−̂ κ∗
+
+> i
+
+∥∥∥∥∥
+
+> 2
+
+≤ 1
+
+n(n − 1) 
+
+∑
+
+> i̸=j
+
+∥∥∥∥∥
+
+12
+
+{
+
+Kij (̂β;̂ e, ̂ G, ̂ Φfit ,̂ m) + Kji (̂ β;̂ e, ̂ G, ̂ Φfit ,̂ m)
+
+}
+
+− ¯K(Oi, O j )
+
+∥∥∥∥∥
+
+> 2
+
+.
+
+31 For the following argument, write the dependence of the fitted nuisance functions on β explicitly: 
+
+Kij (β;̂ e, ̂ G, ̂ Φfit ,̂ m) = Kij 
+
+{
+
+β;̂ e, ̂ G, ̂ Φfit (β),̂ m(·, ·; β)
+
+}
+
+.
+
+Inside each norm on the right, add and subtract 12
+
+[
+
+Kij 
+
+{
+
+β0;̂ e, ̂ G, ̂ Φfit (β0),̂ m(·, ·; β0)
+
+}
+
++ Kji 
+
+{
+
+β0;̂ e, ̂ G, ̂ Φfit (β0),̂ m(·, ·; β0)
+
+} ] 
+
+,
+
+and use ∥a + b∥2 ≤ 2∥a∥2 + 2 ∥b∥2 to obtain 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+∥∥∥∥∥̂ κfit  
+
+> i
+
+−̂ κ∗
+
+> i
+
+∥∥∥∥∥
+
+> 2
+
+≤ 2
+
+n(n − 1) 
+
+∑
+
+> i̸=j
+
+∥∥∥∥∥
+
+12
+
+[
+
+Kij (̂β;̂ e, ̂ G, ̂ Φfit ,̂ m) − Kij (β0;̂ e, ̂ G, ̂ Φfit ,̂ m)+ Kji (̂β;̂ e, ̂ G, ̂ Φfit ,̂ m) − Kji (β0;̂ e, ̂ G, ̂ Φfit ,̂ m)
+
+]∥ ∥∥∥∥
+
+> 2
+
++ 2
+
+n(n − 1) 
+
+∑
+
+> i̸=j
+
+∥∥∥∥∥
+
+12
+
+{
+
+Kij (β0;̂ e, ̂ G, ̂ Φfit ,̂ m) + Kji (β0;̂ e, ̂ G, ̂ Φfit ,̂ m)
+
+}
+
+− ¯K(Oi, O j )
+
+∥∥∥∥∥
+
+> 2
+
+.
+
+(B.4) For each ordered pair, 
+
+Kij (̂ β;̂ e, ̂ G, ̂ Φfit ,̂ m) − Kij (β0;̂ e, ̂ G, ̂ Φfit ,̂ m)=
+
+[∫ 10
+
+∂∂β ⊤ Kij 
+
+{
+
+β0 + t(̂ β − β0); ̂ e, ̂ G, ̂ Φfit (β0 + t(̂ β − β0)),̂ m(·, ·; β0 + t(̂ β − β0))}
+
+dt 
+
+]
+
+(̂β − β0).
+
+Therefore, by Assumption B.8, 1
+
+n(n − 1) 
+
+∑
+
+> i̸=j
+
+∥∥∥∥∥
+
+12
+
+[
+
+Kij (̂β;̂ e, ̂ G, ̂ Φfit ,̂ m) − Kij (β0;̂ e, ̂ G, ̂ Φfit ,̂ m)+ Kji (̂ β;̂ e, ̂ G, ̂ Φfit ,̂ m) − Kji (β0;̂ e, ̂ G, ̂ Φfit ,̂ m)
+
+]∥ ∥∥∥∥
+
+> 2
+
+= Op
+
+(
+
+∥̂ β − β0∥2)
+
+= op(1) .
+
+(B.5) Recall from the proof of Theorem 4.3 that I1, . . . , I F are the subject-level folds, with F fixed, and that for f, g ∈ { 1, . . . , F }, Bf g = {(i, j ) : i ∈ If , j ∈ Ig, i ̸ = j}. The sigma-field Tf g is generated by the training observations outside If ∪ Ig, where the nuisance functions used for pairs in Bf g are fitted. 32 At β0, the conditional kernel convergence established in that proof gives, for ( i, j ) ∈ B f g ,
+
+E
+
+[∥ ∥∥∥∥Kij (β0;̂ e, ̂ G, ̂ Φfit ,̂ m) − Kij (β0; η0)
+
+∥∥∥∥∥ 
+
+> 2
+
+∣∣∣∣∣ Tf g 
+
+]
+
+= op(1) ,E
+
+[∥ ∥∥∥∥Kji (β0;̂ e, ̂ G, ̂ Φfit ,̂ m) − Kji (β0; η0)
+
+∥∥∥∥∥ 
+
+> 2
+
+∣∣∣∣∣ Tf g 
+
+]
+
+= op(1) .
+
+Since ¯K(Oi, O j ) = 12 {Kij (β0; η0) + Kji (β0; η0)} ,
+
+conditioning on Tf g and using 
+
+∥∥∥∥∥
+
+a + b
+
+2
+
+∥∥∥∥∥
+
+> 2
+
+≤ 12 ∥a∥2 + 12 ∥b∥2
+
+give 
+
+E
+
+[∥ ∥∥∥∥
+
+12
+
+{
+
+Kij (β0;̂ e, ̂ G, ̂ Φfit ,̂ m) + Kji (β0;̂ e, ̂ G, ̂ Φfit ,̂ m)
+
+}
+
+− ¯K(Oi, O j )
+
+∥∥∥∥∥ 
+
+> 2
+
+∣∣∣∣∣ Tf g 
+
+]
+
+≤ 12 E
+
+[∥ ∥∥∥∥Kij (β0;̂ e, ̂ G, ̂ Φfit ,̂ m) − Kij (β0; η0)
+
+∥∥∥∥∥ 
+
+> 2
+
+∣∣∣∣∣ Tf g 
+
+]
+
++ 12 E
+
+[∥ ∥∥∥∥Kji (β0;̂ e, ̂ G, ̂ Φfit ,̂ m) − Kji (β0; η0)
+
+∥∥∥∥∥ 
+
+> 2
+
+∣∣∣∣∣ Tf g 
+
+]
+
+= op(1) .
+
+Therefore, for every ε > 0, conditional Markov’s inequality gives Pr 
+
+( 1
+
+|B f g |
+
+∑
+
+> (i,j )∈B f g
+
+∥∥∥∥∥
+
+12
+
+{
+
+Kij (β0;̂ e, ̂ G, ̂ Φfit ,̂ m) + Kji (β0;̂ e, ̂ G, ̂ Φfit ,̂ m)
+
+}
+
+− ¯K(Oi, O j )
+
+∥∥∥∥∥
+
+> 2
+
+> ε 
+
+∣∣∣∣∣ Tf g 
+
+)
+
+≤ 1
+
+ε|B f g |
+
+∑
+
+> (i,j )∈B f g
+
+E
+
+[∥ ∥∥∥∥
+
+12
+
+{
+
+Kij (β0;̂ e, ̂ G, ̂ Φfit ,̂ m) + Kji (β0;̂ e, ̂ G, ̂ Φfit ,̂ m)
+
+}
+
+− ¯K(Oi, O j )
+
+∥∥∥∥∥ 
+
+> 2
+
+∣∣∣∣∣ Tf g 
+
+]
+
+= op(1) .
+
+Hence, for each f, g ∈ { 1, . . . , F },1
+
+|B f g |
+
+∑
+
+> (i,j )∈B f g
+
+∥∥∥∥∥
+
+12
+
+{
+
+Kij (β0;̂ e, ̂ G, ̂ Φfit ,̂ m) + Kji (β0;̂ e, ̂ G, ̂ Φfit ,̂ m)
+
+}
+
+− ¯K(Oi, O j )
+
+∥∥∥∥∥
+
+> 2
+
+= op(1) .
+
+33 Each pair ( i, j ) with i̸ = j appears in exactly one Bf g . Therefore, 1
+
+n(n − 1) 
+
+∑
+
+> i̸=j
+
+∥∥∥∥∥
+
+12
+
+{
+
+Kij (β0;̂ e, ̂ G, ̂ Φfit ,̂ m) + Kji (β0;̂ e, ̂ G, ̂ Φfit ,̂ m)
+
+}
+
+− ¯K(Oi, O j )
+
+∥∥∥∥∥
+
+> 2
+
+=
+
+> F
+
+∑ 
+
+> f=1
+> F
+
+∑
+
+> g=1
+
+|B f g |
+
+n(n − 1) 
+
+[ 1
+
+|B f g |
+
+∑
+
+> (i,j )∈B f g
+
+∥∥∥∥∥
+
+12
+
+{
+
+Kij (β0;̂ e, ̂ G, ̂ Φfit ,̂ m) + Kji (β0;̂ e, ̂ G, ̂ Φfit ,̂ m)
+
+}
+
+− ¯K(Oi, O j )
+
+∥∥∥∥∥
+
+> 2
+
+]
+
+= op(1) .
+
+(B.6) Combining (B.4), (B.5), and (B.6) gives 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+∥∥∥∥∥̂ κfit  
+
+> i
+
+−̂ κ∗
+
+> i
+
+∥∥∥∥∥
+
+> 2
+
+= op(1) .
+
+Recall that ̂
+
+Σβ = 4 
+
+{ ∂∂β ⊤̂ Un(β)
+
+∣∣∣∣β=̂ β
+
+}−1 { 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+̂
+
+κî κ⊤
+
+> i
+
+} { ∂∂β ⊤̂ Un(β)
+
+∣∣∣∣β=̂ β
+
+}−⊤ 
+
+,
+
+where ̂ κi is the centered row average of ̂ ¯Kij , the symmetrized estimating-function contribution from pair ( i, j ): ̂
+
+κi = 1
+
+n − 1
+
+∑ 
+
+> j̸=i
+
+̂
+
+¯Kij − 1
+
+n
+
+> n
+
+∑
+
+> r=1
+
+1
+
+n − 1
+
+∑
+
+> s̸=r
+
+̂
+
+¯Krs .
+
+When the fitted future-trajectory distributions have finite supports, ̂
+
+Φdet 
+
+> ij,ℓ
+
+(β) = ∑
+
+> u1∈S 1,ℓ
+
+∑
+
+> u0∈S 0,ℓ
+
+Ψij,ℓ (β; u1, u 0)̂ p1,ℓ (u1 | H +
+
+> i,ℓ
+
+)̂ p0,ℓ (u0 | H +
+
+> j,ℓ
+
+)=
+
+∫
+
+Ψij,ℓ (β; u1, u 0) d̂L(u1 | H +
+
+> i,ℓ
+
+) d̂L(u0 | H +
+
+> j,ℓ
+
+)=̂ Φfit 
+
+> ij,ℓ
+
+(β).
+
+Therefore, under the deterministic implementation, ̂
+
+κi = 1
+
+n − 1
+
+∑ 
+
+> j̸=i
+
+12
+
+{
+
+Kij (̂β;̂ e, ̂ G, ̂ Φdet ,̂ m) + Kji (̂β;̂ e, ̂ G, ̂ Φdet ,̂ m)
+
+}
+
+− 1
+
+n
+
+> n
+
+∑
+
+> r=1
+
+1
+
+n − 1
+
+∑
+
+> s̸=r
+
+12
+
+{
+
+Krs (̂β;̂ e, ̂ G, ̂ Φdet ,̂ m) + Ksr (̂β;̂ e, ̂ G, ̂ Φdet ,̂ m)
+
+}
+
+= 1
+
+n − 1
+
+∑ 
+
+> j̸=i
+
+12
+
+{
+
+Kij (̂β;̂ e, ̂ G, ̂ Φfit ,̂ m) + Kji (̂β;̂ e, ̂ G, ̂ Φfit ,̂ m)
+
+}
+
+− 1
+
+n
+
+> n
+
+∑
+
+> r=1
+
+1
+
+n − 1
+
+∑
+
+> s̸=r
+
+12
+
+{
+
+Krs (̂β;̂ e, ̂ G, ̂ Φfit ,̂ m) + Ksr (̂β;̂ e, ̂ G, ̂ Φfit ,̂ m)
+
+}
+
+=̂ κfit  
+
+> i
+
+.
+
+For Wald inference under the Monte Carlo implementation ̂ ΦB , compute the symmetrized pair 34 kernels ̂ ¯Kij and the resulting empirical Hoeffding projections ̂ κi using an evaluation of (3.6) independent of the one used to compute ̂ β. Condition throughout the following calculation on the observed data, fitted models, and Monte Carlo draws used to compute ̂ β.Define the symmetrized Monte Carlo kernel error ∆MC  
+
+> ij
+
+= 12
+
+[
+
+Kij (̂ β;̂ e, ̂ G, ̂ ΦB ,̂ m) − Kij (̂ β;̂ e, ̂ G, ̂ Φfit ,̂ m)+ Kji (̂β;̂ e, ̂ G, ̂ ΦB ,̂ m) − Kji (̂β;̂ e, ̂ G, ̂ Φfit ,̂ m)
+
+]
+
+.
+
+After symmetrization, the conditions of Lemma B.10 imply 
+
+E
+
+(
+
+∆MC 
+
+> ij
+
+)
+
+= 0 , sup 
+
+> i̸=j
+
+E
+
+(
+
+∥∆MC  
+
+> ij
+
+∥2)
+
+= Op(1) ,
+
+and for each fixed i the collection {∆MC  
+
+> ij
+
+: j̸ = i} is conditionally independent. Subtracting the corresponding formulas for ̂ κi and ̂ κfit  
+
+> i
+
+gives ̂
+
+κi −̂ κfit  
+
+> i
+
+= 1
+
+n − 1
+
+∑ 
+
+> j̸=i
+
+∆MC  
+
+> ij
+
+− 1
+
+n
+
+> n
+
+∑
+
+> r=1
+
+1
+
+n − 1
+
+∑
+
+> s̸=r
+
+∆MC  
+
+> rs
+
+.
+
+Since the second term is the average of the first terms across subjects, 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+∥̂ κi −̂ κfit  
+
+> i
+
+∥2 ≤ 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+∥∥∥∥∥∥
+
+1
+
+n − 1
+
+∑ 
+
+> j̸=i
+
+∆MC 
+
+> ij
+
+∥∥∥∥∥∥
+
+> 2
+
+.
+
+For each i,
+
+E
+
+∥∥∥∥∥∥
+
+1
+
+n − 1
+
+∑ 
+
+> j̸=i
+
+∆MC 
+
+> ij
+
+∥∥∥∥∥∥
+
+> 2
+
+ = 1(n − 1) 2
+
+∑ 
+
+> j̸=i
+
+E
+
+(
+
+∥∆MC  
+
+> ij
+
+∥2)
+
++ 1(n − 1) 2
+
+∑   
+
+> j̸=i, k ̸=ij̸=k
+
+E
+
+{
+
+(∆ MC  
+
+> ij
+
+)⊤∆MC 
+
+> ik
+
+}
+
+= 1(n − 1) 2
+
+∑ 
+
+> j̸=i
+
+E
+
+(
+
+∥∆MC  
+
+> ij
+
+∥2)
+
+= Op(n−1).
+
+The second equality follows because, for fixed i, the cross terms involve conditionally indepen-dent centered errors. Averaging over i and applying the preceding inequality therefore give 
+
+E
+
+[ 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+∥̂ κi −̂ κfit  
+
+> i
+
+∥2
+
+]
+
+= Op(n−1).
+
+Conditional Markov’s inequality then yields 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+∥̂ κi −̂ κfit  
+
+> i
+
+∥2 = op(1) .
+
+35 Hence 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+̂
+
+κî κ⊤
+
+> ip
+
+−→ Var {κ(O)}.
+
+Together with ∂∂β ⊤̂ Un(β)
+
+∣∣∣∣β=̂ βp
+
+−→ ∂∂β ⊤ ψβ (P0)
+
+∣∣∣∣β=β0
+
+,
+
+the continuous mapping theorem yields ̂ Σβp
+
+−→ Σeff  
+
+> β
+
+. Slutsky’s theorem and Theorem 4.3 then establish the stated Wald pivot and coverage. 
+
+Proof of Corollary 4.5. By Proposition 4.1, Deff  
+
+> β
+
+is the canonical gradient of the root functional; by Theorem 4.3, the estimator has this same influence function. For any regular parametric submodel {Pε} through P0 with score s and any fixed scalar t, P ⊗nt/ √n is contiguous to P ⊗n 
+
+> 0
+
+.Hence the oP ⊗n
+
+> 0
+
+(1) remainder in Theorem 4.3 is also oP ⊗nt/ √n
+
+(1). Under P ⊗n 
+
+> 0
+
+, the local likelihood-ratio expansion and the multivariate central limit theorem for Deff  
+
+> β
+
+(O) and s(O) imply that the influence-function sum n−1/2 ∑ni=1 Deff  
+
+> β
+
+(Oi) and the log-likelihood ratio of P ⊗nt/ √n to P ⊗n 
+
+> 0
+
+are jointly asymptotically normal, with limiting cross-covariance tE {Deff  
+
+> β
+
+(O)s(O)}. Le Cam’s third lemma then yields, under P ⊗nt/ √n,
+
+√n(̂β − β0) ⇝ N
+
+(
+
+tE {Deff  
+
+> β
+
+(O)s(O)}, Σeff 
+
+> β
+
+)
+
+,
+
+whereas pathwise differentiability yields 
+
+√n{β(Pt/ √n) − β0} −→ tE {Deff  
+
+> β
+
+(O)s(O)}.
+
+The centered limit of √n{̂ β − β(Pt/ √n)} is therefore invariant over such submodels, establishing regularity and variance Σ eff  
+
+> β
+
+= Var( Deff  
+
+> β
+
+). If D˜β is the influence function of any other regular asymptotically linear estimator in the same model, the projection property of the canonical gradient yields 
+
+E
+
+[
+
+{D˜β − Deff  
+
+> β
+
+}Deff ⊤
+
+> β
+
+]
+
+= 0 .
+
+Consequently, Var( D˜β ) = Var( Deff  
+
+> β
+
+) + Var {D˜β − Deff  
+
+> β
+
+},
+
+which establishes the lower bound and the equality condition. 
+
+# C Simulation Supplement 
+
+C.1 Simulation Estimators 
+
+The four estimators in the simulation tables differ in which components of the observed-data score are included; all four estimators target the same complete-data logit projection in Defini-36 tion 2.1 when their required nuisance conditions hold. Write 
+
+wij (e) = Ai(1 − Aj )
+
+e(Xi){1 − e(Xj )} ,
+
+and let SIPW  
+
+> ij
+
+(β; G) denote the interval score weighted by inverse censoring probabilities in Section 3.1. Let SFC  
+
+> ij
+
+(β; G, Φ) denote this inverse-censoring-weighted score augmented by the future-score correction in (3.1). For r ∈ { IPW , FC }, define the corresponding baseline outcome regression 
+
+mr
+
+> 0
+
+(x1, x 0; β) = E{Sr
+
+> 12
+
+(β) | X1 = x1, X 2 = x0, A 1 = 1 , A 2 = 0 },
+
+where SFC 12 is evaluated at the chosen censoring survival and future-score projection. Under the correctly specified censoring law, mIPW 0 equals the complete-data baseline outcome regression 
+
+m0 in Section 3.2; under the correctly specified censoring law or correctly specified future-score projection, the same is true for mFC 0 . Let mr denote the corresponding outcome regression used in the following kernels. The four simulation estimators are the roots of ̂
+
+U qn(β) = 1
+
+n(n − 1) 
+
+∑
+
+> i̸=j
+
+Kqij (β;̂ ηij ) = 0 ,
+
+with cross-fitted nuisance estimates, where q takes one of the following forms: IPW : KIPW  
+
+> ij
+
+(β) = wij (e)SIPW  
+
+> ij
+
+(β; G),
+
+IPW-FC : KIPW -FC  
+
+> ij
+
+(β) = wij (e)SFC  
+
+> ij
+
+(β; G, Φ) ,
+
+AIPW : KAIPW  
+
+> ij
+
+(β) = wij (e){SIPW  
+
+> ij
+
+(β; G) − mIPW (Xi, X j ; β)} + mIPW (Xi, X j ; β),
+
+AIPW-FC : KAIPW -FC  
+
+> ij
+
+(β) = wij (e){SFC  
+
+> ij
+
+(β; G, Φ) − mFC (Xi, X j ; β)} + mFC (Xi, X j ; β).
+
+IPW and AIPW use the interval score weighted by inverse censoring probabilities. IPW-FC and AIPW-FC add the predictable future-score correction. The augmented estimators, AIPW and AIPW-FC, also include baseline outcome regression. The main text focuses on AIPW-FC, the estimator combining both augmentation components. 
+
+C.2 Data-Generating Mechanism 
+
+The analysis grid was tℓ = 3 ℓ months, ℓ = 0 , . . . , 8. Let Dℓ and Hℓ denote death and hos-pitalization history by tℓ. Baseline variables were generated as X ∼ Uniform( −1, 1) and 
+
+Zcvd ∼ Bernoulli(0 .30), independently, followed by 
+
+A | X, Z cvd ∼ Bernoulli {expit( −0.30 + 0 .40 X + 1 .60 Zcvd )}.
+
+Among subjects alive at the start of interval ℓ, the discrete death hazard was 
+
+λDℓ = 1 − exp 
+
+[
+
+− exp {− 5.12 + 0 .20 X + 0 .45 Zcvd − 0.05 A}
+
+]
+
+.
+
+37 Among subjects alive with no prior hospitalization, the hospitalization hazard was 
+
+λHℓ = 1 − exp 
+
+> [
+
+− exp {− 1.965 + 0 .45 X + 0 .65 Zcvd − 0.20 A − 1.00 AZ cvd }
+
+> ]
+
+.
+
+Within each interval, death was simulated before hospitalization; hospitalization was then sim-ulated among subjects who remained alive. Once death occurred, no further outcomes were generated for that subject, whereas a first hospitalization set Hℓ = 1 thereafter. The discrete censoring hazard among uncensored subjects alive through interval ℓ was 
+
+λCℓ = 1 − exp 
+
+> [
+
+− exp {aC + 0 .75 Hℓ−1 + 0 .25 X + 0 .55 Zcvd }
+
+> ]
+
+.
+
+Events at tℓ were ascertained before censoring at tℓ, in agreement with the interval convention used in Section 2. For each scenario, only the intercept aC of this censoring hazard was cali-brated so that the marginal censoring proportion by 24 months was approximately the targeted 30%, 50%, or 65%; the covariate effects in the censoring model and the event-generating mech-anism were otherwise unchanged. Across replications, the realized censoring proportions were essentially at their targets, and the mortality and hospitalization rates remained approximately 5% and 60%, respectively. Pairwise win and determinacy processes followed the two-level priority rule that ranks death before hospitalization, as described in Section 5. The pair design vector was 
+
+> ˜
+
+Xij = (1 , X i − Xj , Z cvd  
+
+> i
+
+− Zcvd  
+
+> j
+
+)⊤.
+
+The correctly specified treatment model was logistic in ( X, Z cvd ). The censoring, death, and hospitalization hazards were fitted by pooled complementary log-log models using the covariates in their respective data-generating hazards. We used five subject-level folds throughout. For a pair whose members belonged to folds f and g, the transition fits and the outcome-regression fits excluded both folds. The final estimating equations included all ordered pairs. The future state was ( Dℓ, H ℓ) ∈ { 0, 1}2. Fitted one-step death and hospitalization hazards were used to update state probabilities recursively under A = 1 and A = 0, and the two subject distributions were then combined to obtain expected future win and resolution con-tributions. The same finite-state recursion supplied both the future-score projection and the baseline outcome regression for AIPW and AIPW-FC. For bootstrap inference, subjects were sampled with replacement, all nuisance models and pair indices were reconstructed, and each estimating equation was solved. Basic bootstrap intervals were formed by reflecting the 0.025 and 0.975 bootstrap quantiles about the original estimate. The benchmark value of the complete-data target was calculated independently of the observed censoring process. We used deterministic integration over the continuous biomarker distribution, probabilities 0.7 and 0.3 for the two values of Zcvd , and deterministic forward recursion under 
+
+A = 1 and A = 0. The resulting weighted population logistic score was solved for ( α, γ X , γ cvd ). This procedure yielded the common benchmark value (0 .583789 , −0.538483 , −0.273921) ⊤ for all 38 three censoring scenarios. 
+
+C.3 Double-Robustness Study 
+
+The double-robustness study focused on the 50% censoring scenario and examined the two ro-bustness components in Theorem 3.2. Four misspecification scenarios were considered. For treatment robustness, the misspecified propensity model omitted Zcvd while the outcome re-gression m was correctly specified, or the propensity model was correct while m was set to zero. For censoring robustness, the misspecified censoring model contained only the interval offset and omitted ( Hℓ−1, X, Z cvd ) while the future-score projection was correct, or the censor-ing model was correct while the death and hospitalization transition models used for Φ omitted 
+
+Zcvd and the AZ cvd interaction. All remaining nuisance models were correctly specified. Each scenario used 500 replications. For this auxiliary study, the intercept of the same censoring hazard was calibrated in the same manner to maintain approximately 50% marginal censor-ing; all other data-generating parameters were identical. The model-based variance estimator was implemented only for AIPW-FC, and its ASE and coverage under these misspecification scenarios are reported as an empirical assessment. 39 Table 3: Treatment double-robustness results under 50% censoring. Scenario  Component  Estimator  True  Bias  ESD  ASE  Coverage 
+
+> e wrong,  m correct  Intercept  IPW  0.58  -0.08  0.19  – –AIPW  0.58  0.00  0.20  – –IPW-FC  0.58  -0.08  0.18  – –AIPW-FC  0.58  0.00  0.18  0.17  0.94 Biomarker  IPW  -0.54  0.00  0.16  – –AIPW  -0.54  0.00  0.17  – –IPW-FC  -0.54  0.00  0.15  – –AIPW-FC  -0.54  0.00  0.15  0.15  0.95 CVD  IPW  -0.27  0.20  0.22  – –AIPW  -0.27  -0.02  0.24  – –IPW-FC  -0.27  0.21  0.20  – –AIPW-FC  -0.27  -0.01  0.21  0.22  0.95
+> e correct,  m wrong  Intercept  IPW  0.58  0.00  0.20  – –AIPW  0.58  0.00  0.20  – –IPW-FC  0.58  0.00  0.18  – –AIPW-FC  0.58  0.00  0.18  0.18  0.95 Biomarker  IPW  -0.54  0.00  0.18  – –AIPW  -0.54  0.00  0.18  – –IPW-FC  -0.54  0.00  0.16  – –AIPW-FC  -0.54  0.00  0.16  0.16  0.94 CVD  IPW  -0.27  -0.02  0.23  – –AIPW  -0.27  -0.02  0.23  – –IPW-FC  -0.27  -0.01  0.21  – –AIPW-FC  -0.27  -0.01  0.21  0.20  0.94
+
+40 Table 4: Censoring double-robustness results under 50% censoring. Scenario  Component  Estimator  True  Bias  ESD  ASE  Coverage 
+
+> G wrong, Φ correct  Intercept  IPW  0.58  -0.06  0.19  – –AIPW  0.58  -0.07  0.20  – –IPW-FC  0.58  0.00  0.18  – –AIPW-FC  0.58  0.00  0.18  0.19  0.96 Biomarker  IPW  -0.54  0.02  0.17  – –AIPW  -0.54  0.03  0.18  – –IPW-FC  -0.54  -0.01  0.16  – –AIPW-FC  -0.54  0.00  0.16  0.17  0.96 CVD  IPW  -0.27  0.03  0.22  – –AIPW  -0.27  0.04  0.23  – –IPW-FC  -0.27  -0.01  0.21  – –AIPW-FC  -0.27  0.00  0.21  0.21  0.94
+> G correct, Φ wrong  Intercept  IPW  0.58  0.00  0.20  – –AIPW  0.58  0.00  0.20  – –IPW-FC  0.58  0.01  0.18  – –AIPW-FC  0.58  0.00  0.18  0.19  0.95 Biomarker  IPW  -0.54  0.00  0.18  – –AIPW  -0.54  0.00  0.18  – –IPW-FC  -0.54  0.00  0.16  – –AIPW-FC  -0.54  0.00  0.16  0.17  0.95 CVD  IPW  -0.27  -0.02  0.23  – –AIPW  -0.27  -0.01  0.23  – –IPW-FC  -0.27  -0.01  0.21  – –AIPW-FC  -0.27  0.00  0.21  0.21  0.96
+
+41 The treatment misspecification scenarios evaluate robustness of the treatment adjustment. When e omitted the strong baseline CVD predictor, IPW and IPW-FC had biases of about 
+
+−0.08 for the intercept and 0.20 for the CVD coefficient, whereas both augmented estimators with correct m were close to the target value. When e was correct and m was set to zero, all four estimators remained close to the target value. The censoring misspecification scenarios evaluate robustness of the censoring adjustment. When G omitted all history and baseline predictors, IPW and AIPW were biased in all three components, while IPW-FC and AIPW-FC with cor-rect Φ had much smaller bias. When G was correct and Φ was misspecified, all estimators again remained close to the target value. Across the four scenarios, model-based coverage for AIPW-FC ranged from 0.94 to 0.96. 
+
+# D OneFlorida Application Details 
+
+D.1 Cohort and Outcome 
+
+The index date was the date of breast cancer surgery. The analysis required at least one recorded encounter in each of the years before and after the index date, pre-index cardiovascular disease, membership in the high-risk frailty group, and no other cancer recorded in the preceding year. Patients were also required to be observed and alive at the 90-day landmark and to have nonmissing age and frailty measurements. Initiation of adjuvant chemotherapy between surgery and the landmark defined A = 1; absence of initiation during that window defined A = 0. Follow-up after the landmark was divided into 36 complete intervals of 30 days; the one- and two-year analyses truncated follow-up after 12 and 24 complete intervals, respectively. Let Di,ℓ 
+
+denote death status and Hi,ℓ indicate whether patient i had experienced an inpatient hospi-talization before interval ℓ. For an ordered pair ( i, j ), the interval comparison was determined by 
+
+Rij,ℓ = 1(Di,ℓ ̸ = Dj,ℓ ) + 1(Di,ℓ = Dj,ℓ )1(Hi,ℓ ̸ = Hj,ℓ ),
+
+with Wij,ℓ = 1 when the first member was alive while the second had died, or, conditional on equal death status, when the first member had no hospitalization history while the second did. The pair design vector was 
+
+> ˜
+
+Xij =
+
+> (
+
+1, X Fi − XFj
+
+> )⊤
+
+,
+
+where XF was the standardized frailty index. The first component of β is therefore the treated-versus-control coefficient. The analysis contained 238,161 treated-versus-control ordered pairs and 1,591,382 ordered pairs in the average used to estimate the outcome regression. 
+
+D.2 Nuisance Models and Future-Score Recursion 
+
+All nuisance models were fitted with five-fold cross-fitting at the subject level. The propensity score model was logistic in standardized age, standardized frailty, standardized log prior-year encounter utilization, indicators for congestive heart failure, pre-index cardiomyopathy, pre-index atrial fibrillation or other arrhythmia/cardiac-arrest diagnosis, diabetes, renal disease, myocardial infarction, and stroke or transient ischemic attack, and race and ethnicity group 42 and payer group. The discrete censoring hazard was modeled by a pooled complementary log-log regression on interval, treatment, age, frailty, hospitalization history, prior-year encounter utilization, log-transformed histories of marker abnormality and acute-care use available at the start of the interval, and race and ethnicity group and payer group. For the future-score projection, the recursion was based on the state ( Di,ℓ , H i,ℓ ) ∈ { 0, 1}2. One-step death and hospitalization probabilities were estimated by pooled complementary log-log models. Both models included interval, treatment, age, frailty, and landmark summaries of marker abnormality and acute-care utilization; the death model additionally included current hospitalization history. The hospitalization model was fitted among patients alive and free of prior hospitalization. In the recursion, death was evaluated first, and hospitalization was updated only for patients who survived through the interval. Once death occurred, no further state updates were made. For a patient with covariate history summarized by the fitted transition models, let πai,r (d, h )denote the predicted probability of state ( D, H ) = ( d, h ) at the start of interval r under treat-ment value a. With fitted one-step hazards ̂ pDi,r (a, h ) and ̂ pHi,r (a, 0), the application followed the forward recursion 
+
+πai,r +1 (1 , h ) = πai,r (1 , h ) + πai,r (0 , h )̂pDi,r (a, h ), h = 0 , 1,πai,r +1 (0 , 1) = πai,r (0 , 1) {1 −̂ pDi,r (a, 1) } + πai,r (0 , 0) {1 −̂ pDi,r (a, 0) }̂pHi,r (a, 0) ,πai,r +1 (0 , 0) = πai,r (0 , 0) {1 −̂ pDi,r (a, 0) }{ 1 −̂ pHi,r (a, 0) }.
+
+Let W and R be the 4 × 4 matrices obtained by applying the same priority rule, ranking death before hospitalization, to two states. Their entries equal one when the ordered pair is a win or is resolved, respectively. For a pair still observed at censoring interval ℓ, the components of the future win and resolution scores that do not depend on β were ̂
+
+F W ij,ℓ =
+
+> M∑
+> r=ℓ+1
+
+∆tr{̂ πAi 
+
+> i,r
+
+}⊤Ŵ πAj 
+
+> j,r
+
+,̂ F R ij,ℓ =
+
+> M∑
+> r=ℓ+1
+
+∆tr{̂πAi 
+
+> i,r
+
+}⊤R̂ πAj 
+
+> j,r
+
+.
+
+These future components determine the future-score projection through ̂
+
+Φij,ℓ (β) = ˜Xij 
+
+> [̂
+
+F W ij,ℓ −̂ F R ij,ℓ expit {β⊤ ˜Xij }
+
+> ]
+
+.
+
+This finite-state recursion implements Eq. (3.5) deterministically. The baseline outcome regression used the same recursion over four states under A = 1 and 
+
+A = 0. Its death and hospitalization transition models included interval, treatment, age, frailty, and prior-year encounter utilization, with hospitalization history additionally included in the death model. The resulting win and resolution components, which are independent of β, were averaged over all ordered pairs in the AIPW score. For a pair whose members belonged to folds f and g, transition and outcome-regression pre-dictions for the pair came from models fitted outside both folds; subject-level treatment and censoring predictions were likewise evaluated out of fold. Each of the 200 nonparametric boot-43 strap samples resampled patients with replacement, reconstructed all pair indices, refitted every nuisance model, and solved each estimating equation. Basic bootstrap intervals were calculated as [
+
+2̂β − q0.975 (̂β∗), 2̂ β − q0.025 (̂β∗)
+
+> ]
+
+.
+
+# E Sensitivity Analyses for the OneFlorida Application 
+
+We examined three structured changes to the nuisance models at the three-year horizon, one component at a time. These analyses assessed sensitivity to the treatment-assignment model, the censoring model, and the future-score transition model. The reduced propensity model omitted cardiomyopathy, race and ethnicity group, and payer group from the primary propensity model. The reduced censoring model omitted post-landmark hospitalization, marker, and acute-care histories from the censoring model. The reduced future-score transition model omitted marker abnormality and acute-care histories. Table 5: OneFlorida analyses under alternative model specifications at the three-year horizon. The primary analysis is included for reference. Each reduced analysis changes only the indicated model component. Entries are coefficient estimates with 200 subject-bootstrap standard errors in parentheses. Relative efficiency (RE) is the ratio of the bootstrap variance without future-score correction to that with future-score correction for the treated-versus-control coefficient.                                                         
+
+> Model specification Estimator Treatment Frailty RE Primary analysis IPW 0.10 (0 .21) −0.45 (0 .12) –IPW-FC 0.12 (0 .17) −0.49 (0 .10) 1.47 AIPW 0.13 (0 .21) −0.44 (0 .13) –AIPW-FC 0.13 (0 .18) −0.48 (0 .12) 1.48 Reduced propensity model IPW 0.11 (0 .21) −0.45 (0 .11) –IPW-FC 0.13 (0 .16) −0.49 (0 .09) 1.59 AIPW 0.14 (0 .20) −0.44 (0 .11) –AIPW-FC 0.15 (0 .16) −0.47 (0 .10) 1.51 Reduced censoring model IPW 0.14 (0 .21) −0.44 (0 .11) –IPW-FC 0.12 (0 .17) −0.50 (0 .11) 1.43 AIPW 0.17 (0 .21) −0.43 (0 .12) –AIPW-FC 0.13 (0 .18) −0.49 (0 .12) 1.43 Reduced future-score transition model IPW 0.10 (0 .21) −0.45 (0 .12) –IPW-FC 0.15 (0 .17) −0.49 (0 .10) 1.44 AIPW 0.13 (0 .21) −0.44 (0 .13) –AIPW-FC 0.16 (0 .18) −0.48 (0 .12) 1.45
+
+Across all three reduced specifications, treatment estimates remained close to the primary three-year estimate, frailty remained negative, and future-score correction retained comparable pre-cision gains. For AIPW-FC, treatment estimates under the reduced specifications ranged from 0.13 to 0.16, compared with 0.13 in the primary analysis, and frailty estimates ranged from 
+
+−0.49 to −0.47, compared with −0.48. Every corresponding 95% bootstrap confidence interval for treatment included zero. Relative efficiency ranged from 1.43 to 1.59 for IPW-FC versus IPW and from 1.43 to 1.51 for AIPW-FC versus AIPW. 44 References 
+
+James R Anderson, Kevin C Cain, and Richard D Gelber. Analysis of survival by tumor response. Journal of clinical oncology , 1(11):710–719, 1983. Miguel A Arcones and Evarist Giné. Limit theorems for u-processes. The Annals of Probability ,pages 1494–1542, 1993. Heejung Bang and James M Robins. Doubly robust estimation in missing data and causal inference models. Biometrics , 61(4):962–973, 2005. Huiman X. Barnhart, Yuliya Lokhnygina, Roland A. Matsouaka, and Frank W. Rockhold. Trial design with win statistics for multiple time-to-event endpoints with hierarchy. Statistics in Biopharmaceutical Research , 17(2):197–210, 2025. Ionut Bebu and John M Lachin. Large sample inference for a win ratio analysis of a composite outcome based on prioritized components. Biostatistics , 17(1):178–187, 2016. Edgar Brunner, Marc Vandemeulebroecke, and Tobias Mütze. Win odds: an adaptation of the win ratio to include ties. Statistics in Medicine , 40(14):3367–3384, 2021. Marc Buyse. Generalized pairwise comparisons of prioritized outcomes in the two-sample prob-lem. Statistics in medicine , 29(30):3245–3257, 2010. Zhiqiang Cao, Xi Fang, and Fan Li. Generalized win fraction regression for composite survival endpoints. arXiv preprint arXiv:2604.04360 , 2026. Ying Cui, Bo Huang, Gaohong Dong, Ryuji Uozumi, and Lu Tian. An ipcw adjusted win statistics approach in clinical trials incorporating equivalence margins to define ties. Statistics in Medicine , 44(15-17):e70180, 2025. Gaohong Dong, Lu Mao, Bo Huang, Margaret Gamalo-Siebers, Jiuzhou Wang, GuangLei Yu, and David C Hoaglin. The inverse-probability-of-censoring weighting (ipcw) adjusted win ratio statistic: an unbiased estimator in the presence of independent censoring. Journal of biopharmaceutical statistics , 30(5):882–899, 2020. Gaohong Dong, Bo Huang, Duolao Wang, Johan Verbeeck, Jiuzhou Wang, and David C Hoaglin. Adjusting win statistics for dependent censoring. Pharmaceutical Statistics , 20(3):440–450, 2021. Gaohong Dong, Margaret Gamalo-Siebers, Ying Cui, Bo Huang, Xiaolong Luo, and Lu Tian. Win statistics (win ratio, win odds, and net benefit): Noncollapsibility and standardization for randomized clinical trials. Journal of Biopharmaceutical Statistics , 2026. Gaohong Dong et al. Win statistics (win ratio, win odds, and net benefit) can complement one another to show the strength of the treatment effect on time-to-event outcomes. Pharmaceu-tical Statistics , 22(1):20–33, 2023. 45 Xi Fang and Fan Li. Improving inverse probability of censoring weighting for win statistics with composite survival outcomes. arXiv preprint arXiv:2605.26507 , 2026. Dianne M Finkelstein and David A Schoenfeld. Combining mortality and longitudinal measures in clinical trials. Statistics in medicine , 18(11):1341–1354, 1999. WANG Hongyue, PENG Jing, Z ZHENG Juila, WANG Bokai, LU Xiang, CHEN Chongshu, M TU Xin, and FENG Changyong. Win ratio–an intuitive and easy-to-interpret composite outcome in medical studies. Shanghai Archives of Psychiatry , 29(1):55, 2017. Jeanne Kowalski and Xin M Tu. Modern applied U-statistics . John Wiley & Sons, 2008. Heng Li, Wei-Chen Chen, Nelson Lu, Rong Tang, and Yu Zhao. The elusiveness of the win ratio parameter in the presence of missing data. Therapeutic Innovation & Regulatory Science , 58 (3):431–432, 2024. Lei Li, Jing Lei, and Yuexiao Dong. Probabilistic win ratio method for hierarchical composite endpoints with coarsened outcomes. arXiv preprint arXiv:2606.07762 , 2026. Yi Liu, Huiman Barnhart, Sean O’Brien, Yuliya Lokhnygina, and Roland A. Matsouaka. Esti-mation and inference for win measures with multiple ordinal endpoints subject to missingness. 
+
+arXiv preprint arXiv:2605.27085 , 2026a. Yi Liu, Huiman Barnhart, Sean O’Brien, Yuliya Lokhnygina, and Roland A. Matsouaka. Esti-mation and inference of the win ratio for two hierarchical endpoints subject to censoring and missing data. arXiv preprint arXiv:2602.13533 , 2026b. Xiaodong Luo, Hong Tian, Surya Mohanty, and Wei Yann Tsai. An alternative approach to confidence interval estimation for the win ratio statistic. Biometrics , 71(1):139–145, 2015. Lu Mao. Defining estimand for the win ratio: Separate the true effect from censoring. Clinical Trials , 21(5):584–594, 2024. Lu Mao and Tuo Wang. A class of proportional win-fractions regression models for composite outcomes. Biometrics , 77(4):1265–1275, 2021. D Oakes. On the win-ratio statistic in clinical trials with multiple types of event. Biometrika ,103(3):742–745, 2016. Stuart J Pocock, Cono A Ariti, Timothy J Collier, and Duolao Wang. The win ratio: a new approach to the analysis of composite endpoints in clinical trials based on clinical priorities. 
+
+European heart journal , 33(2):176–182, 2012. Stuart J. Pocock, John Gregson, Timothy J. Collier, Joao Pedro Ferreira, and Gregg W. Stone. The win ratio in cardiology trials: lessons learnt, new developments, and wise future use. 
+
+European Heart Journal , 45(44):4684–4699, 2024. James M Robins, Andrea Rotnitzky, and Lue Ping Zhao. Estimation of regression coefficients 46 when some regressors are not always observed. Journal of the American statistical Association ,89(427):846–866, 1994. James Song, Johan Verbeeck, Bo Huang, et al. The win odds: statistical inference and regres-sion. Journal of Biopharmaceutical Statistics , 33(2):140–150, 2023. Bang Wang, Zi Wang, and Yu Cheng. Generalized win-odds regression models for composite endpoints. Lifetime Data Analysis , 32(1):13, 2026. Tuo Wang and Lu Mao. Stratified proportional win-fractions regression analysis. Statistics in medicine , 41(26):5305–5318, 2022. Shuang Yang, Xiwei Lou, Mustafa M Ahmed, Stephen E Kimmel, Karen C Daily, Thomas J George, Carl J Pepine, Jiang Bian, Dejana Braithwaite, Dongyu Zhang, et al. Impact of pre-existing frailty on cardiotoxicity among breast cancer patients receiving adjuvant therapy. 
+
+Cardio Oncology , 7(2):110–121, 2025. 47
